@@ -398,12 +398,15 @@ CLTrainer <- function(data,
 
     # AnomalyDetection for all CohortDates----
     if(!is.null(AnomalyDetection)) {
-      temp <- data[get(CalendarDate) == get(CohortDate), list(ConversionCheck = sum(get(ConversionMeasure)), Leads = max(get(BaseFunnelMeasure[1]))), by = eval(CalendarDate)]
+      temp <- data[, list(ConversionCheck = sum(get(ConversionMeasure))), by = eval(CohortDate)]
+      data.table::setnames(temp, eval(CohortDate), eval(CalendarDate))
+      temp1 <- data[, list(Leads = max(get(BaseFunnelMeasure[1]))), by = eval(CalendarDate)]
+      temp <- merge(temp, temp1, by = eval(CalendarDate), all = FALSE); rm(temp1)
       temp <- temp[, ConversionRate := ConversionCheck / (Leads + 1)][, .SD, .SDcols = c(eval(CalendarDate), "ConversionRate")]
       temp <- RemixAutoML::CreateCalendarVariables(data = temp, DateCols = eval(CalendarDate), AsFactor = FALSE, TimeUnits = "wday")
       temp <- RemixAutoML::GenTSAnomVars(data = temp, ValueCol = "ConversionRate", GroupVars = paste0(CalendarDate,"_wday"), DateVar = eval(CalendarDate), HighThreshold = AnomalyDetection$tstat_high, LowThreshold = AnomalyDetection$tstat_low, KeepAllCols = TRUE, IsDataScaled = FALSE)
       temp <- temp[, .SD, .SDcols = c(eval(CalendarDate), "AnomHigh","AnomLow")]
-      if(!is.null(x)) {
+      if(!is.null(temp)) {
         data <- merge(data, temp, by.x = eval(CohortDate), by.y = eval(CalendarDate), all.x = TRUE)
         data[is.na(AnomHigh), AnomHigh := 0]
         data[is.na(AnomLow), AnomLow := 0]
@@ -582,7 +585,6 @@ CLTrainer <- function(data,
 
     # FE: AutoLagRollStats() ConversionMeasure Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
-      #temp <- data[get(CohortDate) == get(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
       temp <- data[, sum(get(ConversionMeasure)), by = eval(CohortDate)]
       data.table::setnames(temp, eval(CohortDate), eval(CalendarDate))
       data.table::setnames(temp, "V1", eval(ConversionMeasure))
@@ -622,6 +624,7 @@ CLTrainer <- function(data,
       }
 
       # Join back to data----
+      if(!is.Date(data[[eval(CalendarDate)]])) data[, eval(CalendarDate) := as.Date(get(CalendarDate))]
       data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
     }
 
@@ -757,11 +760,11 @@ CLTrainer <- function(data,
 
       # Define features----
       if(proc %chin% c("evaluate","eval")) {
-        Features <- names(TrainData)[!names(TrainData) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
+        Features <- names(TrainData)[!names(TrainData) %chin% c(eval(CalendarDate),eval(CohortDate),eval(ConversionMeasure),eval(ConversionRateMeasure))]
         idcols <- names(TrainData)[!names(TrainData) %in% Features]
         if(ModelID %chin% names(TrainData)) Features <- Features[!Features %chin% ModelID]
       } else {
-        Features <- names(data)[!names(data) %chin% c(eval(CalendarDate),eval(CohortDate),eval(BaseFunnelMeasure),eval(ConversionMeasure),eval(ConversionRateMeasure))]
+        Features <- names(data)[!names(data) %chin% c(eval(CalendarDate),eval(CohortDate),eval(ConversionMeasure),eval(ConversionRateMeasure))]
         idcols <- names(data)[!names(data) %in% Features]
         if(ModelID %chin% names(data)) Features <- Features[!Features %chin% ModelID]
       }
