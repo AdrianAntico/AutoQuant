@@ -290,9 +290,6 @@ AutoLagRollStats <- function(data,
             tempData <- tempData[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(eval(Targets)), keyby = c(eval(DateColumn),eval(Fact))]
           }
 
-          # Set up for binary search instead of vector scan----
-          data.table::setkeyv(x = tempData, cols = c(eval(Fact),eval(DateColumn)))
-
           # Ensure TimeBetween is null for aggregated data----
           if(!is.null(TimeBetween)) TimeBetween <- NULL
 
@@ -317,9 +314,6 @@ AutoLagRollStats <- function(data,
 
         } else {
 
-          # Set up for binary search instead of vector scan----
-          data.table::setkeyv(x = data, cols = c(eval(Fact),eval(DateColumn)))
-
           # Build GDL Features----
           data <- DT_GDL_Feature_Engineering(
             data,
@@ -342,15 +336,19 @@ AutoLagRollStats <- function(data,
 
         # Check if timeaggs is same of TimeUnit----
         if(Counter > 1L) {
-          data.table::set(data, j = "TEMPDATE", value = lubridate::floor_date(data[[eval(DateColumn)]], unit = eval(timeaggs)))
-          data <- merge(data, tempData[, .SD, .SDcols = c(eval(Fact),eval(DateColumn),setdiff(names(tempData),names(data)))], by.x = c(eval(Fact),"TEMPDATE"), by.y = c(eval(Fact),eval(DateColumn)), all.x = TRUE)
+          data[, TEMPDATE := lubridate::floor_date(get(DateColumn), unit = eval(timeaggs))]
+          data <- merge(
+            data,
+            tempData[, .SD, .SDcols = c(eval(Fact),eval(DateColumn),setdiff(names(tempData),names(data)))],
+            by.x = c(eval(Fact),"TEMPDATE"),
+            by.y = c(eval(Fact),eval(DateColumn)), all.x = TRUE)
           data.table::set(data, j = "TEMPDATE", value = NULL)
         }
       }
     }
   }
 
-  # Debugging
+  # Debugging----
   if(Debug) print("AutoLagRollStats: Indep")
 
   # Single categoricals at a time AND no hierarchical: if there are hierarchical the single cats will be handled above----
@@ -376,10 +374,7 @@ AutoLagRollStats <- function(data,
           data.table::set(tempData, j = eval(DateColumn), value = lubridate::floor_date(x = tempData[[eval(DateColumn)]], unit = timeaggs))
 
           # Agg by date column----
-          tempData <- tempData[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(eval(Targets)), by = c(eval(DateColumn),eval(Fact))]
-
-          # Set up for binary search instead of vector scan----
-          data.table::setkeyv(x = tempData, cols = c(eval(Fact),eval(DateColumn)))
+          tempData <- tempData[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(eval(Targets)), keyby = c(eval(DateColumn),eval(Fact))]
 
           # Ensure TimeBetween is null for aggregated data----
           if(!is.null(TimeBetween)) TimeBetween <- NULL
@@ -430,7 +425,7 @@ AutoLagRollStats <- function(data,
 
         # Check if timeaggs is same of TimeUnit----
         if(Counter > 1L) {
-          data.table::set(data, j = "TEMPDATE", value = lubridate::floor_date(data[[eval(DateColumn)]], unit = eval(timeaggs)))
+          data[, TEMPDATE := lubridate::floor_date(get(DateColumn), unit = eval(timeaggs))]
           data <- merge(
             data, tempData[, .SD, .SDcols = c(eval(Fact),eval(DateColumn),setdiff(names(tempData),names(data)))],
             by.x = c(eval(Fact),"TEMPDATE"),
