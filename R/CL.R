@@ -624,7 +624,7 @@ CLTrainer <- function(data,
       }
 
       # Join back to data----
-      if(!is.Date(data[[eval(CalendarDate)]])) data[, eval(CalendarDate) := as.Date(get(CalendarDate))]
+      if(!lubridate::is.Date(data[[eval(CalendarDate)]])) data[, eval(CalendarDate) := as.Date(get(CalendarDate))]
       data <- merge(data, temp[, .SD, .SDcols = c(eval(CalendarDate), setdiff(names(temp), names(data)))], by = eval(CalendarDate), all = FALSE)
     }
 
