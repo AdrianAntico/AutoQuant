@@ -525,6 +525,7 @@ AutoCatBoostCARMA <- function(data,
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
+    if(is.list(Lags)) TimeGroups <- names(Lags)
 
     # Generate features----
     data <- AutoLagRollStats(
@@ -572,6 +573,7 @@ AutoCatBoostCARMA <- function(data,
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
+    if(is.list(Lags)) TimeGroups <- names(Lags)
 
     # Generate features----
     data <- AutoLagRollStats(
@@ -614,6 +616,9 @@ AutoCatBoostCARMA <- function(data,
 
   # No Group with or without Diff
   if(is.null(GroupVariables)) {
+
+    # TimeGroups----
+    if(is.list(Lags)) TimeGroups <- names(Lags)
 
     # Generate features----
     data <- AutoLagRollStats(
