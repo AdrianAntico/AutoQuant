@@ -25,18 +25,27 @@
 #' @param Debug Set to TRUE to get a print of which steps are running
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
-#' # Create fake data with a Date----
-#' data <- RemixAutoML::FakeDataGenerator(
-#'   Correlation = 0.75,
-#'   N = 25000L,
-#'   ID = 2L,
-#'   ZIP = 0L,
-#'   FactorCount = 2L,
-#'   AddDate = TRUE,
-#'   Classification = FALSE,
-#'   MultiClass = FALSE)
-#' data.table::setnames(x = data, old = c("Factor_1","Factor_2"), new = c("Factor1","Factor2"))
-#' data.table::setorderv(x = data, cols = c("Factor1","Factor2","DateTime"))
+#'
+#' # Create fake Panel Data----
+#' Count <- 1L
+#' for(Level in LETTERS) {
+#'   datatemp <- RemixAutoML::FakeDataGenerator(
+#'     Correlation = 0.75,
+#'     N = 25000L,
+#'     ID = 0L,
+#'     ZIP = 0L,
+#'     FactorCount = 0L,
+#'     AddDate = TRUE,
+#'     Classification = FALSE,
+#'     MultiClass = FALSE)
+#'   datatemp[, Factor1 := eval(Level)]
+#'   if(Count == 1L) {
+#'     data <- data.table::copy(datatemp)
+#'   } else {
+#'     data <- data.table::rbindlist(list(data, data.table::copy(datatemp)))
+#'   }
+#'   Count <- Count + 1L
+#' }
 #'
 #' # Add scoring records
 #' data <- RemixAutoML::AutoLagRollStats(
@@ -45,8 +54,8 @@
 #'   data                 = data,
 #'   DateColumn           = "DateTime",
 #'   Targets              = "Adrian",
-#'   HierarchyGroups      = c("Factor1","Factor2"),
-#'   IndependentGroups    = NULL,
+#'   HierarchyGroups      = NULL,
+#'   IndependentGroups    = c("Factor1"),
 #'   TimeUnitAgg          = "days",
 #'   TimeGroups           = c("days", "weeks", "months", "quarters"),
 #'   TimeBetween          = NULL,
@@ -476,20 +485,49 @@ AutoLagRollStats <- function(data,
 #' @param Debug Set to TRUE to get a print out of which step you are on
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
+#'
+#' # Create fake Panel Data----
+#' Count <- 1L
+#' for(Level in LETTERS) {
+#'   datatemp <- RemixAutoML::FakeDataGenerator(
+#'     Correlation = 0.75,
+#'     N = 25000L,
+#'     ID = 0L,
+#'     ZIP = 0L,
+#'     FactorCount = 0L,
+#'     AddDate = TRUE,
+#'     Classification = FALSE,
+#'     MultiClass = FALSE)
+#'   datatemp[, Factor1 := eval(Level)]
+#'   if(Count == 1L) {
+#'     data <- data.table::copy(datatemp)
+#'   } else {
+#'     data <- data.table::rbindlist(list(data, data.table::copy(datatemp)))
+#'   }
+#'   Count <- Count + 1L
+#' }
+#'
+#' # Create ID columns to know which records to score
+#' data[, ID := .N:1L, by = "Factor1"]
+#' data.table::set(data, i = which(data[["ID"]] == 2L), j = "ID", value = 1L)
+#'
+#' # Score records
 #' data <- RemixAutoML::AutoLagRollStatsScoring(
 #'
 #'   # Data
 #'   data                 = data,
-#'   RowNumsID            = "ScoreRecords",
+#'   RowNumsID            = "ID",
 #'   RowNumsKeep          = 1,
 #'   DateColumn           = "DateTime",
-#'   Targets              = "Weekly_Sales",
+#'   Targets              = "Adrian",
 #'   HierarchyGroups      = c("Store","Dept"),
 #'   IndependentGroups    = NULL,
 #'
 #'   # Services
 #'   TimeBetween          = NULL,
-#'   TimeUnit             = c("days", "weeks", "months"),
+#'   TimeGroups           = c("days", "weeks", "months"),
+#'   TimeUnit             = "day",
+#'   TimeUnitAgg          = "day",
 #'   RollOnLag1           = TRUE,
 #'   Type                 = "Lag",
 #'   SimpleImpute         = TRUE,
@@ -501,8 +539,8 @@ AutoLagRollStats <- function(data,
 #'   Skew_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
 #'   Kurt_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
 #'   Quantile_RollWindows  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   Quantiles_Selected   = c("q5","q10","q95"),
-#'   Debug                = FALSE)
+#'   Quantiles_Selected    = c("q5","q10","q95"),
+#'   Debug                 = FALSE)
 #' @export
 AutoLagRollStatsScoring <- function(data,
                                     RowNumsID            = "temp",
@@ -851,7 +889,7 @@ AutoLagRollStatsScoring <- function(data,
     }
   }
 
-  # Debugging
+  # Debugging----
   if(Debug) print("AutoLagRollStatsScoring: Independent")
 
   # Single categoricals at a time----
@@ -869,15 +907,16 @@ AutoLagRollStatsScoring <- function(data,
         # Increment----
         Counter <- Counter + 1L
 
-        # Copy data----
-        tempData <- data.table::copy(data)
-        data.table::setnames(tempData, eval(DateColumn), "TEMPDATE")
-
         # Check if timeaggs is same of TimeUnit----
         if(Counter > 1L) {
 
+          # Copy data----
+          tempData <- data.table::copy(data)
+
           # Floor Date column to timeagg level----
-          if(timeaggs != TimeGroups[1]) data.table::set(tempData, j = "TEMPDATE", value = lubridate::floor_date(x = tempData[["TEMPDATE"]], unit = timeaggs))
+          if(timeaggs != TimeGroups[1]) {
+            tempData[, TEMPDATE := lubridate::floor_date(x = get(DateColumn), unit = timeaggs)]
+          }
 
           # Ensure Targets is numeric - someimes comes in as list----
           for(tar in Targets) if(!is.numeric(tempData[[eval(tar)]])) data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))
@@ -916,7 +955,7 @@ AutoLagRollStatsScoring <- function(data,
 
           # Build features----
           KeepData <- Partial_DT_GDL_Feature_Engineering(
-            data            = tempData,
+            data            = data,
             lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags,
             periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows,
             SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows,
@@ -926,7 +965,7 @@ AutoLagRollStatsScoring <- function(data,
             statsFUNs       = RollFunctions,
             targets         = Targets,
             groupingVars    = Fact,
-            sortDateName    = "TEMPDATE",
+            sortDateName    = DateColumn,
             timeDiffTarget  = TimeBetween,
             timeAgg         = timeaggs,
             WindowingLag    = RollOnLag1,
@@ -963,24 +1002,13 @@ AutoLagRollStatsScoring <- function(data,
         if(Counter > 1L) {
 
           # I need to match up date aggregation to join properly----
-          if(timeaggs != TimeGroups[1L]) {
-            KeepData <- merge(
-              #x = data.table::set(KeepData, j = "TEMPDATE", value = lubridate::floor_date(KeepData[[eval(DateColumn)]], unit = timeaggs)),
-              x = KeepData,
-              y = data.table::set(tempData, j = c(setdiff(names(tempData),c(eval(Fact),"TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
-              by = c(eval(Fact),"TEMPDATE"),
-              all.x = TRUE)
-          }
-
-          # I need to match up date aggregation to join properly----
-          if(timeaggs == TimeGroups[1L]) {
-            data.table::set(KeepData, j = "TEMPDATE", value = KeepData[[eval(DateColumn)]])
-            KeepData <- merge(
-              x = KeepData,
-              y = data.table::set(tempData, j = c(setdiff(names(tempData),c(eval(IndependentGroups),"TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
-              by = c(eval(IndependentGroups),"TEMPDATE"),
-              all.x = TRUE)
-          }
+          KeepData[, TEMPDATE := lubridate::floor_date(get(DateColumn), unit = eval(timeaggs))]
+          KeepData <- merge(
+            x = KeepData,
+            y = data.table::set(tempData, j = c(setdiff(names(tempData),c(eval(Fact),"TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
+            by = c(eval(Fact),"TEMPDATE"),
+            all.x = TRUE)
+          data.table::set(KeepData, j = "TEMPDATE", value = NULL)
         }
       }
     }

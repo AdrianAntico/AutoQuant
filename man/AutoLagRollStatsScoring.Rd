@@ -81,20 +81,49 @@ data.table of original data plus created lags, rolling stats, and time between e
 AutoLagRollStatsScoring Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
 }
 \examples{
+
+# Create fake Panel Data----
+Count <- 1L
+for(Level in LETTERS) {
+  datatemp <- RemixAutoML::FakeDataGenerator(
+    Correlation = 0.75,
+    N = 25000L,
+    ID = 0L,
+    ZIP = 0L,
+    FactorCount = 0L,
+    AddDate = TRUE,
+    Classification = FALSE,
+    MultiClass = FALSE)
+  datatemp[, Factor1 := eval(Level)]
+  if(Count == 1L) {
+    data <- data.table::copy(datatemp)
+  } else {
+    data <- data.table::rbindlist(list(data, data.table::copy(datatemp)))
+  }
+  Count <- Count + 1L
+}
+
+# Create ID columns to know which records to score
+data[, ID := .N:1L, by = "Factor1"]
+data.table::set(data, i = which(data[["ID"]] == 2L), j = "ID", value = 1L)
+
+# Score records
 data <- RemixAutoML::AutoLagRollStatsScoring(
 
   # Data
   data                 = data,
-  RowNumsID            = "ScoreRecords",
+  RowNumsID            = "ID",
   RowNumsKeep          = 1,
   DateColumn           = "DateTime",
-  Targets              = "Weekly_Sales",
+  Targets              = "Adrian",
   HierarchyGroups      = c("Store","Dept"),
   IndependentGroups    = NULL,
 
   # Services
   TimeBetween          = NULL,
-  TimeUnit             = c("days", "weeks", "months"),
+  TimeGroups           = c("days", "weeks", "months"),
+  TimeUnit             = "day",
+  TimeUnitAgg          = "day",
   RollOnLag1           = TRUE,
   Type                 = "Lag",
   SimpleImpute         = TRUE,
@@ -106,8 +135,8 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
   Skew_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
   Kurt_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
   Quantile_RollWindows  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-  Quantiles_Selected   = c("q5","q10","q95"),
-  Debug                = FALSE)
+  Quantiles_Selected    = c("q5","q10","q95"),
+  Debug                 = FALSE)
 }
 \seealso{
 Other Feature Engineering: 

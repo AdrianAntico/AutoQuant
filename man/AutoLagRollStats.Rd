@@ -75,18 +75,27 @@ data.table of original data plus created lags, rolling stats, and time between e
 AutoLagRollStats Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
 }
 \examples{
-# Create fake data with a Date----
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.75,
-  N = 25000L,
-  ID = 2L,
-  ZIP = 0L,
-  FactorCount = 2L,
-  AddDate = TRUE,
-  Classification = FALSE,
-  MultiClass = FALSE)
-data.table::setnames(x = data, old = c("Factor_1","Factor_2"), new = c("Factor1","Factor2"))
-data.table::setorderv(x = data, cols = c("Factor1","Factor2","DateTime"))
+
+# Create fake Panel Data----
+Count <- 1L
+for(Level in LETTERS) {
+  datatemp <- RemixAutoML::FakeDataGenerator(
+    Correlation = 0.75,
+    N = 25000L,
+    ID = 0L,
+    ZIP = 0L,
+    FactorCount = 0L,
+    AddDate = TRUE,
+    Classification = FALSE,
+    MultiClass = FALSE)
+  datatemp[, Factor1 := eval(Level)]
+  if(Count == 1L) {
+    data <- data.table::copy(datatemp)
+  } else {
+    data <- data.table::rbindlist(list(data, data.table::copy(datatemp)))
+  }
+  Count <- Count + 1L
+}
 
 # Add scoring records
 data <- RemixAutoML::AutoLagRollStats(
@@ -95,8 +104,8 @@ data <- RemixAutoML::AutoLagRollStats(
   data                 = data,
   DateColumn           = "DateTime",
   Targets              = "Adrian",
-  HierarchyGroups      = c("Factor1","Factor2"),
-  IndependentGroups    = NULL,
+  HierarchyGroups      = NULL,
+  IndependentGroups    = c("Factor1"),
   TimeUnitAgg          = "days",
   TimeGroups           = c("days", "weeks", "months", "quarters"),
   TimeBetween          = NULL,
