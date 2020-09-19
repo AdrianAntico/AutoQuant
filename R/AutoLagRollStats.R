@@ -914,9 +914,7 @@ AutoLagRollStatsScoring <- function(data,
           tempData <- data.table::copy(data)
 
           # Floor Date column to timeagg level----
-          if(timeaggs != TimeGroups[1]) {
-            tempData[, TEMPDATE := lubridate::floor_date(x = get(DateColumn), unit = timeaggs)]
-          }
+          if(timeaggs != TimeGroups[1]) tempData[, TEMPDATE := lubridate::floor_date(x = get(DateColumn), unit = timeaggs)]
 
           # Ensure Targets is numeric - someimes comes in as list----
           for(tar in Targets) if(!is.numeric(tempData[[eval(tar)]])) data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))
@@ -975,33 +973,10 @@ AutoLagRollStatsScoring <- function(data,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
             AscRowRemove    = TRUE)
-
-          # data            = tempData
-          # lags            = if(is.list(Lags)) Lags[[timeaggs]] else Lags
-          # periods         = if(is.list(MA_RollWindows)) MA_RollWindows[[timeaggs]] else MA_RollWindows
-          # SDperiods       = if(is.list(SD_RollWindows)) SD_RollWindows[[timeaggs]] else SD_RollWindows
-          # Skewperiods     = if(is.list(Skew_RollWindows)) Skew_RollWindows[[timeaggs]] else Skew_RollWindows
-          # Kurtperiods     = if(is.list(Kurt_RollWindows)) Kurt_RollWindows[[timeaggs]] else Kurt_RollWindows
-          # Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows
-          # statsFUNs       = RollFunctions
-          # targets         = Targets
-          # groupingVars    = Fact
-          # sortDateName    = "TEMPDATE"
-          # timeDiffTarget  = TimeBetween
-          # timeAgg         = timeaggs
-          # WindowingLag    = RollOnLag1
-          # Type            = Type
-          # Timer           = FALSE
-          # SimpleImpute    = SimpleImpute
-          # AscRowByGroup   = RowNumsID
-          # RecordsKeep     = RowNumsKeep
-          # AscRowRemove    = TRUE
         }
 
-        # When IndependentGroups changes, dates are different - find out where the date changes
+        # Combine data sets----
         if(Counter > 1L) {
-
-          # I need to match up date aggregation to join properly----
           KeepData[, TEMPDATE := lubridate::floor_date(get(DateColumn), unit = eval(timeaggs))]
           KeepData <- merge(
             x = KeepData,
@@ -1015,9 +990,7 @@ AutoLagRollStatsScoring <- function(data,
   }
 
   # Simple impute missed----
-  for(miss in seq_len(ncol(KeepData))) {
-    data.table::set(KeepData, i = which(is.na(KeepData[[miss]])), j = miss, value = -1)
-  }
+  for(miss in seq_len(ncol(KeepData))) data.table::set(KeepData, i = which(is.na(KeepData[[miss]])), j = miss, value = -1)
 
   # Return data----
   if("TEMPDATE" %chin% names(KeepData)) data.table::setnames(KeepData, "TEMPDATE", DateColumn)
