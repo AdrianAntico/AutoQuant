@@ -995,7 +995,7 @@ CLForecast <- function(data,
       temp <- data[, list(
         data.table::first(get(ArgsList$BaseFunnelMeasure[1])),
         data.table::first(get(ArgsList$BaseFunnelMeasure[2]))), by = list(get(ArgsList$CalendarDate))]
-      data.table::setnames(temp, c("get","V1","V2","V3"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure[1],ArgsList$BaseFunnelMeasure[2]))
+      data.table::setnames(temp, c("get","V1","V2"), c(ArgsList$CalendarDate, ArgsList$BaseFunnelMeasure[1],ArgsList$BaseFunnelMeasure[2]))
     } else if(length(ArgsList$BaseFunnelMeasure) == 3) {
       temp <- data[, list(
         data.table::first(get(ArgsList$BaseFunnelMeasure[1])),
