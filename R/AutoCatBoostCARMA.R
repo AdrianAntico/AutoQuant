@@ -197,9 +197,12 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Feature Engineering: Add XREGS----")
 
   # Convert XREGS to data.table
+  if(DebugMode) print("# Convert XREGS to data.table")
   if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
 
   # Check lengths of XREGS
+  if(DebugMode) print(names(XREGS))
+  if(DebugMode) print("# Check lengths of XREGS")
   if(!is.null(XREGS) & TrainOnFull) {
     if(Difference) {
       FC_Periods <- min(-2L + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
@@ -216,9 +219,11 @@ AutoCatBoostCARMA <- function(data,
   }
 
   # Check for any Target Variable hiding in XREGS
+  if(DebugMode) print("# Check for any Target Variable hiding in XREGS")
   if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
 
   # Merge data and XREG for Training
+  if(DebugMode) print("merging xregs to data")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
       data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
@@ -228,6 +233,7 @@ AutoCatBoostCARMA <- function(data,
   }
 
   # Set Keys for data.table usage----
+  if(DebugMode) print("# Set Keys for data.table usage----")
   if(!is.null(GroupVariables)) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
     if(!is.null(XREGS)) {

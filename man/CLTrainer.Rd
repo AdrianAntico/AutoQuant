@@ -215,7 +215,7 @@ CLTrainer is a forecasting model for chain ladder style forecasting
 data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 
 # Build model
-RemixAutoML::AutoCatBoostChainLadder(
+RemixAutoML::CLTrainer(
 
    # Data Arguments----
    data = data,

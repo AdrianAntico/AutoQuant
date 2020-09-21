@@ -75,7 +75,7 @@
 #' data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 #'
 #' # Build model
-#' RemixAutoML::AutoCatBoostChainLadder(
+#' RemixAutoML::CLTrainer(
 #'
 #'    # Data Arguments----
 #'    data = data,
