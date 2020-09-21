@@ -585,8 +585,8 @@ CLTrainer <- function(data,
 
     # FE: AutoLagRollStats() ConversionMeasure Over Calendar Time----
     if(proc %chin% c("evaluate","evaluation","eval","training","train")) {
-      temp <- data[, sum(get(ConversionMeasure)), by = eval(CohortDate)]
-      data.table::setnames(temp, eval(CohortDate), eval(CalendarDate))
+      print("# AutoLagRollStatsScoring----")
+      temp <- data[get(CohortDate) == get(CalendarDate), sum(get(ConversionMeasure)), by = eval(CalendarDate)]
       data.table::setnames(temp, "V1", eval(ConversionMeasure))
       x <- system.time(gcFirst = FALSE, temp <- RemixAutoML::AutoLagRollStats(
 
@@ -1163,8 +1163,7 @@ CLForecast <- function(data,
     # FE: Total Conversion Measure by CalendarDate AutoLagRollStatsScoring----
     print("# AutoLagRollStatsScoring----")
     temp <- data.table::copy(data)
-    #temp <- temp[get(ArgsList$CohortDate) == get(ArgsList$CalendarDate), list(sum(get(ArgsList$ConversionMeasure))), by = list(get(ArgsList$CalendarDate))]
-    temp <- temp[, list(sum(get(ArgsList$ConversionMeasure))), by = list(get(ArgsList$CohortDate))]
+    temp <- temp[get(ArgsList$CohortDate) == get(ArgsList$CalendarDate), list(sum(get(ArgsList$ConversionMeasure))), by = list(get(ArgsList$CalendarDate))]
     data.table::setnames(temp, c("get","V1"), c(eval(ArgsList$CalendarDate), eval(ArgsList$ConversionMeasure)))
     temp[, ScoreRecords := data.table::fifelse(get(ArgsList$CalendarDate) == ScoreDate, 1, 2)]
     data.table::set(temp, j = eval(ArgsList$CalendarDate), value = as.Date(temp[[eval(ArgsList$CalendarDate)]]))
