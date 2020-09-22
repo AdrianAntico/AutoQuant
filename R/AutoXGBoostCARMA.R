@@ -366,29 +366,36 @@ AutoXGBoostCARMA <- function(data,
 
     # Store Objects If No Error in Hierarchy Run----
     if(!is.null(Output)) {
-      data <- Output$data
-      FourierFC <- Output$FourierFC
+      if(Output$data[, .N] != 0) {
+        data <- Output$data
+        FourierFC <- Output$FourierFC
+      } else {
+        print("Turning off Fourier Terms. Failed to build.")
+        FourierTerms <- 0
+      }
     } else {
       print("Turning off Fourier Terms. Failed to build.")
       FourierTerms <- 0
     }
 
     # If Fourier is turned off, concatenate grouping cols
-    if(!is.null(HierarchGroups)) {
-      if(length(HierarchGroups) > 1) {
-        if(any(HierarchGroups %chin% names(data))) {
+    if(FourierTerms == 0) {
+      if(!is.null(HierarchGroups)) {
+        if(length(HierarchGroups) > 1) {
+          if(any(HierarchGroups %chin% names(data))) {
+            data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
+            data[, eval(HierarchGroups) := NULL]
+          }
+        } else {
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-          data[, eval(HierarchGroups) := NULL]
+          if(HierarchGroups != "GroupVar") {
+            data[, eval(HierarchGroups) := NULL]
+          }
         }
-      } else {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-        if(HierarchGroups != "GroupVar") {
-          data[, eval(HierarchGroups) := NULL]
+      } else if(!is.null(GroupVariables)) {
+        if(all(GroupVariables %chin% names(data))) {
+          data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
         }
-      }
-    } else if(!is.null(GroupVariables)) {
-      if(all(GroupVariables %chin% names(data))) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       }
     }
   }

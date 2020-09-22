@@ -1,5 +1,5 @@
 #' AutoCatBoostHurdleModel for generalized hurdle modeling
-#' 
+#'
 #' AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd on github for more background.
 #'
 #' @author Adrian Antico
@@ -41,14 +41,14 @@
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @examples
 #' \donttest{
-#' Output <- RemixAutoML::AutoCatBoostHurdleModel( 
-#' 
+#' Output <- RemixAutoML::AutoCatBoostHurdleModel(
+#'
 #'   # Operationalization
 #'   task_type = "GPU",
 #'   ModelID = "ModelTest",
 #'   SaveModelObjects = FALSE,
 #'   ReturnModelObjects = TRUE,
-#'   
+#'
 #'   # Data related args
 #'   data = data,
 #'   TrainOnFull = FALSE,
@@ -59,7 +59,7 @@
 #'   FeatureColNames = NULL,
 #'   PrimaryDateColumn = NULL,
 #'   IDcols = NULL,
-#'   
+#'
 #'   # Metadata args
 #'   Paths = normalizePath("./"),
 #'   MetaDataPaths = NULL,
@@ -68,7 +68,7 @@
 #'   ClassWeights = NULL,
 #'   SplitRatios = c(0.70, 0.20, 0.10),
 #'   NumOfParDepPlots = 10L,
-#'   
+#'
 #'   # Grid tuning setup
 #'   PassInGrid = NULL,
 #'   GridTune = FALSE,
@@ -78,7 +78,7 @@
 #'   MaxRunMinutes = 60L*60L,
 #'   Shuffles = 2L,
 #'   MetricPeriods = 25L,
-#'   
+#'
 #'   # Bandit grid args
 #'   Trees = seq(1000L, 5000L, 500L),
 #'   Depth = seq(4L, 8L, 1L),
@@ -118,13 +118,13 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     Shuffles = 2L,
                                     MetricPeriods = 25L,
                                     Trees = seq(1000L, 5000L, 500L),
-                                    Depth = seq(4L, 8L, 1L),
+                                    Depth = 6,
                                     LearningRate = seq(0.01,0.10,0.01),
-                                    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+                                    L2_Leaf_Reg = 3.0,
                                     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
                                     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                                     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
-  
+
   # Store args----
   ArgsList <- list()
   ArgsList[["Buckets"]] <- Buckets
@@ -140,7 +140,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   ArgsList[["Paths"]] <- Paths
   ArgsList[["MetaDataPaths"]] <- MetaDataPaths
   ArgsList[["SaveModelObjects"]] <- SaveModelObjects
-  
+
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
@@ -149,7 +149,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   # Turn on full speed ahead----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Ensure Paths and metadata_path exists----
   if(!is.null(Paths)) if(!dir.exists(normalizePath(Paths))) dir.create(normalizePath(Paths))
   if(is.null(MetaDataPaths)) MetaDataPaths <- Paths else if(!dir.exists(normalizePath(MetaDataPaths))) dir.create(normalizePath(MetaDataPaths))
@@ -158,16 +158,16 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-  
+
   # IDcols to Names----
   if(!is.null(IDcols)) if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
-  
+
   # Primary Date Column----
   if(is.numeric(PrimaryDateColumn) | is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
-  
+
   # FeatureColumnNames----
   if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
-  
+
   # Add target bucket column----
   if(length(Buckets) == 1L) {
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1L]), j = "Target_Buckets", value = 0L)
@@ -180,10 +180,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i - 1], "+")))
       } else {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i - 1]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      }      
+      }
     }
   }
-  
+
   # Add target bucket column----
   if(!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1L])]
@@ -197,7 +197,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       }
     }
   }
-  
+
   # Add target bucket column----
   if(!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1])]
@@ -211,7 +211,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       }
     }
   }
-  
+
   # AutoDataPartition if Validation and TestData are NULL----
   if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
@@ -226,21 +226,21 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     TestData <- DataSets$TestData
     rm(DataSets)
   }
-  
+
   # Begin classification model building----
   if(length(Buckets) == 1L) {
     ClassifierModel <- AutoCatBoostClassifier(
 
       # GPU or CPU
       task_type = task_type,
-      
+
       # Metadata arguments
       ModelID = ModelID,
       model_path = Paths,
       metadata_path = MetaDataPaths,
       SaveModelObjects = SaveModelObjects,
       ReturnModelObjects = ReturnModelObjects,
-      
+
       # Data arguments
       data = data,
       TrainOnFull = TrainOnFull,
@@ -251,12 +251,12 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       PrimaryDateColumn = PrimaryDateColumn,
       ClassWeights = ClassWeights,
       IDcols = IDcols,
-      
+
       # Model evaluation
       eval_metric = "AUC",
       MetricPeriods = MetricPeriods,
       NumOfParDepPlots = NumOfParDepPlots,
-      
+
       # Grid tuning arguments - PassInGrid is the best of GridMetrics
       PassInGrid = PassInGrid,
       GridTune = GridTune,
@@ -265,7 +265,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MaxRunMinutes = MaxRunMinutes,
       Shuffles = Shuffles,
       BaselineComparison = BaselineComparison,
-      
+
       # Trees, Depth, and LearningRate used in the bandit grid tuning
       Trees = Trees,
       Depth = Depth,
@@ -274,11 +274,11 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       RSM = RSM,
       BootStrapType = BootStrapType,
       GrowPolicy = GrowPolicy)
-    
+
   } else {
-    
+
     ClassifierModel <- AutoCatBoostMultiClass(
-      
+
       # GPU or CPU
       task_type = task_type,
 
@@ -288,7 +288,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       metadata_path = MetaDataPaths,
       SaveModelObjects = SaveModelObjects,
       ReturnModelObjects = ReturnModelObjects,
-      
+
       # Data arguments
       data = data,
       TrainOnFull = TrainOnFull,
@@ -299,12 +299,12 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       PrimaryDateColumn = PrimaryDateColumn,
       ClassWeights = ClassWeights,
       IDcols = IDcols,
-      
+
       # Model evaluation
       eval_metric = "MultiClass",
       MetricPeriods = MetricPeriods,
       grid_eval_metric = "accuracy",
-      
+
       # Grid tuning arguments - PassInGrid is the best of GridMetrics
       PassInGrid = PassInGrid,
       GridTune = GridTune,
@@ -313,7 +313,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MaxRunMinutes = MaxRunMinutes,
       Shuffles = Shuffles,
       BaselineComparison = BaselineComparison,
-      
+
       # Trees, Depth, and LearningRate used in the bandit grid tuning
       Trees = Trees,
       Depth = Depth,
@@ -323,7 +323,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       BootStrapType = BootStrapType,
       GrowPolicy = GrowPolicy)
   }
-  
+
   # Store metadata----
   ModelList <- list()
   ClassModel <- ClassifierModel$Model
@@ -336,16 +336,16 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     TargetLevels <- NULL
     ArgsList[["TargetLevels"]] <- NULL
   }
-  
+
   # Store model----
   if(SaveModelObjects) ModelList[["Classifier"]] <- ClassModel
-  
+
   # Add Target to IDcols----
   IDcols <- c(IDcols, TargetColumnName)
-  
+
   # Score Classification Model----
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
-   
+
   # Model Scoring----
   TestData <- AutoCatBoostScoring(
     RemoveModel = TRUE,
@@ -358,18 +358,18 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     ModelID = ModelID,
     ReturnFeatures = TRUE,
     MultiClassTargetLevels = TargetLevels,
-    TransformNumeric = FALSE, 
-    BackTransNumeric = FALSE, 
-    TargetColumnName = NULL, 
-    TransformationObject = NULL, 
-    TransID = NULL, 
+    TransformNumeric = FALSE,
+    BackTransNumeric = FALSE,
+    TargetColumnName = NULL,
+    TransformationObject = NULL,
+    TransID = NULL,
     TransPath = Paths,
     MDP_Impute = FALSE,
     MDP_CharToFactor = TRUE,
-    MDP_RemoveDates = FALSE, 
+    MDP_RemoveDates = FALSE,
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
-  
+
   # Change name for classification----
   if(TargetType == "Classification") {
     data.table::setnames(TestData, "p1", "Predictions_C1")
@@ -379,22 +379,22 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   # Remove Model Object----
   rm(ClassModel)
-  
+
   # Remove Target_Buckets----
   data.table::set(data, j = "Target_Buckets", value = NULL)
   data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
-  
+
   # Remove Target From IDcols----
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
-  
+
   # Change Name of Predicted MultiClass Column----
   if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
   counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
   Degenerate <- 0L
-  
+
   # Begin regression model building----
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
-    
+
     # Define data sets----
     if(bucket == max(seq_len(length(Buckets) + 1L))) {
       if(!is.null(TestData)) {
@@ -430,19 +430,19 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         testBucket <- NULL
       }
     }
-    
+
     # Create Modified IDcols----
     IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)
-    
+
     # AutoCatBoostRegression()----
     if(trainBucket[, .N] != 0L) {
-      
+
       # If there is some variance then build model
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
-        
+
         # Increment----
         counter <- counter - 1L
-        
+
         # Modify filepath and file name----
         if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
 
@@ -493,7 +493,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             BootStrapType = BootStrapType,
             GrowPolicy = GrowPolicy,
             Methods = Methods)
-        
+
         # Store Model----
         RegressionModel <- RegModel$Model
         if(ReturnModelObjects | SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
@@ -502,7 +502,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         } else {
           ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- NULL
         }
-          
+
         # Score models----
         TestData <- AutoCatBoostScoring(
           TargetType = "regression",
@@ -524,20 +524,20 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           MDP_RemoveDates = FALSE,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
-        
+
         # Clear TestModel From Memory----
         rm(RegModel)
         gc()
-        
+
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
         data.table::setnames(TestData, "Predictions", Val)
 
       } else {
-        
+
         # Account for degenerate distributions----
         ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
-        
+
         # Use single value for predictions in the case of zero variance----
         if(bucket == max(seq_len(length(Buckets) + 1L))) {
           Degenerate <- Degenerate + 1L
@@ -550,12 +550,12 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         }
       }
     } else {
-      
+
       # Account for degenerate distributions----
       ArgsList[["degenerate"]] <- c(ArgsList[["degenerate"]], bucket)
     }
   }
-  
+
   # Rearrange Column order----
   counter <- length(Buckets)
   if(counter > 2L) {
@@ -598,10 +598,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   } else {
     TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
   }
-  
+
   # Regression r2 via sqrt of correlation----
   r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2L
-  
+
   # Regression Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
@@ -610,7 +610,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID,"_ValidationData.csv")))
     }
   }
-  
+
   # Regression Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = TestData,
@@ -619,10 +619,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     GraphType = "calibration",
     PercentileBucket = 0.05,
     aggrfun = function(x) mean(x, na.rm = TRUE))
-  
+
   # Add Number of Trees to Title----
   EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
-  
+
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
@@ -631,7 +631,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
     }
   }
-  
+
   # Regression Evaluation Calibration Plot----
   EvaluationBoxPlot <- EvalPlot(
     data = TestData,
@@ -640,10 +640,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     GraphType = "boxplot",
     PercentileBucket = 0.05,
     aggrfun = function(x) mean(x, na.rm = TRUE))
-  
+
   # Add Number of Trees to Title----
   EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
-  
+
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
@@ -652,7 +652,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID,"_EvaluationBoxPlot.png")))
     }
   }
-  
+
   # Regression Evaluation Metrics----
   EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"),MetricValue = rep(999999, 4L))
   i <- 0L
@@ -679,10 +679,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
     }, error = function(x) "skip")
   }
-  
+
   # Remove Cols----
   TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL)]
-  
+
   # Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if(SaveModelObjects) {
@@ -692,7 +692,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
-  
+
   # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0L
@@ -726,7 +726,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
     }, error = function(x) "skip")
   }
-  
+
   # Regression Save ParDepBoxPlots to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
@@ -735,10 +735,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
     }
   }
-  
+
   # Save args list to file----
   if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(Paths), paste0(ModelID, "_HurdleArgList.Rdata")))
-  
+
   # Return Output----
   return(list(
     ArgsList = ArgsList,

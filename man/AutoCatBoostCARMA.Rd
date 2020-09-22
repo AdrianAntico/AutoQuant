@@ -42,6 +42,8 @@ AutoCatBoostCARMA(
   GridEvalMetric = "mae",
   ModelCount = 1,
   NTrees = 1000,
+  L2_Leaf_Reg = 3,
+  Depth = 6,
   PartitionType = "timeseries",
   Timer = TRUE,
   DebugMode = FALSE
@@ -121,6 +123,10 @@ AutoCatBoostCARMA(
 \item{ModelCount}{Set the number of models to try in the grid tune}
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
+
+\item{L2_Leaf_Reg}{l2 reg parameter}
+
+\item{Depth}{Depth of catboost model}
 
 \item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
 
@@ -203,6 +209,8 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   FourierTerms = 4,
   TimeTrendVariable = TRUE,
   NTrees = 2500,
+  L2_Leaf_Reg = 3.0,
+  Depth = 6,
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   PartitionType = "random")

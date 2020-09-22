@@ -34,9 +34,9 @@ AutoCatBoostHurdleModel(
   Shuffles = 2L,
   MetricPeriods = 25L,
   Trees = seq(1000L, 5000L, 500L),
-  Depth = seq(4L, 8L, 1L),
+  Depth = 6,
   LearningRate = seq(0.01, 0.1, 0.01),
-  L2_Leaf_Reg = seq(1, 10, 1),
+  L2_Leaf_Reg = 3,
   RSM = c(0.8, 0.85, 0.9, 0.95, 1),
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")
@@ -117,14 +117,14 @@ AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd
 }
 \examples{
 \donttest{
-Output <- RemixAutoML::AutoCatBoostHurdleModel( 
+Output <- RemixAutoML::AutoCatBoostHurdleModel(
 
   # Operationalization
   task_type = "GPU",
   ModelID = "ModelTest",
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
-  
+
   # Data related args
   data = data,
   TrainOnFull = FALSE,
@@ -135,7 +135,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
   IDcols = NULL,
-  
+
   # Metadata args
   Paths = normalizePath("./"),
   MetaDataPaths = NULL,
@@ -144,7 +144,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   ClassWeights = NULL,
   SplitRatios = c(0.70, 0.20, 0.10),
   NumOfParDepPlots = 10L,
-  
+
   # Grid tuning setup
   PassInGrid = NULL,
   GridTune = FALSE,
@@ -154,7 +154,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   MaxRunMinutes = 60L*60L,
   Shuffles = 2L,
   MetricPeriods = 25L,
-  
+
   # Bandit grid args
   Trees = seq(1000L, 5000L, 500L),
   Depth = seq(4L, 8L, 1L),

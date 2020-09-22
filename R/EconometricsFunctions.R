@@ -5617,7 +5617,7 @@ AutoHierarchicalFourier <- function(datax = data,
   # xregs = NonGroupDateNames
 
   # Create fourier vars----
-  FourierFC <- AutoFourierFeatures(
+  FourierFC <- tryCatch({AutoFourierFeatures(
     data = datax,
     FourierPairs = FourierTerms,
     FCPeriods = FC_PeriodS,
@@ -5625,11 +5625,13 @@ AutoHierarchicalFourier <- function(datax = data,
     TargetColumn = TargetColumN,
     DateColumn = DateColumN,
     GroupVariable = IndependentGroups,
-    xregs = NonGroupDateNames)
+    xregs = NonGroupDateNames)}, error = function(x) NULL)
 
   # Prepare data to return----
-  datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
-  FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+  if(!is.null(FourierFC)) {
+    datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
+    FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+  }
 
   # Return data
   return(list(data = datax, FourierFC = FourierFC))

@@ -41,6 +41,8 @@
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
+#' @param Depth Depth of catboost model
+#' @param L2_Leaf_Reg l2 reg parameter
 #' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
@@ -113,6 +115,8 @@
 #'   FourierTerms = 4,
 #'   TimeTrendVariable = TRUE,
 #'   NTrees = 2500,
+#'   L2_Leaf_Reg = 3.0,
+#'   Depth = 6,
 #'   ZeroPadSeries = NULL,
 #'   DataTruncate = FALSE,
 #'   PartitionType = "random")
@@ -163,6 +167,8 @@ AutoCatBoostCARMA <- function(data,
                               GridEvalMetric = "mae",
                               ModelCount = 1,
                               NTrees = 1000,
+                              L2_Leaf_Reg = 3.0,
+                              Depth = 6,
                               PartitionType = "timeseries",
                               Timer = TRUE,
                               DebugMode = FALSE) {
@@ -379,23 +385,13 @@ AutoCatBoostCARMA <- function(data,
   # Feature Engineering: Add Fourier Features by GroupVar----
   # To error check, store arg values and run through EconometricsFunctions.R AutoHierarchicalFourier
   if(DebugMode) print("Feature Engineering: Add Fourier Features by GroupVar----")
-  if(FourierTerms > 0) {
+  if(FourierTerms > 0L) {
 
     # Split GroupVar and Define HierarchyGroups and IndependentGroups
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
-
-    # datax = data
-    # xRegs = names(XREGS)
-    # FourierTermS = FourierTerms
-    # TimeUniT = TimeUnit
-    # FC_PeriodS = FC_Periods
-    # TargetColumN = TargetColumnName
-    # DateColumN = DateColumnName
-    # HierarchGroups = HierarchSupplyValue
-    # IndependentGroups = IndependentSupplyValue
 
     # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
     Output <- tryCatch({AutoHierarchicalFourier(
@@ -412,29 +408,36 @@ AutoCatBoostCARMA <- function(data,
 
     # Store Objects If No Error in Hierarchy Run----
     if(!is.null(Output)) {
-      data <- Output$data
-      FourierFC <- Output$FourierFC
+      if(Output$data[, .N] != 0) {
+        data <- Output$data
+        FourierFC <- Output$FourierFC
+      } else {
+        print("Turning off Fourier Terms. Failed to build.")
+        FourierTerms <- 0
+      }
     } else {
       print("Turning off Fourier Terms. Failed to build.")
       FourierTerms <- 0
     }
 
     # If Fourier is turned off, concatenate grouping cols
-    if(!is.null(HierarchGroups)) {
-      if(length(HierarchGroups) > 1) {
-        if(any(HierarchGroups %chin% names(data))) {
+    if(FourierTerms == 0) {
+      if(!is.null(HierarchGroups)) {
+        if(length(HierarchGroups) > 1) {
+          if(any(HierarchGroups %chin% names(data))) {
+            data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
+            data[, eval(HierarchGroups) := NULL]
+          }
+        } else {
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-          data[, eval(HierarchGroups) := NULL]
+          if(HierarchGroups != "GroupVar") {
+            data[, eval(HierarchGroups) := NULL]
+          }
         }
-      } else {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-        if(HierarchGroups != "GroupVar") {
-          data[, eval(HierarchGroups) := NULL]
+      } else if(!is.null(GroupVariables)) {
+        if(all(GroupVariables %chin% names(data))) {
+          data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
         }
-      }
-    } else if(!is.null(GroupVariables)) {
-      if(all(GroupVariables %chin% names(data))) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       }
     }
   }
@@ -928,9 +931,9 @@ AutoCatBoostCARMA <- function(data,
       # GrowPolicy is turned off for CPU runs
       # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
       Trees = NTrees, # seq(100L, 500L, 50L),
-      Depth = seq(4L, 8L, 1L),
+      Depth = Depth,
       LearningRate = seq(0.01,0.10,0.01),
-      L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+      L2_Leaf_Reg = L2_Leaf_Reg,
       RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
       BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
       GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
