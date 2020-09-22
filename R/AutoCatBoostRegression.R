@@ -161,9 +161,9 @@ AutoCatBoostRegression <- function(data,
                                    BaselineComparison = "default",
                                    MetricPeriods = 10L,
                                    Trees = 50L,
-                                   Depth = NULL,
+                                   Depth = 6,
                                    LearningRate = NULL,
-                                   L2_Leaf_Reg = NULL,
+                                   L2_Leaf_Reg = 3.0,
                                    RSM = NULL,
                                    BootStrapType = NULL,
                                    GrowPolicy = NULL) {
@@ -192,6 +192,11 @@ AutoCatBoostRegression <- function(data,
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
+  if(tolower(task_type) == "gpu") {
+    if(Depth > 16) Depth <- 16
+  } else {
+    if(Depth > 16) Depth <- 16
+  }
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {
@@ -721,6 +726,8 @@ AutoCatBoostRegression <- function(data,
       best_model_min_trees = 10L,
       metric_period        = MetricPeriods,
       iterations           = Trees,
+      depth                = Depth,
+      l2_leaf_reg          = L2_Leaf_Reg,
       loss_function        = LossFunction,
       eval_metric          = eval_metric,
       has_time             = HasTime,

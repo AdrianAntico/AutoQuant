@@ -35,9 +35,9 @@ AutoCatBoostRegression(
   BaselineComparison = "default",
   MetricPeriods = 10L,
   Trees = 50L,
-  Depth = NULL,
+  Depth = 6,
   LearningRate = NULL,
-  L2_Leaf_Reg = NULL,
+  L2_Leaf_Reg = 3,
   RSM = NULL,
   BootStrapType = NULL,
   GrowPolicy = NULL
