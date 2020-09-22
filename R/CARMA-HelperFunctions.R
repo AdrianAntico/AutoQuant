@@ -116,11 +116,7 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
               IndepentVariablesPass = IndepentVariablesPass,
               HierarchGroups        = HierarchGroups,
               GroupVariables        = GroupVariables,
-              FC_Periods            = FC_Periods,
-              SD_Periods            = if(all(SD_Periods == 0L)) 0L else SD_Periods[!SD_Periods %in% c(0L,1L)],
-              Skew_Periods          = if(all(Skew_Periods == 0L)) 0L else Skew_Periods[!Skew_Periods %in% c(0L,1L,2L)],
-              Kurt_Periods          = if(all(Kurt_Periods == 0L)) 0L else Kurt_Periods[!Kurt_Periods %in% c(0L,1L,2L,3L)],
-              Quantile_Periods      = if(all(Quantile_Periods == 0L)) 0L else Quantile_Periods[!Quantile_Periods %in% c(0L,1L,2L,3L,4L)]))
+              FC_Periods            = FC_Periods))
 }
 
 #' CARMA_Get_IndepentVariablesPass

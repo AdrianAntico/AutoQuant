@@ -181,10 +181,6 @@ AutoCatBoostCARMA <- function(data,
   GroupVariables        <- Args$GroupVariables
   FC_Periods            <- Args$FC_Periods
   HoldOutPeriods        <- Args$HoldOutPeriods
-  SD_Periods            <- Args$SD_Periods
-  Skew_Periods          <- Args$Skew_Periods
-  Kurt_Periods          <- Args$Kurt_Periods
-  Quantile_Periods      <- Args$Quantile_Periods
 
   # Variables for Program: Redefine HoldOutPerids----
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L] * length(unique(data[[eval(DateColumnName)]])), 0L)
