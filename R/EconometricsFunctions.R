@@ -5472,7 +5472,7 @@ AutoFourierFeatures <- function(data,
 
         # Step7: Create future date records FutureFourier----
         for(time in seq_len(FCPeriods - 1)) {
-          d <- maxDate
+          d <- as.Date(maxDate)
           if (tolower(Time_Unit) %chin% c("hour","hours")) {
             temp <- data.table::as.data.table(d + lubridate::hours(1*time))
           } else if(tolower(Time_Unit) == "1min") {
@@ -5606,6 +5606,15 @@ AutoHierarchicalFourier <- function(datax = data,
 
   # xRegs non group names
   NonGroupDateNames <- xRegs[!xRegs %chin% "GroupVar"]
+
+  # data = datax
+  # FourierPairs = FourierTerms
+  # FCPeriods = FC_PeriodS
+  # Time_Unit = TimeUniT
+  # TargetColumn = TargetColumN
+  # DateColumn = DateColumN
+  # GroupVariable = IndependentGroups
+  # xregs = NonGroupDateNames
 
   # Create fourier vars----
   FourierFC <- AutoFourierFeatures(

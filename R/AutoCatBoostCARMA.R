@@ -47,10 +47,20 @@
 #' @examples
 #' \donttest{
 #'
-#'  # Pull in Walmart Data Set
+#'  # Load Walmart Data from Dropbox----
 #'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'
+#'  # Subset for Stores / Departments With Full Series (143 time points each)----
 #'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
-#'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+#'
+#'  # Subset Columns (remove IsHoliday column)----
+#'  keep <- c("Store","Dept","Date","Weekly_Sales")
+#'  data <- data[, ..keep]
+#'  data <- data[Store == 1][, Store := NULL]
+#'  xregs <- data.table::copy(data)
+#'  data.table::setnames(xregs, "Dept", "GroupVar")
+#'  data.table::setnames(xregs, "Weekly_Sales", "Other")
+#'  data <- data[as.Date(Date) < as.Date('2012-09-28')]
 #'
 #'  # Build forecast
 #'  CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
@@ -61,9 +71,9 @@
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
-#'   GroupVariables = c("Store","Dept"),
+#'   GroupVariables = c("Dept"),
 #'   TimeUnit = "weeks",
-#'   TimeGroups = c("weeks"),
+#'   TimeGroups = c("weeks","months"),
 #'
 #'   # Productionize
 #'   TrainOnFull = FALSE,
@@ -90,8 +100,8 @@
 #'   HolidayMovingAverages = 1:2,
 #'
 #'   # Time Series Features
-#'   Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
-#'   MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
+#'   Lags = Lags = list("weeks" = seq(1L, 5L, 1L), "months" = c(1,2,3)),
+#'   MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(1,2,3)),
 #'   SD_Periods = NULL,
 #'   Skew_Periods = NULL,
 #'   Kurt_Periods = NULL,
@@ -376,6 +386,16 @@ AutoCatBoostCARMA <- function(data,
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
+
+    # datax = data
+    # xRegs = names(XREGS)
+    # FourierTermS = FourierTerms
+    # TimeUniT = TimeUnit
+    # FC_PeriodS = FC_Periods
+    # TargetColumN = TargetColumnName
+    # DateColumN = DateColumnName
+    # HierarchGroups = HierarchSupplyValue
+    # IndependentGroups = IndependentSupplyValue
 
     # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
     Output <- tryCatch({AutoHierarchicalFourier(
