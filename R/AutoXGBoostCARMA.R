@@ -1178,15 +1178,15 @@ AutoXGBoostCARMA <- function(data,
       if(!is.null(XREGS)) {
 
         # Ensure Grouping Variables are Character----
-        if(!is.character(CalendarFeatures[["GroupVar"]])) {
-          data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
-        }
-        if(!is.character(XREGS[["GroupVar"]])) {
-          data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
-        }
-
-        # Match GroupVariables Type----
         if(!is.null(GroupVariables)) {
+          if(!is.character(CalendarFeatures[["GroupVar"]])) {
+            data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
+          }
+          if(!is.character(XREGS[["GroupVar"]])) {
+            data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
+          }
+
+          # Match GroupVariables Type----
           if(!"GroupVar" %chin% names(XREGS)) {
             if(IndepentVariablesPass %chin% names(XREGS)) {
               CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(IndepentVariablesPass,eval(DateColumnName)), all = FALSE)
@@ -1489,6 +1489,7 @@ AutoXGBoostCARMA <- function(data,
           GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
+        if("GroupVar" %chin% keep) keep <- keep[!keep %chin% "GroupVar"]
 
         # Generate GDL Features for Updated Records----
         if(DebugMode) print("Generate GDL Features for Updated Records----")

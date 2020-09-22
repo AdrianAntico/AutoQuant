@@ -196,19 +196,17 @@ AutoLagRollStats <- function(data,
       # Increment counter----
       counter <- counter + 1L
 
+      # Copy data----
+      tempData <- data.table::copy(data)
+
       # Check time scale----
-      if(timeaggs != TimeUnitAgg) {
+      if(counter > 1) {
 
-        # Copy data----
-        tempData <- data.table::copy(data)
+        # Floor Date column to timeagg level----
+        data.table::set(tempData, j = eval(DateColumn), value = lubridate::floor_date(x = tempData[[eval(DateColumn)]], unit = timeaggs))
 
-        # Aggregate tempData and tempRegs to correct dimensional level----
-        if(tolower(timeaggs) != "raw") {
-          data.table::set(tempData, j = eval(DateColumn), value = lubridate::floor_date(x = tempData[[eval(DateColumn)]], unit = timeaggs))
-          tempData <- data[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(eval(Targets)), by = c(eval(DateColumn))]
-        } else {
-          tempData <- data[, .SD, .SDcols = c(eval(Targets),eval(DateColumn))]
-        }
+        # Agg by date column----
+        tempData <- tempData[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(eval(Targets)), keyby = c(eval(DateColumn))]
 
         # Ensure TimeBetween is null for aggregated data----
         if(!is.null(TimeBetween)) TimeBetween <- NULL
@@ -234,6 +232,21 @@ AutoLagRollStats <- function(data,
 
       } else {
 
+        # lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags
+        # periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows
+        # SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows
+        # Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows
+        # Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows
+        # Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows
+        # targets         = Targets
+        # groupingVars    = NULL
+        # sortDateName    = DateColumn
+        # timeDiffTarget  = TimeBetween
+        # timeAgg         = timeaggs
+        # WindowingLag    = RollOnLag1
+        # Type            = Type
+        # SimpleImpute    = SimpleImpute
+
         # Build features----
         data <- DT_GDL_Feature_Engineering(
           data,
@@ -255,9 +268,13 @@ AutoLagRollStats <- function(data,
       }
 
       # Check if timeaggs is same of TimeUnit----
-      if(timeaggs != TimeUnitAgg | tolower(timeaggs) == "raw") {
-        data.table::set(data, j = "TEMPDATE", value = lubridate::floor_date(data[[eval(DateColumn)]], unit = eval(timeaggs)))
-        data <- merge(data, tempData[, .SD, .SDcols = c(eval(DateColumn),setdiff(names(tempData),names(data)))], by.x = c("TEMPDATE"), by.y = c(eval(DateColumn)), all.x = TRUE)
+      if(Counter > 1L) {
+        data[, TEMPDATE := lubridate::floor_date(get(DateColumn), unit = eval(timeaggs))]
+        data <- merge(
+          data, tempData[, .SD, .SDcols = c(eval(DateColumn),setdiff(names(tempData),names(data)))],
+          by.x = c("TEMPDATE"),
+          by.y = c(eval(DateColumn)),
+          all.x = TRUE)
         data.table::set(data, j = "TEMPDATE", value = NULL)
       }
     }
