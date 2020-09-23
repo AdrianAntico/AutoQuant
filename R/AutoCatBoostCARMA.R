@@ -40,6 +40,8 @@
 #' @param NumGPU Defaults to 1. If CPU is set this argument will be ignored.
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
+#' @param MaxRunsWithoutNewWinner Default is 50
+#' @param MaxRunMinutes Default is 60*60
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param Depth Depth of catboost model
 #' @param L2_Leaf_Reg l2 reg parameter
@@ -114,6 +116,8 @@
 #'   XREGS = NULL,
 #'   FourierTerms = 4,
 #'   TimeTrendVariable = TRUE,
+#'   MaxRunsWithoutNewWinner = 50,
+#'   MaxRunMinutes = 60*60,
 #'   NTrees = 2500,
 #'   L2_Leaf_Reg = 3.0,
 #'   Depth = 6,
@@ -166,6 +170,8 @@ AutoCatBoostCARMA <- function(data,
                               GridTune = FALSE,
                               GridEvalMetric = "mae",
                               ModelCount = 1,
+                              MaxRunsWithoutNewWinner = 50,
+                              MaxRunMinutes = 60*60,
                               NTrees = 1000,
                               L2_Leaf_Reg = 3.0,
                               Depth = 6,
@@ -919,8 +925,8 @@ AutoCatBoostCARMA <- function(data,
       #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
       PassInGrid = NULL,
       GridTune = GridTune,
-      MaxModelsInGrid = 100L,
-      MaxRunsWithoutNewWinner = 100L,
+      MaxModelsInGrid = ModelCount,
+      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
       MaxRunMinutes = 60*60,
       Shuffles = 4L,
       BaselineComparison = "default",

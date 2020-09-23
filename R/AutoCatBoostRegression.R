@@ -192,11 +192,7 @@ AutoCatBoostRegression <- function(data,
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  if(tolower(task_type) == "gpu") {
-    if(Depth > 16) Depth <- 16
-  } else {
-    if(Depth > 16) Depth <- 16
-  }
+  if(any(Depth > 16)) Depth <- Depth[!Depth > 16]
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {

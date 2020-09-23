@@ -41,6 +41,8 @@ AutoCatBoostCARMA(
   GridTune = FALSE,
   GridEvalMetric = "mae",
   ModelCount = 1,
+  MaxRunsWithoutNewWinner = 50,
+  MaxRunMinutes = 60 * 60,
   NTrees = 1000,
   L2_Leaf_Reg = 3,
   Depth = 6,
@@ -121,6 +123,10 @@ AutoCatBoostCARMA(
 \item{GridEvalMetric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 
 \item{ModelCount}{Set the number of models to try in the grid tune}
+
+\item{MaxRunsWithoutNewWinner}{Default is 50}
+
+\item{MaxRunMinutes}{Default is 60*60}
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
@@ -208,6 +214,8 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   XREGS = NULL,
   FourierTerms = 4,
   TimeTrendVariable = TRUE,
+  MaxRunsWithoutNewWinner = 50,
+  MaxRunMinutes = 60*60,
   NTrees = 2500,
   L2_Leaf_Reg = 3.0,
   Depth = 6,
