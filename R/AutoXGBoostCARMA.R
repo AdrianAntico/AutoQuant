@@ -1234,10 +1234,6 @@ AutoXGBoostCARMA <- function(data,
       # Prepare data for scoring----
       if(DebugMode) print("Prepare data for scoring----")
       temp <- cbind(CalendarFeatures, 1)
-      # tryCatch({temp[, eval(DateColumnName) := fasttime::fastPOSIXct(get(DateColumnName))]}, error = function(x) {
-      #   temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-      # })
-
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
       if(any(class(UpdateData[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
       if(any(class(temp[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) temp[, eval(DateColumnName) := as.Date(get(DateColumnName))]

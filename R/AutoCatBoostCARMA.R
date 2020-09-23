@@ -1264,13 +1264,9 @@ AutoCatBoostCARMA <- function(data,
       # Prepare data for scoring----
       if(DebugMode) print("Prepare data for scoring----")
       temp <- cbind(CalendarFeatures, 1)
-      if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-        temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-      } else {
-        temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-      }
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
-      if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+      if(any(class(UpdateData[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+      if(any(class(temp[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) temp[, eval(DateColumnName) := as.Date(get(DateColumnName))]
       UpdateData <- data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
 
       # Update holiday feature----
