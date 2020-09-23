@@ -752,27 +752,15 @@ AutoLagRollStatsScoring <- function(data,
           AscRowRemove = TRUE)
       }
 
-      # When Fact changes, dates are different - find out where the date changes
+      # Combine data sets----
       if(Counter > 1L) {
-
-        # I need to match up date aggregation to join properly----
-        if(timeaggs != TimeUnitAgg) {
-          KeepData <- merge(
-            x = data.table::set(KeepData, j = "TEMPDATE", value = lubridate::floor_date(KeepData[[eval(DateColumn)]], unit = timeaggs)),
-            y = data.table::set(tempData, j = c(setdiff(names(tempData),c("TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
-            by = c("TEMPDATE"),
-            all.x = TRUE)
-        }
-
-        # I need to match up date aggregation to join properly----
-        if(timeaggs == TimeUnitAgg) {
-          data.table::set(KeepData, j = "TEMPDATE", value = KeepData[[eval(DateColumn)]])
-          KeepData <- merge(
-            x = KeepData,
-            y = data.table::set(tempData, j = c(setdiff(names(tempData),c("TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
-            by = c("TEMPDATE"),
-            all.x = TRUE)
-        }
+        KeepData[, TEMPDATE := lubridate::floor_date(get(DateColumn), unit = eval(timeaggs))]
+        KeepData <- merge(
+          x = KeepData,
+          y = data.table::set(tempData, j = c(setdiff(names(tempData),c("TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
+          by = c("TEMPDATE"),
+          all.x = TRUE)
+        data.table::set(KeepData, j = "TEMPDATE", value = NULL)
       }
     }
   }
