@@ -187,20 +187,20 @@ AutoLagRollStats <- function(data,
   # No Categoricals----
   if(is.null(IndependentGroups) & is.null(HierarchyGroups)) {
 
-    # Initialize counter----
-    counter <- 0L
+    # Initialize Counter----
+    Counter <- 0L
 
     # Loop through various time aggs----
     for(timeaggs in TimeGroups) {
 
-      # Increment counter----
-      counter <- counter + 1L
+      # Increment Counter----
+      Counter <- Counter + 1L
 
       # Copy data----
       tempData <- data.table::copy(data)
 
       # Check time scale----
-      if(counter > 1) {
+      if(Counter > 1) {
 
         # Floor Date column to timeagg level----
         data.table::set(tempData, j = eval(DateColumn), value = lubridate::floor_date(x = tempData[[eval(DateColumn)]], unit = timeaggs))
