@@ -1158,7 +1158,9 @@ AutoCatBoostCARMA <- function(data,
 
       # Timer----
       if(DebugMode) print("Timer----")
-      if(Timer) if(i != 1) print(paste("Forecast future step: ", i-1))
+      if(Timer) endtime <- Sys.time()
+      if(Timer) if(i != 1) print(paste("Forecast future step: ", i-1, " : Run time for iteration = ", endtime - starttime))
+      if(Timer) starttime <- Sys.time()
 
       # Create single future record----
       if(DebugMode) print("Create single future record----")
