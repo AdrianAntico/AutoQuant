@@ -1158,8 +1158,7 @@ AutoCatBoostCARMA <- function(data,
 
       # Timer----
       if(DebugMode) print("Timer----")
-      if(Timer) endtime <- Sys.time()
-      if(Timer) if(i != 1) print(paste("Forecast future step: ", i-1, " : Run time for iteration = ", endtime - starttime))
+      if(Timer) if(i != 1) print(paste("Forecast future step: ", i-1))
       if(Timer) starttime <- Sys.time()
 
       # Create single future record----
@@ -1595,6 +1594,10 @@ AutoCatBoostCARMA <- function(data,
         if(!"ID" %chin% c(names(UpdateData))) data.table::set(UpdateData, j = "ID", value = nrow(UpdateData):1L)
         UpdateData <- data.table::rbindlist(list(UpdateData[ID > 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
       }
+
+      # Print time to complete----
+      if(Timer) endtime <- Sys.time()
+      if(Timer) if(i != 1) print(endtime - starttime)
     }
     gc()
   }
