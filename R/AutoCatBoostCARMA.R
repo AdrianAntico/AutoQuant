@@ -551,6 +551,10 @@ AutoCatBoostCARMA <- function(data,
   # Group and No Differencing
   if(!is.null(GroupVariables) & !Difference) {
 
+    print(TimeGroups)
+    print(Lags)
+    print(MA_Periods)
+
     # Split GroupVar and Define HierarchyGroups and IndependentGroups----
     Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
     data <- Output$data
