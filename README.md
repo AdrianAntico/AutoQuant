@@ -1920,7 +1920,7 @@ ________________________________________________________________________________
 <details><summary>Expand to view content</summary>
 <p>
  
-### The **CARMA** Suite <img src="Images/AutoCARMA2.png" align="right" width="300" />
+### The **CARMA** Suite
 
 <details><summary>Code Example</summary>
 <p>
@@ -2017,6 +2017,8 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   * <code>AutoLagRollStatsScoring()</code> - creates lags and moving average features for a single record (along with the time between vars)
   * <code>CreateCalendarVariables()</code> - creates numeric features identifying various time units based on date columns
   * <code>CreateHolidayVariables()</code> - creates count features based on the specified holiday groups you want to track and the date columns you supply
+  * <code>AutoHierarchicalFourier()</code> - creates fourier pairs, by group, in paralell, for group variables and their interactions
+  * <code>DifferenceData()</code> - differencing of the target variable for single series and panel data
 
 **Optimal transformations:** the target variable along with the associated lags and moving average features were transformed. This is really useful for regression models with categorical features that have associated target values that significantly differ from each other. The transformation options that are tested (using a Pearson test for normality) include: 
   * YeoJohnson
@@ -2241,17 +2243,5 @@ For each of the models tested internally, several aspects should be noted:
 ##### **tokenizeH2O()** 
 <code>tokenizeH2O()</code> tokenizes an H2O string column.
 
-##### **percRank()** 
-<code>percRank()</code> is an inner function for calibration plots and partial dependence plots. It computes PercentRank for all numeric records in a column.
-
-##### **SimpleCap()** 
-<code>SimpleCap()</code> apply proper case to text.
-
 ##### **PrintObjectsSize()** 
 <code>PrintObjectsSize()</code> prints out environment objects and their respective sizes. Useful for debugging programs.
-
-##### **tempDatesFun()** 
-<code>tempDatesFun()</code> is a special case for character conversion to date when importing from Excel.
-</p>
-</details>
-
