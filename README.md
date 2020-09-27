@@ -535,9 +535,6 @@ TestData <- dataSets$TestData
 
 <code>AutoDataPartition()</code> is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify a stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
 
-##### **AutoDataDictionary()**
-<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R. There are several data dictionary types returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
-
 ##### **DT_GDL_Feature_Engineering()** and **Partial_DT_GDL_Feature_Engineering()**
 <code>DT_GDL_Feature_Engineering()</code> Runs in the background of AutoLagRollStats(). It builds autoregressive and moving average features from target columns and distributed lags and distributed moving average from independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups. 100% data.table built. It runs super fast and can handle big data.
 
@@ -2230,6 +2227,9 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **ProblematicFeatures()**
 <code>ProblematicFeatures()</code> identifies columns that have either little to no variance, categorical variables with extremely high cardinality, too many NA's, too many zeros, or too high of a skew.
+
+##### **AutoDataDictionary()**
+<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R. There are several data dictionary types returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
 
 ##### **RemixTheme()** 
 <code>RemixTheme()</code> is a specific font, set of colors, and style for plots.
