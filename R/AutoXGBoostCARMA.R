@@ -607,7 +607,7 @@ AutoXGBoostCARMA <- function(data,
 
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Lag / Lead, MA Holiday Variables----")
-  if(HolidayVariable == TRUE & max(HolidayLags) > 0L & max(HolidayMovingAverages) > 0L) {
+  if(!is.null(HolidayVariable) & max(HolidayLags) > 0L & max(HolidayMovingAverages) > 0L) {
     if(!is.null(GroupVariables)) {
 
       # Build Features---

@@ -670,7 +670,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Lag / Lead, MA Holiday Variables----")
-  if(HolidayVariable & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+  if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
     if(!is.null(GroupVariables)) {
       data <- DT_GDL_Feature_Engineering(
         data,
