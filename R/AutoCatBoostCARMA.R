@@ -95,7 +95,7 @@
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-#'   Difference = FALSE, #TRUE,
+#'   Difference = FALSE,
 #'
 #'   # Date Features
 #'   CalendarVariables = c("week", "month", "quarter"),
@@ -419,11 +419,11 @@ AutoCatBoostCARMA <- function(data,
         FourierFC <- Output$FourierFC
       } else {
         print("Turning off Fourier Terms. Failed to build.")
-        FourierTerms <- 0
+        FourierTerms <<- 0
       }
     } else {
       print("Turning off Fourier Terms. Failed to build.")
-      FourierTerms <- 0
+      FourierTerms <<- 0
     }
 
     # If Fourier is turned off, concatenate grouping cols
@@ -1768,6 +1768,9 @@ AutoCatBoostCARMA <- function(data,
   } else {
     UpdateData[!get(DateColumnName) %in% FutureDateData, eval(TargetColumnName) := NA]
   }
+
+  # Remove FourierTerms if it exists
+  if(exists("FourierTerms")) rm(FourierTerms)
 
   # Return data----
   if(DebugMode) print("Return data----")
