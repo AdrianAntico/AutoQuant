@@ -1225,7 +1225,7 @@ AutoCatBoostCARMA <- function(data,
         }
       } else if(FourierTerms > 0) {
         if(exists("FourierFC")) {
-          if(FourierFC[, .N] != 0) {
+          if(length(FourierFC) != 0) {
             CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
           }
         }
