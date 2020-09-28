@@ -195,7 +195,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   # Target Transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-  Difference = FALSE, #TRUE,
+  Difference = FALSE,
 
   # Date Features
   CalendarVariables = c("week", "month", "quarter"),

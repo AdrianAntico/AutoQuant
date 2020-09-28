@@ -1224,7 +1224,11 @@ AutoCatBoostCARMA <- function(data,
           CalendarFeatures <- cbind(CalendarFeatures, XREGFC[i-1])
         }
       } else if(FourierTerms > 0) {
-        CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+        if(exists("FourierFC")) {
+          if(FourierFC[, .N] != 0) {
+            CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+          }
+        }
       }
 
       # Prepare for more feature engineering----
