@@ -16,14 +16,14 @@
 #' \donttest{
 #' # Create fake data
 #' data <- RemixAutoML::FakeDataGenerator(
-#'   Correlation = 0.85, 
-#'   N = 1000, 
-#'   ID = 2, 
-#'   ZIP = 0, 
-#'   AddDate = FALSE, 
-#'   Classification = FALSE, 
+#'   Correlation = 0.85,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = FALSE,
+#'   Classification = FALSE,
 #'   MultiClass = FALSE)
-#' 
+#'
 #' # Run data partitioning function
 #' dataSets <- RemixAutoML::AutoDataPartition(
 #'   data,
@@ -34,7 +34,7 @@
 #'   StratifyNumericTarget = NULL,
 #'   StratTargetPrecision = 1L,
 #'   TimeColumnName = NULL)
-#' 
+#'
 #' # Collect data
 #' TrainData <- dataSets$TrainData
 #' ValidationData <- dataSets$ValidationData
@@ -49,10 +49,10 @@ AutoDataPartition <- function(data,
                               StratifyNumericTarget = NULL,
                               StratTargetPrecision = 3L,
                               TimeColumnName = NULL) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Arguments----
   if(NumDataSets < 0) return("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
   if(!is.null(StratifyNumericTarget)) {
@@ -71,10 +71,10 @@ AutoDataPartition <- function(data,
     if(!(TimeColumnName %chin% names(data))) return("TimeColumnName not in vector of data names")
     if(is.character(data[[eval(TimeColumnName)]]) | is.factor(data[[eval(TimeColumnName)]])) return("TimeColumnName is not a data, Posix_, numeric, or integer valued column")
   }
-  
+
   # Ensure data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Stratify Numeric Target----
   if(PartitionType == "random") {
     if(!is.null(StratifyNumericTarget)) {
@@ -82,15 +82,15 @@ AutoDataPartition <- function(data,
       StratifyColumnNames <- "StratCol"
     }
   }
-  
+
   # Partition Steps----
   if(tolower(PartitionType) == "time") {
-    
+
     # Data prep----
     copy_data <- data.table::copy(data)
     DataCollect <- list()
     if(!is.null(StratifyColumnNames)) keep <- c(eval(StratifyColumnNames))
-    
+
     # Modify ratios to account for data decrements----
     RatioList <- c()
     RatioList[NumDataSets] <- Ratios[NumDataSets]
@@ -99,7 +99,7 @@ AutoDataPartition <- function(data,
       for(j in (i + 1L):NumDataSets) tempRatio <- Ratios[j] + tempRatio
       RatioList[i] <- Ratios[i] * (1 / (1 - tempRatio))
     }
-    
+
     # Gather Row Numbers----
     RowList <- list()
     for(i in NumDataSets:1L) {
@@ -121,7 +121,7 @@ AutoDataPartition <- function(data,
         }
       }
     }
-    
+
     # Partition Data----
     for(i in seq_len(NumDataSets)) {
       if(i == 1L) {
@@ -134,7 +134,7 @@ AutoDataPartition <- function(data,
         DataCollect[[paste0("TestData", NumDataSets - 2L)]] <- data[RowList[[i]]]
       }
     }
-    
+
     # Remove StratCol from StratifyNumericTarget----
     if(PartitionType == "random") {
       if(!is.null(StratifyNumericTarget)) {
@@ -149,15 +149,15 @@ AutoDataPartition <- function(data,
         DataCollect$TestData <- x3
       }
     }
-    
+
   } else if(tolower(PartitionType) == "timeseries" & !is.null(StratifyColumnNames)) {
-    
+
     # Initalize collection----
     DataCollect <- list()
     data[, ID := 1:.N, by = c(eval(StratifyColumnNames))]
     if(var(data[, mean(ID), by = c(eval(StratifyColumnNames))][["V1"]]) != 0) return("There are an unequal number of records by strata. PartitionType 'timeseries' requires equal number of observations for each strata")
     Rows <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
-    
+
     # Figure out which rows go to which data set
     for(i in NumDataSets:1L) {
       if(i == 1L) {
@@ -183,12 +183,12 @@ AutoDataPartition <- function(data,
       }
     }
   } else {
-    
+
     # Initialize DataCollect
     DataCollect <- list()
-    data.table::setorderv(x = data, cols = eval(TimeColumnName), order = 1L, na.last = TRUE)
+    data <- data[order(runif(.N))]
     Rows <- data[, .N]
-    
+
     # Figure out which rows go to which data set
     for(i in rev(seq_len(NumDataSets))) {
       if(i == 1L) {
@@ -211,7 +211,7 @@ AutoDataPartition <- function(data,
       }
     }
   }
-  
+
   # Return data----
   return(DataCollect)
 }
