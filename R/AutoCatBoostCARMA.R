@@ -764,7 +764,7 @@ AutoCatBoostCARMA <- function(data,
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
-        PartitionType = "timeseries",
+        PartitionType = PartitionType,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else if(Difference) {
@@ -774,7 +774,7 @@ AutoCatBoostCARMA <- function(data,
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
-        PartitionType = "timeseries",
+        PartitionType = PartitionType,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     } else if(!is.null(GroupVariables)) {
@@ -782,7 +782,7 @@ AutoCatBoostCARMA <- function(data,
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
-        PartitionType = "timeseries",
+        PartitionType = PartitionType,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else {
@@ -790,7 +790,7 @@ AutoCatBoostCARMA <- function(data,
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
-        PartitionType = "timeseries",
+        PartitionType = PartitionType,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     }
