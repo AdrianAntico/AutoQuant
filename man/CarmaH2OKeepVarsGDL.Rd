@@ -14,8 +14,8 @@ CarmaH2OKeepVarsGDL(
   HierarchGroups,
   GroupVariables,
   GroupVarVector,
-  CalendarVariables,
-  HolidayVariable,
+  CalendarVariables = NULL,
+  HolidayVariable = NULL,
   TargetColumnName,
   DateColumnName
 )

@@ -175,8 +175,8 @@ CarmaH2OKeepVarsGDL <- function(data,
                                 HierarchGroups,
                                 GroupVariables,
                                 GroupVarVector,
-                                CalendarVariables,
-                                HolidayVariable,
+                                CalendarVariables = NULL,
+                                HolidayVariable = NULL,
                                 TargetColumnName,
                                 DateColumnName) {
 
@@ -194,19 +194,19 @@ CarmaH2OKeepVarsGDL <- function(data,
       data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
       UpdateData[, ID := .N:1, by = "GroupVar"]
     }
-    if(CalendarVariables == TRUE & HolidayVariable == TRUE) {
+    if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID",names(CalendarFeatures),"HolidayCounts"))
       } else {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID",names(CalendarFeatures),"HolidayCounts"))
       }
-    } else if(CalendarVariables == TRUE & HolidayVariable == FALSE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID",names(CalendarFeatures)))
       } else {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID",names(CalendarFeatures)))
       }
-    } else if(CalendarVariables == FALSE & HolidayVariable == TRUE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID","HolidayCounts"))
       } else {
@@ -236,19 +236,19 @@ CarmaH2OKeepVarsGDL <- function(data,
       data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
       UpdateData[, ID := .N:1, by = "GroupVar"]
     }
-    if(CalendarVariables == TRUE & HolidayVariable == TRUE) {
+    if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID",names(CalendarFeatures),"HolidayCounts"))
       } else {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures),"HolidayCounts"))
       }
-    } else if(CalendarVariables == TRUE & HolidayVariable == FALSE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID",names(CalendarFeatures)))
       } else {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures)))
       }
-    } else if(CalendarVariables == FALSE & HolidayVariable == TRUE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID","HolidayCounts"))
       } else {
@@ -272,21 +272,21 @@ CarmaH2OKeepVarsGDL <- function(data,
 
   } else {
 
-    if(CalendarVariables == TRUE & HolidayVariable == TRUE) {
+    if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(XREGS)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures),"HolidayCounts"))
         keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
       } else {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures),"HolidayCounts"))
       }
-    } else if(CalendarVariables == TRUE & HolidayVariable == FALSE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(XREGS)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures)))
         keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
       } else {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures)))
       }
-    } else if(CalendarVariables == FALSE & HolidayVariable == TRUE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(XREGS)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID","HolidayCounts"))
         keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
@@ -341,8 +341,8 @@ CarmaXGBoostKeepVarsGDL <- function(data,
                                     HierarchGroups,
                                     GroupVariables,
                                     GroupVarVector,
-                                    CalendarVariables,
-                                    HolidayVariable,
+                                    CalendarVariables = NULL,
+                                    HolidayVariable = NULL,
                                     TargetColumnName,
                                     DateColumnName) {
 
@@ -358,7 +358,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
       data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
       UpdateData[, ID := .N:1, by = "GroupVar"]
     }
-    if(CalendarVariables == TRUE & HolidayVariable == TRUE) {
+    if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) {
@@ -374,7 +374,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
         }
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",IndepVarPassTRUE,"ID",names(CalendarFeatures),"HolidayCounts"))
       }
-    } else if(CalendarVariables == TRUE & HolidayVariable == FALSE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) {
@@ -390,7 +390,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
         }
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",IndepVarPassTRUE,"ID",names(CalendarFeatures)))
       }
-    } else if(CalendarVariables == FALSE & HolidayVariable == TRUE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) {
@@ -440,7 +440,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
       data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
       UpdateData[, ID := .N:1, by = "GroupVar"]
     }
-    if(CalendarVariables == TRUE & HolidayVariable == TRUE) {
+    if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) {
@@ -458,7 +458,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures),"HolidayCounts"))
         }
       }
-    } else if(CalendarVariables == TRUE & HolidayVariable == FALSE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
@@ -474,7 +474,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
           keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures)))
         }
       }
-    } else if(CalendarVariables == FALSE & HolidayVariable == TRUE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(HierarchGroups)) {
         if(!"GroupVar" %chin% names(UpdateData)) {
           if("GroupVar" %chin% names(GroupVarVector)) data.table::set(GroupVarVector, j = "GroupVar", value = NULL)
@@ -519,21 +519,21 @@ CarmaXGBoostKeepVarsGDL <- function(data,
   } else {
     UpdateData <- UpdateData[order(get(DateColumnName))]
     UpdateData[, ID := .N:1]
-    if(CalendarVariables == TRUE & HolidayVariable == TRUE) {
+    if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(XREGS)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures),"HolidayCounts"))
         keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
       } else {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures),"HolidayCounts"))
       }
-    } else if(CalendarVariables == TRUE & HolidayVariable == FALSE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(XREGS)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures)))
         keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
       } else {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures)))
       }
-    } else if(CalendarVariables == FALSE & HolidayVariable == TRUE) {
+    } else if(!is.null(CalendarVariables) & !is.null(HolidayVariable)) {
       if(!is.null(XREGS)) {
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID","HolidayCounts"))
         keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])

@@ -27,8 +27,10 @@ AutoCatBoostCARMA(
   Quantiles_Selected = c("q5", "q95"),
   Difference = TRUE,
   FourierTerms = 6L,
-  CalendarVariables = TRUE,
-  HolidayVariable = TRUE,
+  CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
+    "isoweek", "month", "quarter", "year"),
+  HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
+    "OtherEcclesticalFeasts"),
   HolidayLags = 1L,
   HolidayMovingAverages = 1L:2L,
   TimeTrendVariable = FALSE,
@@ -96,9 +98,9 @@ AutoCatBoostCARMA(
 
 \item{FourierTerms}{Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.}
 
-\item{CalendarVariables}{Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year}
+\item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
-\item{HolidayVariable}{Set to TRUE to have a holiday counter variable created.}
+\item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
 
 \item{HolidayLags}{Number of lags to build off of the holiday count variable.}
 
@@ -196,8 +198,8 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   Difference = FALSE, #TRUE,
 
   # Date Features
-  CalendarVariables = TRUE,
-  HolidayVariable = TRUE,
+  CalendarVariables = c("week", "month", "quarter"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
 

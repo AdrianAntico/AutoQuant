@@ -26,8 +26,8 @@
 #' @param Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
 #' @param Difference Puts the I in ARIMA for single series and grouped series.
 #' @param FourierTerms Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.
-#' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
-#' @param HolidayVariable Set to TRUE to have a holiday counter variable created.
+#' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
+#' @param HolidayVariable NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"
 #' @param HolidayLags Number of lags to build off of the holiday count variable.
 #' @param HolidayMovingAverages Number of moving averages to build off of the holiday count variable.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
@@ -98,8 +98,8 @@
 #'   Difference = FALSE, #TRUE,
 #'
 #'   # Date Features
-#'   CalendarVariables = TRUE,
-#'   HolidayVariable = TRUE,
+#'   CalendarVariables = c("week", "month", "quarter"),
+#'   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
 #'   HolidayLags = 1,
 #'   HolidayMovingAverages = 1:2,
 #'
@@ -156,8 +156,8 @@ AutoCatBoostCARMA <- function(data,
                               Quantiles_Selected = c("q5","q95"),
                               Difference = TRUE,
                               FourierTerms = 6L,
-                              CalendarVariables = TRUE,
-                              HolidayVariable = TRUE,
+                              CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+                              HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                               HolidayLags = 1L,
                               HolidayMovingAverages = 1L:2L,
                               TimeTrendVariable = FALSE,
@@ -450,36 +450,23 @@ AutoCatBoostCARMA <- function(data,
 
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
-  if(CalendarVariables) {
-    if(TimeUnit == "hour") {
-      CalendarVariableColumns <- c("hour","wday","mday","yday","week","isoweek","month","quarter","year")
-    } else if(TimeUnit == "day") {
-      CalendarVariableColumns <- c("wday","mday","yday","week","isoweek","month","quarter","year")
-    } else if(TimeUnit == "week") {
-      CalendarVariableColumns <- c("week","month","quarter","year")
-    } else if(TimeUnit == "month") {
-      CalendarVariableColumns <- c("month","quarter","year")
-    } else if(TimeUnit == "quarter") {
-      CalendarVariableColumns <- c("quarter","year")
-    } else if(TimeUnit == "year") {
-      CalendarVariableColumns <- "year"
-    }
+  if(!is.null(CalendarVariables)) {
 
     # Create calendar variables
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
-      TimeUnits = CalendarVariableColumns)
+      TimeUnits = CalendarVariables)
   }
 
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
-  if(HolidayVariable == TRUE & !is.null(GroupVariables)) {
+  if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+      HolidayGroups = HolidayVariable,
       Holidays = NULL,
       GroupingVars = "GroupVar")
 
@@ -489,11 +476,11 @@ AutoCatBoostCARMA <- function(data,
     } else {
       data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
     }
-  } else if(HolidayVariable) {
+  } else if(!is.null(HolidayVariable)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+      HolidayGroups = HolidayVariable,
       Holidays = NULL)
 
     # Convert to lubridate as_date() or POSIXct----
@@ -1246,12 +1233,12 @@ AutoCatBoostCARMA <- function(data,
 
       # Update calendar variables----
       if(DebugMode) print("Update calendar variables----")
-      if(CalendarVariables) {
+      if(!is.null(CalendarVariables)) {
         CalendarFeatures <- CreateCalendarVariables(
           data = CalendarFeatures,
           DateCols = eval(DateColumnName),
           AsFactor = FALSE,
-          TimeUnits = CalendarVariableColumns)
+          TimeUnits = CalendarVariables)
       }
 
       # Update Time Trend feature----
@@ -1268,18 +1255,18 @@ AutoCatBoostCARMA <- function(data,
 
       # Update holiday feature----
       if(DebugMode) print("Update holiday feature----")
-      if(HolidayVariable & !is.null(GroupVariables)) {
+      if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
           DateCols = eval(DateColumnName),
-          HolidayGroups = c("USPublicHolidays"),
+          HolidayGroups = HolidayVariable,
           Holidays = NULL,
           GroupingVars = "GroupVar")
-      } else if(HolidayVariable) {
+      } else if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
           DateCols = eval(DateColumnName),
-          HolidayGroups = c("USPublicHolidays"),
+          HolidayGroups = HolidayVariable,
           Holidays = NULL)
       }
 
@@ -1289,11 +1276,15 @@ AutoCatBoostCARMA <- function(data,
       # Group with or No Diff
       if(!is.null(GroupVariables) & Difference) {
 
+        # Calendar and Holiday----
+        if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+        if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
+
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1333,12 +1324,16 @@ AutoCatBoostCARMA <- function(data,
 
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
-        if(HolidayVariable & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+        if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+
+          # Calendar and Holiday----
+          if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+          if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
             data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+            GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1396,11 +1391,15 @@ AutoCatBoostCARMA <- function(data,
       # Group and Diff
       if(!is.null(GroupVariables) & !Difference) {
 
+        # Calendar and Holiday----
+        if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+        if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
+
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1440,7 +1439,11 @@ AutoCatBoostCARMA <- function(data,
 
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
-        if(HolidayVariable & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+        if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+
+          # Calendar and Holiday----
+          if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+          if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
           # Generate GDL Features for Updated Records----
           if(DebugMode) print("Generate GDL Features for Updated Records----")
@@ -1449,7 +1452,7 @@ AutoCatBoostCARMA <- function(data,
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
             data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+            GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1502,11 +1505,15 @@ AutoCatBoostCARMA <- function(data,
       # No Group with or without Diff
       if(is.null(GroupVariables)) {
 
+        # Calendar and Holiday----
+        if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+        if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
+
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         if("GroupVar" %chin% keep) keep <- keep[!keep %chin% "GroupVar"]
@@ -1544,12 +1551,16 @@ AutoCatBoostCARMA <- function(data,
 
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
-        if(HolidayVariable & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+        if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+
+          # Calendar and Holiday----
+          if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+          if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
           # Copy data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
             data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+            GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
 
