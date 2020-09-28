@@ -13,6 +13,7 @@
 #' @param HierarchGroups Vector of hierachy categorical columns.
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
+#' @param NumOfParDepPlots Supply a number for the number of partial dependence plots you want returned
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
@@ -78,6 +79,7 @@
 #'   GroupVariables = c("Dept"),
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
+#'   NumOfParDepPlots = 10L,
 #'
 #'   # Productionize
 #'   TrainOnFull = FALSE,
@@ -144,6 +146,7 @@ AutoCatBoostCARMA <- function(data,
                               FC_Periods = 30,
                               TimeUnit = "week",
                               TimeGroups = c("weeks","months"),
+                              NumOfParDepPlots = 10L,
                               TargetTransformation = FALSE,
                               Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                               XREGS = NULL,
@@ -899,7 +902,7 @@ AutoCatBoostCARMA <- function(data,
       eval_metric = EvalMetric,
       loss_function = EvalMetric,
       MetricPeriods = 10L,
-      NumOfParDepPlots = 10L,
+      NumOfParDepPlots = NumOfParDepPlots,
       EvalPlots = TRUE,
 
       # Grid tuning arguments:
