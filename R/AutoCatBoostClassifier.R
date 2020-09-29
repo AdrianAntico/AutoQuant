@@ -686,6 +686,7 @@ AutoCatBoostClassifier <- function(data,
         ggplot2::ggtitle(paste0("Catboost Best Model AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
         ChartTheme() + ggplot2::xlab("Specificity") +
         ggplot2::ylab("Sensitivity")
+      if("plotly" %chin% installed.packages()) ROC_Plot <- plotly::ggplotly(ROC_Plot)
     } else {
       ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
         ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
@@ -693,6 +694,7 @@ AutoCatBoostClassifier <- function(data,
         ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
         ChartTheme() + ggplot2::xlab("Specificity") +
         ggplot2::ylab("Sensitivity")
+      if("plotly" %chin% installed.packages()) ROC_Plot <- plotly::ggplotly(ROC_Plot)
     }
   }
 
@@ -716,6 +718,7 @@ AutoCatBoostClassifier <- function(data,
       GraphType = "calibration",
       PercentileBucket = 0.05,
       aggrfun = function(x) mean(x, na.rm = TRUE))
+    if("plotly" %chin% installed.packages()) EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
   }
 
   # Add Number of Trees to Title----
@@ -797,7 +800,11 @@ AutoCatBoostClassifier <- function(data,
           FactLevels = 10L,
           Function = function(x) mean(x, na.rm = TRUE))
         j <- j + 1L
-        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+        if("plotly" %chin% installed.packages()) {
+          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
+        } else {
+          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+        }
       }, error = function(x) "skip")
     }
   } else {
@@ -867,7 +874,7 @@ AutoCatBoostClassifier <- function(data,
         Model = model,
         ValidationData = ValidationData,
         VariableImportance = VariableImportance,
-        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
+        VI_Plot = tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL),
         ColNames = Names))
     }
   } else if(ReturnModelObjects) {
@@ -879,7 +886,7 @@ AutoCatBoostClassifier <- function(data,
       EvaluationPlot = EvaluationPlot,
       EvaluationMetrics = RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),CatBoostTestData=ValidationData),
       VariableImportance = VariableImportance,
-      VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
+      VI_Plot = tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL),
       PartialDependencePlots = ParDepPlots,
       GridMetrics = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
       ColNames = Names))
