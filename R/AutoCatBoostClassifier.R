@@ -718,11 +718,11 @@ AutoCatBoostClassifier <- function(data,
       GraphType = "calibration",
       PercentileBucket = 0.05,
       aggrfun = function(x) mean(x, na.rm = TRUE))
-    if("plotly" %chin% installed.packages()) EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
   }
 
   # Add Number of Trees to Title----
   if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: AUC = ",round(AUC_Metrics$auc, 3L)))
+  if(!TrainOnFull) if("plotly" %chin% installed.packages()) EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
 
   # Save plot to file----
   if(!TrainOnFull) {

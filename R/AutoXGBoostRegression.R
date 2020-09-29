@@ -919,6 +919,7 @@ AutoXGBoostRegression <- function(data,
       }
     }
 
+    # Evaluation Plot----
     EvaluationPlot <- EvalPlot(
       data = ValidationData,
       PredictionColName = "Predict",
@@ -928,7 +929,11 @@ AutoXGBoostRegression <- function(data,
       aggrfun = function(x) mean(x, na.rm = TRUE))
 
     # Add Number of Trees to Title
-    EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
+    if("plotly" %chin% installed.packages()) {
+      EvaluationPlot <- plotly::ggplotly(EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L))))
+    } else {
+      EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
+    }
 
     # Save plot to file
     if(SaveModelObjects) {
@@ -994,7 +999,11 @@ AutoXGBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
-            ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
+            if("plotly" %chin% installed.packages()) {
+              ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- plotly::ggplotly(Out)
+            } else {
+              ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
+            }
           }, error = function(x) "skip")
           tryCatch({
             Out1 <- ParDepCalPlots(
@@ -1007,7 +1016,11 @@ AutoXGBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             k <- k + 1L
-            ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1
+            if("plotly" %chin% installed.packages()) {
+              ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- plotly::ggplotly(Out1)
+            } else {
+              ParDepBoxPlots[[paste0(VariableImportance[k, Feature])]] <- Out1
+            }
           }, error = function(x) "skip")
         }
       }
@@ -1060,15 +1073,28 @@ AutoXGBoostRegression <- function(data,
   }
 
   # VI_Plot_Function----
-  VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
-      ggplot2::geom_bar(stat = "identity") +
-      ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-      ggplot2::coord_flip() +
-      ggplot2::labs(title = "Global Variable Importance") +
-      ggplot2::xlab("Top Model Features") +
-      ggplot2::ylab("Value")
+  if("plotly" %chin% installed.packages()) {
+    VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
+      plotly::ggplotly(ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
+        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
+        ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
+        ggplot2::coord_flip() +
+        ggplot2::labs(title = "Global Variable Importance") +
+        ggplot2::xlab("Top Model Features") +
+        ggplot2::ylab("Value"))
+    }
+  } else {
+    VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
+      ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
+        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
+        ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
+        ggplot2::coord_flip() +
+        ggplot2::labs(title = "Global Variable Importance") +
+        ggplot2::xlab("Top Model Features") +
+        ggplot2::ylab("Value")
+    }
   }
 
   # Regression Return Model Objects----
