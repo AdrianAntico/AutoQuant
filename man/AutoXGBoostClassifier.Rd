@@ -118,15 +118,15 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     # GPU or CPU
     TreeMethod = "hist",
     NThreads = 8L,
-  
+
     # Metadata arguments
     model_path = normalizePath("./"),
     metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
     ModelID = "Test_Model_1",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,   
-  
+    SaveModelObjects = FALSE,
+
     # Data arguments
     data = data,
     TrainOnFull = FALSE,
@@ -135,11 +135,11 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
     IDcols = c("IDcols_1","IDcols_2"),
-  
+
     # Model evaluation
     eval_metric = "auc",
     NumOfParDepPlots = 3L,
-  
+
     # Grid tuning arguments - PassInGrid is the best of GridMetrics
     PassInGrid = NULL,
     GridTune = TRUE,
@@ -148,10 +148,10 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Verbose = 1L,
-  
+
     # Trees, Depth, and LearningRate used in the bandit grid tuning
     # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used 
+    # The ones below can be set to NULL and the values in the example will be used
     Shuffles = 1L,
     Trees = seq(50L, 500L, 50L),
     eta = seq(0.05,0.40,0.05),

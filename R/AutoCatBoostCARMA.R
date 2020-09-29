@@ -25,6 +25,7 @@
 #' @param Kurt_Periods Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)
 #' @param Quantile_Periods Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)
 #' @param Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
+#' @param AnomalyDetection NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)
 #' @param Difference Puts the I in ARIMA for single series and grouped series.
 #' @param FourierTerms Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.
 #' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
@@ -115,6 +116,7 @@
 #'   Quantiles_Selected = c("q5","q95"),
 #'
 #'   # Bonus Features
+#'   AnomalyDetection = NULL,
 #'   XREGS = NULL,
 #'   FourierTerms = 4,
 #'   TimeTrendVariable = TRUE,
@@ -149,6 +151,7 @@ AutoCatBoostCARMA <- function(data,
                               NumOfParDepPlots = 10L,
                               TargetTransformation = FALSE,
                               Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+                              AnomalyDetection = NULL,
                               XREGS = NULL,
                               Lags = c(1L:5L),
                               MA_Periods = c(2L:5L),
@@ -491,6 +494,44 @@ AutoCatBoostCARMA <- function(data,
       data.table::set(data, j = eval(DateColumnName), value = lubridate::as_date(data[[eval(DateColumnName)]]))
     } else {
       data.table::set(data, j = eval(DateColumnName), value = as.POSIXct(data[[eval(DateColumnName)]]))
+    }
+  }
+
+  # Anomaly detection by Group and Calendar Vars ----
+  if(!is.null(AnomalyDetection)) {
+    if(!is.null(CalendarVariables) & !is.null(GroupVariables)) {
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = c("GroupVar", paste0(DateColumnName, "_", CalendarVariables[1])),
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
+    } else if(!is.null(GroupVariables)) {
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = c("GroupVar"),
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
+    } else {
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = NULL,
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
     }
   }
 
@@ -1275,6 +1316,13 @@ AutoCatBoostCARMA <- function(data,
           DateCols = eval(DateColumnName),
           HolidayGroups = HolidayVariable,
           Holidays = NULL)
+      }
+
+      # Update Anomaly Detection ----
+      if(i > 1) {
+        if(!is.null(AnomalyDetection)) {
+          UpdateData[, ":=" (AnomHigh = 0, AnomLow = 0)]
+        }
       }
 
       # Update Lags and MA's----

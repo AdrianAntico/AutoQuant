@@ -25,6 +25,7 @@
 #' @param Quantile_Periods Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)
 #' @param Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
 #' @param Difference Set to TRUE to put the I in ARIMA
+#' @param AnomalyDetection NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)
 #' @param FourierTerms Set to the max number of pairs
 #' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
 #' @param HolidayVariable NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"
@@ -70,6 +71,7 @@
 #'   DataTruncate = FALSE,
 #'   SplitRatios = c(1 - 10 / 143, 10 / 143),
 #'   PartitionType = "timeseries",
+#'   AnomalyDetection = NULL,
 #'
 #'   # Productionize
 #'   FC_Periods = 4,
@@ -125,6 +127,7 @@ AutoXGBoostCARMA <- function(data,
                              TimeGroups = c("weeks","months"),
                              TargetTransformation = FALSE,
                              Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+                             AnomalyDetection = NULL,
                              XREGS = NULL,
                              Lags = c(1:5),
                              MA_Periods = c(1:5),
@@ -427,6 +430,44 @@ AutoXGBoostCARMA <- function(data,
       DateCols = eval(DateColumnName),
       HolidayGroups = HolidayVariable,
       Holidays = NULL)
+  }
+
+  # Anomaly detection by Group and Calendar Vars ----
+  if(!is.null(AnomalyDetection)) {
+    if(!is.null(CalendarVariables) & !is.null(GroupVariables)) {
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = c("GroupVar", paste0(DateColumnName, "_", CalendarVariables[1])),
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
+    } else if(!is.null(GroupVariables)) {
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = c("GroupVar"),
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
+    } else {
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = NULL,
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
+    }
   }
 
   # Feature Engineering: Add Target Transformation----
@@ -1250,6 +1291,13 @@ AutoXGBoostCARMA <- function(data,
           DateCols = eval(DateColumnName),
           HolidayGroups = HolidayVariable,
           Holidays = NULL)
+      }
+
+      # Update Anomaly Detection ----
+      if(i > 1) {
+        if(!is.null(AnomalyDetection)) {
+          UpdateData[, ":=" (AnomHigh = 0, AnomLow = 0)]
+        }
       }
 
       # Update Lags and MA's----

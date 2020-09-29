@@ -18,6 +18,7 @@ AutoCatBoostCARMA(
   NumOfParDepPlots = 10L,
   TargetTransformation = FALSE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  AnomalyDetection = NULL,
   XREGS = NULL,
   Lags = c(1L:5L),
   MA_Periods = c(2L:5L),
@@ -80,6 +81,8 @@ AutoCatBoostCARMA(
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
 \item{Methods}{Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
+
+\item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
 
 \item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
@@ -217,6 +220,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   Quantiles_Selected = c("q5","q95"),
 
   # Bonus Features
+  AnomalyDetection = NULL,
   XREGS = NULL,
   FourierTerms = 4,
   TimeTrendVariable = TRUE,

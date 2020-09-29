@@ -17,6 +17,7 @@ AutoXGBoostCARMA(
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  AnomalyDetection = NULL,
   XREGS = NULL,
   Lags = c(1:5),
   MA_Periods = c(1:5),
@@ -73,6 +74,8 @@ AutoXGBoostCARMA(
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
 \item{Methods}{Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
+
+\item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
 
 \item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
@@ -162,6 +165,7 @@ XGBoostResults <- AutoXGBoostCARMA(
   DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 143, 10 / 143),
   PartitionType = "timeseries",
+  AnomalyDetection = NULL,
 
   # Productionize
   FC_Periods = 4,
