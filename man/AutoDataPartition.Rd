@@ -42,12 +42,12 @@ This function will take your ratings matrix and model and score your data in par
 \donttest{
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.85, 
-  N = 1000, 
-  ID = 2, 
-  ZIP = 0, 
-  AddDate = FALSE, 
-  Classification = FALSE, 
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
   MultiClass = FALSE)
 
 # Run data partitioning function

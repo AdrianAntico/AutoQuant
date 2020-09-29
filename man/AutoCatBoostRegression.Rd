@@ -202,10 +202,10 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     # The ones below can be set to NULL and the values in the example will be used
     # GrowPolicy is turned off for CPU runs
     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
-    Trees = seq(100L, 500L, 50L),
-    Depth = seq(4L, 8L, 1L),
+    Trees = 1000,
+    Depth = 6,
     LearningRate = seq(0.01,0.10,0.01),
-    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+    L2_Leaf_Reg = 3.0,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))

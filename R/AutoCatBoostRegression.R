@@ -121,10 +121,10 @@
 #'     # The ones below can be set to NULL and the values in the example will be used
 #'     # GrowPolicy is turned off for CPU runs
 #'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
-#'     Trees = seq(100L, 500L, 50L),
-#'     Depth = seq(4L, 8L, 1L),
+#'     Trees = 1000,
+#'     Depth = 6,
 #'     LearningRate = seq(0.01,0.10,0.01),
-#'     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+#'     L2_Leaf_Reg = 3.0,
 #'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
 #'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
 #'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
@@ -885,7 +885,12 @@ AutoCatBoostRegression <- function(data,
       }
 
       # Add Number of Trees to Title
-      if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
+      if("plotly" %chin% installed.packages()) {
+        if(!TrainOnFull) EvaluationPlot <- plotly::ggplotly(EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L))))
+      } else {
+        if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
+      }
+
 
       # Save plot to file
       if(!TrainOnFull) {
@@ -910,7 +915,11 @@ AutoCatBoostRegression <- function(data,
       }
 
       # Add Number of Trees to Title
-      if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
+      if("plotly" %chin% installed.packages()) {
+        if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + plotly::ggplotly(ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L))))
+      } else {
+        if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
+      }
 
       # Save plot to file
       if(!TrainOnFull) {
@@ -1011,7 +1020,11 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
-            ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+            if("plotly" %chin% installed.packages()) {
+              ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
+            } else {
+              ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+            }
           }, error = function(x) "skip")
           tryCatch({
             Out1 <- ParDepCalPlots(
@@ -1024,7 +1037,11 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             k <- k + 1L
-            ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+            if("plotly" %chin% installed.packages()) {
+              ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- plotly::ggplotly(Out1)
+            } else {
+              ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+            }
           }, error = function(x) "skip")
         }
 
@@ -1106,7 +1123,7 @@ AutoCatBoostRegression <- function(data,
         EvaluationBoxPlot = EvaluationBoxPlot,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = VariableImportance,
-        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
+        VI_Plot = tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL),
         PartialDependencePlots = ParDepPlots,
         PartialDependenceBoxPlots = ParDepBoxPlots,
         GridList = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
