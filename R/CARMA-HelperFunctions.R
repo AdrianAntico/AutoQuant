@@ -8,7 +8,7 @@ CARMA_GroupHierarchyCheck <- function(data = data,
 
   # Simple organization of option sets
   if(length(Group_Variables) > 1 & !is.null(HierarchyGroups)) {
-    data[, eval(Group_Variables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+    if("GroupVar" %chin% names(data)) data[, eval(Group_Variables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
     HierarchSupplyValue <- HierarchyGroups
   } else {
     HierarchSupplyValue <- NULL

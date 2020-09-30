@@ -250,7 +250,11 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("merging xregs to data")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
+      if(length(GroupVariables) > 1) {
+        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c(GroupVariables, eval(DateColumnName)), all = FALSE)
+      } else {
+        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
+      }
     } else {
       data <- merge(data, XREGS, by = c(eval(DateColumnName)), all = FALSE)
     }
@@ -261,7 +265,11 @@ AutoCatBoostCARMA <- function(data,
   if(!is.null(GroupVariables)) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
     if(!is.null(XREGS)) {
-      data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
+      if(length(GroupVariables) > 1) {
+        data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
+      } else {
+        data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
+      }
     }
   } else {
     data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
@@ -469,12 +477,21 @@ AutoCatBoostCARMA <- function(data,
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
   if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
-    data <- CreateHolidayVariables(
-      data,
-      DateCols = eval(DateColumnName),
-      HolidayGroups = HolidayVariable,
-      Holidays = NULL,
-      GroupingVars = "GroupVar")
+    if(length(GroupVariables) > 1) {
+      data <- CreateHolidayVariables(
+        data,
+        DateCols = eval(DateColumnName),
+        HolidayGroups = HolidayVariable,
+        Holidays = NULL,
+        GroupingVars = eval(GroupVariables))
+    } else {
+      data <- CreateHolidayVariables(
+        data,
+        DateCols = eval(DateColumnName),
+        HolidayGroups = HolidayVariable,
+        Holidays = NULL,
+        GroupingVars = "GroupVar")
+    }
 
     # Convert to lubridate as_date() or POSIXct----
     if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
@@ -500,9 +517,14 @@ AutoCatBoostCARMA <- function(data,
   # Anomaly detection by Group and Calendar Vars ----
   if(!is.null(AnomalyDetection)) {
     if(!is.null(CalendarVariables) & !is.null(GroupVariables)) {
+      if(length(GroupVariables) > 1) {
+        groupvars <- c(GroupVariables, paste0(DateColumnName, "_", CalendarVariables[1]))
+      } else {
+        groupvars <- c("GroupVar", paste0(DateColumnName, "_", CalendarVariables[1]))
+      }
       data <- RemixAutoML::GenTSAnomVars(
         data = data, ValueCol = eval(TargetColumnName),
-        GroupVars = c("GroupVar", paste0(DateColumnName, "_", CalendarVariables[1])),
+        GroupVars = ,
         DateVar = eval(DateColumnName),
         HighThreshold = AnomalyDetection$tstat_high,
         LowThreshold = AnomalyDetection$tstat_low,
@@ -1233,11 +1255,23 @@ AutoCatBoostCARMA <- function(data,
 
         # Ensure Grouping Variables are Character----
         if(!is.null(GroupVariables)) {
-          if(!is.character(CalendarFeatures[["GroupVar"]])) {
-            data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
-          }
-          if(!is.character(XREGS[["GroupVar"]])) {
-            data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
+          if(length(GroupVariables) > 1) {
+            for(gv in seq_len(length(GroupVariables))) {
+              if(!is.character(CalendarFeatures[[eval(GroupVariables[gv])]])) {
+                data.table::set(CalendarFeatures, j = eval(GroupVariables[gv]), value = as.character(CalendarFeatures[[eval(GroupVariables[gv])]]))
+              }
+              if(all(GroupVariables %chin% names(XREGS)) & "GroupVar" %chin% names(XREGS)) XREGS[, GroupVar := NULL]
+              if(!is.character(XREGS[[eval(GroupVariables[gv])]])) {
+                data.table::set(XREGS, j = eval(GroupVariables[gv]), value = as.character(XREGS[[eval(GroupVariables[gv])]]))
+              }
+            }
+          } else {
+            if(!is.character(CalendarFeatures[["GroupVar"]])) {
+              data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
+            }
+            if(!is.character(XREGS[["GroupVar"]])) {
+              data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
+            }
           }
 
           # Match GroupVariables Type----
@@ -1544,10 +1578,11 @@ AutoCatBoostCARMA <- function(data,
           # Join Holiday Lags and Moving Averages back to UpdateData
           if(!"GroupVar" %chin% names(Temporary)) {
             keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+            if(eval(DateColumnName) %chin% names(Temporary))
+            Temporary <- merge(Temporary[, .SD, .SDcols = unique(names(Temporary))], Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
           } else {
             keep <- c("GroupVar",eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+            Temporary <- merge(Temporary[, .SD, .SDcols = unique(names(Temporary))], Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar", eval(DateColumnName)), all = FALSE)
           }
         }
 
