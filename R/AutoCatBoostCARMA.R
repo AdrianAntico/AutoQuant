@@ -229,9 +229,9 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("# Check lengths of XREGS")
   if(!is.null(XREGS) & TrainOnFull) {
     if(Difference) {
-      FC_Periods <- min(-2L + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
-    } else {
       FC_Periods <- min(-1L + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
+    } else {
+      FC_Periods <- min(length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
     }
 
     # Stop if XREGS doesn't supply forward looking data
