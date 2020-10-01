@@ -318,20 +318,20 @@ AutoCatBoostRegression <- function(data,
   # Regression Sort data if PrimaryDateColumn----
   if(!is.null(PrimaryDateColumn)) {
     data.table::setorderv(x = data, cols = eval(PrimaryDateColumn), order = 1L)
-    if(!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(data, j = eval(PrimaryDateColumn), value = NULL)
+    if(!(eval(PrimaryDateColumn) %chin% IDcols)) data.table::set(data, j = eval(PrimaryDateColumn), value = NULL)
   }
 
   # Regression Sort ValidationData if PrimaryDateColumn----
   if(!is.null(PrimaryDateColumn) & TrainOnFull != TRUE) {
     data.table::setorderv(x = ValidationData, cols = eval(PrimaryDateColumn), order = 1L)
-    if(!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(ValidationData, j = eval(PrimaryDateColumn), value = NULL)
+    if(!(eval(PrimaryDateColumn) %chin% IDcols)) data.table::set(ValidationData, j = eval(PrimaryDateColumn), value = NULL)
   }
 
   # Regression Sort TestData if PrimaryDateColumn----
   if(!is.null(TestData) & TrainOnFull != TRUE) {
     if(!is.null(PrimaryDateColumn)) {
       data.table::setorderv(x = TestData, cols = eval(PrimaryDateColumn), order = -1L)
-      if(!(eval(PrimaryDateColumn) %in% IDcols)) data.table::set(TestData, j = eval(PrimaryDateColumn), value = NULL)
+      if(!(eval(PrimaryDateColumn) %chin% IDcols)) data.table::set(TestData, j = eval(PrimaryDateColumn), value = NULL)
     }
   }
 
@@ -378,7 +378,7 @@ AutoCatBoostRegression <- function(data,
   # Regression Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))), as.numeric(which(sapply(dataTrain, is.character)))))
 
-  # Regression Convert CatFeatures to 1-indexed----
+  # Regression Convert CatFeatures to 0-indexed----
   if(length(CatFeatures) > 0L) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
 
   # Regression Train ModelDataPrep----
@@ -391,16 +391,14 @@ AutoCatBoostRegression <- function(data,
     MissNum = -1L)
 
   # Regression Validation ModelDataPrep----
-  if(TrainOnFull != TRUE) {
-    if(!is.null(dataTest)) {
-      dataTest <- ModelDataPrep(
-        data = dataTest,
-        Impute = TRUE,
-        CharToFactor = TRUE,
-        RemoveDates = TRUE,
-        MissFactor = "0",
-        MissNum = -1)
-    }
+  if(!TrainOnFull & !is.null(dataTest)) {
+    dataTest <- ModelDataPrep(
+      data = dataTest,
+      Impute = TRUE,
+      CharToFactor = TRUE,
+      RemoveDates = TRUE,
+      MissFactor = "0",
+      MissNum = -1)
   }
 
   # Regression Test ModelDataPrep----
@@ -433,32 +431,32 @@ AutoCatBoostRegression <- function(data,
 
   # Regression Subset Target Variables----
   TrainTarget <- dataTrain[, .SD, .SDcols = eval(Target)][[1L]]
-  if(TrainOnFull != TRUE) {
+  if(!TrainOnFull) {
     TestTarget <- dataTest[, .SD, .SDcols = eval(Target)][[1L]]
     if(!is.null(TestData)) FinalTestTarget <- TestData[, .SD, .SDcols = eval(Target)][[1L]]
   }
 
   # Regression eval_metric checks
-  if(TrainOnFull != TRUE) if(tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) return("eval_metric Poisson requires positive values for Target")
+  if(!TrainOnFull) if(tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) return("eval_metric Poisson requires positive values for Target")
 
   # Regression Initialize Catboost Data Conversion----
   if(!is.null(CatFeatures)) {
     if(!is.null(TestData)) {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
-      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
-      if(TrainOnFull != TRUE) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
+      if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
+      if(!TrainOnFull) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
     } else {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
-      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
+      if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
     }
   } else {
     if(!is.null(TestData)) {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
-      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
-      if(TrainOnFull != TRUE) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget)
+      if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
+      if(!TrainOnFull) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget)
     } else {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
-      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
+      if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
     }
   }
 

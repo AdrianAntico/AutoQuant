@@ -142,7 +142,7 @@ AutoCatBoostCARMA(
 
 \item{Depth}{Depth of catboost model}
 
-\item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
+\item{PartitionType}{Select "random" for random data partitioning "timeseries" for partitioning by time frames}
 
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
@@ -175,63 +175,65 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
  # Build forecast
  CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
-  # data
+  # data args
   data = data, # TwoGroup_Data,
-  NonNegativePred = FALSE,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
   GroupVariables = c("Dept"),
   TimeUnit = "weeks",
   TimeGroups = c("weeks","months"),
-  NumOfParDepPlots = 10L,
 
-  # Productionize
+  # Production args
   TrainOnFull = FALSE,
-  SplitRatios = c(1 - 10 / 143, 10 / 143),
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
   FC_Periods = 4,
-  EvalMetric = "RMSE",
-  GridTune = FALSE,
-  GridEvalMetric = "mae",
-  ModelCount = 5,
-  TaskType = "GPU",
-  NumGPU = 1,
   Timer = TRUE,
   DebugMode = TRUE,
 
-  # Target Transformations
+  # Target transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Difference = FALSE,
+  NonNegativePred = FALSE,
 
-  # Date Features
+  # Date features
   CalendarVariables = c("week", "month", "quarter"),
   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
 
-  # Time Series Features
+  # Time series features
   Lags = Lags = list("weeks" = seq(1L, 5L, 1L), "months" = c(1,2,3)),
-  MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(1,2,3)),
+  MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3)),
   SD_Periods = NULL,
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
   Quantiles_Selected = c("q5","q95"),
 
-  # Bonus Features
+  # Bonus features
   AnomalyDetection = NULL,
-  XREGS = NULL,
-  FourierTerms = 4,
+  XREGS = xregs,
+  FourierTerms = 2,
   TimeTrendVariable = TRUE,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+
+  # ML Args
+  NumOfParDepPlots = 100L,
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  GridEvalMetric = "mae",
+  ModelCount = 5,
+  TaskType = "GPU",
+  NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60*60,
   NTrees = 2500,
   L2_Leaf_Reg = 3.0,
-  Depth = 6,
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
-  PartitionType = "random")
+  Depth = 6)
 
 UpdateMetrics <- print(CatBoostResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
 print(UpdateMetrics)

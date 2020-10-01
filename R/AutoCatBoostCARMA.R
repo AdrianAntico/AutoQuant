@@ -5,19 +5,20 @@
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Supply your full series data set here
-#' @param NonNegativePred TRUE or FALSE
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
+#' @param NonNegativePred TRUE or FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param HierarchGroups Vector of hierachy categorical columns.
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
-#' @param NumOfParDepPlots Supply a number for the number of partial dependence plots you want returned
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
+#' @param Timer Set to FALSE to turn off the updating print statements for progress
+#' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
 #' @param SD_Periods Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52)
@@ -35,21 +36,20 @@
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
+#' @param PartitionType Select "random" for random data partitioning "timeseries" for partitioning by time frames
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
+#' @param NumOfParDepPlots Supply a number for the number of partial dependence plots you want returned
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
-#' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param TaskType Default is "GPU" but you can also set it to "CPU"
 #' @param NumGPU Defaults to 1. If CPU is set this argument will be ignored.
 #' @param GridTune Set to TRUE to run a grid tune
+#' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Default is 50
 #' @param MaxRunMinutes Default is 60*60
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param Depth Depth of catboost model
 #' @param L2_Leaf_Reg l2 reg parameter
-#' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
-#' @param Timer Set to FALSE to turn off the updating print statements for progress
-#' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
 #' \donttest{
 #'
@@ -71,63 +71,65 @@
 #'  # Build forecast
 #'  CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 #'
-#'   # data
+#'   # data args
 #'   data = data, # TwoGroup_Data,
-#'   NonNegativePred = FALSE,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
 #'   GroupVariables = c("Dept"),
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
-#'   NumOfParDepPlots = 10L,
 #'
-#'   # Productionize
+#'   # Production args
 #'   TrainOnFull = FALSE,
-#'   SplitRatios = c(1 - 10 / 143, 10 / 143),
+#'   SplitRatios = c(1 - 10 / 138, 10 / 138),
+#'   PartitionType = "random",
 #'   FC_Periods = 4,
-#'   EvalMetric = "RMSE",
-#'   GridTune = FALSE,
-#'   GridEvalMetric = "mae",
-#'   ModelCount = 5,
-#'   TaskType = "GPU",
-#'   NumGPU = 1,
 #'   Timer = TRUE,
 #'   DebugMode = TRUE,
 #'
-#'   # Target Transformations
+#'   # Target transformations
 #'   TargetTransformation = TRUE,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
+#'   NonNegativePred = FALSE,
 #'
-#'   # Date Features
+#'   # Date features
 #'   CalendarVariables = c("week", "month", "quarter"),
 #'   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
 #'   HolidayLags = 1,
 #'   HolidayMovingAverages = 1:2,
 #'
-#'   # Time Series Features
+#'   # Time series features
 #'   Lags = Lags = list("weeks" = seq(1L, 5L, 1L), "months" = c(1,2,3)),
-#'   MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(1,2,3)),
+#'   MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3)),
 #'   SD_Periods = NULL,
 #'   Skew_Periods = NULL,
 #'   Kurt_Periods = NULL,
 #'   Quantile_Periods = NULL,
 #'   Quantiles_Selected = c("q5","q95"),
 #'
-#'   # Bonus Features
+#'   # Bonus features
 #'   AnomalyDetection = NULL,
-#'   XREGS = NULL,
-#'   FourierTerms = 4,
+#'   XREGS = xregs,
+#'   FourierTerms = 2,
 #'   TimeTrendVariable = TRUE,
+#'   ZeroPadSeries = NULL,
+#'   DataTruncate = FALSE,
+#'
+#'   # ML Args
+#'   NumOfParDepPlots = 100L,
+#'   EvalMetric = "RMSE",
+#'   GridTune = FALSE,
+#'   GridEvalMetric = "mae",
+#'   ModelCount = 5,
+#'   TaskType = "GPU",
+#'   NumGPU = 1,
 #'   MaxRunsWithoutNewWinner = 50,
 #'   MaxRunMinutes = 60*60,
 #'   NTrees = 2500,
 #'   L2_Leaf_Reg = 3.0,
-#'   Depth = 6,
-#'   ZeroPadSeries = NULL,
-#'   DataTruncate = FALSE,
-#'   PartitionType = "random")
+#'   Depth = 6)
 #'
 #' UpdateMetrics <- print(CatBoostResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
 #' print(UpdateMetrics)
