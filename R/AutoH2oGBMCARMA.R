@@ -44,11 +44,13 @@
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'
 #'  # Pull in Walmart Data Set
-#'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
-#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+#'  data <- data.table::fread(
+#'  "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+#'    , Counts := NULL]
 #'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 #'
 #'  # Build forecast
@@ -82,7 +84,8 @@
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+#'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'     "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = TRUE,
 #'
 #'   # Date Features
@@ -105,7 +108,9 @@
 #'   FourierTerms = 4L,
 #'   TimeTrendVariable = TRUE)
 #'
-#' UpdateMetrics <- print(H2oGBMResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' UpdateMetrics <-
+#'   print(H2oGBMResults$ModelInformation$EvaluationMetrics[
+#'     Metric == "MSE", MetricValue := sqrt(MetricValue)])
 #' print(UpdateMetrics)
 #' H2oGBMResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 #' H2oGBMResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]

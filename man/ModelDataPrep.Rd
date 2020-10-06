@@ -45,15 +45,16 @@ Returns the original data table with corrected values
 This function replaces inf values with NA, converts characters to factors, and imputes with constants
 }
 \examples{
+\dontrun{
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.75, 
-  N = 250000L, 
-  ID = 2L, 
-  ZIP = 0L, 
-  FactorCount = 6L, 
-  AddDate = TRUE, 
-  Classification = FALSE, 
+  Correlation = 0.75,
+  N = 250000L,
+  ID = 2L,
+  ZIP = 0L,
+  FactorCount = 6L,
+  AddDate = TRUE,
+  Classification = FALSE,
   MultiClass = FALSE)
 
 # Check column types
@@ -74,6 +75,7 @@ data <- RemixAutoML::ModelDataPrep(
 
 # Check column types
 str(data)
+}
 }
 \seealso{
 Other Feature Engineering: 

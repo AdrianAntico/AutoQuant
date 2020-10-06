@@ -11,8 +11,10 @@
 #' @param aggrfun The statistics function used in aggregation, listed as a function
 #' @return Calibration plot or boxplot
 #' @examples
+#' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.70, N = 10000000, Classification = TRUE)
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70, N = 10000000, Classification = TRUE)
 #' data.table::setnames(data, "IDcol_1", "Predict")
 #'
 #' # Run function
@@ -22,6 +24,7 @@
 #'          GraphType = "calibration",
 #'          PercentileBucket = 0.05,
 #'          aggrfun = function(x) mean(x, na.rm = TRUE))
+#' }
 #' @export
 EvalPlot <- function(data,
                      PredictionColName = c("PredictedValues"),

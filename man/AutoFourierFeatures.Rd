@@ -20,6 +20,10 @@ AutoFourierFeatures(
 
 \item{FourierPairs}{A number indicating the max number of fourier pairs that will be built}
 
+\item{FCPeriods}{Number of periods}
+
+\item{Time_Unit}{Agg level}
+
 \item{TargetColumn}{The name of your target column}
 
 \item{DateColumn}{The name of your date column}

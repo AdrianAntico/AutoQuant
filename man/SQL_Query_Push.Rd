@@ -12,8 +12,6 @@ SQL_Query_Push(DBConnection, Query, CloseChannel = TRUE)
 \item{Query}{The SQL statement you want to run}
 
 \item{CloseChannel}{TRUE to close when done, FALSE to leave the channel open}
-
-\item{ASIS}{Auto column typing}
 }
 \description{
 SQL_Query get data from a database

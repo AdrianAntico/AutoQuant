@@ -78,28 +78,29 @@ A data.table of predicted values with the option to return model features as wel
 AutoH2OMLScoring is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() models training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring.
 }
 \examples{
-\donttest{
-Preds <- AutoH2OMLScoring(ScoringData = data,
-                          ModelObject = NULL,
-                          ModelType = "mojo",
-                          H2OShutdown = TRUE,
-                          MaxMem = "28G",
-                          NThreads = max(1, parallel::detectCores()-2),
-                          JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-                          ModelPath = normalizePath("./"),
-                          ModelID = "ModelTest",
-                          ReturnFeatures = TRUE,
-                          TransformNumeric = FALSE,
-                          BackTransNumeric = FALSE,
-                          TargetColumnName = NULL,
-                          TransformationObject = NULL,
-                          TransID = NULL,
-                          TransPath = NULL,
-                          MDP_Impute = TRUE,
-                          MDP_CharToFactor = TRUE,
-                          MDP_RemoveDates = TRUE,
-                          MDP_MissFactor = "0",
-                          MDP_MissNum = -1)
+\dontrun{
+Preds <- AutoH2OMLScoring(
+  ScoringData = data,
+  ModelObject = NULL,
+  ModelType = "mojo",
+  H2OShutdown = TRUE,
+  MaxMem = "28G",
+  NThreads = max(1, parallel::detectCores()-2),
+  JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+  ModelPath = normalizePath("./"),
+  ModelID = "ModelTest",
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1)
 }
 }
 \seealso{

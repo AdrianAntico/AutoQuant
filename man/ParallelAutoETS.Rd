@@ -24,10 +24,12 @@ Time series data sets to pass onto auto modeling functions
 ParallelAutoETS to run the 4 data sets at once
 }
 \examples{
+\dontrun{
 ParallelAutoETS(
   MetricSelection = "MAE",
   Output = NULL,
   TrainValidateShare = c(0.50,0.50))
+}
 }
 \seealso{
 Other Time Series: 

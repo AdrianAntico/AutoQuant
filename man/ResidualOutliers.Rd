@@ -45,32 +45,35 @@ A named list containing FullData = original data.table with outliers data and AR
 ResidualOutliers is an automated time series outlier detection function that utilizes tsoutliers and auto.arima. It looks for five types of outliers: "AO" Additive outliter - a singular extreme outlier that surrounding values aren't affected by; "IO" Innovational outlier - Initial outlier with subsequent anomalous values; "LS" Level shift - An initial outlier with subsequent observations being shifted by some constant on average; "TC" Transient change - initial outlier with lingering effects that dissapate exponentially over time; "SLS" Seasonal level shift - similar to level shift but on a seasonal scale.
 }
 \examples{
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-                               Target = as.numeric(stats::filter(rnorm(1000,
-                                                                       mean = 50,
-                                                                       sd = 20),
-                                                                 filter=rep(1,10),
-                                                                 circular=TRUE)))
-data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+\dontrun{
+data <- data.table::data.table(
+  DateTime = as.Date(Sys.time()),
+  Target = as.numeric(stats::filter(
+    rnorm(1000, mean = 50, sd = 20),
+  filter=rep(1,10),
+  circular=TRUE)))
+data[, temp := seq(1:1000)][, DateTime := DateTime - temp][
+  , temp := NULL]
 data <- data[order(DateTime)]
-data[, Predicted := as.numeric(stats::filter(rnorm(1000,
-                                                   mean = 50,
-                                                   sd = 20),
-                                             filter=rep(1,10),
-                                             circular=TRUE))]
-stuff <- ResidualOutliers(data = data,
-                          DateColName = "DateTime",
-                          TargetColName = "Target",
-                          PredictedColName = NULL,
-                          TimeUnit = "day",
-                          Lags = 5,
-                          MA = 5,
-                          SLags = 0,
-                          SMA = 0,
-                          tstat = 4)
+data[, Predicted := as.numeric(
+  stats::filter(rnorm(1000, mean = 50, sd = 20),
+filter=rep(1,10),
+circular=TRUE))]
+stuff <- ResidualOutliers(
+  data = data,
+  DateColName = "DateTime",
+  TargetColName = "Target",
+  PredictedColName = NULL,
+  TimeUnit = "day",
+  Lags = 5,
+  MA = 5,
+  SLags = 0,
+  SMA = 0,
+  tstat = 4)
 data     <- stuff[[1]]
 model    <- stuff[[2]]
 outliers <- data[type != "<NA>"]
+}
 }
 \seealso{
 Other Unsupervised Learning: 

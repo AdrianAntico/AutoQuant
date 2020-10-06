@@ -30,9 +30,16 @@
 #' @param HurdleModel Set to FALSE
 #' @examples
 #' \donttest{
-#' # Create some dummy correlated data with numeric and categorical features
-#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
-#' 
+#' # Create some dummy correlated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGBMRegression(
 #'
@@ -44,25 +51,11 @@
 #'     Alpha = NULL,
 #'     Distribution = "poisson",
 #'
-#'     # Model evaluation: 
-#'     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-#'     #   'NumOfParDepPlots' Number of partial dependence calibration plots generated. 
-#'     #     A value of 3 will return plots for the top 3 variables based on variable importance
-#'     #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-#'     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+#'     # Model evaluation:
 #'     eval_metric = "RMSE",
 #'     NumOfParDepPlots = 3,
 #'
-#'     # Metadata arguments: 
-#'     #   'ModelID' is used to create part of the file names generated when saving to file'
-#'     #   'model_path' is where the minimal model objects for scoring will be stored
-#'     #      'ModelID' will be the name of the saved model object
-#'     #   'metadata_path' is where model evaluation and model interpretation files are saved
-#'     #      objects saved to model_path if metadata_path is null
-#'     #      Saved objects include: 
-#'     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-#'     #         'ModelID_VariableImportance.csv' is the variable importance.
-#'     #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+#'     # Metadata arguments:
 #'     model_path = NULL,
 #'     metadata_path = NULL,
 #'     ModelID = "FirstModel",
@@ -70,20 +63,15 @@
 #'     SaveModelObjects = FALSE,
 #'
 #'     # Data arguments:
-#'     #   'TrainOnFull' is to train a model with 100 percent of your data.
-#'     #     That means no holdout data will be used for evaluation
-#'     #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-#'     #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-#'     #     CatBoost categorical treatment is enhanced when supplied
-#'     #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-#'     #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+#'     FeatureColNames = names(data)[!names(data) %chin%
+#'       c("IDcol_1", "IDcol_2","Adrian")],
 #'     TransformNumericColumns = NULL,
-#'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+#'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'                 "LogPlus1","Logit","YeoJohnson"),
 #'
 #'     # Model args
 #'     Trees = 50,
@@ -117,14 +105,14 @@ AutoH2oGBMRegression <- function(data,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = TRUE,
                                  HurdleModel = FALSE) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Ensure model_path and metadata_path exists----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
   if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
-  
+
   # Regression Check Arguments----
   if(!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) return("eval_metric not in MSE, RMSE, MAE, RMSLE")
   if(Trees < 1) return("Trees must be greater than 1")
@@ -136,19 +124,19 @@ AutoH2oGBMRegression <- function(data,
   if(NumOfParDepPlots < 0) return("NumOfParDepPlots needs to be a positive number")
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
-  
+
   # Regression Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Regression Ensure data is a data.table----
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  
+
   # Regression Ensure data is a data.table----
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-  
+
   # Convert TransformNumericColumns to Names if not character----
   if(!is.null(TransformNumericColumns)) if(!is.character(TransformNumericColumns)) TransformNumericColumns <- names(data)[TransformNumericColumns]
-  
+
   # Transform data, ValidationData, and TestData----
   if(!is.null(ValidationData) & !is.null(TransformNumericColumns)) {
     MeanTrainTarget <- data[, mean(get(TargetColumnName))]
@@ -161,7 +149,7 @@ AutoH2oGBMRegression <- function(data,
       SaveOutput = SaveModelObjects)
     data <- Output$Data
     TransformationResults <- Output$FinalResults
-    
+
     # Transform ValidationData----
     ValidationData <- AutoTransformationScore(
       ScoringData = ValidationData,
@@ -169,7 +157,7 @@ AutoH2oGBMRegression <- function(data,
       FinalResults = TransformationResults,
       TransID = NULL,
       Path = NULL)
-    
+
     # Transform TestData----
     if (!is.null(TestData)) {
       TestData <- AutoTransformationScore(
@@ -180,7 +168,7 @@ AutoH2oGBMRegression <- function(data,
         Path = NULL)
     }
   }
-  
+
   # Regression Data Partition----
   if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     if(!is.null(TransformNumericColumns)) {
@@ -194,10 +182,10 @@ AutoH2oGBMRegression <- function(data,
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
-      
+
       # Mean of data----
       MeanTrainTarget <- data[, mean(get(TargetColumnName))]
-      
+
       # Transform data sets----
       Output <- AutoTransformationCreate(
         data,
@@ -208,7 +196,7 @@ AutoH2oGBMRegression <- function(data,
         SaveOutput = SaveModelObjects)
       data <- Output$Data
       TransformationResults <- Output$FinalResults
-      
+
       # Transform ValidationData----
       ValidationData <- AutoTransformationScore(
         ScoringData = ValidationData,
@@ -216,7 +204,7 @@ AutoH2oGBMRegression <- function(data,
         FinalResults = TransformationResults,
         TransID = NULL,
         Path = NULL)
-      
+
       # Transform TestData----
       if(!is.null(TestData)) {
         TestData <- AutoTransformationScore(
@@ -240,25 +228,25 @@ AutoH2oGBMRegression <- function(data,
       MeanTrainTarget <- data[, mean(get(TargetColumnName))]
     }
   }
-  
+
   # Regression ModelDataPrep----
   dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
   if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
   if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
-  
+
   # Regression Target Name Storage----
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
-  
+
   # Regression Get Min Value of Target Data----
   MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
-  
+
   # Regression Proper Distribution Check----
   if(MinVal < 0 & tolower(Distribution) == "poisson") {
     Distribution <- "gaussian"
   } else if(MinVal == 0 & tolower(Distribution) %chin% c("gamma", "tweedie")) {
     Distribution <- "poisson"
   }
-  
+
   # Regression Save Names of data----
   if(is.numeric(FeatureColNames)) {
     Names <- data.table::as.data.table(names(data)[FeatureColNames])
@@ -272,13 +260,13 @@ AutoH2oGBMRegression <- function(data,
     }
   }
   if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
-  
+
   # Regression Grid Tune Check----
   if(GridTune & !TrainOnFull) {
     if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
-    
+
     # Regression Grid Tune Search Criteria----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -288,7 +276,7 @@ AutoH2oGBMRegression <- function(data,
       stopping_rounds      = 10,
       stopping_metric      = toupper(eval_metric),
       stopping_tolerance   = 1e-3)
-    
+
     # Regression Grid Parameters----
     hyper_params <- list(
       max_depth                        = c(4, 8, 12, 15),
@@ -300,7 +288,7 @@ AutoH2oGBMRegression <- function(data,
       nbins                            = c(10, 20, 30),
       nbins_cats                       = c(64, 256, 512),
       histogram_type                   = c("UniformAdaptive", "QuantilesGlobal", "RoundRobin"))
-    
+
     # Regression Grid Train Model----
     if(!is.null(Alpha)) {
       grid <- h2o::h2o.grid(
@@ -370,21 +358,21 @@ AutoH2oGBMRegression <- function(data,
           seed                 = 1234)
       }
     }
-    
+
     # Regression Get Best Model----
     Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID, "_Grid"), sort_by = eval_metric, decreasing = FALSE)
-    
+
     # Regression Collect Best Grid Model----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1L]])
   }
-  
+
   # Regression Start Up H2O----
   if(!GridTune) {
     if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
   }
-  
+
   # Regression Baseline Model----
   if(!is.null(Alpha)) {
     if(!TrainOnFull) {
@@ -427,7 +415,7 @@ AutoH2oGBMRegression <- function(data,
         ntrees           = Trees)
     }
   }
-  
+
   # Regression Grab Evaluation Metric----
   if(GridTune & !TrainOnFull) {
     if(!is.null(TestData)) {
@@ -494,7 +482,7 @@ AutoH2oGBMRegression <- function(data,
       }
     }
   }
-  
+
   # Regression Pick Winner----
   if(GridTune & !TrainOnFull) {
     if(GridModelEval > BaseModelEval) {
@@ -505,7 +493,7 @@ AutoH2oGBMRegression <- function(data,
   } else {
     FinalModel <- base_model
   }
-  
+
   # Regression Save Model----
   if(SaveModelObjects) {
     if(tolower(IfSaveModel) == "mojo") {
@@ -520,7 +508,7 @@ AutoH2oGBMRegression <- function(data,
       SaveModel <- h2o::h2o.saveModel(object = FinalModel, path = model_path, force = TRUE)
     }
   }
-  
+
   # Regression Score Final Test Data----
   if(!is.null(TestData)) {
     Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatest))
@@ -529,7 +517,7 @@ AutoH2oGBMRegression <- function(data,
   } else {
     Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatrain))
   }
-  
+
   # Regression Variable Importance----
   if(!TrainOnFull) {
     VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
@@ -540,15 +528,15 @@ AutoH2oGBMRegression <- function(data,
         data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
       }
     }
-    
+
     # Regression Format Variable Importance Table----
     data.table::setnames(
-      VariableImportance, 
-      c("variable", "relative_importance", "scaled_importance", "percentage" ), 
+      VariableImportance,
+      c("variable", "relative_importance", "scaled_importance", "percentage" ),
       c("Variable", "RelativeImportance", "ScaledImportance", "Percentage"))
     VariableImportance[, ':=' (RelativeImportance = round(RelativeImportance, 4L), ScaledImportance = round(ScaledImportance, 4), Percentage = round(Percentage, 4))]
   }
-  
+
   # Regression H2O Shutdown----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
@@ -560,10 +548,10 @@ AutoH2oGBMRegression <- function(data,
   } else {
     ValidationData <- data.table::as.data.table(cbind(dataTrain, Predict))
   }
-  
+
   # Regression Change Prediction Name----
   data.table::setnames(ValidationData, "predict", "Predict")
-  
+
   # Inverse Transform----
   if(!is.null(TransformNumericColumns)) {
     if(GridTune) TransformationResults <- TransformationResults[ColumnName != "Predict"]
@@ -574,7 +562,7 @@ AutoH2oGBMRegression <- function(data,
         MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), MethodName], 1),
         Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), Lambda], 1),
         NormalizedStatistics = rep(0, 1))))
-    
+
     # If Actual target columnname == "Target" remove the duplicate version----
     if(length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
       temp <- TransformationResults[, .N, by = "ColumnName"][N != 1][[1L]]
@@ -582,7 +570,7 @@ AutoH2oGBMRegression <- function(data,
       ValidationData[, eval(names(data)[temp1]) := NULL]
       TransformationResults <- TransformationResults[, ID := 1:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
     }
-    
+
     # Transform Target and Predicted Value----
     ValidationData <- AutoTransformationScore(
       ScoringData = ValidationData,
@@ -591,10 +579,10 @@ AutoH2oGBMRegression <- function(data,
       TransID = NULL,
       Path = NULL)
   }
-  
+
   # Regression Get R2----
   if(!TrainOnFull) r_squared <- (ValidationData[, stats::cor(get(TargetColumnName), Predict)][[1]]) ^ 2L
-  
+
   # Regression Save Validation Data to File----
   if(SaveModelObjects) {
     if(!TrainOnFull) {
@@ -602,7 +590,7 @@ AutoH2oGBMRegression <- function(data,
         data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
       } else {
         data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
-      }      
+      }
     } else {
       if(!is.null(metadata_path)) {
         data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_FullDataPredictions.csv")))
@@ -611,7 +599,7 @@ AutoH2oGBMRegression <- function(data,
       }
     }
   }
-  
+
   # Regression Evaluation Calibration Plot----
   if(!TrainOnFull) {
     if(!is.null(Alpha)) {
@@ -631,7 +619,7 @@ AutoH2oGBMRegression <- function(data,
         PercentileBucket = 0.05,
         aggrfun = function(x) mean(x, na.rm = TRUE))
     }
-    
+
     # Regression Evaluation Plot Update Title----
     if(GridTune) {
       val <- max(GridModelEval, BaseModelEval)
@@ -639,7 +627,7 @@ AutoH2oGBMRegression <- function(data,
     } else {
       EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("GBM Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(BaseModelEval, 3L)))
     }
-    
+
     # Save plot to file----
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
@@ -648,7 +636,7 @@ AutoH2oGBMRegression <- function(data,
         ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
       }
     }
-    
+
     # Regression Evaluation BoxPlot----
     EvaluationBoxPlot <- EvalPlot(
       data = ValidationData,
@@ -657,7 +645,7 @@ AutoH2oGBMRegression <- function(data,
       GraphType = "boxplot",
       PercentileBucket = 0.05,
       aggrfun = function(x) mean(x, na.rm = TRUE))
-    
+
     # Regression Evaluation BoxPlot Update Title----
     if(GridTune) {
       val <- max(GridModelEval, BaseModelEval)
@@ -665,7 +653,7 @@ AutoH2oGBMRegression <- function(data,
     } else {
       EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("GBM Calibration Evaluation Plot: ", toupper(eval_metric), " = ", round(BaseModelEval, 3L)))
     }
-    
+
     # Save plot to file----
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
@@ -674,7 +662,7 @@ AutoH2oGBMRegression <- function(data,
         ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
       }
     }
-    
+
     # Regression Evaluation Metrics----
     EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 8L))
     i <- 0L
@@ -696,10 +684,10 @@ AutoH2oGBMRegression <- function(data,
         data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
       }, error = function(x) "skip")
     }
-    
+
     # Remove Features----
     ValidationData[, ':=' (Metric  = NULL)]
-    
+
     # Regression Save EvaluationMetrics to File----
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if(SaveModelObjects) {
@@ -709,7 +697,7 @@ AutoH2oGBMRegression <- function(data,
         data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
       }
     }
-    
+
     # Regression Partial Dependence----
     ParDepPlots <- list()
     ParDepBoxPlots <- list()
@@ -773,7 +761,7 @@ AutoH2oGBMRegression <- function(data,
           }, error = function(x) "skip")
         }
       }
-      
+
       # Regression Save ParDepPlots to file----
       if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
@@ -782,7 +770,7 @@ AutoH2oGBMRegression <- function(data,
           save(ParDepPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepPlots.R")))
         }
       }
-      
+
       # Regression Save ParDepBoxPlots to file----
       if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
@@ -790,7 +778,7 @@ AutoH2oGBMRegression <- function(data,
         } else {
           save(ParDepBoxPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepBoxPlots.R")))
         }
-      }  
+      }
     }
   }
 
@@ -802,7 +790,7 @@ AutoH2oGBMRegression <- function(data,
       TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
     }
   }
-  
+
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
     ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +

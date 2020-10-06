@@ -33,24 +33,34 @@ AutoWordFreq(
 This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
 }
 \examples{
+\dontrun{
 data <- data.table::data.table(
-DESCR = c("Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru,
-           Urkle, Urkle, Urkle, Urkle, Urkle, Urkle, Urkle, Gru, Gru, Gru,
-           bears, bears, bears, bears, bears, bears, smug, smug, smug, smug,
-           smug, smug, smug, smug, smug, smug, smug, smug, smug, smug, smug,
-           eats, eats, eats, eats, eats, eats, beats, beats, beats, beats,
-           beats, beats, beats, beats, beats, beats, beats, science, science,
-           Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt,
-           Schrute, Schrute, Schrute, Schrute, Schrute, Schrute, Schrute,
-           James, James, James, James, James, James, James, James, James, James,
-           Halpert, Halpert, Halpert, Halpert, Halpert, Halpert, Halpert, Halpert"))
-data <- AutoWordFreq(data,
-                     TextColName = "DESCR",
-                     GroupColName = NULL,
-                     GroupLevel = NULL,
-                     RemoveEnglishStopwords = FALSE,
-                     Stemming = FALSE,
-                     StopWords = c("Bla"))
+DESCR = c(
+  "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Gru",
+  "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Urkle",
+  "Urkle", "Urkle", "Urkle", "Urkle", "Urkle", "Urkle",
+  "Gru", "Gru", "Gru", "bears", "bears", "bears",
+  "bears", "bears", "bears", "smug", "smug", "smug", "smug",
+  "smug", "smug", "smug", "smug", "smug", "smug",
+  "smug", "smug", "smug", "smug", "smug", "eats", "eats",
+  "eats", "eats", "eats", "eats", "beats", "beats", "beats", "beats",
+  "beats", "beats", "beats", "beats", "beats", "beats",
+  "beats", "science", "science", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
+  "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
+  "Schrute", "Schrute", "Schrute", "Schrute", "Schrute",
+  "Schrute", "Schrute", "James", "James", "James", "James",
+  "James", "James", "James", "James", "James", "James",
+  "Halpert", "Halpert", "Halpert", "Halpert",
+  "Halpert", "Halpert", "Halpert", "Halpert"))
+data <- AutoWordFreq(
+  data,
+  TextColName = "DESCR",
+  GroupColName = NULL,
+  GroupLevel = NULL,
+  RemoveEnglishStopwords = FALSE,
+  Stemming = FALSE,
+  StopWords = c("Bla"))
+}
 }
 \seealso{
 Other EDA: 

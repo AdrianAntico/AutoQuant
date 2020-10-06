@@ -39,7 +39,7 @@ AutoMarketBasketModel(
 AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within.
 }
 \examples{
-\donttest{
+\dontrun{
 rules_data <- AutoMarketBasketModel(
   data,
   OrderIDColumnName = "OrderNumber",

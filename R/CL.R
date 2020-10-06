@@ -10,11 +10,9 @@
 #' @param ConversionMeasure E.g. "Conversions". Rate is derived as conversions over leads by cohort periods out
 #' @param ConversionRateMeasure Conversions over Leads for every cohort
 #' @param CohortPeriodsVariable Numeric. Numerical value of the the number of periods since cohort base date.
-#' @param TargetVariable Target Variable Name
 #' @param CalendarDate The name of your date column that represents the calendar date
 #' @param CohortDate The name of your date column that represents the cohort date
 #' @param TruncateDate NULL. Supply a date to represent the earliest point in time you want in your data. Filtering takes place before partitioning data so feature engineering can include as many non null values as possible.
-#' @param MaxCohortPeriods The maximum number of CohortPeriodsVariable out to include in modeling
 #' @param TimeUnit Base time unit of data. "days", "weeks", "months", "quarters", "years"
 #' @param TransformTargetVariable TRUE or FALSe
 #' @param TransformMethods Choose from "Identity", "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
@@ -26,7 +24,6 @@
 #' @param MetaDataPath Path to where you want your metadata saved. If NULL, function will try ModelPath if it is not NULL.
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
-#' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param TaskType "GPU" or "CPU" for catboost training
 #' @param NumGPUs Number of GPU's you would like to utilize
@@ -70,9 +67,10 @@
 #' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
 #' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Create simulated data
-#' data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   ChainLadderData = TRUE)
 #'
 #' # Build model
 #' RemixAutoML::CLTrainer(
@@ -89,8 +87,11 @@
 #'    TruncateDate = NULL,
 #'    TimeUnit = "days",
 #'    TransformTargetVariable = TRUE,
-#'    TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
-#'    AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
+#'    TransformMethods = c("Identity","BoxCox","Asinh",
+#'                         "Asin","LogPlus1","Logit",
+#'                         "YeoJohnson"),
+#'    AnomalyDetection = list(tstat_high = 3,
+#'      tstat_low = -2),
 #'
 #'    # MetaData Arguments----
 #'    Jobs = c("eval","train"),
@@ -110,21 +111,29 @@
 #'    ImputeRollStats = -0.001,
 #'    CalendarTimeGroups = c("days","weeks","months"),
 #'    CohortTimeGroups = c("days", "weeks"),
-#'    CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
-#'    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+#'    CalendarVariables = c("wday","mday","yday","week",
+#'                          "month","quarter","year"),
+#'    HolidayGroups = c("USPublicHolidays","EasterGroup",
+#'                      "ChristmasGroup","OtherEcclesticalFeasts"),
 #'    CohortHolidayLags = c(1L,2L,7L),
 #'    CohortHolidayMovingAverages = c(3L,7L),
 #'    CalendarHolidayLags = c(1L,2L,7L),
 #'    CalendarHolidayMovingAverages = c(3L,7L),
-#'    CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
-#'    CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+#'    CalendarLags = list("day" = c(1L,2L,7L,35L,42L),
+#'                        "week" = c(5L,6L,10L,12L,25L,26L)),
+#'    CalendarMovingAverages = list("day" = c(7L,14L,35L,42L),
+#'                                  "week" = c(5L,6L,10L,12L,20L,24L),
+#'                                  "month" = c(6L,12L)),
 #'    CalendarStandardDeviations = NULL,
 #'    CalendarSkews = NULL,
 #'    CalendarKurts = NULL,
 #'    CalendarQuantiles = NULL,
 #'    CalendarQuantilesSelected = "q50",
-#'    CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
-#'    CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+#'    CohortLags = list("day" = c(1L,2L,7L,35L,42L),
+#'                      "week" = c(5L,6L)),
+#'    CohortMovingAverages = list("day" = c(7L,14L,35L,42L),
+#'                                "week" = c(5L,6L),
+#'                                "month" = c(1L,2L)),
 #'    CohortStandardDeviations = NULL,
 #'    CohortSkews = NULL,
 #'    CohortKurts = NULL,
@@ -925,6 +934,7 @@ CLTrainer <- function(data,
 #' @param data N
 #' @param FC_BaseFunnelMeasure d
 #' @param OutputFilePath P
+#' @param SegmentName a
 #' @param MaxDateForecasted S
 #' @param MaxCalendarDate S
 #' @param ArgsList A

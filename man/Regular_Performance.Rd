@@ -21,6 +21,8 @@ Regular_Performance(
 
 \item{Results}{This is a time series model}
 
+\item{GridList}{List}
+
 \item{TrainValidateShare}{The values used to blend training and validation performance}
 
 \item{ExperimentGrid}{The results collection table}

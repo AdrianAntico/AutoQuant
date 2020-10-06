@@ -21,7 +21,7 @@ LimeModel <- function(data,
                       MaxMem = "32G",
                       ModelPath = NULL,
                       ModelID = NULL) {
-  
+
   # XGBoost----
   if(tolower(ModelType) == "xgboost") {
     return(
@@ -37,7 +37,7 @@ LimeModel <- function(data,
                             error = function(x) NULL)})
       })
   }
-  
+
   # H2O----
   if(tolower(ModelType) == "h2o") {
     h2o::h2o.init(startH2O = TRUE, enable_assertions = FALSE, max_mem_size = MaxMem, nthreads = NThreads)
@@ -55,7 +55,7 @@ LimeModel <- function(data,
                             error = function(x) NULL)})
       })
   }
-  
+
   # CatBoost----
   if(tolower(ModelType) == "catboost") {
     return(
@@ -113,7 +113,8 @@ LimeModel <- function(data,
 #' @param MDP_MissFactor Replicate what you did with the model training.
 #' @param MDP_MissNum Replicate what you did with the model training.
 #' @return LimeModelObject and Lime Explanations
-#' @examples 
+#' @examples
+#' \dontrun{
 #' # CatBoost data generator
 #' dataGenH2O <- function() {
 #'   Correl <- 0.85
@@ -131,7 +132,11 @@ LimeModel <- function(data,
 #'   data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
 #'   data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
 #'   data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
-#'   data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20, "A",ifelse(Independent_Variable2 < 0.40, "B",ifelse(Independent_Variable2 < 0.6,  "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#'   data[, Independent_Variable11 := as.factor(
+#'     ifelse(Independent_Variable2 < 0.20,
+#'     "A",ifelse(Independent_Variable2 < 0.40,
+#'     "B",ifelse(Independent_Variable2 < 0.6,
+#'     "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #'   data[, ':=' (x1 = NULL, x2 = NULL)]
 #'   data[, Classification := ifelse(Classification > 0.5, 1, 0)]
 #'   rm(N,Correl)
@@ -159,7 +164,7 @@ LimeModel <- function(data,
 #'   ReturnModelObjects = TRUE,
 #'   SaveModelObjects = TRUE,
 #'   PassInGrid = NULL)
-#' 
+#'
 #' # CatBoost Build Lime Model and Explanations
 #' LimeOutput <- RemixAutoML::AutoLimeAid(
 #'   EvalPredsData = data[c(1,15)],
@@ -195,11 +200,11 @@ LimeModel <- function(data,
 #'   MDP_RemoveDates = TRUE,
 #'   MDP_MissFactor = "0",
 #'   MDP_MissNum = -1)
-#'    
+#'
 #' # Plot lime objects
 #' lime::plot_features(LimeOutput$LimeExplanations)
 #' suppressWarnings(lime::plot_explanations(LimeOutput$LimeExplanations))
-#' 
+#'
 #' # H2O data generator
 #' dataGenH2O <- function() {
 #'   Correl <- 0.85
@@ -217,7 +222,10 @@ LimeModel <- function(data,
 #'   data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
 #'   data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
 #'   data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
-#'   data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20, "A",ifelse(Independent_Variable2 < 0.40, "B",ifelse(Independent_Variable2 < 0.6,  "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#'   data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20,
+#'     "A",ifelse(Independent_Variable2 < 0.40,
+#'     "B",ifelse(Independent_Variable2 < 0.6,
+#'     "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #'   data[, ':=' (x1 = NULL, x2 = NULL)]
 #'   data[, Classification := ifelse(Classification > 0.5, 1, 0)]
 #'   rm(N,Correl)
@@ -245,14 +253,14 @@ LimeModel <- function(data,
 #'   SaveModelObjects = TRUE,
 #'   IfSaveModel = "standard",
 #'   H2OShutdown = TRUE)
-#' 
+#'
 # H2O Build Lime Model and Explanations
 #' LimeOutput <- RemixAutoML::AutoLimeAid(
 #'   EvalPredsData = data[c(1,15)],
 #'   LimeTrainingData = data,
 #'   LimeBins = 10,
 #'   LimeIterations = 7500,
-#'   TargetType = "regression", 
+#'   TargetType = "regression",
 #'   LimeNumFeatures = 0,
 #'   LimeModel = NULL,
 #'   LimeModelPath = "C:/Users/aantico/Desktop/Retention Analytics",
@@ -281,11 +289,11 @@ LimeModel <- function(data,
 #'   MDP_RemoveDates = TRUE,
 #'   MDP_MissFactor = "0",
 #'   MDP_MissNum = -1)
-#' 
+#'
 #' # Plot lime objects
 #' lime::plot_features(LimeOutput$LimeExplanations)
 #' suppressWarnings(lime::plot_explanations(LimeOutput$LimeExplanations))
-#' 
+#'
 #' # XGBoost create data function
 #' dataGenXGBoost <- function() {
 #'   Correl <- 0.85
@@ -303,7 +311,10 @@ LimeModel <- function(data,
 #'   data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
 #'   data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
 #'   data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
-#'   data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20, "A",ifelse(Independent_Variable2 < 0.40, "B",ifelse(Independent_Variable2 < 0.6,  "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+#'   data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20,
+#'     "A",ifelse(Independent_Variable2 < 0.40,
+#'     "B",ifelse(Independent_Variable2 < 0.6,
+#'     "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
 #'   data[, ':=' (x1 = NULL, x2 = NULL)]
 #'   data[, Classification := ifelse(Classification > 0.5, 1, 0)]
 #'   rm(Correl,N)
@@ -333,7 +344,7 @@ LimeModel <- function(data,
 #'   ReturnFactorLevels = TRUE,
 #'   SaveModelObjects = TRUE,
 #'   PassInGrid = NULL)
-#' 
+#'
 #' # XGBoost Build Lime and Generate Output
 #' LimeOutput <- RemixAutoML::AutoLimeAid(
 #'   EvalPredsData = data[c(1,15)],
@@ -369,10 +380,11 @@ LimeModel <- function(data,
 #'   MDP_RemoveDates = TRUE,
 #'   MDP_MissFactor = "0",
 #'   MDP_MissNum = -1)
-#' 
+#'
 #' # Plot lime objects
 #' lime::plot_features(LimeOutput$LimeExplanations)
 #' suppressWarnings(lime::plot_explanations(LimeOutput$LimeExplanations))
+#' }
 #' @export
 AutoLimeAid <- function(EvalPredsData = data,
                         LimeTrainingData = data,
@@ -407,11 +419,11 @@ AutoLimeAid <- function(EvalPredsData = data,
                         MDP_RemoveDates = TRUE,
                         MDP_MissFactor = "0",
                         MDP_MissNum = -1) {
-  
+
   # Check Lime Arguments----
   if(is.null(EvalPredsData) & is.null(LimeTrainingData)) return("EvalPredsData and LimeTrainingData cannot both be NULL.")
   if(is.null(LimeModelPath)) {
-    if(is.null(LimeModel)) return("You need to either supply a model or a path to a model if you aren't supplying training data to build a model")        
+    if(is.null(LimeModel)) return("You need to either supply a model or a path to a model if you aren't supplying training data to build a model")
     if(is.null(LimeTrainingData)) return("You need to supply LimeTrainingData to train your lime model.")
   } else {
     if(!dir.exists(LimeModelPath)) {
@@ -427,7 +439,7 @@ AutoLimeAid <- function(EvalPredsData = data,
     }
   }
   if(is.null(LimeModel)) BuildLimeModel <- TRUE else BuildLimeModel <- FALSE
-  
+
   # Check ML Model Arguments----
   if(is.null(MLModel)) {
     if(is.null(MLModelPath)) return("I need a model supplied (unless the model is by H2O) or a pathfile to go find your model")
@@ -442,7 +454,7 @@ AutoLimeAid <- function(EvalPredsData = data,
     if(!dir.exists(MLMetaDataPath)) return("The MLMetaDataPath directory does not exist")
     if(file.exists(file.path(MLMetaDataPath,MLModelID,"_ColNames"))) FeatureColumnNames <- data.table::fread(file.path(MLMetaDataPath,MLModelID,"_ColNames"))
   }
-  
+
   # Check Data Arguments----
   if(is.null(FeatureColumnNames)) {
     if(is.null(MLModelPath)) return("MLModelPath cannot be NULL if you are not supply FeatureColumnNames")
@@ -455,13 +467,13 @@ AutoLimeAid <- function(EvalPredsData = data,
   if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
   if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
   if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
-  
+
   # LimeNumFeatures == 0 means use all features----
   if(LimeNumFeatures == 0) NumFeatures <- length(FeatureColumnNames) else NumFeatures <- LimeNumFeatures
-  
+
   # IDcols conversion----
   if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
-  
+
   # Apply Transform Numeric Variables----
   if(TransformNumeric) {
     if(!is.null(TransformationObject)) {
@@ -479,8 +491,8 @@ AutoLimeAid <- function(EvalPredsData = data,
           FinalResults = tempTrans,
           Type = "Apply",
           TransID = TransID,
-          Path = NULL)  
-      }      
+          Path = NULL)
+      }
     } else {
       EvalPredsData <- AutoTransformationScore(
         ScoringData = EvalPredsData,
@@ -494,17 +506,17 @@ AutoLimeAid <- function(EvalPredsData = data,
           FinalResults = tempTrans,
           Type = "Apply",
           TransID = TransID,
-          Path = TransPath)        
+          Path = TransPath)
       }
     }
   }
-  
+
   # Binary Identify column numbers for factor variables----
   if(ModelType != "h2o") {
     CatFeatures <- sort(c(as.numeric(which(sapply(EvalPredsData, is.factor))), as.numeric(which(sapply(EvalPredsData, is.character)))))
-    CatFeatures <- names(EvalPredsData)[CatFeatures]  
+    CatFeatures <- names(EvalPredsData)[CatFeatures]
   }
-  
+
   # Subset Columns Needed----
   if(is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
     keep1 <- names(EvalPredsData)[c(FeatureColumnNames)]
@@ -526,7 +538,7 @@ AutoLimeAid <- function(EvalPredsData = data,
     ScoringMerge <- data.table::copy(EvalPredsData)
     if(!is.null(LimeTrainingData)) LimeTrainingData <- LimeTrainingData[, ..keep]
   }
-  
+
   # DummifyDT categorical columns----
   if(tolower(ModelType) == "xgboost") {
     if(!is.null(CatFeatures)) {
@@ -576,12 +588,12 @@ AutoLimeAid <- function(EvalPredsData = data,
             SavePath = MLModelPath,
             ImportFactorLevels = TRUE,
             ReturnFactorLevels = FALSE,
-            ClustScore = FALSE) 
-        }      
+            ClustScore = FALSE)
+        }
       }
-    }  
+    }
   }
-  
+
   # ModelDataPrep Check----
   EvalPredsData <- ModelDataPrep(
     data = EvalPredsData,
@@ -597,9 +609,9 @@ AutoLimeAid <- function(EvalPredsData = data,
       CharToFactor = MDP_CharToFactor,
       RemoveDates = MDP_RemoveDates,
       MissFactor = MDP_MissFactor,
-      MissNum = MDP_MissNum) 
+      MissNum = MDP_MissNum)
   }
-  
+
   # CatBoost Functions----
   if(tolower(ModelType) == "catboost") {
     loadNamespace(package = "catboost")
@@ -610,7 +622,7 @@ AutoLimeAid <- function(EvalPredsData = data,
     } else if(tolower(TargetType) == "multiclass") {
       model_type.catboost.Model <<- function(x, ...) return("multilabel")
     }
-    
+
     # Score model functions----
     predict <- function(x, ScoringPool, ...) {
       if(tolower(...) == "regression") {
@@ -640,38 +652,38 @@ AutoLimeAid <- function(EvalPredsData = data,
       }
       return(score)
     }
-    
+
     # Define CatBoost predict_model----
     if(tolower(TargetType) == "regression") {
       predict_model.catboost.Model <<- function(x, newdata, CatFeaturesX = CatFeatures, ...) {
-        
+
         # Initialize Catboost Data Conversion----
         if(!is.null(CatFeaturesX)) {
           ScoringPool <- catboost::catboost.load_pool(newdata, cat_features = CatFeaturesX)
         } else {
           ScoringPool <- catboost::catboost.load_pool(newdata)
         }
-        
+
         # Score model----
         score <- predict(x = MLModel, ScoringPool, TargetType)
-        
+
         # Change Output Predictions Column Name----
         data.table::setnames(score, "V1", "Response")
         return(as.data.frame(score))
-      }      
+      }
     } else if(tolower(TargetType) == "classification") {
       predict_model.catboost.Model <<- function(x, newdata, TargetType = "regression", CatFeaturesX = CatFeatures, ...) {
-        
+
         # Initialize Catboost Data Conversion----
         if(!is.null(CatFeaturesX)) {
           ScoringPool <- catboost::catboost.load_pool(newdata, cat_features = CatFeaturesX)
         } else {
           ScoringPool <- catboost::catboost.load_pool(newdata)
         }
-        
+
         # Score model----
         score <- predict(x = MLModel, ScoringPool, TargetType)
-        
+
         # Change Output Predictions Column Name----
         data.table::setnames(score, "V1", "1")
         data.table::set(score, j = "0", value = 1 - score[["1"]])
@@ -679,17 +691,17 @@ AutoLimeAid <- function(EvalPredsData = data,
       }
     } else {
       predict_model.catboost.Model <<- function(x, newdata, TargetType = "regression", CatFeaturesX = CatFeatures, ...) {
-        
+
         # Initialize Catboost Data Conversion----
         if(!is.null(CatFeaturesX)) {
           ScoringPool <- catboost::catboost.load_pool(newdata, cat_features = CatFeaturesX)
         } else {
           ScoringPool <- catboost::catboost.load_pool(newdata)
         }
-        
+
         # Score model----
         score <- predict(x = MLModel, ScoringPool, TargetType)
-        
+
         # Change Output Predictions Column Name----
         if(!is.null(MultiClassTargetLevels)) {
           TargetLevels <- MultiClassTargetLevels
@@ -713,16 +725,16 @@ AutoLimeAid <- function(EvalPredsData = data,
       }
     }
   }
-  
+
   # Lime Aid----
   if(is.null(LimeModel)) {
-    
+
     # Check if LimeTrainingData exists
     if(is.null(LimeTrainingData)) return("Need to supply LimeTrainingData")
-    
+
     # Check if base ML model is supplied or exists in file
     if(is.null(MLModel) | tolower(ModelType) == "h2o") {
-      
+
       # Load MLModels----
       options(warn = -1)
       if(is.null(MLModel) | tolower(ModelType) == "h2o") {
@@ -734,24 +746,24 @@ AutoLimeAid <- function(EvalPredsData = data,
           MLModel <- model
         } else if(tolower(ModelType) == "catboost") {
           MLModel <- catboost::catboost.load_model(file.path(MLModelPath,MLModelID))
-        }  
+        }
       }
-      
+
       # LimeModel will pull in model object
       LimeAId <- LimeModel(
         data = LimeTrainingData,
         Model = MLModel,
         Bins = LimeBins,
-        ModelType = ModelType, 
+        ModelType = ModelType,
         ModelPath = MLModelPath,
         ModelID = MLModelID)
-      
+
       # Shutdown H2O----
-      if(!BuildLimeModel) if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)  
-      
+      if(!BuildLimeModel) if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)
+
       # Save LimeModel if Path Provided----
       save(LimeAId, file = file.path(normalizePath(LimeModelPath), LimeModelID))
-      
+
       # Explain Predictions----
       if(!is.null(EvalPredsData)) {
         LimeExplanations <- tryCatch({lime::explain(
@@ -797,22 +809,22 @@ AutoLimeAid <- function(EvalPredsData = data,
           })
       }
     } else {
-      
+
       # LimeModel will pull in model object
       LimeAId <- LimeModel(
         data = LimeTrainingData,
         Model = MLModel,
         Bins = LimeBins,
-        ModelType = ModelType, 
+        ModelType = ModelType,
         ModelPath = MLModelPath,
         ModelID = MLModelID)
-      
+
       # Shutdown H2O----
-      if(!BuildLimeModel) if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)  
-      
+      if(!BuildLimeModel) if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)
+
       # Save LimeModel if Path Provided----
       save(LimeAId, file = file.path(normalizePath(LimeModelPath), LimeModelID))
-      
+
       # Explain Predictions----
       if(!is.null(EvalPredsData)) {
         LimeExplanations <- tryCatch({lime::explain(
@@ -855,11 +867,11 @@ AutoLimeAid <- function(EvalPredsData = data,
                       })
                   })
               })
-          }) 
+          })
       }
     }
   } else {
-    
+
     # Load ML Models----
     options(warn = -1)
     if(is.null(MLModel) | tolower(ModelType) == "h2o") {
@@ -871,9 +883,9 @@ AutoLimeAid <- function(EvalPredsData = data,
         Model <- model
       } else if(tolower(ModelType) == "catboost") {
         model <- catboost::catboost.load_model(file.path(MLModelPath,MLModelID))
-      }  
+      }
     }
-    
+
     # Create Explanations----
     if(!is.null(EvalPredsData)) {
       LimeExplanations <- tryCatch({lime::explain(
@@ -916,16 +928,16 @@ AutoLimeAid <- function(EvalPredsData = data,
                     })
                 })
             })
-        })      
+        })
     }
   }
-  
+
   # Convert warning back to original state----
   options(warn = 0, error = NULL)
-  
+
   # Shutdown H2O----
   if(tolower(ModelType) == "h2o") tryCatch({h2o::h2o.shutdown(prompt = FALSE)}, error = function(x) NULL)
-  
+
   # Return Lime Artifacts----
   if(!is.null(LimeModel)) {
     return(list(
@@ -934,6 +946,6 @@ AutoLimeAid <- function(EvalPredsData = data,
   } else {
     return(list(
       LimeModel = LimeAId,
-      LimeExplanations = LimeExplanations))    
+      LimeExplanations = LimeExplanations))
   }
 }

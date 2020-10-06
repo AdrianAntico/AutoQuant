@@ -14,11 +14,11 @@ ColumnSubsetDataTable(
 \arguments{
 \item{data}{data.table}
 
+\item{TargetColumnName}{Target variable}
+
+\item{DateColumnName}{Date variable}
+
 \item{GroupVars}{Group variables}
-
-\item{Target}{Target variable}
-
-\item{Date}{Date variable}
 }
 \description{
 ColumnSubsetDataTable will subset data tables by column

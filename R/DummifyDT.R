@@ -15,17 +15,18 @@
 #' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
 #' @param ReturnFactorLevels If you want a named list of all the factor levels returned, set this to TRUE. Doing so will cause the function to return a list with the source data.table and the list of factor variables' levels
 #' @examples
+#' \dontrun{
 #' # Create fake data with 10 categorical columns
 #' data <- RemixAutoML::FakeDataGenerator(
-#'   Correlation = 0.85, 
-#'   N = 25000, 
-#'   ID = 2L, 
-#'   ZIP = 0, 
+#'   Correlation = 0.85,
+#'   N = 25000,
+#'   ID = 2L,
+#'   ZIP = 0,
 #'   FactorCount = 10L,
-#'   AddDate = FALSE, 
-#'   Classification = FALSE, 
+#'   AddDate = FALSE,
+#'   Classification = FALSE,
 #'   MultiClass = FALSE)
-#' 
+#'
 #' # Create dummy variables
 #' data <- RemixAutoML::DummifyDT(
 #'   data = data,
@@ -46,6 +47,7 @@
 #'   FactorLevelsList = NULL,
 #'   ClustScore = FALSE,
 #'   ReturnFactorLevels = FALSE)
+#' }
 #' @return Either a data table with new dummy variables columns and optionally removes base columns (if ReturnFactorLevels is FALSE), otherwise a list with the data.table and a list of the factor levels.
 #' @export
 DummifyDT <- function(data,
@@ -58,13 +60,13 @@ DummifyDT <- function(data,
                       FactorLevelsList   = NULL,
                       ClustScore         = FALSE,
                       ReturnFactorLevels = FALSE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-  
+
   # Check data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Check arguments----
   if(!is.character(cols)) return("cols needs to be a character vector of names")
   if(!is.logical(KeepFactorCols)) return("KeepFactorCols needs to be either TRUE or FALSE")
@@ -74,13 +76,13 @@ DummifyDT <- function(data,
   if(!is.logical(ImportFactorLevels)) return("ImportFactorLevels needs to be either TRUE or FALSE")
   if(!is.logical(ClustScore)) return("ClustScore needs to be either TRUE or FALSE")
   if(!is.null(SavePath)) if(!is.character(SavePath)) return("SavePath needs to be a character value of a folder location")
-  
+
   # Ensure correct argument settings----
   if(OneHot & ClustScore) {
     OneHot <- FALSE
     KeepFactorCols <- FALSE
   }
-  
+
   # Build dummies start----
   FactorsLevelsList <- list()
   if(length(cols) > 1L & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
@@ -92,30 +94,30 @@ DummifyDT <- function(data,
       inds <- sort(unique(temp[[eval(col)]]))
     } else if(!is.null(FactorLevelsList)) {
       temp <- FactorLevelsList[[eval(col)]]
-      inds <- sort(unique(temp[[eval(col)]])) 
+      inds <- sort(unique(temp[[eval(col)]]))
     } else {
       inds <- sort(unique(data[[eval(col)]]))
     }
-    
+
     # Allocate columns----
     data.table::alloc.col(data, n = ncol(data) + length(inds))
-    
+
     # Save factor levels for scoring later----
     if(SaveFactorLevels) data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL], file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
-    
+
     # Collect Factor Levels----
     if(ReturnFactorLevels) FactorsLevelsList[[eval(col)]] <- data[, get(col), by = eval(col)][, V1 := NULL]
-    
+
     # Convert to character if col is factor----
     if(is.factor(data[[eval(col)]])) data.table::set(data, j = eval(col), value = as.character(data[[eval(col)]]))
-    
+
     # If for clustering set up old school way----
     if(!ClustScore) {
       data.table::set(data, j = paste0(col, "_", inds), value = 0L)
     } else {
       data.table::set(data, j = paste0(col, inds), value = 0L)
     }
-    
+
     # Build dummies----
     for(ind in inds) {
       if(!ClustScore) {
@@ -124,20 +126,20 @@ DummifyDT <- function(data,
         data.table::set(data, i = which(data[[col]] %chin% ind), j = paste0(col, ind),value = 1L)
       }
     }
-    
+
     # Remove original factor columns----
     if(!KeepFactorCols) data.table::set(data, j = eval(col), value = NULL)
     if(ClustScore) setcolorder(data, c(setdiff(names(data), Names), Names))
     if(OneHot) data.table::set(data, j = paste0(col, "_Base"), value = 0L)
   }
-  
+
   # Clustering section----
   if(ClustScore) data.table::setnames(data, names(data), tolower(gsub('[[:punct:] ]+', replacement = "", names(data))))
-  
+
   # Return data----
   if(ReturnFactorLevels) {
     return(list(data = data, FactorLevelsList = FactorsLevelsList))
   } else {
-    return(data)    
+    return(data)
   }
 }

@@ -3,11 +3,9 @@
 #' AutoCARMA_QA
 #' @author Adrian Antico
 #' @family QA Functions
-#'
-#' # Data Names Mapping
 #' @param ModelName Choose from 'catboost', 'h2odrf', 'h2ogbm', 'h2oglm', 'h2oautoml', 'xgboost'
 #' @param FeatureGridTune Set to TRUE to only run in evaluation model opposed to TrainOnFull model which does not return model performance measures
-#' @param Nthreads_ = parallel::detectCores() - 2
+#' @param NThreads_ = parallel::detectCores() - 2
 #' @param MaxMem_ = "28G"
 #' @param TreeMethod__ = "hist" or "gpu_hist" for xgboost carma
 #' @param TestRows = "ALL" to run all tests (see example for all tests), or a numeric vector with the row numbers from the test list (see example)
@@ -19,21 +17,16 @@
 #' @param DateColumnName_ = "Date" # Name of data_ date column name.
 #' @param HierarchGroups_ = c("Store","Dept") # NULL otherwise
 #' @param GroupVariables_ = c("Store","Dept") #
-#'
-#' # Date Features
 #' @param CalendarVariables_ = TRUE   # This TURNS ON procedure to create numeric calendar variables that your TimeUnit_ directs. FALSE otherwise.
 #' @param HolidayVariable_ = TRUE   # This TURNS ON procedure to create a numeric holiday count variable. FALSE otherwise.
 #' @param HolidayLags_ = c(1:2) # Supply a numeric vector of lag periods
 #' @param HolidayMovingAverages_ = c(1:2) # Supply a numeric vector of Moving Average periods
 #' @param TimeUnit_ = "week" # Choices include "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"
 #' @param TimeGroups_ = c("weeks","months","quarter") # These will tell GDL to build gdl features along the time aggregation dimension
-#' # Data Wrangling Features Mapping
 #' @param ZeroPadSeries_ = c('NULL', 'all', 'inner') ZeroPadSeries choose "all", "inner", or NULL. 'Outer' grows missing dates by group to the largest of all groups size. 'Inner' fills in series by using the group level's own max and min values (versus filling all group levels to the max value of the groups level with the widest time gap)
 #' @param DataTruncate_ = FALSE # TRUE will truncate all rows where GDL columns produced a -1 (remove all rows where ID < max(rolling stats)). FALSE otherwise.
 #' @param SplitRatios_ = c(1 - 10 / 143, 10 / 143) # If you have GroupVariables_ then base it on number of records in a group, like default
 #' @param PartitionType_ = "timeseries" # always time series for this function. Place holder for other time series options down the road.
-#'
-#' # Productionize Features Mapping
 #' @param TrainOnFull_ = FALSE # Set to TRUE put in Forecase mode. FALSE to put in Evaluation mode. Forecast mode generates forecasts based on a model built using all of data_, and no evaluation metrics are collected when set to TRUE. Evaluation mode will build a forecast for your validation periods and collect the holdout metrics and other evaluation objects, but no future forecast beyond max date of data_.  as specified in SplitRatios_.
 #' @param FC_Periods_ = 4 # Self explanatory
 #' @param EvalMetric_ = "RMSE" # "RMSE" only with catboost 17.5
@@ -42,12 +35,8 @@
 #' @param ModelCount_ = 5 # NEEDS TO BE UPDATED ONCE BANDIT GRID TUNING WORKS.
 #' @param TaskType_ = "GPU" # Set to "CPU" to train on CPU versus GPU. Must supply a value.
 #' @param Timer_ = TRUE # Print out the forecast step the function is currently working on. If it errors on the first run scoring the model then it is likely a very different error then if has printed "Forecasting 1:"
-#'
-#' # Target Transformations Feature Mapping
 #' @param TargetTransformation_ = TRUE # Set to TRUE to have every available numeric transformation compete for best normalization fit to normal distribution
 #' @param Difference_ = TRUE # The I in ARIMA. Works for single series and grouped series a.k.a. panel data.
-#'
-#' # Time Series Features
 #' @param Lags_ = c(1:5) # Numeric vector of lag periods
 #' @param MA_Periods_ = c(1:5) # Numeric vector of lag periods
 #' @param SD_Periods_ = c(2:5) # Numeric vector of lag periods
@@ -55,8 +44,6 @@
 #' @param Kurt_Periods_ = c(4:5) # Numeric vector of lag periods
 #' @param Quantile_Periods_ = c(3:5) # Numeric vector of lag periods
 #' @param Quantiles_Selected_ = c("q5","q95") # Select the quantiles you want calculated. "q5", "q10", ..., "q95".
-#'
-#' # Bonus Features MAPPING
 #' @param FourierTerms_ = 2 # (TECHINICALLY FOURIER PAIRS) Hierarchy grouping (full group variable interaction set) is ran by default (MAKE INTO OPTIOn). Uses parallelization to loop through the unique set of all GroupVariables levels and computes fourier terms as if the group level's are a single series; just for all groups and it's parallelized.
 #' @param TimeTrendVariable_ = TRUE # Set to TRUE to have a sequence created from 1 to nrow by group or single series
 #' @param NTrees_ = 150 # Number of trees to have trained. Can be 10000 or more depending on group level size.
@@ -199,9 +186,9 @@ AutoCARMA_QA <- function(ModelName              = "catboost",
       XREGSData <- data.table::fread(file.path(DataPath, XREGSX))
     } else {
       if(!is.null(GroupVariables_)) {
-        Output <- RemixAutoAI::QA_WALMARTDATAGENERATOR(Data, Groups = length(GroupVariables_), TimeUnit__ = toupper(TimeUnit_))
+        Output <- QA_WALMARTDATAGENERATOR(Data, Groups = length(GroupVariables_), TimeUnit__ = toupper(TimeUnit_))
       } else {
-        Output <- RemixAutoAI::QA_WALMARTDATAGENERATOR(data = Data, Groups = 0L, TimeUnit__ = TimeUnit_)
+        Output <- QA_WALMARTDATAGENERATOR(data = Data, Groups = 0L, TimeUnit__ = TimeUnit_)
       }
       Data <- Output$dataFull
       DataForecast <- Output$dataForecastX

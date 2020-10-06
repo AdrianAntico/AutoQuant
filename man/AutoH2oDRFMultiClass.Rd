@@ -75,9 +75,16 @@ Saves to file and returned in list: VariableImportance.csv, Model, ValidationDat
 AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
 }
 \examples{
-\donttest{
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+\dontrun{
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
@@ -86,7 +93,8 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+   FeatureColNames = names(data)[!names(data) \%chin\%
+     c("IDcol_1", "IDcol_2","Adrian")],
    eval_metric = "logloss",
    Trees = 50,
    GridTune = FALSE,
@@ -94,7 +102,8 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
    NThreads = max(1, parallel::detectCores()-2),
    MaxModelsInGrid = 10,
    model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   metadata_path = file.path(normalizePath("./"),
+     "MetaData"),
    ModelID = "FirstModel",
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,

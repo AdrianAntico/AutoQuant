@@ -8,8 +8,9 @@
 #' @param targetColNum the column number of the target variable
 #' @param targetName the name, in quotes, of the target variable
 #' @examples
-#' \donttest{
-#' auc_val <- H2OMultinomialAUC(validate, best_model, targetColNum = 1, targetName = "TargetVar")
+#' \dontrun{
+#' auc_val <- H2OMultinomialAUC(
+#'   validate, best_model, targetColNum = 1, targetName = "TargetVar")
 #' }
 #' @return Micro AUC
 H2OMultinomialAUC <-

@@ -42,16 +42,17 @@ The winning model used for scoring in the AutoRecommenderScoring function
 This function returns the winning model that you pass onto AutoRecommenderScoring
 }
 \examples{
-\donttest{
-WinningModel <- AutoRecommender(RatingsMatrix,
-                                Partition = "Split",
-                                KFolds = 1,
-                                Ratio = 0.75,
-                                Given = 1,
-                                RatingType = "TopN",
-                                RatingsKeep = 20,
-                                SkipModels = "AssociationRules",
-                                ModelMetric = "TPR")
+\dontrun{
+WinningModel <- AutoRecommender(
+  RatingsMatrix,
+  Partition = "Split",
+  KFolds = 1,
+  Ratio = 0.75,
+  Given = 1,
+  RatingType = "TopN",
+  RatingsKeep = 20,
+  SkipModels = "AssociationRules",
+  ModelMetric = "TPR")
 }
 }
 \seealso{

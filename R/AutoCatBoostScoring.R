@@ -1,4 +1,4 @@
-#' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
+#' AutoCatBoostScoring
 #'
 #' AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring.
 #'
@@ -26,28 +26,29 @@
 #' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
 #' @param RemoveModel Set to TRUE if you want the model removed immediately after scoring
 #' @examples
-#' \donttest{
-#' Preds <- AutoCatBoostScoring(TargetType = "regression",
-#'                              ScoringData = data,
-#'                              FeatureColumnNames = 2:12,
-#'                              IDcols = NULL,
-#'                              ModelObject = NULL,
-#'                              ModelPath = normalizePath("./"),
-#'                              ModelID = "ModelTest",
-#'                              ReturnFeatures = TRUE,
-#'                              MultiClassTargetLevels = NULL,
-#'                              TransformNumeric = FALSE,
-#'                              BackTransNumeric = FALSE,
-#'                              TargetColumnName = NULL,
-#'                              TransformationObject = NULL,
-#'                              TransID = NULL,
-#'                              TransPath = NULL,
-#'                              MDP_Impute = TRUE,
-#'                              MDP_CharToFactor = TRUE,
-#'                              MDP_RemoveDates = TRUE,
-#'                              MDP_MissFactor = "0",
-#'                              MDP_MissNum = -1,
-#'                              RemoveModel = FALSE)
+#' \dontrun{
+#' Preds <- AutoCatBoostScoring(
+#'   TargetType = "regression",
+#'   ScoringData = data,
+#'   FeatureColumnNames = 2:12,
+#'   IDcols = NULL,
+#'   ModelObject = NULL,
+#'   ModelPath = normalizePath("./"),
+#'   ModelID = "ModelTest",
+#'   ReturnFeatures = TRUE,
+#'   MultiClassTargetLevels = NULL,
+#'   TransformNumeric = FALSE,
+#'   BackTransNumeric = FALSE,
+#'   TargetColumnName = NULL,
+#'   TransformationObject = NULL,
+#'   TransID = NULL,
+#'   TransPath = NULL,
+#'   MDP_Impute = TRUE,
+#'   MDP_CharToFactor = TRUE,
+#'   MDP_RemoveDates = TRUE,
+#'   MDP_MissFactor = "0",
+#'   MDP_MissNum = -1,
+#'   RemoveModel = FALSE)
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
@@ -74,10 +75,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 RemoveModel = FALSE) {
   # Load catboost----
   loadNamespace(package = "catboost")
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Check arguments----
   if(is.null(ScoringData)) return("ScoringData cannot be NULL")
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
@@ -86,10 +87,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
   if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
   if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
-  
+
   # Pull in ColNames----
   if(is.null(FeatureColumnNames)) FeatureColumnNames <- data.table::fread(file = file.path(normalizePath(ModelID), "_ColNames.csv"))
-  
+
   # Pull In Transformation Object----
   if(is.null(TransformationObject)) {
     if(TransformNumeric | BackTransNumeric) {
@@ -97,7 +98,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       TransformationObject <- data.table::fread(file.path(normalizePath(TransPath), paste0(TransID, "_transformation.csv")))
     }
   }
-  
+
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
     data = ScoringData,
@@ -106,16 +107,16 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     RemoveDates = MDP_RemoveDates,
     MissFactor = MDP_MissFactor,
     MissNum = MDP_MissNum)
-  
+
   # Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
-  
+
   # Convert CatFeatures to 1-indexed----
   if(!is.null(CatFeatures)) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
-  
+
   # IDcols conversion----
   if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
-  
+
   # Apply Transform Numeric Variables----
   if(TransformNumeric) {
     tempTrans <- data.table::copy(TransformationObject)
@@ -127,17 +128,17 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       TransID = TransID,
       Path = TransPath)
   }
-  
+
   # Convert FeatureColumnNames to Character Names----
   if(data.table::is.data.table(FeatureColumnNames)) {
     FeatureColumnNames <- FeatureColumnNames[[1L]]
   } else if(is.numeric(FeatureColumnNames)) {
     FeatureColumnNames <- names(ScoringData)[FeatureColumnNames]
   }
-  
+
   # Remove Target from FeatureColumnNames----
   if(TransformNumeric | BackTransNumeric) if(!is.null(TargetColumnName)) if(TargetColumnName %chin% FeatureColumnNames) FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
-  
+
   # Subset Columns Needed----
   keep1 <- c(FeatureColumnNames)
   if(!is.null(IDcols)) keep <- c(IDcols, FeatureColumnNames) else keep <- c(FeatureColumnNames)
@@ -149,14 +150,14 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
   }
-  
+
   # Initialize Catboost Data Conversion----
   if(!is.null(CatFeatures)) {
     ScoringPool <- catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
   } else {
     ScoringPool <- catboost::catboost.load_pool(ScoringData)
   }
-  
+
   # Load model----
   if(!is.null(ModelObject)) {
     model <- ModelObject
@@ -164,7 +165,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     model <- tryCatch({catboost::catboost.load_model(file.path(normalizePath(ModelPath), ModelID))}, error = function(x) NULL)
     if(is.null(model)) return("Model not found in ModelPath")
   }
-  
+
   # Score model----
   if(tolower(TargetType) == "regression") {
     predict <- data.table::as.data.table(
@@ -191,10 +192,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         pool = ScoringPool,
         prediction_type = "Probability")))
   }
-  
+
   # Remove Model----
   if(RemoveModel) rm(model)
-  
+
   # Score model-----
   if(tolower(TargetType) == "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
@@ -216,20 +217,20 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       all = FALSE)
     predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
-  
+
   # Rename predicted value----
   if(tolower(TargetType) %chin% c("regression")) data.table::setnames(predict, "V1", "Predictions")
   if(tolower(TargetType) == "classification") data.table::setnames(predict, "V1", "p1")
-  
+
   # Merge features back on----
   if(ReturnFeatures) predict <- cbind(predict, ScoringMerge)
-  
+
   # Back Transform Numeric Variables----
   if(BackTransNumeric) {
     grid_trans_results <- data.table::copy(TransformationObject)
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
-    
+
     # Run Back-Transform----
     predict <- AutoTransformationScore(
       ScoringData = predict,
@@ -238,10 +239,10 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       TransID = NULL,
       Path = NULL)
   }
-  
+
   # Garbage Collection----
   gc()
-  
+
   # Return data----
   return(predict)
 }

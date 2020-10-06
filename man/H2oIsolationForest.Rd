@@ -39,7 +39,7 @@ A data.table
 H2oIsolationForest for anomaly detection
 }
 \examples{
-\donttest{
+\dontrun{
 
 # Create simulated data
 

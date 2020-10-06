@@ -27,7 +27,7 @@ AutoH2OTextPrepScoring(
 This function returns prepared tokenized data for H2O Word2VecModeler scoring
 }
 \examples{
-\donttest{
+\dontrun{
 data <- AutoH2OTextPrepScoring(data = x,
                                string = "text_column",
                                MaxMem = "28G",

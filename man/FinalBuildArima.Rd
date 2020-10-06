@@ -36,6 +36,7 @@ Time series data sets to pass onto auto modeling functions
 FinalBuildArima to generate forecasts and ensemble data
 }
 \examples{
+\dontrun{
 FinalBuildArima(
   Output = NULL,
   TimeSeriesPrepareOutput = NULL,
@@ -43,6 +44,7 @@ FinalBuildArima(
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
   MaxRunMinutes = 5)
+}
 }
 \seealso{
 Other Time Series: 

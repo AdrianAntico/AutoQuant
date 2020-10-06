@@ -5,8 +5,8 @@
 #' @family Data Wrangling
 #' @author Adrian Antico
 #' @param data data.table
-#' @param Target Target variable
-#' @param Date Date variable
+#' @param TargetColumnName Target variable
+#' @param DateColumnName Date variable
 #' @param GroupVars Group variables
 #' @export
 ColumnSubsetDataTable <- function(data,
@@ -667,7 +667,6 @@ SQL_Server_DBConnection <- function(DataBaseName = "",
 #' @family Data Wrangling
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param Query The SQL statement you want to run
-#' @param ASIS Auto column typing
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #' @export
 SQL_Query_Push <- function(DBConnection,
@@ -691,6 +690,7 @@ SQL_Query_Push <- function(DBConnection,
 #' @param Query The SQL statement you want to run
 #' @param ASIS Auto column typing
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#' @param RowsPerBatch Rows default is 1024
 #' @export
 SQL_Query <- function(DBConnection,
                       Query,
@@ -763,10 +763,12 @@ SQL_DropTable <- function(DBConnection,
 #' @param DataToPush data to be sent to warehouse
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
-#' @param rownames c("Segment","Date")
+#' @param RowNames c("Segment","Date")
+#' @param ColNames Column names in first row
 #' @param AppendData TRUE or FALSE
 #' @param AddPK Add a PK column to table
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#' @param Safer TRUE
 #' @export
 SQL_SaveTable <- function(DataToPush,
                           DBConnection,

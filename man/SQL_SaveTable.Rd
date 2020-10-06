@@ -23,13 +23,17 @@ SQL_SaveTable(
 
 \item{SQLTableName}{The SQL statement you want to run}
 
+\item{RowNames}{c("Segment","Date")}
+
+\item{ColNames}{Column names in first row}
+
 \item{CloseChannel}{TRUE to close when done, FALSE to leave the channel open}
 
 \item{AppendData}{TRUE or FALSE}
 
 \item{AddPK}{Add a PK column to table}
 
-\item{rownames}{c("Segment","Date")}
+\item{Safer}{TRUE}
 }
 \description{
 SQL_SaveTable get data from a database

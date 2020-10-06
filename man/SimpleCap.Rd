@@ -16,8 +16,10 @@ An object to pass along to ggplot objects following the "+" sign
 SimpleCap function is for capitalizing the first letter of words (need I say more?)
 }
 \examples{
+\dontrun{
 x <- "adrian"
 x <- SimpleCap(x)
+}
 }
 \seealso{
 Other Misc: 

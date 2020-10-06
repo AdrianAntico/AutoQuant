@@ -1,7 +1,7 @@
-#' AutoHurdleScoring() 
-#' 
+#' AutoHurdleScoring()
+#'
 #' AutoHurdleScoring() can score AutoCatBoostHurdleModel() and AutoXGBoostHurdleModel()
-#'  
+#'
 #' @author Adrian Antico
 #' @family Automated Model Scoring
 #' @param TestData scoring data.table
@@ -11,11 +11,11 @@
 #' @param ArgList Output from the hurdle model
 #' @param ModelList Output from the hurdle model
 #' @return A data.table with the final predicted value, the intermediate model predictions, and your source data
-#' @examples 
-#' \donttest{
-#' 
+#' @examples
+#' \dontrun{
+#'
 #' # XGBoost----
-#' 
+#'
 #' # Define file path
 #' Path <- "C:/Users/aantico/Documents/Package/GUI_Package"
 #'
@@ -31,7 +31,8 @@
 #'   MultiClass = FALSE)
 #'
 #' # Define features
-#' Features <- names(data)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","DateTime")]
+#' Features <- names(data)[!names(data) %chin%
+#'   c("Adrian","IDcol_1","IDcol_2","IDcol_3","DateTime")]
 #'
 #' # Build hurdle model
 #' Output <- RemixAutoML::AutoXGBoostHurdleModel(
@@ -97,26 +98,26 @@ AutoHurdleScoring <- function(TestData = NULL,
                               ModelClass = "catboost",
                               ArgList = NULL,
                               ModelList = NULL) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Load ArgList and ModelList if NULL----
   if(is.null(Path) & (is.null(ArgList) | is.null(ModelList))) return("Supply a value to the Path argument to where the ArgList and ModelList are located")
-  
+
   # Load ArgList and ModelList if not supplied----
   if(is.null(ArgList)) {
     load(file.path(normalizePath(Path), paste0(ModelID, "_HurdleArgList.Rdata")))
     ArgList <- ArgsList
     rm(ArgsList)
   }
-  
+
   # Define Buckets----
   Buckets <- ArgList$Buckets
-  
+
   # Score Classification Model----
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
-  
+
   # Store classifier model----
   if(tolower(ModelClass) == "catboost") if(!is.null(ModelList)) ClassModel <- ModelList[[1L]] else if(!is.null(ArgList$ModelID)) ClassModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths), ArgList$ModelID)) else return("Need to supply a ModelList")
   if(tolower(ModelClass) == "xgboost") {
@@ -128,23 +129,23 @@ AutoHurdleScoring <- function(TestData = NULL,
     } else {
       return("Need to supply a ModelList")
     }
-  } 
-  
+  }
+
   # Store FeatureNames----
   FeatureNames <- ArgList$FeatureColNames
-  
+
   # Factor levels list----
   if(!is.null(ArgList$FactorLevelsList)) FactorLevelsList <- ArgList$FactorLevelsList else FactorLevelsList <- NULL
-  
+
   # Store IDcols----
   IDcolsReorder <- ArgList$IDcols
   IDcols <- ArgList$IDcols
   IDcols <- c(IDcols, setdiff(names(TestData), c(IDcols, ArgList$FeatureColNames)))
-  
+
   # Store colnames----
   ColumnNames <- names(TestData)
-  
-  # Classification Model Scoring---- 
+
+  # Classification Model Scoring----
   if(tolower(ModelClass) == "catboost") {
     TestData <- AutoCatBoostScoring(
       TargetType = TargetType,
@@ -216,10 +217,10 @@ AutoHurdleScoring <- function(TestData = NULL,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)
   }
-  
+
   # Remove Model Object----
   rm(ClassModel)
-  
+
   # Change name for classification----
   if(tolower(TargetType) == "classification" & tolower(ModelClass) == "catboost") {
     data.table::setnames(TestData, "p1", "Predictions_C1")
@@ -230,30 +231,30 @@ AutoHurdleScoring <- function(TestData = NULL,
     TestData[, Predictions_C0 := 1 - Predictions_C1]
     data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
   }
-  
+
   # Change Name of Predicted MultiClass Column----
   if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
-  
+
   # Begin regression model building----
   counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
   Degenerate <- 0L
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
-    
+
     # Update IDcols----
     IDcolsModified <- c(IDcols, setdiff(names(TestData), ColumnNames))
-    
+
     # Check for constant value bucket----
     if(!any(bucket %in% c(ArgList$constant))) {
-      
+
       # Increment----
       counter <- counter - 1L
-      
+
       # Score TestData----
       if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ArgList$ModelID,"_",bucket,"+") else ModelIDD <- paste0(ArgList$ModelID, "_", bucket)
-      
+
       # Manage TransformationResults
       if(is.null(ArgList$TransformNumericColumns)) TransformationResults <- NULL else TransformationResults <- ArgList$TransformNumericColumns
-      
+
       # Store Transformations----
       if(!is.null(ArgList$TransformNumericColumns)) {
         TransformationResults <- ArgList[[paste0("TransformationResults_", ModelIDD)]]
@@ -262,24 +263,24 @@ AutoHurdleScoring <- function(TestData = NULL,
         TransformationResults <- NULL
         Transform <- FALSE
       }
-      
+
       # Load Model----
       if(!is.null(ModelList)) {
         RegressionModel <- ModelList[[ModelIDD]]
       } else {
-        
+
         # Catboost
         if(tolower(ModelClass) == "catboost") {
           RegressionModel <- catboost::catboost.load_model(model_path = file.path(normalizePath(ArgList$Paths), ModelIDD))
-        } 
-        
+        }
+
         # XGBoost
         if(tolower(ModelClass) == "xgboost") {
           load(file.path(normalizePath(ArgList$Paths), ModelIDD))
           RegressionModel <- model
         }
       }
-      
+
       # Catboost Model Scroring----
       if(tolower(ModelClass) == "catboost") {
         TestData <- AutoCatBoostScoring(
@@ -303,7 +304,7 @@ AutoHurdleScoring <- function(TestData = NULL,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
       }
-      
+
       # XGBoost Model Scoring----
       if(tolower(ModelClass) == "xgboost") {
         TestData <- AutoXGBoostScoring(
@@ -329,7 +330,7 @@ AutoHurdleScoring <- function(TestData = NULL,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
       }
-      
+
       # H2O DRF Model Scroring----
       if(tolower(ModelClass) == "h2odrf") {
         TestData <- AutoH2OMLScoring(
@@ -354,16 +355,16 @@ AutoHurdleScoring <- function(TestData = NULL,
           MDP_MissFactor = "0",
           MDP_MissNum = -1)
       }
-      
+
       # Remove Model----
       rm(RegressionModel)
-      
+
       # Change prediction name to prevent duplicates----
       if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
       data.table::setnames(TestData, "Predictions", Val)
-      
+
     } else {
-      
+
       # Use single value for predictions in the case of zero variance----
       if(bucket == max(seq_len(length(Buckets) + 1L))) {
         data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
@@ -374,7 +375,7 @@ AutoHurdleScoring <- function(TestData = NULL,
       }
     }
   }
-  
+
   # Rearrange Column order----
   if(counter > 2L) {
     if(length(IDcols) != 0L) {
@@ -404,7 +405,7 @@ AutoHurdleScoring <- function(TestData = NULL,
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     }
   }
-  
+
   # Final Combination of Predictions----
   if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
     for(i in seq_len(length(Buckets) + 1L)) {
@@ -417,7 +418,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   } else {
     TestData[, FinalPredictedValue := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
   }
-  
+
   # Final column rearrange----
   if(ArgList$TargetColumnName %chin% names(TestData)) {
     while(which(names(TestData) == ArgList$TargetColumnName) > 1L) data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))

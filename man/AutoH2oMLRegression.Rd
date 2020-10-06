@@ -85,8 +85,15 @@ AutoH2oMLRegression is an automated H2O modeling framework with grid-tuning and 
 }
 \examples{
 \donttest{
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oMLRegression(
@@ -97,28 +104,42 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     H2OShutdown = TRUE,
     IfSaveModel = "mojo",
 
-    # Model evaluation: 
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated. 
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+    # Model evaluation:
+    #   'eval_metric' is the measure catboost uses when
+    #      evaluting on holdout data during its bandit style
+    #      process
+    #   'NumOfParDepPlots' Number of partial dependence
+    #      calibration plots generated.
+    #     A value of 3 will return plots for the top 3 variables
+    #      based on variable importance
+    #     Won't be returned if GrowPolicy is either
+    #      "Depthwise" or "Lossguide" is used
+    #     Can run the RemixAutoML::ParDepCalPlots() with
+    #       the outputted ValidationData
     eval_metric = "RMSE",
     NumOfParDepPlots = 3,
 
-    # Metadata arguments: 
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
+    # Metadata arguments:
+    #   'ModelID' is used to create part of the file names
+    #     generated when saving to file'
+    #   'model_path' is where the minimal model objects
+    #     for scoring will be stored
     #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
+    #   'metadata_path' is where model evaluation and model
+    #      interpretation files are saved
     #      objects saved to model_path if metadata_path is null
-    #      Saved objects include: 
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+    #      Saved objects include:
+    #         'ModelID_ValidationData.csv' is the supplied or
+    #            generated TestData with predicted values
+    #         'ModelID_VariableImportance.csv' is the variable
+    #            importance.
+    #            This won't be saved to file if GrowPolicy is either
+    #            "Depthwise" or "Lossguide" was used
     #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+    #            Results of all model builds including parameter
+    #            settings, bandit probs, and grid IDs
+    #         'ModelID_EvaluationMetrics.csv' which contains MSE,
+    #          MAE, MAPE, R2
     model_path = NULL,
     metadata_path = NULL,
     ModelID = "FirstModel",
@@ -126,20 +147,27 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     SaveModelObjects = FALSE,
 
     # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
+    #   'TrainOnFull' is to train a model with 100
+    #      percent of your data.
     #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+    #   If ValidationData and TestData are NULL and TrainOnFull
+    #      is FALSE then data will be split 70 20 10
+    #   'PrimaryDateColumn' is a date column in data that is
+    #      meaningful when sorted.
     #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+    #   'IDcols' are columns in your data that you don't use for
+    #      modeling but get returned with ValidationData
+    #   'TransformNumericColumns' is for transforming your target
+    #     variable. Just supply the name of it
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+    FeatureColNames = names(data)[!names(data) \%chin\%
+      c("IDcol_1", "IDcol_2","Adrian")],
     TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+    Methods = c("BoxCox", "Asinh", "Asin", "Log",
+      "LogPlus1", "Logit", "YeoJohnson"),
 
     # Model args
     ExcludeAlgos = NULL,

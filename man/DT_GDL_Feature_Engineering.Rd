@@ -63,31 +63,35 @@ data.table of original data plus created lags, rolling stats, and time between e
 Builds autoregressive and moving average from target columns and distributed lags and distributed moving average for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups.
 }
 \examples{
+\dontrun{
 N = 25116
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-                               Target = stats::filter(rnorm(N,
-                                                            mean = 50,
-                                                            sd = 20),
-                                                      filter=rep(1,10),
-                                                      circular=TRUE))
-data[, temp := seq(1:N)][, DateTime := DateTime - temp][, temp := NULL]
+data <- data.table::data.table(
+  DateTime = as.Date(Sys.time()),
+  Target = stats::filter(rnorm(N, mean = 50, sd = 20),
+  filter=rep(1,10),
+  circular=TRUE))
+data[, temp := seq(1:N)][, DateTime := DateTime - temp][
+  , temp := NULL]
 data <- data[order(DateTime)]
-data <- DT_GDL_Feature_Engineering(data,
-                                   lags           = c(seq(1,5,1)),
-                                   periods        = c(3,5,10,15,20,25),
-                                   SDperiods       = c(seq(5, 95, 5)),
-                                   Skewperiods     = c(seq(5, 95, 5)),
-                                   Kurtperiods     = c(seq(5, 95, 5)),
-                                   Quantileperiods = c(seq(5, 95, 5)),
-                                   statsFUNs      = c("mean","sd","skew","kurt","q05","q95"),
-                                   targets        = c("Target"),
-                                   groupingVars   = NULL,
-                                   sortDateName   = "DateTime",
-                                   timeDiffTarget = c("Time_Gap"),
-                                   timeAgg        = c("days"),
-                                   WindowingLag   = 1,
-                                   Type           = "Lag",
-                                   SimpleImpute   = TRUE)
+data <- DT_GDL_Feature_Engineering(
+  data,
+  lags           = c(seq(1,5,1)),
+  periods        = c(3,5,10,15,20,25),
+  SDperiods       = c(seq(5, 95, 5)),
+  Skewperiods     = c(seq(5, 95, 5)),
+  Kurtperiods     = c(seq(5, 95, 5)),
+  Quantileperiods = c(seq(5, 95, 5)),
+  statsFUNs      = c("mean",
+    "sd","skew","kurt","q05","q95"),
+  targets        = c("Target"),
+  groupingVars   = NULL,
+  sortDateName   = "DateTime",
+  timeDiffTarget = c("Time_Gap"),
+  timeAgg        = c("days"),
+  WindowingLag   = 1,
+  Type           = "Lag",
+  SimpleImpute   = TRUE)
+}
 }
 \seealso{
 Other Feature Engineering: 

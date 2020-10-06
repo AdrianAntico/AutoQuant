@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoCatBoostScoring.R
 \name{AutoCatBoostScoring}
 \alias{AutoCatBoostScoring}
-\title{AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.}
+\title{AutoCatBoostScoring}
 \usage{
 AutoCatBoostScoring(
   TargetType = NULL,
@@ -78,28 +78,29 @@ A data.table of predicted values with the option to return model features as wel
 AutoCatBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring.
 }
 \examples{
-\donttest{
-Preds <- AutoCatBoostScoring(TargetType = "regression",
-                             ScoringData = data,
-                             FeatureColumnNames = 2:12,
-                             IDcols = NULL,
-                             ModelObject = NULL,
-                             ModelPath = normalizePath("./"),
-                             ModelID = "ModelTest",
-                             ReturnFeatures = TRUE,
-                             MultiClassTargetLevels = NULL,
-                             TransformNumeric = FALSE,
-                             BackTransNumeric = FALSE,
-                             TargetColumnName = NULL,
-                             TransformationObject = NULL,
-                             TransID = NULL,
-                             TransPath = NULL,
-                             MDP_Impute = TRUE,
-                             MDP_CharToFactor = TRUE,
-                             MDP_RemoveDates = TRUE,
-                             MDP_MissFactor = "0",
-                             MDP_MissNum = -1,
-                             RemoveModel = FALSE)
+\dontrun{
+Preds <- AutoCatBoostScoring(
+  TargetType = "regression",
+  ScoringData = data,
+  FeatureColumnNames = 2:12,
+  IDcols = NULL,
+  ModelObject = NULL,
+  ModelPath = normalizePath("./"),
+  ModelID = "ModelTest",
+  ReturnFeatures = TRUE,
+  MultiClassTargetLevels = NULL,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1,
+  RemoveModel = FALSE)
 }
 }
 \seealso{

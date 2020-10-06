@@ -32,6 +32,10 @@ RL_ML_Update(
 
 \item{NEWGrid}{Previous grid passed in}
 
+\item{NewPerformance}{Internal}
+
+\item{BestPerformance}{Internal}
+
 \item{TrialVector}{Numeric vector with the total trials for each arm}
 
 \item{SuccessVector}{Numeric vector with the total successes for each arm}
@@ -56,11 +60,14 @@ RL_ML_Update(
 RL_ML_Update updates the bandit probabilities for selecting different grids
 }
 \examples{
+\dontrun{
 RL_Update_Output <- RL_ML_Update(
   ExperimentGrid = ExperimentGrid,
   ModelRun = run,
   ModelType = "classification",
   NEWGrid = NewGrid,
+  NewPerformance = NewPerformance,
+  BestPerformance = BestPerformance,
   TrialVector = Trials,
   SuccessVector = Successes,
   GridIDS = GridIDs,
@@ -75,6 +82,7 @@ BanditProbs <- RL_Update_Output[["BanditProbs"]]
 Trials <- RL_Update_Output[["Trials"]]
 Successes <- RL_Update_Output[["Successes"]]
 NewGrid <- RL_Update_Output[["NewGrid"]]
+}
 }
 \seealso{
 Other Reinforcement Learning: 

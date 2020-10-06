@@ -9,16 +9,19 @@
 #' @param x X is the independent variable name in quotes
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
 #' @examples
-#'
+#' \dontrun{
 #' # Create Growth Data
-#' data <- data.table::data.table(Target = seq(1, 500, 1), Variable = rep(1, 500))
+#' data <- data.table::data.table(Target = seq(1, 500, 1),
+#'   Variable = rep(1, 500))
 #' for (i in as.integer(1:500)) {
 #'   if (i == 1) {
 #'     var <- data[i, "Target"][[1]]
-#'     data.table::set(data, i = i, j = 2L, value = var * (1 + runif(1) / 100))
+#'     data.table::set(data, i = i, j = 2L,
+#'       value = var * (1 + runif(1) / 100))
 #'   } else {
 #'     var <- data[i - 1, "Variable"][[1]]
-#'     data.table::set(data, i = i, j = 2L, value = var * (1 + runif(1) / 100))
+#'     data.table::set(data, i = i, j = 2L,
+#'       value = var * (1 + runif(1) / 100))
 #'   }
 #' }
 #'
@@ -44,16 +47,22 @@
 #'
 #' # Plot output
 #' ggplot2::ggplot(data2, ggplot2::aes(x = Variable)) +
-#'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]], color = "Target")) +
-#'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]], color = "Predicted")) +
+#'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.x"]],
+#'                                   color = "Target")) +
+#'   ggplot2::geom_line(ggplot2::aes(y = data2[["Target.y"]],
+#'                                   color = "Predicted")) +
 #'  RemixAutoML::ChartTheme(Size = 12) +
-#'   ggplot2::ggtitle(paste0("Growth Models AutoNLS: ", data11$ModelName)) +
+#'   ggplot2::ggtitle(paste0("Growth Models AutoNLS: ",
+#'     data11$ModelName)) +
 #'   ggplot2::ylab("Target Variable") +
 #'   ggplot2::xlab("Independent Variable") +
-#'   ggplot2::scale_colour_manual("Values", breaks = c("Target", "Predicted"), values = c("red", "blue"))
+#'   ggplot2::scale_colour_manual("Values",
+#'     breaks = c("Target", "Predicted"),
+#'     values = c("red", "blue"))
 #'
 #' summary(data11$ModelObject)
 #' data11$EvaluationMetrics
+#' }
 #' @return A list containing "PredictionData" which is a data table with your original column replaced by the nls model predictions; "ModelName" the model name; "ModelObject" The winning model to later use; "EvaluationMetrics" Model metrics for models with ability to build.
 #' @export
 AutoNLS <- function(data,
@@ -81,7 +90,7 @@ AutoNLS <- function(data,
         baseline <- monreg::monreg(z, zz, hr = 0.5, hd = 0.5)
         preds <- baseline$estimation
         preds[preds < 0] <- 0
-        val0 <- base::mean(abs(zz - preds))
+        val0 <- mean(abs(zz - preds))
         data.table::set(nls_collection, 1L, 2L, value = val0)
       }, error = function(x) return("skip"))
     } else {
@@ -89,7 +98,7 @@ AutoNLS <- function(data,
         baseline <- stats::lm(as.formula(Target ~ poly(Variable, 5)), data = DATA)
         preds <- baseline$fitted.values
         preds[preds < 0] <- 0
-        val0 <- base::mean(abs(zz - preds))
+        val0 <- mean(abs(zz - preds))
         data.table::set(nls_collection, 1L, 2L, value = val0)
       }, error = function(x) return("skip"))
     }
@@ -100,16 +109,16 @@ AutoNLS <- function(data,
     model1 <- stats::nls(Target ~ SSasymp(Variable, Asym, R0, lrc), data = DATA)
     preds1 <- stats::fitted(model1, DATA)
     preds1[preds1 < 0] <- 0
-    val <- base::mean(abs(zz - preds1))
+    val <- mean(abs(zz - preds1))
     data.table::set(nls_collection, 2L, 2L, value = val)
   }, error = function(x) return("skip"))
 
-  # Asymp offset model
-  tryCatch({ ----
+  # Asymp offset model ----
+  tryCatch({
     model2 <- stats::nls(Target ~ SSasympOff(Variable, Asym, lrc, c0), data = DATA)
     preds2 <- stats::fitted(model2, DATA)
     preds2[preds2 < 0] <- 0
-    val2 <- base::mean(abs(zz - preds2))
+    val2 <- mean(abs(zz - preds2))
     data.table::set(nls_collection, 3L, 2L, value = val2)
   }, error = function(x) return("skip"))
 
@@ -118,7 +127,7 @@ AutoNLS <- function(data,
     model3 <- stats::nls(Target ~ SSasympOrig(Variable, Asym, lrc), data = DATA)
     preds3 <- stats::fitted(model3, DATA)
     preds3[preds3 < 0] <- 0
-    val3 <- base::mean(abs(zz - preds3))
+    val3 <- mean(abs(zz - preds3))
     data.table::set(nls_collection, 4L, 2L, value = val3)
   }, error = function(x) return("skip"))
 
@@ -127,7 +136,7 @@ AutoNLS <- function(data,
     model4 <- stats::nls(Target ~ SSbiexp(Variable, A1, lrc1, A2, lrc2), data = DATA)
     preds4 <- stats::fitted(model4, DATA)
     preds4[preds4 < 0] <- 0
-    val4 <- base::mean(abs(zz - preds4))
+    val4 <- mean(abs(zz - preds4))
     data.table::set(nls_collection, 5L, 2L, value = val4)
   }, error = function(x) return("skip"))
 
@@ -136,7 +145,7 @@ AutoNLS <- function(data,
     model5 <- stats::nls(Target ~ SSfpl(Variable, A, B, xmid, scal), data = DATA)
     preds5 <- stats::fitted(model5, DATA)
     preds5[preds5 < 0] <- 0
-    val5 <- base::mean(abs(zz - preds5))
+    val5 <- mean(abs(zz - preds5))
     data.table::set(nls_collection, 6L, 2L, value = val5)
   }, error = function(x) return("skip"))
 
@@ -145,7 +154,7 @@ AutoNLS <- function(data,
     model6 <- stats::nls(Target ~ SSgompertz(Variable, Asym, b2, b3), data = DATA)
     preds6 <- stats::fitted(model6, DATA)
     preds6[preds6 < 0] <- 0
-    val6 <- base::mean(abs(zz - preds6))
+    val6 <- mean(abs(zz - preds6))
     data.table::set(nls_collection, 7L, 2L, value = val6)
   }, error = function(x) return("skip"))
 
@@ -154,7 +163,7 @@ AutoNLS <- function(data,
     model7 <- stats::nls(Target ~ SSlogis(Variable, Asym, xmid, scal), data = DATA)
     preds7 <- stats::fitted(model7, DATA)
     preds7[preds7 < 0] <- 0
-    val7 <- base::mean(abs(zz - preds7))
+    val7 <- mean(abs(zz - preds7))
     data.table::set(nls_collection, 8L, 2L, value = val7)
   }, error = function(x) return("skip"))
 
@@ -163,7 +172,7 @@ AutoNLS <- function(data,
     model8 <- stats::nls(Target ~ SSmicmen(Variable, Vm, K), data = DATA)
     preds8 <- stats::fitted(model8, DATA)
     preds8[preds8 < 0] <- 0
-    val8 <- base::mean(abs(zz - preds8))
+    val8 <- mean(abs(zz - preds8))
     data.table::set(nls_collection, 9L, 2L, value = val8)
   }, error = function(x) return("skip"))
 
@@ -172,7 +181,7 @@ AutoNLS <- function(data,
     model9 <- stats::nls(Target ~ SSweibull(Variable, Asym, Drop, lrc, pwr), data = DATA)
     preds9 <- stats::fitted(model9, DATA)
     preds9[preds9 < 0] <- 0
-    val9 <- base::mean(abs(zz - preds9))
+    val9 <- mean(abs(zz - preds9))
     data.table::set(nls_collection, 10L, 2L, value = val9)
   }, error = function(x) return("skip"))
 

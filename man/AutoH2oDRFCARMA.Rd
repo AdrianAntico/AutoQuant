@@ -15,6 +15,7 @@ AutoH2oDRFCARMA(
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   XREGS = NULL,
   Lags = c(1:5),
   MA_Periods = c(1:5),
@@ -64,6 +65,8 @@ AutoH2oDRFCARMA(
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
+
+\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
 
 \item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
@@ -118,10 +121,6 @@ AutoH2oDRFCARMA(
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
 \item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
-
-\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
-
-\item{GridEvalMetric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
@@ -130,11 +129,13 @@ Returns a data.table of original series and forecasts, the catboost model object
 AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
 }
 \examples{
-\donttest{
+\dontrun{
 
  # Pull in Walmart Data Set
- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
- data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+ data <- data.table::fread(
+   "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+ data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+   , Counts := NULL]
  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 
  # Build forecast
@@ -167,7 +168,8 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
 
   # Target Transformations
   TargetTransformation = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+    "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
 
   # Features
@@ -188,7 +190,9 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
   NTrees = 1000L,
   DebugMode = FALSE)
 
-UpdateMetrics <- print(H2oDFRResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+UpdateMetrics <-
+  print(H2oDFRResults$ModelInformation$EvaluationMetrics[
+    Metric == "MSE", MetricValue := sqrt(MetricValue)])
 print(UpdateMetrics)
 H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]

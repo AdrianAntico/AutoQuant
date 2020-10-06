@@ -78,9 +78,16 @@ Saves to file and returned in list: VariableImportance.csv, Model, ValidationDat
 AutoH2oGBMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
 }
 \examples{
-\donttest{
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+\dontrun{
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
 
 TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 
@@ -89,46 +96,28 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
     NThreads = max(1, parallel::detectCores()-2),
     H2OShutdown = FALSE,
     IfSaveModel = "mojo",
-    
-    # Model evaluation: 
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated. 
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData     
+
+    # Model evaluation:
     eval_metric = "auc",
     NumOfParDepPlots = 3L,
-    
-    # Metadata arguments: 
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include: 
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix metrics for all thresholds
+
+    # Metadata arguments:
     ModelID = "FirstModel",
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"), "MetaData"),
+    metadata_path = file.path(normalizePath("./"),
+      "MetaData"),
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
-    
+
     # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
     data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Target",
-    FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
-    
+    FeatureColNames = names(data)[!names(data) \%chin\%
+      c("IDcol_1", "IDcol_2","Adrian")],
+
     # Model args
     Trees = 50,
     GridTune = FALSE,

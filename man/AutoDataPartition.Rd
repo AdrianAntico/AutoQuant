@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoDataPartition.R
 \name{AutoDataPartition}
 \alias{AutoDataPartition}
-\title{The AutoDataPartition function}
+\title{AutoDataPartition}
 \usage{
 AutoDataPartition(
   data,

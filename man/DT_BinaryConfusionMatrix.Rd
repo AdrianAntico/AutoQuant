@@ -24,7 +24,7 @@ DT_BinaryConfusionMatrix(
 DT_BinaryConfusionMatrix is for computing all metrics related to binary modeling outcomes
 }
 \examples{
-\donttest{
+\dontrun{
 AggMetricsByGroup <- DT_BinaryConfusionMatrix(
   data,
   GroupVariables = c("Store","Dept"),

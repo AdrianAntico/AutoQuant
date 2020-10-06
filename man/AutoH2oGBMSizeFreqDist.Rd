@@ -82,28 +82,29 @@ AutoH2oGBMSizeFreqDist for building size and frequency distributions via quantil
 }
 \examples{
 \donttest{
-AutoH2oGBMSizeFreqDist(CountData = NULL, 
-                       SizeData = NULL,
-                       CountQuantiles = seq(0.10,0.90,0.10), 
-                       SizeQuantiles = seq(0.10,0.90,0.10), 
-                       AutoTransform = TRUE, 
-                       DataPartitionRatios = c(0.75,0.20,0.05),
-                       StratifyColumnName = NULL,
-                       StratifyTargets = FALSE,
-                       NTrees = 1500,
-                       MaxMem = "28G",
-                       NThreads = max(1, parallel::detectCores()-2),
-                       EvalMetric = "Quantile",
-                       GridTune = FALSE,
-                       CountTargetColumnName = NULL,
-                       SizeTargetColumnName = NULL,
-                       CountFeatureColNames = NULL,
-                       SizeFeatureColNames = NULL,
-                       ModelIDs = c("CountModel","SizeModel"),
-                       MaxModelsGrid = 5,
-                       ModelPath = NULL,
-                       MetaDataPath = NULL,
-                       NumOfParDepPlots = 0)
+AutoH2oGBMSizeFreqDist(
+  CountData = NULL,
+  SizeData = NULL,
+  CountQuantiles = seq(0.10,0.90,0.10),
+  SizeQuantiles = seq(0.10,0.90,0.10),
+  AutoTransform = TRUE,
+  DataPartitionRatios = c(0.75,0.20,0.05),
+  StratifyColumnName = NULL,
+  StratifyTargets = FALSE,
+  NTrees = 1500,
+  MaxMem = "28G",
+  NThreads = max(1, parallel::detectCores()-2),
+  EvalMetric = "Quantile",
+  GridTune = FALSE,
+  CountTargetColumnName = NULL,
+  SizeTargetColumnName = NULL,
+  CountFeatureColNames = NULL,
+  SizeFeatureColNames = NULL,
+  ModelIDs = c("CountModel","SizeModel"),
+  MaxModelsGrid = 5,
+  ModelPath = NULL,
+  MetaDataPath = NULL,
+  NumOfParDepPlots = 0)
 }
 }
 \seealso{

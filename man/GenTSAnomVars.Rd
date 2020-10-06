@@ -39,27 +39,31 @@ The original data.table with the added columns merged in. When KeepAllCols is se
 GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them. The anomalies are separated into those that are extreme on the positive end versus those that are on the negative end.
 }
 \examples{
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-                            Target = stats::filter(rnorm(10000,
-                                                         mean = 50,
-                                                         sd = 20),
-                                                   filter=rep(1,10),
-                                                   circular=TRUE))
-data[, temp := seq(1:10000)][, DateTime := DateTime - temp][, temp := NULL]
+\dontrun{
+data <- data.table::data.table(
+  DateTime = as.Date(Sys.time()),
+  Target = stats::filter(
+    rnorm(10000, mean = 50, sd = 20),
+  filter=rep(1,10),
+  circular=TRUE))
+data[, temp := seq(1:10000)][, DateTime := DateTime - temp][
+  , temp := NULL]
 data <- data[order(DateTime)]
 x <- data.table::as.data.table(sde::GBM(N=10000)*1000)
 data[, predicted := x[-1,]]
 data[, Fact1 := sample(letters, size = 10000, replace = TRUE)]
 data[, Fact2 := sample(letters, size = 10000, replace = TRUE)]
 data[, Fact3 := sample(letters, size = 10000, replace = TRUE)]
-stuff <- GenTSAnomVars(data,
-                    ValueCol = "Target",
-                    GroupVars = c("Fact1","Fact2","Fact3"),
-                    DateVar = "DateTime",
-                    HighThreshold = 1.96,
-                    LowThreshold = -1.96,
-                    KeepAllCols = TRUE,
-                    IsDataScaled  = FALSE)
+stuff <- GenTSAnomVars(
+  data,
+  ValueCol = "Target",
+  GroupVars = c("Fact1","Fact2","Fact3"),
+  DateVar = "DateTime",
+  HighThreshold = 1.96,
+  LowThreshold = -1.96,
+  KeepAllCols = TRUE,
+  IsDataScaled  = FALSE)
+}
 }
 \seealso{
 Other Unsupervised Learning: 

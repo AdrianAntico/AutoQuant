@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoFreqSizeDistScoringFunctions.R
 \name{IntermittentDemandScoringDataGenerator}
 \alias{IntermittentDemandScoringDataGenerator}
-\title{IntermittentDemandScoringDataGenerator creates the scoring data for forecasting}
+\title{IntermittentDemandScoringDataGenerator}
 \usage{
 IntermittentDemandScoringDataGenerator(
   data = NULL,
@@ -58,7 +58,7 @@ Returns the most recent records for every level of your grouping variables with 
 IntermittentDemandScoringDataGenerator creates the scoring data for forecasting. It will recreate the same features used for modeling, take the most recent record, and then duplicate those records for each forecast period specifed.
 }
 \examples{
-\donttest{
+\dontrun{
  ScoringData <- IntermittentDemandScoringDataGenerator(
    data = data,
    SaveData = FALSE,

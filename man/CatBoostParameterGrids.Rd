@@ -44,7 +44,14 @@ CatBoostParameterGrids https://catboost.ai/docs/concepts/r-training-parameters.h
 \seealso{
 Other Supervised Learning: 
 \code{\link{AutoH2OScoring}()},
-\code{\link{XGBoostParameterGrids}()}
+\code{\link{CatBoostClassifierParams}()},
+\code{\link{CatBoostMultiClassParams}()},
+\code{\link{CatBoostRegressionParams}()},
+\code{\link{XGBoostClassifierParams}()},
+\code{\link{XGBoostMultiClassParams}()},
+\code{\link{XGBoostParameterGrids}()},
+\code{\link{XGBoostRegressionMetrics}()},
+\code{\link{XGBoostRegressionParams}()}
 }
 \author{
 Adrian Antico

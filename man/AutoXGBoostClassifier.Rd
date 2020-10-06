@@ -108,9 +108,16 @@ Saves to file and returned in list: VariableImportance.csv, Model, ValidationDat
 AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 }
 \examples{
-\donttest{
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+\dontrun{
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostClassifier(
@@ -121,7 +128,8 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
     # Metadata arguments
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    metadata_path = file.path(normalizePath("./")
+      ,"R_Model_Testing"),
     ModelID = "Test_Model_1",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
@@ -133,7 +141,8 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+    FeatureColNames = names(data)[!names(data) \%chin\%
+      c("IDcol_1", "IDcol_2","Adrian")],
     IDcols = c("IDcols_1","IDcols_2"),
 
     # Model evaluation
@@ -151,7 +160,8 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
     # Trees, Depth, and LearningRate used in the bandit grid tuning
     # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used
+    # The ones below can be set to NULL and the values in the
+    #    example will be used
     Shuffles = 1L,
     Trees = seq(50L, 500L, 50L),
     eta = seq(0.05,0.40,0.05),

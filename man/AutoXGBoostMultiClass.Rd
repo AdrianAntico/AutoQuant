@@ -114,9 +114,16 @@ Saves to file and returned in list: VariableImportance.csv, Model, ValidationDat
 AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, variable importance, and column names used in model fitting.
 }
 \examples{
-\donttest{
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+\dontrun{
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
 
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostMultiClass(
@@ -124,30 +131,32 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     # GPU or CPU
     TreeMethod = "hist",
     NThreads = 8L,
-  
+
     # Metadata arguments
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    metadata_path = file.path(normalizePath("./"),
+      "R_Model_Testing"),
     ModelID = "Test_Model_1",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,   
-  
+    SaveModelObjects = FALSE,
+
     # Data arguments
     data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+    FeatureColNames = names(data)[!names(data) \%chin\%
+      c("IDcol_1", "IDcol_2","Adrian")],
     IDcols = c("IDcols_1","IDcols_2"),
-  
+
     # Model evaluation
     eval_metric = "auc",
     Objective = 'multi:softmax',
     grid_eval_metric = "accuracy",
     NumOfParDepPlots = 3L,
-  
+
     # Grid tuning arguments - PassInGrid is the best of GridMetrics
     PassInGrid = NULL,
     GridTune = TRUE,
@@ -156,10 +165,11 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Verbose = 1L,
-  
+
     # Trees, Depth, and LearningRate used in the bandit grid tuning
     # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used 
+    # The ones below can be set to NULL
+    #   and the values in the example will be used
     Shuffles = 1L,
     Trees = seq(50L, 500L, 50L),
     eta = seq(0.05,0.40,0.05),

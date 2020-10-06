@@ -54,6 +54,7 @@ CarmaCatBoostKeepVarsGDL is to help manage carma code
 Other Carma Helper: 
 \code{\link{CARMA_Define_Args}()},
 \code{\link{CARMA_Get_IndepentVariablesPass}()},
+\code{\link{CARMA_GroupHierarchyCheck}()},
 \code{\link{CarmaH2OKeepVarsGDL}()},
 \code{\link{CarmaXGBoostKeepVarsGDL}()}
 }

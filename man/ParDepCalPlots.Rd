@@ -39,9 +39,10 @@ Partial dependence calibration plot or boxplot
 This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 }
 \examples{
-
+\dontrun{
 # Create fake data
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.70, N = 10000000, Classification = FALSE)
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70, N = 10000000, Classification = FALSE)
 data.table::setnames(data, "Independent_Variable2", "Predict")
 
 # Build plot
@@ -54,6 +55,7 @@ Plot <- RemixAutoML::ParDepCalPlots(
   PercentileBucket = 0.20,
   FactLevels = 10,
   Function = function(x) mean(x, na.rm = TRUE))
+}
 }
 \seealso{
 Other Model Evaluation and Interpretation: 

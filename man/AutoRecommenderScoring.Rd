@@ -30,8 +30,7 @@ Returns the prediction data
 This function will take your ratings matrix and model and score your data in parallel.
 }
 \examples{
-\donttest{
-# F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(AutoRecomDataCreate(TransactionData)))
+\dontrun{
 Results <- AutoRecommenderScoring(
   data = AutoRecomDataCreate(
       data,

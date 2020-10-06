@@ -22,31 +22,35 @@ Multiple ggplots on a single image
 Sick of copying this one into your code? Well, not anymore.
 }
 \examples{
+\dontrun{
 Correl <- 0.85
 data <- data.table::data.table(Target = runif(100))
 data[, x1 := qnorm(Target)]
 data[, x2 := runif(100)]
-data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-                                            sqrt(1-Correl^2) * qnorm(x2)))]
-data[, Predict := (pnorm(Correl * x1 +
-                           sqrt(1-Correl^2) * qnorm(x2)))]
-p1 <- RemixAutoML::ParDepCalPlots(data,
-                                  PredictionColName = "Predict",
-                                  TargetColName = "Target",
-                                  IndepVar = "Independent_Variable1",
-                                  GraphType = "calibration",
-                                  PercentileBucket = 0.20,
-                                  FactLevels = 10,
-                                  Function = function(x) mean(x, na.rm = TRUE))
-p2 <- RemixAutoML::ParDepCalPlots(data,
-                                  PredictionColName = "Predict",
-                                  TargetColName = "Target",
-                                  IndepVar = "Independent_Variable1",
-                                  GraphType = "boxplot",
-                                  PercentileBucket = 0.20,
-                                  FactLevels = 10,
-                                  Function = function(x) mean(x, na.rm = TRUE))
+data[, Independent_Variable1 := log(
+  pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+data[, Predict := (
+  pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+p1 <- RemixAutoML::ParDepCalPlots(
+  data,
+  PredictionColName = "Predict",
+  TargetColName = "Target",
+  IndepVar = "Independent_Variable1",
+  GraphType = "calibration",
+  PercentileBucket = 0.20,
+  FactLevels = 10,
+  Function = function(x) mean(x, na.rm = TRUE))
+p2 <- RemixAutoML::ParDepCalPlots(
+  data,
+  PredictionColName = "Predict",
+  TargetColName = "Target",
+  IndepVar = "Independent_Variable1",
+  GraphType = "boxplot",
+  PercentileBucket = 0.20,
+  FactLevels = 10,
+  Function = function(x) mean(x, na.rm = TRUE))
 RemixAutoML::multiplot(plotlist = list(p1,p2), cols = 2)
+}
 }
 \seealso{
 Other Graphics: 

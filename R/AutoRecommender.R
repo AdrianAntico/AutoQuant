@@ -13,16 +13,17 @@
 #' @param SkipModels AssociationRules runs the slowest and may crash your system. Choose from: "AssociationRules","ItemBasedCF","UserBasedCF","PopularItems","RandomItems"
 #' @param ModelMetric Choose from "Precision", "Recall", "TPR", or "FPR"
 #' @examples
-#' \donttest{
-#' WinningModel <- AutoRecommender(RatingsMatrix,
-#'                                 Partition = "Split",
-#'                                 KFolds = 1,
-#'                                 Ratio = 0.75,
-#'                                 Given = 1,
-#'                                 RatingType = "TopN",
-#'                                 RatingsKeep = 20,
-#'                                 SkipModels = "AssociationRules",
-#'                                 ModelMetric = "TPR")
+#' \dontrun{
+#' WinningModel <- AutoRecommender(
+#'   RatingsMatrix,
+#'   Partition = "Split",
+#'   KFolds = 1,
+#'   Ratio = 0.75,
+#'   Given = 1,
+#'   RatingType = "TopN",
+#'   RatingsKeep = 20,
+#'   SkipModels = "AssociationRules",
+#'   ModelMetric = "TPR")
 #' }
 #' @return The winning model used for scoring in the AutoRecommenderScoring function
 #' @export

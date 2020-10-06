@@ -39,13 +39,16 @@
 #' @param Trees For tree models
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @param GridTune Keep set to FALSE. I need to investigate how to do this more efficiently with this function
+#' @param ModelCount Number of models
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
 #' \donttest{
 #'
 #'  # Pull in Walmart Data Set
-#'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
-#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+#'  data <- data.table::fread(
+#'    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+#'    , Counts := NULL]
 #'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 #'
 #'  # Build forecast
@@ -74,10 +77,12 @@
 #'   Timer = TRUE,
 #'   DebugMode = FALSE,
 #'   GridTune = FALSE,
+#'   ModelCount = 1,
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
 #'   Difference = TRUE,
+#'   NThreads = max(1L, parallel::detectCores()-2L),
 #'
 #'   # Date Features
 #'   CalendarVariables = TRUE,
@@ -100,7 +105,9 @@
 #'   TimeTrendVariable = TRUE,
 #'   DebugMode = FALSE)
 #'
-#' UpdateMetrics <- print(H2oMLResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' UpdateMetrics <- print(
+#'   H2oMLResults$ModelInformation$EvaluationMetrics[
+#'     Metric == "MSE", MetricValue := sqrt(MetricValue)])
 #' print(UpdateMetrics)
 #' H2oMLResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 #' H2oMLResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
@@ -142,7 +149,6 @@ AutoH2oMLCARMA <- function(data,
                            NThreads = max(1L, parallel::detectCores()-2L),
                            EvalMetric = "RMSE",
                            GridTune = FALSE,
-                           GridEvalMetric = "mae",
                            ModelCount = 1,
                            PartitionType = "timeseries",
                            Timer = TRUE,

@@ -71,6 +71,8 @@ OptimizeArima(
 
 \item{MaxNumberModels}{The number of models you want to test.}
 
+\item{MaxRunMinutes}{Time}
+
 \item{FinalGrid}{If NULL, regular train optimization occurs. If the grid is supplied, final builds are conducted.}
 
 \item{DebugMode}{Debugging}
@@ -82,6 +84,7 @@ Time series data sets to pass onto auto modeling functions
 OptimizeArima is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 }
 \examples{
+\dontrun{
 Results <- OptimizeArima(
   Output,
   MetricSelection = "MAE",
@@ -105,6 +108,7 @@ Results <- OptimizeArima(
   MaxNumberModels = 5,
   MaxRunMinutes = NULL,
   FinalGrid = NULL)
+}
 }
 \seealso{
 Other Time Series: 

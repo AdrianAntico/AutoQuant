@@ -15,6 +15,7 @@
 #' @param MaxThresh Maximum value to consider for model threshold
 #' @param ThresholdPrecision Incrementing value in search
 #' @examples
+#' \dontrun{
 #' data <- data.table::data.table(Target = runif(10))
 #' data[, x1 := qnorm(Target)]
 #' data[, x2 := runif(10)]
@@ -32,6 +33,7 @@
 #'                     ThresholdPrecision = 0.001)
 #' optimalThreshold <- data$Thresholds
 #' allResults <- data$EvaluationTable
+#' }
 #' @return Optimal threshold and corresponding utilities for the range of thresholds tested
 #' @export
 threshOptim <- function(data,

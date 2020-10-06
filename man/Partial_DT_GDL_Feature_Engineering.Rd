@@ -75,35 +75,39 @@ data.table of original data plus created lags, rolling stats, and time between e
 For scoring models in production that have > 1 grouping variables and for when you need > 1 record (or records per grouping variables) returned. This function is for generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set, typical new records that become available for model scoring. Column names and ordering will be identical to the output from the corresponding DT_GDL_Feature_Engineering() function, which most likely was used to create features for model training.
 }
 \examples{
+\dontrun{
 N = 25116
-data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-  Target = stats::filter(rnorm(N,
-                               mean = 50,
-                               sd = 20),
-                         filter=rep(1,10),
-                         circular=TRUE))
+data <- data.table::data.table(
+  DateTime = as.Date(Sys.time()),
+  Target = stats::filter(
+    rnorm(N, mean = 50, sd = 20),
+  filter=rep(1,10),
+  circular=TRUE))
 data[, temp := seq(1:N)][, DateTime := DateTime - temp]
 data <- data[order(DateTime)]
-data <- Partial_DT_GDL_Feature_Engineering(data,
-                                           lags           = c(1:5),
-                                           periods        = c(seq(10,50,10)),
-                                           SDperiods       = c(seq(5, 95, 5)),
-                                           Skewperiods     = c(seq(5, 95, 5)),
-                                           Kurtperiods     = c(seq(5, 95, 5)),
-                                           Quantileperiods = c(seq(5, 95, 5)),
-                                           statsFUNs      = c("mean","sd", "skew", "kurt","q5","q95"),
-                                           targets        = c("Target"),
-                                           groupingVars   = NULL,
-                                           sortDateName   = "DateTime",
-                                           timeDiffTarget = c("Time_Gap"),
-                                           timeAgg        = "days",
-                                           WindowingLag   = 1,
-                                           Type           = "Lag",
-                                           Timer          = TRUE,
-                                           SimpleImpute   = TRUE,
-                                           AscRowByGroup  = "temp",
-                                           RecordsKeep    = c(1,5,100,2500),
-                                           AscRowRemove   = TRUE)
+data <- Partial_DT_GDL_Feature_Engineering(
+  data,
+  lags           = c(1:5),
+  periods        = c(seq(10,50,10)),
+  SDperiods       = c(seq(5, 95, 5)),
+  Skewperiods     = c(seq(5, 95, 5)),
+  Kurtperiods     = c(seq(5, 95, 5)),
+  Quantileperiods = c(seq(5, 95, 5)),
+  statsFUNs      = c("mean","sd", "skew",
+    "kurt","q5","q95"),
+  targets        = c("Target"),
+  groupingVars   = NULL,
+  sortDateName   = "DateTime",
+  timeDiffTarget = c("Time_Gap"),
+  timeAgg        = "days",
+  WindowingLag   = 1,
+  Type           = "Lag",
+  Timer          = TRUE,
+  SimpleImpute   = TRUE,
+  AscRowByGroup  = "temp",
+  RecordsKeep    = c(1,5,100,2500),
+  AscRowRemove   = TRUE)
+}
 }
 \seealso{
 Other Feature Engineering: 

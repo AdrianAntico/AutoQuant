@@ -36,6 +36,7 @@ Time series data sets to pass onto auto modeling functions
 ParallelAutoNNET to run the 4 data sets at once
 }
 \examples{
+\dontrun{
 ParallelAutoNNET(
   MetricSelection = "MAE",
   Output = NULL,
@@ -43,6 +44,7 @@ ParallelAutoNNET(
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
   MaxRunMinutes = 5)
+}
 }
 \seealso{
 Other Time Series: 

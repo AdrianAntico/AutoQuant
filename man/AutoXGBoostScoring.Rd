@@ -84,30 +84,31 @@ A data.table of predicted values with the option to return model features as wel
 AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
 }
 \examples{
-\donttest{
-Preds <- AutoXGBoostScoring(TargetType = "regression",
-                            ScoringData = data,
-                            FeatureColumnNames = 2:12,
-                            IDcols = NULL,
-                            FactorLevelsList = NULL,
-                            TargetLevels = NULL,
-                            Objective = "multi:softmax",
-                            OneHot = FALSE,
-                            ModelObject = NULL,
-                            ModelPath = "home",
-                            ModelID = "ModelTest",
-                            ReturnFeatures = TRUE,
-                            TransformNumeric = FALSE,
-                            BackTransNumeric = FALSE,
-                            TargetColumnName = NULL,
-                            TransformationObject = NULL,
-                            TransID = NULL,
-                            TransPath = NULL,
-                            MDP_Impute = TRUE,
-                            MDP_CharToFactor = TRUE,
-                            MDP_RemoveDates = TRUE,
-                            MDP_MissFactor = "0",
-                            MDP_MissNum = -1)
+\dontrun{
+Preds <- AutoXGBoostScoring(
+  TargetType = "regression",
+  ScoringData = data,
+  FeatureColumnNames = 2:12,
+  IDcols = NULL,
+  FactorLevelsList = NULL,
+  TargetLevels = NULL,
+  Objective = "multi:softmax",
+  OneHot = FALSE,
+  ModelObject = NULL,
+  ModelPath = "home",
+  ModelID = "ModelTest",
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1)
 }
 }
 \seealso{

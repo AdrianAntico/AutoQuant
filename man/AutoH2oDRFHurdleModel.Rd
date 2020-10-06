@@ -78,7 +78,7 @@ Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, Va
 AutoH2oDRFHurdleModel is generalized hurdle modeling framework
 }
 \examples{
-\donttest{
+\dontrun{
 Output <- AutoH2oDRFHurdleModel(
   data,
   TrainOnFull = FALSE,
@@ -96,7 +96,7 @@ Output <- AutoH2oDRFHurdleModel(
   SaveModelObjects = TRUE,
   IfSaveModel = "mojo",
   MaxMem = "28G",
-  NThreads = max(1L, parallel::detectCores()-2L)
+  NThreads = max(1L, parallel::detectCores()-2L),
   Trees = 1000L,
   GridTune = FALSE,
   MaxModelsInGrid = 1L,

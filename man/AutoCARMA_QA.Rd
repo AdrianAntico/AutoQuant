@@ -60,6 +60,8 @@ AutoCARMA_QA(
 
 \item{MaxMem_}{= "28G"}
 
+\item{NThreads_}{= parallel::detectCores() - 2}
+
 \item{TreeMethod__}{= "hist" or "gpu_hist" for xgboost carma}
 
 \item{TestRows}{= "ALL" to run all tests (see example for all tests), or a numeric vector with the row numbers from the test list (see example)}
@@ -78,14 +80,11 @@ AutoCARMA_QA(
 
 \item{HierarchGroups_}{= c("Store","Dept") # NULL otherwise}
 
-\item{GroupVariables_}{= c("Store","Dept") #
-
-# Date Features}
+\item{GroupVariables_}{= c("Store","Dept") #}
 
 \item{TimeUnit_}{= "week" # Choices include "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"}
 
-\item{TimeGroups_}{= c("weeks","months","quarter") # These will tell GDL to build gdl features along the time aggregation dimension
-# Data Wrangling Features Mapping}
+\item{TimeGroups_}{= c("weeks","months","quarter") # These will tell GDL to build gdl features along the time aggregation dimension}
 
 \item{ZeroPadSeries_}{= c('NULL', 'all', 'inner') ZeroPadSeries choose "all", "inner", or NULL. 'Outer' grows missing dates by group to the largest of all groups size. 'Inner' fills in series by using the group level's own max and min values (versus filling all group levels to the max value of the groups level with the widest time gap)}
 
@@ -93,9 +92,7 @@ AutoCARMA_QA(
 
 \item{SplitRatios_}{= c(1 - 10 / 143, 10 / 143) # If you have GroupVariables_ then base it on number of records in a group, like default}
 
-\item{PartitionType_}{= "timeseries" # always time series for this function. Place holder for other time series options down the road.
-
-# Productionize Features Mapping}
+\item{PartitionType_}{= "timeseries" # always time series for this function. Place holder for other time series options down the road.}
 
 \item{TrainOnFull_}{= FALSE # Set to TRUE put in Forecase mode. FALSE to put in Evaluation mode. Forecast mode generates forecasts based on a model built using all of data_, and no evaluation metrics are collected when set to TRUE. Evaluation mode will build a forecast for your validation periods and collect the holdout metrics and other evaluation objects, but no future forecast beyond max date of data_.  as specified in SplitRatios_.}
 
@@ -111,15 +108,11 @@ AutoCARMA_QA(
 
 \item{TaskType_}{= "GPU" # Set to "CPU" to train on CPU versus GPU. Must supply a value.}
 
-\item{Timer_}{= TRUE # Print out the forecast step the function is currently working on. If it errors on the first run scoring the model then it is likely a very different error then if has printed "Forecasting 1:"
-
-# Target Transformations Feature Mapping}
+\item{Timer_}{= TRUE # Print out the forecast step the function is currently working on. If it errors on the first run scoring the model then it is likely a very different error then if has printed "Forecasting 1:"}
 
 \item{TargetTransformation_}{= TRUE # Set to TRUE to have every available numeric transformation compete for best normalization fit to normal distribution}
 
-\item{Difference_}{= TRUE # The I in ARIMA. Works for single series and grouped series a.k.a. panel data.
-
-# Time Series Features}
+\item{Difference_}{= TRUE # The I in ARIMA. Works for single series and grouped series a.k.a. panel data.}
 
 \item{CalendarVariables_}{= TRUE   # This TURNS ON procedure to create numeric calendar variables that your TimeUnit_ directs. FALSE otherwise.}
 
@@ -141,9 +134,7 @@ AutoCARMA_QA(
 
 \item{Quantile_Periods_}{= c(3:5) # Numeric vector of lag periods}
 
-\item{Quantiles_Selected_}{= c("q5","q95") # Select the quantiles you want calculated. "q5", "q10", ..., "q95".
-
-# Bonus Features MAPPING}
+\item{Quantiles_Selected_}{= c("q5","q95") # Select the quantiles you want calculated. "q5", "q10", ..., "q95".}
 
 \item{FourierTerms_}{= 2 # (TECHINICALLY FOURIER PAIRS) Hierarchy grouping (full group variable interaction set) is ran by default (MAKE INTO OPTIOn). Uses parallelization to loop through the unique set of all GroupVariables levels and computes fourier terms as if the group level's are a single series; just for all groups and it's parallelized.}
 
@@ -154,8 +145,6 @@ AutoCARMA_QA(
 \item{DebugMode_}{= TRUE # When TRUE it will print every comment section header line. When it crashes, you can get a print out of the last N steps that were ran, depending on the print max limit.}
 
 \item{OptionsWarn}{Set to 1 to print warnings immediately to screen versus after a function finishes; 2 to kill processes if a warning occurs. See options(warn = )}
-
-\item{Nthreads_}{= parallel::detectCores() - 2}
 }
 \description{
 AutoCARMA_QA
@@ -163,6 +152,4 @@ AutoCARMA_QA
 \author{
 Adrian Antico
 }
-\concept{QA Functions
-
-# Data Names Mapping}
+\concept{QA Functions}

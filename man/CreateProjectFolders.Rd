@@ -2,7 +2,7 @@
 % Please edit documentation in R/SystemFunctions.R
 \name{CreateProjectFolders}
 \alias{CreateProjectFolders}
-\title{PathNormalizer Converts path files to proper path files}
+\title{CreateProjectFolders Converts path files to proper path files}
 \usage{
 CreateProjectFolders(
   ProjectName = input$ID_NewProjectName,
@@ -17,16 +17,14 @@ CreateProjectFolders(
 \item{RootPath}{This is the path file to the root folder}
 
 \item{ExistsButNoProjectList}{Set to TRUE if the folder exists but not the ProjectList file}
+
+\item{Local}{a}
 }
 \value{
 Returns a proper path file string
 }
 \description{
-PathNormalizer Converts path files to proper path files
-}
-\seealso{
-Other System Functions: 
-\code{\link{PathNormalizer}()}
+CreateProjectFolders Converts path files to proper path files
 }
 \author{
 Adrian Antico

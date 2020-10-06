@@ -42,13 +42,13 @@ Returns a list of CountData scores, SizeData scores, along with count and size p
 AutoCatBoostFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
 }
 \examples{
-\donttest{
+\dontrun{
 FinalData <- AutoCatBoostFreqSizeScoring(
   ScoringData,
   TargetColumnNames = c("Counts","TARGET_qty"),
   FeatureColumnNames = 1:ncol(ScoringData),
   IDcols = NULL,
-  CountQuantiles = seq(0.10,0.90,0.10), 
+  CountQuantiles = seq(0.10,0.90,0.10),
   SizeQuantiles = seq(0.10,0.90,0.10),
   ModelPath = getwd(),
   ModelIDs = c("CountModel","SizeModel"),

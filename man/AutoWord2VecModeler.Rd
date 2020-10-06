@@ -57,22 +57,23 @@ AutoWord2VecModeler(
 This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
 }
 \examples{
-\donttest{
-data <- AutoWord2VecModeler(data,
-                            BuildType = "individual",
-                            stringCol = c("Text_Col1","Text_Col2"),
-                            KeepStringCol = FALSE,
-                            model_path = normalizePath("./"),
-                            vects = 100,
-                            SaveStopWords = FALSE,
-                            MinWords = 1,
-                            WindowSize = 1,
-                            Epochs = 25,
-                            StopWords = NULL,
-                            SaveModel = "standard",
-                            Threads = max(1,parallel::detectCores()-2),
-                            MaxMemory = "28G",
-                            SaveOutput = TRUE)
+\dontrun{
+data <- AutoWord2VecModeler(
+  data,
+  BuildType = "individual",
+  stringCol = c("Text_Col1","Text_Col2"),
+  KeepStringCol = FALSE,
+  model_path = normalizePath("./"),
+  vects = 100,
+  SaveStopWords = FALSE,
+  MinWords = 1,
+  WindowSize = 1,
+  Epochs = 25,
+  StopWords = NULL,
+  SaveModel = "standard",
+  Threads = max(1,parallel::detectCores()-2),
+  MaxMemory = "28G",
+  SaveOutput = TRUE)
 }
 }
 \seealso{

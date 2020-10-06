@@ -17,6 +17,8 @@ ClassificationMetrics(
 \arguments{
 \item{TestData}{Test data from your modeling}
 
+\item{Thresholds}{Value}
+
 \item{Target}{Name of your target variable}
 
 \item{Predict}{Name of your predicted value variable}

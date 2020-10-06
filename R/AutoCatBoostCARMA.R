@@ -51,13 +51,15 @@
 #' @param Depth Depth of catboost model
 #' @param L2_Leaf_Reg l2 reg parameter
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'
 #'  # Load Walmart Data from Dropbox----
-#'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'  data <- data.table::fread(
+#'    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 #'
-#'  # Subset for Stores / Departments With Full Series (143 time points each)----
-#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+#'  # Subset for Stores / Departments With Full Series
+#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+#'    , Counts := NULL]
 #'
 #'  # Subset Columns (remove IsHoliday column)----
 #'  keep <- c("Store","Dept","Date","Weekly_Sales")
@@ -90,19 +92,22 @@
 #'
 #'   # Target transformations
 #'   TargetTransformation = TRUE,
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+#'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'     "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
 #'
 #'   # Date features
 #'   CalendarVariables = c("week", "month", "quarter"),
-#'   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+#'   HolidayVariable = c("USPublicHolidays",
+#'     "EasterGroup",
+#'     "ChristmasGroup","OtherEcclesticalFeasts"),
 #'   HolidayLags = 1,
 #'   HolidayMovingAverages = 1:2,
 #'
 #'   # Time series features
-#'   Lags = Lags = list("weeks" = seq(1L, 5L, 1L), "months" = c(1,2,3)),
-#'   MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3)),
+#'   MA_Periods = list("weeks" = seq(2L, 10L, 2L),
+#'     "months" = c(2,3)),
 #'   SD_Periods = NULL,
 #'   Skew_Periods = NULL,
 #'   Kurt_Periods = NULL,
@@ -131,7 +136,9 @@
 #'   L2_Leaf_Reg = 3.0,
 #'   Depth = 6)
 #'
-#' UpdateMetrics <- print(CatBoostResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' UpdateMetrics <- print(
+#'   CatBoostResults$ModelInformation$EvaluationMetrics[
+#'     Metric == "MSE", MetricValue := sqrt(MetricValue)])
 #' print(UpdateMetrics)
 #' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 #' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]

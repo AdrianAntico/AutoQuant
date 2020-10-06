@@ -47,6 +47,8 @@ H2oAutoencoder(
 
 \item{ModelID}{"TestModel"}
 
+\item{LayerStructure}{a}
+
 \item{ReturnLayer}{Which layer of the NNet to return. Choose from 1-7 with 4 being the layer with the least amount of nodes}
 
 \item{per_feature}{Set to TRUE to have per feature anomaly detection generated. Otherwise and overall value will be generated}
@@ -70,7 +72,7 @@ A data.table
 H2oAutoencoder for anomaly detection and or dimensionality reduction
 }
 \examples{
-\donttest{
+\dontrun{
 
 # Create simulated data
 
@@ -106,38 +108,38 @@ N <- length(names(data)[2L:ncol(data)])
 
 # Run algo
 Output <- RemixAutoML::H2oAutoencoder(
-   
+
    # Select the service
-   AnomalyDetection = TRUE, 
+   AnomalyDetection = TRUE,
    DimensionReduction = TRUE,
-   
+
    # Data related args
    data = data,
    ValidationData = NULL,
    Features = names(data)[2L:ncol(data)],
    RemoveFeatures = FALSE,
-   
+
    # H2O args
    NThreads = max(1L, parallel::detectCores()-2L),
    MaxMem = "28G",
    H2oShutdown = TRUE,
    ModelID = "TestModel",
-   LayerStructure = NULL, # creates this internally if LayerStructure is NULL --> c(N, N * GR, N GR ^ 2, N * GR ^ 3, N * GR ^ 2, N * GR, N)
-   ReturnLayer = 4L, 
+   LayerStructure = NULL,
+   ReturnLayer = 4L,
    per_feature = TRUE,
-   Activation = "Tanh", 
-   Epochs = 5L, 
-   L2 = 0.10, 
-   ElasticAveraging = TRUE, 
-   ElasticAveragingMovingRate = 0.90, 
+   Activation = "Tanh",
+   Epochs = 5L,
+   L2 = 0.10,
+   ElasticAveraging = TRUE,
+   ElasticAveragingMovingRate = 0.90,
    ElasticAveragingRegularization = 0.001)
-   
+
  # Inspect output
  Data <- Output$Data
  Model <- Output$Model
- 
+
  # If ValidationData is not null
- ValidationData <- Output$ValidationData  
+ ValidationData <- Output$ValidationData
 }
 }
 \seealso{

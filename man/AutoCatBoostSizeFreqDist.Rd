@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoCatBoostSizeFreqDist.R
 \name{AutoCatBoostSizeFreqDist}
 \alias{AutoCatBoostSizeFreqDist}
-\title{AutoCatBoostSizeFreqDist for building size and frequency distributions via quantile regressions}
+\title{AutoCatBoostSizeFreqDist}
 \usage{
 AutoCatBoostSizeFreqDist(
   CountData = NULL,
@@ -84,30 +84,31 @@ This function does not return anything. It can only store your models and model 
 AutoCatBoostSizeFreqDist for building size and frequency distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build. Use this with the AutoQuantileGibbsSampler function to simulate the joint distribution.
 }
 \examples{
-\donttest{
-AutoCatBoostSizeFreqDist(CountData = CountData, 
-                         SizeData = SizeData,
-                         CountQuantiles = seq(0.10,0.90,0.10), 
-                         SizeQuantiles = seq(0.10,0.90,0.10), 
-                         AutoTransform = TRUE, 
-                         DataPartitionRatios = c(0.75,0.20,0.05),
-                         StratifyColumnNames = NULL,
-                         NTrees = 1500,
-                         TaskType = "GPU",
-                         EvalMetric = "Quantile",
-                         GridTune = FALSE,
-                         GridEvalMetric = "mae",
-                         CountTargetColumnName = "Counts",
-                         SizeTargetColumnName = "Target_qty",
-                         CountFeatureColNames = 2:ncol(CountData),
-                         SizeFeatureColNames = 2:ncol(SizeData),
-                         CountIDcols = NULL,
-                         SizeIDcols = NULL,
-                         ModelIDs = c("CountModel","SizeModel"),
-                         MaxModelsGrid = 5,
-                         ModelPath = getwd(),
-                         MetaDataPath = paste0(getwd(),"/ModelMetaData"),
-                         NumOfParDepPlots = 1)
+\dontrun{
+AutoCatBoostSizeFreqDist(
+  CountData = CountData,
+  SizeData = SizeData,
+  CountQuantiles = seq(0.10,0.90,0.10),
+  SizeQuantiles = seq(0.10,0.90,0.10),
+  AutoTransform = TRUE,
+  DataPartitionRatios = c(0.75,0.20,0.05),
+  StratifyColumnNames = NULL,
+  NTrees = 1500,
+  TaskType = "GPU",
+  EvalMetric = "Quantile",
+  GridTune = FALSE,
+  GridEvalMetric = "mae",
+  CountTargetColumnName = "Counts",
+  SizeTargetColumnName = "Target_qty",
+  CountFeatureColNames = 2:ncol(CountData),
+  SizeFeatureColNames = 2:ncol(SizeData),
+  CountIDcols = NULL,
+  SizeIDcols = NULL,
+  ModelIDs = c("CountModel","SizeModel"),
+  MaxModelsGrid = 5,
+  ModelPath = getwd(),
+  MetaDataPath = paste0(getwd(),"/ModelMetaData"),
+  NumOfParDepPlots = 1)
 }
 }
 \seealso{

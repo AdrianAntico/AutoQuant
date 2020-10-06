@@ -54,32 +54,22 @@ Returns a list of predicted values. Each list element contains the predicted val
 AutoH2OScoring is the complement of AutoH20Modeler. Use this for scoring models. You can score regression, quantile regression, classification, multinomial, clustering, and text models (built with the Word2VecModel function). You can also use this to score multioutcome models so long as the there are two models: one for predicting the count of outcomes (a count outcome in character form) and a multinomial model on the label data. You will want to ensure you have a record for each label in your training data in (0,1) as factor form.
 }
 \examples{
-\donttest{
+\dontrun{
 # Multinomial Example
 Correl <- 0.85
 aa <- data.table::data.table(target = runif(1000))
 aa[, x1 := qnorm(target)]
 aa[, x2 := runif(1000)]
-aa[, Independent_Variable1 := log(pnorm(Correl * x1 +
-                                          sqrt(1-Correl^2) * qnorm(x2)))]
-aa[, Independent_Variable2 := (pnorm(Correl * x1 +
-                                       sqrt(1-Correl^2) * qnorm(x2)))]
-aa[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-                                          sqrt(1-Correl^2) * qnorm(x2)))]
-aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-                                              sqrt(1-Correl^2) * qnorm(x2))))]
-aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-                                           sqrt(1-Correl^2) * qnorm(x2)))]
-aa[, Independent_Variable6 := (pnorm(Correl * x1 +
-                                       sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-aa[, Independent_Variable7 := (pnorm(Correl * x1 +
-                                       sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-aa[, Independent_Variable8 := (pnorm(Correl * x1 +
-                                       sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-aa[, Independent_Variable9 := (pnorm(Correl * x1 +
-                                       sqrt(1-Correl^2) * qnorm(x2)))^2]
-aa[, Independent_Variable10 := (pnorm(Correl * x1 +
-                                        sqrt(1-Correl^2) * qnorm(x2)))^4]
+aa[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+aa[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+aa[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+aa[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+aa[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+aa[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
 aa[, ':=' (x1 = NULL, x2 = NULL)]
 aa[, target := as.factor(ifelse(target < 0.33,"A",ifelse(target < 0.66, "B","C")))]
 Construct <- data.table::data.table(Targets = rep("target",3),
@@ -141,8 +131,15 @@ data <- AutoH2OScoring(Features     = aa,
 }
 \seealso{
 Other Supervised Learning: 
+\code{\link{CatBoostClassifierParams}()},
+\code{\link{CatBoostMultiClassParams}()},
 \code{\link{CatBoostParameterGrids}()},
-\code{\link{XGBoostParameterGrids}()}
+\code{\link{CatBoostRegressionParams}()},
+\code{\link{XGBoostClassifierParams}()},
+\code{\link{XGBoostMultiClassParams}()},
+\code{\link{XGBoostParameterGrids}()},
+\code{\link{XGBoostRegressionMetrics}()},
+\code{\link{XGBoostRegressionParams}()}
 }
 \author{
 Adrian Antico

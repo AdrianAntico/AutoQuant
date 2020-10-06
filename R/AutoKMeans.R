@@ -21,36 +21,37 @@
 #' @param SaveModels Set to "standard", "mojo", or NULL (default)
 #' @param PathFile Set to folder where you will keep the models
 #' @examples
-#' \donttest{
-# data <- data.table::as.data.table(iris)
-# data <- AutoKMeans(data,
-#                    nthreads = 8,
-#                    MaxMem = "28G",
-#                    SaveModels = NULL,
-#                    PathFile = normalizePath("./"),
-#                    GridTuneGLRM = TRUE,
-#                    GridTuneKMeans = TRUE,
-#                    glrmCols = 1:(ncol(data)-1),
-#                    IgnoreConstCols = TRUE,
-#                    glrmFactors = 2,
-#                    Loss = "Absolute",
-#                    glrmMaxIters = 1000,
-#                    SVDMethod = "Randomized",
-#                    MaxRunTimeSecs = 3600,
-#                    KMeansK = 5,
-#                    KMeansMetric = "totss")
-# unique(data[["Species"]])
-# unique(data[["ClusterID"]])
-# temp <- data[, mean(ClusterID), by = "Species"]
-# Setosa <- round(temp[Species == "setosa", V1][[1]],0)
-# Versicolor <- round(temp[Species == "versicolor", V1][[1]],0)
-# Virginica <- round(temp[Species == "virginica", V1][[1]],0)
-# data[, Check := "a"]
-# data[ClusterID == eval(Setosa), Check := "setosa"]
-# data[ClusterID == eval(Virginica), Check := "virginica"]
-# data[ClusterID == eval(Versicolor), Check := "versicolor"]
-# data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
-# data[, mean(Acc)][[1]]
+#' \dontrun{
+#' data <- data.table::as.data.table(iris)
+#' data <- AutoKMeans(
+#'   data,
+#'   nthreads = 8,
+#'   MaxMem = "28G",
+#'   SaveModels = NULL,
+#'   PathFile = normalizePath("./"),
+#'   GridTuneGLRM = TRUE,
+#'   GridTuneKMeans = TRUE,
+#'   glrmCols = 1:(ncol(data)-1),
+#'   IgnoreConstCols = TRUE,
+#'   glrmFactors = 2,
+#'   Loss = "Absolute",
+#'   glrmMaxIters = 1000,
+#'   SVDMethod = "Randomized",
+#'   MaxRunTimeSecs = 3600,
+#'   KMeansK = 5,
+#'   KMeansMetric = "totss")
+#' unique(data[["Species"]])
+#' unique(data[["ClusterID"]])
+#' temp <- data[, mean(ClusterID), by = "Species"]
+#' Setosa <- round(temp[Species == "setosa", V1][[1]],0)
+#' Versicolor <- round(temp[Species == "versicolor", V1][[1]],0)
+#' Virginica <- round(temp[Species == "virginica", V1][[1]],0)
+#' data[, Check := "a"]
+#' data[ClusterID == eval(Setosa), Check := "setosa"]
+#' data[ClusterID == eval(Virginica), Check := "virginica"]
+#' data[ClusterID == eval(Versicolor), Check := "versicolor"]
+#' data[, Acc := as.numeric(ifelse(Check == Species, 1, 0))]
+#' data[, mean(Acc)][[1]]
 #' }
 #' @return Original data.table with added column with cluster number identifier
 #' @export
@@ -70,10 +71,10 @@ AutoKMeans <- function(data,
                        MaxRunTimeSecs  = 3600,
                        KMeansK         = 50,
                        KMeansMetric    = "totss") {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Check Arguments----
   if(nthreads < 0) return("nthreads needs to be a positive integer")
   if(!is.character(MaxMem)) return("MaxMem needs to be a character value. E.g. MaxMem = '28G'")
@@ -84,10 +85,10 @@ AutoKMeans <- function(data,
   if(!(is.numeric(glrmCols) | is.integer(glrmCols))) return("glrmCols needs to be the column numbers")
   if(!is.logical(IgnoreConstCols)) return("IgnoreConstCols needs to be either TRUE or FALSE")
   if(!(is.numeric(glrmFactors) | is.integer(glrmFactors))) return("glrmFactors needs to be an integer value")
-  
+
   # Check data.table----
   if(!data.table::is.data.table(data)) data <- data.table::as.data.table(data)
-  
+
   # Set up Scoring File if SaveModels is not NULL----
   if(!is.null(SaveModels)) {
     KMeansModelFile <- data.table::data.table(
@@ -95,7 +96,7 @@ AutoKMeans <- function(data,
       FilePath1 = rep("bla", 2L),
       FilePath2 = rep("bla", 2L))
   }
-  
+
   # Build glmr model----
   h2o::h2o.init(startH2O = FALSE, max_mem_size = MaxMem, nthreads = nthreads, enable_assertions = FALSE)
   datax <- h2o::as.h2o(data)
@@ -108,17 +109,17 @@ AutoKMeans <- function(data,
       stopping_rounds      = 10,
       stopping_metric      = "MSE",
       stopping_tolerance   = 1e-3)
-    
+
     # Define hyperparameters----
     HyperParams <- list(
-      transform = c("NONE","DEMEAN","DESCALE","STANDARDIZE"), 
-      k = 1:5, 
+      transform = c("NONE","DEMEAN","DESCALE","STANDARDIZE"),
+      k = 1:5,
       regularization_x = c("None","Quadratic","L2","L1","NonNegative","OneSparse","UnitOneSparse","Simplex"),
         regularization_y = c("None","Quadratic","L2","L1","NonNegative","OneSparse","UnitOneSparse","Simplex"),
         gamma_x          = seq(0.01, 0.10, 0.01),
         gamma_y          = seq(0.01, 0.10, 0.01),
         svd_method       = c("Randomized","GramSVD","Power"))
-    
+
     # Run grid tune----
     grid <- h2o::h2o.grid(
       "glrm",
@@ -128,7 +129,7 @@ AutoKMeans <- function(data,
       ignore_const_cols = IgnoreConstCols,
       loss              = Loss,
       hyper_params      = HyperParams)
-    
+
     # Get best performer----
     Grid_Out <- h2o::h2o.getGrid(grid_id = "GLRM", sort_by = search_criteria$stopping_metric, decreasing = FALSE)
     model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1L]])
@@ -143,14 +144,14 @@ AutoKMeans <- function(data,
       svd_method        = SVDMethod,
       max_runtime_secs  = MaxRunTimeSecs)
   }
-  
+
   # Save model if requested----
   if(!is.null(SaveModels)) {
     fitY <- model@model$archetypes
     save(fitY, file = file.path(normalizePath(PathFile), "fitY"))
     data.table::set(KMeansModelFile, i = 1L, j = 2L, value = file.path(normalizePath(PathFile), "fitY"))
   }
-  
+
   # Run k-means----
   if(GridTuneKMeans) {
     x_raw <- h2o::h2o.getFrame(model@model$representation_name)
@@ -160,7 +161,7 @@ AutoKMeans <- function(data,
       data.table::set(KMeansModelFile, i = 1L, j = 3L, value = file.path(normalizePath(PathFile), "Names.Rdata"))
       save(KMeansModelFile, file = file.path(normalizePath(PathFile), "KMeansModelFile.Rdata"))
     }
-    
+
     # Define grid tune search scheme in a named list----
     search_criteria  <- list(
       strategy             = "RandomDiscrete",
@@ -168,10 +169,10 @@ AutoKMeans <- function(data,
       max_models           = 30,
       seed                 = 1234,
       stopping_rounds      = 10)
-    
+
     # Define hyperparameters----
     HyperParams <- list(max_iterations   = c(10, 20, 50, 100), init = c("Random","PlusPlus","Furthest"))
-    
+
     # Run grid tune----
     grid <- h2o::h2o.grid(
       "kmeans",
@@ -182,7 +183,7 @@ AutoKMeans <- function(data,
       grid_id           = "KMeans",
       estimate_k        = TRUE,
       hyper_params      = HyperParams)
-    
+
     # Get best performer----
     Grid_Out <- h2o::h2o.getGrid(grid_id = "KMeans", sort_by = KMeansMetric, decreasing = FALSE)
     model <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1L]])
@@ -194,11 +195,11 @@ AutoKMeans <- function(data,
       data.table::set(KMeansModelFile, i = 1L, j = 3L, value = file.path(normalizePath(PathFile), "Names.Rdata"))
       save(KMeansModelFile, file = file.path(normalizePath(PathFile), "KMeansModelFile.Rdata"))
     }
-    
+
     # Train KMeans----
     model <- h2o::h2o.kmeans(training_frame = x_raw, x = Names, k = KMeansK, estimate_k = TRUE)
   }
-  
+
   # Save model if requested----
   if(!is.null(SaveModels)) {
     if(tolower(SaveModels) == "mojo") {
@@ -213,7 +214,7 @@ AutoKMeans <- function(data,
       save(KMeansModelFile, file = file.path(normalizePath(PathFile), "KMeansModelFile.Rdata"))
     }
   }
-  
+
   # Combine outputs----
   preds <- data.table::as.data.table(h2o::h2o.predict(model, x_raw))
   h2o::h2o.shutdown(prompt = FALSE)

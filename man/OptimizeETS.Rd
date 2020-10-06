@@ -51,6 +51,7 @@ Time series data sets to pass onto auto modeling functions
 OptimizeETS is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 }
 \examples{
+\dontrun{
 Results <- OptimizeETS(
   Output,
   MetricSelection = "MAE",
@@ -64,6 +65,7 @@ Results <- OptimizeETS(
   DateName = NULL,
   TrainValidateShare = NULL,
   FinalGrid = NULL)
+}
 }
 \seealso{
 Other Time Series: 

@@ -12,27 +12,28 @@
 #' @param Print Set to TRUE to print iteration number to console
 #' @import timeDate
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Create fake data with a Date----
 #' data <- RemixAutoML::FakeDataGenerator(
-#'   Correlation = 0.75, 
-#'   N = 25000L, 
-#'   ID = 2L, 
-#'   ZIP = 0L, 
-#'   FactorCount = 4L, 
-#'   AddDate = TRUE, 
-#'   Classification = FALSE, 
+#'   Correlation = 0.75,
+#'   N = 25000L,
+#'   ID = 2L,
+#'   ZIP = 0L,
+#'   FactorCount = 4L,
+#'   AddDate = TRUE,
+#'   Classification = FALSE,
 #'   MultiClass = FALSE)
 #' for(i in seq_len(20L)) {
 #'   print(i)
-#'   data <- data.table::rbindlist(list(data, RemixAutoML::FakeDataGenerator(
-#'     Correlation = 0.75, 
-#'     N = 25000L, 
-#'     ID = 2L, 
-#'     ZIP = 0L, 
-#'     FactorCount = 4L, 
-#'     AddDate = TRUE, 
-#'     Classification = FALSE, 
+#'   data <- data.table::rbindlist(list(data,
+#'   RemixAutoML::FakeDataGenerator(
+#'     Correlation = 0.75,
+#'     N = 25000L,
+#'     ID = 2L,
+#'     ZIP = 0L,
+#'     FactorCount = 4L,
+#'     AddDate = TRUE,
+#'     Classification = FALSE,
 #'     MultiClass = FALSE)))
 #' }
 #' # Run function and time it
@@ -40,7 +41,8 @@
 #'   data <- CreateHolidayVariables(
 #'     data,
 #'     DateCols = "DateTime",
-#'     HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+#'     HolidayGroups = c("USPublicHolidays","EasterGroup",
+#'       "ChristmasGroup","OtherEcclesticalFeasts"),
 #'     Holidays = NULL,
 #'     GroupingVars = c("Factor_1","Factor_2","Factor_3","Factor_4"),
 #'     Print = FALSE))
@@ -55,32 +57,32 @@ CreateHolidayVariables <- function(data,
                                    Holidays = NULL,
                                    GroupingVars = NULL,
                                    Print = FALSE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-  
+
   # Convert to data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # If GroupVars are numeric, convert them to character
   for(zz in seq_along(GroupingVars)) {
     if(is.numeric(data[[eval(GroupingVars[zz])]]) | is.integer(data[[eval(GroupingVars[zz])]])) {
-      data.table::set(data, j = GroupingVars[zz], value = as.character(data[[eval(GroupingVars[zz])]]))  
+      data.table::set(data, j = GroupingVars[zz], value = as.character(data[[eval(GroupingVars[zz])]]))
     }
   }
-  
+
   # Require namespace----
   requireNamespace("timeDate", quietly = TRUE)
-  
+
   # Function for expanding dates, vectorize----
   HolidayCountsInRange <- function(Start, End, Values) return(as.integer(length(which(x = Values %in% seq(as.Date(Start), as.Date(End), by = "days")))))
-  
+
   # Sort by group and date----
   if(!is.null(GroupingVars)) {
     if(!any(class(data[[eval(DateCols)]]) %chin% c("POSIXct","POSIXt","Date"))) data[, eval(DateCols) := as.POSIXct(data[[eval(DateCols)]])]
     data <- data[order(get(GroupingVars),get(DateCols))]
   }
-  
+
   # Store individual holidays if HolidayGroups is specified----
   Holidays <- NULL
   if(!is.null(HolidayGroups)) {
@@ -104,30 +106,27 @@ CreateHolidayVariables <- function(data,
       }
     }
   }
-  
+
   # Turn DateCols into character names if not already----
   for(i in DateCols) if(!is.character(DateCols[i])) DateCols[i] <- names(data)[DateCols[i]]
-  
+
   # Allocate data.table cols----
   data.table::alloc.col(DT = data, ncol(data) + 1L)
-  
+
   # Create Temp Date Columns----
   MinDate <- data[, min(get(DateCols[1L]))]
   if(!is.null(GroupingVars)) {
     for(i in seq_len(length(DateCols))) {
       data.table::setorderv(x = data, cols = c(eval(GroupingVars), eval(DateCols[i])), order = 1L, na.last = TRUE)
       data[, paste0("Lag1_", eval(DateCols[i])) := data.table::shift(x = get(DateCols[i]), n = 1L, fill = MinDate, type = "lag"),  by = c(eval(GroupingVars))]
-    }  
+    }
   } else {
     for(i in seq_len(length(DateCols))) {
       data.table::setorderv(x = data, cols = eval(DateCols[i]), order = 1L, na.last = TRUE)
       data.table::set(data, j = paste0("Lag1_", eval(DateCols[i])), value = data.table::shift(x = data[[eval(DateCols[i])]], n = 1L, fill = MinDate, type = "lag"))
     }
   }
-  
-  # Enforce the missing lagged date to equal the regular date minus a constant----
-  
-  
+
   # Run holiday function to get unique dates----
   library(timeDate)
 

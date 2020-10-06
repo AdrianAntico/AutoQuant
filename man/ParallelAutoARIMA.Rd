@@ -29,6 +29,8 @@ ParallelAutoARIMA(
 \item{MaxRunMinutes}{5}
 
 \item{MaxRunsWithoutNewWinner}{12}
+
+\item{NumCores}{Value}
 }
 \value{
 Time series data sets to pass onto auto modeling functions
@@ -37,6 +39,7 @@ Time series data sets to pass onto auto modeling functions
 ParallelAutoARIMA to run the 4 data sets at once
 }
 \examples{
+\dontrun{
 ParallelAutoARIMA(
   MetricSelection = "MAE",
   Output = NULL,
@@ -44,6 +47,7 @@ ParallelAutoARIMA(
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
   MaxRunMinutes = 5)
+}
 }
 \seealso{
 Other Time Series: 

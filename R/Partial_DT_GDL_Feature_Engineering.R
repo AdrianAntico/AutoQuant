@@ -25,35 +25,39 @@
 #' @param AscRowRemove Set to TRUE to remove the AscRowByGroup column upon returning data.
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
+#' \dontrun{
 #' N = 25116
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'   Target = stats::filter(rnorm(N,
-#'                                mean = 50,
-#'                                sd = 20),
-#'                          filter=rep(1,10),
-#'                          circular=TRUE))
+#' data <- data.table::data.table(
+#'   DateTime = as.Date(Sys.time()),
+#'   Target = stats::filter(
+#'     rnorm(N, mean = 50, sd = 20),
+#'   filter=rep(1,10),
+#'   circular=TRUE))
 #' data[, temp := seq(1:N)][, DateTime := DateTime - temp]
 #' data <- data[order(DateTime)]
-#' data <- Partial_DT_GDL_Feature_Engineering(data,
-#'                                            lags           = c(1:5),
-#'                                            periods        = c(seq(10,50,10)),
-#'                                            SDperiods       = c(seq(5, 95, 5)),
-#'                                            Skewperiods     = c(seq(5, 95, 5)),
-#'                                            Kurtperiods     = c(seq(5, 95, 5)),
-#'                                            Quantileperiods = c(seq(5, 95, 5)),
-#'                                            statsFUNs      = c("mean","sd", "skew", "kurt","q5","q95"),
-#'                                            targets        = c("Target"),
-#'                                            groupingVars   = NULL,
-#'                                            sortDateName   = "DateTime",
-#'                                            timeDiffTarget = c("Time_Gap"),
-#'                                            timeAgg        = "days",
-#'                                            WindowingLag   = 1,
-#'                                            Type           = "Lag",
-#'                                            Timer          = TRUE,
-#'                                            SimpleImpute   = TRUE,
-#'                                            AscRowByGroup  = "temp",
-#'                                            RecordsKeep    = c(1,5,100,2500),
-#'                                            AscRowRemove   = TRUE)
+#' data <- Partial_DT_GDL_Feature_Engineering(
+#'   data,
+#'   lags           = c(1:5),
+#'   periods        = c(seq(10,50,10)),
+#'   SDperiods       = c(seq(5, 95, 5)),
+#'   Skewperiods     = c(seq(5, 95, 5)),
+#'   Kurtperiods     = c(seq(5, 95, 5)),
+#'   Quantileperiods = c(seq(5, 95, 5)),
+#'   statsFUNs      = c("mean","sd", "skew",
+#'     "kurt","q5","q95"),
+#'   targets        = c("Target"),
+#'   groupingVars   = NULL,
+#'   sortDateName   = "DateTime",
+#'   timeDiffTarget = c("Time_Gap"),
+#'   timeAgg        = "days",
+#'   WindowingLag   = 1,
+#'   Type           = "Lag",
+#'   Timer          = TRUE,
+#'   SimpleImpute   = TRUE,
+#'   AscRowByGroup  = "temp",
+#'   RecordsKeep    = c(1,5,100,2500),
+#'   AscRowRemove   = TRUE)
+#' }
 #' @export
 Partial_DT_GDL_Feature_Engineering <- function(data,
                                                lags            = c(seq(1,5,1)),

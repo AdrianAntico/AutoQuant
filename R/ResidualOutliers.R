@@ -15,32 +15,35 @@
 #' @param SMA Max seasonal moving averages
 #' @param tstat the t-stat value for tsoutliers
 #' @examples
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
-#'                                Target = as.numeric(stats::filter(rnorm(1000,
-#'                                                                        mean = 50,
-#'                                                                        sd = 20),
-#'                                                                  filter=rep(1,10),
-#'                                                                  circular=TRUE)))
-#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+#' \dontrun{
+#' data <- data.table::data.table(
+#'   DateTime = as.Date(Sys.time()),
+#'   Target = as.numeric(stats::filter(
+#'     rnorm(1000, mean = 50, sd = 20),
+#'   filter=rep(1,10),
+#'   circular=TRUE)))
+#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][
+#'   , temp := NULL]
 #' data <- data[order(DateTime)]
-#' data[, Predicted := as.numeric(stats::filter(rnorm(1000,
-#'                                                    mean = 50,
-#'                                                    sd = 20),
-#'                                              filter=rep(1,10),
-#'                                              circular=TRUE))]
-#' stuff <- ResidualOutliers(data = data,
-#'                           DateColName = "DateTime",
-#'                           TargetColName = "Target",
-#'                           PredictedColName = NULL,
-#'                           TimeUnit = "day",
-#'                           Lags = 5,
-#'                           MA = 5,
-#'                           SLags = 0,
-#'                           SMA = 0,
-#'                           tstat = 4)
+#' data[, Predicted := as.numeric(
+#'   stats::filter(rnorm(1000, mean = 50, sd = 20),
+#' filter=rep(1,10),
+#' circular=TRUE))]
+#' stuff <- ResidualOutliers(
+#'   data = data,
+#'   DateColName = "DateTime",
+#'   TargetColName = "Target",
+#'   PredictedColName = NULL,
+#'   TimeUnit = "day",
+#'   Lags = 5,
+#'   MA = 5,
+#'   SLags = 0,
+#'   SMA = 0,
+#'   tstat = 4)
 #' data     <- stuff[[1]]
 #' model    <- stuff[[2]]
 #' outliers <- data[type != "<NA>"]
+#' }
 #' @return A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model.
 #' @export
 ResidualOutliers <- function(data,
@@ -53,7 +56,7 @@ ResidualOutliers <- function(data,
                              SLags = 0,
                              SMA = 0,
                              tstat = 2) {
-  
+
   # Define TS Frequency
   if(tolower(TimeUnit) %chin% c("hour","hours")) {
     freq <- 24
@@ -70,7 +73,7 @@ ResidualOutliers <- function(data,
   } else {
     warning("TimeUnit is not in hour, day, week, month, quarter, or year")
   }
-  
+
   # Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
@@ -78,10 +81,10 @@ ResidualOutliers <- function(data,
   if(is.character(data[[eval(DateColName)]]) | is.factor(data[[eval(DateColName)]])) {
     data[, eval(DateColName) := as.POSIXct(get(DateColName))]
   }
-  
+
   # Ensure data is sorted----
   data.table::setorderv(x = data, cols = eval(DateColName), order = 1L)
-  
+
   # Keep columns----
   if(!is.null(PredictedColName)) {
     data[, Residuals := get(TargetColName) - get(PredictedColName)]
@@ -91,10 +94,10 @@ ResidualOutliers <- function(data,
   keep <- c(DateColName, "Residuals")
   temp <- data[, ..keep]
   MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
-  
+
   # Convert to time series object----
   tsData <- stats::ts(temp, start = temp[, min(get(DateColName))][[1]], frequency = freq)
-  
+
   # Build the auto arima----
   if(MinVal > 0) {
     fit <- tryCatch({
@@ -125,21 +128,21 @@ ResidualOutliers <- function(data,
         biasadj = FALSE,
         stepwise = TRUE)}, error = function(x) "empty")
   }
-  
+
   # Store the arima parameters----
   if("empty" %chin% fit) print("No model could be fit"); return(NULL)
   pars <- tsoutliers::coefs2poly(fit)
-  
+
   # Store the arima residuals----
   resid <- cbind(tsData, stats::residuals(fit))
-  
+
   # Find the outliers
   x <- data.table::as.data.table(tsoutliers::locate.outliers(
     resid = resid[, 3L],
     pars = pars,
     cval = tstat,
     types = c("AO", "TC", "LS", "IO", "SLS")))
-  
+
   # Merge back to source data----
   residDT <- data.table::as.data.table(resid)
   z <- cbind(data, residDT)
@@ -149,7 +152,7 @@ ResidualOutliers <- function(data,
   data <- merge(z, x, by = "ind", all.x = TRUE)
   data[, ':=' (ind = NULL, coefhat = NULL)]
   data[type == "<NA>", type := NA]
-  
+
   # Reorder data, remove the coefhat column to send to database or stakeholder----
   return(list(FullData = data, ARIMA_MODEL = fit))
 }

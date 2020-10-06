@@ -38,7 +38,6 @@ AutoH2oMLCARMA(
   NThreads = max(1L, parallel::detectCores() - 2L),
   EvalMetric = "RMSE",
   GridTune = FALSE,
-  GridEvalMetric = "mae",
   ModelCount = 1,
   PartitionType = "timeseries",
   Timer = TRUE,
@@ -112,6 +111,8 @@ AutoH2oMLCARMA(
 
 \item{GridTune}{Keep set to FALSE. I need to investigate how to do this more efficiently with this function}
 
+\item{ModelCount}{Number of models}
+
 \item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
 
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
@@ -128,8 +129,10 @@ AutoH2oMLCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, 
 \donttest{
 
  # Pull in Walmart Data Set
- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
- data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+ data <- data.table::fread(
+   "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+ data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+   , Counts := NULL]
  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 
  # Build forecast
@@ -158,10 +161,12 @@ AutoH2oMLCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, 
   Timer = TRUE,
   DebugMode = FALSE,
   GridTune = FALSE,
+  ModelCount = 1,
 
   # Target Transformations
   TargetTransformation = TRUE,
   Difference = TRUE,
+  NThreads = max(1L, parallel::detectCores()-2L),
 
   # Date Features
   CalendarVariables = TRUE,
@@ -184,7 +189,9 @@ AutoH2oMLCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, 
   TimeTrendVariable = TRUE,
   DebugMode = FALSE)
 
-UpdateMetrics <- print(H2oMLResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+UpdateMetrics <- print(
+  H2oMLResults$ModelInformation$EvaluationMetrics[
+    Metric == "MSE", MetricValue := sqrt(MetricValue)])
 print(UpdateMetrics)
 H2oMLResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 H2oMLResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]

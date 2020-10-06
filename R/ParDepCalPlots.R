@@ -13,9 +13,10 @@
 #' @param Function Supply the function you wish to use for aggregation.
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
-#'
+#' \dontrun{
 #' # Create fake data
-#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.70, N = 10000000, Classification = FALSE)
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70, N = 10000000, Classification = FALSE)
 #' data.table::setnames(data, "Independent_Variable2", "Predict")
 #'
 #' # Build plot
@@ -28,6 +29,7 @@
 #'   PercentileBucket = 0.20,
 #'   FactLevels = 10,
 #'   Function = function(x) mean(x, na.rm = TRUE))
+#' }
 #' @export
 ParDepCalPlots <- function(data,
                            PredictionColName = c("PredictedValues"),

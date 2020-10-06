@@ -63,6 +63,8 @@ AutoCatBoostHurdleModel(
 
 \item{TransformNumericColumns}{Transform numeric column inside the AutoCatBoostRegression() function}
 
+\item{Methods}{Choose transformation methods}
+
 \item{ClassWeights}{Utilize these for the classifier model}
 
 \item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
@@ -76,6 +78,8 @@ AutoCatBoostHurdleModel(
 \item{MetaDataPaths}{TA character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.}
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
+
+\item{ReturnModelObjects}{TRUE to return the models}
 
 \item{NumOfParDepPlots}{Set to pull back N number of partial dependence calibration plots.}
 
@@ -116,7 +120,7 @@ Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, V
 AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd on github for more background.
 }
 \examples{
-\donttest{
+\dontrun{
 Output <- RemixAutoML::AutoCatBoostHurdleModel(
 
   # Operationalization
@@ -140,7 +144,9 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   Paths = normalizePath("./"),
   MetaDataPaths = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods =
+     c("BoxCox", "Asinh", "Asin", "Log",
+       "LogPlus1", "Logit", "YeoJohnson"),
   ClassWeights = NULL,
   SplitRatios = c(0.70, 0.20, 0.10),
   NumOfParDepPlots = 10L,
@@ -161,7 +167,8 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   LearningRate = seq(0.01,0.10,0.01),
   L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+  BootStrapType = c("Bayesian", "Bernoulli",
+     "Poisson", "MVS", "No"),
   GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 }
 }

@@ -20,6 +20,8 @@ SQL_Query(
 \item{ASIS}{Auto column typing}
 
 \item{CloseChannel}{TRUE to close when done, FALSE to leave the channel open}
+
+\item{RowsPerBatch}{Rows default is 1024}
 }
 \description{
 SQL_Query get data from a database

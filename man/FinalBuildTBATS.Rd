@@ -33,6 +33,7 @@ Time series data sets to pass onto auto modeling functions
 FinalBuildTBATS to generate forecasts and ensemble data
 }
 \examples{
+\dontrun{
 FinalBuildTBATS(
   Output = NULL,
   TimeSeriesPrepareOutput = NULL,
@@ -40,6 +41,7 @@ FinalBuildTBATS(
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
   MaxRunMinutes = 5)
+}
 }
 \seealso{
 Other Time Series: 

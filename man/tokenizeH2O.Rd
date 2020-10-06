@@ -13,7 +13,7 @@ tokenizeH2O(data)
 This function tokenizes text data
 }
 \examples{
-\donttest{
+\dontrun{
 data <- tokenizeH2O(data = data[["StringColumn"]])
 }
 }

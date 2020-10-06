@@ -30,12 +30,13 @@ A BinaryRatingsMatrix
 Convert transactional data.table to a binary ratings matrix
 }
 \examples{
-\donttest{
-RatingsMatrix <- AutoRecomDataCreate(data,
-                                     EntityColName = "CustomerID",
-                                     ProductColName = "StockCode",
-                                     MetricColName = "TotalSales",
-                                     ReturnMatrix = TRUE)
+\dontrun{
+RatingsMatrix <- AutoRecomDataCreate(
+  data,
+  EntityColName = "CustomerID",
+  ProductColName = "StockCode",
+  MetricColName = "TotalSales",
+  ReturnMatrix = TRUE)
 }
 }
 \seealso{

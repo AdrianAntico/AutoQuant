@@ -78,7 +78,7 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
 #' @param Target The name of your target variable column
 #' @param Predicted The name of your predicted value column#'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' AggMetricsByGroup <- DT_BinaryConfusionMatrix(
 #'   data,
 #'   GroupVariables = c("Store","Dept"),
@@ -145,6 +145,7 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
 #' @author Adrian Antico
 #' @family Model Evaluation
 #' @param TestData Test data from your modeling
+#' @param Thresholds Value
 #' @param Target Name of your target variable
 #' @param Predict Name of your predicted value variable
 #' @param PositiveOutcome The value of the positive outcome level
@@ -264,8 +265,13 @@ ClassificationMetrics <- function(TestData,
 #' @param H2oGLMTestData Test data returned from AutoH2oGLMClassifier
 #' @param XGBoostTestData Test data returned from AutoXGBoostClassifier
 #' @examples
-#' \donttest{
-#' RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2ogbm","h2odrf","xgboost"),
+#' \dontrun{
+#' RemixClassificationMetrics <- function(
+#'   MLModels = c("catboost",
+#'                "h2oautoml",
+#'                "h2ogbm",
+#'                "h2odrf",
+#'                "xgboost"),
 #'   TargetVariable = "Value",
 #'   Thresholds = seq(0.01,0.99,0.01),
 #'   CostMatrix = c(1,0,0,1),

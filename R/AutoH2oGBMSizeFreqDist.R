@@ -15,7 +15,7 @@
 #' @param NTrees Default is 1500. If the best model utilizes all trees, you should consider increasing the argument.
 #' @param MaxMem The max memory allocation. E.g. "28G"
 #' @param NThreads The max threads to use. E.g. 4
-#' @param EvalMetric Set to "Quantile". Alternative quantile methods may become available in the future. 
+#' @param EvalMetric Set to "Quantile". Alternative quantile methods may become available in the future.
 #' @param GridTune The default is set to FALSE. If you set to TRUE, make sure to specify MaxModelsGrid to a number greater than 1.
 #' @param CountTargetColumnName Column names or column numbers
 #' @param SizeTargetColumnName Column names or column numbers
@@ -29,35 +29,36 @@
 #' @return This function does not return anything. It can only store your models and model evaluation metadata to file.
 #' @examples
 #' \donttest{
-#' AutoH2oGBMSizeFreqDist(CountData = NULL, 
-#'                        SizeData = NULL,
-#'                        CountQuantiles = seq(0.10,0.90,0.10), 
-#'                        SizeQuantiles = seq(0.10,0.90,0.10), 
-#'                        AutoTransform = TRUE, 
-#'                        DataPartitionRatios = c(0.75,0.20,0.05),
-#'                        StratifyColumnName = NULL,
-#'                        StratifyTargets = FALSE,
-#'                        NTrees = 1500,
-#'                        MaxMem = "28G",
-#'                        NThreads = max(1, parallel::detectCores()-2),
-#'                        EvalMetric = "Quantile",
-#'                        GridTune = FALSE,
-#'                        CountTargetColumnName = NULL,
-#'                        SizeTargetColumnName = NULL,
-#'                        CountFeatureColNames = NULL,
-#'                        SizeFeatureColNames = NULL,
-#'                        ModelIDs = c("CountModel","SizeModel"),
-#'                        MaxModelsGrid = 5,
-#'                        ModelPath = NULL,
-#'                        MetaDataPath = NULL,
-#'                        NumOfParDepPlots = 0)
+#' AutoH2oGBMSizeFreqDist(
+#'   CountData = NULL,
+#'   SizeData = NULL,
+#'   CountQuantiles = seq(0.10,0.90,0.10),
+#'   SizeQuantiles = seq(0.10,0.90,0.10),
+#'   AutoTransform = TRUE,
+#'   DataPartitionRatios = c(0.75,0.20,0.05),
+#'   StratifyColumnName = NULL,
+#'   StratifyTargets = FALSE,
+#'   NTrees = 1500,
+#'   MaxMem = "28G",
+#'   NThreads = max(1, parallel::detectCores()-2),
+#'   EvalMetric = "Quantile",
+#'   GridTune = FALSE,
+#'   CountTargetColumnName = NULL,
+#'   SizeTargetColumnName = NULL,
+#'   CountFeatureColNames = NULL,
+#'   SizeFeatureColNames = NULL,
+#'   ModelIDs = c("CountModel","SizeModel"),
+#'   MaxModelsGrid = 5,
+#'   ModelPath = NULL,
+#'   MetaDataPath = NULL,
+#'   NumOfParDepPlots = 0)
 #' }
 #' @export
-AutoH2oGBMSizeFreqDist <- function(CountData = NULL, 
+AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
                                    SizeData = NULL,
-                                   CountQuantiles = seq(0.10,0.90,0.10), 
-                                   SizeQuantiles = seq(0.10,0.90,0.10), 
-                                   AutoTransform = TRUE, 
+                                   CountQuantiles = seq(0.10,0.90,0.10),
+                                   SizeQuantiles = seq(0.10,0.90,0.10),
+                                   AutoTransform = TRUE,
                                    DataPartitionRatios = c(0.75,0.20,0.05),
                                    StratifyColumnName = NULL,
                                    StratifyTargets = FALSE,
@@ -75,19 +76,19 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
                                    ModelPath = NULL,
                                    MetaDataPath = NULL,
                                    NumOfParDepPlots = 0) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Return immediately if no paths are given----
   if(is.null(ModelPath)) return("Need to supply a path in ModelPath for saving models")
-  
+
   # Count Model AutoTransform----
   if(AutoTransform) TransFormCols <- CountTargetColumnName else TransFormCols <- NULL
-  
+
   # Clear GPU garbage----
   gc()
-  
+
   # Target stratification----
   if(StratifyTargets) {
     StratTargetColumns <- "Counts"
@@ -96,7 +97,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     StratTargetColumns <- NULL
     StratTargetPrecision <- NULL
   }
-  
+
   # Count Model AutoDataPartition----
   CountDataSets <- AutoDataPartition(
     data = CountData,
@@ -107,20 +108,20 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     StratifyNumericTarget = StratTargetColumns,
     StratTargetPrecision = StratTargetPrecision,
     TimeColumnName = NULL)
-  
+
   # Store data sets----
   CountDataTrain <- CountDataSets$TrainData
   CountDataValidate <- CountDataSets$ValidationData
   CountDataTest <- CountDataSets$TestData
-  
+
   # Build Count Models----
   for(quan in CountQuantiles) {
-    
+
     # Copy data sets----
     CountDataTrainCopy <- data.table::copy(CountDataTrain)
     CountDataValidateCopy <- data.table::copy(CountDataValidate)
     CountDataTestCopy <- data.table::copy(CountDataTest)
-    
+
     # Build Model----
     TestModel <- AutoH2oGBMRegression(
       data = CountDataTrainCopy,
@@ -150,17 +151,17 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     # Pause Runs by 10 seconds----
     Sys.sleep(10)
   }
-  
+
   # Clear Count Model Data----
   rm(CountDataSets,CountData,CountDataTrain,CountDataValidate,CountDataTest)
-  
+
   # Size Model AutoTransform----
   if(AutoTransform) {
     TransFormCols <- SizeTargetColumnName
   } else {
     TransFormCols <- NULL
   }
-  
+
   # Target stratification----
   if(StratifyTargets) {
     StratTargetColumns <- "Size"
@@ -169,7 +170,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     StratTargetColumns <- NULL
     StratTargetPrecision <- NULL
   }
-  
+
   # Size Model AutoDataPartition----
   SizeDataSets <- AutoDataPartition(
     data = SizeData,
@@ -180,23 +181,23 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     StratifyNumericTarget = StratTargetColumns,
     StratTargetPrecision = StratTargetPrecision,
     TimeColumnName = NULL)
-  
+
   # Store data sets----
   SizeDataTrain <- SizeDataSets$TrainData
   SizeDataValidate <- SizeDataSets$ValidationData
   SizeDataTest <- SizeDataSets$TestData
-  
+
   # Clear GPU garbage----
   gc()
-  
+
   # Build Size Models----
   for(quan in SizeQuantiles) {
-    
+
     # Copy data----
     SizeDataTrainCopy <- data.table::copy(SizeDataTrain)
     SizeDataValidateCopy <- data.table::copy(SizeDataValidate)
     SizeDataTestCopy <- data.table::copy(SizeDataTest)
-    
+
     # Build Models----
     TestModel <- AutoH2oGBMRegression(
       data = SizeDataTrainCopy,
@@ -222,7 +223,7 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
       IfSaveModel = "standard",
       H2OShutdown = TRUE,
       Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"))
-    
+
     # Pause Runs by 10 seconds----
     Sys.sleep(10)
   }

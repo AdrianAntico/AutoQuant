@@ -119,7 +119,7 @@ The TargetEncoding column let's you specify the column number of features you wi
 The SupplyData column lets you supply the data names for training and validation data. Set to NULL if you want the data partitioning to be done internally.
 }
 \examples{
-\donttest{
+\dontrun{
 # Classification Example
 Correl <- 0.85
 aa <- data.table::data.table(target = runif(1000))

@@ -38,9 +38,16 @@
 #' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
 #' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
 #' @examples
-#' \donttest{
-#' # Create some dummy correlated data with numeric and categorical features
-#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+#' \dontrun{
+#' # Create some dummy correlated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = FALSE,
+#'   Classification = TRUE,
+#'   MultiClass = FALSE)
 #'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoCatBoostClassifier(
@@ -50,19 +57,27 @@
 #'     NumGPUs = 1,
 #'
 #'     # Metadata arguments:
-#'     #   'ModelID' is used to create part of the file names generated when saving to file'
-#'     #   'model_path' is where the minimal model objects for scoring will be stored
-#'     #      'ModelID' will be the name of the saved model object
-#'     #   'metadata_path' is where model evaluation and model interpretation files are saved
-#'     #      objects saved to model_path if metadata_path is null
-#'     #      Saved objects include:
-#'     #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-#'     #         'ModelID_ROC_Plot.png' and 'Model_ID_EvaluationPlot.png' calibration plot
-#'     #         'ModelID_VariableImportance.csv' is the variable importance.
-#'     #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-#'     #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-#'     #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-#'     #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix measures across all thresholds
+#'     #   'ModelID' is used to create part of the file
+#'     #       names generated when saving to file'
+#'     #   'model_path' is where the minimal model objects
+#'     #       for scoring will be stored
+#'     #   'ModelID' will be the name of the saved model object
+#'     #   'metadata_path' is where model evaluation and model
+#'     #       interpretation files are saved
+#'     #    objects saved to model_path if metadata_path is null
+#'     #    Saved objects include:
+#'     #    'ModelID_ValidationData.csv' is the supplied or generated
+#'     #       TestData with predicted values
+#'     #    'ModelID_ROC_Plot.png' and 'Model_ID_EvaluationPlot.png'
+#'     #        calibration plot
+#'     #    'ModelID_VariableImportance.csv' is the variable importance.
+#'     #        This won't be saved to file if GrowPolicy is either
+#'     #          "Depthwise" or "Lossguide" was used
+#'     #    'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
+#'     #        Results of all model builds including parameter settings,
+#'     #          bandit probs, and grid IDs
+#'     #    'ModelID_EvaluationMetrics.csv' which contains all confusion
+#'     #           matrix measures across all thresholds
 #'     ModelID = "Test_Model_1",
 #'     model_path = normalizePath("./"),
 #'     metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
@@ -70,29 +85,39 @@
 #'     ReturnModelObjects = TRUE,
 #'
 #'     # Data arguments:
-#'     #   'TrainOnFull' is to train a model with 100 percent of your data.
-#'     #     That means no holdout data will be used for evaluation
-#'     #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-#'     #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-#'     #     CatBoost categorical treatment is enhanced when supplied
-#'     #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+#'     #   'TrainOnFull' is to train a model with 100 percent of
+#'     #      your data.
+#'     #   That means no holdout data will be used for evaluation
+#'     #   If ValidationData and TestData are NULL and TrainOnFull
+#'     #      is FALSE then data will be split 70 20 10
+#'     #   'PrimaryDateColumn' is a date column in data that is
+#'     #      meaningful when sorted.
+#'     #    CatBoost categorical treatment is enhanced when supplied
+#'     #   'IDcols' are columns in your data that you don't use for
+#'     #      modeling but get returned with ValidationData
 #'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+#'     FeatureColNames = names(data)[!names(data) %chin%
+#'         c("IDcol_1","IDcol_2","Adrian")],
 #'     PrimaryDateColumn = NULL,
 #'     ClassWeights = c(1L,1L),
 #'     IDcols = c("IDcol_1","IDcol_2"),
 #'
 #'     # Model evaluation:
-#'     #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+#'     #   'eval_metric' is the measure catboost uses when evaluting
+#'     #       on holdout data during its bandit style process
 #'     #   'loss_function' the loss function used in training optimization
-#'     #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-#'     #     A value of 3 will return plots for the top 3 variables based on variable importance
-#'     #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-#'     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+#'     #   'NumOfParDepPlots' Number of partial dependence calibration plots
+#'     #       generated.
+#'     #     A value of 3 will return plots for the top 3 variables based
+#'     #       on variable importance
+#'     #     Won't be returned if GrowPolicy is either "Depthwise" or
+#'     #       "Lossguide" is used
+#'     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted
+#'     #        ValidationData
 #'     eval_metric = "AUC",
 #'     loss_function = "Logloss",
 #'     MetricPeriods = 10L,
@@ -101,11 +126,15 @@
 #'     # Grid tuning arguments:
 #'     #   'PassInGrid' is for retraining using a previous grid winning args
 #'     #   'MaxModelsInGrid' is a cap on the number of models that will run
-#'     #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
+#'     #   'MaxRunsWithoutNewWinner' number of runs without a new winner
+#'     #      before exiting grid tuning
 #'     #   'MaxRunMinutes' is a cap on the number of minutes that will run
-#'     #   'Shuffles' is the number of times you want the random grid arguments shuffled
-#'     #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
-#'     #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
+#'     #   'Shuffles' is the number of times you want the random grid
+#'     #      arguments shuffled
+#'     #   'BaselineComparison' default means to compare each model build
+#'     #      with a default built of catboost using max(Trees)
+#'     #   'MetricPeriods' is the number of trees built before evaluting
+#'     #      holdoutdata internally. Used in finding actual Trees used.
 #'     PassInGrid = NULL,
 #'     GridTune = FALSE,
 #'     MaxModelsInGrid = 100L,
@@ -116,7 +145,8 @@
 #'
 #'     # Trees, Depth, and LearningRate used in the bandit grid tuning
 #'     # Must set Trees to a single value if you are not grid tuning
-#'     # The ones below can be set to NULL and the values in the example will be used
+#'     # The ones below can be set to NULL and the values in the example
+#'     #   will be used
 #'     # GrowPolicy is turned off for CPU runs
 #'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
 #'     Trees = seq(100L, 500L, 50L),

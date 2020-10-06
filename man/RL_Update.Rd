@@ -54,6 +54,7 @@ RL_Update(
 RL_Update updates the bandit probabilities for selecting different grids
 }
 \examples{
+\dontrun{
 RL_Update_Output <- RL_Update(
   ExperimentGrid = ExperimentGrid,
   MetricSelection = MetricSelection,
@@ -73,6 +74,7 @@ BanditProbs <- RL_Update_Output[["BanditProbs"]]
 Trials <- RL_Update_Output[["Trials"]]
 Successes <- RL_Update_Output[["Successes"]]
 NewGrid <- RL_Update_Output[["NewGrid"]]
+}
 }
 \seealso{
 Other Reinforcement Learning: 

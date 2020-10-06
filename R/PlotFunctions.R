@@ -9,31 +9,35 @@
 #' @param layout Leave NULL
 #' @param ... Passthrough arguments
 #' @examples
+#' \dontrun{
 #' Correl <- 0.85
 #' data <- data.table::data.table(Target = runif(100))
 #' data[, x1 := qnorm(Target)]
 #' data[, x2 := runif(100)]
-#' data[, Independent_Variable1 := log(pnorm(Correl * x1 +
-#'                                             sqrt(1-Correl^2) * qnorm(x2)))]
-#' data[, Predict := (pnorm(Correl * x1 +
-#'                            sqrt(1-Correl^2) * qnorm(x2)))]
-#' p1 <- RemixAutoML::ParDepCalPlots(data,
-#'                                   PredictionColName = "Predict",
-#'                                   TargetColName = "Target",
-#'                                   IndepVar = "Independent_Variable1",
-#'                                   GraphType = "calibration",
-#'                                   PercentileBucket = 0.20,
-#'                                   FactLevels = 10,
-#'                                   Function = function(x) mean(x, na.rm = TRUE))
-#' p2 <- RemixAutoML::ParDepCalPlots(data,
-#'                                   PredictionColName = "Predict",
-#'                                   TargetColName = "Target",
-#'                                   IndepVar = "Independent_Variable1",
-#'                                   GraphType = "boxplot",
-#'                                   PercentileBucket = 0.20,
-#'                                   FactLevels = 10,
-#'                                   Function = function(x) mean(x, na.rm = TRUE))
+#' data[, Independent_Variable1 := log(
+#'   pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' data[, Predict := (
+#'   pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' p1 <- RemixAutoML::ParDepCalPlots(
+#'   data,
+#'   PredictionColName = "Predict",
+#'   TargetColName = "Target",
+#'   IndepVar = "Independent_Variable1",
+#'   GraphType = "calibration",
+#'   PercentileBucket = 0.20,
+#'   FactLevels = 10,
+#'   Function = function(x) mean(x, na.rm = TRUE))
+#' p2 <- RemixAutoML::ParDepCalPlots(
+#'   data,
+#'   PredictionColName = "Predict",
+#'   TargetColName = "Target",
+#'   IndepVar = "Independent_Variable1",
+#'   GraphType = "boxplot",
+#'   PercentileBucket = 0.20,
+#'   FactLevels = 10,
+#'   Function = function(x) mean(x, na.rm = TRUE))
 #' RemixAutoML::multiplot(plotlist = list(p1,p2), cols = 2)
+#' }
 #' @return Multiple ggplots on a single image
 #' @export
 multiplot <- function(...,
@@ -64,16 +68,21 @@ multiplot <- function(...,
 #' @author Douglas Pestana
 #' @family Graphics
 #' @examples
-#' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
+#' \dontrun{
+#' data <- data.table::data.table(
+#'   DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
 #'                                mean = 50,
 #'                                sd = 20),
 #'                          filter=rep(1,10),
 #'                          circular=TRUE))
-#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][
+#'   , temp := NULL]
 #' data <- data[order(DateTime)]
-#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::geom_line()
+#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) +
+#'   ggplot2::geom_line()
 #' p <- p + RemixTheme()
+#' }
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 RemixTheme <- function() {
@@ -113,16 +122,20 @@ RemixTheme <- function() {
 #' @param BackGroundColor "gray95",
 #' @param LegendPosition Where to place legend
 #' @examples
+#' \dontrun{
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
 #'   Target = stats::filter(rnorm(1000,
 #'                                mean = 50,
 #'                                sd = 20),
 #'                          filter=rep(1,10),
 #'                          circular=TRUE))
-#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][
+#'   , temp := NULL]
 #' data <- data[order(DateTime)]
-#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) + ggplot2::geom_line()
+#' p <- ggplot2::ggplot(data, ggplot2::aes(x = DateTime, y = Target)) +
+#'   ggplot2::geom_line()
 #' p <- p + ChartTheme(Size = 12)
+#' }
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 ChartTheme <- function(Size = 12,
@@ -165,7 +178,9 @@ ChartTheme <- function(Size = 12,
 #' @param GroupVariables Group variables
 #' @param VLineDate Date of last actual target value
 #' @param Aggregate Choose from 'sum' or 'mean'
+#' @param TextSize Default 12
 #' @param NumberGroupsDisplay Number of lines to display
+#' @param LevelsToDisplay Value
 #' @param OtherGroupLabel Label to call all other group levels
 #' @param DisplayOtherGroup If TRUE, a line will be shown with all levels that fall into 'other' otherwise no line will be shown
 #' @param LineWidth Numeric value. Default is 1
@@ -523,6 +538,8 @@ TimeSeriesPlotter <- function(data = data,
   }
 }
 
+#' AutoBanditSarima2x2LagMA
+#' @param Output asdf
 #' @noRd
 AutoBanditSarima2x2LagMA <- function(Output) {
 

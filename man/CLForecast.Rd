@@ -22,6 +22,8 @@ CLForecast(
 
 \item{FC_BaseFunnelMeasure}{d}
 
+\item{SegmentName}{a}
+
 \item{MaxDateForecasted}{S}
 
 \item{MaxCalendarDate}{S}

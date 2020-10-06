@@ -85,33 +85,36 @@ TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA
 TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
 }
 \examples{
-\donttest{
+\dontrun{
 data <- data.table::data.table(DateTime = as.Date(Sys.time()),
   Target = stats::filter(rnorm(100,
                                mean = 50,
                                sd = 20),
                          filter=rep(1,10),
                          circular=TRUE))
-data[, temp := seq(1:100)][, DateTime := DateTime - temp][, temp := NULL]
+data[, temp := seq(1:100)][, DateTime := DateTime - temp][
+  , temp := NULL]
 data <- data[order(DateTime)]
-output <-   AutoTS(data,
-                   TargetName              = "Target",
-                   DateName                = "DateTime",
-                   FCPeriods               = 1,
-                   HoldOutPeriods          = 1,
-                   EvaluationMetric        = "MAPE",
-                   InnerEval               = "AICc",
-                   TimeUnit                = "day",
-                   Lags                    = 1,
-                   SLags                   = 1,
-                   MaxFourierPairs         = 0,
-                   NumCores                = 4,
-                   SkipModels              = c("NNET","TBATS","ETS","TSLM","ARFIMA","DSHW"),
-                   StepWise                = TRUE,
-                   TSClean                 = FALSE,
-                   ModelFreq               = TRUE,
-                   PlotPredictionIntervals = TRUE,
-                   PrintUpdates            = FALSE)
+output <-   AutoTS(
+  data,
+  TargetName              = "Target",
+  DateName                = "DateTime",
+  FCPeriods               = 1,
+  HoldOutPeriods          = 1,
+  EvaluationMetric        = "MAPE",
+  InnerEval               = "AICc",
+  TimeUnit                = "day",
+  Lags                    = 1,
+  SLags                   = 1,
+  MaxFourierPairs         = 0,
+  NumCores                = 4,
+  SkipModels              = c("NNET","TBATS","ETS",
+    "TSLM","ARFIMA","DSHW"),
+  StepWise                = TRUE,
+  TSClean                 = FALSE,
+  ModelFreq               = TRUE,
+  PlotPredictionIntervals = TRUE,
+  PrintUpdates            = FALSE)
 ForecastData <- output$Forecast
 ModelEval    <- output$EvaluationMetrics
 WinningModel <- output$TimeSeriesModel

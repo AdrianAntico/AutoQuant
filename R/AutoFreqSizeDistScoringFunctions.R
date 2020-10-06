@@ -1,7 +1,7 @@
-#' IntermittentDemandScoringDataGenerator creates the scoring data for forecasting
+#' IntermittentDemandScoringDataGenerator
 #'
 #' IntermittentDemandScoringDataGenerator creates the scoring data for forecasting. It will recreate the same features used for modeling, take the most recent record, and then duplicate those records for each forecast period specifed.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data This is your source data
@@ -18,8 +18,8 @@
 #' @param CurrentDate Set this to the current date or a date that you want. It is user specified in case you want to score historical data.
 #' @param CalendarVariables Set this to the same setting you used in modeling data creation
 #' @param HolidayGroups Set this to the same setting you used in modeling data creation
-#' @examples 
-#' \donttest{
+#' @examples
+#' \dontrun{
 #'  ScoringData <- IntermittentDemandScoringDataGenerator(
 #'    data = data,
 #'    SaveData = FALSE,
@@ -65,18 +65,18 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
                                                                          "quarter",
                                                                          "year"),
                                                    HolidayGroups = "USPublicHolidays") {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Copy data----
   datax <- data.table::copy(data)
-  
+
   # Convert DateVariableName to Date Type----
   if(is.character(datax[[eval(DateVariableName)]])) {
     data.table::set(datax, j = eval(DateVariableName), value = as.Date(datax[[eval(DateVariableName)]]))
   }
-  
+
   # Current date calculated like data gen process----
   if(is.null(CurrentDate)) {
     if(tolower(TimeUnit) == "day") {
@@ -89,20 +89,20 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   } else {
     CurrentDate <- as.Date(CurrentDate)
   }
-  
+
   # Ensure is data.table----
   if(!data.table::is.data.table(datax)) {
     datax <- data.table::as.data.table(datax)
   }
-  
+
   # Round down dates----
   data.table::set(
-    datax, 
-    j = eval(DateVariableName), 
+    datax,
+    j = eval(DateVariableName),
     value = lubridate::floor_date(
-      datax[[eval(DateVariableName)]], 
+      datax[[eval(DateVariableName)]],
       unit = eval(TimeUnit)))
-  
+
   # Group Concatenation----
   if (!is.null(GroupingVariables)) {
     if(length(GroupingVariables) > 1) {
@@ -111,36 +111,36 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
     } else {
       data.table::setnames(datax, eval(GroupingVariables), "GroupVar")
     }
-    
+
     # Modify GroupingVariables argument
     ReverseGroupingVariables <- GroupingVariables
     GroupingVariables <- "GroupVar"
   }
-  
+
   # Ensure data is aggregated to proper time unit----
-  datax <- datax[, sum(get(TargetVariableName)), 
+  datax <- datax[, sum(get(TargetVariableName)),
                  by = c("GroupVar", eval(DateVariableName))]
   data.table::setnames(datax, "V1", eval(TargetVariableName))
-  
+
   # Add Calendar Variables----
   if(!is.null(CalendarVariables)) {
     datax <- CreateCalendarVariables(
-      datax, 
+      datax,
       DateCols = DateVariableName,
-      AsFactor = FALSE, 
-      TimeUnits = CalendarVariables)    
+      AsFactor = FALSE,
+      TimeUnits = CalendarVariables)
   }
-  
+
   # Add Holiday Variables----
   if(!is.null(HolidayGroups)) {
     datax <- CreateHolidayVariables(
-      datax, 
+      datax,
       DateCols = DateVariableName,
-      HolidayGroups = HolidayGroups, 
+      HolidayGroups = HolidayGroups,
       Holidays = NULL,
-      GroupingVars = "GroupVar")    
+      GroupingVars = "GroupVar")
   }
-  
+
   # Add in the time varying features----
   datax <- DT_GDL_Feature_Engineering(
     datax,
@@ -155,27 +155,27 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
     WindowingLag   = 0,
     Type           = "Lag",
     SimpleImpute   = TRUE)
-  
+
   # Add Time Trend Variable----
   if(!is.null(GroupingVariables)) {
     data.table::setorderv(
-      datax, 
-      cols = c("GroupVar", eval(DateVariableName)), 
+      datax,
+      cols = c("GroupVar", eval(DateVariableName)),
       order = c(1,-1))
     datax[, TimeTrend := 1:.N, by = list(GroupVar)]
   }
-  
+
   # Add in the time since last demand instance from RandomStartDate----
   datax <- datax[order(-get(DateVariableName))][
     , TimeSinceLastDemand := as.numeric(difftime(CurrentDate, get(DateVariableName), units = TimeUnit))]
-  
+
   # Subset data----
   datax <- datax[TimeTrend == 1]
-  
+
   # Add FC_Window----
   temp <- data.table::CJ(GroupVar = as.character(datax[["GroupVar"]]), FC_Window = seq_len(FC_Periods))
   datax <- merge(datax, temp, by = "GroupVar", all = FALSE)
-  
+
   # Back-transform GroupingVariables----
   if(length(ReverseGroupingVariables) > 1) {
     datax[, eval(ReverseGroupingVariables) := data.table::tstrsplit(GroupVar, " ")][
@@ -183,20 +183,20 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
   } else {
     data.table::setnames(datax, eval(GroupingVariables), eval(ReverseGroupingVariables))
   }
-  
+
   # Save data----
   if(SaveData) {
     data.table::fwrite(datax, file = file.path(FilePath,"ScoringData.csv"))
   }
-  
+
   # Return datax----
   return(datax)
 }
 
 #' AutoCatBoostFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist()
-#' 
+#'
 #' AutoCatBoostFreqSizeScoring is for scoring the models build with AutoCatBoostSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param ScoringData The scoring data returned from IntermittentDemandScoringDataGenerator()
@@ -208,14 +208,14 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
 #' @param ModelPath The path file to where you models were saved
 #' @param ModelIDs The ID's used in model building
 #' @param KeepFeatures Set to TRUE to return the features with the predicted values
-#' @examples 
-#' \donttest{
+#' @examples
+#' \dontrun{
 #' FinalData <- AutoCatBoostFreqSizeScoring(
 #'   ScoringData,
 #'   TargetColumnNames = c("Counts","TARGET_qty"),
 #'   FeatureColumnNames = 1:ncol(ScoringData),
 #'   IDcols = NULL,
-#'   CountQuantiles = seq(0.10,0.90,0.10), 
+#'   CountQuantiles = seq(0.10,0.90,0.10),
 #'   SizeQuantiles = seq(0.10,0.90,0.10),
 #'   ModelPath = getwd(),
 #'   ModelIDs = c("CountModel","SizeModel"),
@@ -227,20 +227,20 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
                                         TargetColumnNames = NULL,
                                         FeatureColumnNames = NULL,
                                         IDcols = NULL,
-                                        CountQuantiles = seq(0.10,0.90,0.10), 
+                                        CountQuantiles = seq(0.10,0.90,0.10),
                                         SizeQuantiles = seq(0.10,0.90,0.10),
                                         ModelPath = NULL,
                                         ModelIDs = c("CountModel","SizeModel"),
                                         KeepFeatures = TRUE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100)
-  
+
   # Ensure data.table----
   if(!data.table::is.data.table(ScoringData)) {
     ScoringData <- data.table::as.data.table(ScoringData)
   }
-  
+
   # Score count models----
   Counter <- 1
   for(Count in CountQuantiles) {
@@ -266,22 +266,22 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
       MDP_MissFactor = "0",
       MDP_MissNum = -1
     )
-    
+
     # Rearrange Column Ordering, change names, cbind----
     data.table::setcolorder(data, c(2:ncol(data),1))
     if(Count == min(CountQuantiles)) {
       data.table::setnames(data, "Predictions", paste0(ModelIDs[1],"_",Count))
-      CountData <- data      
+      CountData <- data
     } else {
       CountData <- cbind(CountData, data[[paste0("Predictions")]])
       data.table::setnames(CountData, "V2", paste0(ModelIDs[1],"_",Count))
     }
-    
+
     # Update timer----
     print(paste0("Count model scoring is ",100*round(Counter/length(CountQuantiles),2),"% complete"))
     Counter <- Counter + 1
   }
-  
+
   # Score size models----
   Counter <- 1
   for(Size in SizeQuantiles) {
@@ -307,26 +307,26 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
       MDP_MissFactor = "0",
       MDP_MissNum = -1
     )
-    
+
     # Rearrange Column Ordering, change names, cbind----
     data.table::setcolorder(data, c(2:ncol(data),1))
     if(Size == min(SizeQuantiles)) {
       data.table::setnames(data, "Predictions", paste0(ModelIDs[2],"_",Size))
-      SizeData <- data      
+      SizeData <- data
     } else {
       SizeData <- cbind(SizeData, data[[paste0("Predictions")]])
       data.table::setnames(SizeData, "V2", paste0(ModelIDs[2],"_",Size))
     }
-    
+
     # Update timer----
     print(paste0("Size model scoring is ",100*round(Counter/length(CountQuantiles),2),"% complete"))
     Counter <- Counter + 1
   }
-  
+
   # Column names of predictions----
   CountPredNames <- c("FC_Window", names(CountData)[which(grepl(pattern = paste0(ModelIDs[1],"_"), x = names(CountData)))])
   SizePredNames <- c("FC_Window", names(SizeData)[which(grepl(pattern = paste0(ModelIDs[2],"_"), x = names(SizeData)))])
-  
+
   # Return FinalData----
   return(list(CountData = CountData,
               SizeData = SizeData,
@@ -335,9 +335,9 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
 }
 
 #' AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoH2oGBMSizeFreqDist()
-#' 
+#'
 #' AutoH2oGBMFreqSizeScoring is for scoring the models build with AutoH2oGBMSizeFreqDist(). It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data.
-#' 
+#'
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param ScoringData The scoring data returned from IntermittentDemandScoringDataGenerator()
@@ -348,12 +348,12 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
 #' @param ModelIDs The ID's used in model building
 #' @param KeepFeatures Set to TRUE to return the features with the predicted values
 #' @param JavaOptions For mojo scoring '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-#' @examples 
-#' \donttest{
+#' @examples
+#' \dontrun{
 #' FinalData <- AutoH2oGBMFreqSizeScoring(
 #'   ScoringData,
 #'   TargetColumnNames = c("Counts","TARGET_qty"),
-#'   CountQuantiles = seq(0.10,0.90,0.10), 
+#'   CountQuantiles = seq(0.10,0.90,0.10),
 #'   SizeQuantiles = seq(0.10,0.90,0.10),
 #'   ModelPath = getwd(),
 #'   ModelIDs = c("CountModel","SizeModel"),
@@ -364,21 +364,21 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
 #' @export
 AutoH2oGBMFreqSizeScoring <- function(ScoringData,
                                       TargetColumnNames = NULL,
-                                      CountQuantiles = seq(0.10,0.90,0.10), 
+                                      CountQuantiles = seq(0.10,0.90,0.10),
                                       SizeQuantiles = seq(0.10,0.90,0.10),
                                       ModelPath = NULL,
                                       ModelIDs = c("CountModel","SizeModel"),
                                       JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
                                       KeepFeatures = TRUE) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(percent = 100)
-  
+
   # Ensure data.table----
   if(!data.table::is.data.table(ScoringData)) {
     ScoringData <- data.table::as.data.table(ScoringData)
   }
-  
+
   # Score count models----
   Counter <- 1
   for(Count in CountQuantiles) {
@@ -403,22 +403,22 @@ AutoH2oGBMFreqSizeScoring <- function(ScoringData,
       MDP_RemoveDates = TRUE,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)
-    
+
     # Rearrange Column Ordering, change names, cbind----
     data.table::setcolorder(data, c(2:ncol(data),1))
     if(Count == min(CountQuantiles)) {
       data.table::setnames(data, "Predictions", paste0(ModelIDs[1],"_",Count))
-      CountData <- data      
+      CountData <- data
     } else {
       CountData <- cbind(CountData, data[[paste0("Predictions")]])
       data.table::setnames(CountData, "V2", paste0(ModelIDs[1],"_",Count))
     }
-    
+
     # Update timer----
     print(paste0("Count model scoring is ",100*round(Counter/length(CountQuantiles),2),"% complete"))
     Counter <- Counter + 1
   }
-  
+
   # Score size models----
   Counter <- 1
   for(Size in SizeQuantiles) {
@@ -443,29 +443,29 @@ AutoH2oGBMFreqSizeScoring <- function(ScoringData,
       MDP_RemoveDates = TRUE,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)
-    
+
     # Rearrange Column Ordering, change names, cbind----
     data.table::setcolorder(data, c(2:ncol(data),1))
     if(Size == min(SizeQuantiles)) {
       data.table::setnames(data, "Predictions", paste0(ModelIDs[2],"_",Size))
-      SizeData <- data      
+      SizeData <- data
     } else {
       SizeData <- cbind(SizeData, data[[paste0("Predictions")]])
       data.table::setnames(SizeData, "V2", paste0(ModelIDs[2],"_",Size))
     }
-    
+
     # Update timer----
     print(paste0("Size model scoring is ",100*round(Counter/length(SizeQuantiles),2),"% complete"))
     Counter <- Counter + 1
   }
-  
+
   # Shut down H2O----
   h2o::h2o.shutdown(prompt = FALSE)
-  
+
   # Column names of predictions----
   CountPredNames <- c("FC_Window", names(CountData)[which(grepl(pattern = paste0(ModelIDs[1],"_"), x = names(CountData)))])
   SizePredNames <- c("FC_Window", names(SizeData)[which(grepl(pattern = paste0(ModelIDs[2],"_"), x = names(SizeData)))])
-  
+
   # Return FinalData----
   return(list(CountData = CountData,
               SizeData = SizeData,

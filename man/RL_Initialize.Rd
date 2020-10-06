@@ -24,6 +24,7 @@ RL_Initialize(
 RL_Initialize sets up the components necessary for RL
 }
 \examples{
+\dontrun{
 RL_Start <- RL_Initialize(
   ParameterGridSet = GridClusters,
   Alpha = Alpha,
@@ -34,6 +35,7 @@ Successes <- RL_Start[["Successes"]]
 Trials <- RL_Start[["Trials"]]
 GridIDs <- RL_Start[["GridIDs"]]
 BanditProbs <- RL_Start[["BanditProbs"]]
+}
 }
 \seealso{
 Other Reinforcement Learning: 

@@ -132,11 +132,13 @@ Returns a data.table of original series and forecasts, the h2o-gbm model objects
 AutoH2oGBMCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 }
 \examples{
-\donttest{
+\dontrun{
 
  # Pull in Walmart Data Set
- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
- data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+ data <- data.table::fread(
+ "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+ data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+   , Counts := NULL]
  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 
  # Build forecast
@@ -170,7 +172,8 @@ H2oGBMResults <- RemixAutoML::AutoH2oGBMCARMA(
 
   # Target Transformations
   TargetTransformation = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+    "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
 
   # Date Features
@@ -193,7 +196,9 @@ H2oGBMResults <- RemixAutoML::AutoH2oGBMCARMA(
   FourierTerms = 4L,
   TimeTrendVariable = TRUE)
 
-UpdateMetrics <- print(H2oGBMResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+UpdateMetrics <-
+  print(H2oGBMResults$ModelInformation$EvaluationMetrics[
+    Metric == "MSE", MetricValue := sqrt(MetricValue)])
 print(UpdateMetrics)
 H2oGBMResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 H2oGBMResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]

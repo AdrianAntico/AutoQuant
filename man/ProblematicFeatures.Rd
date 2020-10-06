@@ -36,19 +36,22 @@ data table with new dummy variables columns and optionally removes base columns
 ProblematicFeatures identifies problematic features for machine learning and outputs a data.table of the feature names in the first column and the metrics they failed to pass in the columns.
 }
 \examples{
+\dontrun{
 test <- data.table::data.table(RandomNum = runif(1000))
 test[, NearZeroVarEx := ifelse(runif(1000) > 0.99, runif(1), 1)]
 test[, CharUniqueEx := as.factor(ifelse(RandomNum < 0.95, sample(letters, size = 1), "FFF"))]
 test[, NA_RateEx := ifelse(RandomNum < 0.95, NA, "A")]
 test[, ZeroRateEx := ifelse(RandomNum < 0.95, 0, runif(1))]
 test[, HighSkewThreshEx := ifelse(RandomNum > 0.96, 100000, 1)]
-ProblematicFeatures(test,
-                    ColumnNumbers = 2:ncol(test),
-                    NearZeroVarThresh = 0.05,
-                    CharUniqThresh = 0.50,
-                    NA_Rate = 0.20,
-                    Zero_Rate = 0.20,
-                    HighSkewThresh = 10)
+ProblematicFeatures(
+  test,
+  ColumnNumbers = 2:ncol(test),
+  NearZeroVarThresh = 0.05,
+  CharUniqThresh = 0.50,
+  NA_Rate = 0.20,
+  Zero_Rate = 0.20,
+  HighSkewThresh = 10)
+}
 }
 \seealso{
 Other EDA: 

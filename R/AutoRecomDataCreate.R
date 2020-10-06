@@ -9,12 +9,13 @@
 #' @param ReturnMatrix Set to FALSE to coerce the object (desired route) or TRUE to return a matrix
 #' @return A BinaryRatingsMatrix
 #' @examples
-#' \donttest{
-#' RatingsMatrix <- AutoRecomDataCreate(data,
-#'                                      EntityColName = "CustomerID",
-#'                                      ProductColName = "StockCode",
-#'                                      MetricColName = "TotalSales",
-#'                                      ReturnMatrix = TRUE)
+#' \dontrun{
+#' RatingsMatrix <- AutoRecomDataCreate(
+#'   data,
+#'   EntityColName = "CustomerID",
+#'   ProductColName = "StockCode",
+#'   MetricColName = "TotalSales",
+#'   ReturnMatrix = TRUE)
 #' }
 #' @export
 AutoRecomDataCreate <- function(data,

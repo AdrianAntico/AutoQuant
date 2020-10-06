@@ -196,12 +196,6 @@ CLTrainer(
 \item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
 \item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
-
-\item{TargetVariable}{Target Variable Name}
-
-\item{MaxCohortPeriods}{The maximum number of CohortPeriodsVariable out to include in modeling}
-
-\item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 }
 \value{
 Saves metadata and models to files of your choice. Also returns metadata and models from the function. User specifies both options.
@@ -210,9 +204,10 @@ Saves metadata and models to files of your choice. Also returns metadata and mod
 CLTrainer is a forecasting model for chain ladder style forecasting
 }
 \examples{
-\donttest{
+\dontrun{
 # Create simulated data
-data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+data <- RemixAutoML::FakeDataGenerator(
+  ChainLadderData = TRUE)
 
 # Build model
 RemixAutoML::CLTrainer(
@@ -229,8 +224,11 @@ RemixAutoML::CLTrainer(
    TruncateDate = NULL,
    TimeUnit = "days",
    TransformTargetVariable = TRUE,
-   TransformMethods = c("Identity","BoxCox","Asinh","Asin","LogPlus1","Logit","YeoJohnson"),
-   AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
+   TransformMethods = c("Identity","BoxCox","Asinh",
+                        "Asin","LogPlus1","Logit",
+                        "YeoJohnson"),
+   AnomalyDetection = list(tstat_high = 3,
+     tstat_low = -2),
 
    # MetaData Arguments----
    Jobs = c("eval","train"),
@@ -250,21 +248,29 @@ RemixAutoML::CLTrainer(
    ImputeRollStats = -0.001,
    CalendarTimeGroups = c("days","weeks","months"),
    CohortTimeGroups = c("days", "weeks"),
-   CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
-   HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+   CalendarVariables = c("wday","mday","yday","week",
+                         "month","quarter","year"),
+   HolidayGroups = c("USPublicHolidays","EasterGroup",
+                     "ChristmasGroup","OtherEcclesticalFeasts"),
    CohortHolidayLags = c(1L,2L,7L),
    CohortHolidayMovingAverages = c(3L,7L),
    CalendarHolidayLags = c(1L,2L,7L),
    CalendarHolidayMovingAverages = c(3L,7L),
-   CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
-   CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+   CalendarLags = list("day" = c(1L,2L,7L,35L,42L),
+                       "week" = c(5L,6L,10L,12L,25L,26L)),
+   CalendarMovingAverages = list("day" = c(7L,14L,35L,42L),
+                                 "week" = c(5L,6L,10L,12L,20L,24L),
+                                 "month" = c(6L,12L)),
    CalendarStandardDeviations = NULL,
    CalendarSkews = NULL,
    CalendarKurts = NULL,
    CalendarQuantiles = NULL,
    CalendarQuantilesSelected = "q50",
-   CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
-   CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+   CohortLags = list("day" = c(1L,2L,7L,35L,42L),
+                     "week" = c(5L,6L)),
+   CohortMovingAverages = list("day" = c(7L,14L,35L,42L),
+                               "week" = c(5L,6L),
+                               "month" = c(1L,2L)),
    CohortStandardDeviations = NULL,
    CohortSkews = NULL,
    CohortKurts = NULL,

@@ -13,11 +13,11 @@
 #' @param TimeUnit List the time aggregation level for the time between events features, such as "hour", "day", "weeks", "months", "quarter", or "year"
 #' @param TimeUnitAgg List the time aggregation of your data that you want to use as a base time unit for your features. E.g. "raw" or "day"
 #' @param Lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
-#' @param MARollWindows A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
-#' @param SDRollWindows  A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.
-#' @param SkewRollWindows  A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.
-#' @param KurtRollWindows  A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.
-#' @param QuantileRollWindows A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.
+#' @param MA_RollWindows A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
+#' @param SD_RollWindows  A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.
+#' @param Skew_RollWindows  A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.
+#' @param Kurt_RollWindows  A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.
+#' @param Quantile_RollWindows A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.
 #' @param Quantiles_Selected Select from the following c("q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60"," q65", "q70", "q75", "q80", "q85", "q90", "q95")
 #' @param RollOnLag1 Set to FALSE to build rolling stats off of target columns directly or set to TRUE to build the rolling stats off of the lag-1 target
 #' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
@@ -25,7 +25,7 @@
 #' @param Debug Set to TRUE to get a print of which steps are running
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
-#'
+#' \dontrun{
 #' # Create fake Panel Data----
 #' Count <- 1L
 #' for(Level in LETTERS) {
@@ -42,7 +42,8 @@
 #'   if(Count == 1L) {
 #'     data <- data.table::copy(datatemp)
 #'   } else {
-#'     data <- data.table::rbindlist(list(data, data.table::copy(datatemp)))
+#'     data <- data.table::rbindlist(
+#'       list(data, data.table::copy(datatemp)))
 #'   }
 #'   Count <- Count + 1L
 #' }
@@ -57,7 +58,8 @@
 #'   HierarchyGroups      = NULL,
 #'   IndependentGroups    = c("Factor1"),
 #'   TimeUnitAgg          = "days",
-#'   TimeGroups           = c("days", "weeks", "months", "quarters"),
+#'   TimeGroups           = c("days", "weeks",
+#'                            "months", "quarters"),
 #'   TimeBetween          = NULL,
 #'   TimeUnit             = "days",
 #'
@@ -67,14 +69,21 @@
 #'   SimpleImpute         = TRUE,
 #'
 #'   # Calculated Columns
-#'   Lags                 = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
-#'   MA_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Lags                 = list("days" = c(seq(1,5,1)),
+#'                               "weeks" = c(seq(1,3,1)),
+#'                               "months" = c(seq(1,2,1)),
+#'                               "quarters" = c(seq(1,2,1))),
+#'   MA_RollWindows       = list("days" = c(seq(1,5,1)),
+#'                               "weeks" = c(seq(1,3,1)),
+#'                               "months" = c(seq(1,2,1)),
+#'                               "quarters" = c(seq(1,2,1))),
 #'   SD_RollWindows       = NULL,
 #'   Skew_RollWindows     = NULL,
 #'   Kurt_RollWindows     = NULL,
 #'   Quantile_RollWindows = NULL,
 #'   Quantiles_Selected   = NULL,
 #'   Debug                = FALSE)
+#' }
 #' @export
 AutoLagRollStats <- function(data,
                              Targets              = NULL,
@@ -107,7 +116,7 @@ AutoLagRollStats <- function(data,
   if(!is.null(Skew_RollWindows)) RollFunctions <- c(RollFunctions,"skew")
   if(!is.null(Kurt_RollWindows)) RollFunctions <- c(RollFunctions,"kurt")
   if(!is.null(Quantiles_Selected)) RollFunctions <- c(RollFunctions,Quantiles_Selected)
-  if(is.null(TimeBetween)) TimeBetween <- NULL else TimeBetween <- "TimeBetweenRecords" # Cant remember why I put the NULL there
+  if(is.null(TimeBetween)) TimeBetween <- NULL else TimeBetween <- "TimeBetweenRecords"
   if(RollOnLag1) RollOnLag1 <- 1L else RollOnLag1 <- 0L
   TimeGroupPlaceHolder <- c()
   if("raw" %chin% tolower(TimeGroups)) TimeGroupPlaceHolder <- c(TimeGroupPlaceHolder, "raw")
@@ -490,11 +499,11 @@ AutoLagRollStats <- function(data,
 #' @param TimeUnit List the time aggregation level for the time between events features, such as "hour", "day", "weeks", "months", "quarter", or "year"
 #' @param TimeUnitAgg List the time aggregation of your data that you want to use as a base time unit for your features. E.g. "day",
 #' @param Lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
-#' @param MARollWindows A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
-#' @param SDRollWindows  A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.
-#' @param SkewRollWindows  A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.
-#' @param KurtRollWindows  A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.
-#' @param QuantileRollWindows A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.
+#' @param MA_RollWindows A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
+#' @param SD_RollWindows  A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.
+#' @param Skew_RollWindows  A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.
+#' @param Kurt_RollWindows  A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.
+#' @param Quantile_RollWindows A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.
 #' @param Quantiles_Selected Select from the following c("q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60"," q65", "q70", "q75", "q80", "q85", "q90", "q95")
 #' @param RollOnLag1 Set to FALSE to build rolling stats off of target columns directly or set to TRUE to build the rolling stats off of the lag-1 target
 #' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
@@ -502,7 +511,7 @@ AutoLagRollStats <- function(data,
 #' @param Debug Set to TRUE to get a print out of which step you are on
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
-#'
+#' \donttest{
 #' # Create fake Panel Data----
 #' Count <- 1L
 #' for(Level in LETTERS) {
@@ -519,7 +528,8 @@ AutoLagRollStats <- function(data,
 #'   if(Count == 1L) {
 #'     data <- data.table::copy(datatemp)
 #'   } else {
-#'     data <- data.table::rbindlist(list(data, data.table::copy(datatemp)))
+#'     data <- data.table::rbindlist(
+#'       list(data, data.table::copy(datatemp)))
 #'   }
 #'   Count <- Count + 1L
 #' }
@@ -550,14 +560,27 @@ AutoLagRollStats <- function(data,
 #'   SimpleImpute         = TRUE,
 #'
 #'   # Calculated Columns
-#'   Lags                  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   MA_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   SD_RollWindows        = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   Skew_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   Kurt_RollWindows      = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
-#'   Quantile_RollWindows  = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1))),
+#'   Lags                  = list("days" = c(seq(1,5,1)),
+#'                                "weeks" = c(seq(1,3,1)),
+#'                                "months" = c(seq(1,2,1))),
+#'   MA_RollWindows        = list("days" = c(seq(1,5,1)),
+#'                                "weeks" = c(seq(1,3,1)),
+#'                                "months" = c(seq(1,2,1))),
+#'   SD_RollWindows        = list("days" = c(seq(1,5,1)),
+#'                                "weeks" = c(seq(1,3,1)),
+#'                                "months" = c(seq(1,2,1))),
+#'   Skew_RollWindows      = list("days" = c(seq(1,5,1)),
+#'                                "weeks" = c(seq(1,3,1)),
+#'                                "months" = c(seq(1,2,1))),
+#'   Kurt_RollWindows      = list("days" = c(seq(1,5,1)),
+#'                                "weeks" = c(seq(1,3,1)),
+#'                                "months" = c(seq(1,2,1))),
+#'   Quantile_RollWindows  = list("days" = c(seq(1,5,1)),
+#'                                "weeks" = c(seq(1,3,1)),
+#'                                "months" = c(seq(1,2,1))),
 #'   Quantiles_Selected    = c("q5","q10","q95"),
 #'   Debug                 = FALSE)
+#' }
 #' @export
 AutoLagRollStatsScoring <- function(data,
                                     RowNumsID            = "temp",

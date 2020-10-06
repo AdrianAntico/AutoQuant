@@ -45,8 +45,13 @@ RemixClassificationMetrics(
 RemixClassificationMetrics
 }
 \examples{
-\donttest{
-RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2ogbm","h2odrf","xgboost"),
+\dontrun{
+RemixClassificationMetrics <- function(
+  MLModels = c("catboost",
+               "h2oautoml",
+               "h2ogbm",
+               "h2odrf",
+               "xgboost"),
   TargetVariable = "Value",
   Thresholds = seq(0.01,0.99,0.01),
   CostMatrix = c(1,0,0,1),

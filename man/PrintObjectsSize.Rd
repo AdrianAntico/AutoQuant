@@ -16,7 +16,7 @@ A print to your console of the sizes of the objects in your environment
 PrintObjectsSize prints out the top N objects and their associated sizes, sorted by size
 }
 \examples{
-\donttest{
+\dontrun{
 PrintObjectsSize(N = 10)
 }
 }

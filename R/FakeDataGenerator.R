@@ -14,7 +14,7 @@
 #' @param Classification Set to TRUE to build classification data
 #' @param MultiClass Set to TRUE to build MultiClass data
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data <- RemixAutoML::FakeDataGenerator(
 #'    Correlation = 0.70,
 #'    N = 1000L,
@@ -52,15 +52,13 @@ FakeDataGenerator <- function(Correlation = 0.70,
     # Pull in data
     data <- data.table::as.data.table(as.numeric(fpp::cafe))
 
-    # for(i in 1:11) data <- data.table::rbindlist(list(data,data))
-
     # Change names to common names for other calls in this function
     data.table::setnames(data, "V1", "Weekly_Sales")
 
     # Pick a starting date
     data.table::set(data, j = "Date", value = "1982-01-01")
     data.table::setcolorder(data, c(2L, 1L))
-    data[, Date := fasttime::fastPOSIXct(Date)]
+    data[, Date := as.Date(Date)]
 
     # "1min"
     if(tolower(TimeSeriesTimeAgg) %chin% c("1min","1mins","minutes","min","mins","01min","01mins")) {
@@ -252,10 +250,6 @@ FakeDataGenerator <- function(Correlation = 0.70,
   # Zero Inflation Setup----
   if(!Classification & !MultiClass) {
     if(ZIP == 1L) {
-      # hist(data$Adrian)
-      # hist(data$Independent_Variable8)
-      # hist(log(MASS::rnegbin(n = N, mu = 50, theta = 0.25)) + 1L)
-      # hist(rnbinom(n = N, size = 50, prob = 0.5))
       data[, Adrian := data.table::fifelse(Adrian < 0.5, 0, Independent_Variable8)][, Independent_Variable8 := NULL]
     } else if(ZIP == 2L) {
       data[, Adrian := data.table::fifelse(Adrian < 0.33, 0, data.table::fifelse(Adrian < 0.66, log(Adrian * 10), log(Adrian*20)))]

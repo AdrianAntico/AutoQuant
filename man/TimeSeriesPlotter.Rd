@@ -53,9 +53,13 @@ TimeSeriesPlotter(
 
 \item{NumberGroupsDisplay}{Number of lines to display}
 
+\item{LevelsToDisplay}{Value}
+
 \item{OtherGroupLabel}{Label to call all other group levels}
 
 \item{DisplayOtherGroup}{If TRUE, a line will be shown with all levels that fall into 'other' otherwise no line will be shown}
+
+\item{TextSize}{Default 12}
 
 \item{LineWidth}{Numeric value. Default is 1}
 

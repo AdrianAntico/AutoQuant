@@ -73,8 +73,6 @@ AutoH2oGLMClassifier(
 \item{H2OShutdown}{Set to TRUE to shutdown H2O after running the function}
 
 \item{HurdleModel}{Set to FALSE}
-
-\item{Trees}{The maximum number of trees you want in your models}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -85,7 +83,14 @@ AutoH2oGLMClassifier is an automated H2O modeling framework with grid-tuning and
 \examples{
 \donttest{
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMClassifier(
@@ -94,9 +99,9 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+   FeatureColNames = names(data)[!names(data) \%chin\% c("IDcol_1", "IDcol_2","Adrian")],
    Distribution = "binomial",
-   link = NULL, 
+   link = NULL,
    eval_metric = "auc",
    GridTune = FALSE,
    MaxMem = "32G",

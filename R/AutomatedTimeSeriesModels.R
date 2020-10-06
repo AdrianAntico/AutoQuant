@@ -24,76 +24,11 @@
 #' @param NumberCores Number of cores to use in parallelism. E.g. if you have a 4 core CPU then supply 4 if you want to utilize all four cores
 #' @param DebugMode Set to TRUE to get print outs of particular steps helpful in tracing errors
 #' @return data.table containing historical values and the forecast values along with the grid tuning results in full detail, as a second data.table
-#'
-#' 2. BoxCox - "skip" means I didn't use it
-#'
-#' 3. IncludeDrift - TRUE or FALSE in forecast::Arima()
-#'
-#' 4. SeasonalDifferences - 0, 1, 2, ... Set to 0 by default as values > 0 can cause model runs to take significantly longer depending on the size of the data
-#'
-#' 5. SeasonalMovingAverages - Q in Arima(p,d,q)(P,D,Q)
-#'
-#' 6. SeasonalLags - P in Arima(p,d,q)(P,D,Q)
-#'
-#' 7. MaxFourierTerms - used in xreg argument in Arima
-#'
-#' 8. Differences - d in Arima(p,d,q)(P,D,Q)
-#'
-#' 9. MovingAverages - q in Arima(p,d,q)(P,D,Q)
-#'
-#' 10. Lags - p in Arima(p,d,q)(P,D,Q)
-#'
-#' 11. BiasAdj - TRUE if BoxCox isn't "skip"
-#'
-#' 12. GridName - ID for set of function arguments that are treated like hyperparameters
-#'
-#' 13. Train_MSE - MSE of the training data fit
-#'
-#' 14. Train_MAE - MAE of the training data fit
-#'
-#' 15. Train_MAPE - MAPE of the training data fit
-#'
-#' 16. Validate_MSE - MSE of the validation data fit
-#'
-#' 17. Validate_MAE - MAE of the validation data fit
-#'
-#' 18. Validate_MAPE - MAPE of the validation data fit
-#'
-#' 19. Blended_MSE - MSE  weighted by the TrainWeighting argument so that the Blended MSE = TrainWeighting * Train_MSE + (1 - TrainWeighting)  * Validate_MSE
-#'
-#' 20. Blended_MAE - like above
-#'
-#' 21. Blended_MAPE - like above
-#'
-#' # Non overlapping set of Arima arguments in order of increasing sophistication
-#'
-#' 22. BanditProbs_StratifyParsimonousGrid_3
-#'
-#' 23. BanditProbs_StratifyParsimonousGrid_4
-#'
-#' 24. BanditProbs_StratifyParsimonousGrid_5
-#'
-#' 25. BanditProbs_StratifyParsimonousGrid_6
-#'
-#' 26. BanditProbs_StratifyParsimonousGrid_7
-#'
-#' 27. BanditProbs_StratifyParsimonousGrid_8
-#'
-#' 28. BanditProbs_StratifyParsimonousGrid_9
-#'
-#' 29. BanditProbs_StratifyParsimonousGrid_10
-#'
-#' 30. RunTime - Time taken to build the model using the set of arguments
-#'
-#' 31. ModelRankByDataType - There are 4 data types: user-supplied frequency or not (2) and forecast::tsclean() or not (2)
-#'
-#' 32. ModelRank - the rank of the model based on the Blended_xxx measure
-#'
-#' 34. ModelRunNumber - The order that the model was run
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Build model
-#' data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 #'
 #' # Pimping
 #' Output <- RemixAutoML::AutoBanditSarima(
@@ -229,20 +164,6 @@ AutoBanditSarima <- function(data,
     ModelFreq = TRUE,
     FinalBuild = FALSE)
 
-  # Debugging ----
-  # TargetName = TargetVariableName
-  # DateName = DateColumnName
-  # Lags = ARIMA_Lags
-  # SeasonalLags = ARIMA_SeasonalLags
-  # MovingAverages = ARIMA_MovingAverages
-  # SeasonalMovingAverages = ARIMA_SeasonalMovingAverages
-  # TimeUnit = TimeAggLevel
-  # FCPeriods = NumFCPeriods
-  # HoldOutPeriods = NumHoldOutPeriods
-  # TSClean = TRUE
-  # ModelFreq = TRUE
-  # FinalBuild = FALSE
-
   # 2. Find Best ARIMA Models----
   Arima_ExperimentGrid <- tryCatch({ParallelAutoARIMA(
     MetricSelection = EvaluationMetric,
@@ -256,14 +177,6 @@ AutoBanditSarima <- function(data,
 
   # Debugging ----
   if(DebugMode) for(jj in 1:10) print(paste0("ParallelAutoARIMA() finished successfully"))
-
-  # MetricSelection = EvaluationMetric
-  # Output = Arima_Artifacts_Build
-  # MaxFourierTerms = ARIMA_MaxFourierTerms
-  # TrainValidateShare = c(ARIMA_TrainShareEvaluate, 1-ARIMA_TrainShareEvaluate)
-  # MaxNumberModels = ARIMA_MaxNumberModels
-  # MaxRunMinutes = ARIMA_MaxRunTime
-  # MaxRunsWithoutNewWinner = ARIMA_RunsWithoutWinner
 
   # Reutrn if no suitable models were fit----
   if(Arima_ExperimentGrid[1]$Train_MSE == -7) return(paste0("Unable to fit an arima to this data"))
@@ -297,14 +210,6 @@ AutoBanditSarima <- function(data,
         ByDataType = FALSE,
         DebugMode = DebugMode)},
         error = function(x) NULL)
-
-      # # Debugging ----
-      # ModelOutputGrid = Arima_ExperimentGrid
-      # TimeSeriesPrepareOutput = Arima_Artifacts_Score
-      # FCPeriods = NumFCPeriods
-      # NumberModelsScore = 1
-      # MetricSelection = EvaluationMetric
-      # ByDataType = FALSE
       if(DebugMode) if(is.null(ForecastOutput)) for(kk in 1:10) print("Forecast output is NULL") else for(kk in 1:10) print("Forecast output is NOT NULL")
 
       # Move on if model build failure----

@@ -29,6 +29,8 @@ WideTimeSeriesEnsembleForecast(
 
 \item{NTrees}{Select the number of trees to utilize in ML models}
 
+\item{TaskType}{GPU or CPU}
+
 \item{GridTune}{Set to TRUE to grid tune the ML models}
 
 \item{MaxNumberModels}{The number of models to try for each ML model}

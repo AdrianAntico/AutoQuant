@@ -24,10 +24,12 @@ Time series data sets to pass onto auto modeling functions
 ParallelAutoTSLM to run the 4 data sets at once
 }
 \examples{
+\dontrun{
 ParallelAutoTSLM(
   MetricSelection = "MAE",
   Output = NULL,
   TrainValidateShare = c(0.50,0.50))
+}
 }
 \seealso{
 Other Time Series: 

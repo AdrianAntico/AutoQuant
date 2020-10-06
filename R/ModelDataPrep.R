@@ -15,20 +15,21 @@
 #' @param MissNum Supply  the value to impute missing numeric values
 #' @param IgnoreCols Supply column numbers for columns you want the function to ignore
 #' @examples
+#' \dontrun{
 #' # Create fake data
 #' data <- RemixAutoML::FakeDataGenerator(
-#'   Correlation = 0.75, 
-#'   N = 250000L, 
-#'   ID = 2L, 
-#'   ZIP = 0L, 
-#'   FactorCount = 6L, 
-#'   AddDate = TRUE, 
-#'   Classification = FALSE, 
+#'   Correlation = 0.75,
+#'   N = 250000L,
+#'   ID = 2L,
+#'   ZIP = 0L,
+#'   FactorCount = 6L,
+#'   AddDate = TRUE,
+#'   Classification = FALSE,
 #'   MultiClass = FALSE)
-#' 
+#'
 #' # Check column types
 #' str(data)
-#' 
+#'
 #' # Convert some factors to character
 #' data <- RemixAutoML::ModelDataPrep(
 #'   data,
@@ -41,9 +42,10 @@
 #'   MissFactor   = "0",
 #'   MissNum      = -1,
 #'   IgnoreCols   = c("Factor_1"))
-#' 
+#'
 #' # Check column types
 #' str(data)
+#' }
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
@@ -56,29 +58,29 @@ ModelDataPrep <- function(data,
                           MissFactor   = "0",
                           MissNum      = -1,
                           IgnoreCols   = NULL) {
-  
+
   # Full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  
+
   # Check data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Prepare columns for action----
   x <- as.integer(seq_along(data))
   if(!is.null(IgnoreCols)) if(class(IgnoreCols) == "character") x <- setdiff(x, which(names(data) %chin% IgnoreCols)) else x <- setdiff(x, IgnoreCols)
-  
+
   # Replace any inf values with NA----
   for(col in x) data.table::set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]), NA))
-  
+
   # Turn character columns into factors----
   if(CharToFactor) for(col in x) if(is.character(data[[col]])) data.table::set(data, j = col, value = as.factor(data[[col]]))
-  
+
   # Turn factor columns into character----
   if(FactorToChar) for(col in x) if(is.factor(data[[col]])) data.table::set(data, j = col, value = as.character(data[[col]]))
-  
+
   # Turn integers columns into numeric----
   if(IntToNumeric) for(col in x) if(is.integer(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
-  
+
   # Turn logical columns into numeric----
   if(IntToNumeric) for(col in x) if(is.logical(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
 
@@ -94,7 +96,7 @@ ModelDataPrep <- function(data,
       }
     }
   }
-  
+
   # Remove Dates----
   if(RemoveDates | DateToChar) {
     for(col in rev(x)) {
@@ -102,12 +104,12 @@ ModelDataPrep <- function(data,
         if(DateToChar) {
           data.table::set(data, j = paste0(names(data)[col]), value = as.character(data[[eval(col)]]))
         } else {
-          data.table::set(data, j = paste0(names(data)[col]), value = NULL) 
-        }        
+          data.table::set(data, j = paste0(names(data)[col]), value = NULL)
+        }
       }
     }
   }
-  
+
   # Return data----
   return(data)
 }

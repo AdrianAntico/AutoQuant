@@ -33,7 +33,7 @@ A data.table with the final predicted value, the intermediate model predictions,
 AutoHurdleScoring() can score AutoCatBoostHurdleModel() and AutoXGBoostHurdleModel()
 }
 \examples{
-\donttest{
+\dontrun{
 
 # XGBoost----
 
@@ -52,7 +52,8 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Define features
-Features <- names(data)[!names(data) \%in\% c("Adrian","IDcol_1","IDcol_2","IDcol_3","DateTime")]
+Features <- names(data)[!names(data) \%chin\%
+  c("Adrian","IDcol_1","IDcol_2","IDcol_3","DateTime")]
 
 # Build hurdle model
 Output <- RemixAutoML::AutoXGBoostHurdleModel(

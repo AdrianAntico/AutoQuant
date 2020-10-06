@@ -35,9 +35,16 @@
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @examples
-#' \donttest{
-#' # Create some dummy correlated data with numeric and categorical features
-#' data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+#' \dontrun{
+#' # Create some dummy correlated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 1000L,
+#'   ID = 2L,
+#'   ZIP = 0L,
+#'   AddDate = FALSE,
+#'   Classification = TRUE,
+#'   MultiClass = FALSE)
 #'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoXGBoostClassifier(
@@ -48,7 +55,8 @@
 #'
 #'     # Metadata arguments
 #'     model_path = normalizePath("./"),
-#'     metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+#'     metadata_path = file.path(normalizePath("./")
+#'       ,"R_Model_Testing"),
 #'     ModelID = "Test_Model_1",
 #'     ReturnFactorLevels = TRUE,
 #'     ReturnModelObjects = TRUE,
@@ -60,7 +68,8 @@
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+#'     FeatureColNames = names(data)[!names(data) %chin%
+#'       c("IDcol_1", "IDcol_2","Adrian")],
 #'     IDcols = c("IDcols_1","IDcols_2"),
 #'
 #'     # Model evaluation
@@ -78,7 +87,8 @@
 #'
 #'     # Trees, Depth, and LearningRate used in the bandit grid tuning
 #'     # Must set Trees to a single value if you are not grid tuning
-#'     # The ones below can be set to NULL and the values in the example will be used
+#'     # The ones below can be set to NULL and the values in the
+#'     #    example will be used
 #'     Shuffles = 1L,
 #'     Trees = seq(50L, 500L, 50L),
 #'     eta = seq(0.05,0.40,0.05),

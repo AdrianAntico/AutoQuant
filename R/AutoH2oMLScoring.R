@@ -26,28 +26,29 @@
 #' @param MDP_MissFactor If you set MDP_Impute to TRUE, supply the character values to replace missing values with
 #' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
 #' @examples
-#' \donttest{
-#' Preds <- AutoH2OMLScoring(ScoringData = data,
-#'                           ModelObject = NULL,
-#'                           ModelType = "mojo",
-#'                           H2OShutdown = TRUE,
-#'                           MaxMem = "28G",
-#'                           NThreads = max(1, parallel::detectCores()-2),
-#'                           JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
-#'                           ModelPath = normalizePath("./"),
-#'                           ModelID = "ModelTest",
-#'                           ReturnFeatures = TRUE,
-#'                           TransformNumeric = FALSE,
-#'                           BackTransNumeric = FALSE,
-#'                           TargetColumnName = NULL,
-#'                           TransformationObject = NULL,
-#'                           TransID = NULL,
-#'                           TransPath = NULL,
-#'                           MDP_Impute = TRUE,
-#'                           MDP_CharToFactor = TRUE,
-#'                           MDP_RemoveDates = TRUE,
-#'                           MDP_MissFactor = "0",
-#'                           MDP_MissNum = -1)
+#' \dontrun{
+#' Preds <- AutoH2OMLScoring(
+#'   ScoringData = data,
+#'   ModelObject = NULL,
+#'   ModelType = "mojo",
+#'   H2OShutdown = TRUE,
+#'   MaxMem = "28G",
+#'   NThreads = max(1, parallel::detectCores()-2),
+#'   JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
+#'   ModelPath = normalizePath("./"),
+#'   ModelID = "ModelTest",
+#'   ReturnFeatures = TRUE,
+#'   TransformNumeric = FALSE,
+#'   BackTransNumeric = FALSE,
+#'   TargetColumnName = NULL,
+#'   TransformationObject = NULL,
+#'   TransID = NULL,
+#'   TransPath = NULL,
+#'   MDP_Impute = TRUE,
+#'   MDP_CharToFactor = TRUE,
+#'   MDP_RemoveDates = TRUE,
+#'   MDP_MissFactor = "0",
+#'   MDP_MissNum = -1)
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
@@ -72,10 +73,10 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
                              MDP_RemoveDates = TRUE,
                              MDP_MissFactor = "0",
                              MDP_MissNum = -1) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Check arguments----
   if(is.null(ScoringData)) return("ScoringData cannot be NULL")
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
@@ -106,10 +107,10 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
         Path = TransPath)
     }
   }
-  
+
   # Initialize H2O----
   if(tolower(ModelType) == "standard") h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-  
+
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
     data = ScoringData,
@@ -118,14 +119,14 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     RemoveDates = MDP_RemoveDates,
     MissFactor = MDP_MissFactor,
     MissNum = MDP_MissNum)
-  
+
   # Initialize H2O Data Conversion----
   if(!is.null(ModelType)) {
     if(tolower(ModelType) != "mojo" | !is.null(ModelObject)) {
       ScoreData <- h2o::as.h2o(ScoringData)
     } else {
       ScoreData <- ScoringData
-    }    
+    }
   }
 
   # Make Predictions----
@@ -139,38 +140,38 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
           mojo_zip_path = file.path(normalizePath(ModelPath), paste0(ModelID, ".zip")),
           genmodel_jar_path = file.path(normalizePath(ModelPath), ModelID),
           java_options = JavaOptions))
-      
+
     } else if(tolower(ModelType) == "standard") {
       model <- h2o::h2o.loadModel(path = file.path(normalizePath(ModelPath), ModelID))
       predict <- data.table::as.data.table(h2o::h2o.predict(object = model, newdata = ScoreData))
-    }    
+    }
   }
 
   # Change column name----
   data.table::setnames(predict, "predict", "Predictions")
-  
+
   # Shut down H2O----
   if(tolower(ModelType) != "mojo") if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
-  
+
   # Merge features back on----
   if(ReturnFeatures) predict <- cbind(predict, ScoringData)
-  
+
   # Back Transform Numeric Variables----
   if(BackTransNumeric) {
-    
+
     # Make copy of TransformationResults----
     grid_trans_results <- data.table::copy(TransformationObject)
-    
+
     # Append record for Predicted Column----
     data.table::set(
       grid_trans_results,
       i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)),
       j = "ColumnName",
       value = "Predictions")
-    
+
     # Remove target variable----
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
-    
+
     # Run Back-Transform----
     predict <- AutoTransformationScore(
       ScoringData = predict,
@@ -179,7 +180,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
       TransID = NULL,
       Path = NULL)
   }
-  
+
   # Return data----
   return(predict)
 }

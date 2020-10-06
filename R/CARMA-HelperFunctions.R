@@ -1,6 +1,10 @@
+#' CARMA_GroupHierarchyCheck
+#'
 #' @author Adrian Antico
 #' @family Carma Helper
-#' @noRd
+#' @param data data fed into function
+#' @param Group_Variables Takes GroupVariables from caram function
+#' @param HierarchyGroups Vector of group variables
 #' @export
 CARMA_GroupHierarchyCheck <- function(data = data,
                                       Group_Variables = GroupVariables,

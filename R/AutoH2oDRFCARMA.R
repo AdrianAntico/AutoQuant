@@ -34,7 +34,6 @@
 #' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
-#' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
@@ -44,11 +43,13 @@
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'
 #'  # Pull in Walmart Data Set
-#'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
-#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+#'  data <- data.table::fread(
+#'    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+#'    , Counts := NULL]
 #'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 #'
 #'  # Build forecast
@@ -81,7 +82,8 @@
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+#'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'     "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = TRUE,
 #'
 #'   # Features
@@ -102,7 +104,9 @@
 #'   NTrees = 1000L,
 #'   DebugMode = FALSE)
 #'
-#' UpdateMetrics <- print(H2oDFRResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' UpdateMetrics <-
+#'   print(H2oDFRResults$ModelInformation$EvaluationMetrics[
+#'     Metric == "MSE", MetricValue := sqrt(MetricValue)])
 #' print(UpdateMetrics)
 #' H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 #' H2oDFRResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
@@ -121,6 +125,7 @@ AutoH2oDRFCARMA <- function(data,
                             TimeUnit = "week",
                             TimeGroups = c("weeks","months"),
                             TargetTransformation = FALSE,
+                            Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
                             XREGS = NULL,
                             Lags = c(1:5),
                             MA_Periods = c(1:5),
@@ -394,17 +399,6 @@ AutoH2oDRFCARMA <- function(data,
       HierarchGroups = HierarchSupplyValue,
       IndependentGroups = IndependentSupplyValue)},
       error = function(x) NULL)
-
-    # ARGS TO TROUBLESHOOT
-    # datax = data
-    # xRegs = names(XREGS)
-    # FourierTermS = FourierTerms
-    # TimeUniT = TimeUnit
-    # FC_PeriodS = FC_Periods
-    # TargetColumN = TargetColumnName
-    # DateColumN = DateColumnName
-    # HierarchGroups = HierarchSupplyValue
-    # IndependentGroups = IndependentSupplyValue
 
     # Store Objects If No Error in Hierarchy Run----
     if(!is.null(Output)) {

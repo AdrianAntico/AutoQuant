@@ -78,7 +78,7 @@ PredictArima <- function(object = Results,
   }
 
   # Predict new----
-  z <- KalmanForecast(n.ahead, object$model)
+  z <- stats::KalmanForecast(n.ahead, object$model)
   z$pred <- ts(z[[1L]] + xm, start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
   z$var <- ts(sqrt(z[[2L]] * object$sigma2), start = xtsp[2L] + deltat(rsd), frequency = xtsp[3L])
 
@@ -129,6 +129,7 @@ PredictArima <- function(object = Results,
 #' @param train Data set
 #' @param ValidationData Data set
 #' @param HoldOutPeriods Passthrough
+#' @param GridList List
 #' @export
 Regular_Performance <- function(Model = NULL,
                                 Results = Results,
@@ -313,6 +314,7 @@ Regular_Performance <- function(Model = NULL,
 #' @param train Data set
 #' @param ValidationData Data set
 #' @param HoldOutPeriods Passthrough
+#' @param FinalScore FALSE
 #' @export
 RL_Performance <- function(Results = Results,
                            NextGrid = NextGrid,
@@ -574,12 +576,6 @@ GenerateParameterGrids <- function(Model = NULL,
         MovingAverages = c(0L, seq_len(MovingAverages)),
         Lags = c(0L, seq_len(Lags)))
     }
-
-    # Concerned about the Drift term (TRUE / FALSE)
-    # Function PredictArima() is a modification of
-    #   getS3method('predict','Arima') - xregs negative consequences
-    #   if output looks terrible
-    # Grid <- Grid[!(IncludeDrift == TRUE & Differences > 0)]
 
     # Grid info for Statification Parsimonous----
     l <- as.list(Grid[.N][, 4L:ncol(Grid)][1L,])
@@ -1020,7 +1016,11 @@ GenerateParameterGrids <- function(Model = NULL,
 #' @param FinalBuild Set to TRUE to create data sets with full data
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
-#' data <- data.table::fread(file.path(PathNormalizer("C:\\Users\\aantico\\Documents\\Package\\data"),"tsdata.csv"))
+#' \dontrun{
+#' data <- data.table::fread(
+#'   file.path(PathNormalizer(
+#'     "C:\\Users\\aantico\\Documents\\Package\\data"),
+#'     "tsdata.csv"))
 #' TimeSeriesDataPrepare(
 #'   data = data,
 #'   TargetName = "Weekly_Sales",
@@ -1035,6 +1035,7 @@ GenerateParameterGrids <- function(Model = NULL,
 #'   TSClean = TRUE,
 #'   ModelFreq = TRUE,
 #'   FinalBuild = FALSE)
+#' }
 #' @export
 TimeSeriesDataPrepare <- function(data,
                                   TargetName,
@@ -1253,11 +1254,13 @@ TimeSeriesDataPrepare <- function(data,
 #' @param MaxFourierTerms Max value of fourier pairs
 #' @param TrainValidateShare A two-element numeric vector. The first element is the weight applied to the training performance and the remainder is applied to the validation performance.
 #' @param MaxRunsWithoutNewWinner The number of runs without a new winner which if passed tells the function to stop
+#' @param MaxRunMinutes Time
 #' @param MaxNumberModels The number of models you want to test.
 #' @param FinalGrid If NULL, regular train optimization occurs. If the grid is supplied, final builds are conducted.
 #' @param DebugMode Debugging
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' Results <- OptimizeArima(
 #'   Output,
 #'   MetricSelection = "MAE",
@@ -1281,6 +1284,7 @@ TimeSeriesDataPrepare <- function(data,
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = NULL,
 #'   FinalGrid = NULL)
+#' }
 #' @export
 OptimizeArima <- function(Output,
                           MetricSelection = "MAE",
@@ -1398,23 +1402,6 @@ OptimizeArima <- function(Output,
             MaxRunMinutes = MaxRunMinutes,
             TotalRunTime = TotalRunTime,
             BanditProbabilities = BanditProbs)
-
-          #
-          # ExperimentGrid = ExperimentGrid
-          # MetricSelection = MetricSelection
-          # ModelRun = run
-          # NEWGrid = NewGrid
-          # TrialVector = Trials
-          # SuccessVector = Successes
-          # GridIDS = GridIDs
-          # BanditArmsCount = BanditArmsN
-          # RunsWithoutNewWinner = RunsWithoutNewWinner
-          # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-          # MaxNumberModels = MaxNumberModels
-          # MaxRunMinutes = MaxRunMinutes
-          # TotalRunTime = TotalRunTime
-          # BanditProbabilities = BanditProbs
-          #
 
           # Collect updated bandit metadata----
           BanditProbs <- RL_Update_Output[["BanditProbs"]]
@@ -1544,23 +1531,6 @@ OptimizeArima <- function(Output,
         MaxRunMinutes = MaxRunMinutes,
         TotalRunTime = TotalRunTime,
         BanditProbabilities = BanditProbs)
-
-      #
-      # ExperimentGrid = ExperimentGrid
-      # MetricSelection = MetricSelection
-      # ModelRun = run
-      # NEWGrid = NewGrid
-      # TrialVector = Trials
-      # SuccessVector = Successes
-      # GridIDS = GridIDs
-      # BanditArmsCount = BanditArmsN
-      # RunsWithoutNewWinner = RunsWithoutNewWinner
-      # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-      # MaxNumberModels = MaxNumberModels
-      # MaxRunMinutes = MaxRunMinutes
-      # TotalRunTime = TotalRunTime
-      # BanditProbabilities = BanditProbs
-      #
 
       # Collect updated bandit metadata----
       BanditProbs <- RL_Update_Output[["BanditProbs"]]
@@ -1733,6 +1703,7 @@ OptimizeArima <- function(Output,
 #' @param FinalGrid Grid for forecasting models
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' Results <- OptimizeETS(
 #'   Output,
 #'   MetricSelection = "MAE",
@@ -1746,6 +1717,7 @@ OptimizeArima <- function(Output,
 #'   DateName = NULL,
 #'   TrainValidateShare = NULL,
 #'   FinalGrid = NULL)
+#' }
 #' @export
 OptimizeETS <- function(Output,
                         MetricSelection = "MAE",
@@ -1954,6 +1926,7 @@ OptimizeETS <- function(Output,
 #' @param FinalGrid Grid for forecasting models
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' Results <- OptimizeTBATS(
 #'   Output,
 #'   MetricSelection = "MAE",
@@ -1969,6 +1942,7 @@ OptimizeETS <- function(Output,
 #'   DateName = NULL,
 #'   TrainValidateShare = NULL,
 #'   FinalGrid = NULL)
+#' }
 #' @export
 OptimizeTBATS <- function(Output,
                           MetricSelection = "MAE",
@@ -2180,9 +2154,11 @@ OptimizeTBATS <- function(Output,
 #' @param TrainValidateShare A two-element numeric vector. The first element is the weight applied to the training performance and the remainder is applied to the validation performance.
 #' @param MaxRunsWithoutNewWinner The number of runs without a new winner which if passed tells the function to stop
 #' @param MaxNumberModels The number of models you want to test.
+#' @param MaxRunMinutes Time
 #' @param FinalGrid If NULL, regular train optimization occurs. If the grid is supplied, final builds are conducted.
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' Results <- OptimizeNNET(
 #'   Output,
 #'   MetricSelection = "MAE",
@@ -2202,6 +2178,7 @@ OptimizeTBATS <- function(Output,
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = NULL,
 #'   FinalGrid = NULL)
+#' }
 #' @export
 OptimizeNNET <- function(Output,
                          MetricSelection = "MAE",
@@ -2567,6 +2544,7 @@ OptimizeNNET <- function(Output,
 #' @param FinalGrid Grid for forecasting models
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' Results <- OptimizeArfima(
 #'   Output,
 #'   MetricSelection = "MAE",
@@ -2582,6 +2560,7 @@ OptimizeNNET <- function(Output,
 #'   DateName = NULL,
 #'   TrainValidateShare = NULL,
 #'   FinalGrid = NULL)
+#' }
 #' @export
 OptimizeArfima <- function(Output,
                            MetricSelection = "MAE",
@@ -2778,6 +2757,7 @@ OptimizeArfima <- function(Output,
 #' @param FinalGrid Grid for forecasting models
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' Results <- OptimizeTSLM(
 #'   Output,
 #'   MetricSelection = "MAE",
@@ -2791,6 +2771,7 @@ OptimizeArfima <- function(Output,
 #'   DateName = NULL,
 #'   TrainValidateShare = NULL,
 #'   FinalGrid = NULL)
+#' }
 #' @export
 OptimizeTSLM <- function(Output,
                          MetricSelection = "MAE",
@@ -2940,8 +2921,10 @@ OptimizeTSLM <- function(Output,
 #' @param MaxNumberModels 20
 #' @param MaxRunMinutes 5
 #' @param MaxRunsWithoutNewWinner 12
+#' @param NumCores Value
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' ParallelAutoARIMA(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
@@ -2949,6 +2932,7 @@ OptimizeTSLM <- function(Output,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = 5)
+#' }
 #' @export
 ParallelAutoARIMA <- function(
   Output,
@@ -3024,32 +3008,6 @@ ParallelAutoARIMA <- function(
         MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
         MaxNumberModels = MaxNumberModels,
         MaxRunMinutes = MaxRunMinutes)
-
-      # ARGS FOR TESTING ----
-      # Output = Output
-      # MetricSelection = MetricSelection
-      # DataSetName = TrainArtifacts[[i]][["Name"]]
-      # train = TrainArtifacts[[i]][["Data"]]
-      # test = Output$TestData
-      # Lags = Output$Lags
-      # SeasonalLags = Output$SeasonalLags
-      # MovingAverages = Output$MovingAverages
-      # SeasonalMovingAverages = Output$SeasonalMovingAverages
-      # Differences = TrainArtifacts[[i]][["Diff"]]
-      # SeasonalDifferences = TrainArtifacts[[i]][["SDiff"]]
-      # FullData = Output$FullData
-      # HoldOutPeriods = Output$HoldOutPeriods
-      # MinVal = Output$MinVal
-      # TargetName = Output$TargetName
-      # DateName = Output$DateName
-      # MaxFourierTerms = MaxFourierTerms
-      # TrainValidateShare = c(TrainValidateShare)
-      # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-      # MaxNumberModels = MaxNumberModels
-      # MaxRunMinutes = MaxRunMinutes
-      # FinalGrid = NULL
-      #
-
     }
 
   # shut down parallel objects----
@@ -3078,10 +3036,12 @@ ParallelAutoARIMA <- function(
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' ParallelAutoETS(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
 #'   TrainValidateShare = c(0.50,0.50))
+#' }
 #' @export
 ParallelAutoETS <- function(
   Output,
@@ -3169,10 +3129,12 @@ ParallelAutoETS <- function(
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' ParallelAutoTBATS(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
 #'   TrainValidateShare = c(0.50,0.50))
+#' }
 #' @export
 ParallelAutoTBATS <- function(
   Output,
@@ -3234,23 +3196,6 @@ ParallelAutoTBATS <- function(
         DateName = Output$DateName,
         TrainValidateShare = TrainValidateShare,
         FinalGrid = NULL)
-
-      #
-      # MetricSelection = MetricSelection
-      # DataSetName = TrainArtifacts[[i]][["Name"]]
-      # train = TrainArtifacts[[i]][["Data"]]
-      # test = Output$TestData
-      # Lags = Output$Lags
-      # MovingAverages = Output$MovingAverages
-      # FullData = Output$FullData
-      # HoldOutPeriods = Output$HoldOutPeriods
-      # MinVal = Output$MinVal
-      # TargetName = Output$TargetName
-      # DateName = Output$DateName
-      # TrainValidateShare = TrainValidateShare
-      # FinalGrid = NULL
-      #
-
     }
 
   # shut down parallel objects----
@@ -3278,6 +3223,7 @@ ParallelAutoTBATS <- function(
 #' @param MaxRunsWithoutNewWinner 12
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' ParallelAutoNNET(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
@@ -3285,6 +3231,7 @@ ParallelAutoTBATS <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = 5)
+#' }
 #' @export
 ParallelAutoNNET <- function(
   Output,
@@ -3381,10 +3328,12 @@ ParallelAutoNNET <- function(
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' ParallelAutoArfima(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
 #'   TrainValidateShare = c(0.50,0.50))
+#' }
 #' @export
 ParallelAutoArfima <- function(
   Output,
@@ -3470,10 +3419,12 @@ ParallelAutoArfima <- function(
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' ParallelAutoTSLM(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
 #'   TrainValidateShare = c(0.50,0.50))
+#' }
 #' @export
 ParallelAutoTSLM <- function(
   Output,
@@ -3561,6 +3512,7 @@ ParallelAutoTSLM <- function(
 #' @param DebugMode Debugging
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' FinalBuildArima(
 #'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
@@ -3568,6 +3520,7 @@ ParallelAutoTSLM <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = 5)
+#' }
 #' @export
 FinalBuildArima <- function(
   ModelOutputGrid = NULL,
@@ -3767,6 +3720,7 @@ FinalBuildArima <- function(
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' FinalBuildETS(
 #'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
@@ -3774,6 +3728,7 @@ FinalBuildArima <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = 5)
+#' }
 #' @export
 FinalBuildETS <- function(
   ModelOutputGrid = NULL,
@@ -3911,6 +3866,7 @@ FinalBuildETS <- function(
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' FinalBuildTBATS(
 #'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
@@ -3918,6 +3874,7 @@ FinalBuildETS <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = 5)
+#' }
 #' @export
 FinalBuildTBATS <- function(
   ModelOutputGrid = NULL,
@@ -4051,6 +4008,7 @@ FinalBuildTBATS <- function(
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' FinalBuildNNET(
 #'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
@@ -4058,6 +4016,7 @@ FinalBuildTBATS <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = 5)
+#' }
 #' @export
 FinalBuildNNET <- function(
   ModelOutputGrid = NULL,
@@ -4200,6 +4159,7 @@ FinalBuildNNET <- function(
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' FinalBuildArfima(
 #'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
@@ -4207,6 +4167,7 @@ FinalBuildNNET <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = 5)
+#' }
 #' @export
 FinalBuildArfima <- function(
   ModelOutputGrid = NULL,
@@ -4340,6 +4301,7 @@ FinalBuildArfima <- function(
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
+#' \dontrun{
 #' FinalBuildTSLM(
 #'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
@@ -4347,6 +4309,7 @@ FinalBuildArfima <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
 #'   MaxRunMinutes = 5)
+#' }
 #' @export
 FinalBuildTSLM <- function(
   ModelOutputGrid = NULL,
@@ -4480,6 +4443,7 @@ FinalBuildTSLM <- function(
 #' @param Path The path to the folder where the ts forecasts are stored
 #' @param TargetName "Weekly_Sales"
 #' @param DateName "Date"
+#' @param TaskType GPU or CPU
 #' @param NTrees Select the number of trees to utilize in ML models
 #' @param GridTune Set to TRUE to grid tune the ML models
 #' @param FCPeriods Number of periods to forecast
@@ -5012,6 +4976,7 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
 #' @param ML_Methods Select which models to build for the ensemble
 #' @param Path The path to the folder where the ts forecasts are stored
 #' @param TargetName "Weekly_Sales"
+#' @param TaskType GPU or CPU
 #' @param DateName "Date"
 #' @param NTrees Select the number of trees to utilize in ML models
 #' @param GridTune Set to TRUE to grid tune the ML models
@@ -5403,6 +5368,8 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
 #' @param data The source data
 #' @param FourierPairs A number indicating the max number of fourier pairs that will be built
 #' @param TargetColumn The name of your target column
+#' @param FCPeriods Number of periods
+#' @param Time_Unit Agg level
 #' @param DateColumn The name of your date column
 #' @param GroupVariable The name of your group variable
 #' @param xregs Extra data to merge in

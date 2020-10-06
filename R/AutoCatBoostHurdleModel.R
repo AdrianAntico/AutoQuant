@@ -14,11 +14,13 @@
 #' @param PrimaryDateColumn Supply a date column if the data is functionally related to it
 #' @param IDcols Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions
 #' @param TransformNumericColumns Transform numeric column inside the AutoCatBoostRegression() function
+#' @param Methods Choose transformation methods
 #' @param ClassWeights Utilize these for the classifier model
 #' @param SplitRatios Supply vector of partition ratios. For example, c(0.70,0.20,0,10).
 #' @param task_type Set to "GPU" or "CPU"
 #' @param ModelID Define a character name for your models
 #' @param Paths The path to your folder where you want your model information saved
+#' @param ReturnModelObjects TRUE to return the models
 #' @param MetaDataPaths TA character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
 #' @param GridTune Set to TRUE if you want to grid tune the models
@@ -40,7 +42,7 @@
 #' @param GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' Output <- RemixAutoML::AutoCatBoostHurdleModel(
 #'
 #'   # Operationalization
@@ -64,7 +66,9 @@
 #'   Paths = normalizePath("./"),
 #'   MetaDataPaths = NULL,
 #'   TransformNumericColumns = NULL,
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+#'   Methods =
+#'      c("BoxCox", "Asinh", "Asin", "Log",
+#'        "LogPlus1", "Logit", "YeoJohnson"),
 #'   ClassWeights = NULL,
 #'   SplitRatios = c(0.70, 0.20, 0.10),
 #'   NumOfParDepPlots = 10L,
@@ -85,7 +89,8 @@
 #'   LearningRate = seq(0.01,0.10,0.01),
 #'   L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
 #'   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-#'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+#'   BootStrapType = c("Bayesian", "Bernoulli",
+#'      "Poisson", "MVS", "No"),
 #'   GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 #' }
 #' @export

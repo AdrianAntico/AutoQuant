@@ -33,6 +33,7 @@ Time series data sets to pass onto auto modeling functions
 FinalBuildNNET to generate forecasts and ensemble data
 }
 \examples{
+\dontrun{
 FinalBuildNNET(
   Output = NULL,
   TimeSeriesPrepareOutput = NULL,
@@ -40,6 +41,7 @@ FinalBuildNNET(
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
   MaxRunMinutes = 5)
+}
 }
 \seealso{
 Other Time Series: 

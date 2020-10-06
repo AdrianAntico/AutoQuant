@@ -1,4 +1,4 @@
-#' The AutoDataPartition function
+#' AutoDataPartition
 #'
 #' This function will take your ratings matrix and model and score your data in parallel.
 #' @author Adrian Antico and Douglas Pestana

@@ -24,7 +24,7 @@
 #' @param PassInGrid Pass in a grid for changing up the parameter settings for catboost
 #' @return Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' Output <- AutoH2oDRFHurdleModel(
 #'   data,
 #'   TrainOnFull = FALSE,
@@ -42,7 +42,7 @@
 #'   SaveModelObjects = TRUE,
 #'   IfSaveModel = "mojo",
 #'   MaxMem = "28G",
-#'   NThreads = max(1L, parallel::detectCores()-2L)
+#'   NThreads = max(1L, parallel::detectCores()-2L),
 #'   Trees = 1000L,
 #'   GridTune = FALSE,
 #'   MaxModelsInGrid = 1L,
@@ -71,7 +71,7 @@ AutoH2oDRFHurdleModel <- function(data,
                                   MaxModelsInGrid = 1L,
                                   NumOfParDepPlots = 10L,
                                   PassInGrid = NULL) {
-  
+
   # Store args----
   ArgsList <- list()
   ArgsList[["Buckets"]] <- Buckets
@@ -82,30 +82,30 @@ AutoH2oDRFHurdleModel <- function(data,
   ArgsList[["Paths"]] <- Paths
   ArgsList[["MetaDataPaths"]] <- MetaDataPaths
   ArgsList[["SaveModelObjects"]] <- SaveModelObjects
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Ensure Paths and metadata_path exists----
   if(!is.null(Paths)) if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))
-  
+
   # Check args----
   if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
-  
+
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-  
+
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-  
+
   # FeatureColumnNames----
   if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
-  
+
   # Add target bucket column----
   if(length(Buckets) == 1L) {
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1L]), j = "Target_Buckets", value = 0L)
@@ -118,10 +118,10 @@ AutoH2oDRFHurdleModel <- function(data,
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i-1L], "+")))
       } else {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      }      
+      }
     }
   }
-  
+
   # Add target bucket column----
   if(!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1])]
@@ -135,7 +135,7 @@ AutoH2oDRFHurdleModel <- function(data,
       }
     }
   }
-  
+
   # Add target bucket column----
   if(!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1L])]
@@ -149,12 +149,12 @@ AutoH2oDRFHurdleModel <- function(data,
       }
     }
   }
-  
+
   # Ensure target is a factor----
   data.table::set(data, j = "Target_Buckets", value = as.factor(data[["Target_Buckets"]]))
   if(!is.null(ValidationData)) data.table::set(ValidationData, j = "Target_Buckets", value = as.factor(ValidationData[["Target_Buckets"]]))
   if(!is.null(TestData)) data.table::set(TestData, j = "Target_Buckets", value = as.factor(TestData[["Target_Buckets"]]))
-  
+
   # AutoDataPartition if Validation and TestData are NULL----
   if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
@@ -169,7 +169,7 @@ AutoH2oDRFHurdleModel <- function(data,
     TestData <- DataSets$TestData
     rm(DataSets)
   }
-  
+
   # Begin classification model building----
   if(length(Buckets) == 1L) {
     ClassifierModel <- AutoH2oDRFClassifier(
@@ -193,7 +193,7 @@ AutoH2oDRFHurdleModel <- function(data,
       IfSaveModel = IfSaveModel,
       H2OShutdown = FALSE,
       HurdleModel = TRUE)
-    
+
     # data = data
     # ValidationData = ValidationData
     # TestData = TestData
@@ -213,8 +213,8 @@ AutoH2oDRFHurdleModel <- function(data,
     # SaveModelObjects = SaveModelObjects
     # IfSaveModel = IfSaveModel
     # H2OShutdown = FALSE
-    
-    
+
+
   } else {
     ClassifierModel <- AutoH2oDRFMultiClass(
       data = data,
@@ -237,7 +237,7 @@ AutoH2oDRFHurdleModel <- function(data,
       H2OShutdown = FALSE,
       HurdleModel = TRUE)
   }
-  
+
   # Store metadata----
   ModelList <- list()
   ClassModel <- ClassifierModel$Model
@@ -245,7 +245,7 @@ AutoH2oDRFHurdleModel <- function(data,
   VariableImportance <- ClassifierModel$VariableImportance
   if(length(Buckets > 1L)) TargetLevels <- ClassifierModel$TargetLevels else TargetLevels <- NULL
   if(SaveModelObjects) ModelList[["Classifier"]] <- ClassModel
-  
+
   # Model Scoring----
   TestData <- AutoH2OMLScoring(
     ScoringData = data,
@@ -268,7 +268,7 @@ AutoH2oDRFHurdleModel <- function(data,
     MDP_RemoveDates = TRUE,
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
-  
+
   # ScoringData = data
   # ModelObject = ClassModel
   # ModelType = "mojo"
@@ -289,7 +289,7 @@ AutoH2oDRFHurdleModel <- function(data,
   # MDP_RemoveDates = TRUE
   # MDP_MissFactor = "0"
   # MDP_MissNum = -1
-  
+
   # Change name for classification----
   if(length(Buckets) == 1L) {
     data.table::setnames(TestData, "p0", "Predictions_C0")
@@ -301,19 +301,19 @@ AutoH2oDRFHurdleModel <- function(data,
 
   # Remove classification Prediction----
   TestData[, Predictions := NULL]
-  
+
   # Remove Model Object----
   rm(ClassModel)
-  
+
   # Remove Target_Buckets----
   data.table::set(data, j = "Target_Buckets", value = NULL)
   data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
-  
+
   # Begin regression model building----
   counter <- 0L
   Degenerate <- 0L
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
-    
+
     # Define data sets----
     if(bucket == max(seq_len(length(Buckets) + 1L))) {
       if(!is.null(TestData)) {
@@ -349,19 +349,19 @@ AutoH2oDRFHurdleModel <- function(data,
         testBucket <- NULL
       }
     }
-    
+
     # Check for degenerecy----
     if(trainBucket[, .N] != 0L) {
-      
+
       # Check for constant values----
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
-        
+
         # Increment counter----
         counter <- counter + 1L
-        
+
         # Modify filepath and file name----
         if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
-        
+
         # Build model----
         TestModel <- AutoH2oDRFRegression(
           data = trainBucket,
@@ -385,7 +385,7 @@ AutoH2oDRFHurdleModel <- function(data,
           IfSaveModel = IfSaveModel,
           H2OShutdown = FALSE,
           HurdleModel = TRUE)
-        
+
         # data = trainBucket
         # ValidationData = validBucket
         # TestData = testBucket
@@ -407,7 +407,7 @@ AutoH2oDRFHurdleModel <- function(data,
         # IfSaveModel = IfSaveModel
         # H2OShutdown = FALSE
         # HurdleModel = TRUE
-        
+
         # Store Model----
         RegressionModel <- RegressionModel$Model
         if(!is.null(TransformNumericColumns)) TransformationResults <- RegressionModel$TransformationResults
@@ -426,7 +426,7 @@ AutoH2oDRFHurdleModel <- function(data,
           TargetColumnName <- NULL
           TransformationObject <- NULL
         }
-        
+
         # Score model----
         TestData <- AutoH2OMLScoring(
           ScoringData = TestData,
@@ -452,19 +452,19 @@ AutoH2oDRFHurdleModel <- function(data,
 
         # Clear TestModel From Memory----
         rm(RegressionModel)
-        
+
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets) + 1L))) {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket - 1L], "+"))
         } else {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket]))
         }
-        
+
       } else {
-        
+
         # Account for degenerate distributions----
         ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
-        
+
         # Use single value for predictions in the case of zero variance----
         if(bucket == max(seq_len(length(Buckets) + 1L))) {
           Degenerate <- Degenerate + 1L
@@ -477,12 +477,12 @@ AutoH2oDRFHurdleModel <- function(data,
         }
       }
     } else {
-      
+
       # Account for degenerate distributions----
       ArgsList[["degenerate"]] <- c(ArgsList[["degenerate"]], bucket)
     }
   }
-  
+
   # Final Combination of Predictions----
   # Logic: 1 Buckets --> 4 columns of preds
   #        2 Buckets --> 6 columns of preds
@@ -497,7 +497,7 @@ AutoH2oDRFHurdleModel <- function(data,
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + counter + Degenerate]])
       }
-    }  
+    }
   } else if(counter == 2L & length(Buckets) != 1L) {
     for(i in seq_len(length(Buckets)+1)) {
       if(i == 1L) {
@@ -505,16 +505,16 @@ AutoH2oDRFHurdleModel <- function(data,
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + 1L + counter]])
       }
-    }  
+    }
   } else if(counter == 2L & length(Buckets) == 1L) {
     data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1L]] * TestData[[3L]] +  TestData[[2L]] * TestData[[4L]])
   } else {
-    data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1]] * TestData[[3L]] +  TestData[[2L]] * TestData[[4L]]) 
+    data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1]] * TestData[[3L]] +  TestData[[2L]] * TestData[[4L]])
   }
-  
+
   # Regression r2 via sqrt of correlation----
   r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2L
-  
+
   # Regression Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
@@ -523,7 +523,7 @@ AutoH2oDRFHurdleModel <- function(data,
       data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID, "_ValidationData.csv")))
     }
   }
-  
+
   # Regression Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = TestData,
@@ -532,10 +532,10 @@ AutoH2oDRFHurdleModel <- function(data,
     GraphType = "calibration",
     PercentileBucket = 0.05,
     aggrfun = function(x) mean(x, na.rm = TRUE))
-  
+
   # Add Number of Trees to Title----
   EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
-  
+
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
@@ -544,7 +544,7 @@ AutoH2oDRFHurdleModel <- function(data,
       ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
     }
   }
-  
+
   # Regression Evaluation Calibration Plot----
   EvaluationBoxPlot <- EvalPlot(
     data = TestData,
@@ -553,10 +553,10 @@ AutoH2oDRFHurdleModel <- function(data,
     GraphType = "boxplot",
     PercentileBucket = 0.05,
     aggrfun = function(x) mean(x, na.rm = TRUE))
-  
+
   # Add Number of Trees to Title----
   EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
-  
+
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
@@ -565,7 +565,7 @@ AutoH2oDRFHurdleModel <- function(data,
       ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationBoxPlot.png")))
     }
   }
-  
+
   # Regression Evaluation Metrics----
   EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"), MetricValue = rep(999999, 4L))
   i <- 0L
@@ -590,10 +590,10 @@ AutoH2oDRFHurdleModel <- function(data,
       data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
     }, error = function(x) "skip")
   }
-  
+
   # Remove Cols----
   TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL, Metric3 = NULL)]
-  
+
   # Save EvaluationMetrics to File----
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
   if(SaveModelObjects) {
@@ -603,7 +603,7 @@ AutoH2oDRFHurdleModel <- function(data,
       data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
-  
+
   # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0L
@@ -637,7 +637,7 @@ AutoH2oDRFHurdleModel <- function(data,
       ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
     }, error = function(x) "skip")
   }
-  
+
   # Regression Save ParDepBoxPlots to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths)) {
@@ -646,7 +646,7 @@ AutoH2oDRFHurdleModel <- function(data,
       save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
     }
   }
-  
+
   # Shutdown h2o----
   h2o::h2o.shutdown(prompt = FALSE)
 

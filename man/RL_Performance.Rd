@@ -38,6 +38,8 @@ RL_Performance(
 \item{ValidationData}{Data set}
 
 \item{HoldOutPeriods}{Passthrough}
+
+\item{FinalScore}{FALSE}
 }
 \description{
 ARIMA_Performance creates and stores model results in Experiment Grid

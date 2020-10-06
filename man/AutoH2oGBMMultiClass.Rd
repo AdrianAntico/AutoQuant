@@ -76,8 +76,15 @@ AutoH2oGBMMultiClass is an automated H2O modeling framework with grid-tuning and
 }
 \examples{
 \donttest{
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
@@ -86,7 +93,8 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Target",
-   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+   FeatureColNames = names(data)[!names(data) \%chin\%
+     c("IDcol_1", "IDcol_2","Adrian")],
    eval_metric = "logloss",
    Trees = 50,
    GridTune = FALSE,
@@ -94,7 +102,8 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
    NThreads = max(1, parallel::detectCores()-2),
    MaxModelsInGrid = 10,
    model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   metadata_path = file.path(normalizePath("./"),
+     "MetaData"),
    ModelID = "FirstModel",
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,

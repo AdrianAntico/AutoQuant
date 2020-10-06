@@ -45,15 +45,16 @@ Either a data table with new dummy variables columns and optionally removes base
 DummifyDT creates dummy variables for the selected columns. Either one-hot encoding, N+1 columns for N levels, or N columns for N levels.
 }
 \examples{
+\dontrun{
 # Create fake data with 10 categorical columns
 data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.85, 
-  N = 25000, 
-  ID = 2L, 
-  ZIP = 0, 
+  Correlation = 0.85,
+  N = 25000,
+  ID = 2L,
+  ZIP = 0,
   FactorCount = 10L,
-  AddDate = FALSE, 
-  Classification = FALSE, 
+  AddDate = FALSE,
+  Classification = FALSE,
   MultiClass = FALSE)
 
 # Create dummy variables
@@ -76,6 +77,7 @@ data <- RemixAutoML::DummifyDT(
   FactorLevelsList = NULL,
   ClustScore = FALSE,
   ReturnFactorLevels = FALSE)
+}
 }
 \seealso{
 Other Feature Engineering: 

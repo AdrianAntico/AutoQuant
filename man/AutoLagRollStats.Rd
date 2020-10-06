@@ -54,19 +54,19 @@ AutoLagRollStats(
 
 \item{Lags}{A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.}
 
+\item{MA_RollWindows}{A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{SD_RollWindows}{A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Skew_RollWindows}{A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Kurt_RollWindows}{A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.}
+
+\item{Quantile_RollWindows}{A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.}
+
 \item{Quantiles_Selected}{Select from the following c("q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60"," q65", "q70", "q75", "q80", "q85", "q90", "q95")}
 
 \item{Debug}{Set to TRUE to get a print of which steps are running}
-
-\item{MARollWindows}{A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.}
-
-\item{SDRollWindows}{A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.}
-
-\item{SkewRollWindows}{A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.}
-
-\item{KurtRollWindows}{A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.}
-
-\item{QuantileRollWindows}{A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.}
 }
 \value{
 data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
@@ -75,7 +75,7 @@ data.table of original data plus created lags, rolling stats, and time between e
 AutoLagRollStats Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
 }
 \examples{
-
+\dontrun{
 # Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
@@ -92,7 +92,8 @@ for(Level in LETTERS) {
   if(Count == 1L) {
     data <- data.table::copy(datatemp)
   } else {
-    data <- data.table::rbindlist(list(data, data.table::copy(datatemp)))
+    data <- data.table::rbindlist(
+      list(data, data.table::copy(datatemp)))
   }
   Count <- Count + 1L
 }
@@ -107,7 +108,8 @@ data <- RemixAutoML::AutoLagRollStats(
   HierarchyGroups      = NULL,
   IndependentGroups    = c("Factor1"),
   TimeUnitAgg          = "days",
-  TimeGroups           = c("days", "weeks", "months", "quarters"),
+  TimeGroups           = c("days", "weeks",
+                           "months", "quarters"),
   TimeBetween          = NULL,
   TimeUnit             = "days",
 
@@ -117,14 +119,21 @@ data <- RemixAutoML::AutoLagRollStats(
   SimpleImpute         = TRUE,
 
   # Calculated Columns
-  Lags                 = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
-  MA_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Lags                 = list("days" = c(seq(1,5,1)),
+                              "weeks" = c(seq(1,3,1)),
+                              "months" = c(seq(1,2,1)),
+                              "quarters" = c(seq(1,2,1))),
+  MA_RollWindows       = list("days" = c(seq(1,5,1)),
+                              "weeks" = c(seq(1,3,1)),
+                              "months" = c(seq(1,2,1)),
+                              "quarters" = c(seq(1,2,1))),
   SD_RollWindows       = NULL,
   Skew_RollWindows     = NULL,
   Kurt_RollWindows     = NULL,
   Quantile_RollWindows = NULL,
   Quantiles_Selected   = NULL,
   Debug                = FALSE)
+}
 }
 \seealso{
 Other Feature Engineering: 

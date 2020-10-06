@@ -54,7 +54,11 @@ Time series data sets to pass onto auto modeling functions
 TimeSeriesDataPrepare is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 }
 \examples{
-data <- data.table::fread(file.path(PathNormalizer("C:\\\\Users\\\\aantico\\\\Documents\\\\Package\\\\data"),"tsdata.csv"))
+\dontrun{
+data <- data.table::fread(
+  file.path(PathNormalizer(
+    "C:\\\\Users\\\\aantico\\\\Documents\\\\Package\\\\data"),
+    "tsdata.csv"))
 TimeSeriesDataPrepare(
   data = data,
   TargetName = "Weekly_Sales",
@@ -69,6 +73,7 @@ TimeSeriesDataPrepare(
   TSClean = TRUE,
   ModelFreq = TRUE,
   FinalBuild = FALSE)
+}
 }
 \seealso{
 Other Time Series: 

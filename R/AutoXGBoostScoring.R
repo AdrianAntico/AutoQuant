@@ -28,30 +28,31 @@
 #' @param MDP_MissFactor If you set MDP_Impute to TRUE, supply the character values to replace missing values with
 #' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
 #' @examples
-#' \donttest{
-#' Preds <- AutoXGBoostScoring(TargetType = "regression",
-#'                             ScoringData = data,
-#'                             FeatureColumnNames = 2:12,
-#'                             IDcols = NULL,
-#'                             FactorLevelsList = NULL,
-#'                             TargetLevels = NULL,
-#'                             Objective = "multi:softmax",
-#'                             OneHot = FALSE,
-#'                             ModelObject = NULL,
-#'                             ModelPath = "home",
-#'                             ModelID = "ModelTest",
-#'                             ReturnFeatures = TRUE,
-#'                             TransformNumeric = FALSE,
-#'                             BackTransNumeric = FALSE,
-#'                             TargetColumnName = NULL,
-#'                             TransformationObject = NULL,
-#'                             TransID = NULL,
-#'                             TransPath = NULL,
-#'                             MDP_Impute = TRUE,
-#'                             MDP_CharToFactor = TRUE,
-#'                             MDP_RemoveDates = TRUE,
-#'                             MDP_MissFactor = "0",
-#'                             MDP_MissNum = -1)
+#' \dontrun{
+#' Preds <- AutoXGBoostScoring(
+#'   TargetType = "regression",
+#'   ScoringData = data,
+#'   FeatureColumnNames = 2:12,
+#'   IDcols = NULL,
+#'   FactorLevelsList = NULL,
+#'   TargetLevels = NULL,
+#'   Objective = "multi:softmax",
+#'   OneHot = FALSE,
+#'   ModelObject = NULL,
+#'   ModelPath = "home",
+#'   ModelID = "ModelTest",
+#'   ReturnFeatures = TRUE,
+#'   TransformNumeric = FALSE,
+#'   BackTransNumeric = FALSE,
+#'   TargetColumnName = NULL,
+#'   TransformationObject = NULL,
+#'   TransID = NULL,
+#'   TransPath = NULL,
+#'   MDP_Impute = TRUE,
+#'   MDP_CharToFactor = TRUE,
+#'   MDP_RemoveDates = TRUE,
+#'   MDP_MissFactor = "0",
+#'   MDP_MissNum = -1)
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
@@ -78,10 +79,10 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                MDP_RemoveDates = TRUE,
                                MDP_MissFactor = "0",
                                MDP_MissNum = -1) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Check arguments----
   if(is.null(ScoringData)) return("ScoringData cannot be NULL")
   if(is.null(FeatureColumnNames)) return("FeatureColumnNames cannot be NULL")
@@ -91,10 +92,10 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
   if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
   if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
-  
+
   # IDcols conversion----
   if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
-  
+
   # Apply Transform Numeric Variables----
   if(TransformNumeric) {
     if(!is.null(TransformationObject)) {
@@ -115,7 +116,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
         Path = TransPath)
     }
   }
-  
+
   # Subset Columns Needed----
   if(is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
     keep1 <- names(ScoringData)[c(FeatureColumnNames)]
@@ -133,11 +134,11 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   } else {
     ScoringMerge <- data.table::copy(ScoringData)
   }
-  
+
   # Binary Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
   CatFeatures <- names(ScoringData)[CatFeatures]
-  
+
   # DummifyDT categorical columns----
   if(!is.null(CatFeatures)) {
     if(!is.null(FactorLevelsList)) {
@@ -148,7 +149,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
         OneHot = OneHot,
         SaveFactorLevels = FALSE,
         SavePath = ModelPath,
-        ImportFactorLevels = FALSE, 
+        ImportFactorLevels = FALSE,
         FactorLevelsList = FactorLevelsList,
         ReturnFactorLevels = FALSE,
         ClustScore = FALSE)
@@ -165,7 +166,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
         ClustScore = FALSE)
     }
   }
-  
+
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
     data = ScoringData,
@@ -174,16 +175,16 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     RemoveDates = MDP_RemoveDates,
     MissFactor = MDP_MissFactor,
     MissNum = MDP_MissNum)
-  
+
   # Initialize XGBoost Data Conversion----
   ScoringMatrix <- xgboost::xgb.DMatrix(as.matrix(ScoringData))
-  
+
   # Load model----
   if(!is.null(ModelObject)) model <- ModelObject else model <- tryCatch({load(file.path(normalizePath(ModelPath), ModelID))}, error = function(x) return("Model not found in ModelPath"))
-  
+
   # Score model----
   predict <- data.table::as.data.table(stats::predict(model, ScoringMatrix))
-  
+
   # Change Output Predictions Column Name----
   if(tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
@@ -214,18 +215,18 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
     }
   }
-  
+
   # Merge features back on----
   if(ReturnFeatures) predict <- cbind(predict, ScoringMerge)
-  
+
   # Back Transform Numeric Variables----
   if(BackTransNumeric) {
     grid_trans_results <- data.table::copy(TransformationObject)
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
-    
+
     # Append record for Predicted Column----
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
-    
+
     # Run Back-Transform----
     predict <- AutoTransformationScore(
       ScoringData = predict,
@@ -234,7 +235,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       TransID = NULL,
       Path = NULL)
   }
-  
+
   # Return data----
   return(predict)
 }

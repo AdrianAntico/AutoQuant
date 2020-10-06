@@ -30,12 +30,13 @@ Returns a data table with missing time series records filled (currently just zer
 TimeSeriesFill For Completing Time Series Data For Single Series or Time Series by Group
 }
 \examples{
-\donttest{
-data <- TimeSeriesFill(data,
-                       DateColumnName = "Date",
-                       GroupVariables = "GroupVar",
-                       TimeUnit = "days",
-                       FillType = "inner")
+\dontrun{
+data <- TimeSeriesFill(
+  data,
+  DateColumnName = "Date",
+  GroupVariables = "GroupVar",
+  TimeUnit = "days",
+  FillType = "inner")
 }
 }
 \seealso{

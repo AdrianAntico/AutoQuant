@@ -108,7 +108,7 @@ Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, Va
 AutoXGBoostHurdleModel is generalized hurdle modeling framework
 }
 \examples{
-\donttest{
+\dontrun{
 Output <- RemixAutoML::AutoXGBoostHurdleModel(
 
    # Operationalization args

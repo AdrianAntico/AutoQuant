@@ -46,11 +46,13 @@
 #' @param Timer Setting to TRUE prints out the forecast number while it is building
 #' @param DebugMode Setting to TRUE generates printout of all header code comments during run time of function
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'
 #'  # Pull in Walmart Data Set
-#'  data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
-#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+#'  data <- data.table::fread(
+#'    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+#'    , Counts := NULL]
 #'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 #'
 #'  # Build forecast
@@ -86,12 +88,15 @@
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+#'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'               "LogPlus1","Logit","YeoJohnson"),
 #'   Difference = TRUE,
 #'
 #'   # Features
-#'   Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
-#'   MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
+#'   Lags = list("days" = seq(1L, 10L, 1L),
+#'               "weeks" = seq(1L, 5L, 1L)),
+#'   MA_Periods = list("days" = seq(5L, 20L, 5L),
+#'                     "weeks" = seq(2L, 10L, 2L)),
 #'   SD_Periods = NULL,
 #'   Skew_Periods = NULL,
 #'   Kurt_Periods = NULL,
@@ -102,11 +107,14 @@
 #'   XREGS = xreg,
 #'   FourierTerms = 4,
 #'   CalendarVariables = c("week", "month", "quarter"),
-#'   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+#'   HolidayVariable = c("USPublicHolidays","EasterGroup",
+#'     "ChristmasGroup","OtherEcclesticalFeasts"),
 #'   TimeTrendVariable = TRUE,
 #'   NTrees = 300)
 #'
-#' UpdateMetrics <- print(XGBoostResults$ModelInformation$EvaluationMetrics[Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' UpdateMetrics <- print(
+#'   XGBoostResults$ModelInformation$EvaluationMetrics[
+#'     Metric == "MSE", MetricValue := sqrt(MetricValue)])
 #' print(UpdateMetrics)
 #' XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 #' XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]

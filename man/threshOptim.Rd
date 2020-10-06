@@ -45,6 +45,7 @@ Optimal threshold and corresponding utilities for the range of thresholds tested
 This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
 }
 \examples{
+\dontrun{
 data <- data.table::data.table(Target = runif(10))
 data[, x1 := qnorm(Target)]
 data[, x2 := runif(10)]
@@ -62,6 +63,7 @@ data <- threshOptim(data     = data,
                     ThresholdPrecision = 0.001)
 optimalThreshold <- data$Thresholds
 allResults <- data$EvaluationTable
+}
 }
 \seealso{
 Other Model Evaluation and Interpretation: 

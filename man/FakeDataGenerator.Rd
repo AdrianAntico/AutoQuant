@@ -45,7 +45,7 @@ FakeDataGenerator(
 FakeDataGenerator
 }
 \examples{
-\donttest{
+\dontrun{
 data <- RemixAutoML::FakeDataGenerator(
    Correlation = 0.70,
    N = 1000L,

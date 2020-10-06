@@ -15,6 +15,7 @@ CARMA_Get_IndepentVariablesPass is to help manage carma code
 \seealso{
 Other Carma Helper: 
 \code{\link{CARMA_Define_Args}()},
+\code{\link{CARMA_GroupHierarchyCheck}()},
 \code{\link{CarmaCatBoostKeepVarsGDL}()},
 \code{\link{CarmaH2OKeepVarsGDL}()},
 \code{\link{CarmaXGBoostKeepVarsGDL}()}

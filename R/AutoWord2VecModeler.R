@@ -19,22 +19,23 @@
 #' @param MaxMemory Amount of memory you want to dedicate to model building
 #' @param SaveOutput Set to TRUE to save your models to file
 #' @examples
-#' \donttest{
-#' data <- AutoWord2VecModeler(data,
-#'                             BuildType = "individual",
-#'                             stringCol = c("Text_Col1","Text_Col2"),
-#'                             KeepStringCol = FALSE,
-#'                             model_path = normalizePath("./"),
-#'                             vects = 100,
-#'                             SaveStopWords = FALSE,
-#'                             MinWords = 1,
-#'                             WindowSize = 1,
-#'                             Epochs = 25,
-#'                             StopWords = NULL,
-#'                             SaveModel = "standard",
-#'                             Threads = max(1,parallel::detectCores()-2),
-#'                             MaxMemory = "28G",
-#'                             SaveOutput = TRUE)
+#' \dontrun{
+#' data <- AutoWord2VecModeler(
+#'   data,
+#'   BuildType = "individual",
+#'   stringCol = c("Text_Col1","Text_Col2"),
+#'   KeepStringCol = FALSE,
+#'   model_path = normalizePath("./"),
+#'   vects = 100,
+#'   SaveStopWords = FALSE,
+#'   MinWords = 1,
+#'   WindowSize = 1,
+#'   Epochs = 25,
+#'   StopWords = NULL,
+#'   SaveModel = "standard",
+#'   Threads = max(1,parallel::detectCores()-2),
+#'   MaxMemory = "28G",
+#'   SaveOutput = TRUE)
 #'}
 #' @export
 AutoWord2VecModeler <- function(data,
@@ -52,28 +53,28 @@ AutoWord2VecModeler <- function(data,
                                 Threads       = max(1, parallel::detectCores() - 2),
                                 MaxMemory     = "28G",
                                 SaveOutput    = FALSE) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Two processes----
   if(tolower(BuildType) == "combined") {
-    
+
     # Create storage file----
     N <- length(stringCol)
     StoreFile <- data.table::data.table(ModelName = rep("a", 1), Path = rep("a", 1), Jar = rep("a", 1))
     i <- 0L
     for(string in stringCol) {
-      
+
       # Increment----
       i <- i + 1L
-      
+
       # Ensure stringCol is character (not factor)----
       if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
-      
+
       # Build single column----
       if(i == 1L) {
         Final <- data[, .(get(string))]
@@ -81,25 +82,25 @@ AutoWord2VecModeler <- function(data,
       } else {
         temp <- data[, .(get(string))]
         data.table::setnames(temp, "V1", "Text")
-        Final <- data.table::rbindlist(list(Final, temp)) 
+        Final <- data.table::rbindlist(list(Final, temp))
       }
     }
-    
+
     # Remove Temp
     rm(temp)
-    
+
     # word2vec time----
     Sys.sleep(10L)
     h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
-    
+
     # It is important to remove "\n"----
     Final[, Text := gsub("  ", " ", Text)]
     Final[, Text := stringr::str_replace_all(Text, "[[:punct:]]", "")]
     Final <- Final[, .(Text)]
-    
+
     # Tokenize----
     tokenized_words <- tokenizeH2O(Final)
-    
+
     # Build model----
     w2v.model <- h2o::h2o.word2vec(
       tokenized_words,
@@ -112,7 +113,7 @@ AutoWord2VecModeler <- function(data,
       init_learning_rate = 0.025,
       sent_sample_rate   = 0.05,
       epochs             = Epochs)
-    
+
     # Save model----
     if(SaveOutput) {
       if(tolower(SaveModel) == "standard") {
@@ -130,35 +131,35 @@ AutoWord2VecModeler <- function(data,
         save(StoreFile, file = file.path(normalizePath(model_path), "StoreFile.Rdata"))
       }
     }
-    
+
     # Loop through all the string columns and score them----
     for(string in stringCol) {
       if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
-      
+
       # word2vec time
       i <- i + 1L
       Sys.sleep(10L)
       h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
-      
+
       # It is important to remove "\n" --
       data[, eval(string) := gsub("  ", " ", get(string))]
       data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
       data2 <- data[, .(get(string))]
-      
+
       # Tokenize
       tokenized_words <- tokenizeH2O(data2)
       rm(data2)
-      
+
       # Score model----
       all_vecs <- h2o::h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
-      
+
       # Convert to data.table----
       all_vecs <- data.table::as.data.table(all_vecs)
       data <- data.table::data.table(cbind(data, all_vecs))
-      
+
       # Remove string cols----
       if(!KeepStringCol) data[, eval(string) := NULL]
-      
+
       # Replace Colnames----
       cols <- names(data)[(ncol(data) - vects + 1):ncol(data)]
       for(c in cols) {
@@ -166,13 +167,13 @@ AutoWord2VecModeler <- function(data,
         data[, eval(c) := NULL]
       }
     }
-    
+
     # Final Prep
     h2o::h2o.rm(w2v.model)
     h2o::h2o.shutdown(prompt = FALSE)
-    
+
   } else {
-    
+
     # Create storage file----
     N <- length(stringCol)
     StoreFile <- data.table::data.table(ModelName = rep("a", N), Path = rep("a", N), Jar = rep("a", N))
@@ -182,16 +183,16 @@ AutoWord2VecModeler <- function(data,
       i <- i + 1L
       Sys.sleep(10L)
       h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
-      
+
       # It is important to remove "\n" --
       data[, eval(string) := gsub("  ", " ", get(string))]
       data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
       data2 <- data[, .(get(string))]
-      
+
       # Tokenize
       tokenized_words <- tokenizeH2O(data2)
       rm(data2)
-      
+
       # Build model
       w2v.model <- h2o::h2o.word2vec(
         tokenized_words,
@@ -204,7 +205,7 @@ AutoWord2VecModeler <- function(data,
         init_learning_rate = 0.025,
         sent_sample_rate   = 0.05,
         epochs             = Epochs)
-      
+
       # Save model
       if(SaveOutput) {
         if(tolower(SaveModel) == "standard") {
@@ -222,30 +223,30 @@ AutoWord2VecModeler <- function(data,
           save(StoreFile, file = file.path(normalizePath(model_path), "StoreFile.Rdata"))
         }
       }
-      
+
       # Score model
       all_vecs <- h2o::h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
-      
+
       # Convert to data.table
       all_vecs <- data.table::as.data.table(all_vecs)
       data <- data.table::data.table(cbind(data, all_vecs))
-      
+
       # Remove string cols
       if(!KeepStringCol) data[, eval(string) := NULL]
-      
+
       # Replace Colnames
       cols <- names(data[, (ncol(data) - vects + 1):ncol(data)])
       for(c in cols) {
         data[, paste0(string, "_", c) := get(c)]
         data[, eval(c) := NULL]
       }
-      
+
       # Final Prep
       h2o::h2o.rm(w2v.model)
       h2o::h2o.shutdown(prompt = FALSE)
     }
   }
-  
+
   # Return data----
-  return(data) 
+  return(data)
 }

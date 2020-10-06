@@ -19,32 +19,22 @@
 #' @param H20ShutDown TRUE to shutdown H2O after the run. Use FALSE if you will be repeatedly scoring and shutdown somewhere else in your environment.
 #' @return Returns a list of predicted values. Each list element contains the predicted values from a single model predict call.
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Multinomial Example
 #' Correl <- 0.85
 #' aa <- data.table::data.table(target = runif(1000))
 #' aa[, x1 := qnorm(target)]
 #' aa[, x2 := runif(1000)]
-#' aa[, Independent_Variable1 := log(pnorm(Correl * x1 +
-#'                                           sqrt(1-Correl^2) * qnorm(x2)))]
-#' aa[, Independent_Variable2 := (pnorm(Correl * x1 +
-#'                                        sqrt(1-Correl^2) * qnorm(x2)))]
-#' aa[, Independent_Variable3 := exp(pnorm(Correl * x1 +
-#'                                           sqrt(1-Correl^2) * qnorm(x2)))]
-#' aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 +
-#'                                               sqrt(1-Correl^2) * qnorm(x2))))]
-#' aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 +
-#'                                            sqrt(1-Correl^2) * qnorm(x2)))]
-#' aa[, Independent_Variable6 := (pnorm(Correl * x1 +
-#'                                        sqrt(1-Correl^2) * qnorm(x2)))^0.10]
-#' aa[, Independent_Variable7 := (pnorm(Correl * x1 +
-#'                                        sqrt(1-Correl^2) * qnorm(x2)))^0.25]
-#' aa[, Independent_Variable8 := (pnorm(Correl * x1 +
-#'                                        sqrt(1-Correl^2) * qnorm(x2)))^0.75]
-#' aa[, Independent_Variable9 := (pnorm(Correl * x1 +
-#'                                        sqrt(1-Correl^2) * qnorm(x2)))^2]
-#' aa[, Independent_Variable10 := (pnorm(Correl * x1 +
-#'                                         sqrt(1-Correl^2) * qnorm(x2)))^4]
+#' aa[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' aa[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' aa[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' aa[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
+#' aa[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' aa[, Independent_Variable6 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.10]
+#' aa[, Independent_Variable7 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.25]
+#' aa[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
+#' aa[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
+#' aa[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
 #' aa[, ':=' (x1 = NULL, x2 = NULL)]
 #' aa[, target := as.factor(ifelse(target < 0.33,"A",ifelse(target < 0.66, "B","C")))]
 #' Construct <- data.table::data.table(Targets = rep("target",3),
@@ -133,7 +123,7 @@ AutoH2OScoring <- function(Features     = data,
       warning("Run either text models, supervised models,
          or unsupervised models, but only one")
     }
-    
+
     # Import grid_tuned_paths or StoreFile----
     if (any(
       tolower(TargetType) %in% c(
@@ -151,7 +141,7 @@ AutoH2OScoring <- function(Features     = data,
     } else {
       warning("TargetType not a valid option")
     }
-    
+
     # Ensure GridTuneRow is not out of bounds----
     if (any(
       tolower(TargetType) %in% c(
@@ -178,13 +168,13 @@ AutoH2OScoring <- function(Features     = data,
     } else {
       warning("TargetType not a valid option")
     }
-    
+
     ScoresList <- list()
     for (i in as.integer(seq_along(GridTuneRow))) {
-      
+
       # Mojo Scoring----
       if (tolower(ScoreMethod) == "mojo") {
-        
+
         # Multinomial Scoring----
         if (tolower(TargetType[i]) == "multinomial") {
           if (tolower(ClassVals[i]) == c("probs")) {
@@ -231,7 +221,7 @@ AutoH2OScoring <- function(Features     = data,
           } else {
             warning("ClassVals can only be Probs, Label or All")
           }
-          
+
           # Binary Scoring----
         } else if (tolower(TargetType[i]) == "classification") {
           if (tolower(ClassVals[i]) == c("p1")) {
@@ -289,7 +279,7 @@ AutoH2OScoring <- function(Features     = data,
           } else {
             warning("ClassVals can only be Probs, Label or All")
           }
-          
+
           # Regression Scoring----
         } else if (tolower(TargetType[i]) == "regression") {
           if (SaveToFile) {
@@ -304,7 +294,7 @@ AutoH2OScoring <- function(Features     = data,
               verbose = FALSE
             )
           )
-          
+
           # Text Scoring----
         } else if (tolower(TargetType[i]) == "text") {
           keep <- StoreFile[i, 1][[1]]
@@ -322,7 +312,7 @@ AutoH2OScoring <- function(Features     = data,
               verbose = FALSE
             )
           )
-          
+
           # Multinomial Multilabel Scoring----
         } else if (tolower(TargetType[i]) == "multioutcome") {
           if (SaveToFile) {
@@ -358,7 +348,7 @@ AutoH2OScoring <- function(Features     = data,
           warning("TargetType is not Multinomial,
           Classification, Regression, or Text")
         }
-        
+
         # Standard Scoring----
       } else if (tolower(ScoreMethod) == "standard") {
         # H2O Startup function----
@@ -375,7 +365,7 @@ AutoH2OScoring <- function(Features     = data,
             startH2o()
           }
         )
-        
+
         # Load model----
         if (tolower(TargetType[i]) == "text") {
           model <- h2o::h2o.loadModel(path = StoreFile[i, Path])
@@ -410,7 +400,7 @@ AutoH2OScoring <- function(Features     = data,
             features <- h2o::as.h2o(Features)
           }
         }
-        
+
         # Multinomial Scoring----
         if (tolower(TargetType[i]) == "multinomial") {
           if (tolower(ClassVals[i]) == "probs") {
@@ -427,7 +417,7 @@ AutoH2OScoring <- function(Features     = data,
           } else {
             warning("ClassVals can only be Probs, Label, or All")
           }
-          
+
           # Binary Scoring----
         } else if (tolower(TargetType[i]) == "classification") {
           if (tolower(ClassVals[i]) == "p1") {
@@ -447,12 +437,12 @@ AutoH2OScoring <- function(Features     = data,
           } else {
             warning("ClassVals can only be Probs, Label, or All")
           }
-          
+
           # Regression Scoring----
         } else if (tolower(TargetType[i]) == "regression") {
           Scores <- data.table::as.data.table(h2o::h2o.predict(model,
                                                                newdata = features)[, 1])
-          
+
           # Text Scoring----
         } else if (tolower(TargetType[i]) == "text") {
           if(tolower(TextType) == "individual") {
@@ -461,7 +451,7 @@ AutoH2OScoring <- function(Features     = data,
               data = Features,
               string = name,
               NThreads = NThreads,
-              MaxMem = MaxMem, 
+              MaxMem = MaxMem,
               StartH2O = FALSE
             )
             Scores <- data.table::as.data.table(h2o::h2o.transform(
@@ -473,9 +463,9 @@ AutoH2OScoring <- function(Features     = data,
                                                    "_",
                                                    names(Scores)))
             Features <-
-              cbind(Features[, paste0(name) := NULL], Scores)            
+              cbind(Features[, paste0(name) := NULL], Scores)
           } else {
-            
+
             # Loop through text columns----
             for(textCol in TextNames) {
               data <- AutoH2OTextPrepScoring(
@@ -493,7 +483,7 @@ AutoH2OScoring <- function(Features     = data,
                                                      "_",
                                                      names(Scores)))
               Features <-
-                cbind(Features[, paste0(textCol) := NULL], Scores)              
+                cbind(Features[, paste0(textCol) := NULL], Scores)
             }
           }
         } else if (tolower(TargetType[i]) == "multioutcome") {

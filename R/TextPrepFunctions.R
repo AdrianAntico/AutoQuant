@@ -5,7 +5,7 @@
 #' @family Misc
 #' @param data The text data
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data <- tokenizeH2O(data = data[["StringColumn"]])
 #' }
 #' @export
@@ -34,24 +34,34 @@ tokenizeH2O <- function(data) {
 #' @param Stemming Set to TRUE to run stemming on your text data
 #' @param StopWords Add your own stopwords, in vector format
 #' @examples
+#' \dontrun{
 #' data <- data.table::data.table(
-#' DESCR = c("Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru, Gru,
-#'            Urkle, Urkle, Urkle, Urkle, Urkle, Urkle, Urkle, Gru, Gru, Gru,
-#'            bears, bears, bears, bears, bears, bears, smug, smug, smug, smug,
-#'            smug, smug, smug, smug, smug, smug, smug, smug, smug, smug, smug,
-#'            eats, eats, eats, eats, eats, eats, beats, beats, beats, beats,
-#'            beats, beats, beats, beats, beats, beats, beats, science, science,
-#'            Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt, Dwigt,
-#'            Schrute, Schrute, Schrute, Schrute, Schrute, Schrute, Schrute,
-#'            James, James, James, James, James, James, James, James, James, James,
-#'            Halpert, Halpert, Halpert, Halpert, Halpert, Halpert, Halpert, Halpert"))
-#' data <- AutoWordFreq(data,
-#'                      TextColName = "DESCR",
-#'                      GroupColName = NULL,
-#'                      GroupLevel = NULL,
-#'                      RemoveEnglishStopwords = FALSE,
-#'                      Stemming = FALSE,
-#'                      StopWords = c("Bla"))
+#' DESCR = c(
+#'   "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Gru",
+#'   "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Urkle",
+#'   "Urkle", "Urkle", "Urkle", "Urkle", "Urkle", "Urkle",
+#'   "Gru", "Gru", "Gru", "bears", "bears", "bears",
+#'   "bears", "bears", "bears", "smug", "smug", "smug", "smug",
+#'   "smug", "smug", "smug", "smug", "smug", "smug",
+#'   "smug", "smug", "smug", "smug", "smug", "eats", "eats",
+#'   "eats", "eats", "eats", "eats", "beats", "beats", "beats", "beats",
+#'   "beats", "beats", "beats", "beats", "beats", "beats",
+#'   "beats", "science", "science", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
+#'   "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
+#'   "Schrute", "Schrute", "Schrute", "Schrute", "Schrute",
+#'   "Schrute", "Schrute", "James", "James", "James", "James",
+#'   "James", "James", "James", "James", "James", "James",
+#'   "Halpert", "Halpert", "Halpert", "Halpert",
+#'   "Halpert", "Halpert", "Halpert", "Halpert"))
+#' data <- AutoWordFreq(
+#'   data,
+#'   TextColName = "DESCR",
+#'   GroupColName = NULL,
+#'   GroupLevel = NULL,
+#'   RemoveEnglishStopwords = FALSE,
+#'   Stemming = FALSE,
+#'   StopWords = c("Bla"))
+#' }
 #' @export
 AutoWordFreq <- function(data,
                          TextColName = "DESCR",
@@ -62,64 +72,56 @@ AutoWordFreq <- function(data,
                          StopWords = c("bla",
                                        "bla2")) {
   # Check data.table
-  if (!data.table::is.data.table(data)) {
-    data <- data.table::as.data.table(data)
-  }
-  
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
   # Ensure stringCol is character (not factor)
-  if (!is.character(data[[eval(TextColName)]]))
-    data[, eval(TextColName) := as.character(get(TextColName))]
-  
+  if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
+
   # Prepare data
-  if (is.null(GroupColName)) {
+  if(is.null(GroupColName)) {
     desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
   } else {
-    if (!is.character(data[[GroupColName]])) {
+    if(!is.character(data[[GroupColName]])) {
       data[, eval(GroupColName) := as.character(get(GroupColName))]
-      desc <-
-        tm::Corpus(tm::VectorSource(data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]]))
+      desc <- tm::Corpus(tm::VectorSource(data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]]))
     }
   }
-  
+
   # Clean text
-  toSpace <-
-    tm::content_transformer(function (x , pattern)
-      gsub(pattern, " ", x))
+  toSpace <- tm::content_transformer(function(x , pattern) gsub(pattern, " ", x))
   text <- tm::tm_map(desc, toSpace, "/")
   text <- tm::tm_map(text, toSpace, "@")
   text <- tm::tm_map(text, toSpace, "\\|")
-  
+
   # Convert the text to lower case
   text <- tm::tm_map(text, tm::content_transformer(tolower))
-  
+
   # Remove numbers
   text <- tm::tm_map(text, tm::removeNumbers)
-  
+
   # Remove english common stopwords
-  if (RemoveEnglishStopwords)
-    text <-
-    tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
-  
+  if(RemoveEnglishStopwords)
+    text <- tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
+
   # specify your stopwords as a character vector
   text <- tm::tm_map(text, tm::removeWords, StopWords)
-  
+
   # Remove punctuations
   text <- tm::tm_map(text, tm::removePunctuation)
-  
+
   # Eliminate extra white spaces
   text <- tm::tm_map(text, tm::stripWhitespace)
-  
+
   # Text stemming
-  if (Stemming)
-    text <- tm::tm_map(text, tm::stemDocument)
-  
+  if(Stemming) text <- tm::tm_map(text, tm::stemDocument)
+
   # Finalize
   dtm <- tm::TermDocumentMatrix(text)
   m <- as.matrix(dtm)
   v <- sort(rowSums(m), decreasing = TRUE)
   d <- data.table::data.table(word = names(v), freq = v)
   print(head(d, 10))
-  
+
   # Word Cloud
   print(
     wordcloud::wordcloud(
@@ -129,10 +131,8 @@ AutoWordFreq <- function(data,
       max.words = 200,
       random.order = FALSE,
       rot.per = 0.35,
-      colors = RColorBrewer::brewer.pal(8, "Dark2")
-    )
-  )
-  
+      colors = RColorBrewer::brewer.pal(8, "Dark2")))
+
   # Return
   return(d)
 }
@@ -148,7 +148,7 @@ AutoWordFreq <- function(data,
 #' @param NThreads The number of threads you want to let H2O utilize
 #' @param StartH2O Set to TRUE to have H2O start inside this function
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' data <- AutoH2OTextPrepScoring(data = x,
 #'                                string = "text_column",
 #'                                MaxMem = "28G",
@@ -162,19 +162,15 @@ AutoH2OTextPrepScoring <- function(data,
                                    NThreads = NULL,
                                    StartH2O = TRUE) {
   # Ensure data.table----
-  if (!is.data.table(data)) {
-    data <- data.table::as.data.table((data))
-  }
+  if(!is.data.table(data)) data.table::setDT((data))
   data[, eval(string) := as.character(get(string))]
-  if(StartH2O) {
-    h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)    
-  }
+  if(StartH2O) h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
 
   # It is important to remove "\n" --
   data[, eval(string) := gsub("  ", " ", get(string))]
   data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
   data2 <- data[, ..string]
-  
+
   # Tokenize
   tokenized_words <- RemixAutoML::tokenizeH2O(data2)
   return(tokenized_words)

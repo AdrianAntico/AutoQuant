@@ -17,23 +17,26 @@
 #' @param Boundaries Supply a vector of two values c(lower bound, upper bound) where the first value is the smallest threshold you want to test and the second value is the largest value you want to test. Note, if your results are at the boundaries you supplied, you should extent the boundary that was reached until the values is within both revised boundaries.
 #' @import foreach
 #' @examples
+#' \dontrun{
 #' data <- data.table::data.table(Target = runif(10))
 #' data[, x1 := qnorm(Target)]
 #' data[, x2 := runif(10)]
 #' data[, Predict := log(pnorm(0.85 * x1 +
 #'                               sqrt(1-0.85^2) * qnorm(x2)))]
 #' data[, ':=' (x1 = NULL, x2 = NULL)]
-#' data <- RedYellowGreen(data,
-#'                        PredictColNumber  = 2,
-#'                        ActualColNumber   = 1,
-#'                        TruePositiveCost  = 0,
-#'                        TrueNegativeCost  = 0,
-#'                        FalsePositiveCost = -1,
-#'                        FalseNegativeCost = -2,
-#'                        MidTierCost = -0.5,
-#'                        Precision = 0.01,
-#'                        Cores = 1,
-#'                        Boundaries = c(0.05,0.75))
+#' data <- RedYellowGreen(
+#'   data,
+#'   PredictColNumber  = 2,
+#'   ActualColNumber   = 1,
+#'   TruePositiveCost  = 0,
+#'   TrueNegativeCost  = 0,
+#'   FalsePositiveCost = -1,
+#'   FalseNegativeCost = -2,
+#'   MidTierCost = -0.5,
+#'   Precision = 0.01,
+#'   Cores = 1,
+#'   Boundaries = c(0.05,0.75))
+#' }
 #' @return A data table with all evaluated strategies, parameters, and utilities, along with a 3d scatterplot of the results
 #' @export
 RedYellowGreen <- function(data,
@@ -47,15 +50,15 @@ RedYellowGreen <- function(data,
                            Cores             = 8,
                            Precision         = 0.01,
                            Boundaries        = c(0.05, 0.75)) {
-  
+
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
   requireNamespace('doParallel', quietly = FALSE)
   requireNamespace('parallel', quietly = FALSE)
-  
+
   # Check data.table
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  
+
   # Ensure arguments are valid
   if(is.character(TruePositiveCost)) return("TruePositiveCost must be numeric")
   if(is.character(TrueNegativeCost)) return("TruePositiveCost must be numeric")
@@ -65,7 +68,7 @@ RedYellowGreen <- function(data,
   if(Precision < 0 | Precision > 0.5) return("Precision should be a decimal value greater than 0 and less than 0.5")
   if(min(Boundaries) < 0 | max(Boundaries) > 0.99999999999999999999) return("Boundaries should be a decimal value greater than 0 and less than 0.99999999999999999999")
   if(Boundaries[1L] > Boundaries[2L]) return("The first Boundaries element should be less than the second element")
-  
+
   # Set up evaluation table
   analysisTable <- data.table::data.table(
     TPP = base::rep(TruePositiveCost, 1L),
@@ -75,12 +78,12 @@ RedYellowGreen <- function(data,
     MTDN = base::rep(TRUE, 1L),
     MTC = base::rep(MidTierCost, 1L),
     Threshold = runif(1L))
-  
+
   # Do nothing possibilities
   temp <- data.table::CJ(MTLT = seq(Boundaries[1L], Boundaries[2L], Precision), MTHT = seq(Boundaries[1L], Boundaries[2L], Precision))[MTHT > MTLT]
   new <- cbind(analysisTable, temp)
   new[, Utility := stats::runif(nrow(new))]
-  
+
   # Parallel components
   requireNamespace(c("parallel", "doParallel", "foreach"))
   packages <- c("data.table")
@@ -89,7 +92,7 @@ RedYellowGreen <- function(data,
   parts    <- base::floor(nrow(new) / bat)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
-  
+
   # Kick off run
   results <- foreach::foreach(
     i = itertools::isplitRows(new, chunks = parts),
@@ -126,7 +129,7 @@ RedYellowGreen <- function(data,
         }
         return(new)
       }
-      
+
       # Inner function for threshold optimizataion
       threshOptim <- function(data,
                               actTar   = 1,
@@ -141,7 +144,7 @@ RedYellowGreen <- function(data,
                               MidTierHighThresh = 0.75) {
         # Convert factor target to numeric
         data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
-        
+
         # Optimize each column's classification threshold ::
         popTrue <- mean(data[[(actTar)]])
         store   <- list()
@@ -186,7 +189,7 @@ RedYellowGreen <- function(data,
         options(warn = 1L)
         return(list(thresh, results))
       }
-      
+
       # Run core function
       data <- RedYellowGreenParallel(
         data,
@@ -198,14 +201,14 @@ RedYellowGreen <- function(data,
         FalseNegativeCost = FalseNegativeCost,
         MidTierCost       = MidTierCost,
         new               = i)
-      
+
       # Return data table
       data
     }
-  
+
   # Shut down cluster
   parallel::stopCluster(cl)
-  
+
   # 3D Scatterplot
   s3d <- scatterplot3d::scatterplot3d(
     x = results[["MTLT"]],

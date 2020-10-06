@@ -61,7 +61,11 @@ ContinuousTimeDataGenerator(
 
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. "day", "week", "month", "quarter", "year"}
 
+\item{TimeGroups}{= c("raw","day","week"),}
+
 \item{GroupingVariables}{These variables (or sinlge variable) is the combination of categorical variables that uniquely defines the level of granularity of each individual level to forecast. E.g. "sku" or c("Store","Department"). Sku is typically unique for all sku's. Store and Department in combination defines all unique departments as the department may be repeated across the stores.}
+
+\item{HierarchyGroupVars}{Group vars}
 
 \item{MinTimeWindow}{The number of time periods you would like to omit for training. Default is 1 so that at a minimum, there is at least one period of values to forecast. You can set it up to a larger value if you do not want more possible target windows for the lower target window values.}
 
@@ -97,6 +101,8 @@ ContinuousTimeDataGenerator(
 
 \item{SampleRate}{Set this to a value greater than 0. The calculation used is the number of records per group level raised to the power of PowerRate. Then that values is multiplied by SampleRate.}
 
+\item{TargetWindowSamples}{= 5}
+
 \item{PrintSteps}{Set to TRUE to have operation steps printed to the console}
 }
 \value{
@@ -106,43 +112,46 @@ Returns two data.table data sets: The first is a modeling data set for the count
 ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling of transactional panel data.
 }
 \examples{
-\donttest{
-DataSets <- ContinuousTimeDataGenerator(data,
-                                        RestrictDateRange = TRUE,
-                                        FC_Periods = 52,
-                                        SaveData = FALSE,
-                                        FilePath = normalizePath("./"),
-                                        TargetVariableName = "qty",
-                                        DateVariableName = "date",
-                                        GDL_Targets = NULL,
-                                        GroupingVariables = "sku",
-                                        MinTimeWindow = 1,
-                                        MinTxnRecords = 2,
-                                        Lags = 1:7,
-                                        MA_Periods = 10L,
-                                        SD_Periods = 10L,
-                                        Skew_Periods = 10L,
-                                        Kurt_Periods = 10L,
-                                        Quantile_Periods = 10L,
-                                        Quantiles_Selected = c("q5"),
-                                        HolidayLags = c(1L:7L),
-                                        HolidayMovingAverages = c(2L:14L),
-                                        TimeBetween = NULL,
-                                        TimeTrendVariable = TRUE,
-                                        TimeUnit = "day",
-                                        CalendarVariables = c("wday",
-                                                              "mday",
-                                                              "yday",
-                                                              "week",
-                                                              "isoweek",
-                                                              "month",
-                                                              "quarter",
-                                                              "year"),
-                                        HolidayGroups = "USPublicHolidays",
-                                        PowerRate = 0.5,
-                                        SampleRate = 5,
-                                        TargetWindowSamples = 5,
-                                        PrintSteps = TRUE)
+\dontrun{
+DataSets <- ContinuousTimeDataGenerator(
+  data,
+  RestrictDateRange = TRUE,
+  FC_Periods = 52,
+  SaveData = FALSE,
+  FilePath = normalizePath("./"),
+  TargetVariableName = "qty",
+  DateVariableName = "date",
+  GDL_Targets = NULL,
+  GroupingVariables = "sku",
+  HierarchyGroupVars = NULL,
+  TimeGroups = c("raw","day","week"),
+  MinTimeWindow = 1,
+  MinTxnRecords = 2,
+  Lags = 1:7,
+  MA_Periods = 10L,
+  SD_Periods = 10L,
+  Skew_Periods = 10L,
+  Kurt_Periods = 10L,
+  Quantile_Periods = 10L,
+  Quantiles_Selected = c("q5"),
+  HolidayLags = c(1L:7L),
+  HolidayMovingAverages = c(2L:14L),
+  TimeBetween = NULL,
+  TimeTrendVariable = TRUE,
+  TimeUnit = "day",
+  CalendarVariables = c("wday",
+    "mday",
+    "yday",
+    "week",
+    "isoweek",
+    "month",
+    "quarter",
+    "year"),
+  HolidayGroups = "USPublicHolidays",
+  PowerRate = 0.5,
+  SampleRate = 5,
+  TargetWindowSamples = 5,
+  PrintSteps = TRUE)
 CountModelData <- DataSets$CountModelData
 SizeModelData <- DataSets$SizeModelData
 rm(DataSets)

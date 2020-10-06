@@ -114,6 +114,7 @@ LimeModelObject and Lime Explanations
 AutoLimeAid automated lime explanations and lime model builds.
 }
 \examples{
+\dontrun{
 # CatBoost data generator
 dataGenH2O <- function() {
   Correl <- 0.85
@@ -131,7 +132,11 @@ dataGenH2O <- function() {
   data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
   data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
   data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
-  data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20, "A",ifelse(Independent_Variable2 < 0.40, "B",ifelse(Independent_Variable2 < 0.6,  "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+  data[, Independent_Variable11 := as.factor(
+    ifelse(Independent_Variable2 < 0.20,
+    "A",ifelse(Independent_Variable2 < 0.40,
+    "B",ifelse(Independent_Variable2 < 0.6,
+    "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
   data[, ':=' (x1 = NULL, x2 = NULL)]
   data[, Classification := ifelse(Classification > 0.5, 1, 0)]
   rm(N,Correl)
@@ -195,7 +200,7 @@ LimeOutput <- RemixAutoML::AutoLimeAid(
   MDP_RemoveDates = TRUE,
   MDP_MissFactor = "0",
   MDP_MissNum = -1)
-   
+
 # Plot lime objects
 lime::plot_features(LimeOutput$LimeExplanations)
 suppressWarnings(lime::plot_explanations(LimeOutput$LimeExplanations))
@@ -217,7 +222,10 @@ dataGenH2O <- function() {
   data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
   data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
   data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
-  data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20, "A",ifelse(Independent_Variable2 < 0.40, "B",ifelse(Independent_Variable2 < 0.6,  "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+  data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20,
+    "A",ifelse(Independent_Variable2 < 0.40,
+    "B",ifelse(Independent_Variable2 < 0.6,
+    "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
   data[, ':=' (x1 = NULL, x2 = NULL)]
   data[, Classification := ifelse(Classification > 0.5, 1, 0)]
   rm(N,Correl)
@@ -251,7 +259,7 @@ LimeOutput <- RemixAutoML::AutoLimeAid(
   LimeTrainingData = data,
   LimeBins = 10,
   LimeIterations = 7500,
-  TargetType = "regression", 
+  TargetType = "regression",
   LimeNumFeatures = 0,
   LimeModel = NULL,
   LimeModelPath = "C:/Users/aantico/Desktop/Retention Analytics",
@@ -302,7 +310,10 @@ dataGenXGBoost <- function() {
   data[, Independent_Variable8 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^0.75]
   data[, Independent_Variable9 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^2]
   data[, Independent_Variable10 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))^4]
-  data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20, "A",ifelse(Independent_Variable2 < 0.40, "B",ifelse(Independent_Variable2 < 0.6,  "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
+  data[, Independent_Variable11 := as.factor(ifelse(Independent_Variable2 < 0.20,
+    "A",ifelse(Independent_Variable2 < 0.40,
+    "B",ifelse(Independent_Variable2 < 0.6,
+    "C",ifelse(Independent_Variable2 < 0.8,  "D", "E")))))]
   data[, ':=' (x1 = NULL, x2 = NULL)]
   data[, Classification := ifelse(Classification > 0.5, 1, 0)]
   rm(Correl,N)
@@ -372,6 +383,7 @@ LimeOutput <- RemixAutoML::AutoLimeAid(
 # Plot lime objects
 lime::plot_features(LimeOutput$LimeExplanations)
 suppressWarnings(lime::plot_explanations(LimeOutput$LimeExplanations))
+}
 }
 \seealso{
 Other Model Evaluation and Interpretation: 

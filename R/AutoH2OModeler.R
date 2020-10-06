@@ -84,7 +84,7 @@
 #' @param ReturnObjects Set to TRUE to return objects from functioin
 #' @return Returns saved models, corrected Construct file, variable importance tables, evaluation and partial dependence calibration plots, model performance measure, and a file called grid_tuned_paths.Rdata which contains paths to your saved models for operationalization.
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Classification Example
 #' Correl <- 0.85
 #' aa <- data.table::data.table(target = runif(1000))
@@ -374,7 +374,7 @@ AutoH2OModeler <- function(Construct,
   ######################################
   # Error handling and prevention
   ######################################
-  
+
   # Handle the multinomial case
   for (i in as.integer(seq_len(nrow(Construct)))) {
     if (tolower(Construct[i, 2][[1]]) == "multinomial" &&
@@ -411,7 +411,7 @@ AutoH2OModeler <- function(Construct,
                       value = "crossentropy")
     }
   }
-  
+
   ErrorCollection <-
     data.table::data.table(Row = rep(-720, 10000),
                            Msg = "I like modeling")
@@ -499,7 +499,7 @@ AutoH2OModeler <- function(Construct,
         ReplaceValue <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 3L, value = ReplaceValue)
       }
-      
+
       # GBM and RF distributions
       if (!(
         tolower(Construct[i, 2][[1]]) %in% c(
@@ -572,7 +572,7 @@ AutoH2OModeler <- function(Construct,
         ReplaceValue2 <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 2L, value = ReplaceValue2)
       }
-      
+
       # Distribution and loss combos for non-regression
       if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial", "binomial",
                                                "bernoulli", "multinomial") &&
@@ -606,7 +606,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
       # Distribution and loss combos for regression
       if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
                                                "poisson",
@@ -635,7 +635,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
       # Quantile Regression with GBM
       if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
@@ -660,7 +660,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
       # RF Quantile regression fail
       if (tolower(Construct[i, 6][[1]]) == "randomforest" &&
           tolower(Construct[i, 2][[1]]) == "quantile") {
@@ -683,7 +683,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
       # Quantile regression loss metrics
       if (tolower(Construct[i, 2][[1]]) == "quantile" &&
           tolower(Construct[i, 3][[1]]) != "mae") {
@@ -705,7 +705,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
       if (tolower(Construct[i, 6][[1]]) == "automl" &
           Construct[i, 11][[1]] != TRUE) {
         j <- j + 1
@@ -783,7 +783,7 @@ AutoH2OModeler <- function(Construct,
         ReplaceVal <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 3L, value = ReplaceVal)
       }
-      
+
       # Deeplearning distributions
       if (!(
         tolower(Construct[i, 2][[1]]) %in% c(
@@ -852,7 +852,7 @@ AutoH2OModeler <- function(Construct,
         ReplaceVal2 <- distMatch[act == LCVals][["Proper"]][[1]]
         data.table::set(Construct, i, 2L, value = ReplaceVal2)
       }
-      
+
       # Distribution and loss combos for non-regression
       if (tolower(Construct[i, 2][[1]]) %in% c("bernoulli",
                                                "multinomial") &&
@@ -878,7 +878,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
       # Distribution and loss combos for regression
       if (tolower(Construct[i, 2][[1]]) %in% c("gaussian",
                                                "poisson",
@@ -915,7 +915,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
       # Quantile regression loss metrics
       if (tolower(Construct[i, 2][[1]]) == "quantile" &&
           tolower(Construct[i, 3][[1]]) != "quantile") {
@@ -938,7 +938,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
       # Quantile Regression with DL
       if (tolower(Construct[i, 2][[1]]) %in% c("quantile") &&
           (Construct[i, 4][[1]] > 1 ||
@@ -963,7 +963,7 @@ AutoH2OModeler <- function(Construct,
           )
         )
       }
-      
+
     } else {
       j <- j + 1
       data.table::set(ErrorCollection,
@@ -985,7 +985,7 @@ AutoH2OModeler <- function(Construct,
       )
     }
   }
-  
+
   # Error stopping point and Construct file save
   ErrorCollection <- ErrorCollection[Row != -720]
   if (nrow(ErrorCollection) >= 1) {
@@ -1017,10 +1017,10 @@ AutoH2OModeler <- function(Construct,
       )
     }
   }
-  
+
   # Clear table
   rm(distMatch)
-  
+
   # Set up grid_tuned_paths.R file
   grid_tuned_paths <-
     data.table::data.table(
@@ -1031,11 +1031,11 @@ AutoH2OModeler <- function(Construct,
       BinThresh = rep(1234.5678, nrow(Construct)),
       PathJar   = rep("a", nrow(Construct))
     )
-  
+
   ######################################
   # Loop through model building
   ######################################
-  
+
   tryCatch({
     for (i in as.integer(seq_len(nrow(Construct)))) {
       # No deeplearning loss functions as stopping metrics
@@ -1056,7 +1056,7 @@ AutoH2OModeler <- function(Construct,
           StoppingMetric <- Construct[i, 3][[1]]
         }
       }
-      
+
       # Define grid tune search scheme in a named list
       search_criteria  <-
         list(
@@ -1068,7 +1068,7 @@ AutoH2OModeler <- function(Construct,
           stopping_metric      = StoppingMetric,
           stopping_tolerance   = 1e-3
         )
-      
+
       # Set up H2O environment instance
       Sys.sleep(10)
       h2o::h2o.init(
@@ -1076,7 +1076,7 @@ AutoH2OModeler <- function(Construct,
         max_mem_size = max_memory,
         enable_assertions = FALSE
       )
-      
+
       # Define data sets
       if (Construct[i, "SupplyData"][[1]]) {
         train        <- h2o::as.h2o(TrainData)
@@ -1093,7 +1093,7 @@ AutoH2OModeler <- function(Construct,
         train        <- data_train[[1]]
         validate     <- data_train[[2]]
       }
-      
+
       # Define targets
       target         <-
         eval(parse(text = paste0(Construct[i, 8][[1]])))
@@ -1113,7 +1113,7 @@ AutoH2OModeler <- function(Construct,
           ModelExclude   <- c("XGBoost", "GLM", "DRF")
         }
       }
-      
+
       if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
         N              <- length(features)
         P5             <- 2 ^ (-1 / 5)
@@ -1124,11 +1124,11 @@ AutoH2OModeler <- function(Construct,
                       i = i,
                       j = 1L,
                       value = Construct[i, 5][[1]])
-      
+
       ######################################
       # Target Encoding
       ######################################
-      
+
       if (!is.na(Construct[i, "TargetEncoding"][[1]])) {
         TEncode <- eval(parse(text = Construct[i, "TargetEncoding"][[1]]))
         cols <- names(train)[TEncode]
@@ -1150,7 +1150,7 @@ AutoH2OModeler <- function(Construct,
             blended_avg = TRUE,
             noise_level = 0
           )
-          
+
           # Apply to validation data
           validate <- h2o::h2o.target_encode_apply(
             validate,
@@ -1161,7 +1161,7 @@ AutoH2OModeler <- function(Construct,
             blended_avg = TRUE,
             noise_level = 0
           )
-          
+
           if (SaveToFile == TRUE) {
             save(x,
                  file = paste0(model_path,
@@ -1171,7 +1171,7 @@ AutoH2OModeler <- function(Construct,
                                ".Rdata"))
           }
         }
-        
+
         # Modify feature reference
         features <-
           c((min(features) + length(eval(
@@ -1181,7 +1181,7 @@ AutoH2OModeler <- function(Construct,
                                length(eval(
                                  parse(text = paste0(Construct[i, 24][[1]]))
                                ))))
-        
+
         # Turn target columns back to factor
         train[, Construct[i, "Targets"][[1]]] <-
           as.factor(train[, Construct[i, "Targets"][[1]]])
@@ -1192,11 +1192,11 @@ AutoH2OModeler <- function(Construct,
                         j = "PD_Data",
                         value = "Validate")
       }
-      
+
       ######################################
       # Hyperparameters
       ######################################
-      
+
       if (Construct[i, 11][[1]]) {
         if (tolower(Construct[i, 6][[1]]) == "gbm") {
           if (tolower(
@@ -1250,7 +1250,7 @@ AutoH2OModeler <- function(Construct,
               )
             )
           }
-          
+
         } else if (tolower(Construct[i, 6][[1]]) == "deeplearning") {
           if (tolower(Construct[i, 3][[1]] %in% c("automatic",
                                                   "crossentropy"))) {
@@ -1473,15 +1473,15 @@ AutoH2OModeler <- function(Construct,
           }
         }
       }
-      
+
       ######################################
       # Grid Tune Models
       ######################################
-      
+
       # Check to see if GridTune is TRUE
       # Check to see if Distribution is quantile
       # Select model
-      
+
       # Grid tuned model build
       if (Construct[i, 11][[1]]) {
         if (tolower(Construct[i, 2][[1]]) == "quantile") {
@@ -1629,7 +1629,7 @@ AutoH2OModeler <- function(Construct,
             )
           }
         }
-        
+
         # Store all models built sorted by metric
         if (tolower(Construct[i, 6][[1]]) == "automl") {
           Grid_Out <- h2o::h2o.getAutoML(project_name = "TestAML")
@@ -1653,14 +1653,14 @@ AutoH2OModeler <- function(Construct,
               decreasing = Decreasing
             )
         }
-        
+
         # Store best model
         if (tolower(Construct[i, 6][[1]]) == "automl") {
           best_model <- Grid_Out@leader
         } else {
           best_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1]])
         }
-        
+
         # Collect accuracy metric on validation data
         if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
           if (tolower(Construct[i, 2][[1]]) == "multinomial") {
@@ -1689,11 +1689,11 @@ AutoH2OModeler <- function(Construct,
                         j = 3L,
                         value = cc)
       }
-      
+
       ######################################
       # Baseline Models
       ######################################
-      
+
       # Check to see if quantile is selected
       # Choose model
       if (tolower(Construct[i, 6][[1]]) != "automl") {
@@ -1785,7 +1785,7 @@ AutoH2OModeler <- function(Construct,
             ntrees           = BL_Trees
           )
         }
-        
+
         # Collect accuracy metric on validation data
         if (tolower(Construct[i, 3][[1]]) == "crossentropy") {
           if (tolower(Construct[i, 2][[1]]) == "multinomial") {
@@ -1807,22 +1807,22 @@ AutoH2OModeler <- function(Construct,
               )
             ))
         }
-        
+
         # Store results in metadata file
         data.table::set(grid_tuned_paths,
                         i = i,
                         j = 4L,
                         value = dd)
       }
-      
+
       ######################################
       # Model Evaluation & Saving
       ######################################
-      
+
       # Check to see if GridTune is TRUE
       # Check to see if Distribution is multinomial
       # Proceed
-      
+
       if (tolower(Construct[i, 6][[1]]) == "automl") {
         if (Construct[i, 21][[1]] == TRUE) {
           if (grid_tuned_paths[i, 2][[1]] != "a")
@@ -1872,7 +1872,7 @@ AutoH2OModeler <- function(Construct,
             }
           }
         }
-        
+
         # Save VarImp and VarNOTImp
         if (best_model@algorithm != "stackedensemble") {
           VIMP <- data.table::as.data.table(h2o::h2o.varimp(best_model))
@@ -1905,7 +1905,7 @@ AutoH2OModeler <- function(Construct,
                           j = 13L,
                           value = 0)
         }
-        
+
         # Gather predicted values
         preds <-
           h2o::h2o.predict(best_model, newdata = validate)[, 1]
@@ -1925,7 +1925,7 @@ AutoH2OModeler <- function(Construct,
           predsPD <- h2o::h2o.predict(best_model, newdata = validate)[, 1]
         }
       }
-      
+
       if (Construct[i, 11][[1]] == TRUE &
           tolower(Construct[i, 6][[1]]) != "automl") {
         if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
@@ -1982,7 +1982,7 @@ AutoH2OModeler <- function(Construct,
                 }
               }
             }
-            
+
             # Save VarImp and VarNOTImp
             VIMP <-
               data.table::as.data.table(h2o::h2o.varimp(best_model))
@@ -2005,7 +2005,7 @@ AutoH2OModeler <- function(Construct,
                      ))
               }
             }
-            
+
             # Gather predicted values
             preds <-
               h2o::h2o.predict(best_model, newdata = validate)[, 1]
@@ -2080,7 +2080,7 @@ AutoH2OModeler <- function(Construct,
                 }
               }
             }
-            
+
             # Save VarImp
             VIMP <-
               data.table::as.data.table(h2o::h2o.varimp(bl_model))
@@ -2103,7 +2103,7 @@ AutoH2OModeler <- function(Construct,
                      ))
               }
             }
-            
+
             # Gather predicted values
             preds <-
               h2o::h2o.predict(bl_model, newdata = validate)[, 1]
@@ -2175,7 +2175,7 @@ AutoH2OModeler <- function(Construct,
                 }
               }
             }
-            
+
             # Store threshold
             store_results <-
               data.table::data.table(
@@ -2228,7 +2228,7 @@ AutoH2OModeler <- function(Construct,
               j = 5L,
               value = Thresh
             )
-            
+
             # Save VarImp
             VIMP <-
               data.table::as.data.table(h2o::h2o.varimp(best_model))
@@ -2250,7 +2250,7 @@ AutoH2OModeler <- function(Construct,
                      ))
               }
             }
-            
+
             # Gather predicted values
             preds <-
               h2o::h2o.predict(best_model, newdata = validate)[, 3]
@@ -2320,7 +2320,7 @@ AutoH2OModeler <- function(Construct,
                 }
               }
             }
-            
+
             # Store threshold
             store_results <-
               data.table::data.table(
@@ -2371,7 +2371,7 @@ AutoH2OModeler <- function(Construct,
               j = 5L,
               value = Thresh
             )
-            
+
             # Save VarImp
             VIMP <-
               data.table::as.data.table(h2o::h2o.varimp(bl_model))
@@ -2393,7 +2393,7 @@ AutoH2OModeler <- function(Construct,
                      ))
               }
             }
-            
+
             # Gather predicted values
             preds <-
               h2o::h2o.predict(bl_model, newdata = validate)[, 3]
@@ -2468,7 +2468,7 @@ AutoH2OModeler <- function(Construct,
             }
           }
         }
-        
+
         # Store threshold for binary classification
         if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                  "binomial",
@@ -2556,7 +2556,7 @@ AutoH2OModeler <- function(Construct,
             predsPD <- h2o::h2o.predict(bl_model, newdata = validate)[, 1]
           }
         }
-        
+
         # Save VarImp
         VIMP <- data.table::as.data.table(h2o::h2o.varimp(bl_model))
         if (SaveToFile == TRUE) {
@@ -2577,11 +2577,11 @@ AutoH2OModeler <- function(Construct,
           }
         }
       }
-      
+
       ######################################
       # Model Evaluation Plots
       ######################################
-      
+
       # Generate plots
       col <- Construct[i, 1][[1]]
       calibration <-
@@ -2628,7 +2628,7 @@ AutoH2OModeler <- function(Construct,
         }
       }
       predName <- names(calibration[, 1])
-      
+
       # Generate evaluation plots
       if (tolower(Construct[i, 2][[1]]) != "multinomial") {
         if (tolower(Construct[i, 2][[1]]) == "quantile") {
@@ -2642,7 +2642,7 @@ AutoH2OModeler <- function(Construct,
           } else {
             val <- dd
           }
-          
+
           # Calibration plot
           out1 <- EvalPlot(
             calibration,
@@ -2667,7 +2667,7 @@ AutoH2OModeler <- function(Construct,
                                    Construct[i, 5][[1]],
                                    ".png"))
           }
-          
+
           # Calibration boxplot
           out2 <- EvalPlot(
             calibration,
@@ -2701,7 +2701,7 @@ AutoH2OModeler <- function(Construct,
           } else {
             val <- dd
           }
-          
+
           out1 <- EvalPlot(
             calibration,
             PredictionColName = predName,
@@ -2717,7 +2717,7 @@ AutoH2OModeler <- function(Construct,
             ": ",
             round(val, 4)
           ))
-          
+
           if (exists("Thresh")) {
             out1 <- out1 + ggplot2::geom_hline(yintercept = Thresh)
           }
@@ -2738,7 +2738,7 @@ AutoH2OModeler <- function(Construct,
           } else {
             val <- dd
           }
-          
+
           # Calibration plot
           out1 <- EvalPlot(
             calibration,
@@ -2761,7 +2761,7 @@ AutoH2OModeler <- function(Construct,
                                    Construct[i, 5][[1]],
                                    ".png"))
           }
-          
+
           # Calibration boxplot
           out2 <- EvalPlot(
             calibration,
@@ -2822,7 +2822,7 @@ AutoH2OModeler <- function(Construct,
             store[[k]] <- temp
           }
           xxx <- data.table::rbindlist(store)
-          
+
           # Multinomial metric
           if (multinomialMetric == "auc") {
             val <- H2OMultinomialAUC(
@@ -2842,13 +2842,13 @@ AutoH2OModeler <- function(Construct,
               mean(xx[, Accuracy := as.numeric(data.table::fifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
                    na.rm = TRUE)
           }
-          
+
           # Store baseline val
           temp <- H2OMultinomialAUC(validate,
                                     best_model,
                                     targetColNum = 1,
                                     targetName = Construct[i, 1][[1]])
-          
+
           # Store micro auc
           data.table::set(
             grid_tuned_paths,
@@ -2862,7 +2862,7 @@ AutoH2OModeler <- function(Construct,
             j = 4L,
             value = temp
           )
-          
+
           # Calibration plot
           out1 <- EvalPlot(
             xxx,
@@ -2885,7 +2885,7 @@ AutoH2OModeler <- function(Construct,
                                    Construct[i, 5][[1]],
                                    ".png"))
           }
-          
+
         } else {
           predsMulti <- h2o::h2o.predict(bl_model, newdata = validate)
           col <- Construct[i, 1][[1]]
@@ -2922,7 +2922,7 @@ AutoH2OModeler <- function(Construct,
             store[[k]] <- temp
           }
           xxx <- data.table::rbindlist(store)
-          
+
           # Multinomial metric
           if (multinomialMetric == "auc") {
             val <- H2OMultinomialAUC(validate,
@@ -2940,7 +2940,7 @@ AutoH2OModeler <- function(Construct,
               mean(xx[, Accuracy := as.numeric(data.table::fifelse(get(Construct[i, 1][[1]]) == predict, 1, 0))][["Accuracy"]],
                    na.rm = TRUE)
           }
-          
+
           # Calibration plot
           out1 <- EvalPlot(
             xxx,
@@ -2963,18 +2963,18 @@ AutoH2OModeler <- function(Construct,
                                    Construct[i, 5][[1]], ".png"))
           }
         }
-        
+
         # Store micro auc
         data.table::set(grid_tuned_paths,
                         i = i,
                         j = 4L,
                         value = val)
       }
-      
+
       #######################################
       # Partial dependence calibration plots
       #######################################
-      
+
       if (Construct[i, 13][[1]] >= 1) {
         VIMP <- VIMP[!is.na(VIMP[, 2][[1]])]
         rows <- nrow(VIMP)
@@ -3020,7 +3020,7 @@ AutoH2OModeler <- function(Construct,
               error = function(x)
                 "skip")
             }
-            
+
             # Add threshold line to charts
             if (tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                      "binomial",
@@ -3032,7 +3032,7 @@ AutoH2OModeler <- function(Construct,
             } else {
               calibr[[paste0(col)]] <- out1
             }
-            
+
             # Expected value regression
             if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                        "binomial",
@@ -3052,7 +3052,7 @@ AutoH2OModeler <- function(Construct,
                 "skip")
             }
           }
-          
+
           # Save output
           if (!(tolower(Construct[i, 2][[1]]) %in% c("quasibinomial",
                                                      "binomial",
@@ -3078,13 +3078,13 @@ AutoH2OModeler <- function(Construct,
           }
         }
       }
-      
+
       # Save grid_tuned_paths
       if (SaveToFile == TRUE) {
         save(grid_tuned_paths,
              file = paste0(model_path, "/grid_tuned_paths.Rdata"))
       }
-      
+
       # Clear H2O environment between runs
       h2o::h2o.rm(data_h2o)
       if (!Construct[i, SupplyData][[1]]) {
@@ -3100,7 +3100,7 @@ AutoH2OModeler <- function(Construct,
       }
       h2o::h2o.rm(preds)
       h2o::h2o.shutdown(prompt = FALSE)
-      
+
       # Clear R environment between runs
       if (Construct[i, 11][[1]]) {
         if (Construct[i, 2][[1]] != "multinomial" &
@@ -3136,7 +3136,7 @@ AutoH2OModeler <- function(Construct,
           rm(dd, VIMP, features, target)
         }
       }
-      
+
       # Remove data if no longer needed
       if (i > 1) {
         if (Construct[i, 7][[1]] != Construct[(i - 1), 7][[1]]) {

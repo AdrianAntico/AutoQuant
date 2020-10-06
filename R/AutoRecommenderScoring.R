@@ -10,8 +10,7 @@
 #' @param NumItemsReturn Number of items to return on scoring
 #' @return Returns the prediction data
 #' @examples
-#' \donttest{
-#' # F(G(Z(x))): AutoRecommenderScoring(AutoRecommender(AutoRecomDataCreate(TransactionData)))
+#' \dontrun{
 #' Results <- AutoRecommenderScoring(
 #'   data = AutoRecomDataCreate(
 #'       data,

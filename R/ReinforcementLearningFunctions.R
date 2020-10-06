@@ -43,6 +43,7 @@ RPM_Binomial_Bandit <- function(Success,
 #' @param Beta Prior trials
 #' @param SubDivisions Tolerance for integration
 #' @examples
+#' \dontrun{
 #' RL_Start <- RL_Initialize(
 #'   ParameterGridSet = GridClusters,
 #'   Alpha = Alpha,
@@ -53,6 +54,7 @@ RPM_Binomial_Bandit <- function(Success,
 #' Trials <- RL_Start[["Trials"]]
 #' GridIDs <- RL_Start[["GridIDs"]]
 #' BanditProbs <- RL_Start[["BanditProbs"]]
+#' }
 #' @export
 RL_Initialize <- function(ParameterGridSet = NULL,
                           Alpha = 1L,
@@ -102,6 +104,7 @@ RL_Initialize <- function(ParameterGridSet = NULL,
 #' @param TotalRunTime Cumulative run time in minutes
 #' @param BanditProbabilities Inital probabilities from RL_Initialize()
 #' @examples
+#' \dontrun{
 #' RL_Update_Output <- RL_Update(
 #'   ExperimentGrid = ExperimentGrid,
 #'   MetricSelection = MetricSelection,
@@ -121,6 +124,7 @@ RL_Initialize <- function(ParameterGridSet = NULL,
 #' Trials <- RL_Update_Output[["Trials"]]
 #' Successes <- RL_Update_Output[["Successes"]]
 #' NewGrid <- RL_Update_Output[["NewGrid"]]
+#' }
 #' @export
 RL_Update <- function(ExperimentGrid = ExperimentGrid,
                       MetricSelection = MetricSelection,
@@ -215,6 +219,8 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @param ModelRun Model iteration number
 #' @param ModelType "classification", "regression", and "multiclass"
 #' @param NEWGrid Previous grid passed in
+#' @param NewPerformance Internal
+#' @param BestPerformance Internal
 #' @param TrialVector Numeric vector with the total trials for each arm
 #' @param SuccessVector Numeric vector with the total successes for each arm
 #' @param GridIDS The numeric vector that identifies which grid is which
@@ -226,11 +232,14 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @param TotalRunTime Cumulative run time in minutes
 #' @param BanditProbabilities Inital probabilities from RL_Initialize()
 #' @examples
+#' \dontrun{
 #' RL_Update_Output <- RL_ML_Update(
 #'   ExperimentGrid = ExperimentGrid,
 #'   ModelRun = run,
 #'   ModelType = "classification",
 #'   NEWGrid = NewGrid,
+#'   NewPerformance = NewPerformance,
+#'   BestPerformance = BestPerformance,
 #'   TrialVector = Trials,
 #'   SuccessVector = Successes,
 #'   GridIDS = GridIDs,
@@ -245,6 +254,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' Trials <- RL_Update_Output[["Trials"]]
 #' Successes <- RL_Update_Output[["Successes"]]
 #' NewGrid <- RL_Update_Output[["NewGrid"]]
+#' }
 #' @export
 RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
                          ModelType = "classification",
@@ -293,18 +303,6 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
   }
 
   # Loop Break Conditions (No new winners; Max models built; Max time reached)----
-  # print("RunsWithoutNewWinner")
-  # print(RunsWithoutNewWinner)
-  # print("MaxRunsWithoutNewWinner")
-  # print(MaxRunsWithoutNewWinner)
-  # print("ModelRun")
-  # print(ModelRun)
-  # print("MaxNumberModels")
-  # print(MaxNumberModels)
-  # print("TotalRunTime")
-  # print(TotalRunTime)
-  # print("MaxRunMinutes")
-  # print(MaxRunMinutes)
   if(RunsWithoutNewWinner >= MaxRunsWithoutNewWinner | ModelRun > MaxNumberModels | TotalRunTime > MaxRunMinutes * 60L) {
     Break <- "exit"
   } else {
@@ -431,7 +429,6 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
 #' @param Grid Passthrough
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
-#' @noRd
 #' @export
 CatBoostRegressionParams <- function(counter = NULL,
                                      BanditArmsN = NULL,
@@ -566,7 +563,6 @@ CatBoostRegressionParams <- function(counter = NULL,
 #' @param Grid Passthrough
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
-#' @noRd
 #' @export
 CatBoostClassifierParams <- function(counter = NULL,
                                      BanditArmsN = NULL,
@@ -700,7 +696,6 @@ CatBoostClassifierParams <- function(counter = NULL,
 #' @param Grid Passthrough
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
-#' @noRd
 #' @export
 CatBoostMultiClassParams <- function(counter = NULL,
                                      BanditArmsN = NULL,
@@ -899,7 +894,6 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
 #' @param Grid Passthrough
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
-#' @noRd
 #' @export
 XGBoostClassifierParams <- function(counter = NULL,
                                     NThreads = -1L,
@@ -974,7 +968,6 @@ XGBoostClassifierParams <- function(counter = NULL,
 #' @param Grid Passthrough
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
-#' @noRd
 #' @export
 XGBoostRegressionParams <- function(counter = NULL,
                                     NThreads = -1L,
@@ -1042,7 +1035,6 @@ XGBoostRegressionParams <- function(counter = NULL,
 #' @param grid_eval_metric Passthrough
 #' @param MinVal = -1L,
 #' @param calibEval Passthrough
-#' @noRd
 #' @export
 XGBoostRegressionMetrics <- function(grid_eval_metric,
                                      MinVal,
@@ -1085,6 +1077,7 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param counter Passthrough
+#' @param num_class NULL
 #' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
 #' @param eval_metric Passthrough
@@ -1094,7 +1087,6 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
 #' @param Grid Passthrough
 #' @param ExperimentalGrid Passthrough
 #' @param GridClusters Passthrough
-#' @noRd
 #' @export
 XGBoostMultiClassParams <- function(counter = NULL,
                                     num_class=NULL,
