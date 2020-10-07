@@ -332,6 +332,7 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @param LearningRate seq(0.01,.10,0.01)
 #' @param L2_Leaf_Reg c(1.0:10.0)
 #' @param RandomStrength seq(1, 2, 0.1)
+#' @param BorderCount seq(32,256,32)
 #' @param GrowPolicy c("SymmetricTree", "Depthwise", "Lossguide")
 #' @param RSM CPU ONLY, Random subspace method.c(0.80, 0.85, 0.90, 0.95, 1.0)
 #' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
@@ -343,6 +344,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
                                    LearningRate = c(0.01,0.02,0.03,0.04),
                                    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
                                    RandomStrength = seq(1, 2, 0.1),
+                                   BorderCount = seq(32,256,32),
                                    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
                                    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                                    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
@@ -356,6 +358,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     LearningRate = if(!is.null(LearningRate)) sort(LearningRate, decreasing = FALSE) else seq(0.01,0.10,0.01),
 
     # Random hyperparameters----
+    BorderCount = if(!is.null(BorderCOunt)) BorderCount else seq(32,256,32),
     RandomStrength = if(!is.null(RandomStrength)) RandomStrength else seq(1,2,0.1),
     L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
     RSM = if(!is.null(RSM)) RSM else c(0.80, 0.85, 0.90, 0.95, 1.0),
@@ -405,6 +408,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     LearningRate = rep(-1,10000L),
     L2_Leaf_Reg = rep(-1,10000L),
     RandomStrength = rep(-1,10000L),
+    BorderCount = rep(-1,10000L),
     RSM = rep(-1,10000L),
     BootStrapType = rep("aa", 10000L),
     GrowPolicy = rep("aa", 10000L))
