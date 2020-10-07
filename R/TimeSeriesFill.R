@@ -101,13 +101,13 @@ TimeSeriesFill <- function(data = data,
     counter <- 0L
     total_length <- length(Groups)
     range_vec <- seq(from = MinRange, to = MaxRange, by = eval(TimeUnit))
-    tempData <- data.table::CJ(i, range_vec)
     for(i in Groups) {
       counter <- counter + 1
+      tempData <- data.table::CJ(i, range_vec)
       print(round(counter / total_length, 3))
       FinalData <- merge(x = tempData,
                          y = data,
-                         by.x = c("i","V2"),
+                         by.x = c("i","range_vec"),
                          by.y = c("GroupVar",eval(DateColumnName)),
                          all.x = TRUE)
 
@@ -122,8 +122,8 @@ TimeSeriesFill <- function(data = data,
         IgnoreCols = NULL)
       data.table::setnames(
         FinalData,
-        old = c("i","V2"),
-        new = c("GroupVar",eval(DateColumnName)))
+        old = c("i","range_vec"),
+        new = c("GroupVar", eval(DateColumnName)))
       if(counter == 1) {
         ReturnData <- FinalData
       } else {
