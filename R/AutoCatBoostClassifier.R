@@ -194,6 +194,7 @@ AutoCatBoostClassifier <- function(data,
                                    LearningRate = NULL,
                                    L2_Leaf_Reg = 3,
                                    RandomStrength = 1,
+                                   BorderCount = 128,
                                    RSM = NULL,
                                    BootStrapType = NULL,
                                    GrowPolicy = NULL) {

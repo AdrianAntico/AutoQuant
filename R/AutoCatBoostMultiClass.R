@@ -181,6 +181,7 @@ AutoCatBoostMultiClass <- function(data,
                                    LearningRate = NULL,
                                    L2_Leaf_Reg = NULL,
                                    RandomStrength = 1,
+                                   BorderCount = 128,
                                    RSM = NULL,
                                    BootStrapType = NULL,
                                    GrowPolicy = NULL) {

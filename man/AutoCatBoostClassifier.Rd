@@ -37,6 +37,7 @@ AutoCatBoostClassifier(
   LearningRate = NULL,
   L2_Leaf_Reg = 3,
   RandomStrength = 1,
+  BorderCount = 128,
   RSM = NULL,
   BootStrapType = NULL,
   GrowPolicy = NULL
@@ -107,13 +108,13 @@ AutoCatBoostClassifier(
 
 \item{RandomStrength}{A multiplier of randomness added to split evaluations. Default value is 1 which adds no randomness.}
 
+\item{BorderCount}{Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU}
+
 \item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
 \item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
 \item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
-
-\item{BorderCount}{Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
