@@ -81,34 +81,30 @@ TimeSeriesFill <- function(data = data,
     MinRange <- data[, min(get(DateColumnName))]
     MaxRange <- data[, max(get(DateColumnName))]
 
-    # Create groups----
-    if(Rows) {
-      # Figure out which series need treatment
-      FullSeriesLength <- length(seq(from = MinRange, to = MaxRange, by = TimeUnit))
-      GroupSeriesLengths <- data[, .N, by = "GroupVar"]
-      GroupSeriesLengths[, FullLength := FullSeriesLength]
+    # Figure out which series need treatment ----
+    FullSeriesLength <- length(seq(from = MinRange, to = MaxRange, by = TimeUnit))
+    GroupSeriesLengths <- data[, .N, by = "GroupVar"]
+    GroupSeriesLengths[, FullLength := FullSeriesLength]
 
-      # ***** temp to test
-      # data.table::set(GroupSeriesLengths, i = c(1,5), j = "FullLength", value = 500)
+    # ***** temp to test
+    # data.table::set(GroupSeriesLengths, i = c(1,5), j = "FullLength", value = 500)
 
-      ModGroups <- GroupSeriesLengths[N != FullLength, GroupVar]
-      KeepGroups <- GroupSeriesLengths[N == FullLength, GroupVar]
-      if(length(KeepGroups) != 0) {
-        NoModData <- data[GroupVar %chin% eval(KeepGroups)]
-        data <- data[!(GroupVar %chin% eval(KeepGroups))]
-      }
+    ModGroups <- GroupSeriesLengths[N != FullLength, GroupVar]
+    KeepGroups <- GroupSeriesLengths[N == FullLength, GroupVar]
+    if(GroupSeriesLengths[N == FullLength][,.N] != 0) {
+      NoModData <- data[GroupVar %chin% eval(KeepGroups)]
+      data <- data[!(GroupVar %chin% eval(KeepGroups))]
     }
 
     # Modify data
     Groups <- unique(data[["GroupVar"]])
     counter <- 0L
+    total_length <- length(Groups)
+    range_vec <- seq(from = MinRange, to = MaxRange, by = eval(TimeUnit))
+    tempData <- data.table::CJ(i, range_vec)
     for(i in Groups) {
       counter <- counter + 1
-      tempData <- data.table::CJ(
-        i,
-        seq(from = MinRange,
-            to = MaxRange,
-            by = eval(TimeUnit)))
+      print(round(counter / total_length, 3))
       FinalData <- merge(x = tempData,
                          y = data,
                          by.x = c("i","V2"),
