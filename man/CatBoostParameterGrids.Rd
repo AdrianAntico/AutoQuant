@@ -11,6 +11,7 @@ CatBoostParameterGrids(
   Depth = seq(4L, 16L, 2L),
   LearningRate = c(0.01, 0.02, 0.03, 0.04),
   L2_Leaf_Reg = seq(1, 10, 1),
+  RandomStrength = seq(1, 2, 0.1),
   RSM = c(0.8, 0.85, 0.9, 0.95, 1),
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")
@@ -28,6 +29,8 @@ CatBoostParameterGrids(
 \item{LearningRate}{seq(0.01,.10,0.01)}
 
 \item{L2_Leaf_Reg}{c(1.0:10.0)}
+
+\item{RandomStrength}{seq(1, 2, 0.1)}
 
 \item{RSM}{CPU ONLY, Random subspace method.c(0.80, 0.85, 0.90, 0.95, 1.0)}
 

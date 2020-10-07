@@ -36,8 +36,10 @@ AutoCatBoostRegression(
   MetricPeriods = 10L,
   Trees = 50L,
   Depth = 6,
-  LearningRate = NULL,
   L2_Leaf_Reg = 3,
+  RandomStrength = 1,
+  BorderCount = 128,
+  LearningRate = NULL,
   RSM = NULL,
   BootStrapType = NULL,
   GrowPolicy = NULL
@@ -106,9 +108,13 @@ AutoCatBoostRegression(
 
 \item{Depth}{Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
 
-\item{LearningRate}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
-
 \item{L2_Leaf_Reg}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)}
+
+\item{RandomStrength}{A multiplier of randomness added to split evaluations. Default value is 1 which adds no randomness.}
+
+\item{BorderCount}{Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU}
+
+\item{LearningRate}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
 
 \item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
@@ -239,8 +245,10 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
     Trees = 1000,
     Depth = 6,
-    LearningRate = seq(0.01,0.10,0.01),
     L2_Leaf_Reg = 3.0,
+    RandomStrength = 1,
+    BorderCount = 128,
+    LearningRate = seq(0.01,0.10,0.01),
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))

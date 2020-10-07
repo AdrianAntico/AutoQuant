@@ -33,8 +33,10 @@
 #' @param MetricPeriods Number of periods to use between Catboost evaluations
 #' @param Trees Bandit grid partitioned. The maximum number of trees you want in your models
 #' @param Depth Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
-#' @param LearningRate Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
 #' @param L2_Leaf_Reg Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
+#' @param RandomStrength A multiplier of randomness added to split evaluations. Default value is 1 which adds no randomness.
+#' @param BorderCount Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU
+#' @param LearningRate Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
 #' @param RSM CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
 #' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
 #' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
@@ -156,8 +158,10 @@
 #'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
 #'     Trees = 1000,
 #'     Depth = 6,
-#'     LearningRate = seq(0.01,0.10,0.01),
 #'     L2_Leaf_Reg = 3.0,
+#'     RandomStrength = 1,
+#'     BorderCount = 128,
+#'     LearningRate = seq(0.01,0.10,0.01),
 #'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
 #'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
 #'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
@@ -195,8 +199,10 @@ AutoCatBoostRegression <- function(data,
                                    MetricPeriods = 10L,
                                    Trees = 50L,
                                    Depth = 6,
-                                   LearningRate = NULL,
                                    L2_Leaf_Reg = 3.0,
+                                   RandomStrength = 1,
+                                   BorderCount = 128,
+                                   LearningRate = NULL,
                                    RSM = NULL,
                                    BootStrapType = NULL,
                                    GrowPolicy = NULL) {
@@ -498,15 +504,17 @@ AutoCatBoostRegression <- function(data,
 
     # Pull in Grid sets----
     Grids <- CatBoostParameterGrids(
-      TaskType      = task_type,
-      Shuffles      = Shuffles,
-      NTrees        = Trees,
-      Depth         = Depth,
-      LearningRate  = LearningRate,
-      L2_Leaf_Reg   = L2_Leaf_Reg,
-      RSM           = RSM,
-      BootStrapType = BootStrapType,
-      GrowPolicy    = GrowPolicy)
+      TaskType       = task_type,
+      Shuffles       = Shuffles,
+      NTrees         = Trees,
+      Depth          = Depth,
+      LearningRate   = LearningRate,
+      L2_Leaf_Reg    = L2_Leaf_Reg,
+      RandomStrength = RandomStrength,
+      BorderCount    = BorderCount,
+      RSM            = RSM,
+      BootStrapType  = BootStrapType,
+      GrowPolicy     = GrowPolicy)
     Grid <- Grids$Grid
     GridClusters <- Grids$Grids
     ExperimentalGrid <- Grids$ExperimentalGrid
@@ -659,6 +667,8 @@ AutoCatBoostRegression <- function(data,
         depth                = PassInGrid[["Depth"]],
         learning_rate        = PassInGrid[["LearningRate"]],
         l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
+        random_strength      = PassInGrid[["RandomStrength"]],
+        border_count         = PassInGrid[["BorderCount"]],
         bootstrap_type       = PassInGrid[["BootStrapType"]],
         grow_policy          = PassInGrid[["GrowPolicy"]],
         allow_writing_files  = FALSE)
@@ -677,6 +687,8 @@ AutoCatBoostRegression <- function(data,
         depth                = PassInGrid[["Depth"]],
         learning_rate        = PassInGrid[["LearningRate"]],
         l2_leaf_reg          = PassInGrid[["L2_Leaf_Reg"]],
+        random_strength      = PassInGrid[["RandomStrength"]],
+        border_count         = PassInGrid[["BorderCount"]],
         rsm                  = PassInGrid[["RSM"]],
         bootstrap_type       = PassInGrid[["BootStrapType"]],
         allow_writing_files  = FALSE)
@@ -721,6 +733,8 @@ AutoCatBoostRegression <- function(data,
           depth                = BestGrid[["Depth"]],
           learning_rate        = BestGrid[["LearningRate"]],
           l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
+          random_strength      = BestGrid[["RandomStrength"]],
+          border_count         = BestGrid[["BorderCount"]],
           bootstrap_type       = BestGrid[["BootStrapType"]],
           grow_policy          = BestGrid[["GrowPolicy"]],
           allow_writing_files  = FALSE)
@@ -739,6 +753,8 @@ AutoCatBoostRegression <- function(data,
           depth                = BestGrid[["Depth"]],
           learning_rate        = BestGrid[["LearningRate"]],
           l2_leaf_reg          = BestGrid[["L2_Leaf_Reg"]],
+          random_strength      = BestGrid[["RandomStrength"]],
+          border_count         = BestGrid[["BorderCount"]],
           rsm                  = BestGrid[["RSM"]],
           bootstrap_type       = BestGrid[["BootStrapType"]],
           allow_writing_files  = FALSE)
@@ -755,6 +771,8 @@ AutoCatBoostRegression <- function(data,
       iterations           = Trees,
       depth                = Depth,
       l2_leaf_reg          = L2_Leaf_Reg,
+      random_strength      = RandomStrength,
+      border_count         = BorderCount,
       loss_function        = LossFunction,
       eval_metric          = eval_metric,
       has_time             = HasTime,
