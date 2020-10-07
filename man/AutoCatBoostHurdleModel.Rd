@@ -35,6 +35,8 @@ AutoCatBoostHurdleModel(
   MetricPeriods = 25L,
   Trees = seq(1000L, 5000L, 500L),
   Depth = 6,
+  RandomStrength = 1,
+  BorderCount = 128,
   LearningRate = seq(0.01, 0.1, 0.01),
   L2_Leaf_Reg = 3,
   RSM = c(0.8, 0.85, 0.9, 0.95, 1),
@@ -103,6 +105,10 @@ AutoCatBoostHurdleModel(
 
 \item{Depth}{= seq(4L, 8L, 1L),}
 
+\item{RandomStrength}{1}
+
+\item{BorderCount}{128}
+
 \item{LearningRate}{= seq(0.01,0.10,0.01),}
 
 \item{L2_Leaf_Reg}{= seq(1.0, 10.0, 1.0),}
@@ -166,6 +172,8 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   Depth = seq(4L, 8L, 1L),
   LearningRate = seq(0.01,0.10,0.01),
   L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+  RandomStrength = 1,
+  BorderCount = 128,
   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
   BootStrapType = c("Bayesian", "Bernoulli",
      "Poisson", "MVS", "No"),
