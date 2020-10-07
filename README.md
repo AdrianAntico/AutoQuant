@@ -76,7 +76,9 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-## Background: ![Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
+## Background: 
+
+![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
 
 <details><summary>Expand to view content</summary>
 <p>
