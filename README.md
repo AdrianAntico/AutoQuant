@@ -2244,6 +2244,3 @@ For each of the models tested internally, several aspects should be noted:
 
 ##### **tokenizeH2O()** 
 <code>tokenizeH2O()</code> tokenizes an H2O string column.
-
-##### **PrintObjectsSize()** 
-<code>PrintObjectsSize()</code> prints out environment objects and their respective sizes. Useful for debugging programs.
