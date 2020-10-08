@@ -43,6 +43,7 @@
 #' @param TaskType Default is "GPU" but you can also set it to "CPU"
 #' @param NumGPU Defaults to 1. If CPU is set this argument will be ignored.
 #' @param GridTune Set to TRUE to run a grid tune
+#' @param PassInGrid Defaults to NULL
 #' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Default is 50
@@ -128,6 +129,7 @@
 #'   NumOfParDepPlots = 100L,
 #'   EvalMetric = "RMSE",
 #'   GridTune = FALSE,
+#'   PassInGrid = NULL,
 #'   GridEvalMetric = "mae",
 #'   ModelCount = 5,
 #'   TaskType = "GPU",
@@ -187,6 +189,7 @@ AutoCatBoostCARMA <- function(data,
                               NumGPU = 1,
                               EvalMetric = "RMSE",
                               GridTune = FALSE,
+                              PassInGrid = NULL,
                               GridEvalMetric = "mae",
                               ModelCount = 1,
                               MaxRunsWithoutNewWinner = 50,
@@ -991,7 +994,7 @@ AutoCatBoostCARMA <- function(data,
       #   'Shuffles' is the number of times you want the random grid arguments shuffled
       #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
       #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
-      PassInGrid = NULL,
+      PassInGrid = PassInGrid,
       GridTune = GridTune,
       MaxModelsInGrid = ModelCount,
       MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
