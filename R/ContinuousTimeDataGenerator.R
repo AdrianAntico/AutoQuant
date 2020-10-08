@@ -471,6 +471,7 @@ ContinuousTimeDataGenerator <- function(data,
 #'
 #' ID_MetadataGenerator for summary metadata for transactional data. The data returned from this function feeds into the IntermittentDemandBootStrapper() function.
 #'
+#' @family Feature Engineering Helper
 #' @param data This is your transactional level data
 #' @param RestrictDateRange = TRUE
 #' @param DateVariableName Bla
@@ -551,6 +552,7 @@ ID_MetadataGenerator <- function(data,
 #'
 #' ID_TrainingDataGenerator for subsetting data for the IntermittentDemandBootStrapper() function.
 #'
+#' @family Feature Engineering Helper
 #' @param data Source data
 #' @param Type "timetoevent1", "eventinwindow1"
 #' @param TargetVariableName Name of the variables to run feature engineering on. List the actual target variable name first.
@@ -631,6 +633,7 @@ ID_TrainingDataGenerator <- function(data,
 #'
 #' ID_TrainingDataGenerator2 for subsetting data for the IntermittentDemandBootStrapper() function.
 #'
+#' @family Feature Engineering Helper
 #' @param data Source data
 #' @param TargetVariableName vector of variable names
 #' @param Level The individual level of your group variable
@@ -718,6 +721,7 @@ ID_TrainingDataGenerator2 <- function(data,
 #'
 #' ID_BuildTrainDataSets for assembling data for the IntermittentDemandBootStrapper() function.
 #'
+#' @family Feature Engineering Helper
 #' @param MetaData This is the metadata returned from the ID_MetadataGenerator() function
 #' @param data This is your transactional data
 #' @param Case Indicate which data constructor method to use

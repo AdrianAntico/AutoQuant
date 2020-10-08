@@ -3,7 +3,7 @@
 #' AutoH2oGBMSizeFreqDist for building size and frequency distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build. Use this with the ID_SingleLevelGibbsSampler function to simulate the joint distribution.
 #'
 #' @author Adrian Antico
-#' @family Automated Time Series
+#' @family Supervised Learning - Compound
 #' @param CountData This is your CountData generated from the IntermittentDemandBootStrapper() function
 #' @param SizeData This is your SizeData generated from the IntermittentDemandBootStrapper() function
 #' @param CountQuantiles The default are deciles, i.e. seq(0.10,0.90,0.10). More granularity the better, but it will take longer to run.

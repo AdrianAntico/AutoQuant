@@ -38,3 +38,11 @@ Returns two data sets for the IntermittentDemandBootStrapper() function based on
 \description{
 ID_TrainingDataGenerator2 for subsetting data for the IntermittentDemandBootStrapper() function.
 }
+\seealso{
+Other Feature Engineering Helper: 
+\code{\link{AutoFourierFeatures}()},
+\code{\link{ID_BuildTrainDataSets}()},
+\code{\link{ID_MetadataGenerator}()},
+\code{\link{ID_TrainingDataGenerator}()}
+}
+\concept{Feature Engineering Helper}

@@ -181,13 +181,14 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
 }
 }
 \seealso{
-Other Automated Regression: 
+Other Supervised Learning - Compound: 
+\code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oDRFHurdleModel}()},
 \code{\link{AutoH2oGBMHurdleModel}()},
-\code{\link{AutoNLS}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoXGBoostHurdleModel}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Regression}
+\concept{Supervised Learning - Compound}

@@ -1,6 +1,6 @@
 #' AutoH2oGBMHurdleModel is generalized hurdle modeling framework
 #'
-#' @family Automated Regression
+#' @family Supervised Learning - Compound
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.
@@ -69,10 +69,10 @@ AutoH2oGBMHurdleModel <- function(data,
                                   MaxModelsInGrid = 1L,
                                   NumOfParDepPlots = 10L,
                                   PassInGrid = NULL) {
-  
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-  
+
   # Ensure Paths and metadata_path exists----
   if(!is.null(Paths)) if(!dir.exists(file.path(normalizePath(Paths)))) dir.create(normalizePath(Paths))
 
@@ -82,21 +82,21 @@ AutoH2oGBMHurdleModel <- function(data,
   if(is.character(Trees) | is.factor(Trees) | is.logical(Trees) | length(Trees) > 1L) return("NumTrees needs to be a numeric scalar")
   if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
   if(is.character(MaxModelsInGrid) | is.factor(MaxModelsInGrid) | is.logical(MaxModelsInGrid) | length(MaxModelsInGrid) > 1L) return("NumberModelsInGrid needs to be a numeric scalar")
-  
+
   # Initialize H2O----
   h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-  
+
   # Initialize collection and counter----
   ModelInformationList <- list()
-  
+
   # Data.table check----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-  
+
   # FeatureColumnNames----
   if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
-  
+
   # Add target bucket column----
   if(length(Buckets) == 1L) {
     data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[1L]), j = "Target_Buckets", value = 0L)
@@ -109,10 +109,10 @@ AutoH2oGBMHurdleModel <- function(data,
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] > Buckets[i - 1L]), j = "Target_Buckets", value = as.factor(paste0(Buckets[i-1L], "+")))
       } else {
         data.table::set(data, i = which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i-1L]), j = "Target_Buckets", value = as.factor(Buckets[i]))
-      }      
+      }
     }
   }
-  
+
   # Add target bucket column----
   if(!is.null(ValidationData)) {
     ValidationData[, Target_Buckets := as.factor(Buckets[1L])]
@@ -126,7 +126,7 @@ AutoH2oGBMHurdleModel <- function(data,
       }
     }
   }
-  
+
   # Add target bucket column----
   if(!is.null(TestData)) {
     TestData[, Target_Buckets := as.factor(Buckets[1L])]
@@ -140,7 +140,7 @@ AutoH2oGBMHurdleModel <- function(data,
       }
     }
   }
-  
+
   # AutoDataPartition if Validation and TestData are NULL----
   if(is.null(ValidationData) & is.null(TestData)) {
     DataSets <- AutoDataPartition(
@@ -155,7 +155,7 @@ AutoH2oGBMHurdleModel <- function(data,
     TestData <- DataSets$TestData
     rm(DataSets)
   }
-  
+
   # Begin classification model building----
   if(length(Buckets) == 1L) {
     ClassifierModel <- AutoH2oGBMClassifier(
@@ -201,13 +201,13 @@ AutoH2oGBMHurdleModel <- function(data,
       H2OShutdown = FALSE,
       HurdleModel = TRUE)
   }
-  
+
   # Store metadata----
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   VariableImportance <- ClassifierModel$VariableImportance
   rm(ClassifierModel)
-  
+
   # Model Scoring----
   TestData <- AutoH2OMLScoring(
     ScoringData = data,
@@ -230,10 +230,10 @@ AutoH2oGBMHurdleModel <- function(data,
     MDP_RemoveDates = TRUE,
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
-  
+
   # Remove classification Prediction----
   TestData <- TestData[, Predictions := NULL]
-  
+
   # Change name for classification----
   if(length(Buckets) == 1L) {
     data.table::setnames(TestData, "p0","Predictions_C0")
@@ -245,11 +245,11 @@ AutoH2oGBMHurdleModel <- function(data,
 
   # Remove Model Object----
   rm(ClassModel)
-  
+
   # Remove Target_Buckets----
   data.table::set(data, j = "Target_Buckets", value = NULL)
   data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
-  
+
   # Begin regression model building----
   counter <- 0L
   Degenerate <- 0L
@@ -288,7 +288,7 @@ AutoH2oGBMHurdleModel <- function(data,
         testBucket <- NULL
       }
     }
-    
+
     # Load Winning Grid if it exists----
     if(file.exists(file.path(normalizePath(Paths, paste0("grid", Buckets[bucket], ".csv"))))) {
       gridSaved <- data.table::fread(file.path(normalizePath(Paths), paste0("grid", Buckets[bucket], ".csv")))
@@ -296,7 +296,7 @@ AutoH2oGBMHurdleModel <- function(data,
     if(file.exists(file.path(normalizePath(MetaDataPaths), paste0("grid", Buckets[bucket], ".csv")))) {
       gridSaved <- data.table::fread(file.path(normalizePath(MetaDataPaths), paste0("grid", Buckets[bucket], ".csv")))
     }
-    
+
     # AutoCatBoostRegression()----
     if(trainBucket[, .N] != 0L) {
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
@@ -350,15 +350,15 @@ AutoH2oGBMHurdleModel <- function(data,
             H2OShutdown = FALSE,
             HurdleModel = TRUE)
         }
-        
+
         # Store Model----
         RegressionModel <- TestModel$Model
         if(!is.null(TransformNumericColumns)) TransformationResults <- TestModel$TransformationInformation
         rm(TestModel)
-        
+
         # Garbage Collection----
         gc()
-        
+
         # Score TestData----
         if(bucket == max(seq_len(length(Buckets) + 1L))) {
           if(!is.null(TransformNumericColumns)) {
@@ -453,10 +453,10 @@ AutoH2oGBMHurdleModel <- function(data,
               MDP_MissNum = -1)
           }
         }
-        
+
         # Clear TestModel From Memory----
         rm(RegressionModel)
-        
+
         # Change prediction name to prevent duplicates----
         if(bucket == max(seq_len(length(Buckets) + 1L))) {
           data.table::setnames(TestData, "Predictions", paste0("Predictions_", Buckets[bucket - 1L], "+"))
@@ -476,7 +476,7 @@ AutoH2oGBMHurdleModel <- function(data,
       }
     }
   }
-  
+
   # Final Combination of Predictions----
   # Logic: 1 Buckets --> 4 columns of preds
   #        2 Buckets --> 6 columns of preds
@@ -491,7 +491,7 @@ AutoH2oGBMHurdleModel <- function(data,
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + counter + Degenerate]])
       }
-    }  
+    }
   } else if(counter == 2L & length(Buckets) != 1L) {
     for(i in seq_len(length(Buckets)+1)) {
       if(i == 1L) {
@@ -499,16 +499,16 @@ AutoH2oGBMHurdleModel <- function(data,
       } else {
         data.table::set(TestData, j = "UpdatedPrediction", value = TestData[["UpdatedPrediction"]] + TestData[[i]] * TestData[[i + 1L + counter]])
       }
-    }  
+    }
   } else if(counter == 2L & length(Buckets) == 1L) {
     data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]])
   } else {
     data.table::set(TestData, j = "UpdatedPrediction", value = TestData[[1L]] * TestData[[3L]] +  TestData[[2L]] * TestData[[4L]])
   }
-  
+
   # Regression r2 via sqrt of correlation
   r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2
-  
+
   # Regression Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
@@ -517,7 +517,7 @@ AutoH2oGBMHurdleModel <- function(data,
       data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID, "_ValidationData.csv")))
     }
   }
-  
+
   # Regression Evaluation Calibration Plot----
   EvaluationPlot <- EvalPlot(
     data = TestData,
@@ -526,11 +526,11 @@ AutoH2oGBMHurdleModel <- function(data,
     GraphType = "calibration",
     PercentileBucket = 0.05,
     aggrfun = function(x) mean(x, na.rm = TRUE))
-  
+
   # Add Number of Trees to Title
   EvaluationPlot <- EvaluationPlot +
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
-  
+
   # Save plot to file
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
@@ -539,7 +539,7 @@ AutoH2oGBMHurdleModel <- function(data,
       ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
     }
   }
-  
+
   # Regression Evaluation Calibration Plot----
   EvaluationBoxPlot <- EvalPlot(
     data = TestData,
@@ -548,11 +548,11 @@ AutoH2oGBMHurdleModel <- function(data,
     GraphType = "boxplot",
     PercentileBucket = 0.05,
     aggrfun = function(x) mean(x, na.rm = TRUE))
-  
+
   # Add Number of Trees to Title----
   EvaluationBoxPlot <- EvaluationBoxPlot +
     ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(r_squared, 3L)))
-  
+
   # Save plot to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {
@@ -561,7 +561,7 @@ AutoH2oGBMHurdleModel <- function(data,
       ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationBoxPlot.png")))
     }
   }
-  
+
   # Regression Evaluation Metrics----
   EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE", "MSE","R2"), MetricValue = rep(999999L, 8L))
   i <- 0L
@@ -586,10 +586,10 @@ AutoH2oGBMHurdleModel <- function(data,
       data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
     }, error = function(x) "skip")
   }
-  
+
   # Remove Cols----
   TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL, Metric3 = NULL)]
-  
+
   # Save EvaluationMetrics to File
   EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999L]
   if(SaveModelObjects) {
@@ -599,7 +599,7 @@ AutoH2oGBMHurdleModel <- function(data,
       data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
-  
+
   # Regression Partial Dependence----
   ParDepPlots <- list()
   j <- 0L
@@ -633,7 +633,7 @@ AutoH2oGBMHurdleModel <- function(data,
       ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
     }, error = function(x) "skip")
   }
-  
+
   # Regression Save ParDepBoxPlots to file----
   if(SaveModelObjects) {
     if(!is.null(MetaDataPaths[1L])) {

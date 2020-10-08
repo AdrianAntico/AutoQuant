@@ -1,6 +1,6 @@
 #' AutoH2oDRFHurdleModel is generalized hurdle modeling framework
 #'
-#' @family Automated Regression
+#' @family Supervised Learning - Compound
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.

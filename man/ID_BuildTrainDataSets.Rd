@@ -47,3 +47,11 @@ Returns the count modeling data and the size modeling data
 \description{
 ID_BuildTrainDataSets for assembling data for the IntermittentDemandBootStrapper() function.
 }
+\seealso{
+Other Feature Engineering Helper: 
+\code{\link{AutoFourierFeatures}()},
+\code{\link{ID_MetadataGenerator}()},
+\code{\link{ID_TrainingDataGenerator2}()},
+\code{\link{ID_TrainingDataGenerator}()}
+}
+\concept{Feature Engineering Helper}

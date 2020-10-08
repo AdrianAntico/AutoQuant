@@ -103,10 +103,11 @@ Output <- RemixAutoML::AutoH2oGBMHurdleModel(
 }
 }
 \seealso{
-Other Automated Regression: 
+Other Supervised Learning - Compound: 
 \code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oDRFHurdleModel}()},
-\code{\link{AutoNLS}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoXGBoostHurdleModel}()}
 }
-\concept{Automated Regression}
+\concept{Supervised Learning - Compound}

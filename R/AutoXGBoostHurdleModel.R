@@ -2,7 +2,7 @@
 #'
 #' AutoXGBoostHurdleModel is generalized hurdle modeling framework
 #'
-#' @family Automated Regression
+#' @family Supervised Learning - Compound
 #' @author Adrian Antico
 #' @param TrainOnFull Set to TRUE to train model on 100 percent of data
 #' @param grid_eval_metric Select the metric to optimize in grid tuning. "accuracy", "microauc", "logloss"

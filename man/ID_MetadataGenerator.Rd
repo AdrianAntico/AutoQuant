@@ -50,3 +50,11 @@ MetaData <- ID_MetadataGenerator(
 )
 }
 }
+\seealso{
+Other Feature Engineering Helper: 
+\code{\link{AutoFourierFeatures}()},
+\code{\link{ID_BuildTrainDataSets}()},
+\code{\link{ID_TrainingDataGenerator2}()},
+\code{\link{ID_TrainingDataGenerator}()}
+}
+\concept{Feature Engineering Helper}

@@ -58,9 +58,7 @@ Other Automated Time Series:
 \code{\link{AutoBanditNNet}()},
 \code{\link{AutoBanditSarima}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
-\code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oGBMFreqSizeScoring}()},
-\code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoTS}()},
 \code{\link{IntermittentDemandScoringDataGenerator}()}
 }

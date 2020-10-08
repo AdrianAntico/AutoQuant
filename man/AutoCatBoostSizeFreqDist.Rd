@@ -112,17 +112,14 @@ AutoCatBoostSizeFreqDist(
 }
 }
 \seealso{
-Other Automated Time Series: 
-\code{\link{AutoBanditNNet}()},
-\code{\link{AutoBanditSarima}()},
-\code{\link{AutoCatBoostFreqSizeScoring}()},
-\code{\link{AutoH2oGBMFreqSizeScoring}()},
+Other Supervised Learning - Compound: 
+\code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoH2oGBMHurdleModel}()},
 \code{\link{AutoH2oGBMSizeFreqDist}()},
-\code{\link{AutoTBATS}()},
-\code{\link{AutoTS}()},
-\code{\link{IntermittentDemandScoringDataGenerator}()}
+\code{\link{AutoXGBoostHurdleModel}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Time Series}
+\concept{Supervised Learning - Compound}

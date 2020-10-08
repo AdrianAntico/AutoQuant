@@ -105,10 +105,11 @@ Output <- AutoH2oDRFHurdleModel(
 }
 }
 \seealso{
-Other Automated Regression: 
+Other Supervised Learning - Compound: 
 \code{\link{AutoCatBoostHurdleModel}()},
+\code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oGBMHurdleModel}()},
-\code{\link{AutoNLS}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoXGBoostHurdleModel}()}
 }
-\concept{Automated Regression}
+\concept{Supervised Learning - Compound}

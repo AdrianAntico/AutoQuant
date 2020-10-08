@@ -35,6 +35,13 @@ AutoFourierFeatures(
 \description{
 #' AutoFourierFeatures
 }
+\seealso{
+Other Feature Engineering Helper: 
+\code{\link{ID_BuildTrainDataSets}()},
+\code{\link{ID_MetadataGenerator}()},
+\code{\link{ID_TrainingDataGenerator2}()},
+\code{\link{ID_TrainingDataGenerator}()}
+}
 \author{
 Adrian Antico
 }

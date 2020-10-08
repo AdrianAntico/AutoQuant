@@ -57,9 +57,7 @@ AutoBanditNNet is a multi-armed bandit model testing framework for AR and SAR NN
 Other Automated Time Series: 
 \code{\link{AutoBanditSarima}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
-\code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oGBMFreqSizeScoring}()},
-\code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoTBATS}()},
 \code{\link{AutoTS}()},
 \code{\link{IntermittentDemandScoringDataGenerator}()}
