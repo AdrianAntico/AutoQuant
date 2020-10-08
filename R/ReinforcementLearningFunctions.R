@@ -488,6 +488,7 @@ CatBoostRegressionParams <- function(counter = NULL,
           learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
           l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
           random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
+          border_count         = GridClusters[[paste0("Grid_",counter-1)]][["BorderCount"]][1L],
           bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
           grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L],
           allow_writing_files  = FALSE)
@@ -508,6 +509,7 @@ CatBoostRegressionParams <- function(counter = NULL,
           learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
           l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
           random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
+          border_count         = GridClusters[[paste0("Grid_",counter-1)]][["BorderCount"]][1L],
           rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
           bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
       }
@@ -530,7 +532,8 @@ CatBoostRegressionParams <- function(counter = NULL,
         depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
         learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
         l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
+        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
+        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
         bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
         grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
     } else {
@@ -545,13 +548,14 @@ CatBoostRegressionParams <- function(counter = NULL,
         devices              = NumGPUs,
         train_dir            = model_path,
         allow_writing_files  = FALSE,
-        iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid-1L)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid-1L)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-        rsm                  = GridClusters[[paste0("Grid_",NewGrid-1L)]][["RSM"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid-1L)]][["BootStrapType"]][1L])
+        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
+        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
+        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
+        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
+        random_strength      = GridClusters[[paste0("Grid_",counter)]][["RandomStrength"]][1L],
+        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
+        rsm                  = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][1L],
+        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L])
     }
   }
   return(base_params)
@@ -671,8 +675,8 @@ CatBoostClassifierParams <- function(counter = NULL,
         depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
         learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
         l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-        border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
+        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
+        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
         bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
         grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
     } else {
@@ -691,8 +695,8 @@ CatBoostClassifierParams <- function(counter = NULL,
         depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
         learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
         l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-        border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
+        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
+        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
         rsm                  = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][1L],
         bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L])
     }
@@ -765,6 +769,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
           learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
           l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
           random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
+          border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
           bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
           grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
       } else {
@@ -782,6 +787,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
           learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
           l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
           random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
+          border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
           rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
           bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
       }
@@ -803,7 +809,8 @@ CatBoostMultiClassParams <- function(counter = NULL,
         depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
         learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
         l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
+        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
+        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
         bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
         grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
     } else {
@@ -817,13 +824,14 @@ CatBoostMultiClassParams <- function(counter = NULL,
         task_type            = task_type,
         train_dir            = model_path,
         class_weights        = ClassWeights,
-        iterations           = GridClusters[[paste0("Grid_",NewGrid-1L)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid-1L)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid-1L)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid-1L)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-        rsm                  = GridClusters[[paste0("Grid_",NewGrid-1L)]][["RSM"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid-1L)]][["BootStrapType"]][1L])
+        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
+        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
+        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
+        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
+        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
+        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
+        rsm                  = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][1L],
+        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L])
     }
   }
   return(base_params)
