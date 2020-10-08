@@ -1030,7 +1030,7 @@ AutoCatBoostMultiClass <- function(data,
         ValidationData = ValidationData,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = VariableImportance,
-        VI_Plot = tryCatch({VI_Plot(VariableImportance)}, error = NULL),
+        VI_Plot = if(!is.null(VariableImportance)) tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
         GridMetrics = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
         ColNames = Names,
         TargetLevels = TargetLevels))
@@ -1038,7 +1038,7 @@ AutoCatBoostMultiClass <- function(data,
   } else {
     if(ReturnModelObjects) {
       return(list(
-        Model = model,,
+        Model = model,
         ColNames = Names,
         TargetLevels = TargetLevels))
     }
