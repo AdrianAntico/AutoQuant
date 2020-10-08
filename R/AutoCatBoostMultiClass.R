@@ -209,6 +209,7 @@ AutoCatBoostMultiClass <- function(data,
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
   if(any(Depth > 16)) Depth <- Depth[!Depth > 16]
+  if(!is.null(PassInGrid)) GridTune <- FALSE
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {
@@ -973,7 +974,7 @@ AutoCatBoostMultiClass <- function(data,
   # MultiClass Variable Importance----
   temp <- catboost::catboost.get_feature_importance(model)
   VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
-  data.table::setnames(VariableImportance, "V2", "Importance")
+  tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
   VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
   VariableImportance <- VariableImportance[order(-Importance)]
   if(SaveModelObjects) {
