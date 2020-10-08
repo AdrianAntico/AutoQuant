@@ -133,7 +133,7 @@ AutoCatBoostRegression is an automated modeling function that runs a variety of 
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
-  N = 1000,
+  N = 10000,
   ID = 2,
   ZIP = 0,
   AddDate = FALSE,

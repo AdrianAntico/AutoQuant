@@ -121,7 +121,7 @@ AutoCatBoostMultiClass is an automated modeling function that runs a variety of 
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
-  N = 1000L,
+  N = 10000L,
   ID = 2L,
   ZIP = 0L,
   AddDate = FALSE,
