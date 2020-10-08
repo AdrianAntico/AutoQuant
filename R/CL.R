@@ -3,7 +3,7 @@
 #' @description CLTrainer is a forecasting model for chain ladder style forecasting
 #'
 #' @author Adrian Antico
-#' @family Automated Time Series
+#' @family Population Dynamics Forecasting
 #' @param data data object
 #' @param PartitionRatios Requires three values for train, validation, and test data sets
 #' @param BaseFunnelMeasure E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure
@@ -930,7 +930,7 @@ CLTrainer <- function(data,
 #' CLForecast for generating forecasts
 #'
 #' @author Adrian Antico
-#' @family Automated Model Scoring
+#' @family Population Dynamics Forecasting
 #' @param data N
 #' @param FC_BaseFunnelMeasure d
 #' @param OutputFilePath P

@@ -2,7 +2,7 @@
 #'
 #' @description PredictArima is a function to overwrite the s3 generic <code>getS3method('predict','Arima')</code>
 #' @author Adrian Antico
-#' @family Automated Time Series
+#' @family Time Series Helper
 #' @param object Object that stores the output from Arima()
 #' @param n.ahead Number of forecast periods to forecast
 #' @param newxreg NULL by default. Forward looking independent variables as matrix type
@@ -120,7 +120,7 @@ PredictArima <- function(object = Results,
 #' Regular_Performance creates and stores model results in Experiment Grid
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Model Set to ets, tbats, arfima, tslm, nnetar
 #' @param Results This is a time series model
 #' @param TrainValidateShare The values used to blend training and validation performance
@@ -303,7 +303,7 @@ Regular_Performance <- function(Model = NULL,
 #' ARIMA_Performance creates and stores model results in Experiment Grid
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Results This is a time series model
 #' @param TrainValidateShare The values used to blend training and validation performance
 #' @param MaxFourierTerms Numeric value
@@ -519,7 +519,7 @@ RL_Performance <- function(Results = Results,
 #' GenerateParameterGrids creates and stores model results in Experiment Grid
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Model 'arima', 'ets', 'tbats', 'nnet', 'arfima', 'tslm', 'dshw'
 #' @param test validation data
 #' @param MinVal Minimum value of time series
@@ -1000,7 +1000,7 @@ GenerateParameterGrids <- function(Model = NULL,
 #' TimeSeriesDataPrepare is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param data Source data.table for forecasting
 #' @param TargetName Name of your target variable
 #' @param DateName Name of your date variable
@@ -1234,7 +1234,7 @@ TimeSeriesDataPrepare <- function(data,
 #' OptimizeArima is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
@@ -1688,7 +1688,7 @@ OptimizeArima <- function(Output,
 #' OptimizeETS is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
@@ -1909,7 +1909,7 @@ OptimizeETS <- function(Output,
 #' OptimizeTBATS is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
@@ -2137,7 +2137,7 @@ OptimizeTBATS <- function(Output,
 #' OptimizeNNET is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
@@ -2527,7 +2527,7 @@ OptimizeNNET <- function(Output,
 #' OptimizeArfima is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
@@ -2742,7 +2742,7 @@ OptimizeArfima <- function(Output,
 #' OptimizeTSLM is a function that takes raw data and returns the necessary time series data and objects for model building. It also fills any time gaps with zeros. Use this before you run any time series model functions.
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
@@ -2912,7 +2912,7 @@ OptimizeTSLM <- function(Output,
 #' ParallelAutoARIMA to run the 4 data sets at once
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
@@ -3030,7 +3030,7 @@ ParallelAutoARIMA <- function(
 #' ParallelAutoETS to run the 4 data sets at once
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
@@ -3123,7 +3123,7 @@ ParallelAutoETS <- function(
 #' ParallelAutoTBATS to run the 4 data sets at once
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
@@ -3212,7 +3212,7 @@ ParallelAutoTBATS <- function(
 #' ParallelAutoNNET to run the 4 data sets at once
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
@@ -3322,7 +3322,7 @@ ParallelAutoNNET <- function(
 #' ParallelAutoArfima to run the 4 data sets at once
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
@@ -3413,7 +3413,7 @@ ParallelAutoArfima <- function(
 #' ParallelAutoTSLM to run the 4 data sets at once
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
@@ -3502,7 +3502,7 @@ ParallelAutoTSLM <- function(
 #' FinalBuildArima to generate forecasts and ensemble data
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
@@ -3711,7 +3711,7 @@ FinalBuildArima <- function(
 #' FinalBuildETS to generate forecasts and ensemble data
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
@@ -3857,7 +3857,7 @@ FinalBuildETS <- function(
 #' FinalBuildTBATS to generate forecasts and ensemble data
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
@@ -3999,7 +3999,7 @@ FinalBuildTBATS <- function(
 #' FinalBuildNNET to generate forecasts and ensemble data
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
@@ -4150,7 +4150,7 @@ FinalBuildNNET <- function(
 #' FinalBuildArfima to generate forecasts and ensemble data
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
@@ -4292,7 +4292,7 @@ FinalBuildArfima <- function(
 #' FinalBuildTSLM to generate forecasts and ensemble data
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
@@ -4434,7 +4434,7 @@ FinalBuildTSLM <- function(
 #' TimeSeriesEnsembleForecast to generate forecasts and ensemble data
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param TS_Models Select which ts model forecasts to ensemble
 #' @param ML_Methods Select which models to build for the ensemble
 #' @param CalendarFeatures TRUE or FALSE
@@ -4971,7 +4971,7 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
 #' WideTimeSeriesEnsembleForecast to generate forecasts and ensemble data
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Time Series Helper
 #' @param TS_Models Select which ts model forecasts to ensemble
 #' @param ML_Methods Select which models to build for the ensemble
 #' @param Path The path to the folder where the ts forecasts are stored
@@ -5364,7 +5364,7 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
 #'
 #' #' AutoFourierFeatures
 #' @author Adrian Antico
-#' @family Feature Engineering
+#' @family Feature Engineering Helper
 #' @param data The source data
 #' @param FourierPairs A number indicating the max number of fourier pairs that will be built
 #' @param TargetColumn The name of your target column
@@ -5546,7 +5546,7 @@ AutoFourierFeatures <- function(data,
 #' AutoHierarchicalFourier
 #'
 #' AutoHierarchicalFourier reverses the difference
-#' @family Data Wrangling
+#' @family Feature Engineering
 #' @author Adrian Antico
 #' @param datax data
 #' @param xRegs The XREGS

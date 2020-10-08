@@ -26,7 +26,6 @@ ColumnSubsetDataTable will subset data tables by column
 \seealso{
 Other Data Wrangling: 
 \code{\link{AutoDataDictionaries}()},
-\code{\link{AutoHierarchicalFourier}()},
 \code{\link{DataDisplayMeta}()},
 \code{\link{FakeDataGenerator}()},
 \code{\link{FullFactorialCatFeatures}()},

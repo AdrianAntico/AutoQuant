@@ -122,19 +122,14 @@ WinningModel <- output$TimeSeriesModel
 }
 \seealso{
 Other Automated Time Series: 
-\code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoBanditNNet}()},
+\code{\link{AutoBanditSarima}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
 \code{\link{AutoCatBoostSizeFreqDist}()},
-\code{\link{AutoH2oDRFCARMA}()},
-\code{\link{AutoH2oGBMCARMA}()},
 \code{\link{AutoH2oGBMFreqSizeScoring}()},
 \code{\link{AutoH2oGBMSizeFreqDist}()},
-\code{\link{AutoH2oGLMCARMA}()},
-\code{\link{AutoH2oMLCARMA}()},
-\code{\link{AutoXGBoostCARMA}()},
-\code{\link{CLTrainer}()},
-\code{\link{IntermittentDemandScoringDataGenerator}()},
-\code{\link{PredictArima}()}
+\code{\link{AutoTBATS}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico and Douglas Pestana

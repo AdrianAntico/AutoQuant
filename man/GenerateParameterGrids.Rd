@@ -45,13 +45,7 @@ GenerateParameterGrids(
 GenerateParameterGrids creates and stores model results in Experiment Grid
 }
 \seealso{
-Other Time Series: 
-\code{\link{AutoBanditNNet}()},
-\code{\link{AutoBanditSarima}()},
-\code{\link{AutoTBATS}()},
-\code{\link{CarmaHoldoutMetrics}()},
-\code{\link{DifferenceDataReverse}()},
-\code{\link{DifferenceData}()},
+Other Time Series Helper: 
 \code{\link{FinalBuildArfima}()},
 \code{\link{FinalBuildArima}()},
 \code{\link{FinalBuildETS}()},
@@ -70,6 +64,7 @@ Other Time Series:
 \code{\link{ParallelAutoNNET}()},
 \code{\link{ParallelAutoTBATS}()},
 \code{\link{ParallelAutoTSLM}()},
+\code{\link{PredictArima}()},
 \code{\link{RL_Performance}()},
 \code{\link{Regular_Performance}()},
 \code{\link{StackedTimeSeriesEnsembleForecast}()},
@@ -79,4 +74,4 @@ Other Time Series:
 \author{
 Adrian Antico
 }
-\concept{Time Series}
+\concept{Time Series Helper}

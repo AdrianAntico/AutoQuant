@@ -24,22 +24,33 @@ PredictArima(
 PredictArima is a function to overwrite the s3 generic <code>getS3method('predict','Arima')</code>
 }
 \seealso{
-Other Automated Time Series: 
-\code{\link{AutoCatBoostCARMA}()},
-\code{\link{AutoCatBoostFreqSizeScoring}()},
-\code{\link{AutoCatBoostSizeFreqDist}()},
-\code{\link{AutoH2oDRFCARMA}()},
-\code{\link{AutoH2oGBMCARMA}()},
-\code{\link{AutoH2oGBMFreqSizeScoring}()},
-\code{\link{AutoH2oGBMSizeFreqDist}()},
-\code{\link{AutoH2oGLMCARMA}()},
-\code{\link{AutoH2oMLCARMA}()},
-\code{\link{AutoTS}()},
-\code{\link{AutoXGBoostCARMA}()},
-\code{\link{CLTrainer}()},
-\code{\link{IntermittentDemandScoringDataGenerator}()}
+Other Time Series Helper: 
+\code{\link{FinalBuildArfima}()},
+\code{\link{FinalBuildArima}()},
+\code{\link{FinalBuildETS}()},
+\code{\link{FinalBuildNNET}()},
+\code{\link{FinalBuildTBATS}()},
+\code{\link{FinalBuildTSLM}()},
+\code{\link{GenerateParameterGrids}()},
+\code{\link{OptimizeArfima}()},
+\code{\link{OptimizeArima}()},
+\code{\link{OptimizeETS}()},
+\code{\link{OptimizeNNET}()},
+\code{\link{OptimizeTBATS}()},
+\code{\link{OptimizeTSLM}()},
+\code{\link{ParallelAutoARIMA}()},
+\code{\link{ParallelAutoArfima}()},
+\code{\link{ParallelAutoETS}()},
+\code{\link{ParallelAutoNNET}()},
+\code{\link{ParallelAutoTBATS}()},
+\code{\link{ParallelAutoTSLM}()},
+\code{\link{RL_Performance}()},
+\code{\link{Regular_Performance}()},
+\code{\link{StackedTimeSeriesEnsembleForecast}()},
+\code{\link{TimeSeriesDataPrepare}()},
+\code{\link{WideTimeSeriesEnsembleForecast}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Time Series}
+\concept{Time Series Helper}

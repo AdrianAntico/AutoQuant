@@ -39,22 +39,24 @@ AutoHierarchicalFourier(
 AutoHierarchicalFourier reverses the difference
 }
 \seealso{
-Other Data Wrangling: 
-\code{\link{AutoDataDictionaries}()},
-\code{\link{ColumnSubsetDataTable}()},
-\code{\link{DataDisplayMeta}()},
-\code{\link{FakeDataGenerator}()},
-\code{\link{FullFactorialCatFeatures}()},
-\code{\link{SQL_ClearTable}()},
-\code{\link{SQL_DropTable}()},
-\code{\link{SQL_Query_Push}()},
-\code{\link{SQL_Query}()},
-\code{\link{SQL_SaveTable}()},
-\code{\link{SQL_Server_DBConnection}()},
-\code{\link{SQL_UpdateTable}()},
-\code{\link{TimeSeriesMelt}()}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Data Wrangling}
+\concept{Feature Engineering}

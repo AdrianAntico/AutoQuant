@@ -35,25 +35,7 @@ AutoFourierFeatures(
 \description{
 #' AutoFourierFeatures
 }
-\seealso{
-Other Feature Engineering: 
-\code{\link{AutoDataPartition}()},
-\code{\link{AutoLagRollStatsScoring}()},
-\code{\link{AutoLagRollStats}()},
-\code{\link{AutoTransformationCreate}()},
-\code{\link{AutoTransformationScore}()},
-\code{\link{AutoWord2VecModeler}()},
-\code{\link{ContinuousTimeDataGenerator}()},
-\code{\link{CreateCalendarVariables}()},
-\code{\link{CreateHolidayVariables}()},
-\code{\link{DT_GDL_Feature_Engineering}()},
-\code{\link{DummifyDT}()},
-\code{\link{H2oAutoencoder}()},
-\code{\link{ModelDataPrep}()},
-\code{\link{Partial_DT_GDL_Feature_Engineering}()},
-\code{\link{TimeSeriesFill}()}
-}
 \author{
 Adrian Antico
 }
-\concept{Feature Engineering}
+\concept{Feature Engineering Helper}

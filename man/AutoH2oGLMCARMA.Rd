@@ -199,22 +199,14 @@ H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 }
 }
 \seealso{
-Other Automated Time Series: 
+Other Automated Panel Data Forecasting: 
 \code{\link{AutoCatBoostCARMA}()},
-\code{\link{AutoCatBoostFreqSizeScoring}()},
-\code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oDRFCARMA}()},
 \code{\link{AutoH2oGBMCARMA}()},
-\code{\link{AutoH2oGBMFreqSizeScoring}()},
-\code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoH2oMLCARMA}()},
-\code{\link{AutoTS}()},
-\code{\link{AutoXGBoostCARMA}()},
-\code{\link{CLTrainer}()},
-\code{\link{IntermittentDemandScoringDataGenerator}()},
-\code{\link{PredictArima}()}
+\code{\link{AutoXGBoostCARMA}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Time Series}
+\concept{Automated Panel Data Forecasting}

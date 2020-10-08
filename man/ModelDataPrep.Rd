@@ -80,7 +80,7 @@ str(data)
 \seealso{
 Other Feature Engineering: 
 \code{\link{AutoDataPartition}()},
-\code{\link{AutoFourierFeatures}()},
+\code{\link{AutoHierarchicalFourier}()},
 \code{\link{AutoLagRollStatsScoring}()},
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationCreate}()},

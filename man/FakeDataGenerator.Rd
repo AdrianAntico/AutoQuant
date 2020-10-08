@@ -62,7 +62,6 @@ data <- RemixAutoML::FakeDataGenerator(
 \seealso{
 Other Data Wrangling: 
 \code{\link{AutoDataDictionaries}()},
-\code{\link{AutoHierarchicalFourier}()},
 \code{\link{ColumnSubsetDataTable}()},
 \code{\link{DataDisplayMeta}()},
 \code{\link{FullFactorialCatFeatures}()},

@@ -3,7 +3,7 @@
 #' AutoH2oGBMCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 #'
 #' @author Adrian Antico
-#' @family Automated Time Series
+#' @family Automated Panel Data Forecasting
 #' @param data Supply your full series data set here
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"

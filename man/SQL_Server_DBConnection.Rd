@@ -17,7 +17,6 @@ SQL_Server_DBConnection is a function to return data dictionary data in table fo
 \seealso{
 Other Data Wrangling: 
 \code{\link{AutoDataDictionaries}()},
-\code{\link{AutoHierarchicalFourier}()},
 \code{\link{ColumnSubsetDataTable}()},
 \code{\link{DataDisplayMeta}()},
 \code{\link{FakeDataGenerator}()},

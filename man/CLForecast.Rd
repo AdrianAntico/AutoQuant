@@ -39,14 +39,10 @@ S
 CLForecast for generating forecasts
 }
 \seealso{
-Other Automated Model Scoring: 
-\code{\link{AutoCatBoostScoring}()},
-\code{\link{AutoH2OMLScoring}()},
-\code{\link{AutoH2OModeler}()},
-\code{\link{AutoHurdleScoring}()},
-\code{\link{AutoXGBoostScoring}()}
+Other Population Dynamics Forecasting: 
+\code{\link{CLTrainer}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Model Scoring}
+\concept{Population Dynamics Forecasting}

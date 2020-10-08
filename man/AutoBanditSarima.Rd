@@ -107,38 +107,17 @@ Output$ErrorLagMA2x2
 }
 }
 \seealso{
-Other Time Series: 
+Other Automated Time Series: 
 \code{\link{AutoBanditNNet}()},
+\code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoCatBoostSizeFreqDist}()},
+\code{\link{AutoH2oGBMFreqSizeScoring}()},
+\code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoTBATS}()},
-\code{\link{CarmaHoldoutMetrics}()},
-\code{\link{DifferenceDataReverse}()},
-\code{\link{DifferenceData}()},
-\code{\link{FinalBuildArfima}()},
-\code{\link{FinalBuildArima}()},
-\code{\link{FinalBuildETS}()},
-\code{\link{FinalBuildNNET}()},
-\code{\link{FinalBuildTBATS}()},
-\code{\link{FinalBuildTSLM}()},
-\code{\link{GenerateParameterGrids}()},
-\code{\link{OptimizeArfima}()},
-\code{\link{OptimizeArima}()},
-\code{\link{OptimizeETS}()},
-\code{\link{OptimizeNNET}()},
-\code{\link{OptimizeTBATS}()},
-\code{\link{OptimizeTSLM}()},
-\code{\link{ParallelAutoARIMA}()},
-\code{\link{ParallelAutoArfima}()},
-\code{\link{ParallelAutoETS}()},
-\code{\link{ParallelAutoNNET}()},
-\code{\link{ParallelAutoTBATS}()},
-\code{\link{ParallelAutoTSLM}()},
-\code{\link{RL_Performance}()},
-\code{\link{Regular_Performance}()},
-\code{\link{StackedTimeSeriesEnsembleForecast}()},
-\code{\link{TimeSeriesDataPrepare}()},
-\code{\link{WideTimeSeriesEnsembleForecast}()}
+\code{\link{AutoTS}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Time Series}
+\concept{Automated Time Series}

@@ -118,8 +118,7 @@ Other Automated Model Scoring:
 \code{\link{AutoCatBoostScoring}()},
 \code{\link{AutoH2OMLScoring}()},
 \code{\link{AutoH2OModeler}()},
-\code{\link{AutoXGBoostScoring}()},
-\code{\link{CLForecast}()}
+\code{\link{AutoXGBoostScoring}()}
 }
 \author{
 Adrian Antico
