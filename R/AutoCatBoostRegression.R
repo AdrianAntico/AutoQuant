@@ -1111,6 +1111,9 @@ AutoCatBoostRegression <- function(data,
           }
         }
       }
+    } else {
+      ParDepBoxPlots <- NULL
+      ParDepPlots <- NULL
     }
 
     # Regression Save Grid output----
