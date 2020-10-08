@@ -83,15 +83,14 @@ IntermittentDemandScoringDataGenerator creates the scoring data for forecasting.
 }
 }
 \seealso{
-Other Automated Time Series: 
-\code{\link{AutoBanditNNet}()},
-\code{\link{AutoBanditSarima}()},
-\code{\link{AutoCatBoostFreqSizeScoring}()},
-\code{\link{AutoH2oGBMFreqSizeScoring}()},
-\code{\link{AutoTBATS}()},
-\code{\link{AutoTS}()}
+Other Automated Model Scoring: 
+\code{\link{AutoCatBoostScoring}()},
+\code{\link{AutoH2OMLScoring}()},
+\code{\link{AutoH2OModeler}()},
+\code{\link{AutoHurdleScoring}()},
+\code{\link{AutoXGBoostScoring}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Time Series}
+\concept{Automated Model Scoring}

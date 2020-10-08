@@ -108,7 +108,8 @@ Other Automated Model Scoring:
 \code{\link{AutoH2OMLScoring}()},
 \code{\link{AutoH2OModeler}()},
 \code{\link{AutoHurdleScoring}()},
-\code{\link{AutoXGBoostScoring}()}
+\code{\link{AutoXGBoostScoring}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico

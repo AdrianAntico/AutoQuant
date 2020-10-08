@@ -59,8 +59,7 @@ Other Automated Time Series:
 \code{\link{AutoCatBoostFreqSizeScoring}()},
 \code{\link{AutoH2oGBMFreqSizeScoring}()},
 \code{\link{AutoTBATS}()},
-\code{\link{AutoTS}()},
-\code{\link{IntermittentDemandScoringDataGenerator}()}
+\code{\link{AutoTS}()}
 }
 \author{
 Adrian Antico

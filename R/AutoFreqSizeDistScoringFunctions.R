@@ -3,7 +3,7 @@
 #' IntermittentDemandScoringDataGenerator creates the scoring data for forecasting. It will recreate the same features used for modeling, take the most recent record, and then duplicate those records for each forecast period specifed.
 #'
 #' @author Adrian Antico
-#' @family Automated Time Series
+#' @family Automated Model Scoring
 #' @param data This is your source data
 #' @param FC_Periods The number of periods you set up to forecast
 #' @param SaveData Set to TRUE to save the output data to file

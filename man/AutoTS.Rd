@@ -126,8 +126,7 @@ Other Automated Time Series:
 \code{\link{AutoBanditSarima}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
 \code{\link{AutoH2oGBMFreqSizeScoring}()},
-\code{\link{AutoTBATS}()},
-\code{\link{IntermittentDemandScoringDataGenerator}()}
+\code{\link{AutoTBATS}()}
 }
 \author{
 Adrian Antico and Douglas Pestana

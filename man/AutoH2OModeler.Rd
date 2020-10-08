@@ -399,7 +399,8 @@ Other Automated Model Scoring:
 \code{\link{AutoCatBoostScoring}()},
 \code{\link{AutoH2OMLScoring}()},
 \code{\link{AutoHurdleScoring}()},
-\code{\link{AutoXGBoostScoring}()}
+\code{\link{AutoXGBoostScoring}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico
