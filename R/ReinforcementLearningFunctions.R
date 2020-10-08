@@ -358,7 +358,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     LearningRate = if(!is.null(LearningRate)) sort(LearningRate, decreasing = FALSE) else seq(0.01,0.10,0.01),
 
     # Random hyperparameters----
-    BorderCount = if(!is.null(BorderCOunt)) BorderCount else seq(32,256,32),
+    BorderCount = if(!is.null(BorderCount)) BorderCount else seq(32,256,32),
     RandomStrength = if(!is.null(RandomStrength)) RandomStrength else seq(1,2,0.1),
     L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
     RSM = if(!is.null(RSM)) RSM else c(0.80, 0.85, 0.90, 0.95, 1.0),
