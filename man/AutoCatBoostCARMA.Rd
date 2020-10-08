@@ -49,6 +49,8 @@ AutoCatBoostCARMA(
   MaxRunMinutes = 60 * 60,
   NTrees = 1000,
   L2_Leaf_Reg = 3,
+  RandomStrength = 1,
+  BorderCount = 254,
   Depth = 6,
   PartitionType = "timeseries",
   Timer = TRUE,
@@ -139,6 +141,10 @@ AutoCatBoostCARMA(
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
 \item{L2_Leaf_Reg}{l2 reg parameter}
+
+\item{RandomStrength}{Default is 1}
+
+\item{BorderCount}{Default is 254}
 
 \item{Depth}{Depth of catboost model}
 
@@ -238,6 +244,8 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   MaxRunMinutes = 60*60,
   NTrees = 2500,
   L2_Leaf_Reg = 3.0,
+  RandomStrength = 1,
+  BorderCount = 254,
   Depth = 6)
 
 UpdateMetrics <- print(

@@ -50,6 +50,8 @@
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param Depth Depth of catboost model
 #' @param L2_Leaf_Reg l2 reg parameter
+#' @param RandomStrength Default is 1
+#' @param BorderCount Default is 254
 #' @examples
 #' \dontrun{
 #'
@@ -134,6 +136,8 @@
 #'   MaxRunMinutes = 60*60,
 #'   NTrees = 2500,
 #'   L2_Leaf_Reg = 3.0,
+#'   RandomStrength = 1,
+#'   BorderCount = 254,
 #'   Depth = 6)
 #'
 #' UpdateMetrics <- print(
@@ -189,6 +193,8 @@ AutoCatBoostCARMA <- function(data,
                               MaxRunMinutes = 60*60,
                               NTrees = 1000,
                               L2_Leaf_Reg = 3.0,
+                              RandomStrength = 1,
+                              BorderCount = 254,
                               Depth = 6,
                               PartitionType = "timeseries",
                               Timer = TRUE,
@@ -1002,6 +1008,8 @@ AutoCatBoostCARMA <- function(data,
       Depth = Depth,
       LearningRate = seq(0.01,0.10,0.01),
       L2_Leaf_Reg = L2_Leaf_Reg,
+      RandomStrength = RandomStrength,
+      BorderCount = BorderCount,
       RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
       BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
       GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
