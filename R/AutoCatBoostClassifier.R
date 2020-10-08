@@ -845,7 +845,6 @@ AutoCatBoostClassifier <- function(data,
 
   # Binary Partial Dependence----
   ParDepPlots <- list()
-  ParDepBoxPlots <- list()
   j <- 0L
   if(!is.null(VariableImportance) & NumOfParDepPlots > 0L) {
     for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
@@ -933,7 +932,7 @@ AutoCatBoostClassifier <- function(data,
       return(list(
         Model = model,
         ValidationData = ValidationData,
-        VariableImportance = VariableImportance,
+        VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
         VI_Plot = if(!is.null(VariableImportance)) tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
         ColNames = Names))
     }
@@ -945,9 +944,9 @@ AutoCatBoostClassifier <- function(data,
       ROC_Plot = ROC_Plot,
       EvaluationPlot = EvaluationPlot,
       EvaluationMetrics = RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),CatBoostTestData=ValidationData),
-      VariableImportance = VariableImportance,
+      VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
       VI_Plot = if(!is.null(VariableImportance)) tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
-      PartialDependencePlots = ParDepPlots,
+      PartialDependencePlots = if(!is.null(ParDepPlots)) ParDepPlots else NULL,
       GridMetrics = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
       ColNames = Names))
   }
