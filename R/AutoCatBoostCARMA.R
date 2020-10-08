@@ -109,6 +109,8 @@
 #'   HolidayMovingAverages = 1:2,
 #'
 #'   # Time series features
+#'   Lags = list("weeks" = seq(2L, 10L, 2L),
+#'     "months" = c(1:3)),
 #'   MA_Periods = list("weeks" = seq(2L, 10L, 2L),
 #'     "months" = c(2,3)),
 #'   SD_Periods = NULL,

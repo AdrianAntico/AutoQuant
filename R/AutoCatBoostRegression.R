@@ -431,7 +431,7 @@ AutoCatBoostRegression <- function(data,
     MissNum = -1L)
 
   # Regression Validation ModelDataPrep----
-  if(!TrainOnFull & !is.null(dataTest)) {
+  if(!TrainOnFull && !is.null(dataTest)) {
     dataTest <- ModelDataPrep(
       data = dataTest,
       Impute = TRUE,

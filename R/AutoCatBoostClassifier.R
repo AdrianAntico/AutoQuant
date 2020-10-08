@@ -328,7 +328,7 @@ AutoCatBoostClassifier <- function(data,
   dataTrain <- ModelDataPrep(data = dataTrain, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1)
 
   # Binary Validation ModelDataPrep----
-  if(TrainOnFull != TRUE) dataTest <- ModelDataPrep(data = dataTest, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1)
+  if(!TrainOnFull) dataTest <- ModelDataPrep(data = dataTest, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1)
 
   # Binary Test ModelDataPrep----
   if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1)

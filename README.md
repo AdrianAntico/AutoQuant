@@ -646,6 +646,8 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     Depth = seq(4L, 8L, 1L),
     LearningRate = seq(0.01,0.10,0.01),
     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+    RandomStrength = 1,
+    BorderCount = 254,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
@@ -1150,6 +1152,8 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     Depth = seq(4L, 8L, 1L),
     LearningRate = seq(0.01,0.10,0.01),
     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+    RandomStrength = 1,
+    BorderCount = 254,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
@@ -1543,6 +1547,8 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     Depth = seq(4L, 8L, 1L),
     LearningRate = seq(0.01,0.10,0.01),
     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+    RandomStrength = 1,
+    BorderCount = 254,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
@@ -1948,6 +1954,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   FC_Periods = 4,
   EvalMetric = "RMSE",
   GridTune = FALSE,
+  PassInGrid = NULL,
   GridEvalMetric = "mae",
   ModelCount = 5,
   TaskType = "GPU",
@@ -1980,6 +1987,10 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   FourierTerms = 4,
   TimeTrendVariable = TRUE,
   NTrees = 2500,
+  Depth = 6,
+  L2_Leaf_Reg = 3.0,
+  RandomStrength = 1,
+  BorderCount = 254,
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   PartitionType = "random")
