@@ -987,7 +987,7 @@ AutoH2oGBMCARMA <- function(data,
                               Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         } else {
           if(eval(DateColumnName) %chin% names(Preds)) {
-            data.table::set(Preds, j = "Date", value = NULL)
+            data.table::set(Preds, j = eval(DateColumnName), value = NULL)
           }
           UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)],
                               Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],
@@ -996,7 +996,7 @@ AutoH2oGBMCARMA <- function(data,
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
         if(eval(DateColumnName) %chin% names(Preds)) {
-          data.table::set(Preds, j = "Date", value = NULL)
+          data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         }
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
@@ -1055,7 +1055,7 @@ AutoH2oGBMCARMA <- function(data,
         }
         Preds[, Predictions := Preds][, Preds := NULL]
         UpdateData <- UpdateData[ID != N]
-        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) {
+        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == eval(DateColumnName))) {
           UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
         }
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
@@ -1206,7 +1206,7 @@ AutoH2oGBMCARMA <- function(data,
         temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
       }
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
-      if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == "Date")) {
+      if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == eval(DateColumnName))) {
         UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
       }
       UpdateData <- data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
@@ -1636,7 +1636,7 @@ AutoH2oGBMCARMA <- function(data,
       FirstRow = DiffTrainOutput$FirstRow[[eval(TargetColumnName)]],
       LastRow = NULL)
   } else if(!is.null(GroupVariables) & Difference == TRUE) {
-    if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(dataStart$Date) == "Date")) {
+    if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(dataStart$Date) == eval(DateColumnName))) {
       UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
     }
     UpdateData <- data.table::rbindlist(list(dataStart,UpdateData), fill = TRUE)
