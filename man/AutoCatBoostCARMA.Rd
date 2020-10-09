@@ -53,6 +53,7 @@ AutoCatBoostCARMA(
   RandomStrength = 1,
   BorderCount = 254,
   Depth = 6,
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   PartitionType = "timeseries",
   Timer = TRUE,
   DebugMode = FALSE
@@ -150,6 +151,8 @@ AutoCatBoostCARMA(
 \item{BorderCount}{Default is 254}
 
 \item{Depth}{Depth of catboost model}
+
+\item{BootStrapType}{Select from Catboost list}
 
 \item{PartitionType}{Select "random" for random data partitioning "timeseries" for partitioning by time frames}
 
@@ -252,6 +255,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   L2_Leaf_Reg = 3.0,
   RandomStrength = 1,
   BorderCount = 254,
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   Depth = 6)
 
 UpdateMetrics <- print(

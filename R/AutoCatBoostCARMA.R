@@ -53,6 +53,7 @@
 #' @param L2_Leaf_Reg l2 reg parameter
 #' @param RandomStrength Default is 1
 #' @param BorderCount Default is 254
+#' @param BootStrapType Select from Catboost list
 #' @examples
 #' \dontrun{
 #'
@@ -142,6 +143,7 @@
 #'   L2_Leaf_Reg = 3.0,
 #'   RandomStrength = 1,
 #'   BorderCount = 254,
+#'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
 #'   Depth = 6)
 #'
 #' UpdateMetrics <- print(
@@ -201,6 +203,7 @@ AutoCatBoostCARMA <- function(data,
                               RandomStrength = 1,
                               BorderCount = 254,
                               Depth = 6,
+                              BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                               PartitionType = "timeseries",
                               Timer = TRUE,
                               DebugMode = FALSE) {
@@ -1011,12 +1014,12 @@ AutoCatBoostCARMA <- function(data,
       # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
       Trees = NTrees, # seq(100L, 500L, 50L),
       Depth = Depth,
-      LearningRate = seq(0.01,0.10,0.01),
+      LearningRate = seq(0.01,0.15,0.01),
       L2_Leaf_Reg = L2_Leaf_Reg,
       RandomStrength = RandomStrength,
       BorderCount = BorderCount,
       RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-      BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+      BootStrapType = BootStrapType,
       GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
 
   # Return model object for when TrainOnFull is FALSE ----

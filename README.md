@@ -1991,6 +1991,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   L2_Leaf_Reg = 3.0,
   RandomStrength = 1,
   BorderCount = 254,
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   PartitionType = "random")
