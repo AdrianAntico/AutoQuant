@@ -1536,16 +1536,28 @@ AutoXGBoostCARMA <- function(data,
       }
 
       # No Group with or without Diff
-      if(is.null(GroupVariables)) {
+      if(!is.null(GroupVariables)) {
 
         # Calendar and Holiday----
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
         if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
         # Create data for GDL----
-        temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+        temp <- CarmaXGBoostKeepVarsGDL(
+            IndepVarPassTRUE = NULL,
+            data,
+            UpdateData,
+            CalendarFeatures,
+            XREGS,
+            Difference,
+            HierarchGroups,
+            GroupVariables,
+            GroupVarVector,
+            CalendarVariables=CalVar,
+            HolidayVariable=HolVar,
+            TargetColumnName,
+            DateColumnName
+        )
         Temporary <- temp$data
         keep <- temp$keep
         if("GroupVar" %chin% keep) keep <- keep[!keep %chin% "GroupVar"]
