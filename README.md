@@ -1939,62 +1939,69 @@ data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 # Build forecast
 CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
-  # data
-  data = data, # TwoGroup_Data,
-  TargetColumnName = "Weekly_Sales",
-  DateColumnName = "Date",
-  HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"),
-  TimeUnit = "weeks",
-  TimeGroups = c("weeks"),
+   # data args
+   data = data, # TwoGroup_Data,
+   TargetColumnName = "Weekly_Sales",
+   DateColumnName = "Date",
+   HierarchGroups = NULL,
+   GroupVariables = c("Dept"),
+   TimeUnit = "weeks",
+   TimeGroups = c("weeks","months"),
 
-  # Productionize
-  TrainOnFull = FALSE,
-  SplitRatios = c(1 - 10 / 143, 10 / 143),
-  FC_Periods = 4,
-  EvalMetric = "RMSE",
-  GridTune = FALSE,
-  PassInGrid = NULL,
-  GridEvalMetric = "mae",
-  ModelCount = 5,
-  TaskType = "GPU",
-  NumGPU = 1,
-  Timer = TRUE,
-  DebugMode = TRUE,
+   # Production args
+   TrainOnFull = TRUE,
+   SplitRatios = c(1 - 10 / 138, 10 / 138),
+   PartitionType = "random",
+   FC_Periods = 4,
+   Timer = TRUE,
+   DebugMode = TRUE,
 
-  # Target Transformations
-  TargetTransformation = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-  Difference = FALSE, #TRUE,
+   # Target transformations
+   TargetTransformation = TRUE,
+   Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+   Difference = FALSE,
+   NonNegativePred = FALSE,
 
-  # Date Features
-  CalendarVariables = TRUE,
-  HolidayVariable = TRUE,
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
+   # Date features
+   CalendarVariables = c("week","month","quarter"),
+   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+   HolidayLags = 1,
+   HolidayMovingAverages = 1:2,
 
-  # Time Series Features
-  Lags = list("days" = seq(1L, 10L, 1L), "weeks" = seq(1L, 5L, 1L)),
-  MA_Periods = list("days" = seq(5L, 20L, 5L), "weeks" = seq(2L, 10L, 2L)),
-  SD_Periods = NULL,
-  Skew_Periods = NULL,
-  Kurt_Periods = NULL,
-  Quantile_Periods = NULL,
-  Quantiles_Selected = c("q5","q95"),
+   # Time series features
+   Lags = list("weeks" = seq(2L, 10L, 2L), "months" = c(1:3)),
+   MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3)),
+   SD_Periods = list("weeks" = seq(26L,52L), "months" = c(12L)),
+   Skew_Periods = list("weeks" = seq(26L,52L), "months" = c(12L)),
+   Kurt_Periods = list("weeks" = seq(26L,52L), "months" = c(12L)),
+   Quantile_Periods = list("weeks" = seq(26L,52L), "months" = c(12L)),
+   Quantiles_Selected = c("q5","q95"),
 
-  # Bonus Features
-  XREGS = NULL,
-  FourierTerms = 4,
-  TimeTrendVariable = TRUE,
-  NTrees = 2500,
-  Depth = 6,
-  L2_Leaf_Reg = 3.0,
-  RandomStrength = 1,
-  BorderCount = 254,
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
-  PartitionType = "random")
+   # Bonus features
+   AnomalyDetection = list(tstat_high = 4, tstat_low = -4),
+   XREGS = xregs,
+   FourierTerms = 2,
+   TimeTrendVariable = TRUE,
+   ZeroPadSeries = NULL,
+   DataTruncate = FALSE,
+   NumOfParDepPlots = 100L,
+
+   # ML Args
+   EvalMetric = "RMSE",
+   GridTune = FALSE,
+   PassInGrid = PassInGrid,
+   GridEvalMetric = "mae",
+   ModelCount = 5,
+   TaskType = "GPU",
+   NumGPU = 1,
+   MaxRunsWithoutNewWinner = 50,
+   MaxRunMinutes = 24*60,
+   NTrees = seq(2990,3000,1),
+   L2_Leaf_Reg = 3.0:6.0,
+   RandomStrength = seq(1,2,0.1),
+   BorderCount = seq(32,256,32),
+   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+   Depth = seq(6,10,1))
 ```
 
 </p>
