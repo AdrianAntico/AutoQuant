@@ -44,7 +44,6 @@ AutoCatBoostCARMA(
   EvalMetric = "RMSE",
   GridTune = FALSE,
   PassInGrid = NULL,
-  GridEvalMetric = "mae",
   ModelCount = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60 * 60,
@@ -133,8 +132,6 @@ AutoCatBoostCARMA(
 \item{GridTune}{Set to TRUE to run a grid tune}
 
 \item{PassInGrid}{Defaults to NULL}
-
-\item{GridEvalMetric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 
 \item{ModelCount}{Set the number of models to try in the grid tune}
 
@@ -245,7 +242,6 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   EvalMetric = "RMSE",
   GridTune = FALSE,
   PassInGrid = NULL,
-  GridEvalMetric = "mae",
   ModelCount = 5,
   TaskType = "GPU",
   NumGPU = 1,

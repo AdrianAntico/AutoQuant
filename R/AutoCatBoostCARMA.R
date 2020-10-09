@@ -44,7 +44,6 @@
 #' @param NumGPU Defaults to 1. If CPU is set this argument will be ignored.
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param PassInGrid Defaults to NULL
-#' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Default is 50
 #' @param MaxRunMinutes Default is 60*60
@@ -133,7 +132,6 @@
 #'   EvalMetric = "RMSE",
 #'   GridTune = FALSE,
 #'   PassInGrid = NULL,
-#'   GridEvalMetric = "mae",
 #'   ModelCount = 5,
 #'   TaskType = "GPU",
 #'   NumGPU = 1,
@@ -194,7 +192,6 @@ AutoCatBoostCARMA <- function(data,
                               EvalMetric = "RMSE",
                               GridTune = FALSE,
                               PassInGrid = NULL,
-                              GridEvalMetric = "mae",
                               ModelCount = 1,
                               MaxRunsWithoutNewWinner = 50,
                               MaxRunMinutes = 60*60,
