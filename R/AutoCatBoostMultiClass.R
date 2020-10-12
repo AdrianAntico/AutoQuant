@@ -200,7 +200,6 @@ AutoCatBoostMultiClass <- function(data,
   if(!(tolower(eval_metric) %chin% c("multiclass", "multiclassonevsall"))) return("eval_metric not in c('MultiClass','MultiClassOneVsAll')")
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
   if(any(Trees < 1L)) return("Trees must be greater than 1")
-  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
   if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
   if(MaxModelsInGrid < 1 & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1")
   if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type")
@@ -208,8 +207,18 @@ AutoCatBoostMultiClass <- function(data,
   if(!is.character(ModelID)) return("ModelID needs to be a character type")
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
-  if(any(Depth > 16)) Depth <- Depth[!Depth > 16]
   if(!is.null(PassInGrid)) GridTune <- FALSE
+  if(!GridTune & length(Trees) > 1L) Trees <- max(Trees)
+  if(GridTune) {
+    if(any(Depth > 16)) Depth <- Depth[!Depth > 16]
+  } else {
+    if(length(Depth) > 1) Depth <- max(Depth)
+  }
+  if(!GridTune & length(L2_Leaf_Reg) > 1L) L2_Leaf_Reg <- max(L2_Leaf_Reg)
+  if(!GridTune & length(RandomStrength) > 1L) RandomStrength <- max(RandomStrength)
+  if(!GridTune & length(BorderCount) > 1L) BorderCount <- max(BorderCount)
+  if(!GridTune & length(LearningRate) > 1L) LearningRate <- max(LearningRate)
+  if(!GridTune & length(RSM) > 1L) RSM <- max(RSM)
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {

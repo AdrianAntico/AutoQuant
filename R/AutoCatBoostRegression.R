@@ -230,9 +230,18 @@ AutoCatBoostRegression <- function(data,
   if(NumOfParDepPlots < 0L) return("NumOfParDepPlots needs to be a positive number")
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
-  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  if(any(Depth > 16)) Depth <- Depth[!Depth > 16]
   if(!is.null(PassInGrid)) GridTune <- FALSE
+  if(!GridTune & length(Trees) > 1L) Trees <- max(Trees)
+  if(GridTune) {
+    if(any(Depth > 16)) Depth <- Depth[!Depth > 16]
+  } else {
+    if(length(Depth) > 1) Depth <- max(Depth)
+  }
+  if(!GridTune & length(L2_Leaf_Reg) > 1L) L2_Leaf_Reg <- max(L2_Leaf_Reg)
+  if(!GridTune & length(RandomStrength) > 1L) RandomStrength <- max(RandomStrength)
+  if(!GridTune & length(BorderCount) > 1L) BorderCount <- max(BorderCount)
+  if(!GridTune & length(LearningRate) > 1L) LearningRate <- max(LearningRate)
+  if(!GridTune & length(RSM) > 1L) RSM <- max(RSM)
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {
