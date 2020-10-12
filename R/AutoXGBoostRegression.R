@@ -773,7 +773,7 @@ AutoXGBoostRegression <- function(data,
   if(GridTune & !TrainOnFull) {
 
     # Prepare winning grid----
-    BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
+    BestGrid <- ExperimentalGrid[order(EvalMetric)][1L]
 
     # Set parameters from winning grid----
     if(BestGrid$RunNumber == 1L) {
@@ -989,10 +989,10 @@ AutoXGBoostRegression <- function(data,
     # Regression Variable Importance----
     VariableImportance <- tryCatch({
       data.table::as.data.table(xgboost::xgb.importance(model = model))},
-      error = function(x) data.table(Gain = NULL, Cover = NULL, Frequency = NULL))
+      error = function(x) NULL)
 
     # Variable Importance Formatting----
-    if(VariableImportance[, .N] != 0L) {
+    if(!is.null(VariableImportance)) {
       VariableImportance[, ':=' (Gain = round(Gain, 4), Cover = round(Cover, 4), Frequency = round(Frequency, 4L))]
       if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
@@ -1046,25 +1046,29 @@ AutoXGBoostRegression <- function(data,
         }
       }
     } else {
-      ParDepPlots <- list()
-      ParDepBoxPlots <- list()
+      ParDepPlots <- NULL
+      ParDepBoxPlots <- NULL
     }
 
     # Regression Save ParDepPlots to file----
     if(SaveModelObjects) {
-      if(!is.null(metadata_path)) {
-        save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepPlots.R")))
-      } else {
-        save(ParDepPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepPlots.R")))
+      if(!is.null(ParDepPlots)) {
+        if(!is.null(metadata_path)) {
+          save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepPlots.R")))
+        } else {
+          save(ParDepPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepPlots.R")))
+        }
       }
     }
 
     # Regression Save ParDepBoxPlots to file----
     if(SaveModelObjects) {
-      if(!is.null(metadata_path)) {
-        save(ParDepBoxPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepBoxPlots.R")))
-      } else {
-        save(ParDepBoxPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepBoxPlots.R")))
+      if(!is.null(ParDepPlots)) {
+        if(!is.null(metadata_path)) {
+          save(ParDepBoxPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepBoxPlots.R")))
+        } else {
+          save(ParDepBoxPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepBoxPlots.R")))
+        }
       }
     }
 

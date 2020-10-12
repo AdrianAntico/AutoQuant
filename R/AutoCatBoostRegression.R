@@ -703,7 +703,7 @@ AutoCatBoostRegression <- function(data,
   if(GridTune & !TrainOnFull) {
 
     # Prepare winning grid----
-    BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
+    BestGrid <- ExperimentalGrid[order(EvalMetric)][1L]
     if(tolower(task_type) == "gpu") grid_params <- as.list(BestGrid[, c(5L:12L)]) else grid_params <- as.list(BestGrid[, c(5L:11L)])
     if(tolower(task_type) == "gpu") grid_params <- grid_params[!names(grid_params) %chin% "RSM"]
     if(tolower(task_type) == "cpu") grid_params <- grid_params[!names(grid_params) %chin% "GrowPolicy"]
@@ -1032,6 +1032,8 @@ AutoCatBoostRegression <- function(data,
               data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
             }
           }
+        } else {
+          VariableImportance <- NULL
         }
       } else {
         temp <- catboost::catboost.get_feature_importance(model)
@@ -1053,7 +1055,7 @@ AutoCatBoostRegression <- function(data,
     if(!is.null(VariableImportance)) {
       ParDepBoxPlots <- list()
       ParDepPlots <- list()
-      if(!is.null(VariableImportance) & NumOfParDepPlots > 0L) {
+      if(NumOfParDepPlots > 0L) {
         j <- 0L
         k <- 0L
         for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
