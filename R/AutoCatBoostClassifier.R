@@ -363,13 +363,13 @@ AutoCatBoostClassifier <- function(data,
   if(!is.null(CatFeatures)) {
     if(!is.null(TestData)) {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
-      if(TrainOnFull != TRUE) {
+      if(!TrainOnFull) {
         TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
         FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
       }
     } else {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
-      if(TrainOnFull != TRUE) {
+      if(!TrainOnFull) {
         TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
       }
     }
@@ -382,7 +382,7 @@ AutoCatBoostClassifier <- function(data,
       }
     } else {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
-      if(TrainOnFull != TRUE) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
+      if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
     }
   }
 

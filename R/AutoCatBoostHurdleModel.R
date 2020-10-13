@@ -223,7 +223,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
 
   # AutoDataPartition if Validation and TestData are NULL----
-  if(is.null(ValidationData) & is.null(TestData)) {
+  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     DataSets <- AutoDataPartition(
       data = data,
       NumDataSets = 3L,
@@ -235,6 +235,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     ValidationData <- DataSets$ValidationData
     TestData <- DataSets$TestData
     rm(DataSets)
+  } else {
+    ValidationData <- NULL
+    TestData <- NULL
   }
 
   # Begin classification model building----
@@ -361,34 +364,40 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
 
   # Model Scoring----
-  TestData <- AutoCatBoostScoring(
-    RemoveModel = TRUE,
-    TargetType = TargetType,
-    ScoringData = TestData,
-    FeatureColumnNames = FeatureNames,
-    IDcols = IDcols,
-    ModelObject = ClassModel,
-    ModelPath = Paths,
-    ModelID = ModelID,
-    ReturnFeatures = TRUE,
-    MultiClassTargetLevels = TargetLevels,
-    TransformNumeric = FALSE,
-    BackTransNumeric = FALSE,
-    TargetColumnName = NULL,
-    TransformationObject = NULL,
-    TransID = NULL,
-    TransPath = Paths,
-    MDP_Impute = FALSE,
-    MDP_CharToFactor = TRUE,
-    MDP_RemoveDates = FALSE,
-    MDP_MissFactor = "0",
-    MDP_MissNum = -1)
+  if(!TrainOnFull) {
+    TestData <- AutoCatBoostScoring(
+      RemoveModel = TRUE,
+      TargetType = TargetType,
+      ScoringData = TestData,
+      FeatureColumnNames = FeatureNames,
+      IDcols = IDcols,
+      ModelObject = ClassModel,
+      ModelPath = Paths,
+      ModelID = ModelID,
+      ReturnFeatures = TRUE,
+      MultiClassTargetLevels = TargetLevels,
+      TransformNumeric = FALSE,
+      BackTransNumeric = FALSE,
+      TargetColumnName = NULL,
+      TransformationObject = NULL,
+      TransID = NULL,
+      TransPath = Paths,
+      MDP_Impute = FALSE,
+      MDP_CharToFactor = TRUE,
+      MDP_RemoveDates = FALSE,
+      MDP_MissFactor = "0",
+      MDP_MissNum = -1)
 
-  # Change name for classification----
-  if(TargetType == "Classification") {
-    data.table::setnames(TestData, "p1", "Predictions_C1")
-    TestData[, Predictions_C0 := 1 - Predictions_C1]
-    data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
+    # Change name for classification----
+    if(TargetType == "Classification") {
+      data.table::setnames(TestData, "p1", "Predictions_C1")
+      TestData[, Predictions_C0 := 1 - Predictions_C1]
+      data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
+    }
+
+    # Change Name of Predicted MultiClass Column----
+    if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
+    data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
   }
 
   # Remove Model Object----
@@ -396,13 +405,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   # Remove Target_Buckets----
   data.table::set(data, j = "Target_Buckets", value = NULL)
-  data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
 
-  # Remove Target From IDcols----
+  # Prepare for regression runs ----
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
-
-  # Change Name of Predicted MultiClass Column----
-  if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
   counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
   Degenerate <- 0L
 
@@ -418,7 +423,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
         trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
-        validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- NULL
         testBucket <- NULL
       }
     } else if(bucket == 1L) {
@@ -429,7 +434,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
-        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
+        validBucket <- NULL
         testBucket <- NULL
       }
     } else {
@@ -440,7 +445,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
-        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- NULL
         testBucket <- NULL
       }
     }
@@ -520,49 +525,57 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         }
 
         # Score models----
-        TestData <- AutoCatBoostScoring(
-          TargetType = "regression",
-          ScoringData = TestData,
-          FeatureColumnNames = FeatureNames,
-          IDcols = IDcolsModified,
-          ModelObject = RegressionModel,
-          ModelPath = Paths,
-          ModelID = ModelIDD,
-          ReturnFeatures = TRUE,
-          TransformationObject = ArgsList[[paste0("TransformationResults_", ModelIDD)]],
-          TargetColumnName = eval(TargetColumnName),
-          TransformNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE,
-          BackTransNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE,
-          TransID = NULL,
-          TransPath = NULL,
-          MDP_Impute = TRUE,
-          MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = FALSE,
-          MDP_MissFactor = "0",
-          MDP_MissNum = -1)
+        if(!is.null(TestData)) {
+          TestData <- AutoCatBoostScoring(
+            TargetType = "regression",
+            ScoringData = TestData,
+            FeatureColumnNames = FeatureNames,
+            IDcols = IDcolsModified,
+            ModelObject = RegressionModel,
+            ModelPath = Paths,
+            ModelID = ModelIDD,
+            ReturnFeatures = TRUE,
+            TransformationObject = ArgsList[[paste0("TransformationResults_", ModelIDD)]],
+            TargetColumnName = eval(TargetColumnName),
+            TransformNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE,
+            BackTransNumeric = if(is.null(ArgsList[[paste0("TransformationResults_", ModelIDD)]])) FALSE else TRUE,
+            TransID = NULL,
+            TransPath = NULL,
+            MDP_Impute = TRUE,
+            MDP_CharToFactor = TRUE,
+            MDP_RemoveDates = FALSE,
+            MDP_MissFactor = "0",
+            MDP_MissNum = -1)
 
-        # Clear TestModel From Memory----
-        rm(RegModel)
-        gc()
+          # Clear TestModel From Memory----
+          rm(RegModel)
+          gc()
 
-        # Change prediction name to prevent duplicates----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
-        data.table::setnames(TestData, "Predictions", Val)
+          # Change prediction name to prevent duplicates----
+          if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
+          data.table::setnames(TestData, "Predictions", Val)
+        } else {
+          rm(RegModel); gc()
+        }
 
       } else {
 
-        # Account for degenerate distributions----
-        ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
+        # Check for TrainOnFull ----
+        if(!is.null(TestData)) {
 
-        # Use single value for predictions in the case of zero variance----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) {
-          Degenerate <- Degenerate + 1L
-          data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
-          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
-        } else {
-          Degenerate <- Degenerate + 1L
-          data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
-          data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+          # Account for degenerate distributions----
+          ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
+
+          # Use single value for predictions in the case of zero variance----
+          if(bucket == max(seq_len(length(Buckets) + 1L))) {
+            Degenerate <- Degenerate + 1L
+            data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
+            data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+          } else {
+            Degenerate <- Degenerate + 1L
+            data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
+            data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+          }
         }
       }
     } else {
@@ -573,182 +586,184 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
 
   # Rearrange Column order----
-  counter <- length(Buckets)
-  if(counter > 2L) {
-    if(length(IDcols) != 0L) {
-      if(Degenerate == 0L) {
-        data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
-        data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L), (length(IDcols) + counter + 1L + counter +1L):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter), (length(IDcols) + counter + 2L):(length(IDcols)+counter + 1L + counter)))
+  if(!TrainOnFull) {
+    counter <- length(Buckets)
+    if(counter > 2L) {
+      if(length(IDcols) != 0L) {
+        if(Degenerate == 0L) {
+          data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
+          data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L), (length(IDcols) + counter + 1L + counter +1L):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter), (length(IDcols) + counter + 2L):(length(IDcols)+counter + 1L + counter)))
+        } else {
+          data.table::setcolorder(TestData, c(3L:(2L + length(IDcols)), 1L:2L, (3L + length(IDcols)):ncol(TestData)))
+          data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L + Degenerate), (length(IDcols) + counter + 3L + counter + Degenerate):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter + Degenerate), (length(IDcols) + counter + 2L + Degenerate):(length(IDcols)+counter+counter+Degenerate + 2L)))
+        }
       } else {
-        data.table::setcolorder(TestData, c(3L:(2L + length(IDcols)), 1L:2L, (3L + length(IDcols)):ncol(TestData)))
-        data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L + Degenerate), (length(IDcols) + counter + 3L + counter + Degenerate):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter + Degenerate), (length(IDcols) + counter + 2L + Degenerate):(length(IDcols)+counter+counter+Degenerate + 2L)))
+        data.table::setcolorder(TestData, c(1L:(counter + Degenerate), (2L + counter + Degenerate):(1L + 2L * (counter + Degenerate)), (1L + counter + Degenerate), (2L + 2L * (counter + Degenerate)):ncol(TestData)))
+        data.table::setcolorder(TestData, c((2L * (counter + Degenerate) + 1L):ncol(TestData), 1L:(2L * (counter + Degenerate))))
       }
-    } else {
-      data.table::setcolorder(TestData, c(1L:(counter + Degenerate), (2L + counter + Degenerate):(1L + 2L * (counter + Degenerate)), (1L + counter + Degenerate), (2L + 2L * (counter + Degenerate)):ncol(TestData)))
-      data.table::setcolorder(TestData, c((2L * (counter + Degenerate) + 1L):ncol(TestData), 1L:(2L * (counter + Degenerate))))
-    }
-  } else if(counter == 2L & length(Buckets) == 1L) {
-    if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L,2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
-  } else if(counter == 2L & length(Buckets) != 1L) {
-    if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L), which(names(TestData) %in% c(setdiff(names(TestData), names(TestData)[c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L))])))))
-      data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter), which(names(TestData) %in% setdiff(names(TestData), names(TestData)[c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter))]))))
-    } else {
-      data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L), which(!names(TestData) %in% names(TestData)[c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L))])))
-    }
-  } else {
-    if(length(IDcols) != 0L) {
-      data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L), 3L:(2L + length(IDcols)), (((3L + length(IDcols)) + 2L):ncol(TestData))))
-    }
-  }
-
-  # Final Combination of Predictions----
-  if(counter > 2L || (counter == 2L & length(Buckets) != 1L)) {
-    for(i in seq_len(length(Buckets) + 1L)) {
-      if(i == 1L) {
-        TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
+    } else if(counter == 2L & length(Buckets) == 1L) {
+      if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L,2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
+    } else if(counter == 2L & length(Buckets) != 1L) {
+      if(length(IDcols) != 0L) {
+        data.table::setcolorder(TestData, c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L), which(names(TestData) %in% c(setdiff(names(TestData), names(TestData)[c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L))])))))
+        data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter), which(names(TestData) %in% setdiff(names(TestData), names(TestData)[c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter))]))))
       } else {
-        TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
+        data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L), which(!names(TestData) %in% names(TestData)[c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L))])))
+      }
+    } else {
+      if(length(IDcols) != 0L) {
+        data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L), 3L:(2L + length(IDcols)), (((3L + length(IDcols)) + 2L):ncol(TestData))))
       }
     }
-  } else {
-    TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
-  }
 
-  # Regression r2 via sqrt of correlation----
-  r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2L
-
-  # Regression Save Validation Data to File----
-  if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths)) {
-      data.table::fwrite(TestData, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID,"_ValidationData.csv")))
-    } else {
-      data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID,"_ValidationData.csv")))
-    }
-  }
-
-  # Regression Evaluation Calibration Plot----
-  EvaluationPlot <- EvalPlot(
-    data = TestData,
-    PredictionColName = "UpdatedPrediction",
-    TargetColName = eval(TargetColumnName),
-    GraphType = "calibration",
-    PercentileBucket = 0.05,
-    aggrfun = function(x) mean(x, na.rm = TRUE))
-
-  # Add Number of Trees to Title----
-  EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
-
-  # Save plot to file----
-  if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths)) {
-      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationPlot.png")))
-    } else {
-      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
-    }
-  }
-
-  # Regression Evaluation Calibration Plot----
-  EvaluationBoxPlot <- EvalPlot(
-    data = TestData,
-    PredictionColName = "UpdatedPrediction",
-    TargetColName = eval(TargetColumnName),
-    GraphType = "boxplot",
-    PercentileBucket = 0.05,
-    aggrfun = function(x) mean(x, na.rm = TRUE))
-
-  # Add Number of Trees to Title----
-  EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
-
-  # Save plot to file----
-  if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths)) {
-      ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID,"_EvaluationBoxPlot.png")))
-    } else {
-      ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID,"_EvaluationBoxPlot.png")))
-    }
-  }
-
-  # Regression Evaluation Metrics----
-  EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"),MetricValue = rep(999999, 4L))
-  i <- 0L
-  MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
-  for(metric in c("mae","mape","mse","r2")) {
-    i <- i + 1L
-    tryCatch({
-      if(tolower(metric) == "mae") {
-        TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
-        Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if(tolower(metric) == "mape") {
-        TestData[, Metric := abs((get(TargetColumnName) - UpdatedPrediction) / (get(TargetColumnName) + 1L))]
-        Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if(tolower(metric) == "mse") {
-        TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
-        Metric <- TestData[, mean(Metric, na.rm = TRUE)]
-      } else if(tolower(metric) == "r2") {
-        TestData[, ':=' (
-          Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L,
-          Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2L)]
-        Metric <- 1 - TestData[, sum(Metric2, na.rm = TRUE)] / TestData[, sum(Metric1, na.rm = TRUE)]
+    # Final Combination of Predictions----
+    if(counter > 2L || (counter == 2L & length(Buckets) != 1L)) {
+      for(i in seq_len(length(Buckets) + 1L)) {
+        if(i == 1L) {
+          TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
+        } else {
+          TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
+        }
       }
-      data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
-      data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
-    }, error = function(x) "skip")
-  }
-
-  # Remove Cols----
-  TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL)]
-
-  # Save EvaluationMetrics to File----
-  EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
-  if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths)) {
-      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
+      TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
     }
-  }
 
-  # Regression Partial Dependence----
-  ParDepPlots <- list()
-  j <- 0L
-  ParDepBoxPlots <- list()
-  k <- 0L
-  for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
-    tryCatch({
-      Out <- ParDepCalPlots(
-        data = TestData,
-        PredictionColName = "UpdatedPrediction",
-        TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Variable],
-        GraphType = "calibration",
-        PercentileBucket = 0.05,
-        FactLevels = 10L,
-        Function = function(x) mean(x, na.rm = TRUE))
-      j <- j + 1L
-      ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
-    }, error = function(x) "skip")
-    tryCatch({
-      Out1 <- ParDepCalPlots(
-        data = TestData,
-        PredictionColName = "UpdatedPrediction",
-        TargetColName = eval(TargetColumnName),
-        IndepVar = VariableImportance[i, Variable],
-        GraphType = "boxplot",
-        PercentileBucket = 0.05,
-        FactLevels = 10,
-        Function = function(x) mean(x, na.rm = TRUE))
-      k <- k + 1L
-      ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
-    }, error = function(x) "skip")
-  }
+    # Regression r2 via sqrt of correlation----
+    r_squared <- (TestData[, stats::cor(get(TargetColumnName), UpdatedPrediction)]) ^ 2L
 
-  # Regression Save ParDepBoxPlots to file----
-  if(SaveModelObjects) {
-    if(!is.null(MetaDataPaths)) {
-      save(ParDepBoxPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ParDepBoxPlots.R")))
-    } else {
-      save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
+    # Regression Save Validation Data to File----
+    if(SaveModelObjects) {
+      if(!is.null(MetaDataPaths)) {
+        data.table::fwrite(TestData, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID,"_ValidationData.csv")))
+      } else {
+        data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID,"_ValidationData.csv")))
+      }
+    }
+
+    # Regression Evaluation Calibration Plot----
+    EvaluationPlot <- EvalPlot(
+      data = TestData,
+      PredictionColName = "UpdatedPrediction",
+      TargetColName = eval(TargetColumnName),
+      GraphType = "calibration",
+      PercentileBucket = 0.05,
+      aggrfun = function(x) mean(x, na.rm = TRUE))
+
+    # Add Number of Trees to Title----
+    EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
+
+    # Save plot to file----
+    if(SaveModelObjects) {
+      if(!is.null(MetaDataPaths)) {
+        ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationPlot.png")))
+      } else {
+        ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationPlot.png")))
+      }
+    }
+
+    # Regression Evaluation Calibration Plot----
+    EvaluationBoxPlot <- EvalPlot(
+      data = TestData,
+      PredictionColName = "UpdatedPrediction",
+      TargetColName = eval(TargetColumnName),
+      GraphType = "boxplot",
+      PercentileBucket = 0.05,
+      aggrfun = function(x) mean(x, na.rm = TRUE))
+
+    # Add Number of Trees to Title----
+    EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ",round(r_squared, 3L)))
+
+    # Save plot to file----
+    if(SaveModelObjects) {
+      if(!is.null(MetaDataPaths)) {
+        ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID,"_EvaluationBoxPlot.png")))
+      } else {
+        ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID,"_EvaluationBoxPlot.png")))
+      }
+    }
+
+    # Regression Evaluation Metrics----
+    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","MSE","R2"),MetricValue = rep(999999, 4L))
+    i <- 0L
+    MinVal <- min(TestData[, min(get(TargetColumnName))], TestData[, min(UpdatedPrediction)])
+    for(metric in c("mae","mape","mse","r2")) {
+      i <- i + 1L
+      tryCatch({
+        if(tolower(metric) == "mae") {
+          TestData[, Metric := abs(get(TargetColumnName) - UpdatedPrediction)]
+          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+        } else if(tolower(metric) == "mape") {
+          TestData[, Metric := abs((get(TargetColumnName) - UpdatedPrediction) / (get(TargetColumnName) + 1L))]
+          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+        } else if(tolower(metric) == "mse") {
+          TestData[, Metric := (get(TargetColumnName) - UpdatedPrediction) ^ 2L]
+          Metric <- TestData[, mean(Metric, na.rm = TRUE)]
+        } else if(tolower(metric) == "r2") {
+          TestData[, ':=' (
+            Metric1 = (get(TargetColumnName) - mean(get(TargetColumnName))) ^ 2L,
+            Metric2 = (get(TargetColumnName) - UpdatedPrediction) ^ 2L)]
+          Metric <- 1 - TestData[, sum(Metric2, na.rm = TRUE)] / TestData[, sum(Metric1, na.rm = TRUE)]
+        }
+        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
+        data.table::set(EvaluationMetrics, i = i, j = 3L, value = NA)
+      }, error = function(x) "skip")
+    }
+
+    # Remove Cols----
+    TestData[, ':=' (Metric = NULL, Metric1 = NULL, Metric2 = NULL)]
+
+    # Save EvaluationMetrics to File----
+    EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
+    if(SaveModelObjects) {
+      if(!is.null(MetaDataPaths)) {
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_EvaluationMetrics.csv")))
+      } else {
+        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, "_EvaluationMetrics.csv")))
+      }
+    }
+
+    # Regression Partial Dependence----
+    ParDepPlots <- list()
+    j <- 0L
+    ParDepBoxPlots <- list()
+    k <- 0L
+    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
+      tryCatch({
+        Out <- ParDepCalPlots(
+          data = TestData,
+          PredictionColName = "UpdatedPrediction",
+          TargetColName = eval(TargetColumnName),
+          IndepVar = VariableImportance[i, Variable],
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          FactLevels = 10L,
+          Function = function(x) mean(x, na.rm = TRUE))
+        j <- j + 1L
+        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+      }, error = function(x) "skip")
+      tryCatch({
+        Out1 <- ParDepCalPlots(
+          data = TestData,
+          PredictionColName = "UpdatedPrediction",
+          TargetColName = eval(TargetColumnName),
+          IndepVar = VariableImportance[i, Variable],
+          GraphType = "boxplot",
+          PercentileBucket = 0.05,
+          FactLevels = 10,
+          Function = function(x) mean(x, na.rm = TRUE))
+        k <- k + 1L
+        ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+      }, error = function(x) "skip")
+    }
+
+    # Regression Save ParDepBoxPlots to file----
+    if(SaveModelObjects) {
+      if(!is.null(MetaDataPaths)) {
+        save(ParDepBoxPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, "_ParDepBoxPlots.R")))
+      } else {
+        save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, "_ParDepBoxPlots.R")))
+      }
     }
   }
 
@@ -756,14 +771,20 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(Paths), paste0(ModelID, "_HurdleArgList.Rdata")))
 
   # Return Output----
-  return(list(
-    ArgsList = ArgsList,
-    ModelList = ModelList,
-    ClassificationMetrics = ClassEvaluationMetrics,
-    FinalTestData = TestData,
-    EvaluationPlot = EvaluationPlot,
-    EvaluationBoxPlot = EvaluationBoxPlot,
-    EvaluationMetrics = EvaluationMetrics,
-    PartialDependencePlots = ParDepPlots,
-    PartialDependenceBoxPlots = ParDepBoxPlots))
+  if(!TrainOnFull) {
+    return(list(
+      ArgsList = ArgsList,
+      ModelList = ModelList,
+      ClassificationMetrics = ClassEvaluationMetrics,
+      FinalTestData = TestData,
+      EvaluationPlot = EvaluationPlot,
+      EvaluationBoxPlot = EvaluationBoxPlot,
+      EvaluationMetrics = EvaluationMetrics,
+      PartialDependencePlots = ParDepPlots,
+      PartialDependenceBoxPlots = ParDepBoxPlots))
+  } else {
+    return(list(
+      ArgsList = ArgsList,
+      ModelList = ModelList))
+  }
 }
