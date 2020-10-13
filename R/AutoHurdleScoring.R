@@ -103,7 +103,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
 
   # Load ArgList and ModelList if NULL----
-  if(is.null(Path) & (is.null(ArgList) | is.null(ModelList))) return("Supply a value to the Path argument to where the ArgList and ModelList are located")
+  if(is.null(Path) & (is.null(ArgList) || is.null(ModelList))) return("Supply a value to the Path argument to where the ArgList and ModelList are located")
 
   # Load ArgList and ModelList if not supplied----
   if(is.null(ArgList)) {
@@ -407,7 +407,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   }
 
   # Final Combination of Predictions----
-  if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
+  if(counter > 2L || (counter == 2L & length(Buckets) != 1L)) {
     for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
         TestData[, FinalPredictedValue := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]

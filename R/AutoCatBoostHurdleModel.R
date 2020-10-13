@@ -153,7 +153,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   ArgsList[["SaveModelObjects"]] <- SaveModelObjects
 
   # Check args----
-  if(is.character(Buckets) | is.factor(Buckets) | is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
+  if(is.character(Buckets) || is.factor(Buckets) || is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
   if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
@@ -171,10 +171,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
 
   # IDcols to Names----
-  if(!is.null(IDcols)) if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
+  if(!is.null(IDcols)) if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
 
   # Primary Date Column----
-  if(is.numeric(PrimaryDateColumn) | is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
+  if(is.numeric(PrimaryDateColumn) || is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
 
   # FeatureColumnNames----
   if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
@@ -603,7 +603,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
 
   # Final Combination of Predictions----
-  if(counter > 2L | (counter == 2L & length(Buckets) != 1L)) {
+  if(counter > 2L || (counter == 2L & length(Buckets) != 1L)) {
     for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
         TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
