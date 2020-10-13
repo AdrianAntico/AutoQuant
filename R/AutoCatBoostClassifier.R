@@ -856,7 +856,7 @@ AutoCatBoostClassifier <- function(data,
   # Binary Partial Dependence----
   ParDepPlots <- list()
   j <- 0L
-  if(!is.null(VariableImportance) & NumOfParDepPlots > 0L) {
+  if(!is.null(VariableImportance) & NumOfParDepPlots > 0L & !TrainOnFull) {
     for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
@@ -899,7 +899,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Save EvaluationMetrics to File
-  if(SaveModelObjects & !is.null(ValidationData)) {
+  if(SaveModelObjects & !TrainOnFull) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(ClassWeights[2],0,0,ClassWeights[1]),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
