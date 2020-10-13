@@ -236,9 +236,18 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
 
   # Begin regression model building----
-  counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
-  Degenerate <- 0L
-  for(bucket in rev(seq_len(length(Buckets) + 1L))) {
+  if(length(Buckets) == 1) {
+    counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
+    Degenerate <- 0L
+    bucketset <- 2
+  } else {
+    counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
+    Degenerate <- 0L
+    bucketset <- rev(seq_len(length(Buckets) + 1L))
+  }
+
+  # Loop through model scoring ----
+  for(bucket in bucketset) {
 
     # Update IDcols----
     IDcolsModified <- c(IDcols, setdiff(names(TestData), ColumnNames))
