@@ -165,7 +165,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     #           matrix measures across all thresholds
     ModelID = "Test_Model_1",
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    metadata_path = file.path(normalizePath("./")),
     SaveModelObjects = FALSE,
     ReturnModelObjects = TRUE,
 

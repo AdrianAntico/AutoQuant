@@ -82,7 +82,7 @@
 #'     #           matrix measures across all thresholds
 #'     ModelID = "Test_Model_1",
 #'     model_path = normalizePath("./"),
-#'     metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+#'     metadata_path = file.path(normalizePath("./")),
 #'     SaveModelObjects = FALSE,
 #'     ReturnModelObjects = TRUE,
 #'
@@ -899,7 +899,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Save EvaluationMetrics to File
-  if(SaveModelObjects) {
+  if(SaveModelObjects & !is.null(ValidationData)) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(ClassWeights[2],0,0,ClassWeights[1]),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
@@ -941,7 +941,6 @@ AutoCatBoostClassifier <- function(data,
     if(ReturnModelObjects) {
       return(list(
         Model = model,
-        ValidationData = ValidationData,
         VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
         VI_Plot = if(!is.null(VariableImportance)) tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
         ColNames = Names))

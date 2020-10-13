@@ -131,12 +131,22 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
 \examples{
 \dontrun{
 
- # Pull in Walmart Data Set
+ # Load Walmart Data from Dropbox----
  data <- data.table::fread(
    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+ # Subset for Stores / Departments With Full Series
  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
    , Counts := NULL]
- data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+
+ # Subset Columns (remove IsHoliday column)----
+ keep <- c("Store","Dept","Date","Weekly_Sales")
+ data <- data[, ..keep]
+ data <- data[Store == 1][, Store := NULL]
+ xregs <- data.table::copy(data)
+ data.table::setnames(xregs, "Dept", "GroupVar")
+ data.table::setnames(xregs, "Weekly_Sales", "Other")
+ data <- data[as.Date(Date) < as.Date('2012-09-28')]
 
  # Build forecast
  H2oDFRResults <- RemixAutoML::AutoH2oDRFCARMA(

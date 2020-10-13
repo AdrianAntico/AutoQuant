@@ -45,12 +45,22 @@
 #' @examples
 #' \dontrun{
 #'
-#'  # Pull in Walmart Data Set
+#'  # Load Walmart Data from Dropbox----
 #'  data <- data.table::fread(
 #'    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'
+#'  # Subset for Stores / Departments With Full Series
 #'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
 #'    , Counts := NULL]
-#'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+#'
+#'  # Subset Columns (remove IsHoliday column)----
+#'  keep <- c("Store","Dept","Date","Weekly_Sales")
+#'  data <- data[, ..keep]
+#'  data <- data[Store == 1][, Store := NULL]
+#'  xregs <- data.table::copy(data)
+#'  data.table::setnames(xregs, "Dept", "GroupVar")
+#'  data.table::setnames(xregs, "Weekly_Sales", "Other")
+#'  data <- data[as.Date(Date) < as.Date('2012-09-28')]
 #'
 #'  # Build forecast
 #'  H2oDFRResults <- RemixAutoML::AutoH2oDRFCARMA(
@@ -195,9 +205,9 @@ AutoH2oDRFCARMA <- function(data,
   # Check lengths of XREGS
   if(!is.null(XREGS) & TrainOnFull) {
     if(Difference) {
-      FC_Periods <- min(-2 + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
-    } else {
       FC_Periods <- min(-1 + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
+    } else {
+      FC_Periods <- min(length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
     }
 
     # Stop if XREGS doesn't supply forward looking data
@@ -212,19 +222,29 @@ AutoH2oDRFCARMA <- function(data,
   if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
 
   # Merge data and XREG for Training
+  if(DebugMode) print("merging xregs to data")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      data <- merge(data, XREGS, by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+      if(length(GroupVariables) > 1) {
+        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c(GroupVariables, eval(DateColumnName)), all = FALSE)
+      } else {
+        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
+      }
     } else {
       data <- merge(data, XREGS, by = c(eval(DateColumnName)), all = FALSE)
     }
   }
 
   # Set Keys for data.table usage----
+  if(DebugMode) print("# Set Keys for data.table usage----")
   if(!is.null(GroupVariables)) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
     if(!is.null(XREGS)) {
-      data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
+      if(length(GroupVariables) > 1) {
+        data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
+      } else {
+        data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
+      }
     }
   } else {
     data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
@@ -237,7 +257,9 @@ AutoH2oDRFCARMA <- function(data,
   if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName, GroupVariables)))]
+      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)[c(1,3)]),c(DateColumnName, TargetColumnName, GroupVariables)))
+      xx <- xx[!xx %chin% "GroupVar"]
+      data <- data[, .SD, .SDcols = xx]
     } else {
       data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
     }
@@ -255,21 +277,9 @@ AutoH2oDRFCARMA <- function(data,
     if(length(GroupVariables) > 1) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       data[, eval(GroupVariables) := NULL]
-      if(!is.null(XREGS)) {
-        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        XREGS[, eval(GroupVariables) := NULL]
-      }
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      if(GroupVariables != "GroupVar") {
-        data[, eval(GroupVariables) := NULL]
-      }
-      if(!is.null(XREGS)) {
-        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        if(GroupVariables != "GroupVar") {
-          XREGS[, eval(GroupVariables) := NULL]
-        }
-      }
+      if(GroupVariables != "GroupVar") data[, eval(GroupVariables) := NULL]
     }
   }
 
@@ -370,18 +380,13 @@ AutoH2oDRFCARMA <- function(data,
   # Feature Engineering: Add Fourier Features by GroupVar----
   # To error check, store arg values and run through EconometricsFunctions.R AutoHierarchicalFourier
   if(DebugMode) print("Feature Engineering: Add Fourier Features by GroupVar----")
-  if(FourierTerms > 0) {
+  if(FourierTerms > 0L) {
 
     # Split GroupVar and Define HierarchyGroups and IndependentGroups
-    if(!is.null(GroupVariables)) {
-      Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
-      data <- Output$data
-      HierarchSupplyValue <- Output$HierarchSupplyValue
-      IndependentSupplyValue <- Output$IndependentSupplyValue
-    } else {
-      HierarchSupplyValue <- NULL
-      IndependentSupplyValue <- NULL
-    }
+    Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
+    data <- Output$data
+    HierarchSupplyValue <- Output$HierarchSupplyValue
+    IndependentSupplyValue <- Output$IndependentSupplyValue
 
     # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
     Output <- tryCatch({AutoHierarchicalFourier(
@@ -398,29 +403,36 @@ AutoH2oDRFCARMA <- function(data,
 
     # Store Objects If No Error in Hierarchy Run----
     if(!is.null(Output)) {
-      data <- Output$data
-      FourierFC <- Output$FourierFC
+      if(Output$data[, .N] != 0) {
+        data <- Output$data
+        FourierFC <- Output$FourierFC
+      } else {
+        print("Turning off Fourier Terms. Failed to build.")
+        FourierTerms <<- 0
+      }
     } else {
       print("Turning off Fourier Terms. Failed to build.")
-      FourierTerms <- 0
+      FourierTerms <<- 0
     }
 
     # If Fourier is turned off, concatenate grouping cols
-    if(!is.null(HierarchGroups)) {
-      if(length(HierarchGroups) > 1) {
-        if(any(HierarchGroups %chin% names(data))) {
+    if(FourierTerms == 0) {
+      if(!is.null(HierarchGroups)) {
+        if(length(HierarchGroups) > 1) {
+          if(any(HierarchGroups %chin% names(data))) {
+            data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
+            data[, eval(HierarchGroups) := NULL]
+          }
+        } else {
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-          data[, eval(HierarchGroups) := NULL]
+          if(HierarchGroups != "GroupVar") {
+            data[, eval(HierarchGroups) := NULL]
+          }
         }
-      } else {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-        if(HierarchGroups != "GroupVar") {
-          data[, eval(HierarchGroups) := NULL]
+      } else if(!is.null(GroupVariables)) {
+        if(all(GroupVariables %chin% names(data))) {
+          data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
         }
-      }
-    } else if(!is.null(GroupVariables)) {
-      if(all(GroupVariables %chin% names(data))) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       }
     }
   }
