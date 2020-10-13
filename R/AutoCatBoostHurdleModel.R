@@ -576,6 +576,17 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
             data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
           }
+        } else {
+
+          # Account for degenerate distributions----
+          ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
+
+          # Use single value for predictions in the case of zero variance----
+          if(bucket == max(seq_len(length(Buckets) + 1L))) {
+            Degenerate <- Degenerate + 1L
+          } else {
+            Degenerate <- Degenerate + 1L
+          }
         }
       }
     } else {

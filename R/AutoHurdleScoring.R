@@ -239,7 +239,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(length(Buckets) == 1) {
     counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
     Degenerate <- 0L
-    bucketset <- 2
+    bucketset <- 2:1
   } else {
     counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
     Degenerate <- 0L
