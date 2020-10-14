@@ -6,6 +6,7 @@
 \usage{
 AutoH2oGBMCARMA(
   data,
+  NonNegativePred = FALSE,
   TrainOnFull = FALSE,
   TargetColumnName = "Target",
   DateColumnName = "DateTime",
@@ -19,35 +20,39 @@ AutoH2oGBMCARMA(
   XREGS = NULL,
   Lags = c(1:5),
   MA_Periods = c(1:5),
-  SD_Periods = c(2:5),
-  Skew_Periods = c(3:5),
-  Kurt_Periods = c(4:5),
-  Quantile_Periods = c(3:5),
-  Quantiles_Selected = c("q5", "q95"),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
+  AnomalyDetection = NULL,
   Difference = TRUE,
   FourierTerms = 6,
-  CalendarVariables = FALSE,
-  HolidayVariable = TRUE,
+  CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
+    "isoweek", "month", "quarter", "year"),
+  HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
+    "OtherEcclesticalFeasts"),
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
   TimeTrendVariable = FALSE,
-  ZeroPadSeries = NULL,
   DataTruncate = FALSE,
+  ZeroPadSeries = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
-  MaxMem = "28G",
-  NThreads = max(1L, parallel::detectCores() - 2L),
-  EvalMetric = "RMSE",
+  EvalMetric = "MAE",
   GridTune = FALSE,
-  GridEvalMetric = "mae",
   ModelCount = 1,
   NTrees = 1000,
   PartitionType = "timeseries",
+  MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores() - 2),
   Timer = TRUE,
   DebugMode = FALSE
 )
 }
 \arguments{
 \item{data}{Supply your full series data set here}
+
+\item{NonNegativePred}{TRUE or FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
@@ -85,6 +90,8 @@ AutoH2oGBMCARMA(
 
 \item{Quantiles_Selected}{Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
 
+\item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
+
 \item{Difference}{Puts the I in ARIMA for single series and grouped series.}
 
 \item{FourierTerms}{Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.}
@@ -99,27 +106,25 @@ AutoH2oGBMCARMA(
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
-\item{ZeroPadSeries}{Set to "all", "inner", or NULL. See TimeSeriesFill for explanation}
-
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 
+\item{ZeroPadSeries}{Set to "all", "inner", or NULL. See TimeSeriesFill for explanation}
+
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
-
-\item{MaxMem}{Set to the maximum amount of memory you want to allow for running this function. Default is "32G".}
-
-\item{NThreads}{Set to the number of threads you want to dedicate to this function.}
 
 \item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
-
-\item{GridEvalMetric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 
 \item{ModelCount}{Set the number of models to try in the grid tune}
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
 \item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
+
+\item{MaxMem}{Set to the maximum amount of memory you want to allow for running this function. Default is "32G".}
+
+\item{NThreads}{Set to the number of threads you want to dedicate to this function.}
 
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
@@ -160,41 +165,40 @@ H2oGBMResults <- RemixAutoML::AutoH2oGBMCARMA(
   PartitionType = "timeseries",
 
   # Productionize
+  FC_Periods = 4L,
   TrainOnFull = FALSE,
-  FC_Periods = 4,
   EvalMetric = "RMSE",
   GridTune = FALSE,
-  GridEvalMetric = "mae",
   ModelCount = 5,
-  NTrees = 1000L,
+  MaxMem = "28G",
+  NThreads = 8,
   Timer = TRUE,
-  DebugMode = FALSE,
 
   # Target Transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
     "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
+  NonNegativePred = FALSE,
 
-  # Date Features
-  CalendarVariables = TRUE,
-  HolidayVariable = TRUE,
-  HolidayLags = 1,
+  # Features
+  AnomalyDetection = NULL,
+  HolidayLags = 1L,
   HolidayMovingAverages = 1:2,
-
-  # Time Series Features
   Lags = c(1:5),
-  MA_Periods = c(1:5),
-  SD_Periods = c(2:5),
-  Skew_Periods = c(3:5),
-  Kurt_Periods = c(4:5),
-  Quantile_Periods = c(3:5),
-  Quantiles_Selected = c("q5","q95"),
-
-  # Bonus Features
-  XREGS = xreg,
-  FourierTerms = 4L,
-  TimeTrendVariable = TRUE)
+  MA_Periods = c(2L:5L),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
+  XREGS = NULL,
+  FourierTerms = 2L,
+  CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  TimeTrendVariable = TRUE,
+  NTrees = 1000L,
+  DebugMode = FALSE)
 
 UpdateMetrics <-
   print(H2oGBMResults$ModelInformation$EvaluationMetrics[
