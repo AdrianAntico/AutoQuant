@@ -6,6 +6,7 @@
 \usage{
 AutoH2oDRFCARMA(
   data,
+  NonNegativePred = FALSE,
   TrainOnFull = FALSE,
   TargetColumnName = "Target",
   DateColumnName = "DateTime",
@@ -24,10 +25,13 @@ AutoH2oDRFCARMA(
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
   Quantiles_Selected = NULL,
+  AnomalyDetection = NULL,
   Difference = TRUE,
   FourierTerms = 6,
-  CalendarVariables = FALSE,
-  HolidayVariable = TRUE,
+  CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
+    "isoweek", "month", "quarter", "year"),
+  HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
+    "OtherEcclesticalFeasts"),
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
   TimeTrendVariable = FALSE,
@@ -47,6 +51,8 @@ AutoH2oDRFCARMA(
 }
 \arguments{
 \item{data}{Supply your full series data set here}
+
+\item{NonNegativePred}{TRUE or FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
@@ -84,13 +90,15 @@ AutoH2oDRFCARMA(
 
 \item{Quantiles_Selected}{Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
 
+\item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
+
 \item{Difference}{Puts the I in ARIMA for single series and grouped series.}
 
 \item{FourierTerms}{Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.}
 
-\item{CalendarVariables}{Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year}
+\item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
-\item{HolidayVariable}{Set to TRUE to have a holiday counter variable created.}
+\item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
 
 \item{HolidayLags}{Number of lags to build off of the holiday count variable.}
 
@@ -181,8 +189,10 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
     "LogPlus1", "Logit", "YeoJohnson"),
   Difference = TRUE,
+  NonNegativePred = FALSE,
 
   # Features
+  AnomalyDetection = NULL,
   HolidayLags = 1L,
   HolidayMovingAverages = 1:2,
   Lags = c(1:5),
@@ -194,8 +204,8 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
   Quantiles_Selected = NULL,
   XREGS = NULL,
   FourierTerms = 2L,
-  CalendarVariables = TRUE,
-  HolidayVariable = TRUE,
+  CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
   TimeTrendVariable = TRUE,
   NTrees = 1000L,
   DebugMode = FALSE)

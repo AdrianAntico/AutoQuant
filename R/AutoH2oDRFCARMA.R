@@ -7,6 +7,7 @@
 #' @param data Supply your full series data set here
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
+#' @param NonNegativePred TRUE or FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param HierarchGroups Vector of hierachy categorical columns.
@@ -23,10 +24,11 @@
 #' @param Kurt_Periods Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)
 #' @param Quantile_Periods Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)
 #' @param Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
+#' @param AnomalyDetection NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)
 #' @param Difference Puts the I in ARIMA for single series and grouped series.
 #' @param FourierTerms Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.
-#' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
-#' @param HolidayVariable Set to TRUE to have a holiday counter variable created.
+#' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
+#' @param HolidayVariable NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"
 #' @param HolidayLags Number of lags to build off of the holiday count variable.
 #' @param HolidayMovingAverages Number of moving averages to build off of the holiday count variable.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
@@ -95,8 +97,10 @@
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
 #'     "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = TRUE,
+#'   NonNegativePred = FALSE,
 #'
 #'   # Features
+#'   AnomalyDetection = NULL,
 #'   HolidayLags = 1L,
 #'   HolidayMovingAverages = 1:2,
 #'   Lags = c(1:5),
@@ -108,8 +112,8 @@
 #'   Quantiles_Selected = NULL,
 #'   XREGS = NULL,
 #'   FourierTerms = 2L,
-#'   CalendarVariables = TRUE,
-#'   HolidayVariable = TRUE,
+#'   CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+#'   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
 #'   TimeTrendVariable = TRUE,
 #'   NTrees = 1000L,
 #'   DebugMode = FALSE)
@@ -126,6 +130,7 @@
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoH2oDRFCARMA <- function(data,
+                            NonNegativePred = FALSE,
                             TrainOnFull = FALSE,
                             TargetColumnName = "Target",
                             DateColumnName = "DateTime",
@@ -144,10 +149,11 @@ AutoH2oDRFCARMA <- function(data,
                             Kurt_Periods = NULL,
                             Quantile_Periods = NULL,
                             Quantiles_Selected = NULL,
+                            AnomalyDetection = NULL,
                             Difference = TRUE,
                             FourierTerms = 6,
-                            CalendarVariables = FALSE,
-                            HolidayVariable = TRUE,
+                            CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+                            HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                             HolidayLags = 1,
                             HolidayMovingAverages = 1:2,
                             TimeTrendVariable = FALSE,
@@ -493,6 +499,49 @@ AutoH2oDRFCARMA <- function(data,
     }
   }
 
+  # Anomaly detection by Group and Calendar Vars ----
+  if(!is.null(AnomalyDetection)) {
+    if(!is.null(CalendarVariables) & !is.null(GroupVariables)) {
+      if(length(GroupVariables) > 1) {
+        groupvars <- c(GroupVariables, paste0(DateColumnName, "_", CalendarVariables[1]))
+      } else {
+        groupvars <- c("GroupVar", paste0(DateColumnName, "_", CalendarVariables[1]))
+      }
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = ,
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
+    } else if(!is.null(GroupVariables)) {
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = c("GroupVar"),
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
+    } else {
+      data <- RemixAutoML::GenTSAnomVars(
+        data = data, ValueCol = eval(TargetColumnName),
+        GroupVars = NULL,
+        DateVar = eval(DateColumnName),
+        HighThreshold = AnomalyDetection$tstat_high,
+        LowThreshold = AnomalyDetection$tstat_low,
+        KeepAllCols = TRUE,
+        IsDataScaled = FALSE)
+      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
+      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
+    }
+  }
+
   # Feature Engineering: Add Target Transformation----
   if(DebugMode) print("Feature Engineering: Add Target Transformation----")
   if(TargetTransformation) {
@@ -785,14 +834,14 @@ AutoH2oDRFCARMA <- function(data,
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
   if(!TrainOnFull) {
-    if(Difference == TRUE & !is.null(GroupVariables)) {
+    if(Difference & !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
       DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
-        PartitionType = "timeseries",
+        PartitionType = PartitionType,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else if(Difference) {
@@ -802,7 +851,7 @@ AutoH2oDRFCARMA <- function(data,
         data,
         NumDataSets = NumSets,
         Ratios = c(1-N1/x,N1/x),
-        PartitionType = "timeseries",
+        PartitionType = PartitionType,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     } else if(!is.null(GroupVariables)) {
@@ -810,7 +859,7 @@ AutoH2oDRFCARMA <- function(data,
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
-        PartitionType = "timeseries",
+        PartitionType = PartitionType,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
     } else {
@@ -818,7 +867,7 @@ AutoH2oDRFCARMA <- function(data,
         data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
-        PartitionType = "timeseries",
+        PartitionType = PartitionType,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
     }
@@ -848,11 +897,7 @@ AutoH2oDRFCARMA <- function(data,
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
-  if(TrainOnFull) {
-    Step1SCore <- data.table::copy(data)
-  } else {
-    Step1SCore <- data.table::copy(train)
-  }
+  if(TrainOnFull) Step1SCore <- data.table::copy(data) else Step1SCore <- data.table::copy(train)
 
   # Machine Learning: Build Model----
   if(DebugMode) print("Machine Learning: Build Model----")
@@ -984,7 +1029,7 @@ AutoH2oDRFCARMA <- function(data,
 
     # Machine Learning: Generate predictions----
     if(DebugMode) print("Machine Learning: Generate predictions----")
-    if (i == 1L) {
+    if(i == 1L) {
 
       # i = 1 Score Model With Group Variables----
       if(DebugMode) print("# i = 1 Score Model With Group Variables----")
@@ -1012,18 +1057,21 @@ AutoH2oDRFCARMA <- function(data,
 
       # Data Wrangline: grab historical data and one more future record----
       if(Difference) {
-        if(eval(TargetColumnName) %chin% names(Step1SCore)) if(eval(TargetColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName), value = NULL)
+        if(eval(TargetColumnName) %chin% names(Step1SCore)) {
+          if(eval(TargetColumnName) %chin% names(Preds)) {
+            data.table::set(Preds, j = eval(TargetColumnName), value = NULL)
+          }
+        }
         if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         if(!is.null(GroupVariables)) {
-          UpdateData <- cbind(FutureDateData[2L:(Step1SCore[,.N, by = "GroupVar"][2,(N+1L)])],Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
+          UpdateData <- cbind(FutureDateData, Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         } else {
-          if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
-          UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
+          UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         }
-        data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
+        data.table::setnames(UpdateData, "FutureDateData", eval(DateColumnName))
       } else {
-        if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
+        if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
@@ -1031,6 +1079,8 @@ AutoH2oDRFCARMA <- function(data,
     } else {
       if(!is.null(GroupVariables)) {
         if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
+
+        # GroupVar or Hierarchical----
         if(!is.null(HierarchGroups)) {
           temp <- data.table::copy(UpdateData[, ID := 1:.N, by = c(eval(GroupVariables))])
           temp <- temp[ID == N][, ID := NULL]
@@ -1065,17 +1115,14 @@ AutoH2oDRFCARMA <- function(data,
         # Update data group case----
         if(DebugMode) print("Update data group case----")
         data.table::setnames(Preds, "Predictions", "Preds")
+        if(NonNegativePred & !Difference) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
         Preds <- cbind(UpdateData[ID == N], Preds)
         if(Difference) Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds] else Preds[, eval(TargetColumnName) := Preds]
         Preds[, Predictions := Preds][, Preds := NULL]
         UpdateData <- UpdateData[ID != N]
-        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == eval(DateColumnName))) {
-          UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
-        }
+        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
-        if(Difference) {
-          UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
-        }
+        if(Difference) UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
         UpdateData[, ID := NULL]
 
       } else {
@@ -1114,54 +1161,43 @@ AutoH2oDRFCARMA <- function(data,
     ###############
 
     # Update lags and moving average features for next run----
-    if (i != ForecastRuns+1L) {
+    if(i != ForecastRuns+1L) {
 
       # Timer----
       if(DebugMode) print("Timer----")
-      if (Timer) {
-        if(i != 1) {
-          print(paste("Forecast future step: ", i-1))
-          print(paste("Forecast future step: ", i-1))
-          print(paste("Forecast future step: ", i-1))
-          print(paste("Forecast future step: ", i-1))
-          print(paste("Forecast future step: ", i-1))
-          print(paste("Forecast future step: ", i-1))
-          print(paste("Forecast future step: ", i-1))
-        }
-      }
+      if(Timer) if(i != 1) print(paste("Forecast future step: ", i-1))
+      if(Timer) starttime <- Sys.time()
 
       # Create single future record----
       if(DebugMode) print("Create single future record----")
       d <- max(UpdateData[[eval(DateColumnName)]])
       if (tolower(TimeUnit) %chin% c("hour","hours")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::hours(1))
-      } else if (tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(1))
-      } else if (tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(5))
-      } else if (tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(10))
-      } else if (tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(15))
-      } else if (tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
+      } else if(tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(30))
-      } else if (tolower(TimeUnit) %chin% c("day","days")) {
+      } else if(tolower(TimeUnit) %chin% c("day","days")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::days(1))
-      } else if (tolower(TimeUnit) %chin% c("week","weeks")) {
+      } else if(tolower(TimeUnit) %chin% c("week","weeks")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::weeks(1))
-      } else if (tolower(TimeUnit) %chin% c("month","months")) {
+      } else if(tolower(TimeUnit) %chin% c("month","months")) {
         CalendarFeatures <- data.table::as.data.table(d %m+% months(1))
-      } else if (tolower(TimeUnit) %chin% c("quarter","quarters")) {
+      } else if(tolower(TimeUnit) %chin% c("quarter","quarters")) {
         CalendarFeatures <- data.table::as.data.table(d %m+% months(3))
-      } else if (tolower(TimeUnit) %chin% c("years","year")) {
+      } else if(tolower(TimeUnit) %chin% c("years","year")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::years(1))
       }
 
       # Merge groups vars----
       if(DebugMode) print("Merge groups vars----")
-      if (!is.null(GroupVariables)) {
-        CalendarFeatures <- cbind(unique(GroupVarVector), CalendarFeatures)
-      }
+      if(!is.null(GroupVariables)) CalendarFeatures <- cbind(unique(GroupVarVector), CalendarFeatures)
 
       # Update colname for date----
       if(DebugMode) print("Update colname for date----")
@@ -1170,87 +1206,128 @@ AutoH2oDRFCARMA <- function(data,
       # Merge XREGS if not null----
       if(DebugMode) print("Merge XREGS if not null----")
       if(!is.null(XREGS)) {
+
+        # Ensure Grouping Variables are Character----
         if(!is.null(GroupVariables)) {
-          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+          if(length(GroupVariables) > 1) {
+            for(gv in seq_len(length(GroupVariables))) {
+              if(!is.character(CalendarFeatures[[eval(GroupVariables[gv])]])) {
+                data.table::set(CalendarFeatures, j = eval(GroupVariables[gv]), value = as.character(CalendarFeatures[[eval(GroupVariables[gv])]]))
+              }
+              if(all(GroupVariables %chin% names(XREGS)) & "GroupVar" %chin% names(XREGS)) XREGS[, GroupVar := NULL]
+              if(!is.character(XREGS[[eval(GroupVariables[gv])]])) {
+                data.table::set(XREGS, j = eval(GroupVariables[gv]), value = as.character(XREGS[[eval(GroupVariables[gv])]]))
+              }
+            }
+          } else {
+            if(!is.character(CalendarFeatures[["GroupVar"]])) {
+              data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
+            }
+            if(!is.character(XREGS[["GroupVar"]])) {
+              data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
+            }
+          }
+
+          # Match GroupVariables Type----
+          if(!is.null(GroupVariables)) {
+            if(!"GroupVar" %chin% names(XREGS)) {
+              if(IndepentVariablesPass %chin% names(XREGS)) {
+                CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(IndepentVariablesPass,eval(DateColumnName)), all = FALSE)
+              } else {
+                CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(GroupVariables,eval(DateColumnName)), all = FALSE)
+              }
+            } else {
+              CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+            }
+          } else {
+            CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(eval(DateColumnName)), all = FALSE)
+          }
         } else {
-          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(eval(DateColumnName)), all = FALSE)
+          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = eval(DateColumnName), all = FALSE)
         }
       }
 
       # Add fouier terms----
       if(DebugMode) print("Add fouier terms----")
       if(is.null(GroupVariables) & FourierTerms > 0) {
-        if(i == 1) {
+        if(i == 1L) {
           CalendarFeatures <- cbind(CalendarFeatures, XREG[nrow(Step1SCore)+1])
         } else {
           CalendarFeatures <- cbind(CalendarFeatures, XREGFC[i-1])
         }
       } else if(FourierTerms > 0) {
-        CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+        if(exists("FourierFC")) {
+          if(length(FourierFC) != 0) {
+            CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+          }
+        }
       }
 
       # Prepare for more feature engineering----
       if(DebugMode) print("Prepare for more feature engineering----")
-      if(!tolower(TimeGroups[1]) %chin% c("5min","10min","15min","30min","hour")) {
-        CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]
-      }
+      if(!tolower(TimeGroups[1]) %chin% c("5min","10min","15min","30min","hour")) CalendarFeatures[, eval(DateColumnName) := data.table::as.IDate(get(DateColumnName))]
 
       # Update calendar variables----
       if(DebugMode) print("Update calendar variables----")
-      if(CalendarVariables) {
+      if(!is.null(CalendarVariables)) {
         CalendarFeatures <- CreateCalendarVariables(
           data = CalendarFeatures,
           DateCols = eval(DateColumnName),
           AsFactor = FALSE,
-          TimeUnits = CalendarVariableColumns)
+          TimeUnits = CalendarVariables)
       }
 
       # Update Time Trend feature----
       if(DebugMode) print("Update Time Trend feature----")
-      if(TimeTrendVariable) CalendarFeatures[, TimeTrend := N + 1L]
+      if(TimeTrendVariable) CalendarFeatures[, TimeTrend := N + 1]
 
       # Prepare data for scoring----
       if(DebugMode) print("Prepare data for scoring----")
       temp <- cbind(CalendarFeatures, 1)
-      if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-        temp[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
-      } else {
-        temp[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-      }
       data.table::setnames(temp, c("V2"), c(eval(TargetColumnName)))
-      if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(temp$Date) == eval(DateColumnName))) {
-        UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
-      }
+      if(any(class(UpdateData[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+      if(any(class(temp[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) temp[, eval(DateColumnName) := as.Date(get(DateColumnName))]
       UpdateData <- data.table::rbindlist(list(UpdateData, temp), fill = TRUE)
 
       # Update holiday feature----
       if(DebugMode) print("Update holiday feature----")
-      if(HolidayVariable == TRUE & !is.null(GroupVariables)) {
+      if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
           DateCols = eval(DateColumnName),
-          HolidayGroups = c("USPublicHolidays"),
+          HolidayGroups = HolidayVariable,
           Holidays = NULL,
           GroupingVars = "GroupVar")
-      } else if(HolidayVariable) {
+      } else if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
           DateCols = eval(DateColumnName),
-          HolidayGroups = c("USPublicHolidays"),
+          HolidayGroups = HolidayVariable,
           Holidays = NULL)
+      }
+
+      # Update Anomaly Detection ----
+      if(i > 1) {
+        if(!is.null(AnomalyDetection)) {
+          UpdateData[, ":=" (AnomHigh = 0, AnomLow = 0)]
+        }
       }
 
       # Update Lags and MA's----
       if(DebugMode) print("Update Lags and MA's----")
 
-      # Group and Diff
+      # Group with or No Diff
       if(!is.null(GroupVariables) & Difference) {
+
+        # Calendar and Holiday----
+        if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+        if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1290,12 +1367,16 @@ AutoH2oDRFCARMA <- function(data,
 
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
-        if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+        if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+
+          # Calendar and Holiday----
+          if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+          if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1335,11 +1416,13 @@ AutoH2oDRFCARMA <- function(data,
             Quantiles_Selected   = NULL)
 
           # Join Holiday Lags and Moving Averages back to UpdateData
-          keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary,
-                             Temporary1[, .SD, .SDcols = c(keep)],
-                             by = c(eval(GroupVariables),eval(DateColumnName)),
-                             all = FALSE)
+          if(!"GroupVar" %chin% names(Temporary)) {
+            keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+          } else {
+            keep <- c("GroupVar",eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+          }
         }
 
         # Update data for scoring next iteration----
@@ -1348,21 +1431,25 @@ AutoH2oDRFCARMA <- function(data,
 
       }
 
-      # Group and No Diff
+      # Group and Diff
       if(!is.null(GroupVariables) & !Difference) {
+
+        # Calendar and Holiday----
+        if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+        if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
         # Create data for GDL----
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
 
         # Generate GDL Features for Updated Records----
         if(DebugMode) print("Generate GDL Features for Updated Records----")
 
-        # Build Features----
+        # Build Features
         Temporary <- AutoLagRollStatsScoring(
 
           # Data
@@ -1393,35 +1480,13 @@ AutoH2oDRFCARMA <- function(data,
           Quantiles_Selected   = Quantiles_Selected,
           Debug                = DebugMode)
 
-        # Args for rolling stats scoring
-        # data                 = Temporary
-        # RowNumsID            = "ID"
-        # RowNumsKeep          = 1
-        # DateColumn           = eval(DateColumnName)
-        # Targets              = eval(TargetColumnName)
-        # HierarchyGroups      = HierarchSupplyValue
-        # IndependentGroups    = IndependentSupplyValue
-        #
-        # # Services
-        # TimeBetween          = NULL
-        # TimeUnit             = TimeUnit
-        # RollOnLag1           = TRUE
-        # Type                 = "Lag"
-        # SimpleImpute         = TRUE
-        #
-        # # Calculated Columns
-        # Lags                 = c(Lags)
-        # MA_RollWindows       = c(MA_Periods)
-        # SD_RollWindows       = c(SD_Periods)
-        # Skew_RollWindows     = c(Skew_Periods)
-        # Kurt_RollWindows     = c(Kurt_Periods)
-        # Quantile_RollWindows = c(Quantile_Periods)
-        # Quantiles_Selected   = c(Quantiles_Selected)
-        # Debug = TRUE
-
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
-        if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+        if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+
+          # Calendar and Holiday----
+          if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+          if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
           # Generate GDL Features for Updated Records----
           if(DebugMode) print("Generate GDL Features for Updated Records----")
@@ -1430,7 +1495,7 @@ AutoH2oDRFCARMA <- function(data,
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1465,11 +1530,14 @@ AutoH2oDRFCARMA <- function(data,
             Quantiles_Selected   = NULL)
 
           # Join Holiday Lags and Moving Averages back to UpdateData
-          keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary,
-                             Temporary1[, .SD, .SDcols = c(keep)],
-                             by = c(eval(GroupVariables),eval(DateColumnName)),
-                             all = FALSE)
+          if(!"GroupVar" %chin% names(Temporary)) {
+            keep <- c(eval(GroupVariables),eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            if(eval(DateColumnName) %chin% names(Temporary))
+              Temporary <- merge(Temporary[, .SD, .SDcols = unique(names(Temporary))], Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(GroupVariables), eval(DateColumnName)), all = FALSE)
+          } else {
+            keep <- c("GroupVar",eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
+            Temporary <- merge(Temporary[, .SD, .SDcols = unique(names(Temporary))], Temporary1[, .SD, .SDcols = c(keep)], by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+          }
         }
 
         # Update data for scoring next iteration----
@@ -1481,12 +1549,18 @@ AutoH2oDRFCARMA <- function(data,
       # No Group with or without Diff
       if(is.null(GroupVariables)) {
 
+        # Calendar and Holiday----
+        if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+        if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
+
         # Create data for GDL----
-        temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
-                                         data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                         GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+        temp <- CarmaCatBoostKeepVarsGDL(
+          IndepVarPassTRUE = NULL,
+          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
+        if("GroupVar" %chin% keep) keep <- keep[!keep %chin% "GroupVar"]
 
         # Generate GDL Features for Updated Records----
         if(DebugMode) print("Generate GDL Features for Updated Records----")
@@ -1519,41 +1593,18 @@ AutoH2oDRFCARMA <- function(data,
           Quantile_RollWindows = Quantile_Periods,
           Quantiles_Selected   = Quantiles_Selected)
 
-        # data                 = Temporary
-        # RowNumsID            = "ID"
-        # RowNumsKeep          = 1
-        # DateColumn           = eval(DateColumnName)
-        # Targets              = eval(TargetColumnName)
-        # HierarchyGroups      = NULL
-        # IndependentGroups    = NULL
-        #
-        # # Services
-        # TimeBetween          = NULL
-        # TimeUnit             = TimeUnit
-        # TimeUnitAgg          = TimeGroups[1]
-        # TimeGroups           = TimeGroups
-        # RollOnLag1           = TRUE
-        # Type                 = "Lag"
-        # SimpleImpute         = TRUE
-        #
-        # # Calculated Columns
-        # Lags                 = c(Lags)
-        # MA_RollWindows       = c(MA_Periods)
-        # SD_RollWindows       = c(SD_Periods)
-        # Skew_RollWindows     = c(Skew_Periods)
-        # Kurt_RollWindows     = c(Kurt_Periods)
-        # Quantile_RollWindows = c(Quantile_Periods)
-        # Quantiles_Selected   = c(Quantiles_Selected)
-        # Debug                = TRUE
-
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
-        if(HolidayVariable == TRUE & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+        if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+
+          # Calendar and Holiday----
+          if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
+          if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
           # Copy data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables,HolidayVariable,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1589,18 +1640,13 @@ AutoH2oDRFCARMA <- function(data,
             Quantiles_Selected   = NULL)
 
           # Join Holiday Lags and Moving Averages back to UpdateData
-          keep <- c(eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary,
-                             Temporary1[, .SD, .SDcols = c(keep)],
-                             by = c(eval(DateColumnName)),
-                             all = FALSE)
+          keep <- unique(c(eval(DateColumnName),setdiff(names(Temporary1), names(Temporary))))
+          Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(DateColumnName)), all = FALSE)
         }
 
         # Update data for scoring next iteration----
         if(DebugMode) print("Update data for scoring next iteration----")
-        if(!"ID" %chin% c(names(UpdateData))) {
-          data.table::set(UpdateData, j = "ID", value = nrow(UpdateData):1L)
-        }
+        if(!"ID" %chin% c(names(UpdateData))) data.table::set(UpdateData, j = "ID", value = nrow(UpdateData):1L)
         UpdateData <- data.table::rbindlist(list(UpdateData[ID > 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
       }
     }
