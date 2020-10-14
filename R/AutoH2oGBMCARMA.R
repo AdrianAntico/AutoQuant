@@ -911,7 +911,7 @@ AutoH2oGBMCARMA <- function(data,
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
 
-  # Run AutoCatBoostRegression and return list of ml objects
+  # Run AutoH2oGBMRegression and return list of ml objects
   TestModel <- RemixAutoML::AutoH2oGBMRegression(
 
       # Compute management
