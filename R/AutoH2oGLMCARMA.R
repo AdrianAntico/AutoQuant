@@ -435,7 +435,7 @@ AutoH2oGLMCARMA <- function(data,
 
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
-  if(CalendarVariables) {
+  if(!is.null(CalendarVariables)) {
     if(TimeUnit == "hour") {
       CalendarVariableColumns <- c("hour","wday","mday","yday","week","isoweek","month","quarter","year")
     } else if(TimeUnit == "day") {
@@ -460,13 +460,22 @@ AutoH2oGLMCARMA <- function(data,
 
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
-  if(HolidayVariable & !is.null(GroupVariables)) {
-    data <- CreateHolidayVariables(
-      data,
-      DateCols = eval(DateColumnName),
-      HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-      Holidays = NULL,
-      GroupingVars = "GroupVar")
+  if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
+    if(length(GroupVariables) > 1) {
+      data <- CreateHolidayVariables(
+        data,
+        DateCols = eval(DateColumnName),
+        HolidayGroups = HolidayVariable,
+        Holidays = NULL,
+        GroupingVars = eval(GroupVariables))
+    } else {
+      data <- CreateHolidayVariables(
+        data,
+        DateCols = eval(DateColumnName),
+        HolidayGroups = HolidayVariable,
+        Holidays = NULL,
+        GroupingVars = "GroupVar")
+    }
 
     # Convert to lubridate as_date() or POSIXct----
     if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
@@ -474,15 +483,15 @@ AutoH2oGLMCARMA <- function(data,
     } else {
       data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
     }
-  } else if(HolidayVariable) {
+  } else if(!is.null(HolidayVariable)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
-      HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+      HolidayGroups = HolidayVariable,
       Holidays = NULL)
 
     # Convert to lubridate as_date() or POSIXct----
-    if (!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data.table::set(data, j = eval(DateColumnName), value = lubridate::as_date(data[[eval(DateColumnName)]]))
     } else {
       data.table::set(data, j = eval(DateColumnName), value = as.POSIXct(data[[eval(DateColumnName)]]))
@@ -743,7 +752,7 @@ AutoH2oGLMCARMA <- function(data,
 
   # Feature Engineering: Add Lag / Lead, MA Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Lag / Lead, MA Holiday Variables----")
-  if(HolidayVariable & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
+  if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
     if(!is.null(GroupVariables)) {
       data <- DT_GDL_Feature_Engineering(
         data,
