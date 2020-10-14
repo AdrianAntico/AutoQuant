@@ -971,7 +971,7 @@ AutoH2oGBMCARMA <- function(data,
 
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) {
-    h2o::h2o.shutdown(prompt = FALSE)
+    try(h2o::h2o.shutdown(prompt = FALSE), silent = TRUE)
     return(TestModel)
   }
 
