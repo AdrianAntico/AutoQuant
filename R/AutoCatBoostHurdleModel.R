@@ -33,7 +33,7 @@
 #' @param MaxRunMinutes = 60L*60L,
 #' @param Shuffles = 2L,
 #' @param MetricPeriods = 25L,
-#' @param Trees = seq(1000L, 5000L, 500L),
+#' @param Trees Provide a named list to have different number of trees for each model. Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100))
 #' @param Depth = seq(4L, 8L, 1L),
 #' @param LearningRate = seq(0.01,0.10,0.01),
 #' @param L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
@@ -86,7 +86,7 @@
 #'   MetricPeriods = 25L,
 #'
 #'   # Bandit grid args
-#'   Trees = seq(1000L, 5000L, 500L),
+#'   Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
 #'   Depth = seq(4L, 8L, 1L),
 #'   LearningRate = seq(0.01,0.10,0.01),
 #'   L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
@@ -126,14 +126,22 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     MaxRunMinutes = 60L*60L,
                                     Shuffles = 2L,
                                     MetricPeriods = 25L,
-                                    Trees = seq(1000L, 5000L, 500L),
-                                    Depth = 6,
-                                    RandomStrength = 1,
-                                    BorderCount = 128,
-                                    LearningRate = seq(0.01,0.10,0.01),
-                                    L2_Leaf_Reg = 3.0,
-                                    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-                                    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+                                    Trees = list("classifier" = seq(1000,2000,100),
+                                                 "regression" = seq(1000,2000,100)),
+                                    Depth = list("classifier" = seq(6,10,1),
+                                                 "regression" = seq(6,10,1)),
+                                    RandomStrength = list("classifier" = seq(1,10,1),
+                                                          "regression" = seq(1,10,1)),
+                                    BorderCount = list("classifier" = seq(32,256,16),
+                                                       "regression" = seq(32,256,16)),
+                                    LearningRate = list("classifier" = seq(0.01,0.25,0.01),
+                                                        "regression" = seq(0.01,0.25,0.01)),
+                                    L2_Leaf_Reg = list("classifier" = seq(3.0,10.0,1.0),
+                                                       "regression" = seq(1.0,10.0,1.0)),
+                                    RSM = list("classifier" = c(0.80, 0.85, 0.90, 0.95, 1.0),
+                                               "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
+                                    BootStrapType = list("classifier" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+                                                         "regression" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")),
                                     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
 
   # Store args----
@@ -156,7 +164,197 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(is.character(Buckets) || is.factor(Buckets) || is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
   if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
   if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
-  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
+
+  # Args management ----
+
+  # Trees
+  if(is.list(Trees)) {
+    if(!GridTune) {
+      ClassifierTrees <- Trees[["classifier"]]
+      ClassifierTrees <- ClassifierTrees[length(ClassifierTrees)]
+      RegressionTrees <- Trees[["regression"]]
+      RegressionTrees <- RegressionTrees[length(RegressionTrees)]
+    } else {
+      ClassifierTrees <- Trees[["classifier"]]
+      RegressionTrees <- Trees[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionTrees <- Trees[length(Trees)]
+      ClassifierTrees <- Trees[length(Trees)]
+    } else {
+      ClassifierTrees <- Trees
+      RegressionTrees <- Trees
+    }
+  }
+
+  # Depth
+  if(is.list(Depth)) {
+    if(!GridTune) {
+      ClassifierDepth <- Depth[["classifier"]]
+      ClassifierDepth <- ClassifierDepth[length(ClassifierDepth)]
+      RegressionDepth <- Depth[["regression"]]
+      RegressionDepth <- RegressionDepth[length(RegressionDepth)]
+    } else {
+      ClassifierDepth <- Depth[["classifier"]]
+      RegressionDepth <- Depth[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionDepth <- Depth[length(Depth)]
+      ClassifierDepth <- Depth[length(Depth)]
+    } else {
+      ClassifierDepth <- Depth
+      RegressionDepth <- Depth
+    }
+  }
+
+  # RandomStrength
+  if(is.list(RandomStrength)) {
+    if(!GridTune) {
+      ClassifierRandomStrength <- RandomStrength[["classifier"]]
+      ClassifierRandomStrength <- ClassifierRandomStrength[length(ClassifierRandomStrength)]
+      RegressionRandomStrength <- RandomStrength[["regression"]]
+      RegressionRandomStrength <- RegressionRandomStrength[length(RegressionRandomStrength)]
+    } else {
+      ClassifierRandomStrength <- RandomStrength[["classifier"]]
+      RegressionRandomStrength <- RandomStrength[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionRandomStrength <- RandomStrength[length(RandomStrength)]
+      ClassifierRandomStrength <- RandomStrength[length(RandomStrength)]
+    } else {
+      ClassifierRandomStrength <- RandomStrength
+      RegressionRandomStrength <- RandomStrength
+    }
+  }
+
+  # BorderCount
+  if(is.list(BorderCount)) {
+    if(!GridTune) {
+      ClassifierBorderCount <- BorderCount[["classifier"]]
+      ClassifierBorderCount <- ClassifierBorderCount[length(ClassifierBorderCount)]
+      RegressionBorderCount <- BorderCount[["regression"]]
+      RegressionBorderCount <- RegressionBorderCount[length(RegressionBorderCount)]
+    } else {
+      ClassifierBorderCount <- BorderCount[["classifier"]]
+      RegressionBorderCount <- BorderCount[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionBorderCount <- BorderCount[length(BorderCount)]
+      ClassifierBorderCount <- BorderCount[length(BorderCount)]
+    } else {
+      ClassifierBorderCount <- BorderCount
+      RegressionBorderCount <- BorderCount
+    }
+  }
+
+  # LearningRate
+  if(is.list(LearningRate)) {
+    if(!GridTune) {
+      ClassifierLearningRate <- LearningRate[["classifier"]]
+      ClassifierLearningRate <- ClassifierLearningRate[length(ClassifierLearningRate)]
+      RegressionLearningRate <- LearningRate[["regression"]]
+      RegressionLearningRate <- RegressionLearningRate[length(RegressionLearningRate)]
+    } else {
+      ClassifierLearningRate <- LearningRate[["classifier"]]
+      RegressionLearningRate <- LearningRate[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionLearningRate <- LearningRate[length(LearningRate)]
+      ClassifierLearningRate <- LearningRate[length(LearningRate)]
+    } else {
+      ClassifierLearningRate <- LearningRate
+      RegressionLearningRate <- LearningRate
+    }
+  }
+
+  # L2_Leaf_Reg
+  if(is.list(L2_Leaf_Reg)) {
+    if(!GridTune) {
+      ClassifierL2_Leaf_Reg <- L2_Leaf_Reg[["classifier"]]
+      ClassifierL2_Leaf_Reg <- ClassifierL2_Leaf_Reg[length(ClassifierL2_Leaf_Reg)]
+      RegressionL2_Leaf_Reg <- L2_Leaf_Reg[["regression"]]
+      RegressionL2_Leaf_Reg <- RegressionL2_Leaf_Reg[length(RegressionL2_Leaf_Reg)]
+    } else {
+      ClassifierL2_Leaf_Reg <- L2_Leaf_Reg[["classifier"]]
+      RegressionL2_Leaf_Reg <- L2_Leaf_Reg[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionL2_Leaf_Reg <- L2_Leaf_Reg[length(L2_Leaf_Reg)]
+      ClassifierL2_Leaf_Reg <- L2_Leaf_Reg[length(L2_Leaf_Reg)]
+    } else {
+      ClassifierL2_Leaf_Reg <- L2_Leaf_Reg
+      RegressionL2_Leaf_Reg <- L2_Leaf_Reg
+    }
+  }
+
+  # RSM
+  if(is.list(RSM)) {
+    if(!GridTune) {
+      ClassifierRSM <- RSM[["classifier"]]
+      ClassifierRSM <- ClassifierRSM[length(ClassifierRSM)]
+      RegressionRSM <- RSM[["regression"]]
+      RegressionRSM <- RegressionRSM[length(RegressionRSM)]
+    } else {
+      ClassifierRSM <- RSM[["classifier"]]
+      RegressionRSM <- RSM[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionRSM <- RSM[length(RSM)]
+      ClassifierRSM <- RSM[length(RSM)]
+    } else {
+      ClassifierRSM <- RSM
+      RegressionRSM <- RSM
+    }
+  }
+
+  # BootStrapType
+  if(is.list(BootStrapType)) {
+    if(!GridTune) {
+      ClassifierBootStrapType <- BootStrapType[["classifier"]]
+      ClassifierBootStrapType <- ClassifierBootStrapType[length(ClassifierBootStrapType)]
+      RegressionBootStrapType <- BootStrapType[["regression"]]
+      RegressionBootStrapType <- RegressionBootStrapType[length(RegressionBootStrapType)]
+    } else {
+      ClassifierBootStrapType <- BootStrapType[["classifier"]]
+      RegressionBootStrapType <- BootStrapType[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionBootStrapType <- BootStrapType[length(BootStrapType)]
+      ClassifierBootStrapType <- BootStrapType[length(BootStrapType)]
+    } else {
+      ClassifierBootStrapType <- BootStrapType
+      RegressionBootStrapType <- BootStrapType
+    }
+  }
+
+  # GrowPolicy
+  if(is.list(GrowPolicy)) {
+    if(!GridTune) {
+      ClassifierGrowPolicy <- GrowPolicy[["classifier"]]
+      ClassifierGrowPolicy <- ClassifierGrowPolicy[length(ClassifierGrowPolicy)]
+      RegressionGrowPolicy <- GrowPolicy[["regression"]]
+      RegressionGrowPolicy <- RegressionGrowPolicy[length(RegressionGrowPolicy)]
+    } else {
+      ClassifierGrowPolicy <- GrowPolicy[["classifier"]]
+      RegressionGrowPolicy <- GrowPolicy[["regression"]]
+    }
+  } else {
+    if(!GridTune) {
+      RegressionGrowPolicy <- GrowPolicy[length(GrowPolicy)]
+      ClassifierGrowPolicy <- GrowPolicy[length(GrowPolicy)]
+    } else {
+      ClassifierGrowPolicy <- GrowPolicy
+      RegressionGrowPolicy <- GrowPolicy
+    }
+  }
 
   # Turn on full speed ahead----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -280,15 +478,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       BaselineComparison = BaselineComparison,
 
       # Trees, Depth, and LearningRate used in the bandit grid tuning
-      Trees = Trees,
-      Depth = Depth,
-      LearningRate = LearningRate,
-      RandomStrength = RandomStrength,
-      BorderCount = BorderCount,
-      L2_Leaf_Reg = L2_Leaf_Reg,
-      RSM = RSM,
-      BootStrapType = BootStrapType,
-      GrowPolicy = GrowPolicy)
+      Trees = ClassifierTrees,
+      Depth = ClassifierDepth,
+      LearningRate = ClassifierLearningRate,
+      RandomStrength = ClassifierRandomStrength,
+      BorderCount = ClassifierBorderCount,
+      L2_Leaf_Reg = ClassifierL2_Leaf_Reg,
+      RSM = ClassifierRSM,
+      BootStrapType = ClassifierBootStrapType,
+      GrowPolicy = ClassifierGrowPolicy)
 
   } else {
 
@@ -330,15 +528,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       BaselineComparison = BaselineComparison,
 
       # Trees, Depth, and LearningRate used in the bandit grid tuning
-      Trees = Trees,
-      Depth = Depth,
-      LearningRate = LearningRate,
-      L2_Leaf_Reg = L2_Leaf_Reg,
-      RandomStrength = RandomStrength,
-      BorderCount = BorderCount,
-      RSM = RSM,
-      BootStrapType = BootStrapType,
-      GrowPolicy = GrowPolicy)
+      Trees = ClassifierTrees,
+      Depth = ClassifierDepth,
+      LearningRate = ClassifierLearningRate,
+      L2_Leaf_Reg = ClassifierL2_Leaf_Reg,
+      RandomStrength = ClassifierRandomStrength,
+      BorderCount = ClassifierBorderCount,
+      RSM = ClassifierRSM,
+      BootStrapType = ClassifierBootStrapType,
+      GrowPolicy = ClassifierGrowPolicy)
   }
 
   # Store metadata----
@@ -504,16 +702,16 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             BaselineComparison = BaselineComparison,
 
             # Trees, Depth, and LearningRate used in the bandit grid tuning
-            Trees = Trees,
-            Depth = Depth,
-            LearningRate = LearningRate,
-            L2_Leaf_Reg = L2_Leaf_Reg,
-            RandomStrength = RandomStrength,
-            BorderCount = BorderCount,
-            RSM = RSM,
-            BootStrapType = BootStrapType,
-            GrowPolicy = GrowPolicy,
-            Methods = Methods)
+            Trees = RegressionTrees,
+            Depth = RegressionDepth,
+            LearningRate = RegressionLearningRate,
+            L2_Leaf_Reg = RegressionL2_Leaf_Reg,
+            RandomStrength = RegressionRandomStrength,
+            BorderCount = RegressionBorderCount,
+            RSM = RegressionRSM,
+            BootStrapType = RegressionBootStrapType,
+            GrowPolicy = RegressionGrowPolicy,
+            Methods = RegressionMethods)
 
         # Store Model----
         RegressionModel <- RegModel$Model

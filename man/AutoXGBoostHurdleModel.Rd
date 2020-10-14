@@ -30,12 +30,13 @@ AutoXGBoostHurdleModel(
   BaselineComparison = "default",
   MaxRunsWithoutNewWinner = 10L,
   MaxRunMinutes = 60L,
-  Trees = 1000L,
-  eta = seq(0.05, 0.4, 0.05),
-  max_depth = seq(4L, 16L, 2L),
-  min_child_weight = seq(1, 10, 1),
-  subsample = seq(0.55, 1, 0.05),
-  colsample_bytree = seq(0.55, 1, 0.05)
+  Trees = list(classifier = seq(1000, 2000, 100), regression = seq(1000, 2000, 100)),
+  eta = list(classifier = seq(0.05, 0.4, 0.05), regression = seq(0.05, 0.4, 0.05)),
+  max_depth = list(classifier = seq(4L, 16L, 2L), regression = seq(4L, 16L, 2L)),
+  min_child_weight = list(classifier = seq(1, 10, 1), regression = seq(1, 10, 1)),
+  subsample = list(classifier = seq(0.55, 1, 0.05), regression = seq(0.55, 1, 0.05)),
+  colsample_bytree = list(classifier = seq(0.55, 1, 0.05), regression = seq(0.55, 1,
+    0.05))
 )
 }
 \arguments{
@@ -89,17 +90,17 @@ AutoXGBoostHurdleModel(
 
 \item{MaxRunMinutes}{Max number of minutes to allow the grid tuning to run for}
 
-\item{Trees}{Default 1000}
+\item{Trees}{Provide a named list to have different number of trees for each model. Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100))}
 
-\item{eta}{Learning rates seq(0.05,0.40,0.05)}
+\item{eta}{Provide a named list to have different number of eta for each model.}
 
-\item{max_depth}{Depth seq(4L, 16L, 2L)}
+\item{max_depth}{Provide a named list to have different number of max_depth for each model.}
 
-\item{min_child_weight}{seq(1.0, 10.0, 1.0)}
+\item{min_child_weight}{Provide a named list to have different number of min_child_weight for each model.}
 
-\item{subsample}{seq(0.55, 1.0, 0.05)}
+\item{subsample}{Provide a named list to have different number of subsample for each model.}
 
-\item{colsample_bytree}{seq(0.55, 1.0, 0.05)}
+\item{colsample_bytree}{Provide a named list to have different number of colsample_bytree for each model.}
 }
 \value{
 Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
@@ -147,14 +148,14 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
    MaxRunMinutes = 60L,
 
    # bandit hyperparameters
-   Trees = 1000L,
-   eta = seq(0.05,0.40,0.05),
-   max_depth = seq(4L, 16L, 2L),
+   Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
+   eta = list("classifier" = seq(0.05,0.40,0.05), "regression" = seq(0.05,0.40,0.05)),
+   max_depth = list("classifier" = seq(4L,16L,2L), "regression" = seq(4L,16L,2L)),
 
    # random hyperparameters
-   min_child_weight = seq(1.0, 10.0, 1.0),
-   subsample = seq(0.55, 1.0, 0.05),
-   colsample_bytree = seq(0.55, 1.0, 0.05))
+   min_child_weight = list("classifier" = seq(1.0,10.0,1.0), "regression" = seq(1.0,10.0,1.0)),
+   subsample = list("classifier" = seq(0.55,1.0,0.05), "regression" = seq(0.55,1.0,0.05)),
+   colsample_bytree = list("classifier" = seq(0.55,1.0,0.05), "regression" = seq(0.55,1.0,0.05)))
 }
 }
 \seealso{
