@@ -86,16 +86,24 @@
 #'   MetricPeriods = 25L,
 #'
 #'   # Bandit grid args
-#'   Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
-#'   Depth = seq(4L, 8L, 1L),
-#'   LearningRate = seq(0.01,0.10,0.01),
-#'   L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
-#'   RandomStrength = 1,
-#'   BorderCount = 128,
-#'   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-#'   BootStrapType = c("Bayesian", "Bernoulli",
-#'      "Poisson", "MVS", "No"),
-#'   GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+#'   Trees = list("classifier" = seq(1000,2000,100),
+#'                "regression" = seq(1000,2000,100)),
+#'   Depth = list("classifier" = seq(6,10,1),
+#'                "regression" = seq(6,10,1)),
+#'   RandomStrength = list("classifier" = seq(1,10,1),
+#'                        "regression" = seq(1,10,1)),
+#'   BorderCount = list("classifier" = seq(32,256,16),
+#'                      "regression" = seq(32,256,16)),
+#'   LearningRate = list("classifier" = seq(0.01,0.25,0.01),
+#'                      "regression" = seq(0.01,0.25,0.01)),
+#'   L2_Leaf_Reg = list("classifier" = seq(3.0,10.0,1.0),
+#'                   "regression" = seq(1.0,10.0,1.0)),
+#'   RSM = list("classifier" = c(0.80, 0.85, 0.90, 0.95, 1.0),
+#'              "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
+#'   BootStrapType = list("classifier" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+#'                        "regression" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")),
+#'   GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"),
+#'                     "regression" = c("SymmetricTree", "Depthwise", "Lossguide")))
 #' }
 #' @export
 AutoCatBoostHurdleModel <- function(data = NULL,
@@ -142,7 +150,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                                "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
                                     BootStrapType = list("classifier" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                                                          "regression" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")),
-                                    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
+                                    GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"),
+                                                      "regression" = c("SymmetricTree", "Depthwise", "Lossguide"))) {
 
   # Store args----
   ArgsList <- list()

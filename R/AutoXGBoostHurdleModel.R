@@ -76,14 +76,20 @@
 #'    MaxRunMinutes = 60L,
 #'
 #'    # bandit hyperparameters
-#'    Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
-#'    eta = list("classifier" = seq(0.05,0.40,0.05), "regression" = seq(0.05,0.40,0.05)),
-#'    max_depth = list("classifier" = seq(4L,16L,2L), "regression" = seq(4L,16L,2L)),
+#'    Trees = list("classifier" = seq(1000,2000,100),
+#'                 "regression" = seq(1000,2000,100)),
+#'    eta = list("classifier" = seq(0.05,0.40,0.05),
+#'               "regression" = seq(0.05,0.40,0.05)),
+#'    max_depth = list("classifier" = seq(4L,16L,2L),
+#'                     "regression" = seq(4L,16L,2L)),
 #'
 #'    # random hyperparameters
-#'    min_child_weight = list("classifier" = seq(1.0,10.0,1.0), "regression" = seq(1.0,10.0,1.0)),
-#'    subsample = list("classifier" = seq(0.55,1.0,0.05), "regression" = seq(0.55,1.0,0.05)),
-#'    colsample_bytree = list("classifier" = seq(0.55,1.0,0.05), "regression" = seq(0.55,1.0,0.05)))
+#'    min_child_weight = list("classifier" = seq(1.0,10.0,1.0),
+#'                            "regression" = seq(1.0,10.0,1.0)),
+#'    subsample = list("classifier" = seq(0.55,1.0,0.05),
+#'                     "regression" = seq(0.55,1.0,0.05)),
+#'    colsample_bytree = list("classifier" = seq(0.55,1.0,0.05),
+#'                            "regression" = seq(0.55,1.0,0.05)))
 #' }
 #' @export
 AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
