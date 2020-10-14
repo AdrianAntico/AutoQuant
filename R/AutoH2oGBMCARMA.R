@@ -436,26 +436,13 @@ AutoH2oGBMCARMA <- function(data,
   # Feature Engineering: Add Create Calendar Variables----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
   if(!is.null(CalendarVariables)) {
-    if(TimeUnit == "hour") {
-      CalendarVariableColumns <- c("hour","wday","mday","yday","week","isoweek","month","quarter","year")
-    } else if(TimeUnit == "day") {
-      CalendarVariableColumns <- c("wday","mday","yday","week","isoweek","month","quarter","year")
-    } else if(TimeUnit == "week") {
-      CalendarVariableColumns <- c("week","month","quarter","year")
-    } else if(TimeUnit == "month") {
-      CalendarVariableColumns <- c("month","quarter","year")
-    } else if(TimeUnit == "quarter") {
-      CalendarVariableColumns <- c("quarter","year")
-    } else if(TimeUnit == "year") {
-      CalendarVariableColumns <- "year"
-    }
 
     # Create calendar variables
     data <- CreateCalendarVariables(
       data = data,
       DateCols = eval(DateColumnName),
       AsFactor = FALSE,
-      TimeUnits = CalendarVariableColumns)
+      TimeUnits = CalendarVariables)
   }
 
   # Feature Engineering: Add Create Holiday Variables----
