@@ -969,6 +969,12 @@ AutoH2oGBMCARMA <- function(data,
       GridTune = GridTune,
       MaxModelsInGrid = ModelCount)
 
+  # Return model object for when TrainOnFull is FALSE ----
+  if(!TrainOnFull) {
+    h2o::h2o.shutdown(prompt = FALSE)
+    return(TestModel)
+  }
+
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 2)
 
