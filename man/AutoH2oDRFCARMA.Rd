@@ -164,15 +164,15 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"),
+  GroupVariables = c("Dept"),
   TimeUnit = "week",
-  TimeGroups = c("weeks","months","quarter"),
+  TimeGroups = c("weeks","months"),
 
   # Data Wrangling Features
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
-  SplitRatios = c(1 - 10 / 143, 10 / 143),
-  PartitionType = "timeseries",
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
 
   # Productionize
   FC_Periods = 4L,
@@ -181,22 +181,22 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
   GridTune = FALSE,
   ModelCount = 5,
   MaxMem = "28G",
-  NThreads = 8,
+  NThreads = parallel::detectCores(),
   Timer = TRUE,
 
   # Target Transformations
-  TargetTransformation = TRUE,
+  TargetTransformation = FALSE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
     "LogPlus1", "Logit", "YeoJohnson"),
-  Difference = TRUE,
+  Difference = FALSE,
   NonNegativePred = FALSE,
 
   # Features
   AnomalyDetection = NULL,
   HolidayLags = 1L,
   HolidayMovingAverages = 1:2,
-  Lags = c(1:5),
-  MA_Periods = c(2L:5L),
+  Lags = list("weeks" = c(1:5), "months" = c(1:5)),
+  MA_Periods = list("weeks" = c(2:5), "months" = c(2:5)),
   SD_Periods = NULL,
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
@@ -208,7 +208,7 @@ AutoH2oDRFCARMA Automated CatBoost Calendar, Holiday, ARMA, and Trend Variables 
   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
   TimeTrendVariable = TRUE,
   NTrees = 1000L,
-  DebugMode = FALSE)
+  DebugMode = TRUE)
 
 UpdateMetrics <-
   print(H2oDFRResults$ModelInformation$EvaluationMetrics[

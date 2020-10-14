@@ -562,7 +562,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
 
   # Store model----
-  if(SaveModelObjects) ModelList[["Classifier"]] <- ClassModel
+  if(ReturnModelObjects || SaveModelObjects) ModelList[["Classifier"]] <- ClassModel
 
   # Add Target to IDcols----
   IDcols <- c(IDcols, TargetColumnName)
@@ -724,7 +724,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
         # Store Model----
         RegressionModel <- RegModel$Model
-        if(ReturnModelObjects | SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
+        if(ReturnModelObjects || SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
         if(!is.null(TransformNumericColumns)) {
           ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- RegModel$TransformationResults
         } else {
