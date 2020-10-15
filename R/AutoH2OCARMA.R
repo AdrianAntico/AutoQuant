@@ -978,7 +978,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
       #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
       data = train,
-      TrainOnFull = TRUE,
+      TrainOnFull = TrainOnFull,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,
@@ -1038,7 +1038,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
       #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
       data = train,
-      TrainOnFull = TRUE,
+      TrainOnFull = TrainOnFull,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,
@@ -1098,7 +1098,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
       #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
       data = train,
-      TrainOnFull = TRUE,
+      TrainOnFull = TrainOnFull,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,
@@ -1159,7 +1159,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
       #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
       data = data,
-      TrainOnFull = TRUE,
+      TrainOnFull = TrainOnFull,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,
