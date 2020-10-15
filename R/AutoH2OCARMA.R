@@ -1169,7 +1169,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
       # Model args
       ExcludeAlgos = NULL,
-      Trees = Trees,
+      Trees = NTrees,
       MaxModelsInGrid = ModelCount)
   }
 
