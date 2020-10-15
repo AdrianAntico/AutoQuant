@@ -266,7 +266,7 @@ CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 }
 \seealso{
 Other Automated Panel Data Forecasting: 
-\code{\link{AutoH2OCarma}()},
+\code{\link{AutoH2OCARMA}()},
 \code{\link{AutoXGBoostCARMA}()}
 }
 \author{

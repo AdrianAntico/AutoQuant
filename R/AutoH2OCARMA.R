@@ -1,6 +1,6 @@
-#' AutoH2OCarma
+#' AutoH2OCARMA
 #'
-#' AutoH2OCarma Automated Panel Data and Time Series Forecasting using H2O algorithms, Calendar and Holiday variables, ARIMA features, Fouier variables, time trend, and transformations.
+#' AutoH2OCARMA Automated Panel Data and Time Series Forecasting using H2O algorithms, Calendar and Holiday variables, ARIMA features, Fouier variables, time trend, and transformations.
 #'
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
@@ -66,7 +66,7 @@
 #'  data <- data[as.Date(Date) < as.Date('2012-09-28')]
 #'
 #'  # Build forecast
-#'  Results <- RemixAutoML::AutoH2OCarma(
+#'  Results <- RemixAutoML::AutoH2OCARMA(
 #'
 #'   # Data Artifacts
 #'   AlgoType = "drf",
@@ -136,7 +136,7 @@
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
-AutoH2OCarma <- function(AlgoType = "drf",
+AutoH2OCARMA <- function(AlgoType = "drf",
                          data,
                          NonNegativePred = FALSE,
                          TrainOnFull = FALSE,
