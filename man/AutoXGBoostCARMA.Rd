@@ -219,10 +219,7 @@ XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 \seealso{
 Other Automated Panel Data Forecasting: 
 \code{\link{AutoCatBoostCARMA}()},
-\code{\link{AutoH2oDRFCARMA}()},
-\code{\link{AutoH2oGBMCARMA}()},
-\code{\link{AutoH2oGLMCARMA}()},
-\code{\link{AutoH2oMLCARMA}()}
+\code{\link{AutoH2OCarma}()}
 }
 \author{
 Adrian Antico

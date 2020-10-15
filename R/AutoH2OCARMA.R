@@ -1,9 +1,10 @@
-#' AutoH2oGLMCARMA
+#' AutoH2OCarma
 #'
-#' AutoH2oGLMCARMA Mutlivariate Forecasting with alendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
+#' AutoH2OCarma Automated Panel Data and Time Series Forecasting using H2O algorithms, Calendar and Holiday variables, ARIMA features, Fouier variables, time trend, and transformations.
 #'
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
+#' @param AlgoType Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, and "automl" for H2O's AutoML algo.
 #' @param data Supply your full series data set here
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
@@ -14,8 +15,8 @@
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
-#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. See the Methods argument for a listing of methods.
-#' @param Methods Target transformation methods to testTests YeoJohnson, BoxCox, Log, Log plus one, and Asigh (also Asin and Logit for proportion target variables).
+#' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
+#' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
@@ -27,8 +28,8 @@
 #' @param AnomalyDetection NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)
 #' @param Difference Puts the I in ARIMA for single series and grouped series.
 #' @param FourierTerms Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.
-#' @param CalendarVariables Set to TRUE to have calendar variables created. The calendar variables are numeric representations of second, minute, hour, week day, month day, year day, week, isoweek, quarter, and year
-#' @param HolidayVariable Set to TRUE to have a holiday counter variable created.
+#' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
+#' @param HolidayVariable NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"
 #' @param HolidayLags Number of lags to build off of the holiday count variable.
 #' @param HolidayMovingAverages Number of moving averages to build off of the holiday count variable.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
@@ -45,32 +46,43 @@
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'
-#'  # Pull in Walmart Data Set
+#'  # Load Walmart Data from Dropbox----
 #'  data <- data.table::fread(
 #'    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'
+#'  # Subset for Stores / Departments With Full Series
 #'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
 #'    , Counts := NULL]
-#'  data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+#'
+#'  # Subset Columns (remove IsHoliday column)----
+#'  keep <- c("Store","Dept","Date","Weekly_Sales")
+#'  data <- data[, ..keep]
+#'  data <- data[Store == 1][, Store := NULL]
+#'  xregs <- data.table::copy(data)
+#'  data.table::setnames(xregs, "Dept", "GroupVar")
+#'  data.table::setnames(xregs, "Weekly_Sales", "Other")
+#'  data <- data[as.Date(Date) < as.Date('2012-09-28')]
 #'
 #'  # Build forecast
-#'  H2oGLMResults <- AutoH2oGLMCARMA(
+#'  Results <- RemixAutoML::AutoH2OCarma(
 #'
 #'   # Data Artifacts
+#'   AlgoType = "drf",
 #'   data = data,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
-#'   GroupVariables = c("Store","Dept"),
+#'   GroupVariables = c("Dept"),
 #'   TimeUnit = "week",
-#'   TimeGroups = c("weeks","months","quarter"),
+#'   TimeGroups = c("weeks","months"),
 #'
 #'   # Data Wrangling Features
 #'   ZeroPadSeries = NULL,
 #'   DataTruncate = FALSE,
-#'   SplitRatios = c(1 - 10 / 143, 10 / 143),
-#'   PartitionType = "timeseries",
+#'   SplitRatios = c(1 - 10 / 138, 10 / 138),
+#'   PartitionType = "random",
 #'
 #'   # Productionize
 #'   FC_Periods = 4L,
@@ -79,22 +91,22 @@
 #'   GridTune = FALSE,
 #'   ModelCount = 5,
 #'   MaxMem = "28G",
-#'   NThreads = 8,
+#'   NThreads = parallel::detectCores(),
 #'   Timer = TRUE,
 #'
 #'   # Target Transformations
-#'   TargetTransformation = TRUE,
+#'   TargetTransformation = FALSE,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
 #'     "LogPlus1", "Logit", "YeoJohnson"),
-#'   Difference = TRUE,
+#'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
 #'
 #'   # Features
 #'   AnomalyDetection = NULL,
-#'   HolidayLags = 1L,
-#'   HolidayMovingAverages = 1:2,
-#'   Lags = c(1:5),
-#'   MA_Periods = c(2L:5L),
+#'   HolidayLags = 1:7,
+#'   HolidayMovingAverages = 2:7,
+#'   Lags = list("weeks" = c(1:4), "months" = c(1:3)),
+#'   MA_Periods = list("weeks" = c(2:8), "months" = c(6:12)),
 #'   SD_Periods = NULL,
 #'   Skew_Periods = NULL,
 #'   Kurt_Periods = NULL,
@@ -102,63 +114,69 @@
 #'   Quantiles_Selected = NULL,
 #'   XREGS = NULL,
 #'   FourierTerms = 2L,
-#'   CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+#'   CalendarVariables = c("week", "month", "quarter", "year"),
 #'   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
 #'   TimeTrendVariable = TRUE,
 #'   NTrees = 1000L,
-#'   DebugMode = FALSE)
+#'   DebugMode = TRUE)
 #'
-#' UpdateMetrics <- print(
-#'   H2oGLMResults$ModelInformation$EvaluationMetrics[
-#'     Metric == "MSE", MetricValue := sqrt(MetricValue)])
+#' UpdateMetrics <-
+#'   Results$ModelInformation$EvaluationMetrics[
+#'     Metric == "MSE", MetricValue := sqrt(MetricValue)]
 #' print(UpdateMetrics)
-#' H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
-#' H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
-#' H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
-#' H2oGLMResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
+#'
+#' # Get final number of trees actually used
+#' Results$Model@model$model_summary$number_of_internal_trees
+#'
+#' # Inspect performance
+#' Results$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+#' Results$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+#' Results$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+#' Results$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 #' }
-#' @return Returns a data.table of original series and forecasts, the h2o-gbm model objects (everything returned from AutoH2oGBMRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+#' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
-AutoH2oGLMCARMA <- function(data,
-                            NonNegativePred = FALSE,
-                            TrainOnFull = FALSE,
-                            TargetColumnName = "Target",
-                            DateColumnName = "DateTime",
-                            HierarchGroups = NULL,
-                            GroupVariables = NULL,
-                            FC_Periods = 30,
-                            TimeUnit = "week",
-                            TimeGroups = c("weeks","months"),
-                            TargetTransformation = FALSE,
-                            Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-                            XREGS = NULL,
-                            Lags = c(1:5),
-                            MA_Periods = c(1:5),
-                            SD_Periods = NULL,
-                            Skew_Periods = NULL,
-                            Kurt_Periods = NULL,
-                            Quantile_Periods = NULL,
-                            Quantiles_Selected = NULL,
-                            AnomalyDetection = NULL,
-                            Difference = TRUE,
-                            FourierTerms = 6,
-                            CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
-                            HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-                            HolidayLags = 1,
-                            HolidayMovingAverages = 1:2,
-                            TimeTrendVariable = FALSE,
-                            DataTruncate = FALSE,
-                            ZeroPadSeries = NULL,
-                            SplitRatios = c(0.7, 0.2, 0.1),
-                            EvalMetric = "MAE",
-                            GridTune = FALSE,
-                            ModelCount = 1,
-                            NTrees = 1000,
-                            PartitionType = "timeseries",
-                            MaxMem = "32G",
-                            NThreads = max(1, parallel::detectCores() - 2),
-                            Timer = TRUE,
-                            DebugMode = FALSE) {
+AutoH2OCarma <- function(AlgoType = "drf",
+                         data,
+                         NonNegativePred = FALSE,
+                         TrainOnFull = FALSE,
+                         TargetColumnName = "Target",
+                         DateColumnName = "DateTime",
+                         HierarchGroups = NULL,
+                         GroupVariables = NULL,
+                         FC_Periods = 30,
+                         TimeUnit = "week",
+                         TimeGroups = c("weeks","months"),
+                         TargetTransformation = FALSE,
+                         Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+                         XREGS = NULL,
+                         Lags = c(1:5),
+                         MA_Periods = c(1:5),
+                         SD_Periods = NULL,
+                         Skew_Periods = NULL,
+                         Kurt_Periods = NULL,
+                         Quantile_Periods = NULL,
+                         Quantiles_Selected = NULL,
+                         AnomalyDetection = NULL,
+                         Difference = TRUE,
+                         FourierTerms = 6,
+                         CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+                         HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+                         HolidayLags = 1,
+                         HolidayMovingAverages = 1:2,
+                         TimeTrendVariable = FALSE,
+                         DataTruncate = FALSE,
+                         ZeroPadSeries = NULL,
+                         SplitRatios = c(0.7, 0.2, 0.1),
+                         EvalMetric = "MAE",
+                         GridTune = FALSE,
+                         ModelCount = 1,
+                         NTrees = 1000,
+                         PartitionType = "timeseries",
+                         MaxMem = "32G",
+                         NThreads = max(1, parallel::detectCores() - 2),
+                         Timer = TRUE,
+                         DebugMode = FALSE) {
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -885,7 +903,7 @@ AutoH2oGLMCARMA <- function(data,
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
   if(TrainOnFull) Step1SCore <- data.table::copy(data) else Step1SCore <- data.table::copy(train)
 
-  # Machine Learning: Build Model----
+  # Define features for training ----
   if(DebugMode) print("Machine Learning: Build Model----")
 
   # Define CARMA feature names
@@ -911,8 +929,131 @@ AutoH2oGLMCARMA <- function(data,
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
 
-  # Run AutoH2oGLMRegression and return list of ml objects
-  TestModel <- RemixAutoML::AutoH2oGLMRegression(
+  # Run ML Algo and return list of ml objects ----
+  if(tolower(AlgoType) == "drf") {
+
+    # Distributed Random Forecast ----
+    TestModel <- RemixAutoML::AutoH2oDRFRegression(
+
+      # Compute management
+      MaxMem = MaxMem,
+      NThreads = NThreads,
+      H2OShutdown = FALSE,
+      IfSaveModel = "mojo",
+
+      # Model evaluation:
+      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
+      #     A value of 3 will return plots for the top 3 variables based on variable importance
+      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 0,
+
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
+      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      model_path = getwd(),
+      metadata_path = getwd(),
+      ModelID = "ModelTest",
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = train,
+      TrainOnFull = TRUE,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model args
+      Trees = NTrees,
+      GridTune = GridTune,
+      MaxModelsInGrid = ModelCount)
+
+  } else if(tolower(AlgoType) == "gbm") {
+
+    # Gradient Boosting Machine ----
+    TestModel <- RemixAutoML::AutoH2oGBMRegression(
+
+      # Compute management
+      MaxMem = MaxMem,
+      NThreads = NThreads,
+      H2OShutdown = FALSE,
+      IfSaveModel = "mojo",
+      Alpha = NULL,
+      Distribution = "gaussian",
+
+      # Model evaluation:
+      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
+      #     A value of 3 will return plots for the top 3 variables based on variable importance
+      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 0,
+
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      model_path = getwd(),
+      metadata_path = getwd(),
+      ModelID = "ModelTest",
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = train,
+      TrainOnFull = TRUE,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model args
+      Trees = NTrees,
+      GridTune = GridTune,
+      MaxModelsInGrid = ModelCount)
+  } else if(tolower(AlgoType) == "glm") {
+
+    # Generalized Linear Model ----
+    TestModel <- RemixAutoML::AutoH2oGLMRegression(
 
       # Compute management
       MaxMem = MaxMem,
@@ -970,6 +1111,67 @@ AutoH2oGLMCARMA <- function(data,
       MaxModelsInGrid = ModelCount,
       Distribution = "gaussian",
       link = "identity")
+  } else if(tolower(AlgoType) == "automl") {
+
+    # H2O AutoML ----
+    TestModel <- RemixAutoML::AutoH2oMLRegression(
+
+      # Compute management
+      MaxMem = MaxMem,
+      NThreads = NThreads,
+      H2OShutdown = FALSE,
+      IfSaveModel = "mojo",
+
+      # Model evaluation:
+      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
+      #     A value of 3 will return plots for the top 3 variables based on variable importance
+      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 0,
+
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
+      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
+      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      model_path = getwd(),
+      metadata_path = getwd(),
+      ModelID = "FirstModel",
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = data,
+      TrainOnFull = TRUE,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model args
+      ExcludeAlgos = NULL,
+      Trees = Trees,
+      MaxModelsInGrid = ModelCount)
+  }
 
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) {
@@ -998,11 +1200,7 @@ AutoH2oGLMCARMA <- function(data,
 
   # Number of forecast periods----
   if(DebugMode) print("Number of forecast periods----")
-  if(TrainOnFull) {
-    ForecastRuns <- FC_Periods
-  } else {
-    ForecastRuns <- HoldOutPeriods
-  }
+  if(TrainOnFull) ForecastRuns <- FC_Periods else ForecastRuns <- HoldOutPeriods
 
   #----
 
@@ -1656,11 +1854,15 @@ AutoH2oGLMCARMA <- function(data,
 
   # Remove duplicate date names----
   if(DebugMode) print("Remove duplicate date names----")
-  if(sum(names(UpdateData) %chin% eval(DateColumnName)) > 1) data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(DateColumnName))[2], value = NULL)
+  if(sum(names(UpdateData) %chin% eval(DateColumnName)) > 1) {
+    data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(DateColumnName))[2], value = NULL)
+  }
 
   # Remove duplicate target names----
   if(DebugMode) print("Remove duplicate target names----")
-  if(sum(names(UpdateData) %chin% eval(TargetColumnName)) > 1) data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(TargetColumnName))[2], value = NULL)
+  if(sum(names(UpdateData) %chin% eval(TargetColumnName)) > 1) {
+    data.table::set(UpdateData, j = which(names(UpdateData) %chin% eval(TargetColumnName))[2], value = NULL)
+  }
 
   # Reverse Difference----
   if(DebugMode) print("Reverse Difference----")
@@ -1673,7 +1875,7 @@ AutoH2oGLMCARMA <- function(data,
       FirstRow = DiffTrainOutput$FirstRow[[eval(TargetColumnName)]],
       LastRow = NULL)
   } else if(!is.null(GroupVariables) & Difference == TRUE) {
-    if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(dataStart$Date) == "Date")) {
+    if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(dataStart$Date) == eval(DateColumnName))) {
       UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
     }
     UpdateData <- data.table::rbindlist(list(dataStart,UpdateData), fill = TRUE)
@@ -1824,16 +2026,12 @@ AutoH2oGLMCARMA <- function(data,
         list(
           Forecast = UpdateData,
           ModelInformation = TestModel,
-          TransformationDetail = TransformObject
-        )
-      )
+          TransformationDetail = TransformObject))
     } else {
       return(
         list(
           Forecast = UpdateData,
-          ModelInformation = TestModel
-        )
-      )
+          ModelInformation = TestModel))
     }
   } else {
     if(TargetTransformation) {
@@ -1841,16 +2039,12 @@ AutoH2oGLMCARMA <- function(data,
         list(
           Forecast = UpdateData,
           ModelInformation = TestModel,
-          TransformationDetail = TransformObject
-        )
-      )
+          TransformationDetail = TransformObject))
     } else {
       return(
         list(
           Forecast = UpdateData,
-          ModelInformation = TestModel
-        )
-      )
+          ModelInformation = TestModel))
     }
   }
 }
