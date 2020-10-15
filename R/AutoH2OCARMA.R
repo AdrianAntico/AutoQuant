@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
 #' @param AlgoType Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, and "automl" for H2O's AutoML algo.
+#' @param ExcludeAlgos For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"
 #' @param data Supply your full series data set here
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
@@ -70,6 +71,7 @@
 #'
 #'   # Data Artifacts
 #'   AlgoType = "drf",
+#'   ExcludeAlgos = NULL,
 #'   data = data,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
@@ -1168,7 +1170,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       Methods = NULL,
 
       # Model args
-      ExcludeAlgos = NULL,
+      ExcludeAlgos = ExcludeAlgos,
       Trees = NTrees,
       MaxModelsInGrid = ModelCount)
   }

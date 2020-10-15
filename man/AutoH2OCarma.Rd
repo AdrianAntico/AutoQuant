@@ -132,6 +132,8 @@ AutoH2OCARMA(
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
 \item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
+
+\item{ExcludeAlgos}{For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
@@ -164,6 +166,7 @@ AutoH2OCARMA Automated Panel Data and Time Series Forecasting using H2O algorith
 
   # Data Artifacts
   AlgoType = "drf",
+  ExcludeAlgos = NULL,
   data = data,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
