@@ -2009,8 +2009,10 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
 ##### **AutoCatBoostCARMA()**, **AutoXGBoostCARMA()**, **AutoH2OCARMA()**
 <code>AutoCatBoostCARMA()</code> utilizes the CatBoost alorithm
+
 <code>AutoXGBoostCARMA()</code> utilizes the XGBoost alorithm
-<code>AutoH2OCARMA()</code> utilizes H2O Algorithms: RandomForest, GBM, GLM, and AutoML
+
+<code>AutoH2OCARMA()</code> utilizes H2O Algorithms: RandomForest, GBM, GLM, or AutoML
 
 <details><summary>Model Highlights</summary>
 <p>
