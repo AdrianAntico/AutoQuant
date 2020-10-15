@@ -698,39 +698,30 @@ AutoH2oDRFRegression <- function(data,
           TransformationInformation = TransformationResults,
           ColNames = Names))
       } else {
-        return(
-          list(
-            Model = FinalModel,
-            ValidationData = ValidationData,
-            EvaluationPlot = EvaluationPlot,
-            EvaluationBoxPlot = EvaluationBoxPlot,
-            EvaluationMetrics = EvaluationMetrics,
-            VariableImportance = VariableImportance,
-            VI_Plot = VI_Plot(VI_Data = VariableImportance),
-            PartialDependencePlots = ParDepPlots,
-            PartialDependenceBoxPlots = ParDepBoxPlots,
-            ColNames = Names
-          )
-        )
+        return(list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          EvaluationPlot = EvaluationPlot,
+          EvaluationBoxPlot = EvaluationBoxPlot,
+          EvaluationMetrics = EvaluationMetrics,
+          VariableImportance = VariableImportance,
+          VI_Plot = VI_Plot(VI_Data = VariableImportance),
+          PartialDependencePlots = ParDepPlots,
+          PartialDependenceBoxPlots = ParDepBoxPlots,
+          ColNames = Names))
       }
     } else {
       if(!is.null(TransformNumericColumns)) {
-        return(
-          list(
-            Model = FinalModel,
-            ValidationData = ValidationData,
-            TransformationInformation = TransformationResults,
-            ColNames = Names
-          )
-        )
+        return(list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          TransformationInformation = TransformationResults,
+          ColNames = Names))
       } else {
-        return(
-          list(
-            Model = FinalModel,
-            ValidationData = ValidationData,
-            ColNames = Names
-          )
-        )
+        return(list(
+          Model = FinalModel,
+          ValidationData = ValidationData,
+          ColNames = Names))
       }
     }
   }
