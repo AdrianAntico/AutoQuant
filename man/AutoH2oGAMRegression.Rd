@@ -91,6 +91,7 @@ AutoH2oGAMRegression is an automated H2O modeling framework with grid-tuning and
 }
 \examples{
 \donttest{
+
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -109,41 +110,41 @@ GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 # Run function
 TestModel <- RemixAutoML::AutoH2oGAMRegression(
 
-    # Compute management
-    MaxMem = "32G",
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    IfSaveModel = "mojo",
+ # Compute management
+ MaxMem = "32G",
+ NThreads = max(1, parallel::detectCores()-2),
+ H2OShutdown = TRUE,
+ IfSaveModel = "mojo",
 
-    # Model evaluation:
-    eval_metric = "RMSE",
-    NumOfParDepPlots = 3,
+ # Model evaluation:
+ eval_metric = "RMSE",
+ NumOfParDepPlots = 3,
 
-    # Metadata arguments:
-    model_path = NULL,
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
+ # Metadata arguments:
+ model_path = NULL,
+ metadata_path = NULL,
+ ModelID = "FirstModel",
+ ReturnModelObjects = TRUE,
+ SaveModelObjects = FALSE,
 
-    # Data arguments:
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%chin\%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    GamColNames = GamCols,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log",
-                "LogPlus1", "Logit", "YeoJohnson"),
+ # Data arguments:
+ data = data,
+ TrainOnFull = FALSE,
+ ValidationData = NULL,
+ TestData = NULL,
+ TargetColumnName = "Adrian",
+ FeatureColNames = names(data)[!names(data) \%chin\%
+                                 c("IDcol_1", "IDcol_2","Adrian")],
+ GamColNames = GamCols,
+ TransformNumericColumns = NULL,
+ Methods = c("BoxCox", "Asinh", "Asin", "Log",
+             "LogPlus1", "Logit", "YeoJohnson"),
 
-    # Model args
-    GridTune = FALSE,
-    MaxModelsInGrid = 10,
-    Distribution = "gaussian",
-    link = "identity")
+ # Model args
+ GridTune = FALSE,
+ MaxModelsInGrid = 10,
+ Distribution = "gaussian",
+ link = "Family_Default")
 }
 }
 \seealso{

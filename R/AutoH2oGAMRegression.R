@@ -30,6 +30,7 @@
 #' @param HurdleModel Set to FALSE
 #' @examples
 #' \donttest{
+#'
 #' # Create some dummy correlated data
 #' data <- RemixAutoML::FakeDataGenerator(
 #'   Correlation = 0.85,
@@ -48,41 +49,41 @@
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGAMRegression(
 #'
-#'     # Compute management
-#'     MaxMem = "32G",
-#'     NThreads = max(1, parallel::detectCores()-2),
-#'     H2OShutdown = TRUE,
-#'     IfSaveModel = "mojo",
+#'  # Compute management
+#'  MaxMem = "32G",
+#'  NThreads = max(1, parallel::detectCores()-2),
+#'  H2OShutdown = TRUE,
+#'  IfSaveModel = "mojo",
 #'
-#'     # Model evaluation:
-#'     eval_metric = "RMSE",
-#'     NumOfParDepPlots = 3,
+#'  # Model evaluation:
+#'  eval_metric = "RMSE",
+#'  NumOfParDepPlots = 3,
 #'
-#'     # Metadata arguments:
-#'     model_path = NULL,
-#'     metadata_path = NULL,
-#'     ModelID = "FirstModel",
-#'     ReturnModelObjects = TRUE,
-#'     SaveModelObjects = FALSE,
+#'  # Metadata arguments:
+#'  model_path = NULL,
+#'  metadata_path = NULL,
+#'  ModelID = "FirstModel",
+#'  ReturnModelObjects = TRUE,
+#'  SaveModelObjects = FALSE,
 #'
-#'     # Data arguments:
-#'     data = data,
-#'     TrainOnFull = FALSE,
-#'     ValidationData = NULL,
-#'     TestData = NULL,
-#'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %chin%
-#'       c("IDcol_1", "IDcol_2","Adrian")],
-#'     GamColNames = GamCols,
-#'     TransformNumericColumns = NULL,
-#'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'                 "LogPlus1", "Logit", "YeoJohnson"),
+#'  # Data arguments:
+#'  data = data,
+#'  TrainOnFull = FALSE,
+#'  ValidationData = NULL,
+#'  TestData = NULL,
+#'  TargetColumnName = "Adrian",
+#'  FeatureColNames = names(data)[!names(data) %chin%
+#'                                  c("IDcol_1", "IDcol_2","Adrian")],
+#'  GamColNames = GamCols,
+#'  TransformNumericColumns = NULL,
+#'  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'              "LogPlus1", "Logit", "YeoJohnson"),
 #'
-#'     # Model args
-#'     GridTune = FALSE,
-#'     MaxModelsInGrid = 10,
-#'     Distribution = "gaussian",
-#'     link = "identity")
+#'  # Model args
+#'  GridTune = FALSE,
+#'  MaxModelsInGrid = 10,
+#'  Distribution = "gaussian",
+#'  link = "Family_Default")
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export

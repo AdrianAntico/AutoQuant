@@ -1026,6 +1026,71 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     Trees = 50,
     MaxModelsInGrid = 10)
 ```
+
+</p>
+</details> 
+ 
+##### **AutoH2oGAMRegression()**
+<code>AutoH2oGLMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Define GAM Columns to use - up to 9 are allowed
+GamCols <- names(which(unlist(lapply(data, is.numeric))))
+GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
+GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
+
+# Run function
+TestModel <- RemixAutoML::AutoH2oGAMRegression(
+
+  # Compute management
+  MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  IfSaveModel = "mojo",
+
+  # Model evaluation:
+  eval_metric = "RMSE",
+  NumOfParDepPlots = 3,
+
+  # Metadata arguments:
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+
+  # Data arguments:
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %chin%
+    c("IDcol_1", "IDcol_2","Adrian")],
+  GamColNames = GamCols,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+              "LogPlus1", "Logit", "YeoJohnson"),
+
+  # Model args
+  GridTune = FALSE,
+  MaxModelsInGrid = 10,
+  Distribution = "gaussian",
+  link = "Family_Default")
+```
  
 </p>
 </details> 
@@ -1433,6 +1498,70 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
  
 </p>
 </details> 
+
+##### **AutoH2oGAMClassifier()**
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
+
+# Define GAM Columns to use - up to 9 are allowed
+GamCols <- names(which(unlist(lapply(data, is.numeric))))
+GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
+GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
+
+# Run function
+TestModel <- RemixAutoML::AutoH2oGAMClassifier(
+
+  # Compute management
+  MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  IfSaveModel = "mojo",
+
+  # Model evaluation:
+  eval_metric = "RMSE",
+  NumOfParDepPlots = 3,
+
+  # Metadata arguments:
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+
+  # Data arguments:
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %chin% c("IDcol_1", "IDcol_2","Adrian")],
+  GamColNames = GamCols,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox","Asinh", "Asin","Log","LogPlus1","Logit","YeoJohnson"),
+
+  # Model args
+  GridTune = FALSE,
+  MaxModelsInGrid = 10,
+  Distribution = "binomial",
+  link = "Family_Default",
+  HurdleModel = FALSE)
+ 
+```
+ 
+</p>
+</details> 
   
 #### The Auto_Classifier() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
@@ -1767,6 +1896,55 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
 
 </p>
 </details>
+
+##### **AutoH2oGAMMultiClass()**
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create some dummy correlated data with numeric and categorical features
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
+
+# Define GAM Columns to use - up to 9 are allowed
+GamCols <- names(which(unlist(lapply(data, is.numeric))))
+GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
+GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
+
+# Run function
+TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
+   data,
+   TrainOnFull = FALSE,
+   ValidationData = NULL,
+   TestData = NULL,
+   TargetColumnName = "Adrian",
+   FeatureColNames = names(data)[!names(data) %chin%
+     c("IDcol_1", "IDcol_2","Adrian")],
+   GamColNames = GamCols,
+   eval_metric = "logloss",
+   GridTune = FALSE,
+   MaxMem = "32G",
+   NThreads = max(1, parallel::detectCores()-2),
+   MaxModelsInGrid = 10,
+   model_path = normalizePath("./"),
+   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   ModelID = "FirstModel",
+   ReturnModelObjects = TRUE,
+   SaveModelObjects = FALSE,
+   IfSaveModel = "mojo",
+   H2OShutdown = FALSE,
+   HurdleModel = FALSE)
+```
+
+</p>
+</details>
   
 #### The Auto_MultiClass() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
@@ -1925,7 +2103,7 @@ ________________________________________________________________________________
 <details><summary>Expand to view content</summary>
 <p>
  
-### The **CARMA** Suite
+### The **CARMA** Suite: Panel Data Forecasting
 
 <details><summary>Code Example</summary>
 <p>
@@ -2167,7 +2345,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 
 <code>AutoXGBoostCARMA()</code> utilizes the XGBoost alorithm
 
-<code>AutoH2OCARMA()</code> utilizes H2O Algorithms: RandomForest, GBM, GLM, or AutoML
+<code>AutoH2OCARMA()</code> utilizes H2O Algorithms: RandomForest, GBM, GLM, AutoML, and GAM
 
 <details><summary>Model Highlights</summary>
 <p>

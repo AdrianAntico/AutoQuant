@@ -144,7 +144,7 @@ AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables 
 
 # Load Walmart Data from Dropbox----
 data <- data.table::fread(
- "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+  "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Subset for Stores / Departments With Full Series
 data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][

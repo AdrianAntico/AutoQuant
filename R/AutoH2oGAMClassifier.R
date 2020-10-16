@@ -28,12 +28,13 @@
 #' @param HurdleModel Set to FALSE
 #' @examples
 #' \donttest{
-#' # Create some dummy correlated data with numeric and categorical features
+#'
+#' # Create some dummy correlated data
 #' data <- RemixAutoML::FakeDataGenerator(
 #'   Correlation = 0.85,
-#'   N = 1000L,
-#'   ID = 2L,
-#'   ZIP = 0L,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
 #'   AddDate = FALSE,
 #'   Classification = TRUE,
 #'   MultiClass = FALSE)
@@ -45,30 +46,43 @@
 #'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGAMClassifier(
-#'    data,
-#'    TrainOnFull = FALSE,
-#'    ValidationData = NULL,
-#'    TestData = NULL,
-#'    TargetColumnName = "Adrian",
-#'    FeatureColNames = names(data)[!names(data) %chin%
-#'      c("IDcol_1", "IDcol_2","Adrian")],
-#'    GamColNames = GamCols,
-#'    Distribution = "binomial",
-#'    link = "logit",
-#'    eval_metric = "auc",
-#'    GridTune = FALSE,
-#'    MaxMem = "32G",
-#'    NThreads = max(1, parallel::detectCores()-2),
-#'    MaxModelsInGrid = 10,
-#'    model_path = NULL,
-#'    metadata_path = NULL,
-#'    ModelID = "FirstModel",
-#'    NumOfParDepPlots = 3,
-#'    ReturnModelObjects = TRUE,
-#'    SaveModelObjects = FALSE,
-#'    IfSaveModel = "mojo",
-#'    H2OShutdown = FALSE,
-#'    HurdleModel = FALSE)
+#'
+#'   # Compute management
+#'   MaxMem = "32G",
+#'   NThreads = max(1, parallel::detectCores()-2),
+#'   H2OShutdown = TRUE,
+#'   IfSaveModel = "mojo",
+#'
+#'   # Model evaluation:
+#'   eval_metric = "RMSE",
+#'   NumOfParDepPlots = 3,
+#'
+#'   # Metadata arguments:
+#'   model_path = NULL,
+#'   metadata_path = NULL,
+#'   ModelID = "FirstModel",
+#'   ReturnModelObjects = TRUE,
+#'   SaveModelObjects = FALSE,
+#'
+#'   # Data arguments:
+#'   data = data,
+#'   TrainOnFull = FALSE,
+#'   ValidationData = NULL,
+#'   TestData = NULL,
+#'   TargetColumnName = "Adrian",
+#'   FeatureColNames = names(data)[!names(data) %chin%
+#'     c("IDcol_1", "IDcol_2","Adrian")],
+#'   GamColNames = GamCols,
+#'   TransformNumericColumns = NULL,
+#'   Methods = c("BoxCox","Asinh", "Asin","Log",
+#'     "LogPlus1","Logit","YeoJohnson"),
+#'
+#'   # Model args
+#'   GridTune = FALSE,
+#'   MaxModelsInGrid = 10,
+#'   Distribution = "binomial",
+#'   link = "Family_Default",
+#'   HurdleModel = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export

@@ -1,6 +1,6 @@
-#' AutoH2oGLMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation
+#' AutoH2oGAMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation
 #'
-#' AutoH2oGLMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
+#' AutoH2oGAMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation metrics, confusion matrix, and variable importance.
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Multiclass Classification
 #' @param data This is your data set for training and testing your model
@@ -41,7 +41,7 @@
 #' GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
+#' TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 #'    data,
 #'    TrainOnFull = FALSE,
 #'    ValidationData = NULL,
@@ -66,7 +66,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
-AutoH2oGLMMultiClass <- function(data,
+AutoH2oGAMMultiClass <- function(data,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
                                  TestData = NULL,

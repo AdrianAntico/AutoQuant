@@ -183,6 +183,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 Other Automated Supervised Learning - Multiclass Classification: 
 \code{\link{AutoCatBoostMultiClass}()},
 \code{\link{AutoH2oDRFMultiClass}()},
+\code{\link{AutoH2oGAMMultiClass}()},
 \code{\link{AutoH2oGBMMultiClass}()},
 \code{\link{AutoH2oGLMMultiClass}()},
 \code{\link{AutoH2oMLMultiClass}()}
