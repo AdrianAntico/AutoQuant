@@ -142,12 +142,25 @@ AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables 
 \examples{
 \dontrun{
 
- # Pull in Walmart Data Set
- data <- data.table::fread(
-   "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
- data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
-   , Counts := NULL]
- data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+# Load Walmart Data from Dropbox----
+data <- data.table::fread(
+ "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+# Subset for Stores / Departments With Full Series
+data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+  , Counts := NULL]
+
+# Subset Columns (remove IsHoliday column)----
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store \%in\% c(1,2)]
+
+xregs <- data.table::copy(data)
+xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+xregs[, c("Store","Dept") := NULL]
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+xregs[, Other := jitter(Other, factor = 25)]
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
 
  # Build forecast
 XGBoostResults <- AutoXGBoostCARMA(
@@ -159,13 +172,13 @@ XGBoostResults <- AutoXGBoostCARMA(
   DateColumnName = "Date",
   HierarchGroups = NULL,
   GroupVariables = c("Store","Dept"),
-  TimeUnit = "days",
-  TimeGroups = c("days","weeks"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks","months"),
 
   # Data Wrangling Features
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
-  SplitRatios = c(1 - 10 / 143, 10 / 143),
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
   PartitionType = "timeseries",
   AnomalyDetection = NULL,
 
@@ -184,13 +197,13 @@ XGBoostResults <- AutoXGBoostCARMA(
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
               "LogPlus1","Logit","YeoJohnson"),
-  Difference = TRUE,
+  Difference = FALSE,
 
   # Features
-  Lags = list("days" = seq(1L, 10L, 1L),
-              "weeks" = seq(1L, 5L, 1L)),
-  MA_Periods = list("days" = seq(5L, 20L, 5L),
-                    "weeks" = seq(2L, 10L, 2L)),
+  Lags = list("weeks" = seq(1L, 10L, 1L),
+              "months" = seq(1L, 5L, 1L)),
+  MA_Periods = list("weeks" = seq(5L, 20L, 5L),
+                    "months" = seq(2L, 10L, 2L)),
   SD_Periods = NULL,
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
@@ -198,7 +211,7 @@ XGBoostResults <- AutoXGBoostCARMA(
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
   Quantiles_Selected = c("q5","q95"),
-  XREGS = xreg,
+  XREGS = xregs,
   FourierTerms = 4,
   CalendarVariables = c("week", "month", "quarter"),
   HolidayVariable = c("USPublicHolidays","EasterGroup",
