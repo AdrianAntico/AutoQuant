@@ -205,13 +205,6 @@ CreateCalendarVariables <- function(data,
     if(any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","month","quarter","year"))) data.table::set(data, j = paste0("DATE_", DateColRef), value = NULL)
   }
 
-  # Remove constant columns----
-  if(ncol(data) - NumCols > 0L & nrow(data) > 1L) {
-    colss <- c()
-    for(col in (NumCols + 1L):ncol(data)) if(var(data[[names(data)[col]]], na.rm = TRUE) == 0L) colss <- c(colss, col)
-    if(!is.null(colss)) data.table::set(data, j = names(data)[c(col)], value = NULL)
-  }
-
   # Return data----
   return(data)
 }
