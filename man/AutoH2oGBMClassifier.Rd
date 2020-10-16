@@ -114,7 +114,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
-    TargetColumnName = "Target",
+    TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) \%chin\%
       c("IDcol_1", "IDcol_2","Adrian")],
 
@@ -128,6 +128,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 Other Automated Supervised Learning - Binary Classification: 
 \code{\link{AutoCatBoostClassifier}()},
 \code{\link{AutoH2oDRFClassifier}()},
+\code{\link{AutoH2oGAMClassifier}()},
 \code{\link{AutoH2oGLMClassifier}()},
 \code{\link{AutoH2oMLClassifier}()},
 \code{\link{AutoXGBoostClassifier}()}

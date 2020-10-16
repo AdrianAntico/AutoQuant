@@ -1,6 +1,6 @@
-#' AutoH2oGLMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation
+#' AutoH2oGAMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation
 #'
-#' AutoH2oGLMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
+#' AutoH2oGAMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #' @param data This is your data set for training and testing your model
@@ -9,6 +9,7 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param GamColNames GAM column names. Up to 9 features
 #' @param Distribution "binomial", "quasibinomial"
 #' @param link identity, logit, log, inverse, tweedie
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"
@@ -37,14 +38,21 @@
 #'   Classification = TRUE,
 #'   MultiClass = FALSE)
 #'
+#' # Define GAM Columns to use - up to 9 are allowed
+#' GamCols <- names(which(unlist(lapply(data, is.numeric))))
+#' GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
+#' GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
+#'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoH2oGLMClassifier(
+#' TestModel <- RemixAutoML::AutoH2oGAMClassifier(
 #'    data,
 #'    TrainOnFull = FALSE,
 #'    ValidationData = NULL,
 #'    TestData = NULL,
 #'    TargetColumnName = "Adrian",
-#'    FeatureColNames = names(data)[!names(data) %chin% c("IDcol_1", "IDcol_2","Adrian")],
+#'    FeatureColNames = names(data)[!names(data) %chin%
+#'      c("IDcol_1", "IDcol_2","Adrian")],
+#'    GamColNames = GamCols,
 #'    Distribution = "binomial",
 #'    link = "logit",
 #'    eval_metric = "auc",
@@ -64,12 +72,13 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
-AutoH2oGLMClassifier <- function(data,
+AutoH2oGAMClassifier <- function(data,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 GamColNames = NULL,
                                  Distribution = "binomial",
                                  link = "logit",
                                  eval_metric = "auc",
@@ -185,9 +194,10 @@ AutoH2oGLMClassifier <- function(data,
       hyper_params         = hyper_params,
       search_criteria      = search_criteria,
       is_supervised        = TRUE,
-      algorithm            = "glm",
+      algorithm            = "gam",
       grid_id              = paste0(ModelID, "_Grid"),
       x                    = FeatureColNames,
+      gam_columns          = GamColNames[1L:(min(length(GamColNames),9L))],
       y                    = TargetColumnName,
       training_frame       = datatrain,
       validation_frame     = datavalidate,
@@ -212,8 +222,9 @@ AutoH2oGLMClassifier <- function(data,
 
   # Binary Build Baseline Model----
   if(!TrainOnFull) {
-    base_model <- h2o::h2o.glm(
+    base_model <- h2o::h2o.gam(
       x                = FeatureColNames,
+      gam_columns      = GamColNames[1L:(min(length(GamColNames),9L))],
       y                = TargetColumnName,
       training_frame   = datatrain,
       validation_frame = datavalidate,
@@ -221,8 +232,9 @@ AutoH2oGLMClassifier <- function(data,
       link             = Link,
       model_id         = ModelID)
   } else {
-    base_model <- h2o::h2o.glm(
+    base_model <- h2o::h2o.gam(
       x                = FeatureColNames,
+      gam_columns      = GamColNames[1L:(min(length(GamColNames),9L))],
       y                = TargetColumnName,
       training_frame   = datatrain,
       family           = Distribution,

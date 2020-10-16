@@ -61,7 +61,7 @@
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
-#'     TargetColumnName = "Target",
+#'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[!names(data) %chin%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
 #'
@@ -116,12 +116,19 @@ AutoH2oGBMClassifier <- function(data,
   if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
 
   # Binary Target Name Storage----
-  if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
+  if(!is.character(TargetColumnName)) TargetColumnName <- names(data)[TargetColumnName]
 
   # Binary Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
+
+  # Ensure Target is a factor ----
+  if(!is.factor(data[[eval(TargetColumnName)]])) {
+    data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+    if(!is.null(ValidationData)) ValidationData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+    if(!is.null(TestData)) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+  }
 
   # Binary Data Partition----
   if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
@@ -130,7 +137,7 @@ AutoH2oGBMClassifier <- function(data,
       NumDataSets = 3L,
       Ratios = c(0.70, 0.20, 0.10),
       PartitionType = "random",
-      StratifyColumnNames = Target,
+      StratifyColumnNames = TargetColumnName,
       TimeColumnName = NULL)
     data <- dataSets$TrainData
     ValidationData <- dataSets$ValidationData
@@ -406,7 +413,7 @@ AutoH2oGBMClassifier <- function(data,
     EvaluationPlot <- EvalPlot(
       data = ValidationData,
       PredictionColName = "p1",
-      TargetColName = Target,
+      TargetColName = TargetColumnName,
       GraphType = "calibration",
       PercentileBucket = 0.05,
       aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -414,7 +421,7 @@ AutoH2oGBMClassifier <- function(data,
     EvaluationPlot <- EvalPlot(
       data = ValidationData,
       PredictionColName = "Predict",
-      TargetColName = Target,
+      TargetColName = TargetColumnName,
       GraphType = "calibration",
       PercentileBucket = 0.05,
       aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -441,14 +448,14 @@ AutoH2oGBMClassifier <- function(data,
   # Binary AUC Object Create----
   temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:min(100000L, ValidationData[,.N])]
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    AUC_Metrics <- pROC::roc(response = temp[[eval(Target)]],
+    AUC_Metrics <- pROC::roc(response = temp[[eval(TargetColumnName)]],
                              predictor = temp[["p1"]],
                              na.rm = TRUE,
                              algorithm = 3L,
                              auc = TRUE,
                              ci = TRUE)
   } else {
-    AUC_Metrics <- pROC::roc(response = temp[[eval(Target)]],
+    AUC_Metrics <- pROC::roc(response = temp[[eval(TargetColumnName)]],
                              predictor = temp[["Predict"]],
                              na.rm = TRUE,
                              algorithm = 3L,
@@ -500,8 +507,8 @@ AutoH2oGBMClassifier <- function(data,
         Out <- ParDepCalPlots(
           data = ValidationData,
           PredictionColName = "p1",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
+          TargetColName = TargetColumnName,
+          IndepVar = gsub("\\..*","",VariableImportance[i, Variable]),
           GraphType = "calibration",
           PercentileBucket = 0.05,
           FactLevels = 10,
@@ -516,8 +523,8 @@ AutoH2oGBMClassifier <- function(data,
         Out <- ParDepCalPlots(
           data = ValidationData,
           PredictionColName = "Predict",
-          TargetColName = Target,
-          IndepVar = VariableImportance[i, Variable],
+          TargetColName = TargetColumnName,
+          IndepVar = gsub("\\..*","",VariableImportance[i, Variable]),
           GraphType = "calibration",
           PercentileBucket = 0.05,
           FactLevels = 10,

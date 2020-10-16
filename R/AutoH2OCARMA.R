@@ -4,7 +4,7 @@
 #'
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
-#' @param AlgoType Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, and "automl" for H2O's AutoML algo.
+#' @param AlgoType Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, "automl" for H2O's AutoML algo, and "gam" for H2O's Generalized Additive Model.
 #' @param ExcludeAlgos For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"
 #' @param data Supply your full series data set here
 #' @param TrainOnFull Set to TRUE to train on full data
@@ -1052,6 +1052,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       Trees = NTrees,
       GridTune = GridTune,
       MaxModelsInGrid = ModelCount)
+
   } else if(tolower(AlgoType) == "glm") {
 
     # Generalized Linear Model ----
@@ -1173,7 +1174,73 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       ExcludeAlgos = ExcludeAlgos,
       Trees = NTrees,
       MaxModelsInGrid = ModelCount)
+  } else if(tolower(AlgoType) == "gam") {
+
+    # Define Gam Cols ----
+    GamCols <- names(which(unlist(lapply(data[, .SD, .SDcols = ModelFeatures], is.numeric))))
+    GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
+
+    # Build GAM ----
+    TestModel <- RemixAutoML::AutoH2oGAMRegression(
+
+      # Compute management
+      MaxMem = MaxMem,
+      NThreads = NThreads,
+      H2OShutdown = FALSE,
+      IfSaveModel = "mojo",
+      Alpha = NULL,
+      Distribution = "gaussian",
+
+      # Model evaluation:
+      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
+      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
+      #     A value of 3 will return plots for the top 3 variables based on variable importance
+      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
+      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 0,
+
+      # Metadata arguments:
+      #   'ModelID' is used to create part of the file names generated when saving to file'
+      #   'model_path' is where the minimal model objects for scoring will be stored
+      #      'ModelID' will be the name of the saved model object
+      #   'metadata_path' is where model evaluation and model interpretation files are saved
+      #      objects saved to model_path if metadata_path is null
+      #      Saved objects include:
+      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
+      #         'ModelID_VariableImportance.csv' is the variable importance.
+      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      model_path = getwd(),
+      metadata_path = getwd(),
+      ModelID = "ModelTest",
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+
+      # Data arguments:
+      #   'TrainOnFull' is to train a model with 100 percent of your data.
+      #     That means no holdout data will be used for evaluation
+      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
+      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
+      #     CatBoost categorical treatment is enhanced when supplied
+      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      data = train,
+      TrainOnFull = TrainOnFull,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      GamColNames = GamCols,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+
+      # Model args
+      Trees = NTrees,
+      GridTune = GridTune,
+      MaxModelsInGrid = ModelCount)
+
   }
+
 
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) {

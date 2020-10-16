@@ -12,7 +12,7 @@ AutoH2oGLMClassifier(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   Distribution = "binomial",
-  link = NULL,
+  link = "logit",
   eval_metric = "auc",
   GridTune = FALSE,
   MaxMem = "32G",
@@ -101,7 +101,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
    TargetColumnName = "Adrian",
    FeatureColNames = names(data)[!names(data) \%chin\% c("IDcol_1", "IDcol_2","Adrian")],
    Distribution = "binomial",
-   link = NULL,
+   link = "logit",
    eval_metric = "auc",
    GridTune = FALSE,
    MaxMem = "32G",
@@ -122,6 +122,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
 Other Automated Supervised Learning - Binary Classification: 
 \code{\link{AutoCatBoostClassifier}()},
 \code{\link{AutoH2oDRFClassifier}()},
+\code{\link{AutoH2oGAMClassifier}()},
 \code{\link{AutoH2oGBMClassifier}()},
 \code{\link{AutoH2oMLClassifier}()},
 \code{\link{AutoXGBoostClassifier}()}

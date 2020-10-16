@@ -104,12 +104,19 @@ AutoH2oDRFMultiClass <- function(data,
   if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
 
   # MultiClass Target Name Storage----
-  if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
+  if(!is.character(TargetColumnName)) TargetColumnName <- names(data)[TargetColumnName]
 
   # MultiClass Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
+
+  # Ensure Target is a factor ----
+  if(!is.factor(data[[eval(TargetColumnName)]])) {
+    data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+    if(!is.null(ValidationData)) ValidationData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+    if(!is.null(TestData)) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
+  }
 
   # MultiClass Data Partition----
   if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
@@ -118,7 +125,7 @@ AutoH2oDRFMultiClass <- function(data,
       NumDataSets = 3L,
       Ratios = c(0.70, 0.20, 0.10),
       PartitionType = "random",
-      StratifyColumnNames = Target,
+      StratifyColumnNames = TargetColumnName,
       TimeColumnName = NULL)
     data <- dataSets$TrainData
     ValidationData <- dataSets$ValidationData
@@ -130,14 +137,14 @@ AutoH2oDRFMultiClass <- function(data,
   if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
   if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
 
-  # MultiClass Ensure Target Is a Factor Type----
-  if(!is.factor(dataTrain[[eval(Target)]])) dataTrain[, eval(Target) := as.factor(get(Target))]
+  # MultiClass Ensure TargetColumnName Is a Factor Type----
+  if(!is.factor(dataTrain[[eval(TargetColumnName)]])) dataTrain[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
 
-  # MultiClass Ensure Target Is a Factor Type----
-  if(!TrainOnFull) if(!is.factor(dataTest[[eval(Target)]])) dataTest[, eval(Target) := as.factor(get(Target))]
+  # MultiClass Ensure TargetColumnName Is a Factor Type----
+  if(!TrainOnFull) if(!is.factor(dataTest[[eval(TargetColumnName)]])) dataTest[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
 
-  # MultiClass Ensure Target Is a Factor Type----
-  if(!is.null(TestData)) if(!is.factor(TestData[[eval(Target)]])) TestData[, eval(Target) := as.factor(get(Target))]
+  # MultiClass Ensure TargetColumnName Is a Factor Type----
+  if(!is.null(TestData)) if(!is.factor(TestData[[eval(TargetColumnName)]])) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
 
   # MultiClass Save Names of data----
   if(is.numeric(FeatureColNames)) {
@@ -384,14 +391,10 @@ AutoH2oDRFMultiClass <- function(data,
   }
 
   # MultiClass Metrics Accuracy----
-  if(TargetColumnName == "Target") {
+  if(!TrainOnFull) {
     ValidationData[, eval(TargetColumnName) := as.character(get(TargetColumnName))]
     ValidationData[, Predict := as.character(Predict)]
     MetricAcc <- ValidationData[, mean(data.table::fifelse(get(TargetColumnName) == Predict, 1.0, 0.0), na.rm = TRUE)]
-  } else {
-    ValidationData[, eval(Target) := as.character(get(Target))]
-    ValidationData[, Predict := as.character(Predict)]
-    MetricAcc <- ValidationData[, mean(data.table::fifelse(get(Target) == Predict, 1.0, 0.0), na.rm = TRUE)]
   }
 
   # MultiClass Evaluation Metrics Table----
@@ -401,7 +404,7 @@ AutoH2oDRFMultiClass <- function(data,
   data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
 
   # MultiClass Save Validation Data to File----
-  if(SaveModelObjects) {
+  if(SaveModelObjects & !TrainOnFull) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
     } else {
@@ -410,7 +413,7 @@ AutoH2oDRFMultiClass <- function(data,
   }
 
   # MultiClass Save ConfusionMatrix to File----
-  if(SaveModelObjects) {
+  if(SaveModelObjects & !TrainOnFull) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(ConfusionMatrix, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
@@ -419,26 +422,34 @@ AutoH2oDRFMultiClass <- function(data,
   }
 
   # VI_Plot_Function
-  VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1L:min(10L, .N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
-      ggplot2::geom_bar(stat = "identity") +
-      ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-      ggplot2::coord_flip() +
-      ggplot2::labs(title = "Global Variable Importance") +
-      ggplot2::xlab("Top Model Features") +
-      ggplot2::ylab("Value")
+  if(!TrainOnFull) {
+    VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
+      ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
+        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
+        ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
+        ggplot2::coord_flip() +
+        ggplot2::labs(title = "Global Variable Importance") +
+        ggplot2::xlab("Top Model Features") +
+        ggplot2::ylab("Value")
+    }
   }
 
   # MultiClass Return Objects----
   if(ReturnModelObjects) {
-    return(list(
-      Model = FinalModel,
-      ValidationData = ValidationData,
-      ConfusionMatrix = ConfusionMatrix,
-      EvaluationMetrics = EvaluationMetrics,
-      VariableImportance = VariableImportance,
-      VI_Plot = VI_Plot(VI_Data = VariableImportance),
-      ColNames = Names))
+    if(!TrainOnFull) {
+      return(list(
+        Model = FinalModel,
+        ValidationData = ValidationData,
+        ConfusionMatrix = ConfusionMatrix,
+        EvaluationMetrics = EvaluationMetrics,
+        VariableImportance = VariableImportance,
+        VI_Plot = VI_Plot(VI_Data = VariableImportance),
+        ColNames = Names))
+    } else {
+      return(list(
+        Model = FinalModel,
+        ColNames = Names))
+    }
   }
 }

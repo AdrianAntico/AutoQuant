@@ -51,7 +51,7 @@ AutoH2OCARMA(
 )
 }
 \arguments{
-\item{AlgoType}{Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, and "automl" for H2O's AutoML algo.}
+\item{AlgoType}{Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, "automl" for H2O's AutoML algo, and "gam" for H2O's Generalized Additive Model.}
 
 \item{data}{Supply your full series data set here}
 

@@ -9,6 +9,7 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param GamColNames GAM column names. Up to 9 features
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
@@ -34,6 +35,11 @@
 #'   Classification = FALSE,
 #'   MultiClass = TRUE)
 #'
+#' # Define GAM Columns to use - up to 9 are allowed
+#' GamCols <- names(which(unlist(lapply(data, is.numeric))))
+#' GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
+#' GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
+#'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 #'    data,
@@ -41,7 +47,9 @@
 #'    ValidationData = NULL,
 #'    TestData = NULL,
 #'    TargetColumnName = "Adrian",
-#'    FeatureColNames = names(data)[!names(data) %chin% c("IDcol_1", "IDcol_2","Adrian")],
+#'    FeatureColNames = names(data)[!names(data) %chin%
+#'      c("IDcol_1", "IDcol_2","Adrian")],
+#'    GamColNames = GamCols,
 #'    eval_metric = "logloss",
 #'    GridTune = FALSE,
 #'    MaxMem = "32G",
@@ -64,6 +72,7 @@ AutoH2oGLMMultiClass <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 GamColNames = NULL,
                                  eval_metric = "logloss",
                                  GridTune = FALSE,
                                  MaxMem = "32G",
@@ -131,7 +140,7 @@ AutoH2oGLMMultiClass <- function(data,
   if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
   if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
 
-  # MultiClass Ensure TargetColumnName Is a Factor Type----
+  # MultiClass Ensure Target Is a Factor Type----
   if(!is.factor(dataTrain[[eval(TargetColumnName)]])) dataTrain[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
   if(!TrainOnFull) if(!is.factor(dataTest[[eval(TargetColumnName)]])) dataTest[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
   if(!is.null(TestData)) if(!is.factor(TestData[[eval(TargetColumnName)]])) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
@@ -174,10 +183,11 @@ AutoH2oGLMMultiClass <- function(data,
       hyper_params         = hyper_params,
       search_criteria      = search_criteria,
       is_supervised        = TRUE,
-      algorithm            = "glm",
+      algorithm            = "gam",
       family               = "multinomial",
       grid_id              = paste0(ModelID, "_Grid"),
       x                    = FeatureColNames,
+      gam_columns          = GamColNames[1L:(min(length(GamColNames),9L))],
       y                    = TargetColumnName,
       ntrees               = Trees,
       training_frame       = datatrain,
@@ -202,17 +212,19 @@ AutoH2oGLMMultiClass <- function(data,
 
   # MultiClass Build Baseline Model----
   if(!TrainOnFull) {
-    base_model <- h2o::h2o.glm(
+    base_model <- h2o::h2o.gam(
       x                = FeatureColNames,
       y                = TargetColumnName,
+      gam_columns      = GamColNames[1L:(min(length(GamColNames),9L))],
       training_frame   = datatrain,
       validation_frame = datavalidate,
       family           = "multinomial",
       model_id         = ModelID)
   } else {
-    base_model <- h2o::h2o.glm(
+    base_model <- h2o::h2o.gam(
       x                = FeatureColNames,
       y                = TargetColumnName,
+      gam_columns      = GamColNames[1L:(min(length(GamColNames),9L))],
       training_frame   = datatrain,
       family           = "multinomial",
       model_id         = ModelID)

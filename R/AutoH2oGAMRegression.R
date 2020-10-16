@@ -1,6 +1,6 @@
-#' AutoH2oGLMRegression is an automated H2O modeling framework with grid-tuning and model evaluation
+#' AutoH2oGAMRegression is an automated H2O modeling framework with grid-tuning and model evaluation
 #'
-#' AutoH2oGLMRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+#' AutoH2oGAMRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #' @param data This is your data set for training and testing your model
@@ -9,6 +9,7 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param GamColNames GAM column names. Up to 9 features
 #' @param Distribution "binomial", "quasibinomial"
 #' @param link identity, logit, log, inverse, tweedie
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
@@ -39,8 +40,13 @@
 #'   Classification = FALSE,
 #'   MultiClass = FALSE)
 #'
+#' # Define GAM Columns to use - up to 9 are allowed
+#' GamCols <- names(which(unlist(lapply(data, is.numeric))))
+#' GamCols <- GamCols[!GamCols %in% c("Adrian","IDcol_1","IDcol_2")]
+#' GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
+#'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoH2oGLMRegression(
+#' TestModel <- RemixAutoML::AutoH2oGAMRegression(
 #'
 #'     # Compute management
 #'     MaxMem = "32G",
@@ -60,12 +66,14 @@
 #'     SaveModelObjects = FALSE,
 #'
 #'     # Data arguments:
+#'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[!names(data) %chin%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
+#'     GamColNames = GamCols,
 #'     TransformNumericColumns = NULL,
 #'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
 #'                 "LogPlus1", "Logit", "YeoJohnson"),
@@ -78,12 +86,13 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export
-AutoH2oGLMRegression <- function(data,
+AutoH2oGAMRegression <- function(data,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 GamColNames = NULL,
                                  Distribution = "gaussian",
                                  link = "identity",
                                  TransformNumericColumns = NULL,
@@ -285,9 +294,10 @@ AutoH2oGLMRegression <- function(data,
       hyper_params         = hyper_params,
       search_criteria      = search_criteria,
       is_supervised        = TRUE,
-      algorithm            = "glm",
+      algorithm            = "gam",
       grid_id              = paste0(ModelID, "_Grid"),
       x                    = FeatureColNames,
+      gam_columns          = GamColNames[1L:(min(length(GamColNames),9L))],
       y                    = TargetColumnName,
       training_frame       = datatrain,
       validation_frame     = datavalidate,
@@ -312,12 +322,13 @@ AutoH2oGLMRegression <- function(data,
   }
 
   # Define link----
-  if(!GridTune) if(!is.null(link)) Link <- link else Link <- "identity"
+  if(!GridTune) if(!is.null(link)) Link <- link else Link <- "family_default"
 
-  # Binary Build Baseline Model----
+  # Regression Build Baseline Model----
   if(!TrainOnFull) {
-    base_model <- h2o::h2o.glm(
+    base_model <- h2o::h2o.gam(
       x                = FeatureColNames,
+      gam_columns      = GamColNames[1L:(min(length(GamColNames),9L))],
       y                = TargetColumnName,
       training_frame   = datatrain,
       validation_frame = datavalidate,
@@ -325,8 +336,9 @@ AutoH2oGLMRegression <- function(data,
       link             = Link,
       model_id         = ModelID)
   } else {
-    base_model <- h2o::h2o.glm(
+    base_model <- h2o::h2o.gam(
       x                = FeatureColNames,
+      gam_columns      = GamColNames[1L:(min(length(GamColNames),9L))],
       y                = TargetColumnName,
       training_frame   = datatrain,
       family           = Distribution,

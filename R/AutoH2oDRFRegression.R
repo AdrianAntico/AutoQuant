@@ -608,7 +608,7 @@ AutoH2oDRFRegression <- function(data,
     # Regression Partial Dependence----
     ParDepPlots <- list()
     ParDepBoxPlots <- list()
-    if(NumOfParDepPlots == 0) {
+    if(NumOfParDepPlots != 0) {
       j <- 0L
       k <- 0L
       for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
@@ -617,7 +617,7 @@ AutoH2oDRFRegression <- function(data,
             data = ValidationData,
             PredictionColName = "Predict",
             TargetColName = Target,
-            IndepVar = VariableImportance[i, Variable],
+            IndepVar = gsub("\\..*","",VariableImportance[i, Variable]),
             GraphType = "calibration",
             PercentileBucket = 0.05,
             FactLevels = 10,
@@ -630,7 +630,7 @@ AutoH2oDRFRegression <- function(data,
             data = ValidationData,
             PredictionColName = "Predict",
             TargetColName = Target,
-            IndepVar = VariableImportance[i, Variable],
+            IndepVar = gsub("\\..*","",VariableImportance[i, Variable]),
             GraphType = "boxplot",
             PercentileBucket = 0.05,
             FactLevels = 10,

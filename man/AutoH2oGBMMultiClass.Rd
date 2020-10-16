@@ -92,7 +92,7 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
    TrainOnFull = FALSE,
    ValidationData = NULL,
    TestData = NULL,
-   TargetColumnName = "Target",
+   TargetColumnName = "Adrian",
    FeatureColNames = names(data)[!names(data) \%chin\%
      c("IDcol_1", "IDcol_2","Adrian")],
    eval_metric = "logloss",

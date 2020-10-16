@@ -217,6 +217,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 Other Automated Supervised Learning - Regression: 
 \code{\link{AutoCatBoostRegression}()},
 \code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGAMRegression}()},
 \code{\link{AutoH2oGBMRegression}()},
 \code{\link{AutoH2oGLMRegression}()},
 \code{\link{AutoH2oMLRegression}()}

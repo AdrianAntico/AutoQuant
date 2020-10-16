@@ -247,6 +247,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 \seealso{
 Other Automated Supervised Learning - Binary Classification: 
 \code{\link{AutoH2oDRFClassifier}()},
+\code{\link{AutoH2oGAMClassifier}()},
 \code{\link{AutoH2oGBMClassifier}()},
 \code{\link{AutoH2oGLMClassifier}()},
 \code{\link{AutoH2oMLClassifier}()},
