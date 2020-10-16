@@ -1931,77 +1931,234 @@ ________________________________________________________________________________
 <p>
 
 ```
-# Pull in Walmart Data Set
+# Catboost Version ----
+
+# Load Walmart Data from Dropbox----
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+# Prepare data
 data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
-data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store %in% c(1,2)]
+xregs <- data.table::copy(data)
+xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+xregs[, c("Store","Dept") := NULL]
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+xregs[, Other := jitter(Other, factor = 25)]
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
 
 # Build forecast
 CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
-   # data args
-   data = data,
-   TargetColumnName = "Weekly_Sales",
-   DateColumnName = "Date",
-   HierarchGroups = NULL,
-   GroupVariables = c("Dept"),
-   TimeUnit = "weeks",
-   TimeGroups = c("weeks","months"),
+  # data args
+  data = data,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Dept"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks","months"),
 
-   # Production args
-   TrainOnFull = TRUE,
-   SplitRatios = c(1 - 10 / 138, 10 / 138),
-   PartitionType = "random",
-   FC_Periods = 4,
-   Timer = TRUE,
-   DebugMode = TRUE,
+  # Production args
+  TrainOnFull = TRUE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
+  FC_Periods = 4,
+  Timer = TRUE,
+  DebugMode = TRUE,
 
-   # Target transformations
-   TargetTransformation = TRUE,
-   Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
-   Difference = FALSE,
-   NonNegativePred = FALSE,
+  # Target transformations
+  TargetTransformation = TRUE,
+  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Difference = FALSE,
+  NonNegativePred = FALSE,
 
-   # Date features
-   CalendarVariables = c("week","month","quarter"),
-   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-   HolidayLags = 1,
-   HolidayMovingAverages = 1:2,
+  # Date features
+  CalendarVariables = c("week","month","quarter"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
 
-   # Time series features
-   Lags = list("weeks" = seq(2L, 10L, 2L), "months" = c(1:3)),
-   MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3)),
-   SD_Periods = list("weeks" = seq(26L,52L), "months" = c(12L)),
-   Skew_Periods = list("weeks" = seq(26L,52L), "months" = c(12L)),
-   Kurt_Periods = list("weeks" = seq(26L,52L), "months" = c(12L)),
-   Quantile_Periods = list("weeks" = seq(26L,52L), "months" = c(12L)),
-   Quantiles_Selected = c("q5","q95"),
+  # Time series features
+  Lags = list("weeks" = seq(2L, 10L, 2L), "months" = c(1:3)),
+  MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = c("q5","q95"),
 
-   # Bonus features
-   AnomalyDetection = list(tstat_high = 4, tstat_low = -4),
-   XREGS = xregs,
-   FourierTerms = 2,
-   TimeTrendVariable = TRUE,
-   ZeroPadSeries = NULL,
-   DataTruncate = FALSE,
-   NumOfParDepPlots = 100L,
+  # Bonus features
+  AnomalyDetection = list(tstat_high = 4, tstat_low = -4),
+  XREGS = xregs,
+  FourierTerms = 2,
+  TimeTrendVariable = TRUE,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+  NumOfParDepPlots = 100L,
 
-   # ML Args
-   EvalMetric = "RMSE",
-   GridTune = FALSE,
-   PassInGrid = PassInGrid,
-   GridEvalMetric = "mae",
-   ModelCount = 5,
-   TaskType = "GPU",
-   NumGPU = 1,
-   MaxRunsWithoutNewWinner = 50,
-   MaxRunMinutes = 24*60,
-   NTrees = seq(2990,3000,1),
-   L2_Leaf_Reg = 3.0:6.0,
-   RandomStrength = seq(1,2,0.1),
-   BorderCount = seq(32,256,32),
-   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-   Depth = seq(6,10,1))
+  # ML Args
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  PassInGrid = PassInGrid,
+  GridEvalMetric = "mae",
+  ModelCount = 5,
+  TaskType = "GPU",
+  NumGPU = 1,
+  MaxRunsWithoutNewWinner = 50,
+  MaxRunMinutes = 24*60,
+  NTrees = seq(2990,3000,1),
+  L2_Leaf_Reg = 3.0:6.0,
+  RandomStrength = seq(1,2,0.1),
+  BorderCount = seq(32,256,32),
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+  Depth = seq(6,10,1))
+   
+   
+# XGBoost Version ----
+
+# Load Walmart Data from Dropbox----
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+# Prepare data
+data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store %in% c(1,2)]
+xregs <- data.table::copy(data)
+xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+xregs[, c("Store","Dept") := NULL]
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+xregs[, Other := jitter(Other, factor = 25)]
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
+
+ # Build forecast
+XGBoostResults <- AutoXGBoostCARMA(
+
+  # Data Artifacts
+  data = data,
+  NonNegativePred = FALSE,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks","months"),
+
+  # Data Wrangling Features
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "timeseries",
+  AnomalyDetection = NULL,
+
+  # Productionize
+  FC_Periods = 4,
+  TrainOnFull = FALSE,
+  TreeMethod = "hist",
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  ModelCount = 5,
+  NThreads = 8,
+  Timer = TRUE,
+  DebugMode = FALSE,
+
+  # Target Transformations
+  TargetTransformation = TRUE,
+  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Difference = FALSE,
+
+  # Features
+  Lags = list("weeks" = seq(1L, 10L, 1L), "months" = seq(1L, 5L, 1L)),
+  MA_Periods = list("weeks" = seq(5L, 20L, 5L), "months" = seq(2L, 10L, 2L)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+  Quantiles_Selected = c("q5","q95"),
+  XREGS = xregs,
+  FourierTerms = 4,
+  CalendarVariables = c("week","month","quarter"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  TimeTrendVariable = TRUE,
+  NTrees = 300)
+  
+  
+# H2O Version ----
+
+# Load Walmart Data from Dropbox----
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+# Subset for Stores / Departments With Full Series
+data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+
+# Subset Columns (remove IsHoliday column)----
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store == 1][, Store := NULL]
+xregs <- data.table::copy(data)
+data.table::setnames(xregs, "Dept", "GroupVar")
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
+
+# Build forecast
+Results <- RemixAutoML::AutoH2OCARMA(
+
+  # Data Artifacts
+  AlgoType = "drf",
+  ExcludeAlgos = NULL,
+  data = data,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Dept"),
+  TimeUnit = "week",
+  TimeGroups = c("weeks","months"),
+
+  # Data Wrangling Features
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
+
+  # Productionize
+  FC_Periods = 4L,
+  TrainOnFull = FALSE,
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  ModelCount = 5,
+  MaxMem = "28G",
+  NThreads = parallel::detectCores(),
+  Timer = TRUE,
+
+  # Target Transformations
+  TargetTransformation = FALSE,
+  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Difference = FALSE,
+  NonNegativePred = FALSE,
+
+  # Features
+  AnomalyDetection = NULL,
+  HolidayLags = 1:7,
+  HolidayMovingAverages = 2:7,
+  Lags = list("weeks" = c(1:4), "months" = c(1:3)),
+  MA_Periods = list("weeks" = c(2:8), "months" = c(6:12)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
+  XREGS = NULL,
+  FourierTerms = 2L,
+  CalendarVariables = c("week","month","quarter"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  TimeTrendVariable = TRUE,
+  NTrees = 1000L,
+  DebugMode = TRUE)
+
 ```
 
 </p>
