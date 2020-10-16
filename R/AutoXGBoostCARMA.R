@@ -1565,7 +1565,6 @@ AutoXGBoostCARMA <- function(data,
         # Update data for scoring next iteration----
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
-
       }
 
       # No Group with or without Diff
