@@ -2092,10 +2092,8 @@ XGBoostResults <- AutoXGBoostCARMA(
 # Load Walmart Data from Dropbox----
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
-# Subset for Stores / Departments With Full Series
+# Prepare data
 data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
-
-# Subset Columns (remove IsHoliday column)----
 keep <- c("Store","Dept","Date","Weekly_Sales")
 data <- data[, ..keep]
 data <- data[Store == 1][, Store := NULL]
