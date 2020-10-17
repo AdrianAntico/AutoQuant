@@ -1470,42 +1470,8 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Merge XREGS if not null----
       if(DebugMode) print("Merge XREGS if not null----")
       if(!is.null(XREGS)) {
-
-        # Ensure Grouping Variables are Character----
         if(!is.null(GroupVariables)) {
-          if(length(GroupVariables) > 1) {
-            for(gv in seq_len(length(GroupVariables))) {
-              if(!is.character(CalendarFeatures[[eval(GroupVariables[gv])]])) {
-                data.table::set(CalendarFeatures, j = eval(GroupVariables[gv]), value = as.character(CalendarFeatures[[eval(GroupVariables[gv])]]))
-              }
-              if(all(GroupVariables %chin% names(XREGS)) & "GroupVar" %chin% names(XREGS)) XREGS[, GroupVar := NULL]
-              if(!is.character(XREGS[[eval(GroupVariables[gv])]])) {
-                data.table::set(XREGS, j = eval(GroupVariables[gv]), value = as.character(XREGS[[eval(GroupVariables[gv])]]))
-              }
-            }
-          } else {
-            if(!is.character(CalendarFeatures[["GroupVar"]])) {
-              data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
-            }
-            if(!is.character(XREGS[["GroupVar"]])) {
-              data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
-            }
-          }
-
-          # Match GroupVariables Type----
-          if(!is.null(GroupVariables)) {
-            if(!"GroupVar" %chin% names(XREGS)) {
-              if(IndepentVariablesPass %chin% names(XREGS)) {
-                CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(IndepentVariablesPass,eval(DateColumnName)), all = FALSE)
-              } else {
-                CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(GroupVariables,eval(DateColumnName)), all = FALSE)
-              }
-            } else {
-              CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
-            }
-          } else {
-            CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(eval(DateColumnName)), all = FALSE)
-          }
+          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
         } else {
           CalendarFeatures <- merge(CalendarFeatures, XREGS, by = eval(DateColumnName), all = FALSE)
         }

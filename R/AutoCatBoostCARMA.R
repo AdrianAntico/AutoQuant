@@ -56,6 +56,8 @@
 #' @examples
 #' \dontrun{
 #'
+#'  # Single group variable and xregs ----
+#'
 #'  # Load Walmart Data from Dropbox----
 #'  data <- data.table::fread(
 #'    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
@@ -144,14 +146,102 @@
 #'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
 #'   Depth = 6)
 #'
-#' UpdateMetrics <- print(
-#'   CatBoostResults$ModelInformation$EvaluationMetrics[
-#'     Metric == "MSE", MetricValue := sqrt(MetricValue)])
-#' print(UpdateMetrics)
-#' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
-#' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
-#' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
-#' CatBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
+#' # Two group variables and xregs
+#'
+#' # Load Walmart Data from Dropbox----
+#' data <- data.table::fread(
+#'  "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'
+#' # Subset for Stores / Departments With Full Series
+#' data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+#'   , Counts := NULL]
+#'
+#' # Subset Columns (remove IsHoliday column)----
+#' keep <- c("Store","Dept","Date","Weekly_Sales")
+#' data <- data[, ..keep]
+#' data <- data[Store %in% c(1,2)]
+#'
+#' xregs <- data.table::copy(data)
+#' xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+#' xregs[, c("Store","Dept") := NULL]
+#' data.table::setnames(xregs, "Weekly_Sales", "Other")
+#' xregs[, Other := jitter(Other, factor = 25)]
+#' data <- data[as.Date(Date) < as.Date('2012-09-28')]
+#'
+#' # Ensure no spaces in variable names
+#' data.table::setnames(data, old = names(data), new = gsub("\\.|/|\\-|\"|\\s", "", names(data)))
+#' data.table::setnames(xregs, old = names(xregs), new = gsub("\\.|/|\\-|\"|\\s", "", names(xregs)))
+#'
+#' # Build forecast
+#' CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
+#'
+#'   # data args
+#'   data = data, # TwoGroup_Data,
+#'   TargetColumnName = "Weekly_Sales",
+#'   DateColumnName = "Date",
+#'   HierarchGroups = NULL,
+#'   GroupVariables = c("Store","Dept"),
+#'   TimeUnit = "weeks",
+#'   TimeGroups = c("weeks","months"),
+#'
+#'   # Production args
+#'   TrainOnFull = TRUE,
+#'   SplitRatios = c(1 - 10 / 138, 10 / 138),
+#'   PartitionType = "random",
+#'   FC_Periods = 4,
+#'   Timer = TRUE,
+#'   DebugMode = TRUE,
+#'
+#'   # Target transformations
+#'   TargetTransformation = TRUE,
+#'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'               "LogPlus1", "Logit", "YeoJohnson"),
+#'   Difference = FALSE,
+#'   NonNegativePred = FALSE,
+#'
+#'   # Date features
+#'   CalendarVariables = c("week", "month", "quarter"),
+#'   HolidayVariable = c("USPublicHolidays",
+#'                       "EasterGroup",
+#'                       "ChristmasGroup","OtherEcclesticalFeasts"),
+#'   HolidayLags = 1,
+#'   HolidayMovingAverages = 1:2,
+#'
+#'   # Time series features
+#'   Lags = list("weeks" = seq(2L, 10L, 2L),
+#'               "months" = c(1:3)),
+#'   MA_Periods = list("weeks" = seq(2L, 10L, 2L),
+#'                     "months" = c(2,3)),
+#'   SD_Periods = NULL,
+#'   Skew_Periods = NULL,
+#'   Kurt_Periods = NULL,
+#'   Quantile_Periods = NULL,
+#'   Quantiles_Selected = c("q5","q95"),
+#'
+#'   # Bonus features
+#'   AnomalyDetection = NULL,
+#'   XREGS = xregs,
+#'   FourierTerms = 2,
+#'   TimeTrendVariable = TRUE,
+#'   ZeroPadSeries = NULL,
+#'   DataTruncate = FALSE,
+#'
+#'   # ML Args
+#'   NumOfParDepPlots = 100L,
+#'   EvalMetric = "RMSE",
+#'   GridTune = FALSE,
+#'   PassInGrid = NULL,
+#'   ModelCount = 5,
+#'   TaskType = "GPU",
+#'   NumGPU = 1,
+#'   MaxRunsWithoutNewWinner = 50,
+#'   MaxRunMinutes = 60*60,
+#'   NTrees = 2500,
+#'   L2_Leaf_Reg = 3.0,
+#'   RandomStrength = 1,
+#'   BorderCount = 254,
+#'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+#'   Depth = 6)
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
@@ -1262,42 +1352,9 @@ AutoCatBoostCARMA <- function(data,
       # Merge XREGS if not null----
       if(DebugMode) print("Merge XREGS if not null----")
       if(!is.null(XREGS)) {
-
-        # Ensure Grouping Variables are Character----
         if(!is.null(GroupVariables)) {
-          if(length(GroupVariables) > 1) {
-            for(gv in seq_len(length(GroupVariables))) {
-              if(!is.character(CalendarFeatures[[eval(GroupVariables[gv])]])) {
-                data.table::set(CalendarFeatures, j = eval(GroupVariables[gv]), value = as.character(CalendarFeatures[[eval(GroupVariables[gv])]]))
-              }
-              if(all(GroupVariables %chin% names(XREGS)) & "GroupVar" %chin% names(XREGS)) XREGS[, GroupVar := NULL]
-              if(!is.character(XREGS[[eval(GroupVariables[gv])]])) {
-                data.table::set(XREGS, j = eval(GroupVariables[gv]), value = as.character(XREGS[[eval(GroupVariables[gv])]]))
-              }
-            }
-          } else {
-            if(!is.character(CalendarFeatures[["GroupVar"]])) {
-              data.table::set(CalendarFeatures, j = eval(GroupVariables[zz]), value = as.character(CalendarFeatures[[eval(GroupVariables[zz])]]))
-            }
-            if(!is.character(XREGS[["GroupVar"]])) {
-              data.table::set(XREGS, j = "GroupVar", value = as.character(XREGS[["GroupVar"]]))
-            }
-          }
-
-          # Match GroupVariables Type----
-          if(!is.null(GroupVariables)) {
-            if(!"GroupVar" %chin% names(XREGS)) {
-              if(IndepentVariablesPass %chin% names(XREGS)) {
-                CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(IndepentVariablesPass,eval(DateColumnName)), all = FALSE)
-              } else {
-                CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(GroupVariables,eval(DateColumnName)), all = FALSE)
-              }
-            } else {
-              CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
-            }
-          } else {
-            CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c(eval(DateColumnName)), all = FALSE)
-          }
+          CalendarFeatures <- ModelDataPrep(data = CalendarFeatures, Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+          CalendarFeatures <- merge(CalendarFeatures, XREGS, by = c("GroupVar", eval(DateColumnName)), all = FALSE)
         } else {
           CalendarFeatures <- merge(CalendarFeatures, XREGS, by = eval(DateColumnName), all = FALSE)
         }
