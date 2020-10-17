@@ -278,10 +278,6 @@ data.table::setnames(xregs, "Weekly_Sales", "Other")
 xregs[, Other := jitter(Other, factor = 25)]
 data <- data[as.Date(Date) < as.Date('2012-09-28')]
 
-# Ensure no spaces in variable names
-data.table::setnames(data, old = names(data), new = gsub("\\\\.|/|\\\\-|\"|\\\\s", "", names(data)))
-data.table::setnames(xregs, old = names(xregs), new = gsub("\\\\.|/|\\\\-|\"|\\\\s", "", names(xregs)))
-
 # Build forecast
 CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
