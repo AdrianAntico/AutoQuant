@@ -253,7 +253,7 @@ AutoHurdleScoring <- function(TestData = NULL,
     IDcolsModified <- c(IDcols, setdiff(names(TestData), ColumnNames))
 
     # Check for constant value bucket----
-    if(!any(bucket %in% c(ArgList$constant))) {
+    if(!any(bucket %in% c(ArgList$degenerate))) {
 
       # Increment----
       counter <- counter - 1L
@@ -370,15 +370,23 @@ AutoHurdleScoring <- function(TestData = NULL,
 
       # Change prediction name to prevent duplicates----
       if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
-      data.table::setnames(TestData, "Predictions", Val)
+      if(length(which(names(TestData) == "Predictions")) > 1) {
+        zzz <- names(TestData)
+        zzz[max(which(names(TestData) == "Predictions"))] <- Val
+        colnames(TestData) <- zzz
+      } else {
+        data.table::setnames(TestData, "Predictions", Val)
+      }
 
     } else {
 
       # Use single value for predictions in the case of zero variance----
       if(bucket == max(seq_len(length(Buckets) + 1L))) {
+        data.table::setalloccol(DT = TestData, n = 10)
         data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
         data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
       } else {
+        data.table::setalloccol(DT = TestData, n = ncol(TestData) + 10)
         data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
         data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
       }

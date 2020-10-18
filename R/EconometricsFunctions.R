@@ -5522,24 +5522,29 @@ AutoFourierFeatures <- function(data,
     # Find kmax----
     kmax <- min(FourierPairs, floor(ModelFreqFrequency/2))
 
-    # Training values
-    HistoricalFourier <- tryCatch({data.table::as.data.table(forecast::fourier(
-      TSCleanModelFreqData,
-      K = kmax))},
-      error = function(x) FALSE)
+    # Check
+    if(kmax > 0) {
+      # Training values
+      HistoricalFourier <- tryCatch({data.table::as.data.table(forecast::fourier(
+        TSCleanModelFreqData,
+        K = kmax))},
+        error = function(x) FALSE)
 
-    # Scoring values
-    FutureFourier <- tryCatch({data.table::as.data.table(forecast::fourier(
-      TSCleanModelFreqData,
-      K = kmax,
-      h = (FCPeriods-1)))},
-      error = function(x) FALSE)
+      # Scoring values
+      FutureFourier <- tryCatch({data.table::as.data.table(forecast::fourier(
+        TSCleanModelFreqData,
+        K = kmax,
+        h = (FCPeriods-1)))},
+        error = function(x) FALSE)
 
-    # Merge Training Fouier Terms----
-    data <- cbind(data, HistoricalFourier)
-    return(list(HistoricalData = data,
-                FutureFourier = FutureFourier,
-                HistoricalFourier = HistoricalFourier))
+      # Merge Training Fouier Terms----
+      data <- cbind(data, HistoricalFourier)
+      return(list(HistoricalData = data,
+                  FutureFourier = FutureFourier,
+                  HistoricalFourier = HistoricalFourier))
+    } else {
+      return(NULL)
+    }
   }
 }
 
@@ -5596,8 +5601,15 @@ AutoHierarchicalFourier <- function(datax = data,
 
   # Prepare data to return----
   if(!is.null(FourierFC)) {
-    datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
-    FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+    if(!is.null(IndependentGroups) || !is.null(HierarchGroups)) {
+      datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
+      FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+    } else {
+      datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
+      FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+    }
+  } else {
+    return(NULL)
   }
 
   # Return data

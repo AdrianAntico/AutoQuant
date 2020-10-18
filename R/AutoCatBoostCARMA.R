@@ -519,6 +519,7 @@ AutoCatBoostCARMA <- function(data,
     data <- Output$data
     HierarchSupplyValue <- Output$HierarchSupplyValue
     IndependentSupplyValue <- Output$IndependentSupplyValue
+    rm(Output)
 
     # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
     Output <- tryCatch({AutoHierarchicalFourier(
@@ -1004,7 +1005,7 @@ AutoCatBoostCARMA <- function(data,
   # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
   if(DebugMode) options(warn = 0)
 
-  # Run AutoCatBoostRegression and return list of ml objects
+  # Run AutoCatBoostRegression and return list of ml objects ----
   TestModel <- AutoCatBoostRegression(
 
       # GPU or CPU and the number of available GPUs
@@ -1223,6 +1224,8 @@ AutoCatBoostCARMA <- function(data,
       }
     } else {
       if(!is.null(GroupVariables)) {
+
+        # Modify target reference ----
         if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
 
         # GroupVar or Hierarchical----
@@ -1268,6 +1271,7 @@ AutoCatBoostCARMA <- function(data,
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
         if(Difference) UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
         UpdateData[, ID := NULL]
+
       } else {
 
         # Score Model----

@@ -462,10 +462,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       ReturnModelObjects = ReturnModelObjects,
 
       # Data arguments
-      data = data,
+      data = data.table::copy(data),
       TrainOnFull = TrainOnFull,
-      ValidationData = ValidationData,
-      TestData = TestData,
+      ValidationData = data.table::copy(ValidationData),
+      TestData = data.table::copy(TestData),
       TargetColumnName = "Target_Buckets",
       FeatureColNames = FeatureNames,
       PrimaryDateColumn = PrimaryDateColumn,
@@ -512,10 +512,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       ReturnModelObjects = ReturnModelObjects,
 
       # Data arguments
-      data = data,
+      data = data.table::copy(data),
       TrainOnFull = TrainOnFull,
-      ValidationData = ValidationData,
-      TestData = TestData,
+      ValidationData = data.table::copy(ValidationData),
+      TestData = data.table::copy(TestData),
       TargetColumnName = "Target_Buckets",
       FeatureColNames = FeatureNames,
       PrimaryDateColumn = PrimaryDateColumn,
@@ -605,6 +605,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     # Change Name of Predicted MultiClass Column----
     if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
     data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
+
+  } else {
+    TestData <- NULL
   }
 
   # Remove Model Object----
@@ -615,7 +618,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   # Prepare for regression runs ----
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
-  counter <- max(rev(seq_len(length(Buckets) + 1L))) + 1L
+  counter <- max(rev(seq_len(length(Buckets) + 1L)))
   Degenerate <- 0L
 
   # Begin regression model building----
@@ -640,9 +643,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket])]
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
       } else {
-        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
-        validBucket <- NULL
-        testBucket <- NULL
+        if(length(Buckets) == 1 & Buckets == 0) {
+          trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+          validBucket <- NULL
+          testBucket <- NULL
+        } else {
+          trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
+          validBucket <- NULL
+          testBucket <- NULL
+        }
       }
     } else {
       if(!is.null(TestData)) {
@@ -686,10 +695,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             ReturnModelObjects = ReturnModelObjects,
 
             # Data arguments
-            data = trainBucket,
+            data = data.table::copy(trainBucket),
             TrainOnFull = TrainOnFull,
-            ValidationData = validBucket,
-            TestData = testBucket,
+            ValidationData = data.table::copy(validBucket),
+            TestData = data.table::copy(testBucket),
             TargetColumnName = TargetColumnName,
             FeatureColNames = FeatureNames,
             PrimaryDateColumn = PrimaryDateColumn,
