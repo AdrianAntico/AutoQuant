@@ -48,7 +48,7 @@ AutoHurdleCARMA(
   ModelCount = 100,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 24L * 60L,
-  NTrees = 1000,
+  NTrees = list(classifier = seq(1000, 2000, 100), regression = seq(1000, 2000, 100)),
   L2_Leaf_Reg = 3,
   RandomStrength = 1,
   BorderCount = 254,

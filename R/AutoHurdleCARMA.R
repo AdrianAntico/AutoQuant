@@ -291,7 +291,7 @@ AutoHurdleCARMA <- function(data,
                             ModelCount = 100,
                             MaxRunsWithoutNewWinner = 50,
                             MaxRunMinutes = 24L*60L,
-                            NTrees = 1000,
+                            NTrees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
                             L2_Leaf_Reg = 3.0,
                             RandomStrength = 1,
                             BorderCount = 254,
@@ -326,6 +326,15 @@ AutoHurdleCARMA <- function(data,
   GroupVariables        <- Args$GroupVariables
   FC_Periods            <- Args$FC_Periods
   HoldOutPeriods        <- Args$HoldOutPeriods
+
+  # Trees ----
+  if(is.list(NTrees)) {
+    RegTrees <- NTrees$regression
+    ClassTrees <- NTrees$classifier
+  } else {
+    RegTrees <- NTrees
+    ClassTrees <- NTrees
+  }
 
   # Variables for Program: Redefine HoldOutPerids----
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L] * length(unique(data[[eval(DateColumnName)]])), 0L)
@@ -1016,7 +1025,7 @@ AutoHurdleCARMA <- function(data,
   # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
   if(DebugMode) options(warn = 0)
 
-  # Run AutoCatBoostRegression and return list of ml objects ----
+  # Run Auto__HurdleModel() and return list of ml objects ----
   if(tolower(AlgoType) == "catboost") {
     TestModel <- RemixAutoML::AutoCatBoostHurdleModel(
 
@@ -1056,7 +1065,7 @@ AutoHurdleCARMA <- function(data,
       MetricPeriods = 10L,
 
       # Bandit grid args
-      Trees = list("classifier" = NTrees, "regression" = NTrees),
+      Trees = list("classifier" = RegTrees, "regression" = ClassTrees),
       Depth = list("classifier" = Depth, "regression" = Depth),
       RandomStrength = list("classifier" = RandomStrength, "regression" = RandomStrength),
       BorderCount = list("classifier" = BorderCount, "regression" = BorderCount),

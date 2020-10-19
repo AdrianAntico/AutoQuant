@@ -169,7 +169,7 @@ AutoCatBoostClassifier <- function(data,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    PrimaryDateColumn = NULL,
-                                   ClassWeights = NULL,
+                                   ClassWeights = c(1,1),
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    NumGPUs = 1,
@@ -651,20 +651,38 @@ AutoCatBoostClassifier <- function(data,
 
   # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
-    base_params <- list(
-      use_best_model       = TRUE,
-      best_model_min_trees = 10L,
-      metric_period        = MetricPeriods,
-      iterations           = Trees,
-      depth                = Depth,
-      random_strength      = RandomStrength,
-      border_count         = BorderCount,
-      loss_function        = LossFunction,
-      eval_metric          = eval_metric,
-      has_time             = HasTime,
-      task_type            = task_type,
-      devices              = NumGPUs,
-      class_weights        = ClassWeights)
+    if(!is.null(LearningRate)) {
+      base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = MetricPeriods,
+        iterations           = Trees,
+        depth                = Depth,
+        learning_rate        = LearningRate,
+        random_strength      = RandomStrength,
+        border_count         = BorderCount,
+        loss_function        = LossFunction,
+        eval_metric          = eval_metric,
+        has_time             = HasTime,
+        task_type            = task_type,
+        devices              = NumGPUs,
+        class_weights        = ClassWeights)
+    } else {
+      base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = MetricPeriods,
+        iterations           = Trees,
+        depth                = Depth,
+        random_strength      = RandomStrength,
+        border_count         = BorderCount,
+        loss_function        = LossFunction,
+        eval_metric          = eval_metric,
+        has_time             = HasTime,
+        task_type            = task_type,
+        devices              = NumGPUs,
+        class_weights        = ClassWeights)
+    }
   }
 
   # Binary Train Final Model----

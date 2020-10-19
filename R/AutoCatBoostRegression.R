@@ -777,21 +777,40 @@ AutoCatBoostRegression <- function(data,
 
   # Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
-    base_params <- list(
-      use_best_model       = TRUE,
-      best_model_min_trees = 10L,
-      metric_period        = MetricPeriods,
-      iterations           = Trees,
-      depth                = Depth,
-      l2_leaf_reg          = L2_Leaf_Reg,
-      random_strength      = RandomStrength,
-      border_count         = BorderCount,
-      loss_function        = LossFunction,
-      eval_metric          = eval_metric,
-      has_time             = HasTime,
-      task_type            = task_type,
-      devices              = NumGPUs,
-      allow_writing_files  = FALSE)
+    if(!is.null(LearningRate)) {
+      base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = MetricPeriods,
+        iterations           = Trees,
+        depth                = Depth,
+        learning_rate        = LearningRate,
+        l2_leaf_reg          = L2_Leaf_Reg,
+        random_strength      = RandomStrength,
+        border_count         = BorderCount,
+        loss_function        = LossFunction,
+        eval_metric          = eval_metric,
+        has_time             = HasTime,
+        task_type            = task_type,
+        devices              = NumGPUs,
+        allow_writing_files  = FALSE)
+    } else {
+      base_params <- list(
+        use_best_model       = TRUE,
+        best_model_min_trees = 10L,
+        metric_period        = MetricPeriods,
+        iterations           = Trees,
+        depth                = Depth,
+        l2_leaf_reg          = L2_Leaf_Reg,
+        random_strength      = RandomStrength,
+        border_count         = BorderCount,
+        loss_function        = LossFunction,
+        eval_metric          = eval_metric,
+        has_time             = HasTime,
+        task_type            = task_type,
+        devices              = NumGPUs,
+        allow_writing_files  = FALSE)
+    }
   }
 
   # Regression Train Final Model----

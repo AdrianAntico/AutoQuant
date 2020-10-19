@@ -808,32 +808,65 @@ AutoCatBoostMultiClass <- function(data,
   # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & GridTune == FALSE) {
     if(!is.null(ClassWeights)) {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = MetricPeriods,
-        iterations           = Trees,
-        depth                = Depth,
-        random_strength      = RandomStrength,
-        border_count         = BorderCount,
-        loss_function        = eval_metric,
-        eval_metric          = eval_metric,
-        has_time             = HasTime,
-        task_type            = task_type,
-        class_weights        = ClassWeights)
+      if(!is.null(LearningRate)) {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          depth                = Depth,
+          learning_rate        = LearningRate,
+          random_strength      = RandomStrength,
+          border_count         = BorderCount,
+          loss_function        = eval_metric,
+          eval_metric          = eval_metric,
+          has_time             = HasTime,
+          task_type            = task_type,
+          class_weights        = ClassWeights)
+      } else {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          depth                = Depth,
+          random_strength      = RandomStrength,
+          border_count         = BorderCount,
+          loss_function        = eval_metric,
+          eval_metric          = eval_metric,
+          has_time             = HasTime,
+          task_type            = task_type,
+          class_weights        = ClassWeights)
+      }
     } else {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = MetricPeriods,
-        iterations           = Trees,
-        depth                = Depth,
-        random_strength      = RandomStrength,
-        border_count         = BorderCount,
-        loss_function        = eval_metric,
-        eval_metric          = eval_metric,
-        has_time             = HasTime,
-        task_type            = task_type)
+      if(!is.null(LearningRate)) {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          depth                = Depth,
+          learning_rate        = LearningRate,
+          random_strength      = RandomStrength,
+          border_count         = BorderCount,
+          loss_function        = eval_metric,
+          eval_metric          = eval_metric,
+          has_time             = HasTime,
+          task_type            = task_type)
+      } else {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          depth                = Depth,
+          random_strength      = RandomStrength,
+          border_count         = BorderCount,
+          loss_function        = eval_metric,
+          eval_metric          = eval_metric,
+          has_time             = HasTime,
+          task_type            = task_type)
+      }
     }
   }
 

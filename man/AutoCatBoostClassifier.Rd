@@ -12,7 +12,7 @@ AutoCatBoostClassifier(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
-  ClassWeights = NULL,
+  ClassWeights = c(1, 1),
   IDcols = NULL,
   task_type = "GPU",
   NumGPUs = 1,
