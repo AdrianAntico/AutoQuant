@@ -241,10 +241,12 @@
 #'   NumGPU = 1,
 #'   MaxRunsWithoutNewWinner = 50,
 #'   MaxRunMinutes = 60*60,
-#'   NTrees = 2500,
-#'   L2_Leaf_Reg = 3.0,
-#'   RandomStrength = 1,
-#'   BorderCount = 254,
+#'   NTrees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
+#'   Depth = list("classifier" = seq(6,10,1), "regression" = seq(6,10,1)),
+#'   LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
+#'   L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
+#'   RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
+#'   BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
 #'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
 #'   Depth = 6)
 #' }
@@ -292,10 +294,11 @@ AutoHurdleCARMA <- function(data,
                             MaxRunsWithoutNewWinner = 50,
                             MaxRunMinutes = 24L*60L,
                             NTrees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
-                            L2_Leaf_Reg = 3.0,
-                            RandomStrength = 1,
-                            BorderCount = 254,
-                            Depth = 6,
+                            Depth = list("classifier" = seq(6,10,1), "regression" = seq(6,10,1)),
+                            LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
+                            L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
+                            RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
+                            BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
                             BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
                             PartitionType = "timeseries",
                             Timer = TRUE,
@@ -326,15 +329,6 @@ AutoHurdleCARMA <- function(data,
   GroupVariables        <- Args$GroupVariables
   FC_Periods            <- Args$FC_Periods
   HoldOutPeriods        <- Args$HoldOutPeriods
-
-  # Trees ----
-  if(is.list(NTrees)) {
-    RegTrees <- NTrees$regression
-    ClassTrees <- NTrees$classifier
-  } else {
-    RegTrees <- NTrees
-    ClassTrees <- NTrees
-  }
 
   # Variables for Program: Redefine HoldOutPerids----
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L] * length(unique(data[[eval(DateColumnName)]])), 0L)
@@ -1065,14 +1059,14 @@ AutoHurdleCARMA <- function(data,
       MetricPeriods = 10L,
 
       # Bandit grid args
-      Trees = list("classifier" = RegTrees, "regression" = ClassTrees),
-      Depth = list("classifier" = Depth, "regression" = Depth),
-      RandomStrength = list("classifier" = RandomStrength, "regression" = RandomStrength),
-      BorderCount = list("classifier" = BorderCount, "regression" = BorderCount),
-      LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
-      L2_Leaf_Reg = list("classifier" = L2_Leaf_Reg, "regression" = L2_Leaf_Reg),
+      Trees = NTrees,
+      Depth = Depth,
+      RandomStrength = RandomStrength,
+      BorderCount = BorderCount,
+      LearningRate = LearningRate,
+      L2_Leaf_Reg = L2_Leaf_Reg,
       RSM = list("classifier" = c(0.80, 0.85, 0.90, 0.95, 1.0), "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
-      BootStrapType = list("classifier" = BootStrapType, "regression" = BootStrapType),
+      BootStrapType = BootStrapType,
       GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"), "regression" = c("SymmetricTree", "Depthwise", "Lossguide")))
 
   } else if(tolower(AlgoType) == "xgboost") {
@@ -1785,7 +1779,7 @@ AutoHurdleCARMA <- function(data,
   if(!TrainOnFull) {
     if(!is.null(GroupVariables)) {
       if(!is.null(HierarchGroups)) {
-        x1 <- tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),eval(GroupVariables),"GroupVar")]}, error = function(x) {
+        x1 <- tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),eval(GroupVariables),"GroupVar")]}, error= function(x) {
           tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),eval(GroupVariables))]}, error = function(x) {
             tryCatch({valid[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName),"GroupVar")]}, error = function(x) NULL)
           })

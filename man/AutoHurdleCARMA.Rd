@@ -49,10 +49,12 @@ AutoHurdleCARMA(
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 24L * 60L,
   NTrees = list(classifier = seq(1000, 2000, 100), regression = seq(1000, 2000, 100)),
-  L2_Leaf_Reg = 3,
-  RandomStrength = 1,
-  BorderCount = 254,
-  Depth = 6,
+  Depth = list(classifier = seq(6, 10, 1), regression = seq(6, 10, 1)),
+  LearningRate = list(classifier = seq(0.01, 0.25, 0.01), regression = seq(0.01, 0.25,
+    0.01)),
+  L2_Leaf_Reg = list(classifier = 3:6, regression = 3:6),
+  RandomStrength = list(classifier = 1:10, regression = 1:10),
+  BorderCount = list(classifier = seq(32, 256, 16), regression = seq(32, 256, 16)),
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   PartitionType = "timeseries",
   Timer = TRUE,
@@ -144,13 +146,13 @@ AutoHurdleCARMA(
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
+\item{Depth}{Depth of catboost model}
+
 \item{L2_Leaf_Reg}{l2 reg parameter}
 
 \item{RandomStrength}{Default is 1}
 
 \item{BorderCount}{Default is 254}
-
-\item{Depth}{Depth of catboost model}
 
 \item{BootStrapType}{Select from Catboost list}
 
@@ -353,10 +355,12 @@ Output <- RemixAutoML::AutoHurdleCARMA(
   NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60*60,
-  NTrees = 2500,
-  L2_Leaf_Reg = 3.0,
-  RandomStrength = 1,
-  BorderCount = 254,
+  NTrees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
+  Depth = list("classifier" = seq(6,10,1), "regression" = seq(6,10,1)),
+  LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
+  L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
+  RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
+  BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   Depth = 6)
 }
