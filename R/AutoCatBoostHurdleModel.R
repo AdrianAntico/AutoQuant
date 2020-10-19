@@ -442,7 +442,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     ValidationData <- DataSets$ValidationData
     TestData <- DataSets$TestData
     rm(DataSets)
-  } else {
+  } else if(TrainOnFull) {
     ValidationData <- NULL
     TestData <- NULL
   }
