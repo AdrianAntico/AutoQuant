@@ -208,7 +208,7 @@ AutoHurdleCARMA is an intermittent demand, Mutlivariate Forecasting algorithms w
 
   # Production args
   TrainOnFull = FALSE,
-  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  SplitRatios = c(1 - 20 / 138, 10 / 138, 10 / 138),
   PartitionType = "random",
   FC_Periods = 4,
   Timer = TRUE,
@@ -305,7 +305,7 @@ Output <- RemixAutoML::AutoHurdleCARMA(
 
   # Production args
   TrainOnFull = TRUE,
-  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  SplitRatios = c(1 - 20 / 138, 10 / 138, 10 / 138),
   PartitionType = "random",
   FC_Periods = 4,
   Timer = TRUE,
@@ -361,8 +361,7 @@ Output <- RemixAutoML::AutoHurdleCARMA(
   L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
   RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
   BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  Depth = 6)
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"))
 }
 }
 \seealso{

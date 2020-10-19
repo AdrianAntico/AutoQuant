@@ -94,7 +94,7 @@
 #'
 #'   # Production args
 #'   TrainOnFull = FALSE,
-#'   SplitRatios = c(1 - 10 / 138, 10 / 138),
+#'   SplitRatios = c(1 - 20 / 138, 10 / 138, 10 / 138),
 #'   PartitionType = "random",
 #'   FC_Periods = 4,
 #'   Timer = TRUE,
@@ -191,7 +191,7 @@
 #'
 #'   # Production args
 #'   TrainOnFull = TRUE,
-#'   SplitRatios = c(1 - 10 / 138, 10 / 138),
+#'   SplitRatios = c(1 - 20 / 138, 10 / 138, 10 / 138),
 #'   PartitionType = "random",
 #'   FC_Periods = 4,
 #'   Timer = TRUE,
@@ -247,8 +247,7 @@
 #'   L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
 #'   RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
 #'   BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
-#'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-#'   Depth = 6)
+#'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"))
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
@@ -935,7 +934,7 @@ AutoHurdleCARMA <- function(data,
       DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
-        Ratios = c(1-N1/x,N1/x),
+        Ratios = if(length(SplitRatios) == 3) SplitRatios else c(1-N1/x,N1/x),
         PartitionType = PartitionType,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
