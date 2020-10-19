@@ -431,34 +431,16 @@ AutoCatBoostRegression <- function(data,
   if(length(CatFeatures) > 0L) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
 
   # Regression Train ModelDataPrep----
-  dataTrain <- ModelDataPrep(
-    data = dataTrain,
-    Impute = TRUE,
-    CharToFactor = TRUE,
-    RemoveDates = TRUE,
-    MissFactor = "0",
-    MissNum = -1L)
+  dataTrain <- ModelDataPrep(data = dataTrain,Impute = TRUE,CharToFactor = TRUE,RemoveDates = TRUE,MissFactor = "0",MissNum = -1L, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
 
   # Regression Validation ModelDataPrep----
   if(!TrainOnFull && !is.null(dataTest)) {
-    dataTest <- ModelDataPrep(
-      data = dataTest,
-      Impute = TRUE,
-      CharToFactor = TRUE,
-      RemoveDates = TRUE,
-      MissFactor = "0",
-      MissNum = -1)
+    dataTest <- ModelDataPrep(data = dataTest,Impute = TRUE,CharToFactor = TRUE,RemoveDates = TRUE,MissFactor = "0",MissNum = -1L, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
   }
 
   # Regression Test ModelDataPrep----
   if(!is.null(TestData)) {
-    TestData <- ModelDataPrep(
-      data = TestData,
-      Impute = TRUE,
-      CharToFactor = TRUE,
-      RemoveDates = TRUE,
-      MissFactor = "0",
-      MissNum = -1)
+    TestData <- ModelDataPrep(data = TestData,Impute = TRUE,CharToFactor = TRUE,RemoveDates = TRUE,MissFactor = "0",MissNum = -1L, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
   }
 
   # Regression Save Names of data----

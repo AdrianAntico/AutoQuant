@@ -334,13 +334,13 @@ AutoCatBoostClassifier <- function(data,
   if(length(CatFeatures) > 0L) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
 
   # Binary Train ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = dataTrain, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1)
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, IntToNumeric = TRUE, FactorToChar = FALSE, DateToChar = FALSE, IgnoreCols = NULL)
 
   # Binary Validation ModelDataPrep----
-  if(!TrainOnFull) dataTest <- ModelDataPrep(data = dataTest, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1)
+  if(!TrainOnFull) dataTest <- ModelDataPrep(data = dataTest, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
 
   # Binary Test ModelDataPrep----
-  if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1)
+  if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
 
   # Binary Save Names of data----
   if(is.numeric(FeatureColNames)) {
