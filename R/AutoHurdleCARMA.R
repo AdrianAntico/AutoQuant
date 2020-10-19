@@ -948,7 +948,7 @@ AutoHurdleCARMA <- function(data,
       DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
-        Ratios = c(1-N1/x,N1/x),
+        Ratios = if(length(SplitRatios) == 3) SplitRatios else c(1-N1/x,N1/x),
         PartitionType = PartitionType,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
@@ -956,7 +956,7 @@ AutoHurdleCARMA <- function(data,
       DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
-        Ratios = SplitRatios,
+        Ratios = if(length(SplitRatios) == 3) SplitRatios else c(1-N1/x,N1/x),
         PartitionType = PartitionType,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
