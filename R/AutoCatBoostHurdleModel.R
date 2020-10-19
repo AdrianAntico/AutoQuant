@@ -403,28 +403,34 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   # Add target bucket column----
   if(!is.null(ValidationData)) {
-    ValidationData[, Target_Buckets := as.factor(Buckets[1L])]
-    for(i in seq_len(length(Buckets) + 1L)) {
-      if(i == 1) {
-        ValidationData[which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i]), Target_Buckets := as.factor(Buckets[i])]
-      } else if(i == length(Buckets) + 1L) {
-        ValidationData[which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1], "+"))]
-      } else {
-        ValidationData[which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(Buckets[i])]
+    if(length(Buckets) == 1L) {
+      ValidationData[, Target_Buckets := data.table::fifelse(get(TargetColumnName) <= eval(Buckets[1L]), 0, 1)]
+    } else {
+      for(i in seq_len(length(Buckets) + 1L)) {
+        if(i == 1) {
+          ValidationData[which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i]), Target_Buckets := as.factor(Buckets[i])]
+        } else if(i == length(Buckets) + 1L) {
+          ValidationData[which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1], "+"))]
+        } else {
+          ValidationData[which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(Buckets[i])]
+        }
       }
     }
   }
 
   # Add target bucket column----
   if(!is.null(TestData)) {
-    TestData[, Target_Buckets := as.factor(Buckets[1])]
-    for(i in seq_len(length(Buckets) + 1L)) {
-      if(i == 1) {
-        TestData[which(TestData[[eval(TargetColumnName)]] <= Buckets[i]), Target_Buckets := as.factor(Buckets[i])]
-      } else if(i == length(Buckets) + 1L) {
-        TestData[which(TestData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1L], "+"))]
-      } else {
-        TestData[which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), Target_Buckets := as.factor(Buckets[i])]
+    if(length(Buckets) == 1L) {
+      TestData[, Target_Buckets := data.table::fifelse(get(TargetColumnName) <= eval(Buckets[1L]), 0, 1)]
+    } else {
+      for(i in seq_len(length(Buckets) + 1L)) {
+        if(i == 1) {
+          TestData[which(TestData[[eval(TargetColumnName)]] <= Buckets[i]), Target_Buckets := as.factor(Buckets[i])]
+        } else if(i == length(Buckets) + 1L) {
+          TestData[which(TestData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1L], "+"))]
+        } else {
+          TestData[which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), Target_Buckets := as.factor(Buckets[i])]
+        }
       }
     }
   }
