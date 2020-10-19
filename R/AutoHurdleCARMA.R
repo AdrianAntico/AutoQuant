@@ -508,7 +508,11 @@ AutoHurdleCARMA <- function(data,
 
   # Variables for Program: Store number of data partitions in NumSets----
   if(DebugMode) print("Variables for Program: Store number of data partitions in NumSets----")
-  NumSets <- 2L
+  NumSets <- 3L
+  if(length(SplitRatios) < 3) {
+    SplitRatios <- c(0.7,0.2,0.1)
+    PartitionType <- "random"
+  }
 
   # Variables for Program: Store Maximum Value of TargetColumnName in val----
   if(DebugMode) print("Variables for Program: Store Maximum Value of TargetColumnName in val----")
