@@ -275,6 +275,9 @@ data <- data.table::fread(
 data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
   , Counts := NULL]
 
+# Put negative values at 0
+data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
 # Subset Columns (remove IsHoliday column)----
 keep <- c("Store","Dept","Date","Weekly_Sales")
 data <- data[, ..keep]
