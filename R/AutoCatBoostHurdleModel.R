@@ -559,7 +559,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
   C_VariableImportance <- ClassifierModel$VariableImportance
-  if(length(Buckets) == 1L) C_ParDepPlots <- Classifier$PartialDependencePlots else NULL
+  if(length(Buckets) == 1L) C_ParDepPlots <- ClassifierModel$PartialDependencePlots else NULL
   if(length(Buckets) > 1L) {
     TargetLevels <- ClassifierModel$TargetLevels
     ArgsList[["TargetLevels"]] <- TargetLevels

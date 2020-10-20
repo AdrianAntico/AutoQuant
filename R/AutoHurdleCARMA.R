@@ -1080,7 +1080,6 @@ AutoHurdleCARMA <- function(data,
     1
   }
 
-
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) return(TestModel)
 
@@ -1128,10 +1127,6 @@ AutoHurdleCARMA <- function(data,
     if(i == 1L) {
       if(!is.null(GroupVariables)) {
 
-        # Define IDcols----
-        if(DebugMode) print("# Define IDcols----")
-        if(Difference) IDcols <- "ModTarget" else IDcols <- eval(TargetColumnName)
-
         # Score model ----
         Preds <- RemixAutoML::AutoHurdleScoring(
           TestData = data.table::copy(Step1SCore),
@@ -1148,10 +1143,6 @@ AutoHurdleCARMA <- function(data,
         data.table::setcolorder(Preds, c(2,1,3:ncol(Preds)))
 
       } else {
-
-        # i = 1 Define IDcols----
-        if(DebugMode) print("# i = 1 Define IDcols----")
-        IDcols <- eval(TargetColumnName)
 
         # Score model ----
         Preds <- RemixAutoML::AutoHurdleScoring(
