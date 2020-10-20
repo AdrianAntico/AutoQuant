@@ -558,7 +558,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   ModelList <- list()
   ClassModel <- ClassifierModel$Model
   ClassEvaluationMetrics <- ClassifierModel$EvaluationMetrics
-  VariableImportance <- ClassifierModel$VariableImportance
+  C_VariableImportance <- ClassifierModel$VariableImportance
+  if(length(Buckets) == 1L) C_ParDepPlots <- Classifier$PartialDependencePlots else NULL
   if(length(Buckets) > 1L) {
     TargetLevels <- ClassifierModel$TargetLevels
     ArgsList[["TargetLevels"]] <- TargetLevels
@@ -626,6 +627,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
   counter <- max(rev(seq_len(length(Buckets) + 1L)))
   Degenerate <- 0L
+  R_VariableImportance <- list()
+  R_ParDepPlots <- list()
 
   # Begin regression model building----
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
@@ -714,7 +717,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             # Model evaluation
             eval_metric = "RMSE",
             MetricPeriods = MetricPeriods,
-            NumOfParDepPlots = 0,
+            NumOfParDepPlots = NumOfParDepPlots,
 
             # Grid tuning arguments - PassInGrid is the best of GridMetrics
             PassInGrid = PassInGrid,
@@ -745,6 +748,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         } else {
           ArgsList[[paste0("TransformationResults_", ModelIDD)]] <- NULL
         }
+        R_VariableImportance[[paste0(ModelIDD)]] <- RegModel$VariableImportance
+        R_ParDepPlots[[paste0(ModelIDD)]] <- RegModel$PartialDependencePlots
 
         # Score models----
         if(!is.null(TestData)) {
@@ -1010,6 +1015,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       ModelList = ModelList,
       ClassificationMetrics = ClassEvaluationMetrics,
       FinalTestData = TestData,
+      ClassifierVariableImportance = C_VariableImportance,
+      ClassifierParDepPlots = C_ParDepPlots,
+      RegressionVariableImportance = R_VariableImportance,
+      RegressionParDepPlots = R_ParDepPlots,
       EvaluationPlot = EvaluationPlot,
       EvaluationBoxPlot = EvaluationBoxPlot,
       EvaluationMetrics = EvaluationMetrics,
