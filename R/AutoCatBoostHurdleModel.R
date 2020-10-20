@@ -825,6 +825,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   # Rearrange Column order----
   if(!TrainOnFull) {
+
+    # Rearrange cols ----
     counter <- length(Buckets)
     if(counter > 2L) {
       if(length(IDcols) != 0L) {
@@ -966,7 +968,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     j <- 0L
     ParDepBoxPlots <- list()
     k <- 0L
-    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
+    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, R_VariableImportance[[1]][,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
           data = TestData,
@@ -1015,13 +1017,13 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       ModelList = ModelList,
       ClassificationMetrics = ClassEvaluationMetrics,
       FinalTestData = TestData,
-      ClassifierVariableImportance = C_VariableImportance,
-      ClassifierParDepPlots = C_ParDepPlots,
-      RegressionVariableImportance = R_VariableImportance,
-      RegressionParDepPlots = R_ParDepPlots,
       EvaluationPlot = EvaluationPlot,
       EvaluationBoxPlot = EvaluationBoxPlot,
       EvaluationMetrics = EvaluationMetrics,
+      ClassifierVariableImportance = C_VariableImportance,
+      RegressionVariableImportance = R_VariableImportance,
+      ClassifierParDepPlots = C_ParDepPlots,
+      RegressionParDepPlots = R_ParDepPlots,
       PartialDependencePlots = ParDepPlots,
       PartialDependenceBoxPlots = ParDepBoxPlots))
   } else {
