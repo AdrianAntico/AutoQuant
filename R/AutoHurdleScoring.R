@@ -139,7 +139,6 @@ AutoHurdleScoring <- function(TestData = NULL,
 
   # Store IDcols----
   IDcols <- c(setdiff(names(TestData), c(ArgList$FeatureColNames)))
-  IDcols <- IDcols[!IDcols %in% as.numeric(IDcols)]
 
   # Store colnames----
   ColumnNames <- names(TestData)
