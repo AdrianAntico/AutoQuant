@@ -1545,7 +1545,7 @@ AutoCatBoostCARMA <- function(data,
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
 
-      } else {
+      } else if(!is.null(GroupVariables) && Difference) {
 
         # Calendar and Holiday----
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
@@ -1667,7 +1667,7 @@ AutoCatBoostCARMA <- function(data,
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
 
-      } else {
+      } else if(!is.null(GroupVariables) && !Difference) {
 
         # Calendar and Holiday----
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
@@ -1779,7 +1779,7 @@ AutoCatBoostCARMA <- function(data,
         if(!"ID" %chin% c(names(UpdateData))) data.table::set(UpdateData, j = "ID", value = nrow(UpdateData):1L)
         UpdateData <- data.table::rbindlist(list(UpdateData[ID > 1L][, ID := NULL], Temporary), fill = TRUE, use.names = TRUE)
 
-      } else {
+      } else if(is.null(GroupVariables)) {
 
         # Calendar and Holiday----
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
