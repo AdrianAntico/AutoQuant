@@ -481,7 +481,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       # Model evaluation
       eval_metric = "AUC",
       MetricPeriods = MetricPeriods,
-      NumOfParDepPlots = 0,
+      NumOfParDepPlots = NumOfParDepPlots,
 
       # Grid tuning arguments - PassInGrid is the best of GridMetrics
       PassInGrid = PassInGrid,
