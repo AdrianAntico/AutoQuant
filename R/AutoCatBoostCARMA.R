@@ -1673,7 +1673,7 @@ AutoCatBoostCARMA <- function(data,
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
         if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
         CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
-        UpdateData <- UpdateData[ID != 1]
+        #UpdateData <- UpdateData[ID != 1]
       }
 
       # No Group with or without Diff
