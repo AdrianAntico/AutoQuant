@@ -138,9 +138,8 @@ AutoHurdleScoring <- function(TestData = NULL,
   if(!is.null(ArgList$FactorLevelsList)) FactorLevelsList <- ArgList$FactorLevelsList else FactorLevelsList <- NULL
 
   # Store IDcols----
-  IDcolsReorder <- ArgList$IDcols
-  IDcols <- ArgList$IDcols
-  IDcols <- c(IDcols, setdiff(names(TestData), c(IDcols, ArgList$FeatureColNames)))
+  IDcols <- c(setdiff(names(TestData), c(ArgList$FeatureColNames)))
+  IDcols <- IDcols[!IDcols %in% as.numeric(IDcols)]
 
   # Store colnames----
   ColumnNames <- names(TestData)
