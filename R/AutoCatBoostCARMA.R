@@ -499,7 +499,13 @@ AutoCatBoostCARMA <- function(data,
 
   # Variables for Program: Store Maximum Value of TargetColumnName in val----
   if(DebugMode) print("Variables for Program: Store Maximum Value of TargetColumnName in val----")
-  if(!is.null(Lags)) if(is.list(Lags) & is.list(MA_Periods)) val <- max(unlist(Lags), unlist(MA_Periods)) else val <- max(Lags, MA_Periods)
+  if(!is.null(Lags)) {
+    if(is.list(Lags) & is.list(MA_Periods)) {
+      val <- max(unlist(Lags), unlist(MA_Periods))
+    } else {
+      val <- max(Lags, MA_Periods)
+    }
+  }
 
   # Data Wrangling: Sort data by GroupVar then DateColumnName----
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName----")
@@ -1551,7 +1557,6 @@ AutoCatBoostCARMA <- function(data,
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
         if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
         CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
-        UpdateData <- UpdateData[ID != 1]
       }
 
       # Group and Diff
@@ -1673,7 +1678,6 @@ AutoCatBoostCARMA <- function(data,
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
         if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
         CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
-        #UpdateData <- UpdateData[ID != 1]
       }
 
       # No Group with or without Diff
