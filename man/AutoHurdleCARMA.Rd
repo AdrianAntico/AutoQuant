@@ -8,6 +8,8 @@ AutoHurdleCARMA(
   data,
   AlgoType = "catboost",
   NonNegativePred = FALSE,
+  Threshold = NULL,
+  RoundPreds = FALSE,
   TrainOnFull = FALSE,
   TargetColumnName = "Target",
   DateColumnName = "DateTime",
@@ -67,6 +69,10 @@ AutoHurdleCARMA(
 \item{AlgoType}{Set to "catboost" or "xgboost"}
 
 \item{NonNegativePred}{TRUE or FALSE}
+
+\item{Threshold}{Supply a threshold if you want the scoring function to convert probabilities to a zero or one instead of using raw probabilities}
+
+\item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
@@ -220,6 +226,7 @@ AutoHurdleCARMA is an intermittent demand, Mutlivariate Forecasting algorithms w
     "LogPlus1", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
 
   # Date features
   CalendarVariables = c("week", "month", "quarter"),
@@ -320,6 +327,8 @@ Output <- RemixAutoML::AutoHurdleCARMA(
               "LogPlus1", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
+  Threshold = NULL,
+  RoundPreds = FALSE,
 
   # Date features
   CalendarVariables = c("week", "month", "quarter"),

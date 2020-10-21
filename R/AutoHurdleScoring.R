@@ -10,6 +10,7 @@
 #' @param ModelClass Name of model type. "catboost" is currently the only available option
 #' @param ArgList Output from the hurdle model
 #' @param ModelList Output from the hurdle model
+#' @param Threshold NULL to use raw probabilities to predict. Otherwise, supply a threshold
 #' @return A data.table with the final predicted value, the intermediate model predictions, and your source data
 #' @examples
 #' \dontrun{
@@ -89,7 +90,8 @@
 #'   ModelID = "ModelTest",
 #'   ModelClass = "xgboost",
 #'   ModelList = NULL,
-#'   ArgList = NULL)
+#'   ArgList = NULL,
+#'   Threshold = NULL)
 #' }
 #' @export
 AutoHurdleScoring <- function(TestData = NULL,
@@ -97,7 +99,8 @@ AutoHurdleScoring <- function(TestData = NULL,
                               ModelID = NULL,
                               ModelClass = "catboost",
                               ArgList = NULL,
-                              ModelList = NULL) {
+                              ModelList = NULL,
+                              Threshold = NULL) {
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -222,7 +225,12 @@ AutoHurdleScoring <- function(TestData = NULL,
   # Change name for classification----
   if(tolower(TargetType) == "classification" & tolower(ModelClass) == "catboost") {
     data.table::setnames(TestData, "p1", "Predictions_C1")
-    TestData[, Predictions_C0 := 1 - Predictions_C1]
+    if(!is.null(Threshold)) {
+      TestData[, Predictions_C1 := data.table::fifelse(Predictions_C1 < eval(Threshold), 0, 1)]
+      TestData[, Predictions_C0 := 1 - Predictions_C1]
+    } else {
+      TestData[, Predictions_C0 := 1 - Predictions_C1]
+    }
     data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
   } else if(tolower(TargetType) == "classification" & tolower(ModelClass) == "xgboost") {
     data.table::setnames(TestData, "Predictions", "Predictions_C1")

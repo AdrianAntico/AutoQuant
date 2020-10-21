@@ -9,6 +9,8 @@
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param NonNegativePred TRUE or FALSE
+#' @param Threshold Supply a threshold if you want the scoring function to convert probabilities to a zero or one instead of using raw probabilities
+#' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param HierarchGroups Vector of hierachy categorical columns.
@@ -106,6 +108,7 @@
 #'     "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
+#'   RoundPreds = FALSE,
 #'
 #'   # Date features
 #'   CalendarVariables = c("week", "month", "quarter"),
@@ -206,6 +209,8 @@
 #'               "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
+#'   Threshold = NULL,
+#'   RoundPreds = FALSE,
 #'
 #'   # Date features
 #'   CalendarVariables = c("week", "month", "quarter"),
@@ -257,6 +262,8 @@
 AutoHurdleCARMA <- function(data,
                             AlgoType = "catboost",
                             NonNegativePred = FALSE,
+                            Threshold = NULL,
+                            RoundPreds = FALSE,
                             TrainOnFull = FALSE,
                             TargetColumnName = "Target",
                             DateColumnName = "DateTime",
@@ -1139,13 +1146,17 @@ AutoHurdleCARMA <- function(data,
           ModelID = "ModelTest",
           ModelClass = "catboost",
           ModelList = TestModel$ModelList,
-          ArgList = TestModel$ArgsList)
+          ArgList = TestModel$ArgsList,
+          Threshold = Threshold)
 
         # Modify data to match AutoCatBoostCARMA output ----
         Preds[, (names(Preds)[3:6]) := NULL]
         data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         data.table::setnames(Preds, "FinalPredictedValue", "Predictions")
         data.table::setcolorder(Preds, c(2,1,3:ncol(Preds)))
+
+        # Rounding ----
+        if(RoundPreds) Pred[, Predictions := round(Predictions)]
 
       } else {
 
@@ -1156,13 +1167,17 @@ AutoHurdleCARMA <- function(data,
           ModelID = "ModelTest",
           ModelClass = "catboost",
           ModelList = TestModel$ModelList,
-          ArgList = TestModel$ArgsList)
+          ArgList = TestModel$ArgsList,
+          Threshold = Threshold)
 
         # Modify data to match AutoCatBoostCARMA output ----
         Preds[, (names(Preds)[3:6]) := NULL]
         data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         data.table::setnames(Preds, "FinalPredictedValue", "Predictions")
         data.table::setcolorder(Preds, c(2,1,3:ncol(Preds)))
+
+        # Rounding ----
+        if(RoundPreds) Pred[, Predictions := round(Predictions)]
 
       }
 
@@ -1209,11 +1224,15 @@ AutoHurdleCARMA <- function(data,
           ModelID = "ModelTest",
           ModelClass = "catboost",
           ModelList = TestModel$ModelList,
-          ArgList = TestModel$ArgsList)
+          ArgList = TestModel$ArgsList,
+          Threshold = Threshold)
 
         # Modify data ----
         Preds[, (setdiff(names(Preds),"FinalPredictedValue")) := NULL]
         data.table::setnames(Preds, "FinalPredictedValue", "Predictions")
+
+        # Rounding ----
+        if(RoundPreds) Pred[, Predictions := round(Predictions)]
 
         # Update data group case----
         if(DebugMode) print("Update data group case----")
@@ -1237,11 +1256,15 @@ AutoHurdleCARMA <- function(data,
           ModelID = "ModelTest",
           ModelClass = "catboost",
           ModelList = TestModel$ModelList,
-          ArgList = TestModel$ArgsList)
+          ArgList = TestModel$ArgsList,
+          Threshold = Threshold)
 
         # Modify data ----
         Preds[, (setdiff(names(Preds),"FinalPredictedValue")) := NULL]
         data.table::setnames(Preds, "FinalPredictedValue", "Predictions")
+
+        # Rounding ----
+        if(RoundPreds) Pred[, Predictions := round(Predictions)]
 
         # Update data non-group case----
         if(DebugMode) print("Update data non-group case----")

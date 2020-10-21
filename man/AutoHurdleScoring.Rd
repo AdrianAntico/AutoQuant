@@ -10,7 +10,8 @@ AutoHurdleScoring(
   ModelID = NULL,
   ModelClass = "catboost",
   ArgList = NULL,
-  ModelList = NULL
+  ModelList = NULL,
+  Threshold = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ AutoHurdleScoring(
 \item{ArgList}{Output from the hurdle model}
 
 \item{ModelList}{Output from the hurdle model}
+
+\item{Threshold}{NULL to use raw probabilities to predict. Otherwise, supply a threshold}
 }
 \value{
 A data.table with the final predicted value, the intermediate model predictions, and your source data
@@ -110,7 +113,8 @@ HurdleScores <- RemixAutoML::AutoHurdleScoring(
   ModelID = "ModelTest",
   ModelClass = "xgboost",
   ModelList = NULL,
-  ArgList = NULL)
+  ArgList = NULL,
+  Threshold = NULL)
 }
 }
 \seealso{
