@@ -1156,7 +1156,7 @@ AutoHurdleCARMA <- function(data,
         data.table::setcolorder(Preds, c(2,1,3:ncol(Preds)))
 
         # Rounding ----
-        if(RoundPreds) Pred[, Predictions := round(Predictions)]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
 
       } else {
 
@@ -1177,7 +1177,7 @@ AutoHurdleCARMA <- function(data,
         data.table::setcolorder(Preds, c(2,1,3:ncol(Preds)))
 
         # Rounding ----
-        if(RoundPreds) Pred[, Predictions := round(Predictions)]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
 
       }
 
@@ -1232,7 +1232,7 @@ AutoHurdleCARMA <- function(data,
         data.table::setnames(Preds, "FinalPredictedValue", "Predictions")
 
         # Rounding ----
-        if(RoundPreds) Pred[, Predictions := round(Predictions)]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
 
         # Update data group case----
         if(DebugMode) print("Update data group case----")
@@ -1264,7 +1264,7 @@ AutoHurdleCARMA <- function(data,
         data.table::setnames(Preds, "FinalPredictedValue", "Predictions")
 
         # Rounding ----
-        if(RoundPreds) Pred[, Predictions := round(Predictions)]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
 
         # Update data non-group case----
         if(DebugMode) print("Update data non-group case----")
