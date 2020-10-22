@@ -1029,6 +1029,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   } else {
     return(list(
       ArgsList = ArgsList,
-      ModelList = ModelList))
+      ModelList = ModelList,
+      ClassifierModel = ClassifierModel))
   }
 }

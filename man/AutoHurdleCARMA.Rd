@@ -70,7 +70,7 @@ AutoHurdleCARMA(
 
 \item{NonNegativePred}{TRUE or FALSE}
 
-\item{Threshold}{Supply a threshold if you want the scoring function to convert probabilities to a zero or one instead of using raw probabilities}
+\item{Threshold}{Select confusion matrix measure to optimize for pulling in threshold. Choose from "MCC", "Acc", "TPR", "TNR", "FNR", "FPR", "FDR", "FOR", "F1_Score", "F2_Score", "F0.5_Score", "NPV", "PPV", "ThreatScore", "Utility"}
 
 \item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
 

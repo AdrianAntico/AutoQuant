@@ -9,7 +9,7 @@
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param NonNegativePred TRUE or FALSE
-#' @param Threshold Supply a threshold if you want the scoring function to convert probabilities to a zero or one instead of using raw probabilities
+#' @param Threshold Select confusion matrix measure to optimize for pulling in threshold. Choose from "MCC", "Acc", "TPR", "TNR", "FNR", "FPR", "FDR", "FOR", "F1_Score", "F2_Score", "F0.5_Score", "NPV", "PPV", "ThreatScore", "Utility"
 #' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
@@ -1091,6 +1091,14 @@ AutoHurdleCARMA <- function(data,
   } else if(tolower(AlgoType) == "xgboost") {
     1
   }
+
+  # Grab threshold if turned on ----
+  if(!is.null(Threshold)) {
+    threshold <- TestModel$ClassifierModel$EvaluationMetrics
+    col <- names(threshold)[grep(pattern = Threshold, x = names(threshold))]
+    Threshold <- threshold[, .SD, .SDcols = c("Threshold", eval(col))][order(-get(col))][1,1][[1]]
+  }
+
 
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) return(TestModel)
