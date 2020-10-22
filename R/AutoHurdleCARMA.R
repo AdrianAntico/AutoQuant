@@ -1094,11 +1094,10 @@ AutoHurdleCARMA <- function(data,
 
   # Grab threshold if turned on ----
   if(!is.null(Threshold)) {
-    threshold <- TestModel$ClassifierModel$EvaluationMetrics
+    threshold <- TestModel$ClassificationMetrics
     col <- names(threshold)[grep(pattern = Threshold, x = names(threshold))]
     Threshold <- threshold[, .SD, .SDcols = c("Threshold", eval(col))][order(-get(col))][1,1][[1]]
   }
-
 
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) return(TestModel)
