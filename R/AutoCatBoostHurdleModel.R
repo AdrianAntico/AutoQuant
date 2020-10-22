@@ -469,7 +469,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
       # Data arguments
       data = data.table::copy(data),
-      TrainOnFull = TrainOnFull,
+      TrainOnFull = FALSE,
       ValidationData = data.table::copy(ValidationData),
       TestData = data.table::copy(TestData),
       TargetColumnName = "Target_Buckets",
