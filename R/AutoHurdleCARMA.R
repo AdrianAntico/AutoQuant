@@ -1094,7 +1094,7 @@ AutoHurdleCARMA <- function(data,
 
   # Grab threshold if turned on ----
   if(!is.null(Threshold)) {
-    threshold <- TestModel$ClassificationMetrics
+    threshold <- TestModel$ClassifierModel$EvaluationMetrics
     col <- names(threshold)[grep(pattern = Threshold, x = names(threshold))]
     Threshold <- threshold[, .SD, .SDcols = c("Threshold", eval(col))][order(-get(col))][1,1][[1]]
   }

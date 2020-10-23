@@ -1015,6 +1015,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     return(list(
       ArgsList = ArgsList,
       ModelList = ModelList,
+      ClassifierModel = ClassifierModel,
       ClassificationMetrics = ClassEvaluationMetrics,
       FinalTestData = TestData,
       EvaluationPlot = EvaluationPlot,
