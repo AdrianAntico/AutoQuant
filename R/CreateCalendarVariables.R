@@ -209,7 +209,7 @@ CreateCalendarVariables <- function(data,
 
     # Remove ITime columns if they exist and change names of non IDate columns----
     if(any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) data.table::set(data, j = paste0("TIME_", DateColRef), value = NULL)
-    if(any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","month","quarter","year"))) data.table::set(data, j = paste0("DATE_", DateColRef), value = NULL)
+    if(any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","wom","month","quarter","year"))) data.table::set(data, j = paste0("DATE_", DateColRef), value = NULL)
   }
 
   # Return data----
