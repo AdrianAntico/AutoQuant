@@ -7,6 +7,7 @@
 AutoXGBoostCARMA(
   data,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
   TrainOnFull = FALSE,
   TargetColumnName = NULL,
   DateColumnName = NULL,
@@ -54,6 +55,8 @@ AutoXGBoostCARMA(
 \item{data}{Supply your full series data set here}
 
 \item{NonNegativePred}{TRUE or FALSE}
+
+\item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
@@ -168,6 +171,7 @@ XGBoostResults <- AutoXGBoostCARMA(
   # Data Artifacts
   data = data,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,

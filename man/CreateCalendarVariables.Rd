@@ -18,7 +18,7 @@ CreateCalendarVariables(
 
 \item{AsFactor}{Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned}
 
-\item{TimeUnits}{Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
+\item{TimeUnits}{Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "wom" (week of month), "month", "quarter", "year"}
 }
 \value{
 Returns your data.table with the added calendar variables at the end
@@ -68,6 +68,7 @@ runtime <- system.time(
                   "yday",
                   "week",
                   "isoweek",
+                  "wom",
                   "month",
                   "quarter",
                   "year")))

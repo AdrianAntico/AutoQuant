@@ -8,6 +8,7 @@ AutoH2OCARMA(
   AlgoType = "drf",
   data,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
   TrainOnFull = FALSE,
   TargetColumnName = "Target",
   DateColumnName = "DateTime",
@@ -56,6 +57,8 @@ AutoH2OCARMA(
 \item{data}{Supply your full series data set here}
 
 \item{NonNegativePred}{TRUE or FALSE}
+
+\item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
@@ -197,6 +200,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
     "LogPlus1", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
 
   # Features
   AnomalyDetection = NULL,

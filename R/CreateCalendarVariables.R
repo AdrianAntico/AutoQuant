@@ -7,7 +7,7 @@
 #' @param data This is your data
 #' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
 #' @param AsFactor Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned
-#' @param TimeUnits Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
+#' @param TimeUnits Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "wom" (week of month), "month", "quarter", "year"
 #' @examples
 #' \dontrun{
 #' # Create fake data with a Date column----
@@ -50,6 +50,7 @@
 #'                   "yday",
 #'                   "week",
 #'                   "isoweek",
+#'                   "wom",
 #'                   "month",
 #'                   "quarter",
 #'                   "year")))
@@ -69,8 +70,8 @@ CreateCalendarVariables <- function(data,
 
   # Check args----
   if(!is.logical(AsFactor)) return("AsFactor needs to be TRUE or FALSE")
-  if(!(any(tolower(TimeUnits) %chin% c("second","minute","hour","wday","mday","yday","week","isoweek","month","quarter","year")))) {
-    return("TimeUnits needs to be one of 'minute', 'hour', 'wday','mday', 'yday','week', 'month', 'quarter', 'year'")
+  if(!(any(tolower(TimeUnits) %chin% c("second","minute","hour","wday","mday","yday","week","isoweek","wom","month","quarter","year")))) {
+    return("TimeUnits needs to be one of 'minute', 'hour', 'wday','mday', 'yday','week','wom','month', 'quarter', 'year'")
   }
 
   # Turn DateCols into character names if not already----
@@ -128,25 +129,25 @@ CreateCalendarVariables <- function(data,
         if(AsFactor) {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::second(DataCompute[[eval(paste0("TIME_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::second(DataCompute[[eval(paste0("TIME_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::second(DataCompute[[eval(paste0("TIME_", DateColRef))]]))
         }
       } else if(tolower(j) == "minute") {
         if(AsFactor) {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::minute(DataCompute[[eval(paste0("TIME_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::minute(DataCompute[[paste0("TIME_", DateColRef)]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::minute(DataCompute[[paste0("TIME_", DateColRef)]]))
         }
       } else if(tolower(j) == "hour") {
         if(AsFactor) {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::hour(DataCompute[[eval(paste0("TIME_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::hour(DataCompute[[eval(paste0("TIME_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::hour(DataCompute[[eval(paste0("TIME_", DateColRef))]]))
         }
       } else if(tolower(j) == "wday") {
         if(AsFactor) {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::wday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::wday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::wday(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "mday") {
         if (AsFactor) {
@@ -158,25 +159,31 @@ CreateCalendarVariables <- function(data,
         if (AsFactor) {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::yday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::yday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::yday(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "week") {
         if (AsFactor) {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::week(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::week(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::week(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "isoweek") {
         if (AsFactor) {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
-      } else if(tolower(j) == "month") {
+      } else if(tolower(j) == "isoweek") {
         if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::month(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::month(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
+        }
+      } else if(tolower(j) == "wom") {
+        if (AsFactor) {
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::fifelse(ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7) == 5, 4, ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7))))
+        } else {
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::fifelse(ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7) == 5, 4, ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7)))
         }
       } else if(tolower(j) == "quarter") {
         if (AsFactor) {
@@ -188,7 +195,7 @@ CreateCalendarVariables <- function(data,
         if(AsFactor) {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::year(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::year(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::year(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       }
     }

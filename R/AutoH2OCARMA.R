@@ -10,6 +10,7 @@
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param NonNegativePred TRUE or FALSE
+#' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param HierarchGroups Vector of hierachy categorical columns.
@@ -102,6 +103,7 @@
 #'     "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
+#'   RoundPreds = FALSE,
 #'
 #'   # Features
 #'   AnomalyDetection = NULL,
@@ -141,6 +143,7 @@
 AutoH2OCARMA <- function(AlgoType = "drf",
                          data,
                          NonNegativePred = FALSE,
+                         RoundPreds = FALSE,
                          TrainOnFull = FALSE,
                          TargetColumnName = "Target",
                          DateColumnName = "DateTime",
@@ -1337,6 +1340,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         data.table::setnames(UpdateData, "FutureDateData", eval(DateColumnName))
       } else {
         if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
@@ -1384,6 +1388,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         Preds <- cbind(UpdateData[ID == N], Preds)
         if(Difference) Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds] else Preds[, eval(TargetColumnName) := Preds]
         Preds[, Predictions := Preds][, Preds := NULL]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
         UpdateData <- UpdateData[ID != N]
         if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
@@ -1417,6 +1422,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
         # Update data non-group case----
         if(DebugMode) print("Update data non-group case----")
+        if(RoundPreds) Preds[, eval(names(Preds)[1]) := round(Preds[[1]])]
         data.table::set(UpdateData, i = N, j = as.integer(2:3), value = Preds[[1]])
       }
     }

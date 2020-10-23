@@ -6,6 +6,7 @@
 #' @family Automated Panel Data Forecasting
 #' @param data Supply your full series data set here
 #' @param NonNegativePred TRUE or FALSE
+#' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
@@ -74,6 +75,7 @@
 #'   # Data Artifacts
 #'   data = data,
 #'   NonNegativePred = FALSE,
+#'   RoundPreds = FALSE,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
@@ -138,6 +140,7 @@
 #' @export
 AutoXGBoostCARMA <- function(data,
                              NonNegativePred = FALSE,
+                             RoundPreds = FALSE,
                              TrainOnFull = FALSE,
                              TargetColumnName = NULL,
                              DateColumnName = NULL,
@@ -1089,6 +1092,7 @@ AutoXGBoostCARMA <- function(data,
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
         if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
         UpdateData <- cbind(FutureDateData[1L:N], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
@@ -1135,11 +1139,13 @@ AutoXGBoostCARMA <- function(data,
         Preds <- cbind(UpdateData[ID == N], Preds)
         if(Difference) {
           Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds]
+          if(RoundPreds) Preds[, ModTarget := round(ModTarget)]
         } else {
           if(NonNegativePred) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
           Preds[, eval(TargetColumnName) := Preds]
         }
         Preds[, Predictions := Preds][, Preds := NULL]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
         UpdateData <- UpdateData[ID != N]
         if(any(class(UpdateData[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
         if(any(class(Preds[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) Preds[, eval(DateColumnName) := as.Date(get(DateColumnName))]
@@ -1177,7 +1183,8 @@ AutoXGBoostCARMA <- function(data,
           MDP_MissNum = -1)
 
         # Update data non-group case----
-        if(NonNegativePred) Preds <- Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+        if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+        if(RoundPreds) Preds[, Predictions := round(Predictions)]
         data.table::set(UpdateData, i = N, j = 2L:3L, value = Preds[[1]])
       }
     }

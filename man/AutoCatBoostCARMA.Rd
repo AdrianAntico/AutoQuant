@@ -7,6 +7,7 @@
 AutoCatBoostCARMA(
   data,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
   TrainOnFull = FALSE,
   TargetColumnName = "Target",
   DateColumnName = "DateTime",
@@ -62,6 +63,8 @@ AutoCatBoostCARMA(
 \item{data}{Supply your full series data set here}
 
 \item{NonNegativePred}{TRUE or FALSE}
+
+\item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
@@ -211,6 +214,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
     "LogPlus1", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
 
   # Date features
   CalendarVariables = c("week", "month", "quarter"),
@@ -304,6 +308,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
               "LogPlus1", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
 
   # Date features
   CalendarVariables = c("week", "month", "quarter"),

@@ -8,6 +8,7 @@
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param NonNegativePred TRUE or FALSE
+#' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param HierarchGroups Vector of hierachy categorical columns.
@@ -101,6 +102,7 @@
 #'     "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
+#'   RoundPreds = FALSE,
 #'
 #'   # Date features
 #'   CalendarVariables = c("week", "month", "quarter"),
@@ -194,6 +196,7 @@
 #'               "LogPlus1", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
+#'   RoundPreds = FALSE,
 #'
 #'   # Date features
 #'   CalendarVariables = c("week", "month", "quarter"),
@@ -243,6 +246,7 @@
 #' @export
 AutoCatBoostCARMA <- function(data,
                               NonNegativePred = FALSE,
+                              RoundPreds = FALSE,
                               TrainOnFull = FALSE,
                               TargetColumnName = "Target",
                               DateColumnName = "DateTime",
