@@ -106,7 +106,7 @@ CreateCalendarVariables <- function(data,
   for(i in seq_len(length(DateCols))) {
     if(length(TimeList) != 0L) {
       if(any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) data.table::set(data, j = paste0("TIME_", eval(DateCols[i])), value = data.table::as.ITime(data[[eval(DateCols[i])]]))
-      if(any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","month","quarter","year"))) data.table::set(data, j = paste0("DATE_", eval(DateCols[i])), value = data.table::as.IDate(data[[eval(DateCols[i])]]))
+      if(any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","wom","month","quarter","year"))) data.table::set(data, j = paste0("DATE_", eval(DateCols[i])), value = data.table::as.IDate(data[[eval(DateCols[i])]]))
     }
   }
 
