@@ -340,7 +340,7 @@ runtime <- system.time(
     data = data,
     DateCols = "DateTime",
     AsFactor = FALSE,
-    TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year")))
+    TimeUnits = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "wom", "month", "quarter", "year")))
 head(data)
 print(runtime)
 ```
@@ -348,7 +348,7 @@ print(runtime)
 </p>
 </details>
 
-<code>CreateCalendarVariables()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, month, quarter, and year.
+<code>CreateCalendarVariables()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, wom, month, quarter, and year.
 
 
 ##### **CreateHolidayVariable()**
@@ -2162,6 +2162,7 @@ Output <- RemixAutoML::AutoHurdleCARMA(
   Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,  
 
   # Date features
   CalendarVariables = c("week","month","quarter"),
@@ -2247,6 +2248,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
 
   # Date features
   CalendarVariables = c("week","month","quarter"),
@@ -2315,6 +2317,7 @@ XGBoostResults <- AutoXGBoostCARMA(
   # Data Artifacts
   data = data,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
@@ -2415,6 +2418,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
   Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
+  RoundPreds = FALSE,
 
   # Features
   AnomalyDetection = NULL,
