@@ -69,9 +69,13 @@ CreateCalendarVariables <- function(data,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # Check args----
-  if(!is.logical(AsFactor)) return("AsFactor needs to be TRUE or FALSE")
+  if(!is.logical(AsFactor)) {
+    print("AsFactor needs to be TRUE or FALSE")
+    return(data)
+  }
   if(!(any(tolower(TimeUnits) %chin% c("second","minute","hour","wday","mday","yday","week","isoweek","wom","month","quarter","year")))) {
-    return("TimeUnits needs to be one of 'minute', 'hour', 'wday','mday', 'yday','week','wom','month', 'quarter', 'year'")
+    print("TimeUnits needs to be one of 'minute', 'hour', 'wday','mday', 'yday','week','wom','month', 'quarter', 'year'")
+    return(data)
   }
 
   # Turn DateCols into character names if not already----

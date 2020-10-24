@@ -101,5 +101,5 @@ GenTSAnomVars <- function(data,
     }
     return(data)
   }
-  return(NULL)
+  return(data)
 }
