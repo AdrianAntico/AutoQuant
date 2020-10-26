@@ -6,6 +6,7 @@
 \usage{
 AutoH2OCARMA(
   AlgoType = "drf",
+  ExcludeAlgos = "XGBoost",
   data,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
@@ -53,6 +54,8 @@ AutoH2OCARMA(
 }
 \arguments{
 \item{AlgoType}{Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, "automl" for H2O's AutoML algo, and "gam" for H2O's Generalized Additive Model.}
+
+\item{ExcludeAlgos}{For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
 
 \item{data}{Supply your full series data set here}
 
@@ -135,8 +138,6 @@ AutoH2OCARMA(
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
 \item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
-
-\item{ExcludeAlgos}{For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
@@ -216,7 +217,8 @@ Results <- RemixAutoML::AutoH2OCARMA(
   XREGS = NULL,
   FourierTerms = 2L,
   CalendarVariables = c("week", "month", "quarter", "year"),
-  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup",
+    "ChristmasGroup","OtherEcclesticalFeasts"),
   TimeTrendVariable = TRUE,
   NTrees = 1000L,
   DebugMode = TRUE)

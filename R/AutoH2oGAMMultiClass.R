@@ -47,7 +47,7 @@
 #'    ValidationData = NULL,
 #'    TestData = NULL,
 #'    TargetColumnName = "Adrian",
-#'    FeatureColNames = names(data)[!names(data) %chin%
+#'    FeatureColNames = names(data)[!names(data) %in%
 #'      c("IDcol_1", "IDcol_2","Adrian")],
 #'    GamColNames = GamCols,
 #'    eval_metric = "logloss",
@@ -56,7 +56,7 @@
 #'    NThreads = max(1, parallel::detectCores()-2),
 #'    MaxModelsInGrid = 10,
 #'    model_path = normalizePath("./"),
-#'    metadata_path = file.path(normalizePath("./"), "MetaData"),
+#'    metadata_path = NULL,
 #'    ModelID = "FirstModel",
 #'    ReturnModelObjects = TRUE,
 #'    SaveModelObjects = FALSE,

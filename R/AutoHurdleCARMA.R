@@ -53,6 +53,7 @@
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param Depth Depth of catboost model
 #' @param L2_Leaf_Reg l2 reg parameter
+#' @param LearningRate learning_rate
 #' @param RandomStrength Default is 1
 #' @param BorderCount Default is 254
 #' @param BootStrapType Select from Catboost list
@@ -149,6 +150,7 @@
 #'   MaxRunMinutes = 60*60,
 #'   NTrees = 2500,
 #'   L2_Leaf_Reg = 3.0,
+#'   LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
 #'   RandomStrength = 1,
 #'   BorderCount = 254,
 #'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),

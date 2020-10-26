@@ -73,9 +73,6 @@
 #'   FeatureColNames = names(data)[!names(data) %chin%
 #'     c("IDcol_1", "IDcol_2","Adrian")],
 #'   GamColNames = GamCols,
-#'   TransformNumericColumns = NULL,
-#'   Methods = c("BoxCox","Asinh", "Asin","Log",
-#'     "LogPlus1","Logit","YeoJohnson"),
 #'
 #'   # Model args
 #'   GridTune = FALSE,

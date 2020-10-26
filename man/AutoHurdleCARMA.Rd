@@ -154,6 +154,8 @@ AutoHurdleCARMA(
 
 \item{Depth}{Depth of catboost model}
 
+\item{LearningRate}{learning_rate}
+
 \item{L2_Leaf_Reg}{l2 reg parameter}
 
 \item{RandomStrength}{Default is 1}
@@ -267,6 +269,7 @@ AutoHurdleCARMA is an intermittent demand, Mutlivariate Forecasting algorithms w
   MaxRunMinutes = 60*60,
   NTrees = 2500,
   L2_Leaf_Reg = 3.0,
+  LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
   RandomStrength = 1,
   BorderCount = 254,
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),

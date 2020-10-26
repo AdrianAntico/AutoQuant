@@ -53,7 +53,7 @@ data <- data.table::data.table(Target = runif(10))
 data[, x1 := qnorm(Target)]
 data[, x2 := runif(10)]
 data[, Predict := log(pnorm(0.85 * x1 +
-                              sqrt(1-0.85^2) * qnorm(x2)))]
+  sqrt(1-0.85^2) * qnorm(x2)))]
 data[, ':=' (x1 = NULL, x2 = NULL)]
 data <- RedYellowGreen(
   data,

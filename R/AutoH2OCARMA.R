@@ -119,7 +119,8 @@
 #'   XREGS = NULL,
 #'   FourierTerms = 2L,
 #'   CalendarVariables = c("week", "month", "quarter", "year"),
-#'   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+#'   HolidayVariable = c("USPublicHolidays","EasterGroup",
+#'     "ChristmasGroup","OtherEcclesticalFeasts"),
 #'   TimeTrendVariable = TRUE,
 #'   NTrees = 1000L,
 #'   DebugMode = TRUE)
@@ -141,6 +142,7 @@
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoH2OCARMA <- function(AlgoType = "drf",
+                         ExcludeAlgos = "XGBoost",
                          data,
                          NonNegativePred = FALSE,
                          RoundPreds = FALSE,
