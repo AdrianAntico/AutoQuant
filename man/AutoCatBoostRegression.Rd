@@ -19,6 +19,7 @@ AutoCatBoostRegression(
   NumGPUs = 1,
   eval_metric = "RMSE",
   loss_function = "RMSE",
+  variance_power = 1.5,
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
@@ -73,6 +74,8 @@ AutoCatBoostRegression(
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
 
 \item{loss_function}{Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'}
+
+\item{variance_power}{Used with Tweedie loss_function. From 1.0 to 2.0}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -213,6 +216,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     #        ValidationData
     eval_metric = "RMSE",
     loss_function = "RMSE",
+    variance_power = 1.5,
     MetricPeriods = 10L,
     NumOfParDepPlots = ncol(data)-1L-2L,
     EvalPlots = TRUE,

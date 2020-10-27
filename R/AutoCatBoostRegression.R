@@ -17,6 +17,7 @@
 #' @param NumGPUs Set to 1, 2, 3, etc.
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
 #' @param loss_function Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'
+#' @param variance_power Used with Tweedie loss_function. From 1.0 to 2.0
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -126,6 +127,7 @@
 #'     #        ValidationData
 #'     eval_metric = "RMSE",
 #'     loss_function = "RMSE",
+#'     variance_power = 1.5,
 #'     MetricPeriods = 10L,
 #'     NumOfParDepPlots = ncol(data)-1L-2L,
 #'     EvalPlots = TRUE,
@@ -182,6 +184,7 @@ AutoCatBoostRegression <- function(data,
                                    NumGPUs = 1,
                                    eval_metric = "RMSE",
                                    loss_function = "RMSE",
+                                   variance_power = 1.5,
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
@@ -771,6 +774,7 @@ AutoCatBoostRegression <- function(data,
         random_strength      = RandomStrength,
         border_count         = BorderCount,
         loss_function        = LossFunction,
+        variance_power       = variance_power,
         eval_metric          = eval_metric,
         has_time             = HasTime,
         task_type            = task_type,
@@ -787,6 +791,7 @@ AutoCatBoostRegression <- function(data,
         random_strength      = RandomStrength,
         border_count         = BorderCount,
         loss_function        = LossFunction,
+        variance_power       = variance_power,
         eval_metric          = eval_metric,
         has_time             = HasTime,
         task_type            = task_type,
