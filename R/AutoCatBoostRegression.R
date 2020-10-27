@@ -215,6 +215,9 @@ AutoCatBoostRegression <- function(data,
   # Loss Function----
   if(is.null(loss_function)) LossFunction <- "RMSE" else LossFunction <- loss_function
 
+  # Tweedie ----
+  if(tolower(loss_function) == "tweedie") LossFunction <- paste0('Tweedie:variance_power=',variance_power)
+
   # Turn on full speed ahead----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
 
