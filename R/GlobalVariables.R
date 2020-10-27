@@ -3,6 +3,7 @@ utils::globalVariables(
     "Arima_Artifacts_Score","counter","ForecastOutput","FC_MaxValue","FC_MaxValue","list","model_type.catboost.Model",
     "predict_model.catboost.Model", "ScoreGrid", "TrainArtifacts",
     "Counter1",
+    "VariableImportance",
     "Successs",
     "Forecasts",
     "FinalFC",
