@@ -511,7 +511,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Variables for Program: Store number of data partitions in NumSets----
   if(DebugMode) print("Variables for Program: Store number of data partitions in NumSets----")
-  NumSets <- 2L
+  NumSets <- length(SplitRatios)
 
   # Variables for Program: Store Maximum Value of TargetColumnName in val----
   if(DebugMode) print("Variables for Program: Store Maximum Value of TargetColumnName in val----")
@@ -946,7 +946,7 @@ AutoCatBoostCARMA <- function(data,
       DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
-        Ratios = c(1-N1/x,N1/x),
+        Ratios = SplitRatios,
         PartitionType = PartitionType,
         StratifyColumnNames = "GroupVar",
         TimeColumnName = eval(DateColumnName))
@@ -956,7 +956,7 @@ AutoCatBoostCARMA <- function(data,
       DataSets <- AutoDataPartition(
         data,
         NumDataSets = NumSets,
-        Ratios = c(1-N1/x,N1/x),
+        Ratios = SplitRatios,
         PartitionType = PartitionType,
         StratifyColumnNames = NULL,
         TimeColumnName = eval(DateColumnName))
