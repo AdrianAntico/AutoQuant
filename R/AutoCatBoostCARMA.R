@@ -41,6 +41,7 @@
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
 #' @param NumOfParDepPlots Supply a number for the number of partial dependence plots you want returned
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
+#' @param EvalMetricValue Used when EvalMetric accepts an argument. See \code{\link{AutoCatBoostRegression}}
 #' @param LossFunction Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'
 #' @param LossFunctionValue Used when LossFunction accepts an argument. See \code{\link{AutoCatBoostRegression}}
 #' @param TaskType Default is "GPU" but you can also set it to "CPU"
@@ -136,6 +137,7 @@
 #'   # ML Args
 #'   NumOfParDepPlots = 100L,
 #'   EvalMetric = "RMSE",
+#'   EvalMetricValue = 1.5,
 #'   LossFunction = "RMSE",
 #'   LossFunctionValue = 1.5,
 #'   GridTune = FALSE,
@@ -232,6 +234,7 @@
 #'   # ML Args
 #'   NumOfParDepPlots = 100L,
 #'   EvalMetric = "RMSE",
+#'   EvalMetricValue = 1.5,
 #'   LossFunction = "RMSE",
 #'   LossFunctionValue = 1.5,
 #'   GridTune = FALSE,
@@ -286,6 +289,7 @@ AutoCatBoostCARMA <- function(data,
                               TaskType = "GPU",
                               NumGPU = 1,
                               EvalMetric = "RMSE",
+                              EvalMetricValue = 1.5,
                               LossFunction = "RMSE",
                               LossFunctionValue = 1.5,
                               GridTune = FALSE,
@@ -935,7 +939,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
-  if(!TrainOnFull) {
+  if(!is.null(SplitRatios) || !TrainOnFull) {
     if(Difference & !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
@@ -980,7 +984,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Variables for CARMA function: Define data sets----
   if(DebugMode) print("Variables for CARMA function: Define data sets----")
-  if(!TrainOnFull) {
+  if(!is.null(SplitRatios) || !TrainOnFull) {
     if(NumSets == 2L) {
       train <- DataSets$TrainData
       valid <- DataSets$ValidationData
@@ -1026,6 +1030,15 @@ AutoCatBoostCARMA <- function(data,
   # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
   if(DebugMode) options(warn = 0)
 
+  # Switch up TrainOnFull if SplitRatios is not null
+  if(!is.null(SplitRatios) || !TrainOnFull) {
+    TOF <- FALSE
+  } else if(TrainOnFull) {
+    TOF <- TRUE
+  } else {
+    TOF <- TrainOnFull
+  }
+
   # Run AutoCatBoostRegression and return list of ml objects ----
   TestModel <- AutoCatBoostRegression(
 
@@ -1061,7 +1074,7 @@ AutoCatBoostCARMA <- function(data,
       #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
       #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
       data = train,
-      TrainOnFull = TrainOnFull,
+      TrainOnFull = TOF,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,
@@ -1079,6 +1092,7 @@ AutoCatBoostCARMA <- function(data,
       #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
       #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
       eval_metric = EvalMetric,
+      eval_metric_value = EvalMetricValue,
       loss_function = LossFunction,
       loss_function_value = LossFunctionValue,
       MetricPeriods = 10L,
@@ -1126,16 +1140,16 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Variable for storing ML model: Pull model object out of TestModel list----")
   Model <- TestModel$Model
 
-  # Variable for interation counts: max number of rows in train data.table across all group----
-  if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
+  # Variable for interation counts: max number of rows in Step1SCore data.table across all group----
+  if(DebugMode) print("Variable for interation counts: max number of rows in Step1SCore data.table across all group----")
   if(!is.null(GroupVariables)) {
     if(Difference) {
-      if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L else N <- as.integer(train[, .N, by = "GroupVar"][, max(N)]) - 1L
+      if(!"GroupVar" %chin% names(Step1SCore)) N <- as.integer(Step1SCore[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L else N <- as.integer(Step1SCore[, .N, by = "GroupVar"][, max(N)]) - 1L
     } else {
-      N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
+      N <- as.integer(Step1SCore[, .N, by = "GroupVar"][, max(N)])
     }
   } else {
-    N <- as.integer(train[, .N])
+    N <- as.integer(Step1SCore[, .N])
   }
 
   # Number of forecast periods----

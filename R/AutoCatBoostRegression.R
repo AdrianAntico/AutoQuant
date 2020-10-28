@@ -15,9 +15,10 @@
 #' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param NumGPUs Set to 1, 2, 3, etc.
-#' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "Tweedie", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
-#' @param loss_function Used in model training for model fitting. loss_function_value not necessary with 'MAE', 'MAPE', 'Poisson', 'RMSE', 'SMAPE', 'R2', 'MSLE', and 'MedianAbsoluteError'. Must use loss_function_value with 'Tweedie','FairLoss', 'NumErrors', 'Quantile', 'LogLinQuantile', 'Lq', 'Huber', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html
-#' @param loss_function_value Used with the specified loss function if an associated value is required. Tweedie
+#' @param eval_metric Select from 'RMSE', 'MAE', 'MAPE', 'R2', 'Poisson', 'MedianAbsoluteError', 'SMAPE', 'MSLE', 'NumErrors', 'FairLoss', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile'
+#' @param eval_metric_value Used with the specified eval_metric. See https://catboost.ai/docs/concepts/loss-functions-regression.html
+#' @param loss_function Used in model training for model fitting. 'MAPE', 'MAE', 'RMSE', 'Poisson', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile'
+#' @param loss_function_value Used with the specified loss function if an associated value is required. 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile' 'Lq', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -126,6 +127,7 @@
 #'     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted
 #'     #        ValidationData
 #'     eval_metric = "RMSE",
+#'     eval_metric_value = 1.5,
 #'     loss_function = "RMSE",
 #'     loss_function_value = 1.5,
 #'     MetricPeriods = 10L,
@@ -183,6 +185,7 @@ AutoCatBoostRegression <- function(data,
                                    task_type = "GPU",
                                    NumGPUs = 1,
                                    eval_metric = "RMSE",
+                                   eval_metric_value = 1.5,
                                    loss_function = "RMSE",
                                    loss_function_value = 1.5,
                                    model_path = NULL,
@@ -209,33 +212,76 @@ AutoCatBoostRegression <- function(data,
                                    RSM = NULL,
                                    BootStrapType = NULL,
                                    GrowPolicy = NULL) {
-  # Load catboost----
+  # Load catboost ----
   loadNamespace(package = "catboost")
 
-  # Loss Function----
+  # Loss Function ----
   if(is.null(loss_function)) LossFunction <- "RMSE" else LossFunction <- loss_function
 
-  # Fancy loss functions ----
+  # Eval Metric ----
+  if(is.null(eval_metric)) EvalMetric <- "RMSE" else EvalMetric <- eval_metric
+
+  # Fancy loss and eval functions ----
+
+  # Tweedie
+  if(tolower(eval_metric) == "tweedie") {
+    EvalMetric <- paste0('Tweedie:variance_power=',eval_metric_value)
+  }
   if(tolower(loss_function) == "tweedie") {
     LossFunction <- paste0('Tweedie:variance_power=',loss_function_value)
   }
+
+  # FairLoss
+  if(tolower(eval_metric) == "fairloss") {
+    EvalMetric <- paste0('FairLoss:smoothness=',eval_metric_value)
+  }
   if(tolower(loss_function) == "fairloss") {
-    LossFunction <- paste0('FairLoss:smoothness=',loss_function_value)
+    EvalMetric <- paste0('FairLoss:smoothness=',eval_metric_value)
+  }
+
+  # NumErrors
+  if(tolower(eval_metric) == "numerrors") {
+    EvalMetric <- paste0('NumErrors:greater_than=',eval_metric_value)
   }
   if(tolower(loss_function) == "numerrors") {
     LossFunction <- paste0('NumErrors:greater_than=',loss_function_value)
   }
+
+  # Lq
+  if(tolower(eval_metric) == "lq") {
+    EvalMetric <- paste0('Lq:q=',eval_metric_value)
+  }
   if(tolower(loss_function) == "lq") {
     LossFunction <- paste0('Lq:q=',loss_function_value)
+  }
+
+  # Huber
+  if(tolower(eval_metric) == "huber") {
+    EvalMetric <- paste0('Huber:delta=',eval_metric_value)
   }
   if(tolower(loss_function) == "huber") {
     LossFunction <- paste0('Huber:delta=',loss_function_value)
   }
+
+  # Expectile
+  if(tolower(eval_metric) == "expectile") {
+    EvalMetric <- paste0('Expectile:alpha=',eval_metric_value)
+  }
   if(tolower(loss_function) == "expectile") {
     LossFunction <- paste0('Expectile:alpha=',loss_function_value)
   }
+
+  # Quantile
+  if(tolower(eval_metric) == "quantile") {
+    EvalMetric <- paste0('Quantile:alpha=',eval_metric_value)
+  }
   if(tolower(loss_function) == "quantile") {
     LossFunction <- paste0('Quantile:alpha=',loss_function_value)
+  }
+
+  # LogLinQuantile
+  if(tolower(eval_metric) == "loglinquantile") {
+    EvalMetric <- paste0('LogLinQuantile:alpha=',eval_metric_value)
   }
   if(tolower(loss_function) == "loglinquantile") {
     LossFunction <- paste0('LogLinQuantile:alpha=',loss_function_value)
@@ -496,9 +542,6 @@ AutoCatBoostRegression <- function(data,
     if(!is.null(TestData)) FinalTestTarget <- TestData[, .SD, .SDcols = eval(Target)][[1L]]
   }
 
-  # Regression eval_metric checks
-  if(!TrainOnFull) if(tolower(eval_metric) == "poisson" & (min(TrainTarget) < 0L | min(TestTarget) < 0L)) return("eval_metric Poisson requires positive values for Target")
-
   # Regression Initialize Catboost Data Conversion----
   if(!is.null(CatFeatures)) {
     if(!is.null(TestData)) {
@@ -570,9 +613,9 @@ AutoCatBoostRegression <- function(data,
 
         # Define prameters----
         if(!exists("NewGrid")) {
-          base_params <- CatBoostRegressionParams(LossFunction=LossFunction,NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostRegressionParams(LossFunction=LossFunction,NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=EvalMetric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- CatBoostRegressionParams(LossFunction=LossFunction,NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=eval_metric,task_type=task_type,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostRegressionParams(LossFunction=LossFunction,NumGPUs=NumGPUs,BanditArmsN=BanditArmsN,counter=counter,HasTime=HasTime,MetricPeriods=MetricPeriods,eval_metric=EvalMetric,task_type=task_type,model_path=model_path,NewGrid=NewGrid,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
 
         # Build model----
@@ -681,7 +724,7 @@ AutoCatBoostRegression <- function(data,
         has_time             = HasTime,
         metric_period        = MetricPeriods,
         loss_function        = LossFunction,
-        eval_metric          = eval_metric,
+        eval_metric          = EvalMetric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
@@ -701,7 +744,7 @@ AutoCatBoostRegression <- function(data,
         has_time             = HasTime,
         metric_period        = MetricPeriods,
         loss_function        = LossFunction,
-        eval_metric          = eval_metric,
+        eval_metric          = EvalMetric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
@@ -736,7 +779,7 @@ AutoCatBoostRegression <- function(data,
         metric_period        = MetricPeriods,
         iterations           = BestGrid[["TreesBuilt"]],
         loss_function        = LossFunction,
-        eval_metric          = eval_metric,
+        eval_metric          = EvalMetric,
         has_time             = HasTime,
         task_type            = task_type,
         devices              = NumGPUs,
@@ -747,7 +790,7 @@ AutoCatBoostRegression <- function(data,
           has_time             = HasTime,
           metric_period        = MetricPeriods,
           loss_function        = LossFunction,
-          eval_metric          = eval_metric,
+          eval_metric          = EvalMetric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
@@ -767,7 +810,7 @@ AutoCatBoostRegression <- function(data,
           has_time             = HasTime,
           metric_period        = MetricPeriods,
           loss_function        = LossFunction,
-          eval_metric          = eval_metric,
+          eval_metric          = EvalMetric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
           task_type            = task_type,
@@ -800,7 +843,7 @@ AutoCatBoostRegression <- function(data,
         random_strength      = RandomStrength,
         border_count         = BorderCount,
         loss_function        = LossFunction,
-        eval_metric          = eval_metric,
+        eval_metric          = EvalMetric,
         has_time             = HasTime,
         task_type            = task_type,
         devices              = NumGPUs,
@@ -816,7 +859,7 @@ AutoCatBoostRegression <- function(data,
         random_strength      = RandomStrength,
         border_count         = BorderCount,
         loss_function        = LossFunction,
-        eval_metric          = eval_metric,
+        eval_metric          = EvalMetric,
         has_time             = HasTime,
         task_type            = task_type,
         devices              = NumGPUs,

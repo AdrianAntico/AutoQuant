@@ -43,6 +43,7 @@ AutoCatBoostCARMA(
   TaskType = "GPU",
   NumGPU = 1,
   EvalMetric = "RMSE",
+  EvalMetricValue = 1.5,
   LossFunction = "RMSE",
   LossFunctionValue = 1.5,
   GridTune = FALSE,
@@ -133,6 +134,8 @@ AutoCatBoostCARMA(
 \item{NumGPU}{Defaults to 1. If CPU is set this argument will be ignored.}
 
 \item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
+
+\item{EvalMetricValue}{Used when EvalMetric accepts an argument. See \code{\link{AutoCatBoostRegression}}}
 
 \item{LossFunction}{Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'}
 
@@ -252,6 +255,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   # ML Args
   NumOfParDepPlots = 100L,
   EvalMetric = "RMSE",
+  EvalMetricValue = 1.5,
   LossFunction = "RMSE",
   LossFunctionValue = 1.5,
   GridTune = FALSE,
@@ -348,6 +352,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   # ML Args
   NumOfParDepPlots = 100L,
   EvalMetric = "RMSE",
+  EvalMetricValue = 1.5,
   LossFunction = "RMSE",
   LossFunctionValue = 1.5,
   GridTune = FALSE,

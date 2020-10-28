@@ -18,6 +18,7 @@ AutoCatBoostRegression(
   task_type = "GPU",
   NumGPUs = 1,
   eval_metric = "RMSE",
+  eval_metric_value = 1.5,
   loss_function = "RMSE",
   loss_function_value = 1.5,
   model_path = NULL,
@@ -71,11 +72,13 @@ AutoCatBoostRegression(
 
 \item{NumGPUs}{Set to 1, 2, 3, etc.}
 
-\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "Tweedie", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
+\item{eval_metric}{Select from 'RMSE', 'MAE', 'MAPE', 'R2', 'Poisson', 'MedianAbsoluteError', 'SMAPE', 'MSLE', 'NumErrors', 'FairLoss', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile'}
 
-\item{loss_function}{Used in model training for model fitting. loss_function_value not necessary with 'MAE', 'MAPE', 'Poisson', 'RMSE', 'SMAPE', 'R2', 'MSLE', and 'MedianAbsoluteError'. Must use loss_function_value with 'Tweedie','FairLoss', 'NumErrors', 'Quantile', 'LogLinQuantile', 'Lq', 'Huber', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html}
+\item{eval_metric_value}{Used with the specified eval_metric. See https://catboost.ai/docs/concepts/loss-functions-regression.html}
 
-\item{loss_function_value}{Used with the specified loss function if an associated value is required. Tweedie}
+\item{loss_function}{Used in model training for model fitting. 'MAPE', 'MAE', 'RMSE', 'Poisson', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile'}
+
+\item{loss_function_value}{Used with the specified loss function if an associated value is required. 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile' 'Lq', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -215,6 +218,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted
     #        ValidationData
     eval_metric = "RMSE",
+    eval_metric_value = 1.5,
     loss_function = "RMSE",
     loss_function_value = 1.5,
     MetricPeriods = 10L,
