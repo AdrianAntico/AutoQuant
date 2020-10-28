@@ -15,9 +15,9 @@
 #' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param NumGPUs Set to 1, 2, 3, etc.
-#' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
-#' @param loss_function Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'
-#' @param variance_power Used with Tweedie loss_function. From 1.0 to 2.0
+#' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "Tweedie", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
+#' @param loss_function Used in model training for model fitting. loss_function_value not necessary with 'MAE', 'MAPE', 'Poisson', 'RMSE', 'SMAPE', 'R2', 'MSLE', and 'MedianAbsoluteError'. Must use loss_function_value with 'Tweedie','FairLoss', 'NumErrors', 'Quantile', 'LogLinQuantile', 'Lq', 'Huber', 'Expectile'
+#' @param loss_function_value Used with the specified loss function if an associated value is required. Tweedie
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -127,7 +127,7 @@
 #'     #        ValidationData
 #'     eval_metric = "RMSE",
 #'     loss_function = "RMSE",
-#'     variance_power = 1.5,
+#'     loss_function_value = 1.5,
 #'     MetricPeriods = 10L,
 #'     NumOfParDepPlots = ncol(data)-1L-2L,
 #'     EvalPlots = TRUE,
@@ -184,7 +184,7 @@ AutoCatBoostRegression <- function(data,
                                    NumGPUs = 1,
                                    eval_metric = "RMSE",
                                    loss_function = "RMSE",
-                                   variance_power = 1.5,
+                                   loss_function_value = 1.5,
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
@@ -215,8 +215,31 @@ AutoCatBoostRegression <- function(data,
   # Loss Function----
   if(is.null(loss_function)) LossFunction <- "RMSE" else LossFunction <- loss_function
 
-  # Tweedie ----
-  if(tolower(loss_function) == "tweedie") LossFunction <- paste0('Tweedie:variance_power=',variance_power)
+  # Fancy loss functions ----
+  if(tolower(loss_function) == "tweedie") {
+    LossFunction <- paste0('Tweedie:variance_power=',loss_function_value)
+  }
+  if(tolower(loss_function) == "fairloss") {
+    LossFunction <- paste0('FairLoss:smoothness=',loss_function_value)
+  }
+  if(tolower(loss_function) == "numerrors") {
+    LossFunction <- paste0('NumErrors:greater_than=',loss_function_value)
+  }
+  if(tolower(loss_function) == "lq") {
+    LossFunction <- paste0('Lq:q=',loss_function_value)
+  }
+  if(tolower(loss_function) == "huber") {
+    LossFunction <- paste0('Huber:delta=',loss_function_value)
+  }
+  if(tolower(loss_function) == "expectile") {
+    LossFunction <- paste0('Expectile:alpha=',loss_function_value)
+  }
+  if(tolower(loss_function) == "quantile") {
+    LossFunction <- paste0('Quantile:alpha=',loss_function_value)
+  }
+  if(tolower(loss_function) == "loglinquantile") {
+    LossFunction <- paste0('LogLinQuantile:alpha=',loss_function_value)
+  }
 
   # Turn on full speed ahead----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))

@@ -19,7 +19,7 @@ AutoCatBoostRegression(
   NumGPUs = 1,
   eval_metric = "RMSE",
   loss_function = "RMSE",
-  variance_power = 1.5,
+  loss_function_value = 1.5,
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
@@ -71,11 +71,11 @@ AutoCatBoostRegression(
 
 \item{NumGPUs}{Set to 1, 2, 3, etc.}
 
-\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
+\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "Tweedie", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
 
-\item{loss_function}{Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'}
+\item{loss_function}{Used in model training for model fitting. loss_function_value not necessary with 'MAE', 'MAPE', 'Poisson', 'RMSE', 'SMAPE', 'R2', 'MSLE', and 'MedianAbsoluteError'. Must use loss_function_value with 'Tweedie','FairLoss', 'NumErrors', 'Quantile', 'LogLinQuantile', 'Lq', 'Huber', 'Expectile'}
 
-\item{variance_power}{Used with Tweedie loss_function. From 1.0 to 2.0}
+\item{loss_function_value}{Used with the specified loss function if an associated value is required. Tweedie}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -216,7 +216,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     #        ValidationData
     eval_metric = "RMSE",
     loss_function = "RMSE",
-    variance_power = 1.5,
+    loss_function_value = 1.5,
     MetricPeriods = 10L,
     NumOfParDepPlots = ncol(data)-1L-2L,
     EvalPlots = TRUE,
