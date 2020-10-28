@@ -16,7 +16,7 @@
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param NumGPUs Set to 1, 2, 3, etc.
 #' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "Tweedie", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".
-#' @param loss_function Used in model training for model fitting. loss_function_value not necessary with 'MAE', 'MAPE', 'Poisson', 'RMSE', 'SMAPE', 'R2', 'MSLE', and 'MedianAbsoluteError'. Must use loss_function_value with 'Tweedie','FairLoss', 'NumErrors', 'Quantile', 'LogLinQuantile', 'Lq', 'Huber', 'Expectile'
+#' @param loss_function Used in model training for model fitting. loss_function_value not necessary with 'MAE', 'MAPE', 'Poisson', 'RMSE', 'SMAPE', 'R2', 'MSLE', and 'MedianAbsoluteError'. Must use loss_function_value with 'Tweedie','FairLoss', 'NumErrors', 'Quantile', 'LogLinQuantile', 'Lq', 'Huber', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html
 #' @param loss_function_value Used with the specified loss function if an associated value is required. Tweedie
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.

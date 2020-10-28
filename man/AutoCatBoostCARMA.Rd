@@ -44,7 +44,7 @@ AutoCatBoostCARMA(
   NumGPU = 1,
   EvalMetric = "RMSE",
   LossFunction = "RMSE",
-  VariancePower = 1.5,
+  LossFunctionValue = 1.5,
   GridTune = FALSE,
   PassInGrid = NULL,
   ModelCount = 100,
@@ -136,7 +136,7 @@ AutoCatBoostCARMA(
 
 \item{LossFunction}{Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'}
 
-\item{VariancePower}{Used when LossFunction is 'Tweedie'. Choose from 1.0 to 2.0}
+\item{LossFunctionValue}{Used when LossFunction accepts an argument. See \code{\link{AutoCatBoostRegression}}}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
 
@@ -253,7 +253,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   NumOfParDepPlots = 100L,
   EvalMetric = "RMSE",
   LossFunction = "RMSE",
-  VariancePower = 1.5,
+  LossFunctionValue = 1.5,
   GridTune = FALSE,
   PassInGrid = NULL,
   ModelCount = 5,
@@ -349,7 +349,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   NumOfParDepPlots = 100L,
   EvalMetric = "RMSE",
   LossFunction = "RMSE",
-  VariancePower = 1.5,
+  LossFunctionValue = 1.5,
   GridTune = FALSE,
   PassInGrid = NULL,
   ModelCount = 5,

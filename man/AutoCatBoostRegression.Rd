@@ -73,7 +73,7 @@ AutoCatBoostRegression(
 
 \item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "RMSE" is the default, but other options include: "MAE", "MAPE", "Poisson", "Quantile", "Tweedie", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError".}
 
-\item{loss_function}{Used in model training for model fitting. loss_function_value not necessary with 'MAE', 'MAPE', 'Poisson', 'RMSE', 'SMAPE', 'R2', 'MSLE', and 'MedianAbsoluteError'. Must use loss_function_value with 'Tweedie','FairLoss', 'NumErrors', 'Quantile', 'LogLinQuantile', 'Lq', 'Huber', 'Expectile'}
+\item{loss_function}{Used in model training for model fitting. loss_function_value not necessary with 'MAE', 'MAPE', 'Poisson', 'RMSE', 'SMAPE', 'R2', 'MSLE', and 'MedianAbsoluteError'. Must use loss_function_value with 'Tweedie','FairLoss', 'NumErrors', 'Quantile', 'LogLinQuantile', 'Lq', 'Huber', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html}
 
 \item{loss_function_value}{Used with the specified loss function if an associated value is required. Tweedie}
 

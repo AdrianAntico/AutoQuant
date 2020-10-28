@@ -42,7 +42,7 @@
 #' @param NumOfParDepPlots Supply a number for the number of partial dependence plots you want returned
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
 #' @param LossFunction Used in model training for model fitting. Select from 'RMSE', 'MAE', 'Quantile', 'LogLinQuantile', 'MAPE', 'Poisson', 'PairLogitPairwise', 'Tweedie', 'QueryRMSE'
-#' @param VariancePower Used when LossFunction is 'Tweedie'. Choose from 1.0 to 2.0
+#' @param LossFunctionValue Used when LossFunction accepts an argument. See \code{\link{AutoCatBoostRegression}}
 #' @param TaskType Default is "GPU" but you can also set it to "CPU"
 #' @param NumGPU Defaults to 1. If CPU is set this argument will be ignored.
 #' @param GridTune Set to TRUE to run a grid tune
@@ -137,7 +137,7 @@
 #'   NumOfParDepPlots = 100L,
 #'   EvalMetric = "RMSE",
 #'   LossFunction = "RMSE",
-#'   VariancePower = 1.5,
+#'   LossFunctionValue = 1.5,
 #'   GridTune = FALSE,
 #'   PassInGrid = NULL,
 #'   ModelCount = 5,
@@ -233,7 +233,7 @@
 #'   NumOfParDepPlots = 100L,
 #'   EvalMetric = "RMSE",
 #'   LossFunction = "RMSE",
-#'   VariancePower = 1.5,
+#'   LossFunctionValue = 1.5,
 #'   GridTune = FALSE,
 #'   PassInGrid = NULL,
 #'   ModelCount = 5,
@@ -287,7 +287,7 @@ AutoCatBoostCARMA <- function(data,
                               NumGPU = 1,
                               EvalMetric = "RMSE",
                               LossFunction = "RMSE",
-                              VariancePower = 1.5,
+                              LossFunctionValue = 1.5,
                               GridTune = FALSE,
                               PassInGrid = NULL,
                               ModelCount = 100,
@@ -1080,7 +1080,7 @@ AutoCatBoostCARMA <- function(data,
       #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
       eval_metric = EvalMetric,
       loss_function = LossFunction,
-      variance_power = VariancePower,
+      loss_function_value = LossFunctionValue,
       MetricPeriods = 10L,
       NumOfParDepPlots = NumOfParDepPlots,
       EvalPlots = TRUE,
