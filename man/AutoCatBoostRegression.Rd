@@ -260,6 +260,22 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+
+# Output
+ TestModel$Model
+ TestModel$ValidationData
+ TestModel$EvaluationPlot
+ TestModel$EvaluationBoxPlot
+ TestModel$EvaluationMetrics
+ TestModel$VariableImportance
+ TestModel$InteractionImportance
+ TestModel$ShapValuesDT
+ TestModel$VI_Plot
+ TestModel$PartialDependencePlots
+ TestModel$PartialDependenceBoxPlots
+ TestModel$GridList
+ TestModel$ColNames
+ TestModel$TransformationResults
 }
 }
 \seealso{

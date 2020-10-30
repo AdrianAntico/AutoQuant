@@ -11,6 +11,7 @@ CatBoostMultiClassParams(
   MetricPeriods = NULL,
   ClassWeights = NULL,
   eval_metric = NULL,
+  loss_function = NULL,
   task_type = NULL,
   model_path = NULL,
   NewGrid = NULL,
@@ -31,6 +32,8 @@ CatBoostMultiClassParams(
 \item{ClassWeights}{Passthrough}
 
 \item{eval_metric}{Passthrough}
+
+\item{loss_function}{Passthrough}
 
 \item{task_type}{Passthrough}
 

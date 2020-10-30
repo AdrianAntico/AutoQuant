@@ -8,6 +8,7 @@
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
+#' @param ReturnShapValues Set to TRUE to return a data.table of feature contributions to all predicted values generated
 #' @param ModelObject Supply the model object directly for scoring instead of loading it from file. If you supply this, ModelID and ModelPath will be ignored.
 #' @param ModelPath Supply your path file used in the AutoCatBoost__() function
 #' @param ModelID Supply the model ID used in the AutoCatBoost__() function
@@ -32,6 +33,7 @@
 #'   ScoringData = data,
 #'   FeatureColumnNames = 2:12,
 #'   IDcols = NULL,
+#'   ReturnShapValues = FALSE,
 #'   ModelObject = NULL,
 #'   ModelPath = normalizePath("./"),
 #'   ModelID = "ModelTest",
@@ -56,6 +58,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 ScoringData = NULL,
                                 FeatureColumnNames = NULL,
                                 IDcols = NULL,
+                                ReturnShapValues = FALSE,
                                 ModelObject = NULL,
                                 ModelPath = NULL,
                                 ModelID = NULL,
@@ -193,6 +196,13 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         prediction_type = "Probability")))
   }
 
+  # Create ShapValues ----
+  if(ReturnShapValues) {
+    ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = ScoringPool, type = "ShapValues"))
+    data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_",FeatureColumnNames), "Predictions"))
+    ShapValues[, Predictions := NULL]
+  }
+
   # Remove Model----
   if(RemoveModel) rm(model)
 
@@ -223,7 +233,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(tolower(TargetType) == "classification") data.table::setnames(predict, "V1", "p1")
 
   # Merge features back on----
-  if(ReturnFeatures) predict <- cbind(predict, ScoringMerge)
+  if(ReturnFeatures & multiclass != "multiclass") predict <- cbind(predict, ScoringMerge)
 
   # Back Transform Numeric Variables----
   if(BackTransNumeric) {
@@ -244,5 +254,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   gc()
 
   # Return data----
-  return(predict)
+  if(ReturnShapValues) {
+    return(cbind(predict, ShapValues))
+  } else {
+    return(predict)
+  }
 }

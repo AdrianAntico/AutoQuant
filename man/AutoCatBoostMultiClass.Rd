@@ -16,6 +16,7 @@ AutoCatBoostMultiClass(
   IDcols = NULL,
   task_type = "GPU",
   eval_metric = "MultiClassOneVsAll",
+  loss_function = "MultiClassOneVsAll",
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
@@ -62,7 +63,9 @@ AutoCatBoostMultiClass(
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
-\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. MultiClass or MultiClassOneVsAll}
+\item{eval_metric}{Internal bandit metric. Select from 'MultiClass', 'MultiClassOneVsAll', 'AUC', 'TotalF1', 'MCC', 'Accuracy', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa'}
+
+\item{loss_function}{Select from 'MultiClass' or 'MultiClassOneVsAll'}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -182,13 +185,14 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
       c("IDcol_1", "IDcol_2","Adrian")],
     PrimaryDateColumn = NULL,
     ClassWeights = c(1L,1L,1L,1L,1L),
-    IDcols = c("IDcols_1","IDcols_2"),
+    IDcols = c("IDcol_1","IDcol_2"),
 
     # Model evaluation:
     #   'eval_metric' is the measure catboost uses when evaluting
     #       on holdout data during its bandit style process
     #   'loss_function' the loss function used in training optimization
-    eval_metric = "MultiClass",
+    eval_metric = "MCC",
+    loss_function = "MultiClassOneVsAll",
     grid_eval_metric = "Accuracy",
     MetricPeriods = 10L,
 
@@ -223,9 +227,22 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     LearningRate = seq(0.01,0.10,0.01),
     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
     RandomStrength = 1,
+    BorderCount = 254,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+
+# Output
+TestModel$Model
+TestModel$ValidationData
+TestModel$EvaluationMetrics
+TestModel$Evaluation
+TestModel$VI_Plot
+TestModel$VariableImportance
+TestModel$InteractionImportance
+TestModel$GridMetrics
+TestModel$ColNames = Names,
+TestModel$TargetLevels
 }
 }
 \seealso{

@@ -9,6 +9,7 @@ AutoCatBoostScoring(
   ScoringData = NULL,
   FeatureColumnNames = NULL,
   IDcols = NULL,
+  ReturnShapValues = FALSE,
   ModelObject = NULL,
   ModelPath = NULL,
   ModelID = NULL,
@@ -36,6 +37,8 @@ AutoCatBoostScoring(
 \item{FeatureColumnNames}{Supply either column names or column numbers used in the AutoCatBoostRegression() function}
 
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
+
+\item{ReturnShapValues}{Set to TRUE to return a data.table of feature contributions to all predicted values generated}
 
 \item{ModelObject}{Supply the model object directly for scoring instead of loading it from file. If you supply this, ModelID and ModelPath will be ignored.}
 
@@ -84,6 +87,7 @@ Preds <- AutoCatBoostScoring(
   ScoringData = data,
   FeatureColumnNames = 2:12,
   IDcols = NULL,
+  ReturnShapValues = FALSE,
   ModelObject = NULL,
   ModelPath = normalizePath("./"),
   ModelID = "ModelTest",

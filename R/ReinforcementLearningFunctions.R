@@ -712,6 +712,7 @@ CatBoostClassifierParams <- function(counter = NULL,
 #' @param MetricPeriods Passthrough
 #' @param ClassWeights Passthrough
 #' @param eval_metric Passthrough
+#' @param loss_function Passthrough
 #' @param task_type Passthrough
 #' @param model_path Passthrough
 #' @param NewGrid Passthrough
@@ -725,6 +726,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
                                      MetricPeriods = NULL,
                                      ClassWeights = NULL,
                                      eval_metric = NULL,
+                                     loss_function = NULL,
                                      task_type = NULL,
                                      model_path = NULL,
                                      NewGrid = NULL,
@@ -741,7 +743,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
-        loss_function        = eval_metric,
+        loss_function        = loss_function,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
@@ -755,7 +757,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
@@ -774,7 +776,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
@@ -796,7 +798,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
-        loss_function        = eval_metric,
+        loss_function        = loss_function,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
@@ -815,7 +817,7 @@ CatBoostMultiClassParams <- function(counter = NULL,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
-        loss_function        = eval_metric,
+        loss_function        = loss_function,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,

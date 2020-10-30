@@ -14,7 +14,8 @@
 #' @param ClassWeights Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
-#' @param eval_metric This is the metric used inside catboost to measure performance on validation data during a grid-tune. MultiClass or MultiClassOneVsAll
+#' @param eval_metric Internal bandit metric. Select from 'MultiClass', 'MultiClassOneVsAll', 'AUC', 'TotalF1', 'MCC', 'Accuracy', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa'
+#' @param loss_function Select from 'MultiClass' or 'MultiClassOneVsAll'
 #' @param grid_eval_metric For evaluating models within grid tuning. Choices include, "accuracy", "microauc", "logloss"
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
@@ -104,13 +105,14 @@
 #'       c("IDcol_1", "IDcol_2","Adrian")],
 #'     PrimaryDateColumn = NULL,
 #'     ClassWeights = c(1L,1L,1L,1L,1L),
-#'     IDcols = c("IDcols_1","IDcols_2"),
+#'     IDcols = c("IDcol_1","IDcol_2"),
 #'
 #'     # Model evaluation:
 #'     #   'eval_metric' is the measure catboost uses when evaluting
 #'     #       on holdout data during its bandit style process
 #'     #   'loss_function' the loss function used in training optimization
-#'     eval_metric = "MultiClass",
+#'     eval_metric = "MCC",
+#'     loss_function = "MultiClassOneVsAll",
 #'     grid_eval_metric = "Accuracy",
 #'     MetricPeriods = 10L,
 #'
@@ -145,9 +147,22 @@
 #'     LearningRate = seq(0.01,0.10,0.01),
 #'     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
 #'     RandomStrength = 1,
+#'     BorderCount = 254,
 #'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
 #'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
 #'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+#'
+#' # Output
+#' TestModel$Model
+#' TestModel$ValidationData
+#' TestModel$EvaluationMetrics
+#' TestModel$Evaluation
+#' TestModel$VI_Plot
+#' TestModel$VariableImportance
+#' TestModel$InteractionImportance
+#' TestModel$GridMetrics
+#' TestModel$ColNames = Names,
+#' TestModel$TargetLevels
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
@@ -162,6 +177,7 @@ AutoCatBoostMultiClass <- function(data,
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    eval_metric = "MultiClassOneVsAll",
+                                   loss_function = "MultiClassOneVsAll",
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    ModelID = "FirstModel",
@@ -197,7 +213,6 @@ AutoCatBoostMultiClass <- function(data,
 
   # MultiClass Check Arguments----
   if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
-  if(!(tolower(eval_metric) %chin% c("multiclass", "multiclassonevsall"))) return("eval_metric not in c('MultiClass','MultiClassOneVsAll')")
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
   if(any(Trees < 1L)) return("Trees must be greater than 1")
   if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
@@ -481,9 +496,9 @@ AutoCatBoostMultiClass <- function(data,
 
         # Define parameters----
         if(!exists("NewGrid")) {
-          base_params <- CatBoostMultiClassParams(counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostMultiClassParams(loss_function=loss_function,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- CatBoostMultiClassParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- CatBoostMultiClassParams(loss_function=loss_function,NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
 
         # Build model----
@@ -692,7 +707,7 @@ AutoCatBoostMultiClass <- function(data,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
-        loss_function        = eval_metric,
+        loss_function        = loss_function,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
@@ -711,7 +726,7 @@ AutoCatBoostMultiClass <- function(data,
       base_params <- list(
         has_time             = HasTime,
         metric_period        = MetricPeriods,
-        loss_function        = eval_metric,
+        loss_function        = loss_function,
         eval_metric          = eval_metric,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
@@ -746,7 +761,7 @@ AutoCatBoostMultiClass <- function(data,
           best_model_min_trees = 10L,
           metric_period        = MetricPeriods,
           iterations           = BestGrid[["TreesBuilt"]],
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           has_time             = HasTime,
           task_type            = task_type,
@@ -757,7 +772,7 @@ AutoCatBoostMultiClass <- function(data,
           best_model_min_trees = 10L,
           metric_period        = MetricPeriods,
           iterations           = Trees,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           has_time             = HasTime,
           task_type            = task_type)
@@ -767,7 +782,7 @@ AutoCatBoostMultiClass <- function(data,
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
@@ -786,7 +801,7 @@ AutoCatBoostMultiClass <- function(data,
         base_params <- list(
           has_time             = HasTime,
           metric_period        = MetricPeriods,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           use_best_model       = TRUE,
           best_model_min_trees = 10L,
@@ -818,7 +833,7 @@ AutoCatBoostMultiClass <- function(data,
           learning_rate        = LearningRate,
           random_strength      = RandomStrength,
           border_count         = BorderCount,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           has_time             = HasTime,
           task_type            = task_type,
@@ -832,7 +847,7 @@ AutoCatBoostMultiClass <- function(data,
           depth                = Depth,
           random_strength      = RandomStrength,
           border_count         = BorderCount,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           has_time             = HasTime,
           task_type            = task_type,
@@ -849,7 +864,7 @@ AutoCatBoostMultiClass <- function(data,
           learning_rate        = LearningRate,
           random_strength      = RandomStrength,
           border_count         = BorderCount,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           has_time             = HasTime,
           task_type            = task_type)
@@ -862,7 +877,7 @@ AutoCatBoostMultiClass <- function(data,
           depth                = Depth,
           random_strength      = RandomStrength,
           border_count         = BorderCount,
-          loss_function        = eval_metric,
+          loss_function        = loss_function,
           eval_metric          = eval_metric,
           has_time             = HasTime,
           task_type            = task_type)
@@ -1014,8 +1029,37 @@ AutoCatBoostMultiClass <- function(data,
   }
 
   # MultiClass Variable Importance----
-  temp <- catboost::catboost.get_feature_importance(model)
-  VariableImportance <- data.table::data.table(cbind(Variable = rownames(temp), temp))
+
+  # Feature Information ----
+  if(!is.null(TestData)) {
+    Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))
+    Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
+    #ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "ShapValues"))
+
+  } else if(TrainOnFull) {
+    Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
+    Imp <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange"))
+    #ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "ShapValues"))
+
+  } else {
+    Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+    Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
+    #ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
+  }
+
+  # Gather importances ----
+  temp <- data.table::data.table(ColNames = FeatureColNames)[, Index := 0:(.N - 1)]
+  #data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_temp",temp[[1L]]), "Predictions"))
+  #ShapValues[, Predictions := NULL]
+  #ShapValues <- cbind(ValidationData, ShapValues)
+  Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+  data.table::setnames(Interaction, "ColNames", "Features1")
+  Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+  data.table::setnames(Interaction, "ColNames", "Features2")
+  Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
+  data.table::setcolorder(Interaction, c(2L,3L,1L))
+  data.table::setorderv(Interaction, "score", -1)
+  VariableImportance <- data.table::data.table(cbind(Variable = rownames(Imp), Imp))
   tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
   VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
   VariableImportance <- VariableImportance[order(-Importance)]
@@ -1073,6 +1117,8 @@ AutoCatBoostMultiClass <- function(data,
         ValidationData = ValidationData,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
+        InteractionImportance = if(!is.null(VariableImportance)) Interaction else NULL,
+        #ShapValuesDT = if(!is.null(VariableImportance)) ShapValues else NULL,
         VI_Plot = if(!is.null(VariableImportance)) tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
         GridMetrics = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
         ColNames = Names,
@@ -1083,6 +1129,9 @@ AutoCatBoostMultiClass <- function(data,
       return(list(
         Model = model,
         ColNames = Names,
+        VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
+        InteractionImportance = if(!is.null(VariableImportance)) Interaction else NULL,
+        #ShapValuesDT = if(!is.null(VariableImportance)) ShapValues else NULL,
         TargetLevels = TargetLevels))
     }
   }
