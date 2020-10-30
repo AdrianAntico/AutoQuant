@@ -233,7 +233,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(tolower(TargetType) == "classification") data.table::setnames(predict, "V1", "p1")
 
   # Merge features back on----
-  if(ReturnFeatures & multiclass != "multiclass") predict <- cbind(predict, ScoringMerge)
+  if(ReturnFeatures & tolower(TargetType) != "multiclass") predict <- cbind(predict, ScoringMerge)
 
   # Back Transform Numeric Variables----
   if(BackTransNumeric) {
