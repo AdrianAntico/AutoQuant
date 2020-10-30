@@ -22,7 +22,7 @@ AutoXGBoostRegression(
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   Verbose = 0L,
   NumOfParDepPlots = 3L,
-  NThreads = 8L,
+  NThreads = parallel::detectCores(),
   eval_metric = "rmse",
   TreeMethod = "hist",
   GridTune = FALSE,
@@ -133,7 +133,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 
     # GPU or CPU
     TreeMethod = "hist",
-    NThreads = 8L,
+    NThreads = NThreads = parallel::detectCores(),
 
     # Metadata arguments:
     #   'ModelID' is used to create part of the file

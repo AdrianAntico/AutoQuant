@@ -53,7 +53,7 @@
 #'
 #'     # GPU or CPU
 #'     TreeMethod = "hist",
-#'     NThreads = 8L,
+#'     NThreads = parallel::detectCores(),
 #'
 #'     # Metadata arguments
 #'     model_path = normalizePath("./"),
@@ -72,7 +72,7 @@
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[!names(data) %chin%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
-#'     IDcols = c("IDcols_1","IDcols_2"),
+#'     IDcols = c("IDcol_1","IDcol_2"),
 #'
 #'     # Model evaluation
 #'     eval_metric = "auc",
@@ -119,7 +119,7 @@ AutoXGBoostMultiClass <- function(data,
                                   SaveModelObjects = FALSE,
                                   Verbose = 0L,
                                   NumOfParDepPlots = 3L,
-                                  NThreads = 8L,
+                                  NThreads = parallel::detectCores(),
                                   eval_metric = "merror",
                                   grid_eval_metric = "accuracy",
                                   TreeMethod = "hist",

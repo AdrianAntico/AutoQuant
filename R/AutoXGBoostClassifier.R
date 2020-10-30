@@ -51,12 +51,11 @@
 #'
 #'     # GPU or CPU
 #'     TreeMethod = "hist",
-#'     NThreads = 8L,
+#'     NThreads = parallel::detectCores(),
 #'
 #'     # Metadata arguments
 #'     model_path = normalizePath("./"),
-#'     metadata_path = file.path(normalizePath("./")
-#'       ,"R_Model_Testing"),
+#'     metadata_path = NULL,
 #'     ModelID = "Test_Model_1",
 #'     ReturnFactorLevels = TRUE,
 #'     ReturnModelObjects = TRUE,
@@ -70,7 +69,7 @@
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[!names(data) %chin%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
-#'     IDcols = c("IDcols_1","IDcols_2"),
+#'     IDcols = c("IDcol_1","IDcol_2"),
 #'
 #'     # Model evaluation
 #'     eval_metric = "auc",
@@ -114,7 +113,7 @@ AutoXGBoostClassifier <- function(data,
                                   SaveModelObjects = FALSE,
                                   Verbose = 0L,
                                   NumOfParDepPlots = 3L,
-                                  NThreads = 8L,
+                                  NThreads = parallel::detectCores(),
                                   eval_metric = "auc",
                                   TreeMethod = "hist",
                                   GridTune = FALSE,
@@ -124,7 +123,7 @@ AutoXGBoostClassifier <- function(data,
                                   MaxRunMinutes = 24L*60L,
                                   PassInGrid = NULL,
                                   Shuffles = 1L,
-                                  Trees = 50L,
+                                  Trees = 1000L,
                                   eta = seq(0.05,0.40,0.05),
                                   max_depth = seq(4L, 16L, 2L),
                                   min_child_weight = seq(1.0, 10.0, 1.0),
