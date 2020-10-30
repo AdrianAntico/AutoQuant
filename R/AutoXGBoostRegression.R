@@ -112,7 +112,7 @@
 #'     eval_metric = "rmse",
 #'     NumOfParDepPlots = 3L,
 #'
-#'     # Grid tuning arguments - PassInGrid is the best of GridMetrics
+#'     # Grid tuning arguments
 #'     PassInGrid = NULL,
 #'     GridTune = TRUE,
 #'     grid_eval_metric = "mse",

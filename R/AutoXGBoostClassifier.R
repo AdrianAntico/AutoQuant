@@ -75,7 +75,7 @@
 #'     eval_metric = "auc",
 #'     NumOfParDepPlots = 3L,
 #'
-#'     # Grid tuning arguments - PassInGrid is the best of GridMetrics
+#'     # Grid tuning arguments
 #'     PassInGrid = NULL,
 #'     GridTune = TRUE,
 #'     BaselineComparison = "default",
