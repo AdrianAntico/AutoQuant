@@ -659,6 +659,8 @@ AutoCatBoostRegression <- function(data,
 
     # Return value to CatFeatures as if there are no categorical variables
     CatFeatures <- numeric(0)
+  } else {
+    FactorLevelsList <- NULL
   }
 
   # Regression Convert CatFeatures to 0-indexed----
