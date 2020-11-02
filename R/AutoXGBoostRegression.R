@@ -356,7 +356,7 @@ AutoXGBoostRegression <- function(data,
     }
   }
 
-  # Regression Dummify dataTrain Categorical Features----
+  # Regression Dummify Categorical Features----
   if(!is.null(CatFeatures)) {
     if(SaveModelObjects) {
       if(!is.null(dataTest) & !is.null(TestData) & TrainOnFull == FALSE) {

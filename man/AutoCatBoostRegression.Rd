@@ -12,6 +12,7 @@ AutoCatBoostRegression(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
+  DummifyCols = FALSE,
   IDcols = NULL,
   TransformNumericColumns = NULL,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
@@ -61,6 +62,8 @@ AutoCatBoostRegression(
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
 \item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
+
+\item{DummifyCols}{Logical. Will coerce to TRUE if loss_function or eval_metric is set to 'MultiRMSE'.}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -200,6 +203,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     FeatureColNames = names(data)[!names(data) \%chin\%
       c("IDcol_1", "IDcol_2","Adrian")],
     PrimaryDateColumn = NULL,
+    DummifyCols = FALSE,
     IDcols = c("IDcol_1","IDcol_2"),
     TransformNumericColumns = "Adrian",
     Methods = c("BoxCox", "Asinh", "Asin", "Log",

@@ -8,7 +8,9 @@ AutoCatBoostScoring(
   TargetType = NULL,
   ScoringData = NULL,
   FeatureColumnNames = NULL,
+  FactorLevelsList = NULL,
   IDcols = NULL,
+  OneHot = FALSE,
   ReturnShapValues = FALSE,
   ModelObject = NULL,
   ModelPath = NULL,
@@ -30,13 +32,17 @@ AutoCatBoostScoring(
 )
 }
 \arguments{
-\item{TargetType}{Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
+\item{TargetType}{Set this value to "regression", "classification", "multiclass", or "multiregression" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
 
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
 
 \item{FeatureColumnNames}{Supply either column names or column numbers used in the AutoCatBoostRegression() function}
 
+\item{FactorLevelsList}{List of factors levels to DummifyDT()}
+
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
+
+\item{OneHot}{Passsed to DummifyD}
 
 \item{ReturnShapValues}{Set to TRUE to return a data.table of feature contributions to all predicted values generated}
 
@@ -86,7 +92,9 @@ Preds <- AutoCatBoostScoring(
   TargetType = "regression",
   ScoringData = data,
   FeatureColumnNames = 2:12,
+  FactorLevelsList = NULL,
   IDcols = NULL,
+  OneHot = FALSE,
   ReturnShapValues = FALSE,
   ModelObject = NULL,
   ModelPath = normalizePath("./"),

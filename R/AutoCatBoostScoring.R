@@ -4,10 +4,12 @@
 #'
 #' @author Adrian Antico
 #' @family Automated Model Scoring
-#' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
+#' @param TargetType Set this value to "regression", "classification", "multiclass", or "multiregression" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
+#' @param FactorLevelsList List of factors levels to DummifyDT()
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
+#' @param OneHot Passsed to DummifyD
 #' @param ReturnShapValues Set to TRUE to return a data.table of feature contributions to all predicted values generated
 #' @param ModelObject Supply the model object directly for scoring instead of loading it from file. If you supply this, ModelID and ModelPath will be ignored.
 #' @param ModelPath Supply your path file used in the AutoCatBoost__() function
@@ -32,7 +34,9 @@
 #'   TargetType = "regression",
 #'   ScoringData = data,
 #'   FeatureColumnNames = 2:12,
+#'   FactorLevelsList = NULL,
 #'   IDcols = NULL,
+#'   OneHot = FALSE,
 #'   ReturnShapValues = FALSE,
 #'   ModelObject = NULL,
 #'   ModelPath = normalizePath("./"),
@@ -57,7 +61,9 @@
 AutoCatBoostScoring <- function(TargetType = NULL,
                                 ScoringData = NULL,
                                 FeatureColumnNames = NULL,
+                                FactorLevelsList = NULL,
                                 IDcols = NULL,
+                                OneHot = FALSE,
                                 ReturnShapValues = FALSE,
                                 ModelObject = NULL,
                                 ModelPath = NULL,
@@ -76,6 +82,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 MDP_MissFactor = "0",
                                 MDP_MissNum = -1,
                                 RemoveModel = FALSE) {
+
   # Load catboost----
   loadNamespace(package = "catboost")
 
@@ -92,7 +99,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
 
   # Pull in ColNames----
-  if(is.null(FeatureColumnNames)) FeatureColumnNames <- data.table::fread(file = file.path(normalizePath(ModelID), "_ColNames.csv"))
+  if(!is.null(FeatureColumnNames) & !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID,"_ColNames.csv")))
 
   # Pull In Transformation Object----
   if(is.null(TransformationObject)) {
@@ -101,6 +108,43 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       TransformationObject <- data.table::fread(file.path(normalizePath(TransPath), paste0(TransID, "_transformation.csv")))
     }
   }
+
+  # Identify column numbers for factor variables----
+  CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
+
+  # DummifyDT categorical columns----
+  if(!is.null(CatFeatures) & tolower(TargetType) == "multiregression") {
+    if(!is.null(FactorLevelsList)) {
+      ScoringData <- DummifyDT(
+        data = ScoringData,
+        cols = if(!is.character(CatFeatures)) names(ScoringData)[CatFeatures] else CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = OneHot,
+        SaveFactorLevels = FALSE,
+        SavePath = ModelPath,
+        ImportFactorLevels = FALSE,
+        FactorLevelsList = FactorLevelsList,
+        ReturnFactorLevels = FALSE,
+        ClustScore = FALSE)
+    } else {
+      ScoringData <- DummifyDT(
+        data = ScoringData,
+        cols = if(!is.character(CatFeatures)) names(ScoringData)[CatFeatures] else CatFeatures,
+        KeepFactorCols = FALSE,
+        OneHot = OneHot,
+        SaveFactorLevels = FALSE,
+        SavePath = ModelPath,
+        ImportFactorLevels = TRUE,
+        ReturnFactorLevels = FALSE,
+        ClustScore = FALSE)
+    }
+
+    # Return value to CatFeatures as if there are no categorical variables
+    CatFeatures <- numeric(0)
+  }
+
+  # Convert CatFeatures to 1-indexed----
+  if(length(CatFeatures) > 0) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
 
   # ModelDataPrep Check----
   ScoringData <- ModelDataPrep(
@@ -111,14 +155,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     MissFactor = MDP_MissFactor,
     MissNum = MDP_MissNum)
 
-  # Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
-
-  # Convert CatFeatures to 1-indexed----
-  if(!is.null(CatFeatures)) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
-
   # IDcols conversion----
-  if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
+  if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
 
   # Apply Transform Numeric Variables----
   if(TransformNumeric) {
@@ -143,6 +181,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(TransformNumeric | BackTransNumeric) if(!is.null(TargetColumnName)) if(TargetColumnName %chin% FeatureColumnNames) FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
 
   # Subset Columns Needed----
+  FeatureColumnNames <- names(ScoringData)[!names(ScoringData) %chin% c(IDcols)]
   keep1 <- c(FeatureColumnNames)
   if(!is.null(IDcols)) keep <- c(IDcols, FeatureColumnNames) else keep <- c(FeatureColumnNames)
   ScoringData <- ScoringData[, ..keep]
@@ -170,7 +209,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Score model----
-  if(tolower(TargetType) == "regression") {
+  if(tolower(TargetType) == "regression" || tolower(TargetType) == "multiregression") {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = model,
@@ -197,7 +236,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Create ShapValues ----
-  if(ReturnShapValues) {
+  if(ReturnShapValues & !(tolower(TargetType) %chin% c("multiregression","multiclass"))) {
     ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = ScoringPool, type = "ShapValues"))
     data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_",FeatureColumnNames), "Predictions"))
     ShapValues[, Predictions := NULL]
@@ -230,13 +269,14 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Rename predicted value----
   if(tolower(TargetType) %chin% c("regression")) data.table::setnames(predict, "V1", "Predictions")
+  if(tolower(TargetType) %chin% c("multiregression")) for(i in seq_len(ncol(predict))) data.table::setnames(predict, paste0("V",i), paste0("Predictions.V",i))
   if(tolower(TargetType) == "classification") data.table::setnames(predict, "V1", "p1")
 
   # Merge features back on----
   if(ReturnFeatures & tolower(TargetType) != "multiclass") predict <- cbind(predict, ScoringMerge)
 
   # Back Transform Numeric Variables----
-  if(BackTransNumeric) {
+  if(BackTransNumeric & !tolower(TargetType) == "multiregression") {
     grid_trans_results <- data.table::copy(TransformationObject)
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
@@ -254,7 +294,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   gc()
 
   # Return data----
-  if(ReturnShapValues) {
+  if(ReturnShapValues & !tolower(TargetType) == "multiregression") {
     return(cbind(predict, ShapValues))
   } else {
     return(predict)

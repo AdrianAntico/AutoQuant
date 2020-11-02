@@ -10,6 +10,7 @@
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
+#' @param DummifyCols Logical. Will coerce to TRUE if loss_function or eval_metric is set to 'MultiRMSE'.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
@@ -109,6 +110,7 @@
 #'     FeatureColNames = names(data)[!names(data) %chin%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
 #'     PrimaryDateColumn = NULL,
+#'     DummifyCols = FALSE,
 #'     IDcols = c("IDcol_1","IDcol_2"),
 #'     TransformNumericColumns = "Adrian",
 #'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
@@ -195,6 +197,7 @@ AutoCatBoostRegression <- function(data,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    PrimaryDateColumn = NULL,
+                                   DummifyCols = FALSE,
                                    IDcols = NULL,
                                    TransformNumericColumns = NULL,
                                    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
@@ -333,6 +336,10 @@ AutoCatBoostRegression <- function(data,
   if(!GridTune & length(BorderCount) > 1L) BorderCount <- max(BorderCount)
   if(!GridTune & length(LearningRate) > 1L) LearningRate <- max(LearningRate)
   if(!GridTune & length(RSM) > 1L) RSM <- max(RSM)
+  if(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE") {
+    task_type <- "CPU"
+    TransformNumericColumns <- NULL
+  }
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {
@@ -449,7 +456,13 @@ AutoCatBoostRegression <- function(data,
       data <- dataSets$TrainData
       ValidationData <- dataSets$ValidationData
       TestData <- dataSets$TestData
-      MeanTrainTarget <- mean(data[[eval(TargetColumnName)]], na.rm = TRUE)
+      if(length(TargetColumnName) > 1) {
+        MeanTrainTarget <- c()
+        for(i in seq_len(length(TargetColumnName))) MeanTrainTarget[i] <- mean(data[[eval(TargetColumnName[i])]], na.rm = TRUE)
+        rm(i)
+      } else {
+        MeanTrainTarget <- mean(data[[eval(TargetColumnName)]], na.rm = TRUE)
+      }
     }
   } else {
     UseBestModel <- FALSE
@@ -480,11 +493,11 @@ AutoCatBoostRegression <- function(data,
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
-    if(TrainOnFull != TRUE) dataTest <- ValidationData[, ..keep]
+    if(TrainOnFull != TRUE) dataTest <- ValidationData[, ..keep] else dataTest <- NULL
   } else {
     keep <- c(FeatureColNames, Target)
     dataTrain <- data[, ..keep]
-    if(TrainOnFull != TRUE) dataTest <- ValidationData[, ..keep]
+    if(TrainOnFull != TRUE) dataTest <- ValidationData[, ..keep] else dataTest <- NULL
   }
 
   # Regression TestData Subset Columns Needed----
@@ -518,6 +531,136 @@ AutoCatBoostRegression <- function(data,
   # Regression Identify column numbers for factor variables----
   CatFeatures <- sort(c(as.numeric(which(sapply(dataTrain, is.factor))), as.numeric(which(sapply(dataTrain, is.character)))))
 
+  # DummifyDT Catgegoricals ----
+  if(length(CatFeatures) > 0L & (DummifyCols || LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE")) {
+
+    # Regression Dummify Categorical Features----
+    if(SaveModelObjects) {
+      if(!is.null(dataTest) & !is.null(TestData) & !TrainOnFull) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
+        data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
+        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+        temp <- DummifyDT(
+          data = temp,
+          cols = if(!is.character(CatFeatures)) names(temp)[CatFeatures] else CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = TRUE,
+          ReturnFactorLevels = TRUE,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE)
+        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+        dataTrain <- temp[ID_Factorizer == "TRAIN"]
+        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+        dataTest <- temp[ID_Factorizer == "VALIDATE"]
+        data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
+        TestData <- temp[ID_Factorizer == "TEST"]
+        data.table::set(TestData, j = "ID_Factorizer", value = NULL)
+      } else {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull) {
+          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
+          temp <- data.table::rbindlist(list(dataTrain, dataTest))
+        } else {
+          temp <- dataTrain
+        }
+        temp <- DummifyDT(
+          data = temp,
+          cols = if(!is.character(CatFeatures)) names(temp)[CatFeatures] else CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = TRUE,
+          ReturnFactorLevels = TRUE,
+          SavePath = model_path,
+          ImportFactorLevels = FALSE)
+        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+        dataTrain <- temp[ID_Factorizer == "TRAIN"]
+        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+        if(!TrainOnFull) {
+          dataTest <- temp[ID_Factorizer == "VALIDATE"]
+          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
+        }
+      }
+    } else {
+      if(!is.null(dataTest)) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull) {
+          data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
+          if(!is.null(TestData)) {
+            data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
+            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
+          } else {
+            temp <- data.table::rbindlist(list(dataTrain, dataTest))
+          }
+        } else {
+          temp <- dataTrain
+        }
+        temp <- DummifyDT(
+          data = temp,
+          cols = if(!is.character(CatFeatures)) names(temp)[CatFeatures] else CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = FALSE,
+          ReturnFactorLevels = TRUE,
+          FactorLevelsList = NULL,
+          SavePath = NULL,
+          ImportFactorLevels = FALSE)
+        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+        dataTrain <- temp[ID_Factorizer == "TRAIN"]
+        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+        if(!TrainOnFull) {
+          dataTest <- temp[ID_Factorizer == "VALIDATE"]
+          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
+          if(!is.null(TestData)) {
+            TestData <- temp[ID_Factorizer == "TEST"]
+            data.table::set(TestData, j = "ID_Factorizer", value = NULL)
+          }
+        }
+      } else {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull) {
+          data.table::set(dataTest, j = "ID_Factorizer", value = "TRAIN")
+          FactorLevelsList <- temp$FactorLevelsList
+          temp <- data.table::rbindlist(list(dataTrain, dataTest))
+        } else {
+          temp <- dataTrain
+          FactorLevelsList <- NULL
+        }
+
+        # Dummify
+        temp <- DummifyDT(
+          data = temp,
+          FactorLevelsList = FactorLevelsList,
+          cols = if(!is.character(CatFeatures)) names(temp)[CatFeatures] else CatFeatures,
+          KeepFactorCols = FALSE,
+          OneHot = FALSE,
+          SaveFactorLevels = FALSE,
+          ReturnFactorLevels = TRUE,
+          SavePath = NULL,
+          ImportFactorLevels = FALSE)
+        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+        dataTrain <- temp[ID_Factorizer == "TRAIN"]
+        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+        if(!TrainOnFull) {
+          dataTest <- temp[ID_Factorizer == "VALIDATE"]
+          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
+        }
+      }
+    }
+
+    # Return value to CatFeatures as if there are no categorical variables
+    CatFeatures <- numeric(0)
+  }
+
   # Regression Convert CatFeatures to 0-indexed----
   if(length(CatFeatures) > 0L) for(i in seq_len(length(CatFeatures))) CatFeatures[i] <- CatFeatures[i] - 1L
 
@@ -536,9 +679,11 @@ AutoCatBoostRegression <- function(data,
 
   # Regression Save Names of data----
   if(is.numeric(FeatureColNames)) {
-    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    FeatureColNames <- names(dataTrain)[!names(dataTrain) %chin% c(IDcols,TargetColumnName)]
+    Names <- data.table::as.data.table(FeatureColNames)
     data.table::setnames(Names, "V1", "ColNames")
   } else {
+    FeatureColNames <- names(dataTrain)[!names(dataTrain) %chin% c(IDcols,TargetColumnName)]
     Names <- data.table::as.data.table(FeatureColNames)
     if(!"V1" %chin% names(Names)) {
       data.table::setnames(Names, "FeatureColNames", "ColNames")
@@ -549,13 +694,28 @@ AutoCatBoostRegression <- function(data,
   if(SaveModelObjects) data.table::fwrite(Names, file.path(model_path, paste0(ModelID, "_ColNames.csv")))
 
   # Regression Get Min Value of Target Data----
-  MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
+  if(length(TargetColumnName) > 1) {
+    MinVal <- c()
+    for(i in seq_len(length(TargetColumnName))) MinVal[i] <- min(data[[eval(Target[i])]], na.rm = TRUE)
+    rm(i)
+  } else {
+    MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
+  }
 
   # Regression Subset Target Variables----
-  TrainTarget <- dataTrain[, .SD, .SDcols = eval(Target)][[1L]]
+  if(length(TargetColumnName) > 1) {
+    TrainTarget <- as.matrix(dataTrain[, mget(TargetColumnName)])
+  } else {
+    TrainTarget <- dataTrain[, .SD, .SDcols = eval(Target)][[1L]]
+  }
   if(!TrainOnFull) {
-    TestTarget <- dataTest[, .SD, .SDcols = eval(Target)][[1L]]
-    if(!is.null(TestData)) FinalTestTarget <- TestData[, .SD, .SDcols = eval(Target)][[1L]]
+    if(length(TargetColumnName) > 1) {
+      TestTarget <- as.matrix(dataTest[, mget(TargetColumnName)])
+      if(!is.null(TestData)) FinalTestTarget <- as.matrix(TestData[, mget(TargetColumnName)])
+    } else {
+      TestTarget <- dataTest[, .SD, .SDcols = eval(Target)][[1L]]
+      if(!is.null(TestData)) FinalTestTarget <- TestData[, .SD, .SDcols = eval(Target)][[1L]]
+    }
   }
 
   # Regression Initialize Catboost Data Conversion----
@@ -905,15 +1065,36 @@ AutoCatBoostRegression <- function(data,
   # Regression Validation Data----
   if(!TrainOnFull) {
     if(!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
-      data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
+
+      # MulitRegression vs Standard Regression
+      if(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE") {
+        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
+        for(i in seq_len(length(TargetColumnName))) data.table::setnames(ValidationData, paste0("Target.",TargetColumnName[i]), eval(TargetColumnName[i]))
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Predict = predict))
+        data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
+      }
     } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
-      data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
+
+      # MulitRegression vs Standard Regression
+      if(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE") {
+        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
+        for(i in seq_len(length(TargetColumnName))) data.table::setnames(ValidationData, paste0("Target.",TargetColumnName[i]), eval(TargetColumnName[i]))
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Predict = predict))
+        data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
+      }
     }
   } else {
-    data <- data.table::as.data.table(cbind(Target = TrainTarget, data, Predict = predict))
-    data.table::setnames(data, "Target",eval(TargetColumnName))
+
+    # MulitRegression vs Standard Regression
+    if(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE") {
+      data <- data.table::as.data.table(cbind(Target = TrainTarget, data, Predict = predict))
+      for(i in seq_len(length(TargetColumnName))) data.table::setnames(data, paste0("Target.",TargetColumnName[i]), eval(TargetColumnName[i]))
+    } else {
+      data <- data.table::as.data.table(cbind(Target = TrainTarget, data, Predict = predict))
+      data.table::setnames(data, "Target",eval(TargetColumnName))
+    }
   }
 
   # Inverse Transform----
@@ -966,9 +1147,6 @@ AutoCatBoostRegression <- function(data,
     }
   }
 
-  # Regression r2 via sqrt of correlation
-  if(!TrainOnFull) r_squared <- (ValidationData[, stats::cor(ValidationData[[eval(TargetColumnName)]], Predict)]) ^ 2L
-
   # Regression Save Validation Data to File----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
@@ -986,8 +1164,8 @@ AutoCatBoostRegression <- function(data,
     }
   }
 
-  # Regression Evaluation Metrics----
-  if(!TrainOnFull) {
+  # Regression (Single Target Variable) Evaluation Metrics----
+  if(!TrainOnFull & !(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE")) {
     EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 4L))
     i <- 0L
     for(metric in c("mae", "mape", "rmse", "r2")) {
@@ -1025,15 +1203,13 @@ AutoCatBoostRegression <- function(data,
 
     # Regression Evaluation Calibration Plot----
     if(EvalPlots) {
-      if(!TrainOnFull) {
-        EvaluationPlot <- EvalPlot(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = eval(TargetColumnName),
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          aggrfun = function(x) mean(x, na.rm = TRUE))
-      }
+      EvaluationPlot <- EvalPlot(
+        data = ValidationData,
+        PredictionColName = "Predict",
+        TargetColName = eval(TargetColumnName),
+        GraphType = "calibration",
+        PercentileBucket = 0.05,
+        aggrfun = function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
       if("plotly" %chin% installed.packages()) {
@@ -1054,27 +1230,23 @@ AutoCatBoostRegression <- function(data,
       }
 
       # Regression Evaluation Calibration BoxPlot----
-      if(!TrainOnFull) {
-        EvaluationBoxPlot <- EvalPlot(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = eval(TargetColumnName),
-          GraphType = "boxplot",
-          PercentileBucket = 0.05,
-          aggrfun = function(x) mean(x, na.rm = TRUE))
-      }
+      EvaluationBoxPlot <- EvalPlot(
+        data = ValidationData,
+        PredictionColName = "Predict",
+        TargetColName = eval(TargetColumnName),
+        GraphType = "boxplot",
+        PercentileBucket = 0.05,
+        aggrfun = function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
       if(!TrainOnFull) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
 
       # Save plot to file
-      if(!TrainOnFull) {
-        if(SaveModelObjects) {
-          if(!is.null(metadata_path)) {
-            ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
-          } else {
-            ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
-          }
+      if(SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
+        } else {
+          ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
         }
       }
     } else {
@@ -1338,11 +1510,356 @@ AutoCatBoostRegression <- function(data,
     }
   }
 
+  # Regression (Multiple Target Variables) Evaluation Metrics----
+  if(!TrainOnFull & (LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE")) {
+
+    # Collection Lists
+    EvaluationMetrics <- list()
+    EvaluationPlot <- list()
+    EvaluationBoxPlot <- list()
+    ParDepBoxPlots <- list()
+    ParDepPlots <- list()
+
+    # Loop through Target Variables
+    for(TV in seq_len(length(TargetColumnName))) {
+
+      # Eval Metrics
+      EvaluationMetrics[[TargetColumnName[TV]]] <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 4L))
+      i <- 0L
+      for(metric in c("mae", "mape", "rmse", "r2")) {
+        i <- i + 1L
+        tryCatch({
+          if(tolower(metric) == "mae") {
+            ValidationData[, Metric := abs(ValidationData[[eval(TargetColumnName[TV])]] - ValidationData[[eval(paste0("Predict.V",TV))]])]
+            Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+          } else if(tolower(metric) == "mape") {
+            ValidationData[, Metric := abs((ValidationData[[eval(TargetColumnName[TV])]] - ValidationData[[eval(paste0("Predict.V",TV))]]) / (ValidationData[[eval(TargetColumnName[TV])]] + 1))]
+            Metric <- ValidationData[, mean(Metric, na.rm = TRUE)]
+          } else if(tolower(metric) == "rmse") {
+            ValidationData[, Metric := (ValidationData[[eval(TargetColumnName[TV])]] - ValidationData[[eval(paste0("Predict.V",TV))]]) ^ 2]
+            Metric <- sqrt(ValidationData[, mean(Metric, na.rm = TRUE)])
+          } else if(tolower(metric) == "r2") {
+            ValidationData[, ':=' (Metric1 = (ValidationData[[eval(TargetColumnName[TV])]] - data[, mean(get(TargetColumnName[TV]))]) ^ 2, Metric2 = (ValidationData[[eval(TargetColumnName[TV])]] - ValidationData[[eval(paste0("Predict.V",TV))]]) ^ 2)]
+            Metric <- 1 - ValidationData[, sum(Metric2, na.rm = TRUE)] / ValidationData[, sum(Metric1, na.rm = TRUE)]
+          }
+          data.table::set(EvaluationMetrics[[TargetColumnName[TV]]], i = i, j = 2L, value = round(Metric, 4L))
+        }, error = function(x) "skip")
+      }
+
+      # Remove Cols----
+      ValidationData[, ':=' (Metric = NULL)]
+
+      # Save EvaluationMetrics to File----
+      EvaluationMetrics[[TargetColumnName[TV]]] <- EvaluationMetrics[[TargetColumnName[TV]]][MetricValue != 999999]
+      if(SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          data.table::fwrite(EvaluationMetrics[[TargetColumnName[TV]]], file = file.path(normalizePath(metadata_path), paste0(ModelID, "_", TargetColumnName[TV], "_EvaluationMetrics.csv")))
+        } else {
+          data.table::fwrite(EvaluationMetrics[[TargetColumnName[TV]]], file = file.path(normalizePath(model_path), paste0(ModelID, "_", TargetColumnName[TV], "_EvaluationMetrics.csv")))
+        }
+      }
+
+      # Regression Evaluation Calibration Plot----
+      if(EvalPlots) {
+        EvaluationPlot[[TargetColumnName[TV]]] <- EvalPlot(
+          data = ValidationData,
+          PredictionColName = paste0("Predict.V",TV),
+          TargetColName = eval(TargetColumnName[TV]),
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          aggrfun = function(x) mean(x, na.rm = TRUE))
+
+        # Add Number of Trees to Title
+        if("plotly" %chin% installed.packages()) {
+          if(!TrainOnFull) EvaluationPlot[[TargetColumnName[TV]]] <- plotly::ggplotly(EvaluationPlot[[TargetColumnName[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[[TargetColumnName[TV]]][Metric == "R2", MetricValue], 3L))))
+        } else {
+          if(!TrainOnFull) EvaluationPlot[[TargetColumnName[TV]]] <- EvaluationPlot[[TargetColumnName[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[[TargetColumnName[TV]]][Metric == "R2", MetricValue], 3L)))
+        }
+
+        # Save plot to file
+        if(!TrainOnFull) {
+          if(SaveModelObjects) {
+            if(!is.null(metadata_path)) {
+              ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
+            } else {
+              ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
+            }
+          }
+        }
+
+        # Regression Evaluation Calibration BoxPlot----
+        EvaluationBoxPlot[[TargetColumnName[TV]]] <- EvalPlot(
+          data = ValidationData,
+          PredictionColName = paste0("Predict.V",TV),
+          TargetColName = eval(TargetColumnName[TV]),
+          GraphType = "boxplot",
+          PercentileBucket = 0.05,
+          aggrfun = function(x) mean(x, na.rm = TRUE))
+
+        # Add Number of Trees to Title
+        if(!TrainOnFull) EvaluationBoxPlot[[TargetColumnName[TV]]] <- EvaluationBoxPlot[[TargetColumnName[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[[TargetColumnName[TV]]][Metric == "R2", MetricValue], 3L)))
+
+        # Save plot to file
+        if(SaveModelObjects) {
+          if(!is.null(metadata_path)) {
+            ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
+          } else {
+            ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationBoxPlot.png")))
+          }
+        }
+      } else {
+        EvaluationPlot[[TargetColumnName[TV]]] <- NULL
+        EvaluationBoxPlot[[TargetColumnName[TV]]] <- NULL
+      }
+
+      # Regression Variable Importance----
+      if(TV == 1) {
+        if(tolower(task_type) == "gpu") {
+          if(GridTune) {
+            if(!BestGrid[["GrowPolicy"]] %chin% c("Depthwise","Lossguide")) {
+
+              # Feature Information ----
+              if(!is.null(TestData)) {
+                Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))
+                Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
+
+              } else if(TrainOnFull) {
+                Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
+                Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
+
+              } else {
+                Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+                Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
+
+              }
+
+              # Gather importances ----
+              temp <- data.table::data.table(ColNames = FeatureColNames)[, Index := 0:(.N - 1)]
+              Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+              data.table::setnames(Interaction, "ColNames", "Features1")
+              Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+              data.table::setnames(Interaction, "ColNames", "Features2")
+              Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
+              data.table::setcolorder(Interaction, c(2L,3L,1L))
+              data.table::setorderv(Interaction, "score", -1)
+              VariableImportance <- data.table::data.table(cbind(Variable = row.names(Imp), Imp))
+              tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
+              VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+              VariableImportance <- VariableImportance[order(-Importance)]
+              if(SaveModelObjects) {
+                if(!is.null(metadata_path)) {
+                  data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
+                } else {
+                  data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
+                }
+              }
+            } else {
+              VariableImportance <- NULL
+            }
+          } else {
+
+            # Feature Information ----
+            if(!is.null(TestData)) {
+              Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))
+              Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
+
+            } else if(TrainOnFull) {
+              Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
+              Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
+
+            } else {
+              Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+              Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
+
+            }
+
+            # Gather importances ----
+            temp <- data.table::data.table(ColNames = FeatureColNames)[, Index := 0:(.N - 1)]
+            Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+            data.table::setnames(Interaction, "ColNames", "Features1")
+            Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+            data.table::setnames(Interaction, "ColNames", "Features2")
+            Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
+            data.table::setcolorder(Interaction, c(2L,3L,1L))
+            data.table::setorderv(Interaction, "score", -1)
+            VariableImportance <- data.table::data.table(cbind(Variable = row.names(Imp), Imp))
+            tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
+            VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+            VariableImportance <- VariableImportance[order(-Importance)]
+            if(SaveModelObjects) {
+              if(!is.null(metadata_path)) {
+                data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
+              } else {
+                data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
+              }
+            }
+          }
+        } else {
+          if(GridTune) {
+            if(!BestGrid[["GrowPolicy"]] %chin% c("Depthwise","Lossguide")) {
+
+              # Feature Information ----
+              if(!is.null(TestData)) {
+                Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))
+                Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
+
+              } else if(TrainOnFull) {
+                Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
+                Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
+
+              } else {
+                Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+                Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
+
+              }
+
+              # Gather importances ----
+              temp <- data.table::data.table(ColNames = FeatureColNames)[, Index := 0:(.N - 1)]
+              Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+              data.table::setnames(Interaction, "ColNames", "Features1")
+              Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+              data.table::setnames(Interaction, "ColNames", "Features2")
+              Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
+              data.table::setcolorder(Interaction, c(2L,3L,1L))
+              data.table::setorderv(Interaction, "score", -1)
+              VariableImportance <- data.table::data.table(cbind(Variable = row.names(Imp), Imp))
+              tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
+              VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+              VariableImportance <- VariableImportance[order(-Importance)]
+              if(SaveModelObjects) {
+                if(!is.null(metadata_path)) {
+                  data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
+                } else {
+                  data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
+                }
+              }
+            } else {
+              VariableImportance <- NULL
+            }
+          } else {
+
+            # Feature Information ----
+            if(!is.null(TestData)) {
+              Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))
+              Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
+
+            } else if(TrainOnFull) {
+              Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
+              Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
+
+            } else {
+              Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+              Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
+
+            }
+
+            # Gather importances ----
+            temp <- data.table::data.table(ColNames = FeatureColNames)[, Index := 0:(.N - 1)]
+            Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+            data.table::setnames(Interaction, "ColNames", "Features1")
+            Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+            data.table::setnames(Interaction, "ColNames", "Features2")
+            Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
+            data.table::setcolorder(Interaction, c(2L,3L,1L))
+            data.table::setorderv(Interaction, "score", -1)
+            VariableImportance <- data.table::data.table(cbind(Variable = row.names(Imp), Imp))
+            tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
+            VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
+            VariableImportance <- VariableImportance[order(-Importance)]
+            if(SaveModelObjects) {
+              if(!is.null(metadata_path)) {
+                data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
+              } else {
+                data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
+              }
+            }
+          }
+        }
+      }
+
+      # Regression Partial Dependence----
+      if(!is.null(VariableImportance)) {
+        if(NumOfParDepPlots > 0L) {
+          j <- 0L
+          k <- 0L
+          for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
+            tryCatch({
+              Out <- ParDepCalPlots(
+                data = ValidationData,
+                PredictionColName = paste0("Predict.V",TV),
+                TargetColName = eval(TargetColumnName[TV]),
+                IndepVar = VariableImportance[i, Variable],
+                GraphType = "calibration",
+                PercentileBucket = 0.05,
+                FactLevels = 10L,
+                Function = function(x) mean(x, na.rm = TRUE))
+              j <- j + 1L
+              if("plotly" %chin% installed.packages()) {
+                ParDepPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
+              } else {
+                ParDepPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[j, Variable])]] <- Out
+              }
+            }, error = function(x) "skip")
+            tryCatch({
+              Out1 <- ParDepCalPlots(
+                data = ValidationData,
+                PredictionColName = paste0("Predict.V",TV),
+                TargetColName = eval(TargetColumnName[TV]),
+                IndepVar = VariableImportance[i, Variable],
+                GraphType = "boxplot",
+                PercentileBucket = 0.05,
+                FactLevels = 10L,
+                Function = function(x) mean(x, na.rm = TRUE))
+              k <- k + 1L
+              if("plotly" %chin% installed.packages()) {
+                ParDepBoxPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[k, Variable])]] <- plotly::ggplotly(Out1)
+              } else {
+                ParDepBoxPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[k, Variable])]] <- Out1
+              }
+            }, error = function(x) "skip")
+          }
+
+          # Regression Save ParDepPlots to file----
+          if(SaveModelObjects) {
+            if(!is.null(metadata_path)) {
+              save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_", TargetColumnName[TV], "_ParDepPlots.R")))
+            } else {
+              save(ParDepPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_", TargetColumnName[TV], "_ParDepPlots.R")))
+            }
+          }
+
+          # Regression Save ParDepBoxPlots to file----
+          if(SaveModelObjects) {
+            if(!is.null(metadata_path)) {
+              save(ParDepBoxPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_", TargetColumnName[TV], "_ParDepBoxPlots.R")))
+            } else {
+              save(ParDepBoxPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_", TargetColumnName[TV], "_ParDepBoxPlots.R")))
+            }
+          }
+        }
+      } else {
+        ParDepBoxPlots <- NULL
+        ParDepPlots <- NULL
+      }
+
+      # Regression Save Grid output----
+      if(SaveModelObjects & GridTune) {
+        if(TV == 1) {
+          if(!is.null(metadata_path)) {
+            data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ExperimentalGrid.csv")))
+          } else {
+            data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(model_path), paste0(ModelID, "_ExperimentalGrid.csv")))
+          }
+        }
+      }
+    }
+  }
+
   # Final Garbage Collection----
   if(tolower(task_type) == "gpu") gc()
 
   # Subset Transformation Object----
-  if(!is.null(TransformNumericColumns)) {
+  if(!is.null(TransformNumericColumns) & !(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE")) {
     if(TargetColumnName == "Target") {
       TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
     } else {
@@ -1392,9 +1909,10 @@ AutoCatBoostRegression <- function(data,
         PartialDependenceBoxPlots = if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL,
         GridList = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
         ColNames = Names,
-        TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL))
+        TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
+        FactorLevelsList = FactorLevelsList))
     }
   } else if(ReturnModelObjects) {
-    return(list(Model = model, data = data, ColNames = Names, TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL))
+    return(list(Model = model, data = data, ColNames = Names, TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,FactorLevelsList = FactorLevelsList))
   }
 }
