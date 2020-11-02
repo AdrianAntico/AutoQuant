@@ -99,7 +99,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
 
   # Pull in ColNames----
-  if(!is.null(FeatureColumnNames) & !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID,"_ColNames.csv")))
+  if(is.null(FeatureColumnNames) & !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID,"_ColNames.csv")))
 
   # Pull In Transformation Object----
   if(is.null(TransformationObject)) {
