@@ -17,7 +17,8 @@ CarmaCatBoostKeepVarsGDL(
   CalendarVariables,
   HolidayVariable,
   TargetColumnName,
-  DateColumnName
+  DateColumnName,
+  Preds
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ CarmaCatBoostKeepVarsGDL(
 \item{TargetColumnName}{Supply TargetColumnName}
 
 \item{DateColumnName}{Supply DateColumnName}
+
+\item{Preds}{Supply Preds}
 }
 \description{
 CarmaCatBoostKeepVarsGDL is to help manage carma code

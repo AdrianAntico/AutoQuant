@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
 #' @param data Supply your full series data set here
+#' @param TimeWeights Supply a value that will be multiplied by he time trend value
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param NonNegativePred TRUE or FALSE
@@ -84,6 +85,7 @@
 #'
 #'   # data args
 #'   data = data, # TwoGroup_Data,
+#'   TimeWeights = NULL,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
@@ -181,6 +183,7 @@
 #'
 #'   # data args
 #'   data = data, # TwoGroup_Data,
+#'   TimeWeights = NULL,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
@@ -254,6 +257,7 @@
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoCatBoostCARMA <- function(data,
+                              TimeWeights = NULL,
                               NonNegativePred = FALSE,
                               RoundPreds = FALSE,
                               TrainOnFull = FALSE,
@@ -331,6 +335,13 @@ AutoCatBoostCARMA <- function(data,
   GroupVariables        <- Args$GroupVariables
   FC_Periods            <- Args$FC_Periods
   HoldOutPeriods        <- Args$HoldOutPeriods
+
+  # Time Weights ----
+  if(!is.null(TimeWeights)) {
+    if(length(TimeWeights) != 1L) {
+      TimeWeights <- NULL
+    }
+  }
 
   # Variables for Program: Redefine HoldOutPerids----
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L] * length(unique(data[[eval(DateColumnName)]])), 0L)
@@ -1001,6 +1012,17 @@ AutoCatBoostCARMA <- function(data,
     test  <- NULL
   }
 
+  # Create TimeWeights ----
+  if(!is.null(TimeWeights)) {
+    if(!is.null(GroupVariables)) {
+      data.table::setorderv(x = train, cols = c("GroupVar", DateColumnName), order = c(1,-1))
+      train[, PowerValue := 1:.N, by = "GroupVar"]
+      train[, Weights := eval(TimeWeights) ^ PowerValue]
+      Weights <- train[["Weights"]]
+      train[, ":=" (PowerValue = NULL, Weights = NULL)]
+    }
+  }
+
   # Variables for CARMA function:IDcols----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
   if(!is.null(GroupVariables)) IDcols <- 2 else IDcols <- 1
@@ -1077,6 +1099,7 @@ AutoCatBoostCARMA <- function(data,
       TrainOnFull = TOF,
       ValidationData = valid,
       TestData = test,
+      Weights = Weights,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
       PrimaryDateColumn = eval(DateColumnName),
@@ -1485,7 +1508,7 @@ AutoCatBoostCARMA <- function(data,
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1534,7 +1557,7 @@ AutoCatBoostCARMA <- function(data,
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1592,7 +1615,7 @@ AutoCatBoostCARMA <- function(data,
         # Calendar and Holiday----
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
         if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
-        CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+        CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
       }
 
       # Group and Diff
@@ -1606,7 +1629,7 @@ AutoCatBoostCARMA <- function(data,
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1659,7 +1682,7 @@ AutoCatBoostCARMA <- function(data,
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1713,7 +1736,7 @@ AutoCatBoostCARMA <- function(data,
         # Calendar and Holiday----
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
         if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
-        CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+        CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
       }
 
       # No Group with or without Diff
@@ -1727,7 +1750,7 @@ AutoCatBoostCARMA <- function(data,
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
         Temporary <- temp$data
         keep <- temp$keep
         if("GroupVar" %chin% keep) keep <- keep[!keep %chin% "GroupVar"]
@@ -1774,7 +1797,7 @@ AutoCatBoostCARMA <- function(data,
           # Copy data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1824,7 +1847,7 @@ AutoCatBoostCARMA <- function(data,
         # Calendar and Holiday----
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
         if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
-        CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+        CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
         UpdateData <- UpdateData[ID > 1L][, ID := NULL]
       }
 

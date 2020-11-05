@@ -1119,7 +1119,7 @@ AutoCatBoostMultiClass <- function(data,
         VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
         InteractionImportance = if(!is.null(VariableImportance)) Interaction else NULL,
         #ShapValuesDT = if(!is.null(VariableImportance)) ShapValues else NULL,
-        VI_Plot = if(!is.null(VariableImportance)) tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
+        VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
         GridMetrics = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
         ColNames = Names,
         TargetLevels = TargetLevels))

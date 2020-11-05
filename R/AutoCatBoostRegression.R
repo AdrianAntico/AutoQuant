@@ -7,6 +7,7 @@
 #' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
+#' @param Weights Weights vector for train.pool in catboost
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
@@ -106,6 +107,7 @@
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
+#'     Weights = NULL,
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[!names(data) %chin%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
@@ -194,6 +196,7 @@ AutoCatBoostRegression <- function(data,
                                    TrainOnFull = FALSE,
                                    ValidationData = NULL,
                                    TestData = NULL,
+                                   Weights = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    PrimaryDateColumn = NULL,
@@ -723,20 +726,20 @@ AutoCatBoostRegression <- function(data,
   # Regression Initialize Catboost Data Conversion----
   if(!is.null(CatFeatures)) {
     if(!is.null(TestData)) {
-      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures, weight = Weights)
       if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
       if(!TrainOnFull) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget, cat_features = CatFeatures)
     } else {
-      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures, weight = Weights)
       if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
     }
   } else {
     if(!is.null(TestData)) {
-      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, weight = Weights)
       if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
       if(!TrainOnFull) FinalTestPool <- catboost::catboost.load_pool(TestData[, eval(Target) := NULL], label = FinalTestTarget)
     } else {
-      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget)
+      TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, weight = Weights)
       if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget)
     }
   }
@@ -1214,7 +1217,7 @@ AutoCatBoostRegression <- function(data,
         aggrfun = function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
-      if("plotly" %chin% installed.packages()) {
+      if(all(c("plotly","dplyr") %chin% installed.packages())) {
         if(!TrainOnFull) EvaluationPlot <- plotly::ggplotly(EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L))))
       } else {
         if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
@@ -1454,7 +1457,7 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
-            if("plotly" %chin% installed.packages()) {
+            if(all(c("plotly","dplyr") %chin% installed.packages())) {
               ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
             } else {
               ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
@@ -1471,7 +1474,7 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             k <- k + 1L
-            if("plotly" %chin% installed.packages()) {
+            if(all(c("plotly","dplyr") %chin% installed.packages())) {
               ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- plotly::ggplotly(Out1)
             } else {
               ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
@@ -1572,7 +1575,7 @@ AutoCatBoostRegression <- function(data,
           aggrfun = function(x) mean(x, na.rm = TRUE))
 
         # Add Number of Trees to Title
-        if("plotly" %chin% installed.packages()) {
+        if(all(c("plotly","dplyr") %chin% installed.packages())) {
           if(!TrainOnFull) EvaluationPlot[[TargetColumnName[TV]]] <- plotly::ggplotly(EvaluationPlot[[TargetColumnName[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[[TargetColumnName[TV]]][Metric == "R2", MetricValue], 3L))))
         } else {
           if(!TrainOnFull) EvaluationPlot[[TargetColumnName[TV]]] <- EvaluationPlot[[TargetColumnName[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[[TargetColumnName[TV]]][Metric == "R2", MetricValue], 3L)))
@@ -1796,7 +1799,7 @@ AutoCatBoostRegression <- function(data,
                 FactLevels = 10L,
                 Function = function(x) mean(x, na.rm = TRUE))
               j <- j + 1L
-              if("plotly" %chin% installed.packages()) {
+              if(all(c("plotly","dplyr") %chin% installed.packages())) {
                 ParDepPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
               } else {
                 ParDepPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[j, Variable])]] <- Out
@@ -1813,7 +1816,7 @@ AutoCatBoostRegression <- function(data,
                 FactLevels = 10L,
                 Function = function(x) mean(x, na.rm = TRUE))
               k <- k + 1L
-              if("plotly" %chin% installed.packages()) {
+              if(all(c("plotly","dplyr") %chin% installed.packages())) {
                 ParDepBoxPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[k, Variable])]] <- plotly::ggplotly(Out1)
               } else {
                 ParDepBoxPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[k, Variable])]] <- Out1
@@ -1906,7 +1909,7 @@ AutoCatBoostRegression <- function(data,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
         InteractionImportance = if(!is.null(VariableImportance)) Interaction else NULL,
-        VI_Plot = if(!is.null(VariableImportance)) tryCatch({if("plotly" %chin% installed.packages()) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
+        VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
         PartialDependencePlots = if(!is.null(ParDepPlots)) ParDepPlots else NULL,
         PartialDependenceBoxPlots = if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL,
         GridList = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,

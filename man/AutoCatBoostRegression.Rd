@@ -9,6 +9,7 @@ AutoCatBoostRegression(
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
+  Weights = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
@@ -56,6 +57,8 @@ AutoCatBoostRegression(
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
+
+\item{Weights}{Weights vector for train.pool in catboost}
 
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
@@ -199,6 +202,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
+    Weights = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) \%chin\%
       c("IDcol_1", "IDcol_2","Adrian")],

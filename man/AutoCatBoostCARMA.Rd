@@ -6,6 +6,7 @@
 \usage{
 AutoCatBoostCARMA(
   data,
+  TimeWeights = NULL,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
   TrainOnFull = FALSE,
@@ -64,6 +65,8 @@ AutoCatBoostCARMA(
 }
 \arguments{
 \item{data}{Supply your full series data set here}
+
+\item{TimeWeights}{Supply a value that will be multiplied by he time trend value}
 
 \item{NonNegativePred}{TRUE or FALSE}
 
@@ -202,6 +205,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
 
   # data args
   data = data, # TwoGroup_Data,
+  TimeWeights = NULL,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
@@ -299,6 +303,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
   # data args
   data = data, # TwoGroup_Data,
+  TimeWeights = NULL,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
@@ -372,6 +377,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 }
 \seealso{
 Other Automated Panel Data Forecasting: 
+\code{\link{AutoCatBoostVectorCARMA}()},
 \code{\link{AutoH2OCARMA}()},
 \code{\link{AutoHurdleCARMA}()},
 \code{\link{AutoXGBoostCARMA}()}
