@@ -225,6 +225,8 @@ AutoCatBoostRegression <- function(data,
                                    Shuffles = 1L,
                                    BaselineComparison = "default",
                                    MetricPeriods = 10L,
+                                   langevin = FALSE,
+                                   diffusion_temperature = 10000,
                                    Trees = 50L,
                                    Depth = 6,
                                    L2_Leaf_Reg = 3.0,
@@ -342,6 +344,10 @@ AutoCatBoostRegression <- function(data,
   if(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE") {
     task_type <- "CPU"
     TransformNumericColumns <- NULL
+  }
+  if(langevin & task_type == "GPU") {
+    task_type <- "CPU"
+    print("task_type switched to CPU to enable langevin boosting")
   }
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
@@ -1012,7 +1018,44 @@ AutoCatBoostRegression <- function(data,
 
   # Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
-    if(!is.null(LearningRate)) {
+    if(!is.null(LearningRate) && langevin) {
+      base_params <- list(
+        use_best_model        = TRUE,
+        best_model_min_trees  = 10L,
+        metric_period         = MetricPeriods,
+        langevin              = langevin,
+        diffusion_temperature = diffusion_temperature,
+        iterations            = Trees,
+        depth                 = Depth,
+        learning_rate         = LearningRate,
+        l2_leaf_reg           = L2_Leaf_Reg,
+        random_strength       = RandomStrength,
+        border_count          = BorderCount,
+        loss_function         = LossFunction,
+        eval_metric           = EvalMetric,
+        has_time              = HasTime,
+        task_type             = task_type,
+        devices               = NumGPUs,
+        allow_writing_files   = FALSE)
+    } else if(is.null(LearningRate) && langevin) {
+      base_params <- list(
+        use_best_model        = TRUE,
+        best_model_min_trees  = 10L,
+        metric_period         = MetricPeriods,
+        langevin              = langevin,
+        diffusion_temperature = diffusion_temperature,
+        iterations            = Trees,
+        depth                 = Depth,
+        l2_leaf_reg           = L2_Leaf_Reg,
+        random_strength       = RandomStrength,
+        border_count          = BorderCount,
+        loss_function         = LossFunction,
+        eval_metric           = EvalMetric,
+        has_time              = HasTime,
+        task_type             = task_type,
+        devices               = NumGPUs,
+        allow_writing_files   = FALSE)
+    } else if(!is.null(LearningRate)) {
       base_params <- list(
         use_best_model       = TRUE,
         best_model_min_trees = 10L,

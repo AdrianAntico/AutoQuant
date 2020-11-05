@@ -38,6 +38,8 @@ AutoCatBoostRegression(
   Shuffles = 1L,
   BaselineComparison = "default",
   MetricPeriods = 10L,
+  langevin = FALSE,
+  diffusion_temperature = 10000,
   Trees = 50L,
   Depth = 6,
   L2_Leaf_Reg = 3,

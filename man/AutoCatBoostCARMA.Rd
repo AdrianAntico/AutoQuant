@@ -52,6 +52,8 @@ AutoCatBoostCARMA(
   ModelCount = 100,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 24L * 60L,
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
   NTrees = 1000,
   L2_Leaf_Reg = 3,
   RandomStrength = 1,
@@ -153,6 +155,10 @@ AutoCatBoostCARMA(
 \item{MaxRunsWithoutNewWinner}{Default is 50}
 
 \item{MaxRunMinutes}{Default is 60*60}
+
+\item{Langevin}{Enables the Stochastic Gradient Langevin Boosting mode. If TRUE and TaskType == "GPU" then TaskType will be converted to "CPU"}
+
+\item{DiffusionTemperature}{Default is 10000}
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
@@ -269,6 +275,8 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60*60,
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
   NTrees = 2500,
   L2_Leaf_Reg = 3.0,
   RandomStrength = 1,
@@ -367,6 +375,8 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60*60,
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
   NTrees = 2500,
   L2_Leaf_Reg = 3.0,
   RandomStrength = 1,

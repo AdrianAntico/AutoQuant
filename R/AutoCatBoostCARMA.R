@@ -52,6 +52,8 @@
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Default is 50
 #' @param MaxRunMinutes Default is 60*60
+#' @param Langevin Enables the Stochastic Gradient Langevin Boosting mode. If TRUE and TaskType == "GPU" then TaskType will be converted to "CPU"
+#' @param DiffusionTemperature Default is 10000
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param Depth Depth of catboost model
 #' @param L2_Leaf_Reg l2 reg parameter
@@ -149,6 +151,8 @@
 #'   NumGPU = 1,
 #'   MaxRunsWithoutNewWinner = 50,
 #'   MaxRunMinutes = 60*60,
+#'   Langevin = FALSE,
+#'   DiffusionTemperature = 10000,
 #'   NTrees = 2500,
 #'   L2_Leaf_Reg = 3.0,
 #'   RandomStrength = 1,
@@ -247,6 +251,8 @@
 #'   NumGPU = 1,
 #'   MaxRunsWithoutNewWinner = 50,
 #'   MaxRunMinutes = 60*60,
+#'   Langevin = FALSE,
+#'   DiffusionTemperature = 10000,
 #'   NTrees = 2500,
 #'   L2_Leaf_Reg = 3.0,
 #'   RandomStrength = 1,
@@ -301,6 +307,8 @@ AutoCatBoostCARMA <- function(data,
                               ModelCount = 100,
                               MaxRunsWithoutNewWinner = 50,
                               MaxRunMinutes = 24L*60L,
+                              Langevin = FALSE,
+                              DiffusionTemperature = 10000,
                               NTrees = 1000,
                               L2_Leaf_Reg = 3.0,
                               RandomStrength = 1,
@@ -1146,7 +1154,9 @@ AutoCatBoostCARMA <- function(data,
       # The ones below can be set to NULL and the values in the example will be used
       # GrowPolicy is turned off for CPU runs
       # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
-      Trees = NTrees, # seq(100L, 500L, 50L),
+      langevin = Langevin,
+      diffusion_temperature = DiffusionTemperature,
+      Trees = NTrees,
       Depth = Depth,
       LearningRate = if(GridTune) seq(0.01,0.15,0.01) else NULL,
       L2_Leaf_Reg = L2_Leaf_Reg,
