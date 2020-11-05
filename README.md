@@ -602,6 +602,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
+    Weights = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
     PrimaryDateColumn = NULL,
@@ -642,6 +643,8 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     # The ones below can be set to NULL and the values in the example will be used
     # GrowPolicy is turned off for CPU runs
     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    langevin = FALSE,
+    diffusion_temperature = 10000,
     Trees = seq(100L, 500L, 50L),
     Depth = seq(4L, 8L, 1L),
     LearningRate = seq(0.01,0.10,0.01),
@@ -2288,6 +2291,8 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 24*60,
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
   NTrees = seq(2990,3000,1),
   L2_Leaf_Reg = 3.0:6.0,
   RandomStrength = seq(1,2,0.1),
