@@ -118,6 +118,10 @@ AutoCatBoostRegression(
 
 \item{MetricPeriods}{Number of periods to use between Catboost evaluations}
 
+\item{langevin}{Set to TRUE to enable}
+
+\item{diffusion_temperature}{Defaults to 10000}
+
 \item{Trees}{Bandit grid partitioned. The maximum number of trees you want in your models}
 
 \item{Depth}{Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
@@ -261,6 +265,8 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     #   will be used
     # GrowPolicy is turned off for CPU runs
     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    langevin = FALSE,
+    diffusion_temperature = 10000,
     Trees = 1000,
     Depth = 6,
     L2_Leaf_Reg = 3.0,

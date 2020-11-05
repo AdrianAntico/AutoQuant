@@ -35,6 +35,8 @@
 #' @param MaxRunMinutes Maximum number of minutes to let this run
 #' @param MaxRunsWithoutNewWinner Number of models built before calling it quits
 #' @param MetricPeriods Number of periods to use between Catboost evaluations
+#' @param langevin Set to TRUE to enable
+#' @param diffusion_temperature Defaults to 10000
 #' @param Trees Bandit grid partitioned. The maximum number of trees you want in your models
 #' @param Depth Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
 #' @param L2_Leaf_Reg Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
@@ -164,6 +166,8 @@
 #'     #   will be used
 #'     # GrowPolicy is turned off for CPU runs
 #'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+#'     langevin = FALSE,
+#'     diffusion_temperature = 10000,
 #'     Trees = 1000,
 #'     Depth = 6,
 #'     L2_Leaf_Reg = 3.0,
