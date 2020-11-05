@@ -30,6 +30,8 @@
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param MetricPeriods Number of trees to build before evaluating intermediate metrics. Default is 10L
+#' @param langevin TRUE or FALSE. TRUE enables
+#' @param diffusion_temperature Default value is 10000
 #' @param Trees Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
 #' @param Depth Bandit grid partitioned Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
 #' @param LearningRate Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
@@ -151,6 +153,8 @@
 #'     #   will be used
 #'     # GrowPolicy is turned off for CPU runs
 #'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+#'     langevin = FALSE,
+#'     diffusion_temperature = 10000,
 #'     Trees = seq(100L, 500L, 50L),
 #'     Depth = seq(4L, 8L, 1L),
 #'     LearningRate = seq(0.01,0.10,0.01),
@@ -203,6 +207,8 @@ AutoCatBoostClassifier <- function(data,
                                    Shuffles = 1L,
                                    BaselineComparison = "default",
                                    MetricPeriods = 10L,
+                                   langevin = FALSE,
+                                   diffusion_temperature = 10000,
                                    Trees = 50L,
                                    Depth = 6,
                                    LearningRate = NULL,
@@ -252,6 +258,10 @@ AutoCatBoostClassifier <- function(data,
   if(!GridTune & length(BorderCount) > 1L) BorderCount <- max(BorderCount)
   if(!GridTune & length(LearningRate) > 1L) LearningRate <- max(LearningRate)
   if(!GridTune & length(RSM) > 1L) RSM <- max(RSM)
+  if(langevin & task_type == "GPU") {
+    task_type <- "CPU"
+    print("task_type switched to CPU to enable langevin boosting")
+  }
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {
@@ -665,22 +675,60 @@ AutoCatBoostClassifier <- function(data,
 
   # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
-    if(!is.null(LearningRate)) {
+    if(!is.null(LearningRate) && langevin) {
       base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = MetricPeriods,
-        iterations           = Trees,
-        depth                = Depth,
-        learning_rate        = LearningRate,
-        random_strength      = RandomStrength,
-        border_count         = BorderCount,
-        loss_function        = LossFunction,
-        eval_metric          = eval_metric,
-        has_time             = HasTime,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        class_weights        = ClassWeights)
+        use_best_model        = TRUE,
+        best_model_min_trees  = 10L,
+        metric_period         = MetricPeriods,
+        iterations            = Trees,
+        depth                 = Depth,
+        learning_rate         = LearningRate,
+        langevin              = langevin,
+        diffusion_temperature = diffusion_temperature,
+        random_strength       = RandomStrength,
+        border_count          = BorderCount,
+        loss_function         = LossFunction,
+        eval_metric           = eval_metric,
+        has_time              = HasTime,
+        task_type             = task_type,
+        devices               = NumGPUs,
+        class_weights         = ClassWeights)
+
+    } else if(is.null(LearningRate) && langevin) {
+      base_params <- list(
+        use_best_model        = TRUE,
+        best_model_min_trees  = 10L,
+        metric_period         = MetricPeriods,
+        iterations            = Trees,
+        depth                 = Depth,
+        langevin              = langevin,
+        diffusion_temperature = diffusion_temperature,
+        random_strength       = RandomStrength,
+        border_count          = BorderCount,
+        loss_function         = LossFunction,
+        eval_metric           = eval_metric,
+        has_time              = HasTime,
+        task_type             = task_type,
+        devices               = NumGPUs,
+        class_weights         = ClassWeights)
+
+    } else if(!is.null(LearningRate)) {
+      base_params <- list(
+        use_best_model        = TRUE,
+        best_model_min_trees  = 10L,
+        metric_period         = MetricPeriods,
+        iterations            = Trees,
+        depth                 = Depth,
+        learning_rate         = LearningRate,
+        random_strength       = RandomStrength,
+        border_count          = BorderCount,
+        loss_function         = LossFunction,
+        eval_metric           = eval_metric,
+        has_time              = HasTime,
+        task_type             = task_type,
+        devices               = NumGPUs,
+        class_weights         = ClassWeights)
+
     } else {
       base_params <- list(
         use_best_model       = TRUE,

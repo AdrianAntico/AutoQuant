@@ -32,6 +32,8 @@ AutoCatBoostClassifier(
   Shuffles = 1L,
   BaselineComparison = "default",
   MetricPeriods = 10L,
+  langevin = FALSE,
+  diffusion_temperature = 10000,
   Trees = 50L,
   Depth = 6,
   LearningRate = NULL,
@@ -97,6 +99,10 @@ AutoCatBoostClassifier(
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
+
+\item{langevin}{TRUE or FALSE. TRUE enables}
+
+\item{diffusion_temperature}{Default value is 10000}
 
 \item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
@@ -234,6 +240,8 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     #   will be used
     # GrowPolicy is turned off for CPU runs
     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    langevin = FALSE,
+    diffusion_temperature = 10000,
     Trees = seq(100L, 500L, 50L),
     Depth = seq(4L, 8L, 1L),
     LearningRate = seq(0.01,0.10,0.01),

@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
 #' @param data Supply your full series data set here
+#' @param TimeWeights NULL or a value.
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column names of your target variables column. E.g. c("Target1","Target2", ..., "TargetN")
 #' @param NonNegativePred TRUE or FALSE
@@ -51,6 +52,8 @@
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Default is 50
 #' @param MaxRunMinutes Default is 60*60
+#' @param Langevin TRUE or FALSE
+#' @param DiffusionTemperature Default value of 10000
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param Depth Depth of catboost model
 #' @param L2_Leaf_Reg l2 reg parameter
@@ -59,116 +62,23 @@
 #' @param BootStrapType Select from Catboost list
 #' @examples
 #' \dontrun{
-#'
-#'  # Single group variable and xregs ----
-#'
-#'  # Load Walmart Data from Dropbox----
-#'  data <- data.table::fread(
-#'    "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
-#'
-#'  # Subset for Stores / Departments With Full Series
-#'  data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
-#'    , Counts := NULL]
-#'
-#'  # Subset Columns (remove IsHoliday column)----
-#'  keep <- c("Store","Dept","Date","Weekly_Sales")
-#'  data <- data[, ..keep]
-#'  data <- data[Store == 1][, Store := NULL]
-#'  xregs <- data.table::copy(data)
-#'  data.table::setnames(xregs, "Dept", "GroupVar")
-#'  data.table::setnames(xregs, "Weekly_Sales", "Other")
-#'  data <- data[as.Date(Date) < as.Date('2012-09-28')]
-#'
-#'  # Build forecast
-#'  CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
-#'
-#'   # data args
-#'   data = data, # TwoGroup_Data,
-#'   TargetColumnName = "Weekly_Sales",
-#'   DateColumnName = "Date",
-#'   HierarchGroups = NULL,
-#'   GroupVariables = c("Dept"),
-#'   TimeUnit = "weeks",
-#'   TimeGroups = c("weeks","months"),
-#'
-#'   # Production args
-#'   TrainOnFull = FALSE,
-#'   SplitRatios = c(1 - 10 / 138, 10 / 138),
-#'   PartitionType = "random",
-#'   FC_Periods = 4,
-#'   Timer = TRUE,
-#'   DebugMode = TRUE,
-#'
-#'   # Target transformations
-#'   TargetTransformation = TRUE,
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'     "LogPlus1", "Logit", "YeoJohnson"),
-#'   Difference = FALSE,
-#'   NonNegativePred = FALSE,
-#'   RoundPreds = FALSE,
-#'
-#'   # Date features
-#'   CalendarVariables = c("week", "month", "quarter"),
-#'   HolidayVariable = c("USPublicHolidays",
-#'     "EasterGroup",
-#'     "ChristmasGroup","OtherEcclesticalFeasts"),
-#'   HolidayLags = 1,
-#'   HolidayMovingAverages = 1:2,
-#'
-#'   # Time series features
-#'   Lags = list("weeks" = seq(2L, 10L, 2L),
-#'     "months" = c(1:3)),
-#'   MA_Periods = list("weeks" = seq(2L, 10L, 2L),
-#'     "months" = c(2,3)),
-#'   SD_Periods = NULL,
-#'   Skew_Periods = NULL,
-#'   Kurt_Periods = NULL,
-#'   Quantile_Periods = NULL,
-#'   Quantiles_Selected = c("q5","q95"),
-#'
-#'   # Bonus features
-#'   AnomalyDetection = NULL,
-#'   XREGS = xregs,
-#'   FourierTerms = 2,
-#'   TimeTrendVariable = TRUE,
-#'   ZeroPadSeries = NULL,
-#'   DataTruncate = FALSE,
-#'
-#'   # ML Args
-#'   NumOfParDepPlots = 100L,
-#'   EvalMetric = "RMSE",
-#'   EvalMetricValue = 1.5,
-#'   LossFunction = "RMSE",
-#'   LossFunctionValue = 1.5,
-#'   GridTune = FALSE,
-#'   PassInGrid = NULL,
-#'   ModelCount = 5,
-#'   TaskType = "GPU",
-#'   NumGPU = 1,
-#'   MaxRunsWithoutNewWinner = 50,
-#'   MaxRunMinutes = 60*60,
-#'   NTrees = 2500,
-#'   L2_Leaf_Reg = 3.0,
-#'   RandomStrength = 1,
-#'   BorderCount = 254,
-#'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-#'   Depth = 6)
-#'
 #' # Two group variables and xregs
 #'
 #' # Load Walmart Data from Dropbox----
 #' data <- data.table::fread(
 #'  "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 #'
+#' # Filter out zeros
+#' data <- data[Weekly_Sales != 0]
+#'
 #' # Subset for Stores / Departments With Full Series
 #' data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
-#'   , Counts := NULL]
+#'  , Counts := NULL]
 #'
 #' # Subset Columns (remove IsHoliday column)----
 #' keep <- c("Store","Dept","Date","Weekly_Sales")
 #' data <- data[, ..keep]
 #' data <- data[Store %in% c(1,2)]
-#'
 #' xregs <- data.table::copy(data)
 #' xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
 #' xregs[, c("Store","Dept") := NULL]
@@ -176,12 +86,16 @@
 #' xregs[, Other := jitter(Other, factor = 25)]
 #' data <- data[as.Date(Date) < as.Date('2012-09-28')]
 #'
+#  Vector CARMA testing
+#' data[, Weekly_Profit := Weekly_Sales * 0.75]
+#'
 #' # Build forecast
 #' CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
 #'
 #'   # data args
 #'   data = data, # TwoGroup_Data,
-#'   TargetColumnName = "Weekly_Sales",
+#'   TimeWeights = NULL,
+#'   TargetColumnName = c("Weekly_Sales","Weekly_Profit"),
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
 #'   GroupVariables = c("Store","Dept"),
@@ -233,9 +147,9 @@
 #'
 #'   # ML Args
 #'   NumOfParDepPlots = 100L,
-#'   EvalMetric = "RMSE",
+#'   EvalMetric = "MultiRMSE",
 #'   EvalMetricValue = 1.5,
-#'   LossFunction = "RMSE",
+#'   LossFunction = "MultiRMSE",
 #'   LossFunctionValue = 1.5,
 #'   GridTune = FALSE,
 #'   PassInGrid = NULL,
@@ -244,6 +158,8 @@
 #'   NumGPU = 1,
 #'   MaxRunsWithoutNewWinner = 50,
 #'   MaxRunMinutes = 60*60,
+#'   Langevin = FALSE,
+#'   DiffusionTemperature = 10000,
 #'   NTrees = 2500,
 #'   L2_Leaf_Reg = 3.0,
 #'   RandomStrength = 1,
@@ -254,6 +170,7 @@
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoCatBoostVectorCARMA <- function(data,
+                                    TimeWeights = NULL,
                                     NonNegativePred = FALSE,
                                     RoundPreds = FALSE,
                                     TrainOnFull = FALSE,
@@ -297,6 +214,8 @@ AutoCatBoostVectorCARMA <- function(data,
                                     ModelCount = 100,
                                     MaxRunsWithoutNewWinner = 50,
                                     MaxRunMinutes = 24L*60L,
+                                    Langevin = FALSE,
+                                    DiffusionTemperature = 10000,
                                     NTrees = 1000,
                                     L2_Leaf_Reg = 3.0,
                                     RandomStrength = 1,
@@ -1009,6 +928,19 @@ AutoCatBoostVectorCARMA <- function(data,
     test  <- NULL
   }
 
+  # Create TimeWeights ----
+  if(!is.null(TimeWeights)) {
+    if(!is.null(GroupVariables)) {
+      data.table::setorderv(x = train, cols = c("GroupVar", DateColumnName), order = c(1,-1))
+      train[, PowerValue := 1:.N, by = "GroupVar"]
+      train[, Weights := eval(TimeWeights) ^ PowerValue]
+      Weightss <- train[["Weights"]]
+      train[, ":=" (PowerValue = NULL, Weights = NULL)]
+    }
+  } else {
+    Weightss <- NULL
+  }
+
   # Variables for CARMA function:IDcols----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
   if(!is.null(GroupVariables)) IDcols <- 2 else IDcols <- 1
@@ -1085,6 +1017,7 @@ AutoCatBoostVectorCARMA <- function(data,
     TrainOnFull = TOF,
     ValidationData = valid,
     TestData = test,
+    Weights = Weightss,
     TargetColumnName = TargetVariable,
     FeatureColNames = ModelFeatures,
     PrimaryDateColumn = eval(DateColumnName),
@@ -1129,7 +1062,9 @@ AutoCatBoostVectorCARMA <- function(data,
     # The ones below can be set to NULL and the values in the example will be used
     # GrowPolicy is turned off for CPU runs
     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
-    Trees = NTrees, # seq(100L, 500L, 50L),
+    langevin = Langevin,
+    diffusion_temperature = DiffusionTemperature,
+    Trees = NTrees,
     Depth = Depth,
     LearningRate = seq(0.01,0.15,0.01),
     L2_Leaf_Reg = L2_Leaf_Reg,
