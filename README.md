@@ -2172,8 +2172,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 
 </p>
 </details>
-  
-<img src="Images/ScoringCatBoost.png" align="center" width="400" />
+
 
 ##### **AutoCatBoostScoring()**
 <code>AutoCatBoostScoring()</code> is an automated scoring function that compliments the AutoCatBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
