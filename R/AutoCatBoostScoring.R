@@ -60,6 +60,8 @@
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
+#'   Weights = NULL,
+#'   DummifyCols = FALSE,
 #'   TargetColumnName = c("Adrian","Independent_Variable1"),
 #'   FeatureColNames = names(data)[!names(data) %in%
 #'     c("IDcol_1","IDcol_2","Adrian")],
@@ -88,6 +90,8 @@
 #'   BaselineComparison = "default",
 #'
 #'   # ML Args
+#'   langevin = TRUE,
+#'   diffusion_temperature = 10000,
 #'   Trees = 250,
 #'   Depth = 6,
 #'   L2_Leaf_Reg = 3.0,

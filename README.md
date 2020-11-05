@@ -2049,6 +2049,129 @@ ________________________________________________________________________________
 ## Model Scoring: <img src="Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 10000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Train a Multiple Regression Model (two target variables)
+TestModel <- RemixAutoML::AutoCatBoostRegression(
+
+  # GPU or CPU and the number of available GPUs
+  task_type = "GPU",
+  NumGPUs = 1,
+
+  # Metadata arguments
+  ModelID = "Test_Model_1",
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+
+  # Data arguments
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  Weights = NULL,
+  DummifyCols = FALSE,
+  TargetColumnName = c("Adrian","Independent_Variable1"),
+  FeatureColNames = names(data)[!names(data) %in%
+    c("IDcol_1","IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  IDcols = c("IDcol_1","IDcol_2"),
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1",
+    "Logit","YeoJohnson"),
+
+  # Model evaluation
+  eval_metric = "MultiRMSE",
+  eval_metric_value = 1.5,
+  loss_function = "MultiRMSE",
+  loss_function_value = 1.5,
+  MetricPeriods = 10L,
+  NumOfParDepPlots = ncol(data)-1L-2L,
+  EvalPlots = TRUE,
+
+  # Grid tuning
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 100L,
+  MaxRunsWithoutNewWinner = 100L,
+  MaxRunMinutes = 60*60,
+  Shuffles = 4L,
+  BaselineComparison = "default",
+
+  # ML Args
+  langevin = TRUE,
+  diffusion_temperature = 10000,
+  Trees = 250,
+  Depth = 6,
+  L2_Leaf_Reg = 3.0,
+  RandomStrength = 1,
+  BorderCount = 128,
+  LearningRate = seq(0.01,0.10,0.01),
+  RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+  BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"),
+  GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+
+# Output
+TestModel$Model
+TestModel$ValidationData
+TestModel$EvaluationPlot
+TestModel$EvaluationBoxPlot
+TestModel$EvaluationMetrics
+TestModel$VariableImportance
+TestModel$InteractionImportance
+TestModel$ShapValuesDT
+TestModel$VI_Plot
+TestModel$PartialDependencePlots
+TestModel$PartialDependenceBoxPlots
+TestModel$GridList
+TestModel$ColNames
+TestModel$TransformationResults
+
+# Score a multiple regression model
+Preds <- RemixAutoML::AutoCatBoostScoring(
+  TargetType = "multiregression",
+  ScoringData = data,
+  FeatureColumnNames = names(data)[!names(data) %in%
+    c("IDcol_1", "IDcol_2","Adrian")],
+  FactorLevelsList = TestModel$FactorLevelsList,
+  IDcols = c("IDcol_1","IDcol_2"),
+  OneHot = FALSE,
+  ReturnShapValues = TRUE,
+  ModelObject = TestModel$Model,
+  ModelPath = NULL, #normalizePath("./"),
+  ModelID = "Test_Model_1",
+  ReturnFeatures = TRUE,
+  MultiClassTargetLevels = NULL,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1,
+  RemoveModel = FALSE)
+```
+
+</p>
+</details>
   
 <img src="Images/ScoringCatBoost.png" align="center" width="400" />
 
