@@ -247,6 +247,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     LearningRate = seq(0.01,0.10,0.01),
     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
     RandomStrength = 1,
+    BorderCount = 128,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
