@@ -2228,6 +2228,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
   # data args
   data = data,
+  TimeWeights = NULL,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
   HierarchGroups = NULL,
@@ -2276,6 +2277,9 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
   # ML Args
   EvalMetric = "RMSE",
+  EvalMetricValue = 1,
+  LossFunction = "RMSE",
+  LossFunctionValue = 1,
   GridTune = FALSE,
   PassInGrid = PassInGrid,
   GridEvalMetric = "mae",
