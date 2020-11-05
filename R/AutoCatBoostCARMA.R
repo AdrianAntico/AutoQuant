@@ -1018,11 +1018,11 @@ AutoCatBoostCARMA <- function(data,
       data.table::setorderv(x = train, cols = c("GroupVar", DateColumnName), order = c(1,-1))
       train[, PowerValue := 1:.N, by = "GroupVar"]
       train[, Weights := eval(TimeWeights) ^ PowerValue]
-      Weights <- train[["Weights"]]
+      Weightss <- train[["Weights"]]
       train[, ":=" (PowerValue = NULL, Weights = NULL)]
     }
   } else {
-    Weights <- NULL
+    Weightss <- NULL
   }
 
   # Variables for CARMA function:IDcols----
@@ -1101,7 +1101,7 @@ AutoCatBoostCARMA <- function(data,
       TrainOnFull = TOF,
       ValidationData = valid,
       TestData = test,
-      Weights = Weights,
+      Weights = Weightss,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
       PrimaryDateColumn = eval(DateColumnName),
