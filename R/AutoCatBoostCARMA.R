@@ -1021,6 +1021,8 @@ AutoCatBoostCARMA <- function(data,
       Weights <- train[["Weights"]]
       train[, ":=" (PowerValue = NULL, Weights = NULL)]
     }
+  } else {
+    Weights <- NULL
   }
 
   # Variables for CARMA function:IDcols----
@@ -1099,7 +1101,7 @@ AutoCatBoostCARMA <- function(data,
       TrainOnFull = TOF,
       ValidationData = valid,
       TestData = test,
-      Weights = TimeWeights,
+      Weights = Weights,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
       PrimaryDateColumn = eval(DateColumnName),
