@@ -86,7 +86,7 @@
 #' xregs[, Other := jitter(Other, factor = 25)]
 #' data <- data[as.Date(Date) < as.Date('2012-09-28')]
 #'
-#  Vector CARMA testing
+#' # Vector CARMA testing
 #' data[, Weekly_Profit := Weekly_Sales * 0.75]
 #'
 #' # Build forecast
