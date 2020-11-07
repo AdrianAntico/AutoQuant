@@ -1186,6 +1186,9 @@ AutoCatBoostVectorCARMA <- function(data,
           MDP_MissNum = -1)
       }
 
+      # CatFeatures ----
+      CatFeatures <- names(data)[sort(as.numeric(which(sapply(data, is.factor))),as.numeric(which(sapply(data, is.character))))]
+
       # Data Wrangline: grab historical data and one more future record----
       if(Difference) {
         if(eval(TargetColumnName) %chin% names(Step1SCore)) {
@@ -1205,12 +1208,14 @@ AutoCatBoostVectorCARMA <- function(data,
         if(NonNegativePred) for(zz in seq_len(length(TargetColumnName))) Preds[, paste0("Predictions.V",zz) := data.table::fifelse(get(paste0("Predictions.V",zz)) < 0.5, 0, get(paste0("Predictions.V",zz)))]
         zz <- names(Preds)[which(names(Preds) %like% "Predictions.V")]
         xx <- Preds[, .SD, .SDcols = c(names(Preds)[which(!names(Preds) %chin% c(zz,ModelFeatures,TargetColumnName))])]
-        xx <- data.table::melt.data.table(data = xx, id.vars = NULL, measure.vars = names(xx))
-        xx[, value := NULL]
-        xx[, variable := gsub(pattern = "GroupVar_", replacement = "", x = variable)]
-        data.table::setnames(xx, "variable", "GroupVar")
-        data.table::set(Preds, j = c(names(Preds)[which(!names(Preds) %chin% c(zz,ModelFeatures,TargetColumnName))]), value = NULL)
-        Preds <- cbind(Preds, xx)
+        for(cat in CatFeatures) {
+          aaa <- data.table::copy(xx[, .SD, .SDcols = c(names(xx)[which(names(xx) %like% cat)])])
+          aa <- unique(data.table::melt.data.table(data = aaa, id.vars = NULL, measure.vars = c(names(xx)[which(names(xx) %like% cat)]))[, value := NULL])
+          aa[, variable := gsub(pattern = "GroupVar_", replacement = "", x = variable)]
+          data.table::setnames(aa, "variable", cat)
+          data.table::set(Preds, j = c(names(xx)[which(names(xx) %like% cat)]), value = NULL)
+          Preds <- cbind(Preds, aa)
+        }
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
