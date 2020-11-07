@@ -700,7 +700,7 @@ AutoCatBoostRegression <- function(data,
   if(is.numeric(FeatureColNames)) {
     FeatureColNames <- names(dataTrain)[!names(dataTrain) %chin% c(IDcols,TargetColumnName)]
     Names <- data.table::as.data.table(FeatureColNames)
-    data.table::setnames(Names, "V1", "ColNames")
+    data.table::setnames(Names, "FeatureColNames", "ColNames")
   } else {
     FeatureColNames <- names(dataTrain)[!names(dataTrain) %chin% c(IDcols,TargetColumnName)]
     Names <- data.table::as.data.table(FeatureColNames)
@@ -738,7 +738,7 @@ AutoCatBoostRegression <- function(data,
   }
 
   # Regression Initialize Catboost Data Conversion----
-  if(!is.null(CatFeatures)) {
+  if(length(CatFeatures) > 0) {
     if(!is.null(TestData)) {
       TrainPool <- catboost::catboost.load_pool(dataTrain[, eval(Target) := NULL], label = TrainTarget, cat_features = CatFeatures, weight = Weights)
       if(!TrainOnFull) TestPool <- catboost::catboost.load_pool(dataTest[, eval(Target) := NULL], label = TestTarget, cat_features = CatFeatures)
