@@ -564,7 +564,7 @@ AutoCatBoostRegression <- function(data,
           SavePath = model_path,
           ImportFactorLevels = FALSE,
           GroupVar = TRUE)
-        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
+        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(dataTrain$data)[CatFeatures] else CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
         dataTrain <- temp[ID_Factorizer == "TRAIN"]
@@ -591,7 +591,7 @@ AutoCatBoostRegression <- function(data,
           SavePath = model_path,
           ImportFactorLevels = FALSE,
           GroupVar = TRUE)
-        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
+        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(dataTrain$data)[CatFeatures] else CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
         dataTrain <- temp[ID_Factorizer == "TRAIN"]
@@ -626,7 +626,7 @@ AutoCatBoostRegression <- function(data,
           SavePath = NULL,
           ImportFactorLevels = FALSE,
           GroupVar = TRUE)
-        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
+        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(dataTrain$data)[CatFeatures] else CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
         dataTrain <- temp[ID_Factorizer == "TRAIN"]
@@ -662,7 +662,7 @@ AutoCatBoostRegression <- function(data,
           SavePath = NULL,
           ImportFactorLevels = FALSE,
           GroupVar = TRUE)
-        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
+        IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(dataTrain$data)[CatFeatures] else CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
         dataTrain <- temp[ID_Factorizer == "TRAIN"]
