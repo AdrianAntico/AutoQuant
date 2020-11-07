@@ -215,7 +215,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         ImportFactorLevels = FALSE,
         FactorLevelsList = FactorLevelsList,
         ReturnFactorLevels = FALSE,
-        ClustScore = FALSE)
+        ClustScore = FALSE,
+        GroupVar = TRUE)
     } else {
       ScoringData <- DummifyDT(
         data = ScoringData,
@@ -226,7 +227,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         SavePath = ModelPath,
         ImportFactorLevels = TRUE,
         ReturnFactorLevels = FALSE,
-        ClustScore = FALSE)
+        ClustScore = FALSE,
+        GroupVar = TRUE)
     }
 
     # Return value to CatFeatures as if there are no categorical variables
