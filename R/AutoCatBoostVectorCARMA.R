@@ -1187,7 +1187,7 @@ AutoCatBoostVectorCARMA <- function(data,
       }
 
       # CatFeatures ----
-      CatFeatures <- names(data)[sort(as.numeric(which(sapply(data, is.factor))),as.numeric(which(sapply(data, is.character))))]
+      CatFeatures <- names(data)[sort(c(as.numeric(which(sapply(data, is.factor))),as.numeric(which(sapply(data, is.character)))))]
 
       # Data Wrangline: grab historical data and one more future record----
       if(Difference) {
@@ -1210,8 +1210,8 @@ AutoCatBoostVectorCARMA <- function(data,
         xx <- Preds[, .SD, .SDcols = c(names(Preds)[which(!names(Preds) %chin% c(zz,ModelFeatures,TargetColumnName))])]
         for(cat in CatFeatures) {
           aaa <- data.table::copy(xx[, .SD, .SDcols = c(names(xx)[which(names(xx) %like% cat)])])
-          aa <- unique(data.table::melt.data.table(data = aaa, id.vars = NULL, measure.vars = c(names(xx)[which(names(xx) %like% cat)]))[, value := NULL])
-          aa[, variable := gsub(pattern = "GroupVar_", replacement = "", x = variable)]
+          aa <- data.table::melt.data.table(data = aaa, id.vars = NULL, measure.vars = c(names(xx)[which(names(xx) %like% cat)]))[value != 0][, value := NULL]
+          aa[, variable := gsub(pattern = paste0(cat,"_"), replacement = "", x = variable)]
           data.table::setnames(aa, "variable", cat)
           data.table::set(Preds, j = c(names(xx)[which(names(xx) %like% cat)]), value = NULL)
           Preds <- cbind(Preds, aa)
