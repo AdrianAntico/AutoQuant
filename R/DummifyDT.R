@@ -14,6 +14,7 @@
 #' @param FactorLevelsList Supply a list of factor variable levels
 #' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
 #' @param ReturnFactorLevels If you want a named list of all the factor levels returned, set this to TRUE. Doing so will cause the function to return a list with the source data.table and the list of factor variables' levels
+#' @param GroupVar Ignore this
 #' @examples
 #' \dontrun{
 #' # Create fake data with 10 categorical columns
@@ -59,7 +60,8 @@ DummifyDT <- function(data,
                       ImportFactorLevels = FALSE,
                       FactorLevelsList   = NULL,
                       ClustScore         = FALSE,
-                      ReturnFactorLevels = FALSE) {
+                      ReturnFactorLevels = FALSE,
+                      GroupVar           = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
@@ -85,7 +87,7 @@ DummifyDT <- function(data,
 
   # Build dummies start----
   FactorsLevelsList <- list()
-  if(length(cols) > 1L & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
+  if(!GroupVar) if(length(cols) > 1L & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
   for(col in rev(cols)) {
     size <- ncol(data)
     Names <- setdiff(names(data), col)

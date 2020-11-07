@@ -14,7 +14,8 @@ DummifyDT(
   ImportFactorLevels = FALSE,
   FactorLevelsList = NULL,
   ClustScore = FALSE,
-  ReturnFactorLevels = FALSE
+  ReturnFactorLevels = FALSE,
+  GroupVar = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ DummifyDT(
 \item{ClustScore}{This is for scoring AutoKMeans. Set to FALSE for all other applications.}
 
 \item{ReturnFactorLevels}{If you want a named list of all the factor levels returned, set this to TRUE. Doing so will cause the function to return a list with the source data.table and the list of factor variables' levels}
+
+\item{GroupVar}{Ignore this}
 }
 \value{
 Either a data table with new dummy variables columns and optionally removes base columns (if ReturnFactorLevels is FALSE), otherwise a list with the data.table and a list of the factor levels.

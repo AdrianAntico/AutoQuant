@@ -6,6 +6,7 @@
 \usage{
 AutoCatBoostHurdleModel(
   data = NULL,
+  TimeWeights = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -33,6 +34,8 @@ AutoCatBoostHurdleModel(
   MaxRunMinutes = 60L * 60L,
   Shuffles = 2L,
   MetricPeriods = 25L,
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
   Trees = list(classifier = seq(1000, 2000, 100), regression = seq(1000, 2000, 100)),
   Depth = list(classifier = seq(6, 10, 1), regression = seq(6, 10, 1)),
   RandomStrength = list(classifier = seq(1, 10, 1), regression = seq(1, 10, 1)),
@@ -50,6 +53,8 @@ AutoCatBoostHurdleModel(
 }
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
+
+\item{TimeWeights}{Supply a value that will be multiplied by he time trend value}
 
 \item{TrainOnFull}{Set to TRUE to use all data}
 
@@ -105,6 +110,10 @@ AutoCatBoostHurdleModel(
 
 \item{MetricPeriods}{= 25L,}
 
+\item{Langevin}{TRUE or FALSE}
+
+\item{DiffusionTemperature}{Default 10000}
+
 \item{Trees}{Provide a named list to have different number of trees for each model. Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100))}
 
 \item{Depth}{= seq(4L, 8L, 1L),}
@@ -141,6 +150,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
 
   # Data related args
   data = data,
+  TimeWeights = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -172,6 +182,8 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   MetricPeriods = 25L,
 
   # Bandit grid args
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
   Trees = list("classifier" = seq(1000,2000,100),
                "regression" = seq(1000,2000,100)),
   Depth = list("classifier" = seq(6,10,1),

@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Supervised Learning - Compound
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
+#' @param TimeWeights Supply a value that will be multiplied by he time trend value
 #' @param TrainOnFull Set to TRUE to use all data
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.
@@ -33,6 +34,8 @@
 #' @param MaxRunMinutes = 60L*60L,
 #' @param Shuffles = 2L,
 #' @param MetricPeriods = 25L,
+#' @param Langevin TRUE or FALSE
+#' @param DiffusionTemperature Default 10000
 #' @param Trees Provide a named list to have different number of trees for each model. Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100))
 #' @param Depth = seq(4L, 8L, 1L),
 #' @param LearningRate = seq(0.01,0.10,0.01),
@@ -55,6 +58,7 @@
 #'
 #'   # Data related args
 #'   data = data,
+#'   TimeWeights = NULL,
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
@@ -86,6 +90,8 @@
 #'   MetricPeriods = 25L,
 #'
 #'   # Bandit grid args
+#'   Langevin = FALSE,
+#'   DiffusionTemperature = 10000,
 #'   Trees = list("classifier" = seq(1000,2000,100),
 #'                "regression" = seq(1000,2000,100)),
 #'   Depth = list("classifier" = seq(6,10,1),
@@ -107,6 +113,7 @@
 #' }
 #' @export
 AutoCatBoostHurdleModel <- function(data = NULL,
+                                    TimeWeights = NULL,
                                     TrainOnFull = FALSE,
                                     ValidationData = NULL,
                                     TestData = NULL,
@@ -134,6 +141,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     MaxRunMinutes = 60L*60L,
                                     Shuffles = 2L,
                                     MetricPeriods = 25L,
+                                    Langevin = FALSE,
+                                    DiffusionTemperature = 10000,
                                     Trees = list("classifier" = seq(1000,2000,100),
                                                  "regression" = seq(1000,2000,100)),
                                     Depth = list("classifier" = seq(6,10,1),

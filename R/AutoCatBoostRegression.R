@@ -562,7 +562,8 @@ AutoCatBoostRegression <- function(data,
           SaveFactorLevels = TRUE,
           ReturnFactorLevels = TRUE,
           SavePath = model_path,
-          ImportFactorLevels = FALSE)
+          ImportFactorLevels = FALSE,
+          GroupVar = TRUE)
         IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
@@ -588,7 +589,8 @@ AutoCatBoostRegression <- function(data,
           SaveFactorLevels = TRUE,
           ReturnFactorLevels = TRUE,
           SavePath = model_path,
-          ImportFactorLevels = FALSE)
+          ImportFactorLevels = FALSE,
+          GroupVar = TRUE)
         IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
@@ -622,7 +624,8 @@ AutoCatBoostRegression <- function(data,
           ReturnFactorLevels = TRUE,
           FactorLevelsList = NULL,
           SavePath = NULL,
-          ImportFactorLevels = FALSE)
+          ImportFactorLevels = FALSE,
+          GroupVar = TRUE)
         IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
@@ -657,7 +660,8 @@ AutoCatBoostRegression <- function(data,
           SaveFactorLevels = FALSE,
           ReturnFactorLevels = TRUE,
           SavePath = NULL,
-          ImportFactorLevels = FALSE)
+          ImportFactorLevels = FALSE,
+          GroupVar = TRUE)
         IDcols <- c(IDcols,if(!is.character(CatFeatures)) names(temp$data)[CatFeatures] else CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data

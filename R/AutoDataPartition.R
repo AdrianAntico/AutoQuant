@@ -155,7 +155,7 @@ AutoDataPartition <- function(data,
     # Initalize collection----
     DataCollect <- list()
     data[, ID := 1:.N, by = c(eval(StratifyColumnNames))]
-    if(var(data[, mean(ID), by = c(eval(StratifyColumnNames))][["V1"]]) != 0) {
+    if(var(data[, sum(ID), by = c(eval(StratifyColumnNames))][["V1"]]) != 0) {
       data[, ID := NULL]
       print("There are an unequal number of records by strata. PartitionType 'timeseries' requires equal number of observations for each strata")
       return(data)
