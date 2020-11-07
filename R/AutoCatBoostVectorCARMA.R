@@ -1205,7 +1205,11 @@ AutoCatBoostVectorCARMA <- function(data,
         }
         data.table::setnames(UpdateData, "FutureDateData", eval(DateColumnName))
       } else {
+
+        # NonNeg Preds
         if(NonNegativePred) for(zz in seq_len(length(TargetColumnName))) Preds[, paste0("Predictions.V",zz) := data.table::fifelse(get(paste0("Predictions.V",zz)) < 0.5, 0, get(paste0("Predictions.V",zz)))]
+
+        # Convert dummies back to categoricals
         zz <- names(Preds)[which(names(Preds) %like% "Predictions.V")]
         xx <- Preds[, .SD, .SDcols = c(names(Preds)[which(!names(Preds) %chin% c(zz,ModelFeatures,TargetColumnName))])]
         for(cat in CatFeatures) {
@@ -1216,6 +1220,8 @@ AutoCatBoostVectorCARMA <- function(data,
           data.table::set(Preds, j = c(names(xx)[which(names(xx) %like% cat)]), value = NULL)
           Preds <- cbind(Preds, aa)
         }
+
+        # Combine data sets
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       }
