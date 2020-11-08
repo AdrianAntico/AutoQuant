@@ -1314,7 +1314,7 @@ AutoXGBoostCARMA <- function(data,
             DateCols = eval(DateColumnName),
             HolidayGroups = HolidayVariable,
             Holidays = NULL,
-            GroupingVars = "GroupVar")
+            GroupingVars = if("GroupVar" %chin% names(data)) "GroupVar" else GroupVariables)
         }
       } else if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(

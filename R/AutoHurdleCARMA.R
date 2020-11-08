@@ -621,7 +621,7 @@ AutoHurdleCARMA <- function(data,
       DateCols = eval(DateColumnName),
       HolidayGroups = HolidayVariable,
       Holidays = NULL,
-      GroupingVars = "GroupVar")
+      GroupingVars = if("GroupVar" %chin% names(data)) "GroupVar" else GroupVariables)
 
     # Convert to lubridate as_date() or POSIXct----
     if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
@@ -1389,7 +1389,7 @@ AutoHurdleCARMA <- function(data,
           DateCols = eval(DateColumnName),
           HolidayGroups = HolidayVariable,
           Holidays = NULL,
-          GroupingVars = "GroupVar")
+          GroupingVars = if("GroupVar" %chin% names(data)) "GroupVar" else GroupVariables)
       } else if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
