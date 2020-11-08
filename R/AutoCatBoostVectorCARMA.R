@@ -943,7 +943,7 @@ AutoCatBoostVectorCARMA <- function(data,
 
   # Variables for CARMA function:IDcols----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
-  if(!is.null(GroupVariables)) IDcols <- 2 else IDcols <- 1
+  IDcols <- which(names(data) %chin% DateColumnName)
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
