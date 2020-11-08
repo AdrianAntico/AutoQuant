@@ -290,20 +290,30 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
 data <- data.table::fread(
  "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
-# Subset for Stores / Departments With Full Series
-data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
-  , Counts := NULL]
+# Filter out zeros
+data <- data[Weekly_Sales != 0]
 
-# Subset Columns (remove IsHoliday column)----
+# Subset for Stores / Departments With Full Series
+data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+
+# Subset Columns (remove IsHoliday column)
 keep <- c("Store","Dept","Date","Weekly_Sales")
+
+# Shrink data so it runs fast
 data <- data[, ..keep]
 data <- data[Store \%in\% c(1,2)]
 
+# Create mock xregs
 xregs <- data.table::copy(data)
 xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-xregs[, c("Store","Dept") := NULL]
 data.table::setnames(xregs, "Weekly_Sales", "Other")
 xregs[, Other := jitter(Other, factor = 25)]
+
+# Run this is Hierachical is not used if you want categoricals included
+#   instead of just their interaction
+data.table::setnames(xregs, c("Store","Dept"), c("Add_Store","Add_Dept"))
+
+# Shrink data to demonstrate setup for xregs when forecasting
 data <- data[as.Date(Date) < as.Date('2012-09-28')]
 
 # Build forecast
@@ -314,7 +324,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   TimeWeights = NULL,
   TargetColumnName = "Weekly_Sales",
   DateColumnName = "Date",
-  HierarchGroups = NULL,
+  HierarchGroups = c("Store","Dept"),
   GroupVariables = c("Store","Dept"),
   TimeUnit = "weeks",
   TimeGroups = c("weeks","months"),
@@ -329,17 +339,25 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
   # Target transformations
   TargetTransformation = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("BoxCox",
+              "Asinh",
+              "Asin",
+              "Log",
+              "LogPlus1",
+              "Logit",
+              "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
 
   # Date features
-  CalendarVariables = c("week", "month", "quarter"),
+  CalendarVariables = c("week",
+                        "month",
+                        "quarter"),
   HolidayVariable = c("USPublicHolidays",
                       "EasterGroup",
-                      "ChristmasGroup","OtherEcclesticalFeasts"),
+                      "ChristmasGroup",
+                      "OtherEcclesticalFeasts"),
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
 
@@ -381,7 +399,11 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   L2_Leaf_Reg = 3.0,
   RandomStrength = 1,
   BorderCount = 254,
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+  BootStrapType = c("Bayesian",
+                    "Bernoulli",
+                    "Poisson",
+                    "MVS",
+                    "No"),
   Depth = 6)
 }
 }
