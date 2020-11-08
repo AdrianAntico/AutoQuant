@@ -1536,7 +1536,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
           DateCols = eval(DateColumnName),
           HolidayGroups = HolidayVariable,
           Holidays = NULL,
-          GroupingVars = "GroupVar")
+          GroupingVars = if("GroupVar" %chin% names(UpdateData)) "GroupVar" else GroupVariables)
       } else if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,

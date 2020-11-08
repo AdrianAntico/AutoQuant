@@ -1389,7 +1389,7 @@ AutoHurdleCARMA <- function(data,
           DateCols = eval(DateColumnName),
           HolidayGroups = HolidayVariable,
           Holidays = NULL,
-          GroupingVars = if("GroupVar" %chin% names(data)) "GroupVar" else GroupVariables)
+          GroupingVars = if("GroupVar" %chin% names(UpdateData)) "GroupVar" else GroupVariables)
       } else if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,

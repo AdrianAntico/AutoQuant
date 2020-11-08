@@ -1397,7 +1397,7 @@ AutoCatBoostCARMA <- function(data,
       # Create single future record----
       if(DebugMode) print("Create single future record----")
       d <- max(UpdateData[[eval(DateColumnName)]])
-      if (tolower(TimeUnit) %chin% c("hour","hours")) {
+      if(tolower(TimeUnit) %chin% c("hour","hours")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::hours(1))
       } else if(tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
         CalendarFeatures <- data.table::as.data.table(d + lubridate::minutes(1))
@@ -1490,7 +1490,7 @@ AutoCatBoostCARMA <- function(data,
           DateCols = eval(DateColumnName),
           HolidayGroups = HolidayVariable,
           Holidays = NULL,
-          GroupingVars = if("GroupVar" %chin% names(data)) "GroupVar" else GroupVariables)
+          GroupingVars = if("GroupVar" %chin% names(UpdateData)) "GroupVar" else GroupVariables)
       } else if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
@@ -1678,6 +1678,29 @@ AutoCatBoostCARMA <- function(data,
           Quantile_RollWindows = Quantile_Periods,
           Quantiles_Selected   = Quantiles_Selected,
           Debug                = DebugMode)
+
+        # data                 = Temporary
+        # RowNumsID            = "ID"
+        # RowNumsKeep          = 1
+        # DateColumn           = eval(DateColumnName)
+        # Targets              = eval(TargetColumnName)
+        # HierarchyGroups      = HierarchSupplyValue
+        # IndependentGroups    = IndependentSupplyValue
+        # TimeBetween          = NULL
+        # TimeUnit             = TimeUnit
+        # TimeUnitAgg          = TimeGroups[1]
+        # TimeGroups           = TimeGroups
+        # RollOnLag1           = TRUE
+        # Type                 = "Lag"
+        # SimpleImpute         = TRUE
+        # Lags                 = Lags
+        # MA_RollWindows       = MA_Periods
+        # SD_RollWindows       = SD_Periods
+        # Skew_RollWindows     = Skew_Periods
+        # Kurt_RollWindows     = Kurt_Periods
+        # Quantile_RollWindows = Quantile_Periods
+        # Quantiles_Selected   = Quantiles_Selected
+        # Debug                = DebugMode
 
         # Lag / Lead, MA Holiday Variables----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")

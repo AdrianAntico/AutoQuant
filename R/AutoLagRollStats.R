@@ -874,7 +874,7 @@ AutoLagRollStatsScoring <- function(data,
         if(Counter > 1L) {
 
           # I need to match up date aggregation to join properly----
-          if(timeaggs != TimeUnitAgg & timeaggs != "raw") {
+          if(tolower(timeaggs) != "raw") {
             KeepData <- merge(
               x = data.table::set(KeepData, j = "TEMPDATE", value = lubridate::floor_date(KeepData[[eval(DateColumn)]], unit = timeaggs)),
               y = data.table::set(tempData, j = c(setdiff(names(tempData),c(eval(Fact),"TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
@@ -887,19 +887,11 @@ AutoLagRollStatsScoring <- function(data,
               by = c(eval(Fact),"TEMPDATE"),
               all.x = TRUE)
           }
-
-          # I need to match up date aggregation to join properly----
-          if(timeaggs == TimeUnitAgg) {
-            data.table::set(KeepData, j = "TEMPDATE", value = KeepData[[eval(DateColumn)]])
-            KeepData <- merge(
-              x = KeepData,
-              y = data.table::set(tempData, j = c(setdiff(names(tempData),c(eval(Fact),"TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
-              by = c(eval(Fact),"TEMPDATE"),
-              all.x = TRUE)
-          }
         }
       }
     }
+    if("TEMPDATE" %chin% names(KeepData)) data.table::set(KeepData, j = "TEMPDATE", value = NULL)
+    return(KeepData)
   }
 
   # Debugging----
