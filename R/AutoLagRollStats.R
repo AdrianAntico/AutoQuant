@@ -919,7 +919,7 @@ AutoLagRollStatsScoring <- function(data,
           tempData <- data.table::copy(data)
 
           # Floor Date column to timeagg level----
-          if(timeaggs != TimeGroups[1]) tempData[, TEMPDATE := lubridate::floor_date(x = get(DateColumn), unit = timeaggs)]
+          if(Fact != IndependentGroups[1] || timeaggs != TimeGroups[1]) tempData[, TEMPDATE := lubridate::floor_date(x = get(DateColumn), unit = timeaggs)]
 
           # Ensure Targets is numeric - someimes comes in as list----
           for(tar in Targets) if(!is.numeric(tempData[[eval(tar)]])) data.table::set(tempData, j = eval(tar), value = as.numeric(tempData[[eval(tar)]]))
