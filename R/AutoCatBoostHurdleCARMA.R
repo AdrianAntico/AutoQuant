@@ -1,10 +1,9 @@
-#' AutoHurdleCARMA
+#' AutoCatBoostHurdleCARMA
 #'
-#' AutoHurdleCARMA is an intermittent demand, Mutlivariate Forecasting algorithms with calendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
+#' AutoCatBoostHurdleCARMA is an intermittent demand, Mutlivariate Forecasting algorithms with calendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 #'
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
-#' @param AlgoType Set to "catboost" or "xgboost"
 #' @param data Supply your full series data set here
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
@@ -83,10 +82,9 @@
 #'  data[runif(.N) < 0.25, Weekly_Sales := 0]
 #'
 #'  # Build forecast
-#'  CatBoostResults <- RemixAutoML::AutoHurdleCARMA(
+#'  CatBoostResults <- RemixAutoML::AutoCatBoostHurdleCARMA(
 #'
 #'   # data args
-#'   AlgoType = "catboost",
 #'   data = data, # TwoGroup_Data,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
@@ -185,10 +183,9 @@
 #' data[runif(.N) < 0.25, Weekly_Sales := 0]
 #'
 #' # Build forecast
-#' Output <- RemixAutoML::AutoHurdleCARMA(
+#' Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
 #'
 #'   # data args
-#'   AlgoType = "catboost",
 #'   data = data,
 #'   TargetColumnName = "Weekly_Sales",
 #'   DateColumnName = "Date",
@@ -261,59 +258,58 @@
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
-AutoHurdleCARMA <- function(data,
-                            AlgoType = "catboost",
-                            NonNegativePred = FALSE,
-                            Threshold = NULL,
-                            RoundPreds = FALSE,
-                            TrainOnFull = FALSE,
-                            TargetColumnName = "Target",
-                            DateColumnName = "DateTime",
-                            HierarchGroups = NULL,
-                            GroupVariables = NULL,
-                            FC_Periods = 30,
-                            TimeUnit = "week",
-                            TimeGroups = c("weeks","months"),
-                            NumOfParDepPlots = 10L,
-                            TargetTransformation = FALSE,
-                            Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-                            AnomalyDetection = NULL,
-                            XREGS = NULL,
-                            Lags = c(1L:5L),
-                            MA_Periods = c(2L:5L),
-                            SD_Periods = NULL,
-                            Skew_Periods = NULL,
-                            Kurt_Periods = NULL,
-                            Quantile_Periods = NULL,
-                            Quantiles_Selected = c("q5","q95"),
-                            Difference = TRUE,
-                            FourierTerms = 6L,
-                            CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
-                            HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-                            HolidayLags = 1L,
-                            HolidayMovingAverages = 1L:2L,
-                            TimeTrendVariable = FALSE,
-                            ZeroPadSeries = NULL,
-                            DataTruncate = FALSE,
-                            SplitRatios = c(0.7, 0.2, 0.1),
-                            TaskType = "GPU",
-                            NumGPU = 1,
-                            EvalMetric = "RMSE",
-                            GridTune = FALSE,
-                            PassInGrid = NULL,
-                            ModelCount = 100,
-                            MaxRunsWithoutNewWinner = 50,
-                            MaxRunMinutes = 24L*60L,
-                            NTrees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
-                            Depth = list("classifier" = seq(6,10,1), "regression" = seq(6,10,1)),
-                            LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
-                            L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
-                            RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
-                            BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
-                            BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-                            PartitionType = "timeseries",
-                            Timer = TRUE,
-                            DebugMode = FALSE) {
+AutoCatBoostHurdleCARMA <- function(data,
+                                    NonNegativePred = FALSE,
+                                    Threshold = NULL,
+                                    RoundPreds = FALSE,
+                                    TrainOnFull = FALSE,
+                                    TargetColumnName = "Target",
+                                    DateColumnName = "DateTime",
+                                    HierarchGroups = NULL,
+                                    GroupVariables = NULL,
+                                    FC_Periods = 30,
+                                    TimeUnit = "week",
+                                    TimeGroups = c("weeks","months"),
+                                    NumOfParDepPlots = 10L,
+                                    TargetTransformation = FALSE,
+                                    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+                                    AnomalyDetection = NULL,
+                                    XREGS = NULL,
+                                    Lags = c(1L:5L),
+                                    MA_Periods = c(2L:5L),
+                                    SD_Periods = NULL,
+                                    Skew_Periods = NULL,
+                                    Kurt_Periods = NULL,
+                                    Quantile_Periods = NULL,
+                                    Quantiles_Selected = c("q5","q95"),
+                                    Difference = TRUE,
+                                    FourierTerms = 6L,
+                                    CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+                                    HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+                                    HolidayLags = 1L,
+                                    HolidayMovingAverages = 1L:2L,
+                                    TimeTrendVariable = FALSE,
+                                    ZeroPadSeries = NULL,
+                                    DataTruncate = FALSE,
+                                    SplitRatios = c(0.7, 0.2, 0.1),
+                                    TaskType = "GPU",
+                                    NumGPU = 1,
+                                    EvalMetric = "RMSE",
+                                    GridTune = FALSE,
+                                    PassInGrid = NULL,
+                                    ModelCount = 100,
+                                    MaxRunsWithoutNewWinner = 50,
+                                    MaxRunMinutes = 24L*60L,
+                                    NTrees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
+                                    Depth = list("classifier" = seq(6,10,1), "regression" = seq(6,10,1)),
+                                    LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
+                                    L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
+                                    RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
+                                    BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
+                                    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+                                    PartitionType = "timeseries",
+                                    Timer = TRUE,
+                                    DebugMode = FALSE) {
 
   # Load catboost----
   if(DebugMode) print("Load catboost----")
@@ -1039,60 +1035,55 @@ AutoHurdleCARMA <- function(data,
   # Return warnings to default since catboost will issue warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
   if(DebugMode) options(warn = 0)
 
-  # Run Auto__HurdleModel() and return list of ml objects ----
-  if(tolower(AlgoType) == "catboost") {
-    TestModel <- RemixAutoML::AutoCatBoostHurdleModel(
+  # Run AutoCatBoostHurdleModel() and return list of ml objects ----
+  TestModel <- RemixAutoML::AutoCatBoostHurdleModel(
 
-      # GPU or CPU and the number of available GPUs
-      task_type = TaskType,
-      ModelID = "ModelTest",
-      SaveModelObjects = FALSE,
-      ReturnModelObjects = TRUE,
+    # GPU or CPU and the number of available GPUs
+    task_type = TaskType,
+    ModelID = "ModelTest",
+    SaveModelObjects = FALSE,
+    ReturnModelObjects = TRUE,
 
-      # Data related args
-      data = data.table::copy(train),
-      TrainOnFull = TrainOnFull,
-      ValidationData = data.table::copy(valid),
-      TestData = data.table::copy(test),
-      Buckets = 0L,
-      TargetColumnName = TargetVariable,
-      FeatureColNames = ModelFeatures,
-      PrimaryDateColumn = eval(DateColumnName),
-      IDcols = IDcols,
+    # Data related args
+    data = data.table::copy(train),
+    TrainOnFull = TrainOnFull,
+    ValidationData = data.table::copy(valid),
+    TestData = data.table::copy(test),
+    Buckets = 0L,
+    TargetColumnName = TargetVariable,
+    FeatureColNames = ModelFeatures,
+    PrimaryDateColumn = eval(DateColumnName),
+    IDcols = IDcols,
 
-      # Metadata args
-      Paths = normalizePath("./"),
-      MetaDataPaths = NULL,
-      TransformNumericColumns = NULL,
-      Methods = NULL,
-      ClassWeights = c(1,1),
-      SplitRatios = c(0.70, 0.20, 0.10),
-      NumOfParDepPlots = NumOfParDepPlots,
+    # Metadata args
+    Paths = normalizePath("./"),
+    MetaDataPaths = NULL,
+    TransformNumericColumns = NULL,
+    Methods = NULL,
+    ClassWeights = c(1,1),
+    SplitRatios = c(0.70, 0.20, 0.10),
+    NumOfParDepPlots = NumOfParDepPlots,
 
-      # Grid tuning setup
-      PassInGrid = PassInGrid,
-      GridTune = GridTune,
-      BaselineComparison = "default",
-      MaxModelsInGrid = 500L,
-      MaxRunsWithoutNewWinner = 100L,
-      MaxRunMinutes = 60*60,
-      Shuffles = 2L,
-      MetricPeriods = 10L,
+    # Grid tuning setup
+    PassInGrid = PassInGrid,
+    GridTune = GridTune,
+    BaselineComparison = "default",
+    MaxModelsInGrid = 500L,
+    MaxRunsWithoutNewWinner = 100L,
+    MaxRunMinutes = 60*60,
+    Shuffles = 2L,
+    MetricPeriods = 10L,
 
-      # Bandit grid args
-      Trees = NTrees,
-      Depth = Depth,
-      RandomStrength = RandomStrength,
-      BorderCount = BorderCount,
-      LearningRate = LearningRate,
-      L2_Leaf_Reg = L2_Leaf_Reg,
-      RSM = list("classifier" = c(0.80, 0.85, 0.90, 0.95, 1.0), "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
-      BootStrapType = BootStrapType,
-      GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"), "regression" = c("SymmetricTree", "Depthwise", "Lossguide")))
-
-  } else if(tolower(AlgoType) == "xgboost") {
-    1
-  }
+    # Bandit grid args
+    Trees = NTrees,
+    Depth = Depth,
+    RandomStrength = RandomStrength,
+    BorderCount = BorderCount,
+    LearningRate = LearningRate,
+    L2_Leaf_Reg = L2_Leaf_Reg,
+    RSM = list("classifier" = c(0.80, 0.85, 0.90, 0.95, 1.0), "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
+    BootStrapType = BootStrapType,
+    GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"), "regression" = c("SymmetricTree", "Depthwise", "Lossguide")))
 
   # Grab threshold if turned on ----
   if(!is.null(Threshold)) {

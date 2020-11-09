@@ -295,8 +295,8 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
 \seealso{
 Other Automated Panel Data Forecasting: 
 \code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostHurdleCARMA}()},
 \code{\link{AutoH2OCARMA}()},
-\code{\link{AutoHurdleCARMA}()},
 \code{\link{AutoXGBoostCARMA}()}
 }
 \author{

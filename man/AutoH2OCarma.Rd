@@ -241,8 +241,8 @@ Results$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 \seealso{
 Other Automated Panel Data Forecasting: 
 \code{\link{AutoCatBoostCARMA}()},
+\code{\link{AutoCatBoostHurdleCARMA}()},
 \code{\link{AutoCatBoostVectorCARMA}()},
-\code{\link{AutoHurdleCARMA}()},
 \code{\link{AutoXGBoostCARMA}()}
 }
 \author{
