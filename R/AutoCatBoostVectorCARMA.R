@@ -455,6 +455,7 @@ AutoCatBoostVectorCARMA <- function(data,
   if(DebugMode) print("Feature Engineering: Add Fourier Features by GroupVar----")
   if(FourierTerms > 0L) {
 
+    # Loop through targets ----
     for(zz in seq_len(length(TargetColumnName))) {
 
       # Split GroupVar and Define HierarchyGroups and IndependentGroups

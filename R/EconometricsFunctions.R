@@ -5390,12 +5390,20 @@ AutoFourierFeatures <- function(data,
   if(!is.null(GroupVariable)) {
 
     # Grouping Variable Case----
+    if("GroupVar" %chin% names(data)) {
+      loop <- unique(data[["GroupVar"]])
+    } else {
+      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      loop <- unique(data[["GroupVar"]])
+    }
+
+    # Run in parallel ----
     packages <- c("RemixAutoML","data.table","forecast","lubridate","stats")
     cores <- parallel::detectCores()
     cl <- parallel::makePSOCKcluster(cores)
     doParallel::registerDoParallel(cl)
     Results <- tryCatch({foreach::foreach(
-      i = unique(data[, GroupVar]),
+      i = loop,
       .combine = function(x,...) mapply(function(...) data.table::rbindlist(list(...), fill = TRUE), x, ..., SIMPLIFY = FALSE),
       .multicombine = TRUE,
       .packages = packages) %dopar% {
@@ -5483,15 +5491,20 @@ AutoFourierFeatures <- function(data,
           data.table::setnames(FutureFourier, old = names(FutureFourier)[cols+2], paste0("Fourier_",cols))
         }
 
+        # Remove GroupVar
+        if(GroupVariable != "GroupVar") if("GroupVar" %chin% names(data)) data[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+
         # Step10: Merge Training Fouier Terms----
         list(HistoricalData = tempdatamerge,
              HistoricalFourier = HistoricalFourier,
              FutureFourier = FutureFourier)
       }}, error = function(x) {
+        if(GroupVariable != "GroupVar") if("GroupVar" %chin% names(data)) data[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
         parallel::stopCluster(cl)
       })
 
     # shut down parallel objects----
+    if(GroupVariable != "GroupVar") if("GroupVar" %chin% names(data)) data[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
     tryCatch({parallel::stopCluster(cl)}, error = function(x) "Parallel is already shut down")
 
     # Return Features
@@ -5543,6 +5556,7 @@ AutoFourierFeatures <- function(data,
                   FutureFourier = FutureFourier,
                   HistoricalFourier = HistoricalFourier))
     } else {
+      if(GroupVariable != "GroupVar") if("GroupVar" %chin% names(data)) data[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
       return(NULL)
     }
   }
@@ -5579,15 +5593,6 @@ AutoHierarchicalFourier <- function(datax = data,
   # xRegs non group names
   NonGroupDateNames <- xRegs[!xRegs %chin% "GroupVar"]
 
-  # data = datax
-  # FourierPairs = FourierTerms
-  # FCPeriods = FC_PeriodS
-  # Time_Unit = TimeUniT
-  # TargetColumn = TargetColumN
-  # DateColumn = DateColumN
-  # GroupVariable = IndependentGroups
-  # xregs = NonGroupDateNames
-
   # Create fourier vars----
   FourierFC <- tryCatch({AutoFourierFeatures(
     data = datax,
@@ -5602,8 +5607,13 @@ AutoHierarchicalFourier <- function(datax = data,
   # Prepare data to return----
   if(!is.null(FourierFC)) {
     if(!is.null(IndependentGroups) || !is.null(HierarchGroups)) {
-      datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
-      FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+      if(!is.null(HierarchGroups)) {
+        datax <- merge(datax, FourierFC$HistoricalFourier, by = c(HierarchGroups, DateColumN), all = FALSE)
+        FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+      } else {
+        datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
+        FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+      }
     } else {
       datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
       FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
