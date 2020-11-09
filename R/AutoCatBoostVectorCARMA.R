@@ -1212,12 +1212,12 @@ AutoCatBoostVectorCARMA <- function(data,
         # Convert dummies back to categoricals
         zz <- names(Preds)[which(names(Preds) %like% "Predictions.V")]
         xx <- Preds[, .SD, .SDcols = c(names(Preds)[which(!names(Preds) %chin% c(zz,ModelFeatures,TargetColumnName))])]
-        for(cat in CatFeatures) {
-          aaa <- data.table::copy(xx[, .SD, .SDcols = c(names(xx)[which(names(xx) %like% cat)])])
-          aa <- data.table::melt.data.table(data = aaa, id.vars = NULL, measure.vars = c(names(xx)[which(names(xx) %like% cat)]))[value != 0][, value := NULL]
+        for(cat in rev(CatFeatures)) {
+          aaa <- data.table::copy(xx[, .SD, .SDcols = c(paste0(eval(cat), "_", as.character(unique(data[[eval(cat)]]))))])
+          aa <- data.table::melt.data.table(data = aaa, id.vars = NULL, measure.vars = c(paste0(eval(cat), "_", as.character(unique(data[[eval(cat)]])))))[value != 0][, value := NULL]
           aa[, variable := gsub(pattern = paste0(cat,"_"), replacement = "", x = variable)]
           data.table::setnames(aa, "variable", cat)
-          data.table::set(Preds, j = c(names(xx)[which(names(xx) %like% cat)]), value = NULL)
+          data.table::set(Preds, j = c(paste0(eval(cat), "_", as.character(unique(data[[eval(cat)]])))), value = NULL)
           Preds <- cbind(Preds, aa)
         }
 
