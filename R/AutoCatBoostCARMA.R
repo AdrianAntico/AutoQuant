@@ -1202,7 +1202,7 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Variable for interation counts: max number of rows in Step1SCore data.table across all group----")
   if(!is.null(GroupVariables)) {
     if(Difference) {
-      if(!"GroupVar" %chin% names(Step1SCore)) N <- as.integer(Step1SCore[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L else N <- as.integer(Step1SCore[, .N, by = "GroupVar"][, max(N)]) - 1L
+      if(!"GroupVar" %chin% names(Step1SCore)) N <- as.integer(Step1SCore[, .N, by = c(eval(GroupVariables))][, max(N)]) else N <- as.integer(Step1SCore[, .N, by = "GroupVar"][, max(N)])
     } else {
       N <- as.integer(Step1SCore[, .N, by = "GroupVar"][, max(N)])
     }
