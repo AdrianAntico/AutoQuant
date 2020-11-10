@@ -630,6 +630,8 @@ AutoCatBoostCARMA <- function(data,
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
         }
       }
+    } else if(!is.null(HierarchGroups)) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
     }
   }
 
