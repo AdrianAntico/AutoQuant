@@ -2370,7 +2370,7 @@ data <- data[as.Date(Date) < as.Date('2012-09-28')]
 data[runif(.N) < 0.25, Weekly_Sales := 0]
 
 # Build Forecast ----
-Output <- RemixAutoML::AutoHurdleCARMA(
+Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
 
   # data args
   AlgoType = "catboost",
@@ -2683,7 +2683,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 </p>
 </details>
 
-##### **AutoHurdleCARMA()**, **AutoCatBoostCARMA()**, **AutoXGBoostCARMA()**, **AutoH2OCARMA()**
+##### **AutoCatBoostVectorCARMA()**, **AutoCatBoostHurdleCARMA()**, **AutoCatBoostCARMA()**, **AutoXGBoostCARMA()**, **AutoH2OCARMA()**
 <code>AutoCatBoostVectorCARMA</code> For Panel Data with multiple series to forecast. An example would be, predicting revenue and transactions across a large number of stores over time.
 
 <code>AutoHurdleCARMA()</code> utilizes the AutoCatBoostHurdleModel() function internally in order to model zeros that naturally show up in intermittent demand data sets.
