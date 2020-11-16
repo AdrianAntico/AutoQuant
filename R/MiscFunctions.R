@@ -44,10 +44,10 @@ PrintToPDF <- function(Path,
                  compress = TRUE)
   for(batch in length(ObjectList)) {
     if(length(batch) == 1) {
-      ObjectList[[batch]]
+      print(ObjectList[[batch]])
     } else {
       for(N in seq_len(length(batch))) {
-        ObjectList[[batch]][[N]]
+        print(ObjectList[[batch]][[N]])
       }
     }
   }
