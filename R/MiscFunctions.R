@@ -42,15 +42,7 @@ PrintToPDF <- function(Path,
                  bg = BackgroundColor,
                  fg = ForegroundColor,
                  compress = TRUE)
-  for(batch in length(ObjectList)) {
-    if(length(batch) == 1) {
-      print(ObjectList[[batch]])
-    } else {
-      for(N in seq_len(length(batch))) {
-        print(ObjectList[[batch]][[N]])
-      }
-    }
-  }
+  print(ObjectList)
   while(dev.cur() > 1) grDevices::dev.off()
 }
 
