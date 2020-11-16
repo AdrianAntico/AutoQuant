@@ -1120,8 +1120,8 @@ AutoCatBoostCARMA <- function(data,
       #            Results of all model builds including parameter settings, bandit probs, and grid IDs
       #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
       ModelID = "ModelTest",
-      model_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
-      metadata_path = getwd(),
+      model_path = getwd(),
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
       SaveModelObjects = FALSE,
       ReturnModelObjects = TRUE,
       SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
