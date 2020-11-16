@@ -1,3 +1,59 @@
+#' PrintToPDF
+#'
+#' @author Adrian Antico
+#' @family Misc
+#' @param Path Path file to the location where you want your pdf saved
+#' @param OutputName Supply a name for the file you want saved
+#' @param ObjectList List of objects to print to pdf
+#' @param Title The title of the pdf
+#' @param Width Default is 7
+#' @param Height Default is 7
+#' @param Paper 'USr' for landscape. 'special' means that Width and Height are used to determine page size
+#' @param BackgroundColor Default is 'transparent'
+#' @param ForegroundColor Default is 'black'
+#' @export
+PrintToPDF <- function(Path,
+                       OutputName,
+                       ObjectList = NULL,
+                       Title = "Model Output",
+                       Width = 7,
+                       Height = 7,
+                       Paper = "USr",
+                       BackgroundColor = "transparent",
+                       ForegroundColor = "black") {
+
+  # Ensure procedure can run ----
+  if(!"grDevices" %chin% installed.packages() ||
+     is.null(ObjectList) ||
+     is.null(Path) ||
+     !is.list(ObjectList)) {
+    print("Nothing to print")
+    stop()
+  }
+
+  # Run procedure ----
+  grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,".pdf")),
+                 onefile = TRUE,
+                 title = Title,
+                 width = Width,
+                 height = Height,
+                 fonts = NULL,
+                 paper = Paper,
+                 bg = BackgroundColor,
+                 fg = ForegroundColor,
+                 compress = TRUE)
+  for(batch in length(ObjectList)) {
+    if(length(batch) == 1) {
+      ObjectList[[batch]]
+    } else {
+      for(N in seq_len(length(batch))) {
+        ObjectList[[batch]][[N]]
+      }
+    }
+  }
+  while(dev.cur() > 1) grDevices::dev.off()
+}
+
 #' tempDatesFun Convert Excel datetime char columns to Date columns
 #'
 #' tempDatesFun takes the Excel datetime column, which imports as character, and converts it into a date type

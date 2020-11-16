@@ -25,6 +25,7 @@ AutoCatBoostRegression(
   loss_function_value = 1.5,
   model_path = NULL,
   metadata_path = NULL,
+  SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
   NumOfParDepPlots = 0L,
   EvalPlots = TRUE,
@@ -91,6 +92,8 @@ AutoCatBoostRegression(
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
+
+\item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
 
 \item{ModelID}{A character string to name your model and output}
 
@@ -191,6 +194,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     model_path = normalizePath("./"),
     metadata_path = NULL,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
     ReturnModelObjects = TRUE,
 
     # Data arguments:

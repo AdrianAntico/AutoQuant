@@ -61,6 +61,7 @@ p <- p + ChartTheme(Size = 12)
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
 \code{\link{PrintObjectsSize}()},
+\code{\link{PrintToPDF}()},
 \code{\link{RPM_Binomial_Bandit}()},
 \code{\link{SimpleCap}()},
 \code{\link{tempDatesFun}()},

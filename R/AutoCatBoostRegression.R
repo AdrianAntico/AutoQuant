@@ -23,6 +23,7 @@
 #' @param loss_function_value Used with the specified loss function if an associated value is required. 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile' 'Lq', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
+#' @param SaveInfoToPDF Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
 #' @param EvalPlots Defaults to TRUE. Set to FALSE to not generate and return these objects.
@@ -92,6 +93,7 @@
 #'     model_path = normalizePath("./"),
 #'     metadata_path = NULL,
 #'     SaveModelObjects = FALSE,
+#'     SaveInfoToPDF = FALSE,
 #'     ReturnModelObjects = TRUE,
 #'
 #'     # Data arguments:
@@ -216,6 +218,7 @@ AutoCatBoostRegression <- function(data,
                                    loss_function_value = 1.5,
                                    model_path = NULL,
                                    metadata_path = NULL,
+                                   SaveInfoToPDF = FALSE,
                                    ModelID = "FirstModel",
                                    NumOfParDepPlots = 0L,
                                    EvalPlots = TRUE,
@@ -1947,6 +1950,34 @@ AutoCatBoostRegression <- function(data,
     if(dir.exists(file.path(getwd(),"tmp"))) unlink(x = file.path(getwd(),"tmp"), recursive = TRUE)
   } else {
     if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
+  }
+
+
+
+  # Save PDF of model information ----
+  if(!TrainOnFull & SaveInfoToPDF) {
+    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL)
+    ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL, if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL)
+    TableMetrics <- list(EvaluationMetrics, if(!is.null(VariableImportance)) VariableImportance else NULL, if(!is.null(VariableImportance)) Interaction else NULL)
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "EvaluationPlots",
+      ObjectList = EvalPlotList,
+      Title = "Model Evaluation Plots",
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "PartialDependencePlots",
+      ObjectList = ParDepList,
+      Title = "Partial Dependence Calibration Plots",
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "Metrics_and_Importances",
+      ObjectList = TableMetrics,
+      Title = "Model Metrics and Variable Importances",
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    while(dev.cur() > 1) grDevices::dev.off()
   }
 
   # Regression Return Model Objects----

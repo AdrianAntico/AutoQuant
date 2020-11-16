@@ -34,6 +34,7 @@ Other Misc:
 \code{\link{AutoH2OTextPrepScoring}()},
 \code{\link{ChartTheme}()},
 \code{\link{PrintObjectsSize}()},
+\code{\link{PrintToPDF}()},
 \code{\link{SimpleCap}()},
 \code{\link{tempDatesFun}()},
 \code{\link{tokenizeH2O}()}
