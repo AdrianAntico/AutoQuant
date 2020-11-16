@@ -17,6 +17,7 @@ AutoCatBoostCARMA(
   FC_Periods = 30,
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
+  PDFOutputPath = NULL,
   NumOfParDepPlots = 10L,
   TargetTransformation = FALSE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
@@ -89,6 +90,8 @@ AutoCatBoostCARMA(
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".}
 
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
+
+\item{PDFOutputPath}{NULL or a path file to output PDFs to a specified folder}
 
 \item{NumOfParDepPlots}{Supply a number for the number of partial dependence plots you want returned}
 
@@ -218,6 +221,7 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
   GroupVariables = c("Dept"),
   TimeUnit = "weeks",
   TimeGroups = c("weeks","months"),
+  PDFOutputPath = NULL,
 
   # Production args
   TrainOnFull = FALSE,
@@ -328,6 +332,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   GroupVariables = c("Store","Dept"),
   TimeUnit = "weeks",
   TimeGroups = c("weeks","months"),
+  PDFOutputPath = NULL,
 
   # Production args
   TrainOnFull = TRUE,

@@ -16,6 +16,7 @@
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
+#' @param PDFOutputPath NULL or a path file to output PDFs to a specified folder
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
@@ -94,6 +95,7 @@
 #'   GroupVariables = c("Dept"),
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
+#'   PDFOutputPath = NULL,
 #'
 #'   # Production args
 #'   TrainOnFull = FALSE,
@@ -204,6 +206,7 @@
 #'   GroupVariables = c("Store","Dept"),
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
+#'   PDFOutputPath = NULL,
 #'
 #'   # Production args
 #'   TrainOnFull = TRUE,
@@ -296,6 +299,7 @@ AutoCatBoostCARMA <- function(data,
                               FC_Periods = 30,
                               TimeUnit = "week",
                               TimeGroups = c("weeks","months"),
+                              PDFOutputPath = NULL,
                               NumOfParDepPlots = 10L,
                               TargetTransformation = FALSE,
                               Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
@@ -1116,10 +1120,11 @@ AutoCatBoostCARMA <- function(data,
       #            Results of all model builds including parameter settings, bandit probs, and grid IDs
       #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
       ModelID = "ModelTest",
-      model_path = getwd(),
+      model_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
       metadata_path = getwd(),
       SaveModelObjects = FALSE,
       ReturnModelObjects = TRUE,
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
 
       # Data arguments:
       #   'TrainOnFull' is to train a model with 100 percent of your data.
