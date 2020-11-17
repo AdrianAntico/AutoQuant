@@ -754,7 +754,7 @@ AutoXGBoostRegression <- function(data,
   if(!is.null(PassInGrid)) {
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:linear',
+      objective             = 'reg:squarederror',
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,
