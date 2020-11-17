@@ -65,9 +65,9 @@ PrintToPDF <- function(Path,
           temp <- ObjectList[[i]][counter:(counter + 14L)]
           temp <- temp[!is.na(temp[[eval(names(temp)[1])]])]
           print(gridExtra::grid.table(temp, rows = NULL))
-          grid::grid.newpage()
           counter <- counter + 15L
           if(temp[,.N] < 15) break
+          grid::grid.newpage()
         }
       } else {
         print(gridExtra::grid.table(ObjectList[[i]], rows = NULL))
