@@ -5,6 +5,7 @@
 #' @param Path Path file to the location where you want your pdf saved
 #' @param OutputName Supply a name for the file you want saved
 #' @param ObjectList List of objects to print to pdf
+#' @param Knitr TRUE for data tables, FALSE for plots
 #' @param Title The title of the pdf
 #' @param Width Default is 7
 #' @param Height Default is 7
@@ -15,6 +16,7 @@
 PrintToPDF <- function(Path,
                        OutputName,
                        ObjectList = NULL,
+                       Knitr = FALSE,
                        Title = "Model Output",
                        Width = 7,
                        Height = 7,
@@ -42,7 +44,11 @@ PrintToPDF <- function(Path,
                  bg = BackgroundColor,
                  fg = ForegroundColor,
                  compress = TRUE)
-  print(ObjectList)
+  if(!Knitr) {
+    for(i in seq_len(length(ObjectList))) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
+  } else {
+    for(i in seq_len(length(ObjectList))) multiplot(plotlist = list(knitr::kable(ObjectList[[i]])), cols = 1)
+  }
   while(dev.cur() > 1) grDevices::dev.off()
 }
 

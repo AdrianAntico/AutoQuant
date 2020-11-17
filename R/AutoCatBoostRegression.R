@@ -1271,7 +1271,7 @@ AutoCatBoostRegression <- function(data,
         aggrfun = function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
-      if(all(c("plotly","dplyr") %chin% installed.packages())) {
+      if(all(c("plotly","dplyr") %chin% installed.packages()) & !SaveInfoToPDF) {
         if(!TrainOnFull) EvaluationPlot <- plotly::ggplotly(EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L))))
       } else {
         if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
@@ -1511,11 +1511,7 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
-            if(all(c("plotly","dplyr") %chin% installed.packages())) {
-              ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
-            } else {
-              ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
-            }
+            ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
           }, error = function(x) "skip")
           tryCatch({
             Out1 <- ParDepCalPlots(
@@ -1528,11 +1524,7 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             k <- k + 1L
-            if(all(c("plotly","dplyr") %chin% installed.packages())) {
-              ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- plotly::ggplotly(Out1)
-            } else {
-              ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
-            }
+            ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
           }, error = function(x) "skip")
         }
 
@@ -1956,7 +1948,7 @@ AutoCatBoostRegression <- function(data,
 
   # Save PDF of model information ----
   if(!TrainOnFull & SaveInfoToPDF) {
-    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL)
+    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
     ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL, if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL)
     TableMetrics <- list(EvaluationMetrics, if(!is.null(VariableImportance)) VariableImportance else NULL, if(!is.null(VariableImportance)) Interaction else NULL)
     try(PrintToPDF(
@@ -1975,6 +1967,7 @@ AutoCatBoostRegression <- function(data,
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "Metrics_and_Importances",
       ObjectList = TableMetrics,
+      Knitr = TRUE,
       Title = "Model Metrics and Variable Importances",
       Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
     while(dev.cur() > 1) grDevices::dev.off()
@@ -1983,6 +1976,15 @@ AutoCatBoostRegression <- function(data,
   # Regression Return Model Objects----
   if(!TrainOnFull) {
     if(ReturnModelObjects) {
+
+      # Modify Plots ----
+      if(all(c("plotly","dplyr") %chin% installed.packages())) {
+        EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
+        for(i in seq_len(length(ParDepPlots))) ParDepPlots[[i]] <- plotly::ggplotly(ParDepPlots[[i]])
+        for(i in seq_len(length(ParDepPlots))) ParDepBoxPlots[[i]] <- plotly::ggplotly(ParDepBoxPlots[[i]])
+      }
+
+      # Return ----
       return(list(
         Model = model,
         ValidationData = ValidationData,
