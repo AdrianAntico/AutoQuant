@@ -23,6 +23,7 @@ AutoXGBoostRegression(
   Verbose = 0L,
   NumOfParDepPlots = 3L,
   NThreads = parallel::detectCores(),
+  LossFunction = "reg:squarederror",
   eval_metric = "rmse",
   TreeMethod = "hist",
   GridTune = FALSE,
@@ -77,6 +78,8 @@ AutoXGBoostRegression(
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create.}
 
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
+
+\item{LossFunction}{Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"}
 
@@ -134,6 +137,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     # GPU or CPU
     TreeMethod = "hist",
     NThreads = NThreads = parallel::detectCores(),
+    LossFunction = 'reg:squarederror',
 
     # Metadata arguments:
     #   'ModelID' is used to create part of the file

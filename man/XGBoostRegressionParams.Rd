@@ -8,6 +8,7 @@ XGBoostRegressionParams(
   counter = NULL,
   NThreads = -1L,
   BanditArmsN = NULL,
+  objective = NULL,
   eval_metric = NULL,
   task_type = NULL,
   model_path = NULL,
@@ -23,6 +24,8 @@ XGBoostRegressionParams(
 \item{NThreads}{= -1L,}
 
 \item{BanditArmsN}{Passthrough}
+
+\item{objective}{Passthrough}
 
 \item{eval_metric}{Passthrough}
 

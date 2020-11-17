@@ -13,6 +13,7 @@
 #' @param ReturnFactorLevels Set to TRUE to have the factor levels returned with the other model objects
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
+#' @param LossFunction Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param grid_eval_metric Choose from "poisson","mae","mape","mse","msle","kl","cs","r2"
@@ -55,6 +56,7 @@
 #'     # GPU or CPU
 #'     TreeMethod = "hist",
 #'     NThreads = NThreads = parallel::detectCores(),
+#'     LossFunction = 'reg:squarederror',
 #'
 #'     # Metadata arguments:
 #'     #   'ModelID' is used to create part of the file
@@ -153,6 +155,7 @@ AutoXGBoostRegression <- function(data,
                                   Verbose = 0L,
                                   NumOfParDepPlots = 3L,
                                   NThreads = parallel::detectCores(),
+                                  LossFunction = 'reg:squarederror',
                                   eval_metric = "rmse",
                                   TreeMethod = "hist",
                                   GridTune = FALSE,
@@ -189,6 +192,7 @@ AutoXGBoostRegression <- function(data,
   if(NumOfParDepPlots < 0) return("NumOfParDepPlots needs to be a positive number")
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
+  if(is.null(LossFunction)) LossFunction <- 'reg:squarederror'
 
   # Regression Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -627,9 +631,9 @@ AutoXGBoostRegression <- function(data,
 
         # Define parameters----
         if(!exists("NewGrid")) {
-          base_params <- XGBoostRegressionParams(counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- XGBoostRegressionParams(objective=LossFunction,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- XGBoostRegressionParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- XGBoostRegressionParams(objective=LossFunction,NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
 
         # Run model----
@@ -754,7 +758,7 @@ AutoXGBoostRegression <- function(data,
   if(!is.null(PassInGrid)) {
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:squarederror',
+      objective             = LossFunction,
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,
@@ -779,7 +783,7 @@ AutoXGBoostRegression <- function(data,
     if(BestGrid$RunNumber == 1L) {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:squarederror',
+        objective             = LossFunction,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -793,7 +797,7 @@ AutoXGBoostRegression <- function(data,
     } else {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:squarederror',
+        objective             = LossFunction,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -813,7 +817,7 @@ AutoXGBoostRegression <- function(data,
   if(is.null(PassInGrid) & !GridTune) {
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:squarederror',
+      objective             = LossFunction,
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,

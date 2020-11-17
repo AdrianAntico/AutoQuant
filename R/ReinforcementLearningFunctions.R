@@ -993,6 +993,7 @@ XGBoostClassifierParams <- function(counter = NULL,
 #' @param counter Passthrough
 #' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
+#' @param objective Passthrough
 #' @param eval_metric Passthrough
 #' @param task_type Passthrough
 #' @param model_path Passthrough
@@ -1004,6 +1005,7 @@ XGBoostClassifierParams <- function(counter = NULL,
 XGBoostRegressionParams <- function(counter = NULL,
                                     NThreads = -1L,
                                     BanditArmsN = NULL,
+                                    objective = NULL,
                                     eval_metric = NULL,
                                     task_type = NULL,
                                     model_path = NULL,
@@ -1020,7 +1022,7 @@ XGBoostRegressionParams <- function(counter = NULL,
     if(counter == 1L) {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:squarederror',
+        objective             = objective,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -1031,7 +1033,7 @@ XGBoostRegressionParams <- function(counter = NULL,
       if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:squarederror',
+        objective             = objective,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -1046,7 +1048,7 @@ XGBoostRegressionParams <- function(counter = NULL,
     data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:squarederror',
+      objective             = objective,
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,
