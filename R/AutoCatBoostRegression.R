@@ -1981,7 +1981,7 @@ AutoCatBoostRegression <- function(data,
       if(all(c("plotly","dplyr") %chin% installed.packages())) {
         EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
         for(i in seq_len(length(ParDepPlots))) ParDepPlots[[i]] <- plotly::ggplotly(ParDepPlots[[i]])
-        for(i in seq_len(length(ParDepPlots))) ParDepBoxPlots[[i]] <- plotly::ggplotly(ParDepBoxPlots[[i]])
+        for(i in seq_len(length(ParDepBoxPlots))) ParDepBoxPlots[[i]] <- plotly::ggplotly(ParDepBoxPlots[[i]])
       }
 
       # Return ----

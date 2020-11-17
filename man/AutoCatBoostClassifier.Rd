@@ -20,6 +20,7 @@ AutoCatBoostClassifier(
   loss_function = NULL,
   model_path = NULL,
   metadata_path = NULL,
+  SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
   NumOfParDepPlots = 0L,
   ReturnModelObjects = TRUE,
@@ -75,6 +76,8 @@ AutoCatBoostClassifier(
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
+
+\item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
 
 \item{ModelID}{A character string to name your model and output}
 
@@ -174,6 +177,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     metadata_path = file.path(normalizePath("./")),
     SaveModelObjects = FALSE,
     ReturnModelObjects = TRUE,
+    SaveInfoToPDF = FALSE,
 
     # Data arguments:
     #   'TrainOnFull' is to train a model with 100 percent of

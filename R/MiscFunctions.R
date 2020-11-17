@@ -47,7 +47,7 @@ PrintToPDF <- function(Path,
   if(!Knitr) {
     for(i in seq_len(length(ObjectList))) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
   } else {
-    for(i in seq_len(length(ObjectList))) multiplot(plotlist = list(gridExtra::grid.table(ObjectList[[i]], show.rownames = FALSE)), cols = 1)
+    for(i in seq_len(length(ObjectList))) multiplot(plotlist = list(gridExtra::grid.table(ObjectList[[i]], rows = NULL)), cols = 1)
   }
   while(dev.cur() > 1) grDevices::dev.off()
 }

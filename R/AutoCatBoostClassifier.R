@@ -18,6 +18,7 @@
 #' @param loss_function Default is NULL. Select the loss function of choice. c("MultiRMSE", 'Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
+#' @param SaveInfoToPDF Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics
@@ -87,6 +88,7 @@
 #'     metadata_path = file.path(normalizePath("./")),
 #'     SaveModelObjects = FALSE,
 #'     ReturnModelObjects = TRUE,
+#'     SaveInfoToPDF = FALSE,
 #'
 #'     # Data arguments:
 #'     #   'TrainOnFull' is to train a model with 100 percent of
@@ -196,6 +198,7 @@ AutoCatBoostClassifier <- function(data,
                                    loss_function = NULL,
                                    model_path = NULL,
                                    metadata_path = NULL,
+                                   SaveInfoToPDF = FALSE,
                                    ModelID = "FirstModel",
                                    NumOfParDepPlots = 0L,
                                    ReturnModelObjects = TRUE,
@@ -873,7 +876,6 @@ AutoCatBoostClassifier <- function(data,
 
   # Add Number of Trees to Title----
   if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: AUC = ",round(AUC_Metrics$auc, 3L)))
-  if(!TrainOnFull) if(all(c("plotly","dplyr") %chin% installed.packages())) EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
 
   # Save plot to file----
   if(!TrainOnFull) {
@@ -1034,11 +1036,7 @@ AutoCatBoostClassifier <- function(data,
           FactLevels = 10L,
           Function = function(x) mean(x, na.rm = TRUE))
         j <- j + 1L
-        if(all(c("plotly","dplyr") %chin% installed.packages())) {
-          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
-        } else {
-          ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
-        }
+        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
       }, error = function(x) "skip")
     }
   } else {
@@ -1101,9 +1099,44 @@ AutoCatBoostClassifier <- function(data,
     if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
   }
 
+  # Save PDF of model information ----
+  if(!TrainOnFull & SaveInfoToPDF) {
+    EvalPlotList <- list(EvaluationPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
+    ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL)
+    TableMetrics <- list(EvaluationMetrics, if(!is.null(VariableImportance)) VariableImportance else NULL, if(!is.null(VariableImportance)) Interaction else NULL)
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "EvaluationPlots",
+      ObjectList = EvalPlotList,
+      Title = "Model Evaluation Plots",
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "PartialDependencePlots",
+      ObjectList = ParDepList,
+      Title = "Partial Dependence Calibration Plots",
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "Metrics_and_Importances",
+      ObjectList = TableMetrics,
+      Knitr = TRUE,
+      Title = "Model Metrics and Variable Importances",
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    while(dev.cur() > 1) grDevices::dev.off()
+  }
+
   # Binary Return Model Objects----
   if(TrainOnFull) {
     if(ReturnModelObjects) {
+
+      # Modify Plots ----
+      if(all(c("plotly","dplyr") %chin% installed.packages())) {
+        EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
+        for(i in seq_len(length(ParDepPlots))) ParDepPlots[[i]] <- plotly::ggplotly(ParDepPlots[[i]])
+      }
+
+      # Return ----
       return(list(
         Model = model,
         VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
