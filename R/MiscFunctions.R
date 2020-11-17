@@ -5,7 +5,7 @@
 #' @param Path Path file to the location where you want your pdf saved
 #' @param OutputName Supply a name for the file you want saved
 #' @param ObjectList List of objects to print to pdf
-#' @param Knitr TRUE for data tables, FALSE for plots
+#' @param Tables TRUE for data tables, FALSE for plots
 #' @param Title The title of the pdf
 #' @param Width Default is 7
 #' @param Height Default is 7
@@ -16,7 +16,7 @@
 PrintToPDF <- function(Path,
                        OutputName,
                        ObjectList = NULL,
-                       Knitr = FALSE,
+                       Tables = FALSE,
                        Title = "Model Output",
                        Width = 7,
                        Height = 7,
@@ -33,23 +33,48 @@ PrintToPDF <- function(Path,
     stop()
   }
 
-  # Run procedure ----
-  grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,".pdf")),
-                 onefile = TRUE,
-                 title = Title,
-                 width = Width,
-                 height = Height,
-                 fonts = NULL,
-                 paper = Paper,
-                 bg = BackgroundColor,
-                 fg = ForegroundColor,
-                 compress = TRUE)
-  if(!Knitr) {
+  # Print away ----
+  if(!Tables) {
+    grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,".pdf")),
+                   onefile = TRUE,
+                   title = Title,
+                   width = Width,
+                   height = Height,
+                   fonts = NULL,
+                   paper = Paper,
+                   bg = BackgroundColor,
+                   fg = ForegroundColor,
+                   compress = TRUE)
     for(i in seq_len(length(ObjectList))) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
+    while(dev.cur() > 1) grDevices::dev.off()
   } else {
-    for(i in seq_len(length(ObjectList))) multiplot(plotlist = list(gridExtra::grid.table(ObjectList[[i]], rows = NULL)), cols = 1)
+    for(i in seq_len(length(ObjectList))) {
+      grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,"_",i,".pdf")),
+                     onefile = TRUE,
+                     title = Title,
+                     width = Width,
+                     height = Height,
+                     fonts = NULL,
+                     paper = Paper,
+                     bg = BackgroundColor,
+                     fg = ForegroundColor,
+                     compress = TRUE)
+      if(nrow(ObjectList[[i]]) > 15) {
+        counter <- 1L
+        repeat{
+          temp <- ObjectList[[i]][counter:(counter + 14L)]
+          temp <- temp[!is.na(temp[[eval(names(temp)[1])]])]
+          print(gridExtra::grid.table(ObjectList[[i]], rows = NULL))
+          grid::grid.newpage()
+          counter <- counter + 15L
+          if(temp[,.N] < 15) break
+        }
+      } else {
+        print(gridExtra::grid.table(ObjectList[[i]], rows = NULL))
+      }
+      while(dev.cur() > 1) grDevices::dev.off()
+    }
   }
-  while(dev.cur() > 1) grDevices::dev.off()
 }
 
 #' tempDatesFun Convert Excel datetime char columns to Date columns

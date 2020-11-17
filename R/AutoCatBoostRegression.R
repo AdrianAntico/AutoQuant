@@ -1967,7 +1967,7 @@ AutoCatBoostRegression <- function(data,
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "Metrics_and_Importances",
       ObjectList = TableMetrics,
-      Knitr = TRUE,
+      Tables = TRUE,
       Title = "Model Metrics and Variable Importances",
       Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
     while(dev.cur() > 1) grDevices::dev.off()

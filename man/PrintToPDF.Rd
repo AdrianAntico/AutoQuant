@@ -8,7 +8,7 @@ PrintToPDF(
   Path,
   OutputName,
   ObjectList = NULL,
-  Knitr = FALSE,
+  Tables = FALSE,
   Title = "Model Output",
   Width = 7,
   Height = 7,
@@ -24,7 +24,7 @@ PrintToPDF(
 
 \item{ObjectList}{List of objects to print to pdf}
 
-\item{Knitr}{TRUE for data tables, FALSE for plots}
+\item{Tables}{TRUE for data tables, FALSE for plots}
 
 \item{Title}{The title of the pdf}
 
