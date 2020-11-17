@@ -1956,20 +1956,20 @@ AutoCatBoostRegression <- function(data,
       OutputName = "EvaluationPlots",
       ObjectList = EvalPlotList,
       Title = "Model Evaluation Plots",
-      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
     try(PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "PartialDependencePlots",
       ObjectList = ParDepList,
       Title = "Partial Dependence Calibration Plots",
-      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
     try(PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "Metrics_and_Importances",
       ObjectList = TableMetrics,
       Tables = TRUE,
       Title = "Model Metrics and Variable Importances",
-      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
     while(dev.cur() > 1) grDevices::dev.off()
   }
 
