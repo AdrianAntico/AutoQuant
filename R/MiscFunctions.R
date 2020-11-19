@@ -50,7 +50,7 @@ PrintToPDF <- function(Path,
     for(i in seq_along(ObjectList)) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
     while(dev.cur() > 1) grDevices::dev.off()
   } else {
-    for(i in seq_alont(ObjectList)) {
+    for(i in seq_along(ObjectList)) {
       grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,"_",i,".pdf")),
                      onefile = TRUE,
                      title = Title,
