@@ -9,6 +9,7 @@ PrintToPDF(
   OutputName,
   ObjectList = NULL,
   Tables = FALSE,
+  MaxPages = 500,
   Title = "Model Output",
   Width = 7,
   Height = 7,
@@ -25,6 +26,8 @@ PrintToPDF(
 \item{ObjectList}{List of objects to print to pdf}
 
 \item{Tables}{TRUE for data tables, FALSE for plots}
+
+\item{MaxPages}{Default of 500}
 
 \item{Title}{The title of the pdf}
 

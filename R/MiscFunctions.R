@@ -6,6 +6,7 @@
 #' @param OutputName Supply a name for the file you want saved
 #' @param ObjectList List of objects to print to pdf
 #' @param Tables TRUE for data tables, FALSE for plots
+#' @param MaxPages Default of 500
 #' @param Title The title of the pdf
 #' @param Width Default is 7
 #' @param Height Default is 7
@@ -17,6 +18,7 @@ PrintToPDF <- function(Path,
                        OutputName,
                        ObjectList = NULL,
                        Tables = FALSE,
+                       MaxPages = 500,
                        Title = "Model Output",
                        Width = 7,
                        Height = 7,
@@ -66,7 +68,7 @@ PrintToPDF <- function(Path,
           temp <- temp[!is.na(temp[[eval(names(temp)[1])]])]
           print(gridExtra::grid.table(temp, rows = NULL))
           counter <- counter + 15L
-          if(temp[,.N] < 15) break
+          if(temp[,.N] < 15 || counter == MaxPages) break
           grid::grid.newpage()
         }
       } else {
