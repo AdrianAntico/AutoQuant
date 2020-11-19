@@ -17,6 +17,7 @@
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param PDFOutputPath NULL or a path file to output PDFs to a specified folder
+#' @param SaveDataPath NULL Or supply a path. Data saved will be called 'ModelID'_data.csv
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
@@ -96,6 +97,7 @@
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
 #'   PDFOutputPath = NULL,
+#'   SaveDataPath = NULL,
 #'
 #'   # Production args
 #'   TrainOnFull = FALSE,
@@ -207,6 +209,7 @@
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
 #'   PDFOutputPath = NULL,
+#'   SaveDataPath = NULL,
 #'
 #'   # Production args
 #'   TrainOnFull = TRUE,
@@ -300,6 +303,7 @@ AutoCatBoostCARMA <- function(data,
                               TimeUnit = "week",
                               TimeGroups = c("weeks","months"),
                               PDFOutputPath = NULL,
+                              SaveDataPath = NULL,
                               NumOfParDepPlots = 10L,
                               TargetTransformation = FALSE,
                               Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
@@ -983,6 +987,11 @@ AutoCatBoostCARMA <- function(data,
   # Store Date Info----
   if(DebugMode) print("Store Date Info----")
   FutureDateData <- unique(data[, get(DateColumnName)])
+
+  # Return engineered data before Partitioning ----
+  if(!is.null(SaveDataPath)) {
+    data.table::fwrite(file.path(SaveDataPath, paste0(ModelID,"_data.csv")))
+  }
 
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
