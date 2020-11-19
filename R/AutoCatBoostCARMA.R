@@ -990,7 +990,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Return engineered data before Partitioning ----
   if(!is.null(SaveDataPath)) {
-    data.table::fwrite(file.path(SaveDataPath, paste0(ModelID,"_data.csv")))
+    data.table::fwrite(data, file.path(SaveDataPath, paste0(ModelID,"_data.csv")))
   }
 
   # Data Wrangling: Partition data with AutoDataPartition()----
