@@ -47,10 +47,10 @@ PrintToPDF <- function(Path,
                    bg = BackgroundColor,
                    fg = ForegroundColor,
                    compress = TRUE)
-    for(i in seq_len(length(ObjectList))) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
+    for(i in seq_along(ObjectList)) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
     while(dev.cur() > 1) grDevices::dev.off()
   } else {
-    for(i in seq_len(length(ObjectList))) {
+    for(i in seq_alont(ObjectList)) {
       grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,"_",i,".pdf")),
                      onefile = TRUE,
                      title = Title,
@@ -66,9 +66,9 @@ PrintToPDF <- function(Path,
         repeat{
           temp <- ObjectList[[i]][counter:(counter + 14L)]
           temp <- temp[!is.na(temp[[eval(names(temp)[1])]])]
-          print(gridExtra::grid.table(temp, rows = NULL))
           counter <- counter + 15L
-          if(temp[,.N] < 15 || counter == MaxPages) break
+          if(temp[,.N] < 15 || counter == MaxPages+1L) break
+          print(gridExtra::grid.table(temp, rows = NULL))
           grid::grid.newpage()
         }
       } else {

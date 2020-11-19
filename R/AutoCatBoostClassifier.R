@@ -1121,7 +1121,7 @@ AutoCatBoostClassifier <- function(data,
       OutputName = "Metrics_and_Importances",
       ObjectList = TableMetrics,
       MaxPages = 100,
-      Knitr = TRUE,
+      Tables = TRUE,
       Title = "Model Metrics and Variable Importances",
       Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
     while(dev.cur() > 1) grDevices::dev.off()
