@@ -80,7 +80,7 @@ EvalPlot <- function(data,
       ggplot2::geom_line(ggplot2::aes(y = data[[2L]], color = "Predicted")) +
       ggplot2::xlab("Predicted Percentile") +
       ggplot2::ylab("Observed Values") +
-      ggplot2::scale_color_manual(values = c("red", "blue")) +
+      ggplot2::scale_color_manual(values = c("blue", "red")) +
       ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::ggtitle("Calibration Evaluation Plot") +
