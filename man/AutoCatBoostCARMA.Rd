@@ -344,6 +344,8 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   SplitRatios = c(1 - 10 / 138, 10 / 138),
   PartitionType = "random",
   FC_Periods = 4,
+  TaskType = "GPU",
+  NumGPU = 1,
   Timer = TRUE,
   DebugMode = TRUE,
 
@@ -360,7 +362,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
 
-  # Date features
+  # Calendar features
   CalendarVariables = c("week",
                         "month",
                         "quarter"),
@@ -390,31 +392,33 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
 
-  # ML Args
+  # ML evaluation args
   NumOfParDepPlots = 100L,
   EvalMetric = "RMSE",
   EvalMetricValue = 1.5,
   LossFunction = "RMSE",
   LossFunctionValue = 1.5,
+
+  # ML grid tuning args
   GridTune = FALSE,
   PassInGrid = NULL,
   ModelCount = 5,
-  TaskType = "GPU",
-  NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60*60,
+
+  # ML tuning args
+  NTrees = 2500,
+  Depth = 6
+  L2_Leaf_Reg = 3.0,
   Langevin = FALSE,
   DiffusionTemperature = 10000,
-  NTrees = 2500,
-  L2_Leaf_Reg = 3.0,
   RandomStrength = 1,
   BorderCount = 254,
   BootStrapType = c("Bayesian",
                     "Bernoulli",
                     "Poisson",
                     "MVS",
-                    "No"),
-  Depth = 6)
+                    "No"))
 }
 }
 \seealso{
