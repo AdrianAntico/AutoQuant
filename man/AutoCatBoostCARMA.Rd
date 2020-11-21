@@ -336,8 +336,6 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   GroupVariables = c("Store","Dept"),
   TimeUnit = "weeks",
   TimeGroups = c("weeks","months"),
-  PDFOutputPath = NULL,
-  SaveDataPath = NULL,
 
   # Production args
   TrainOnFull = TRUE,
@@ -392,8 +390,12 @@ CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
 
-  # ML evaluation args
+  # ML evaluation output
+  PDFOutputPath = NULL,
+  SaveDataPath = NULL,
   NumOfParDepPlots = 100L,
+
+  # ML loss functions
   EvalMetric = "RMSE",
   EvalMetricValue = 1.5,
   LossFunction = "RMSE",
