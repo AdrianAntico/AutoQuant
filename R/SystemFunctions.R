@@ -93,7 +93,7 @@ DownloadCSVFromStorageExplorer <- function(UploadCSVObjectName = 'data.csv',
                                            DataStoreName = NULL) {
 
   # Check if azuremlsdk is installed----
-  if(!"azuremlsdk" %chin% installed.packages()) return("You need to run install.packages('azuremlsdk')")
+  if(!"azuremlsdk" %chin% installed.packages()) stop("You need to run install.packages('azuremlsdk')")
 
   # Options----
   options(warn = -1)
