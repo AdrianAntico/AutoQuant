@@ -26,32 +26,21 @@ PrintToPDF <- function(Path,
                        BackgroundColor = "transparent",
                        ForegroundColor = "black") {
 
-  # Ensure procedure can run ----
-  if(!"grDevices" %chin% installed.packages() ||
-     is.null(ObjectList) ||
-     is.null(Path) ||
-     !is.list(ObjectList)) {
-    print("Nothing to print")
-    stop()
-  }
+  # Check for installed package
+  if("grDevices" %chin% installed.packages()) {
 
-  # Print away ----
-  if(!Tables) {
-    grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,".pdf")),
-                   onefile = TRUE,
-                   title = Title,
-                   width = Width,
-                   height = Height,
-                   fonts = NULL,
-                   paper = Paper,
-                   bg = BackgroundColor,
-                   fg = ForegroundColor,
-                   compress = TRUE)
-    for(i in seq_along(ObjectList)) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
-    while(dev.cur() > 1) grDevices::dev.off()
-  } else {
-    for(i in seq_along(ObjectList)) {
-      grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,"_",i,".pdf")),
+    # Ensure procedure can run ----
+    if(!"grDevices" %chin% installed.packages() ||
+       is.null(ObjectList) ||
+       is.null(Path) ||
+       !is.list(ObjectList)) {
+      print("Nothing to print")
+      stop()
+    }
+
+    # Print away ----
+    if(!Tables) {
+      grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,".pdf")),
                      onefile = TRUE,
                      title = Title,
                      width = Width,
@@ -61,21 +50,38 @@ PrintToPDF <- function(Path,
                      bg = BackgroundColor,
                      fg = ForegroundColor,
                      compress = TRUE)
-      if(nrow(ObjectList[[i]]) > 15) {
-        counter <- 1L
-        repeat{
-          temp <- ObjectList[[i]][counter:(counter + 14L)]
-          temp <- temp[!is.na(temp[[eval(names(temp)[1])]])]
-          counter <- counter + 15L
-          if(temp[,.N] < 15 || counter == MaxPages+1L) break
-          print(gridExtra::grid.table(temp, rows = NULL))
-          grid::grid.newpage()
+      for(i in seq_along(ObjectList)) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
+      while(grDevices::dev.cur() > 1) grDevices::dev.off()
+    } else {
+      for(i in seq_along(ObjectList)) {
+        grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,"_",i,".pdf")),
+                       onefile = TRUE,
+                       title = Title,
+                       width = Width,
+                       height = Height,
+                       fonts = NULL,
+                       paper = Paper,
+                       bg = BackgroundColor,
+                       fg = ForegroundColor,
+                       compress = TRUE)
+        if(nrow(ObjectList[[i]]) > 15) {
+          counter <- 1L
+          repeat{
+            temp <- ObjectList[[i]][counter:(counter + 14L)]
+            temp <- temp[!is.na(temp[[eval(names(temp)[1])]])]
+            counter <- counter + 15L
+            if(temp[,.N] < 15 || counter == MaxPages+1L) break
+            print(gridExtra::grid.table(temp, rows = NULL))
+            grid::grid.newpage()
+          }
+        } else {
+          print(gridExtra::grid.table(ObjectList[[i]], rows = NULL))
         }
-      } else {
-        print(gridExtra::grid.table(ObjectList[[i]], rows = NULL))
+        while(grDevices::dev.cur() > 1) grDevices::dev.off()
       }
-      while(dev.cur() > 1) grDevices::dev.off()
     }
+  } else {
+    warning("Need to install the package grDevices in order to run this function")
   }
 }
 

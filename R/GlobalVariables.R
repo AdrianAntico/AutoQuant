@@ -1,5 +1,8 @@
 utils::globalVariables(
   names = c(
+    "EvaluationMetrics",
+    "PowerValue",
+    "Weights",
     "Index",
     "RegressionMethods",
     "variable",
