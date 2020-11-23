@@ -33,10 +33,7 @@ RPM_Binomial_Bandit computes randomized probability matching probabilities for e
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
 \code{\link{ChartTheme}()},
-\code{\link{PrintObjectsSize}()},
 \code{\link{PrintToPDF}()},
-\code{\link{SimpleCap}()},
-\code{\link{tempDatesFun}()},
 \code{\link{tokenizeH2O}()}
 }
 \author{

@@ -21,11 +21,8 @@ data <- tokenizeH2O(data = data[["StringColumn"]])
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
 \code{\link{ChartTheme}()},
-\code{\link{PrintObjectsSize}()},
 \code{\link{PrintToPDF}()},
-\code{\link{RPM_Binomial_Bandit}()},
-\code{\link{SimpleCap}()},
-\code{\link{tempDatesFun}()}
+\code{\link{RPM_Binomial_Bandit}()}
 }
 \author{
 Adrian Antico
