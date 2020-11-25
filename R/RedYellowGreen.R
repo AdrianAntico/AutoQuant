@@ -98,30 +98,112 @@ RedYellowGreen <- function(data,
     i = itertools::isplitRows(new, chunks = parts),
     .combine = function(...) data.table::rbindlist(list(...)),
     .multicombine = TRUE,
-    .packages = packages
+    .packages     = packages
     ) %dopar% {
-
-      # Loop through all combos
-      for(k in seq_len(nrow(new))) {
-        x <- threshOptim(
-          data = data,
-          actTar = names(data)[ActualColNumber],
-          predTar = names(data)[PredictColNumber],
-          tpProfit = TruePositiveCost,
-          tnProfit = TrueNegativeCost,
-          fpProfit = FalsePositiveCost,
-          fnProfit = FalseNegativeCost,
-          MidTierDoNothing = TRUE,
-          MidTierCost = MidTierCost,
-          MidTierLowThresh = new[k, 8L][[1L]],
-          MidTierHighThresh = new[k, 9L][[1L]])
-        data.table::set(new, i = k, j = 7L, value = x[[1L]])
-        temp <- x[[2L]]
-        data.table::set(new, i = k, j = 10L, value = temp[Thresholds == eval(x[[1L]]), "Utilities"][[1L]])
+      RedYellowGreenParallel <- function(data,
+                                         PredictColNumber  = 1,
+                                         ActualColNumber   = 767,
+                                         TruePositiveCost  = 0,
+                                         TrueNegativeCost  = 0,
+                                         FalsePositiveCost = -1,
+                                         FalseNegativeCost = -10,
+                                         MidTierCost       = -5,
+                                         new = i) {
+        # Loop through all combos
+        for(k in as.integer(seq_len(nrow(new)))) {
+          x <- threshOptimz(
+            data = data,
+            actTar = names(data)[ActualColNumber],
+            predTar = names(data)[PredictColNumber],
+            tpProfit = TruePositiveCost,
+            tnProfit = TrueNegativeCost,
+            fpProfit = FalsePositiveCost,
+            fnProfit = FalseNegativeCost,
+            MidTierDoNothing = TRUE,
+            MidTierCost = MidTierCost,
+            MidTierLowThresh = new[k, 8L][[1L]],
+            MidTierHighThresh = new[k, 9L][[1L]])
+          data.table::set(new, i = k, j = 7L, value = x[[1L]])
+          temp <- x[[2L]]
+          data.table::set(new, i = k, j = 10L, value = temp[Thresholds == eval(x[[1L]]), "Utilities"][[1L]])
+        }
+        return(new)
       }
 
+      # Inner function for threshold optimizataion
+      threshOptimz <- function(data,
+                              actTar   = 1,
+                              predTar  = 2,
+                              tpProfit = 1,
+                              tnProfit = 5,
+                              fpProfit = -1,
+                              fnProfit = -1,
+                              MidTierDoNothing = FALSE,
+                              MidTierCost = -100,
+                              MidTierLowThresh = 0.25,
+                              MidTierHighThresh = 0.75) {
+        # Convert factor target to numeric
+        data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
+
+        # Optimize each column's classification threshold ::
+        popTrue <- mean(data[[(actTar)]])
+        store   <- list()
+        j <- 0L
+        options(warn = -1L)
+        for(i in c(MidTierHighThresh)) {
+          j <- j + 1L
+          if(tpProfit != 0) {
+            tp <- sum(data.table::fifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 1 & data[[predTar]] >= i, 1, 0))
+          } else {
+            tp <- 0
+          }
+          if(tnProfit != 0) {
+            tn <- sum(data.table::fifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 0 & data[[predTar]] <  i,1,0))
+          } else {
+            tn <- 0
+          }
+          if(fpProfit != 0) {
+            fp <- sum(data.table::fifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 0 & data[[predTar]] >= i,1,0))
+          } else {
+            fp <- 0
+          }
+          if(fnProfit != 0) {
+            fn <- sum(data.table::fifelse(!(data[[predTar]] < MidTierHighThresh & data[[predTar]] > MidTierLowThresh) & data[[actTar]] == 1 & data[[predTar]] <  i,1,0))
+          } else {
+            fp <- 0
+          }
+          none <- sum(data.table::fifelse(data[[predTar]] <= MidTierHighThresh & data[[predTar]] >= MidTierLowThresh,1,0))
+          tpr <- data.table::fifelse((tp + fn) == 0, 0, tp / (tp + fn))
+          fpr <- data.table::fifelse((fp + tn) == 0, 0, fp / (fp + tn))
+          noneRate <- none / nrow(data)
+          utility <- (1 - noneRate) * (popTrue * (tpProfit * tpr + fnProfit * (1 - tpr)) + (1 - popTrue) * (fpProfit * fpr + tnProfit * (1 - fpr))) + noneRate * MidTierCost
+          store[[j]] <- c(i, utility)
+        }
+        all <- data.table::rbindlist(list(store))
+        utilities <- data.table::melt(all[2L,])
+        data.table::setnames(utilities, "value", "Utilities")
+        thresholds <- data.table::melt(all[1L,])
+        data.table::setnames(thresholds, "value", "Thresholds")
+        results <- cbind(utilities, thresholds)[, c(-1L,-3L)]
+        thresh <- results[Thresholds <= eval(MidTierLowThresh) | Thresholds >= eval(MidTierHighThresh)][order(-Utilities)][1L, 2L][[1L]]
+        options(warn = 1L)
+        return(list(thresh, results))
+      }
+
+      # Run core function
+      data <- RedYellowGreenParallel(
+        data,
+        PredictColNumber  = PredictColNumber,
+        ActualColNumber   = ActualColNumber,
+        TruePositiveCost  = TruePositiveCost,
+        TrueNegativeCost  = TrueNegativeCost,
+        FalsePositiveCost = FalsePositiveCost,
+        FalseNegativeCost = FalseNegativeCost,
+        MidTierCost       = MidTierCost,
+        new               = i)
+
       # Return data table
-      x
+      data
     }
 
   # Shut down cluster
