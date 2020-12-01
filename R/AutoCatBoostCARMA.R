@@ -282,7 +282,7 @@
 #'
 #'   # ML tuning args
 #'   NTrees = 2500,
-#'   Depth = 6
+#'   Depth = 6,
 #'   L2_Leaf_Reg = 3.0,
 #'   Langevin = FALSE,
 #'   DiffusionTemperature = 10000,

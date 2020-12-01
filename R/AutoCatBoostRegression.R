@@ -1944,8 +1944,6 @@ AutoCatBoostRegression <- function(data,
     if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
   }
 
-
-
   # Save PDF of model information ----
   if(!TrainOnFull & SaveInfoToPDF) {
     EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
