@@ -289,9 +289,11 @@ AutoCatBoostRegression <- function(data,
   # Huber
   if(tolower(eval_metric) == "huber") {
     EvalMetric <- paste0('Huber:delta=',eval_metric_value)
+    task_type <- "CPU"
   }
   if(tolower(loss_function) == "huber") {
     LossFunction <- paste0('Huber:delta=',loss_function_value)
+    task_type <- "CPU"
   }
 
   # Expectile
