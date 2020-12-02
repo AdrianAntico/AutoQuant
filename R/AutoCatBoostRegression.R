@@ -292,7 +292,6 @@ AutoCatBoostRegression <- function(data,
   }
   if(tolower(loss_function) == "huber") {
     LossFunction <- paste0('Huber:delta=',loss_function_value)
-    task_type <- "CPU"
   }
 
   # Expectile
@@ -822,12 +821,12 @@ AutoCatBoostRegression <- function(data,
 
         # Score and measure model----
         if(!is.null(TestData)) {
-          predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "RawFormulaVal", thread_count = -1L)
+          predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "RawFormulaVal", thread_count = parallel::detectCores())
           calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
           calibEval[, Metric := (Target - p1) ^ 2L]
           NewPerformance <- calibEval[, mean(Metric, na.rm = TRUE)]
         } else {
-          predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "RawFormulaVal", thread_count = -1L)
+          predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "RawFormulaVal", thread_count = parallel::detectCores())
           calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
           calibEval[, Metric := (Target - p1) ^ 2L]
           NewPerformance <- calibEval[, mean(Metric, na.rm = TRUE)]
@@ -928,6 +927,7 @@ AutoCatBoostRegression <- function(data,
         best_model_min_trees = 10L,
         task_type            = task_type,
         devices              = NumGPUs,
+        thread_count         = parallel::detectCores(),
         train_dir            = model_path,
         iterations           = PassInGrid[["TreesBuilt"]],
         depth                = PassInGrid[["Depth"]],
@@ -948,6 +948,7 @@ AutoCatBoostRegression <- function(data,
         best_model_min_trees = 10L,
         task_type            = task_type,
         devices              = NumGPUs,
+        thread_count         = parallel::detectCores(),
         train_dir            = model_path,
         iterations           = PassInGrid[["TreesBuilt"]],
         depth                = PassInGrid[["Depth"]],
@@ -982,6 +983,7 @@ AutoCatBoostRegression <- function(data,
         has_time             = HasTime,
         task_type            = task_type,
         devices              = NumGPUs,
+        thread_count         = parallel::detectCores(),
         allow_writing_files  = FALSE)
     } else {
       if(tolower(task_type) == "gpu") {
@@ -994,6 +996,7 @@ AutoCatBoostRegression <- function(data,
           best_model_min_trees = 10L,
           task_type            = task_type,
           devices              = NumGPUs,
+          thread_count         = parallel::detectCores(),
           train_dir            = model_path,
           iterations           = BestGrid[["NTrees"]],
           depth                = BestGrid[["Depth"]],
@@ -1014,6 +1017,7 @@ AutoCatBoostRegression <- function(data,
           best_model_min_trees = 10L,
           task_type            = task_type,
           devices              = NumGPUs,
+          thread_count         = parallel::detectCores(),
           train_dir            = model_path,
           iterations           = BestGrid[["NTrees"]],
           depth                = BestGrid[["Depth"]],
@@ -1048,6 +1052,7 @@ AutoCatBoostRegression <- function(data,
         has_time              = HasTime,
         task_type             = task_type,
         devices               = NumGPUs,
+        thread_count          = parallel::detectCores(),
         allow_writing_files   = FALSE)
     } else if(is.null(LearningRate) && langevin) {
       base_params <- list(
@@ -1066,6 +1071,7 @@ AutoCatBoostRegression <- function(data,
         has_time              = HasTime,
         task_type             = task_type,
         devices               = NumGPUs,
+        thread_count          = parallel::detectCores(),
         allow_writing_files   = FALSE)
     } else if(!is.null(LearningRate)) {
       base_params <- list(
@@ -1083,6 +1089,7 @@ AutoCatBoostRegression <- function(data,
         has_time             = HasTime,
         task_type            = task_type,
         devices              = NumGPUs,
+        thread_count         = parallel::detectCores(),
         allow_writing_files  = FALSE)
     } else {
       base_params <- list(
@@ -1099,6 +1106,7 @@ AutoCatBoostRegression <- function(data,
         has_time             = HasTime,
         task_type            = task_type,
         devices              = NumGPUs,
+        thread_count         = parallel::detectCores(),
         allow_writing_files  = FALSE)
     }
   }
@@ -1115,11 +1123,11 @@ AutoCatBoostRegression <- function(data,
 
   # Regression Score Final Test Data----
   if(!is.null(TestData)) {
-    predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "RawFormulaVal", thread_count = -1L)
+    predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "RawFormulaVal", thread_count = parallel::detectCores())
   } else if(TrainOnFull) {
-    predict <- catboost::catboost.predict(model = model, pool = TrainPool, prediction_type = "RawFormulaVal", thread_count = -1L)
+    predict <- catboost::catboost.predict(model = model, pool = TrainPool, prediction_type = "RawFormulaVal", thread_count = parallel::detectCores())
   } else {
-    predict <- catboost::catboost.predict(model = model, pool = TestPool, prediction_type = "RawFormulaVal", thread_count = -1L)
+    predict <- catboost::catboost.predict(model = model, pool = TestPool, prediction_type = "RawFormulaVal", thread_count = parallel::detectCores())
   }
 
   # Regression Validation Data----
@@ -1272,7 +1280,7 @@ AutoCatBoostRegression <- function(data,
         aggrfun = function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
-      if(all(c("plotly","dplyr") %chin% installed.packages()) & !SaveInfoToPDF) {
+      if(all(c("plotly","dplyr") %chin% installed.packages())) {
         if(!TrainOnFull) EvaluationPlot <- plotly::ggplotly(EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L))))
       } else {
         if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
@@ -1512,7 +1520,11 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
-            ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+            if(all(c("plotly","dplyr") %chin% installed.packages())) {
+              ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
+            } else {
+              ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
+            }
           }, error = function(x) "skip")
           tryCatch({
             Out1 <- ParDepCalPlots(
@@ -1525,7 +1537,11 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             k <- k + 1L
-            ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+            if(all(c("plotly","dplyr") %chin% installed.packages())) {
+              ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- plotly::ggplotly(Out1)
+            } else {
+              ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
+            }
           }, error = function(x) "skip")
         }
 
@@ -1945,46 +1961,38 @@ AutoCatBoostRegression <- function(data,
     if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
   }
 
+
+
   # Save PDF of model information ----
   if(!TrainOnFull & SaveInfoToPDF) {
-    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
+    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL)
     ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL, if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL)
     TableMetrics <- list(EvaluationMetrics, if(!is.null(VariableImportance)) VariableImportance else NULL, if(!is.null(VariableImportance)) Interaction else NULL)
-    try(PrintToPDF(
+    PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "EvaluationPlots",
       ObjectList = EvalPlotList,
       Title = "Model Evaluation Plots",
-      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
-    try(PrintToPDF(
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "PartialDependencePlots",
       ObjectList = ParDepList,
       Title = "Partial Dependence Calibration Plots",
-      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
-    try(PrintToPDF(
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "Metrics_and_Importances",
       ObjectList = TableMetrics,
-      Tables = TRUE,
-      MaxPages = 100,
       Title = "Model Metrics and Variable Importances",
-      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
-    while(dev.cur() > 1) grDevices::dev.off()
+      Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    NullCheck <- 1
+    while(!is.null(NullCheck)) NullCheck <- try({grDevices::dev.off()})
   }
 
   # Regression Return Model Objects----
   if(!TrainOnFull) {
     if(ReturnModelObjects) {
-
-      # Modify Plots ----
-      if(all(c("plotly","dplyr") %chin% installed.packages())) {
-        EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
-        for(i in seq_len(length(ParDepPlots))) ParDepPlots[[i]] <- plotly::ggplotly(ParDepPlots[[i]])
-        for(i in seq_len(length(ParDepBoxPlots))) ParDepBoxPlots[[i]] <- plotly::ggplotly(ParDepBoxPlots[[i]])
-      }
-
-      # Return ----
       return(list(
         Model = model,
         ValidationData = ValidationData,

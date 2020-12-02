@@ -474,11 +474,11 @@ AutoCatBoostClassifier <- function(data,
 
         # Score model----
         if(!is.null(TestData)) {
-          predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = -1L)
+          predict <- catboost::catboost.predict(model = model, pool = FinalTestPool, prediction_type = "Probability", thread_count = parallel::detectCores())
           calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
           AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
         } else {
-          predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "Probability", thread_count = -1L)
+          predict <- catboost::catboost.predict(model = model,pool = TestPool, prediction_type = "Probability", thread_count = parallel::detectCores())
           calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
           AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
         }
@@ -576,6 +576,7 @@ AutoCatBoostClassifier <- function(data,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
+        thread_count         = parallel::detectCores(),
         class_weights        = if(is.null(ClassWeights)) c(1,1) else ClassWeights,
         train_dir            = model_path,
         iterations           = PassInGrid[["TreesBuilt"]],
@@ -595,6 +596,7 @@ AutoCatBoostClassifier <- function(data,
         use_best_model       = TRUE,
         best_model_min_trees = 10L,
         task_type            = task_type,
+        thread_count         = parallel::detectCores(),
         train_dir            = model_path,
         class_weights        = if(is.null(ClassWeights)) c(1,1) else ClassWeights,
         iterations           = PassInGrid[["TreesBuilt"]],
@@ -631,6 +633,7 @@ AutoCatBoostClassifier <- function(data,
         has_time             = HasTime,
         task_type            = task_type,
         devices              = NumGPUs,
+        thread_count         = parallel::detectCores(),
         class_weights        = ClassWeights)
     } else {
       if(tolower(task_type) == "gpu") {
@@ -643,6 +646,7 @@ AutoCatBoostClassifier <- function(data,
           best_model_min_trees = 10L,
           task_type            = task_type,
           devices              = NumGPUs,
+          thread_count         = parallel::detectCores(),
           train_dir            = model_path,
           class_weights        = ClassWeights,
           iterations           = BestGrid[["NTrees"]],
@@ -663,6 +667,7 @@ AutoCatBoostClassifier <- function(data,
           best_model_min_trees = 10L,
           task_type            = task_type,
           devices              = NumGPUs,
+          thread_count         = parallel::detectCores(),
           train_dir            = model_path,
           class_weights        = ClassWeights,
           iterations           = BestGrid[["NTrees"]],
@@ -696,6 +701,7 @@ AutoCatBoostClassifier <- function(data,
         has_time              = HasTime,
         task_type             = task_type,
         devices               = NumGPUs,
+        thread_count          = parallel::detectCores(),
         class_weights         = ClassWeights)
 
     } else if(is.null(LearningRate) && langevin) {
@@ -714,6 +720,7 @@ AutoCatBoostClassifier <- function(data,
         has_time              = HasTime,
         task_type             = task_type,
         devices               = NumGPUs,
+        thread_count          = parallel::detectCores(),
         class_weights         = ClassWeights)
 
     } else if(!is.null(LearningRate)) {
@@ -731,6 +738,7 @@ AutoCatBoostClassifier <- function(data,
         has_time              = HasTime,
         task_type             = task_type,
         devices               = NumGPUs,
+        thread_count          = parallel::detectCores(),
         class_weights         = ClassWeights)
 
     } else {
@@ -747,6 +755,7 @@ AutoCatBoostClassifier <- function(data,
         has_time             = HasTime,
         task_type            = task_type,
         devices              = NumGPUs,
+        thread_count         = parallel::detectCores(),
         class_weights        = ClassWeights)
     }
   }
@@ -768,19 +777,19 @@ AutoCatBoostClassifier <- function(data,
         model = model,
         pool = FinalTestPool,
         prediction_type = "Probability",
-        thread_count = -1L)
+        thread_count = parallel::detectCores())
     } else if(TrainOnFull) {
       predict <- catboost::catboost.predict(
         model = model,
         pool = TrainPool,
         prediction_type = "Probability",
-        thread_count = -1L)
+        thread_count = parallel::detectCores())
     } else {
       predict <- catboost::catboost.predict(
         model = model,
         pool = TestPool,
         prediction_type = "Probability",
-        thread_count = -1L)
+        thread_count = parallel::detectCores())
     }
   }
 
