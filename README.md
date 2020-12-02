@@ -2251,10 +2251,10 @@ data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_tra
 # Set negative numbers to 0
 data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
 
-# Subset for Stores / Departments with Full Series Available: (143 time points each)
+# Subset for Stores / Departments with Full Series Available: (143 time points each)----
 data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
 
-# Subset Columns (remove IsHoliday column)
+# Subset Columns (remove IsHoliday column)----
 data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
 
 # Setup xregs
@@ -2280,16 +2280,16 @@ N1 <- xregs[, .N, by = c("STORE","DEPT")][1, N]
 
 # Setup Grid Tuning & Feature Tuning
 Tuning <- data.table::CJ(
-  TimeWeights = c("None",0.9999,0.999,0.99),
-  HierachGroups = c("TRUE","FALSE"),
-  MaxTimeGroups = c("weeks","months","quarters"),
+  TimeWeights = c("None",0.9999,0.999),
+  HierachGroups = c("FALSE"),
+  MaxTimeGroups = c("weeks","months"),
   TargetTransformation = c("TRUE","FALSE"),
   Difference = c("TRUE","FALSE"),
   TimeTrendVariable = c("TRUE","FALSE"),
-  EvalMetric = c("RMSE","Huber"),
-  LossFunction = c("RMSE","Huber"),
+  EvalMetric = c("RMSE"),
+  LossFunction = c("RMSE"),
   Langevin = c("TRUE","FALSE"),
-  L2_Leaf_Reg = c(1.0,2.0,3.0,4.0))
+  L2_Leaf_Reg = c(3.0,4.0))
 
 # Plot list
 PlotList <- list()
@@ -2342,7 +2342,7 @@ for(Run in seq_len(TotalRuns)) {
 
     # Calendar features
     CalendarVariables = c("week","wom","month","quarter"),
-    HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+    HolidayVariable = c("USPublicHolidays"),
     HolidayLags = c(1,2,3),
     HolidayMovingAverages = c(2,3),
 
@@ -2382,7 +2382,7 @@ for(Run in seq_len(TotalRuns)) {
     MaxRunMinutes = 60*60,
 
     # ML tuning args
-    NTrees = 12000,
+    NTrees = 5000,
     Depth = 9,
     L2_Leaf_Reg = Tuning[Run, L2_Leaf_Reg],
     Langevin = as.logical(Tuning[Run, Langevin]),
@@ -2446,6 +2446,9 @@ for(Run in seq_len(TotalRuns)) {
 
   # Append to file
   data.table::fwrite(Metrics, file = file.path(Path, "Walmart_CARMA_Metrics.csv"), append = TRUE)
+
+  # GC
+  gc()
 }
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
