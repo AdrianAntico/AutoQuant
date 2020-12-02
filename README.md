@@ -2235,210 +2235,8 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 
 ```
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# ML-Based Vector AutoRegression CARMA ----
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-# Load Walmart Data from Dropbox----
-data <- data.table::fread(
- "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
-
-# Filter out zeros
-data <- data[Weekly_Sales != 0]
-
-# Subset for Stores / Departments With Full Series
-data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
- , Counts := NULL]
-
-# Subset Columns (remove IsHoliday column)----
-keep <- c("Store","Dept","Date","Weekly_Sales")
-data <- data[, ..keep]
-data <- data[Store %in% c(1,2)]
-xregs <- data.table::copy(data)
-xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-xregs[, c("Store","Dept") := NULL]
-data.table::setnames(xregs, "Weekly_Sales", "Other")
-xregs[, Other := jitter(Other, factor = 25)]
-data <- data[as.Date(Date) < as.Date('2012-09-28')]
-
-#  Vector CARMA testingdata[, Weekly_Profit := Weekly_Sales * 0.75]
-
-# Build forecast
-CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
-
-  # data args
-  data = data, # TwoGroup_Data,
-  TimeWeights = NULL,
-  TargetColumnName = c("Weekly_Sales","Weekly_Profit"),
-  DateColumnName = "Date",
-  HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"),
-  TimeUnit = "weeks",
-  TimeGroups = c("weeks","months"),
-
-  # Production args
-  TrainOnFull = TRUE,
-  SplitRatios = c(1 - 10 / 138, 10 / 138),
-  PartitionType = "random",
-  FC_Periods = 4,
-  Timer = TRUE,
-  DebugMode = TRUE,
-
-  # Target transformations
-  TargetTransformation = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1", "Logit", "YeoJohnson"),
-  Difference = FALSE,
-  NonNegativePred = FALSE,
-  RoundPreds = FALSE,
-
-  # Date features
-  CalendarVariables = c("week", "month", "quarter"),
-  HolidayVariable = c("USPublicHolidays",
-                      "EasterGroup",
-                      "ChristmasGroup","OtherEcclesticalFeasts"),
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
-
-  # Time series features
-  Lags = list("weeks" = seq(2L, 10L, 2L),
-              "months" = c(1:3)),
-  MA_Periods = list("weeks" = seq(2L, 10L, 2L),
-                    "months" = c(2,3)),
-  SD_Periods = NULL,
-  Skew_Periods = NULL,
-  Kurt_Periods = NULL,
-  Quantile_Periods = NULL,
-  Quantiles_Selected = c("q5","q95"),
-
-  # Bonus features
-  AnomalyDetection = NULL,
-  XREGS = xregs,
-  FourierTerms = 2,
-  TimeTrendVariable = TRUE,
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
-
-  # ML Args
-  NumOfParDepPlots = 100L,
-  EvalMetric = "MultiRMSE",
-  EvalMetricValue = 1.5,
-  LossFunction = "MultiRMSE",
-  LossFunctionValue = 1.5,
-  GridTune = FALSE,
-  PassInGrid = NULL,
-  ModelCount = 5,
-  TaskType = "GPU",
-  NumGPU = 1,
-  MaxRunsWithoutNewWinner = 50,
-  MaxRunMinutes = 60*60,
-  Langevin = FALSE,
-  DiffusionTemperature = 10000,
-  NTrees = 2500,
-  L2_Leaf_Reg = 3.0,
-  RandomStrength = 1,
-  BorderCount = 254,
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  Depth = 6)
-
-
-
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# Intermittent Demand CARMA ----
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-# Load Walmart Data from Dropbox----
-data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
-
- # Subset for Stores / Departments With Full Series
-data <- data[, Counts := .N, by = c("Store","Dept")][
-  Counts == 143][
-    , Counts := NULL]
-
-# Subset Columns (remove IsHoliday column)----
-keep <- c("Store","Dept","Date","Weekly_Sales")
-data <- data[, ..keep]
-data <- data[Store %in% c(1,2)]
-xregs <- data.table::copy(data)
-xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-xregs[, c("Store","Dept") := NULL]
-data.table::setnames(xregs, "Weekly_Sales", "Other")
-xregs[, Other := jitter(Other, factor = 25)]
-data <- data[as.Date(Date) < as.Date('2012-09-28')]
-
-# Add some zeros for testing
-data[runif(.N) < 0.25, Weekly_Sales := 0]
-
-# Build Forecast ----
-Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
-
-  # data args
-  AlgoType = "catboost",
-  data = data,
-  TargetColumnName = "Weekly_Sales",
-  DateColumnName = "Date",
-  HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"),
-  TimeUnit = "weeks",
-  TimeGroups = c("weeks","months"),
-
-  # Production args
-  TrainOnFull = TRUE,
-  SplitRatios = c(1 - 10 / 138, 10 / 138),
-  PartitionType = "random",
-  FC_Periods = 4,
-  Timer = TRUE,
-  DebugMode = TRUE,
-
-  # Target transformations
-  TargetTransformation = FALSE,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
-  Difference = FALSE,
-  NonNegativePred = FALSE,
-  RoundPreds = FALSE,  
-
-  # Date features
-  CalendarVariables = c("week","month","quarter"),
-  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
-
-  # Time series features
-  Lags = list("weeks" = seq(2L,10L,2L), "months" = c(1:3)),
-  MA_Periods = list("weeks" = seq(2L,10L,2L), "months" = c(2,3)),
-  SD_Periods = NULL,
-  Skew_Periods = NULL,
-  Kurt_Periods = NULL,
-  Quantile_Periods = NULL,
-  Quantiles_Selected = NULL,
-
-  # Bonus features
-  AnomalyDetection = NULL,
-  XREGS = xregs,
-  FourierTerms = 1,
-  TimeTrendVariable = TRUE,
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
-
-  # ML Args
-  NumOfParDepPlots = 100L,
-  EvalMetric = "RMSE",
-  GridTune = FALSE,
-  PassInGrid = NULL,
-  ModelCount = 5,
-  TaskType = "GPU",
-  NumGPU = 1,
-  MaxRunsWithoutNewWinner = 50,
-  MaxRunMinutes = 60*60,
-  NTrees = 1000,
-  L2_Leaf_Reg = 3.0,
-  RandomStrength = 1,
-  BorderCount = 254,
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  Depth = 6)
-  
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# Catboost Version ----
+# Tuning AutoCatBoostCARMA() ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 # Set up path
@@ -2649,8 +2447,209 @@ for(Run in seq_len(TotalRuns)) {
   # Append to file
   data.table::fwrite(Metrics, file = file.path(Path, "Walmart_CARMA_Metrics.csv"), append = TRUE)
 }
-   
 
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# ML-Based Vector AutoRegression CARMA ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Load Walmart Data from Dropbox----
+data <- data.table::fread(
+ "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+# Filter out zeros
+data <- data[Weekly_Sales != 0]
+
+# Subset for Stores / Departments With Full Series
+data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
+ , Counts := NULL]
+
+# Subset Columns (remove IsHoliday column)----
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store %in% c(1,2)]
+xregs <- data.table::copy(data)
+xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+xregs[, c("Store","Dept") := NULL]
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+xregs[, Other := jitter(Other, factor = 25)]
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
+
+#  Vector CARMA testingdata[, Weekly_Profit := Weekly_Sales * 0.75]
+
+# Build forecast
+CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
+
+  # data args
+  data = data, # TwoGroup_Data,
+  TimeWeights = NULL,
+  TargetColumnName = c("Weekly_Sales","Weekly_Profit"),
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks","months"),
+
+  # Production args
+  TrainOnFull = TRUE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
+  FC_Periods = 4,
+  Timer = TRUE,
+  DebugMode = TRUE,
+
+  # Target transformations
+  TargetTransformation = TRUE,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+              "LogPlus1", "Logit", "YeoJohnson"),
+  Difference = FALSE,
+  NonNegativePred = FALSE,
+  RoundPreds = FALSE,
+
+  # Date features
+  CalendarVariables = c("week", "month", "quarter"),
+  HolidayVariable = c("USPublicHolidays",
+                      "EasterGroup",
+                      "ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+
+  # Time series features
+  Lags = list("weeks" = seq(2L, 10L, 2L),
+              "months" = c(1:3)),
+  MA_Periods = list("weeks" = seq(2L, 10L, 2L),
+                    "months" = c(2,3)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = c("q5","q95"),
+
+  # Bonus features
+  AnomalyDetection = NULL,
+  XREGS = xregs,
+  FourierTerms = 2,
+  TimeTrendVariable = TRUE,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+
+  # ML Args
+  NumOfParDepPlots = 100L,
+  EvalMetric = "MultiRMSE",
+  EvalMetricValue = 1.5,
+  LossFunction = "MultiRMSE",
+  LossFunctionValue = 1.5,
+  GridTune = FALSE,
+  PassInGrid = NULL,
+  ModelCount = 5,
+  TaskType = "GPU",
+  NumGPU = 1,
+  MaxRunsWithoutNewWinner = 50,
+  MaxRunMinutes = 60*60,
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
+  NTrees = 2500,
+  L2_Leaf_Reg = 3.0,
+  RandomStrength = 1,
+  BorderCount = 254,
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+  Depth = 6)
+
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Intermittent Demand CARMA ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Load Walmart Data from Dropbox----
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+ # Subset for Stores / Departments With Full Series
+data <- data[, Counts := .N, by = c("Store","Dept")][
+  Counts == 143][
+    , Counts := NULL]
+
+# Subset Columns (remove IsHoliday column)----
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store %in% c(1,2)]
+xregs <- data.table::copy(data)
+xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+xregs[, c("Store","Dept") := NULL]
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+xregs[, Other := jitter(Other, factor = 25)]
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
+
+# Add some zeros for testing
+data[runif(.N) < 0.25, Weekly_Sales := 0]
+
+# Build Forecast ----
+Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
+
+  # data args
+  AlgoType = "catboost",
+  data = data,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks","months"),
+
+  # Production args
+  TrainOnFull = TRUE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
+  FC_Periods = 4,
+  Timer = TRUE,
+  DebugMode = TRUE,
+
+  # Target transformations
+  TargetTransformation = FALSE,
+  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Difference = FALSE,
+  NonNegativePred = FALSE,
+  RoundPreds = FALSE,  
+
+  # Date features
+  CalendarVariables = c("week","month","quarter"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+
+  # Time series features
+  Lags = list("weeks" = seq(2L,10L,2L), "months" = c(1:3)),
+  MA_Periods = list("weeks" = seq(2L,10L,2L), "months" = c(2,3)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
+
+  # Bonus features
+  AnomalyDetection = NULL,
+  XREGS = xregs,
+  FourierTerms = 1,
+  TimeTrendVariable = TRUE,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+
+  # ML Args
+  NumOfParDepPlots = 100L,
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  PassInGrid = NULL,
+  ModelCount = 5,
+  TaskType = "GPU",
+  NumGPU = 1,
+  MaxRunsWithoutNewWinner = 50,
+  MaxRunMinutes = 60*60,
+  NTrees = 1000,
+  L2_Leaf_Reg = 3.0,
+  RandomStrength = 1,
+  BorderCount = 254,
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+  Depth = 6)
+  
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # XGBoost Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
