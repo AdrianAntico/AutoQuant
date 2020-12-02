@@ -2441,94 +2441,214 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
 # Catboost Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-# Load Walmart Data from Dropbox----
+# Set up path
+Path <- "C:/YourPathHere"
+
+# Set up environment
+data.table::setDTthreads(percent = 100)
+
+# Load data
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
-# Prepare data
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Subset for Stores / Departments with Full Series Available: (143 time points each)
 data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
-keep <- c("Store","Dept","Date","Weekly_Sales")
-data <- data[, ..keep]
-data <- data[Store %in% c(1,2)]
-xregs <- data.table::copy(data)
+
+# Subset Columns (remove IsHoliday column)
+data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
+
+# Setup xregs
+xregs <- data[, .SD, .SDcols = c("Date","Store","Dept")]
+
+# Change data types
+data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+
+# Add GroupVar to xregs
 xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-xregs[, c("Store","Dept") := NULL]
-data.table::setnames(xregs, "Weekly_Sales", "Other")
-xregs[, Other := jitter(Other, factor = 25)]
-data <- data[as.Date(Date) < as.Date('2012-09-28')]
 
-# Build forecast
-CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
+# Change names of categoricals in xregs
+data.table::setnames(xregs, c("Store","Dept"), c("STORE","DEPT"))
 
-  # data args
-  data = data,
-  TimeWeights = NULL,
-  TargetColumnName = "Weekly_Sales",
-  DateColumnName = "Date",
-  HierarchGroups = NULL,
-  GroupVariables = c("Dept"),
-  TimeUnit = "weeks",
-  TimeGroups = c("weeks","months"),
+# Subset data so we have an out of time sample
+data1 <- data.table::copy(data[, ID := 1:.N, by = c("Store","Dept")][ID <= 125][, ID := NULL])
+data[, ID := NULL]
 
-  # Production args
-  TrainOnFull = TRUE,
-  SplitRatios = c(1 - 10 / 138, 10 / 138),
-  PartitionType = "random",
-  FC_Periods = 4,
-  Timer = TRUE,
-  DebugMode = TRUE,
+# Define Holdout windows
+N <- data1[, .N, by = c("Store","Dept")][1, N]
+N1 <- xregs[, .N, by = c("STORE","DEPT")][1, N]
 
-  # Target transformations
-  TargetTransformation = TRUE,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
-  Difference = FALSE,
-  NonNegativePred = FALSE,
-  RoundPreds = FALSE,
+# Setup Grid Tuning & Feature Tuning
+Tuning <- data.table::CJ(
+  TimeWeights = c("None",0.9999,0.999,0.99),
+  HierachGroups = c("TRUE","FALSE"),
+  MaxTimeGroups = c("weeks","months","quarters"),
+  TargetTransformation = c("TRUE","FALSE"),
+  Difference = c("TRUE","FALSE"),
+  TimeTrendVariable = c("TRUE","FALSE"),
+  EvalMetric = c("RMSE","Huber"),
+  LossFunction = c("RMSE","Huber"),
+  Langevin = c("TRUE","FALSE"),
+  L2_Leaf_Reg = c(1.0,2.0,3.0,4.0))
 
-  # Date features
-  CalendarVariables = c("week","month","quarter"),
-  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
+# Plot list
+PlotList <- list()
 
-  # Time series features
-  Lags = list("weeks" = seq(2L, 10L, 2L), "months" = c(1:3)),
-  MA_Periods = list("weeks" = seq(2L, 10L, 2L), "months" = c(2,3)),
-  SD_Periods = NULL,
-  Skew_Periods = NULL,
-  Kurt_Periods = NULL,
-  Quantile_Periods = NULL,
-  Quantiles_Selected = c("q5","q95"),
+# Total runs
+TotalRuns <- Tuning[,.N]
 
-  # Bonus features
-  AnomalyDetection = list(tstat_high = 4, tstat_low = -4),
-  XREGS = xregs,
-  FourierTerms = 2,
-  TimeTrendVariable = TRUE,
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
-  NumOfParDepPlots = 100L,
+# Run models
+for(Run in seq_len(TotalRuns)) {
 
-  # ML Args
-  EvalMetric = "RMSE",
-  EvalMetricValue = 1,
-  LossFunction = "RMSE",
-  LossFunctionValue = 1,
-  GridTune = FALSE,
-  PassInGrid = PassInGrid,
-  GridEvalMetric = "mae",
-  ModelCount = 5,
-  TaskType = "GPU",
-  NumGPU = 1,
-  MaxRunsWithoutNewWinner = 50,
-  MaxRunMinutes = 24*60,
-  Langevin = FALSE,
-  DiffusionTemperature = 10000,
-  NTrees = seq(2990,3000,1),
-  L2_Leaf_Reg = 3.0:6.0,
-  RandomStrength = seq(1,2,0.1),
-  BorderCount = seq(32,256,32),
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  Depth = seq(6,10,1))
+  # Print Run
+  for(zz in seq_len(100)) print(Run)
+
+  # Use clean data each run
+  xregs_new <- data.table::copy(xregs)
+  data_new <- data.table::copy(data1)
+
+  # Timer
+  StartTime <- Sys.time()
+
+  # Run carma system
+  Results <- RemixAutoML::AutoCatBoostCARMA(
+
+    # data args
+    data = data_new,
+    TimeWeights = if(Tuning[Run, TimeWeights] == "None") NULL else as.numeric(Tuning[Run, TimeWeights]),
+    TargetColumnName = "Weekly_Sales",
+    DateColumnName = "Date",
+    HierarchGroups = if(as.logical(Tuning[Run, HierachGroups])) c("Store","Dept") else NULL,
+    GroupVariables = c("Store","Dept"),
+    TimeUnit = "weeks",
+    TimeGroups = if(Tuning[Run, MaxTimeGroups] == "weeks") "weeks" else if(Tuning[Run, MaxTimeGroups] == "months") c("weeks","months") else c("weeks","months","quarters"),
+
+    # Production args
+    TrainOnFull = TRUE,
+    SplitRatios = c(N / N1, 1 - N / N1),
+    PartitionType = "random",
+    FC_Periods = N1-N,
+    TaskType = "GPU",
+    NumGPU = 1,
+    Timer = TRUE,
+    DebugMode = TRUE,
+
+    # Target transformations
+    TargetTransformation = as.logical(Tuning[Run, TargetTransformation]),
+    Methods = c("BoxCox","Asinh","Log","LogPlus1","YeoJohnson"),
+    Difference = as.logical(Tuning[Run, Difference]),
+    NonNegativePred = TRUE,
+    RoundPreds = as.logical(Tuning[Run, RoundPreds]),
+
+    # Calendar features
+    CalendarVariables = c("week","wom","month","quarter"),
+    HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+    HolidayLags = c(1,2,3),
+    HolidayMovingAverages = c(2,3),
+
+    # Time series features
+    Lags = list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12)),
+    MA_Periods = list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12)),
+    SD_Periods = NULL,
+    Skew_Periods = NULL,
+    Kurt_Periods = NULL,
+    Quantile_Periods = NULL,
+    Quantiles_Selected = NULL,
+
+    # Bonus features
+    AnomalyDetection = NULL,
+    XREGS = xregs_new,
+    FourierTerms = 0,
+    TimeTrendVariable = as.logical(Tuning[Run, TimeTrendVariable]),
+    ZeroPadSeries = NULL,
+    DataTruncate = FALSE,
+
+    # ML evaluation output
+    PDFOutputPath = NULL,
+    SaveDataPath = NULL,
+    NumOfParDepPlots = 0L,
+
+    # ML loss functions
+    EvalMetric = Tuning[Run, EvalMetric],
+    EvalMetricValue = 10,
+    LossFunction = Tuning[Run, LossFunction],
+    LossFunctionValue = 10,
+
+    # ML grid tuning args
+    GridTune = FALSE,
+    PassInGrid = NULL,
+    ModelCount = 5,
+    MaxRunsWithoutNewWinner = 50,
+    MaxRunMinutes = 60*60,
+
+    # ML tuning args
+    NTrees = 12000,
+    Depth = 9,
+    L2_Leaf_Reg = Tuning[Run, L2_Leaf_Reg],
+    Langevin = as.logical(Tuning[Run, Langevin]),
+    DiffusionTemperature = 10000,
+    RandomStrength = 1,
+    BorderCount = 254,
+    BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"))
+
+  # Timer
+  EndTime <- Sys.time()
+
+  # Prepare data for evaluation
+  Results <- Results$Forecast
+  data.table::setnames(Results, "Weekly_Sales", "Old")
+  Results <- merge(Results, data, by = c("Store","Dept","Date"), all = FALSE)
+  Results <- Results[is.na(Old)]
+  Results[, Old := NULL]
+
+  # Create totals and subtotals
+  Results <- data.table::groupingsets(
+    x = Results,
+    j = list(Predictions = sum(Predictions), Weekly_Sales = sum(Weekly_Sales)),
+    by = c("Date", "Store", "Dept"),
+    sets = list(c("Date", "Store", "Dept"), c("Store", "Dept"), "Store", "Dept", "Date"))
+  Results[, Store := data.table::fifelse(is.na(Store), "Total", Store)]
+  Results[, Dept := data.table::fifelse(is.na(Dept), "Total", Dept)]
+
+  # Add error measures
+  Results[, Weekly_MAE := abs(Weekly_Sales - Predictions)]
+  Results[, Weekly_MAPE := Weekly_MAE / Weekly_Sales]
+
+  # Weekly results
+  Weekly_MAPE <- Results[, list(Weekly_MAPE = mean(Weekly_MAPE)), by = list(Store,Dept)]
+
+  # Monthly results
+  temp <- data.table::copy(Results)
+  temp <- temp[, Date := lubridate::floor_date(Date, unit = "months")]
+  temp <- temp[, lapply(.SD, sum), by = c("Date","Store","Dept"), .SDcols = c("Predictions", "Weekly_Sales")]
+  temp[, Monthly_MAE := abs(Weekly_Sales - Predictions)]
+  temp[, Monthly_MAPE := Monthly_MAE / Weekly_Sales]
+  Monthly_MAPE <- temp[, list(Monthly_MAPE = mean(Monthly_MAPE)), by = list(Store,Dept)]
+
+  # Create ts plot of actuals and predicted
+  Totals <- Results[Store == "Total" & Dept == "Total"]
+  Totals <- data.table::melt.data.table(data = Totals, id.vars = "Date", measure.vars = c("Predictions","Weekly_Sales"), variable.name = "Series", value.name = "Weekly_Sales")
+  PlotList[[Run]] <- eval(ggplot2::ggplot(data = Totals, ggplot2::aes(x = Date, y = Weekly_Sales, color = Series)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_color_manual(values = c("red","blue")) +
+    ggplot2::labs(
+      title = "Walmart Data Forecast",
+      subtitle = paste0("Weekly MAPE = ", round(100 * Weekly_MAPE[Store == "Total" & Dept == "Total", Weekly_MAPE],1),"%", " :: Monthly MAPE = ", round(100 * Monthly_MAPE[Store == "Total" & Dept == "Total", Monthly_MAPE],1),"%")) +
+    RemixAutoML::ChartTheme(Size = 10, AngleX = 0, AngleY = 0))
+
+  # Collect metrics
+  Metrics <- data.table::data.table(
+    RunNumber = Run,
+    Total_Weekly_MAPE = Weekly_MAPE[Store == "Total" & Dept == "Total", Weekly_MAPE],
+    Total_Monthly_MAPE = Monthly_MAPE[Store == "Total" & Dept == "Total", Monthly_MAPE],
+    Tuning[Run],
+    RunTime = EndTime - StartTime)
+
+  # Append to file
+  data.table::fwrite(Metrics, file = file.path(Path, "Walmart_CARMA_Metrics.csv"), append = TRUE)
+}
    
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
