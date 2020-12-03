@@ -1963,8 +1963,6 @@ AutoCatBoostRegression <- function(data,
     if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
   }
 
-
-
   # Save PDF of model information ----
   if(!TrainOnFull & SaveInfoToPDF) {
     EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL)
@@ -1988,8 +1986,7 @@ AutoCatBoostRegression <- function(data,
       ObjectList = TableMetrics,
       Title = "Model Metrics and Variable Importances",
       Width = 7,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
-    NullCheck <- 1
-    while(!is.null(NullCheck)) NullCheck <- try({grDevices::dev.off()})
+    while(grDevices::dev.cur() > 1) grDevices::dev.off()
   }
 
   # Regression Return Model Objects----
