@@ -2297,8 +2297,17 @@ PlotList <- list()
 # Total runs
 TotalRuns <- Tuning[,.N]
 
+# Load grid results
+if(file.exists(file.path(Path, "Walmart_CARMA_Metrics.csv"))) {
+  Metrics <- data.table::fread(file.path(Path, "Walmart_CARMA_Metrics.csv"))
+  RunStart <- Metrics[, .N]
+  rm(Metrics)
+} else {
+  RunStart <- 0L
+}
+
 # Run models
-for(Run in seq_len(TotalRuns)) {
+for(Run in (RunStart+1L):TotalRuns) {
 
   # Print Run
   for(zz in seq_len(100)) print(Run)
