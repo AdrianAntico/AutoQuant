@@ -43,6 +43,7 @@ AutoCatBoostCARMA(
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1),
+  PartitionType = "timeseries",
   TaskType = "GPU",
   NumGPU = 1,
   EvalMetric = "RMSE",
@@ -61,8 +62,9 @@ AutoCatBoostCARMA(
   RandomStrength = 1,
   BorderCount = 254,
   Depth = 6,
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  PartitionType = "timeseries",
+  RSM = 1,
+  BootStrapType = NULL,
+  GrowPolicy = "SymmetricTree",
   Timer = TRUE,
   DebugMode = FALSE
 )
@@ -140,6 +142,8 @@ AutoCatBoostCARMA(
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
+\item{PartitionType}{Select "random" for random data partitioning "timeseries" for partitioning by time frames}
+
 \item{TaskType}{Default is "GPU" but you can also set it to "CPU"}
 
 \item{NumGPU}{Defaults to 1. If CPU is set this argument will be ignored.}
@@ -176,9 +180,11 @@ AutoCatBoostCARMA(
 
 \item{Depth}{Depth of catboost model}
 
-\item{BootStrapType}{Select from Catboost list}
+\item{RSM}{CPU only. If TaskType is GPU then RSM will not be used}
 
-\item{PartitionType}{Select "random" for random data partitioning "timeseries" for partitioning by time frames}
+\item{BootStrapType}{If NULL, then if TaskType is GPU then Bayesian will be used. If CPU then MVS will be used. If MVS is selected when TaskType is GPU, then BootStrapType will be switched to Bayesian}
+
+\item{GrowPolicy}{Default is SymmetricTree. Others include Lossguide and Depthwise}
 
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 

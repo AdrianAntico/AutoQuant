@@ -103,34 +103,22 @@ DT_GDL_Feature_Engineering <- function(data,
   # Ensure enough columns are allocated beforehand----
   if(!is.null(groupingVars)) {
     if(is.null(timeDiffTarget)) {
-      if(ncol(data) +
-         (length(lags) + length(periods)) * tarNum * length(groupingVars) * length(statsFUNs) > data.table::truelength(data)) {
-        data.table::alloc.col(DT = data,
-                              n = ncol(data) +
-                                (length(lags) + length(periods)) * tarNum * length(groupingVars) * length(statsFUNs))
+      if(ncol(data) + (length(lags) + length(periods)) * tarNum * length(groupingVars) * length(statsFUNs) > data.table::truelength(data)) {
+        data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * length(groupingVars) * length(statsFUNs))
       }
     } else {
-      if(ncol(data) +
-         (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars) * length(statsFUNs) > data.table::truelength(data)) {
-        data.table::alloc.col(DT = data,
-                              n = ncol(data) +
-                                (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars) * length(statsFUNs))
+      if(ncol(data) + (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars) * length(statsFUNs) > data.table::truelength(data)) {
+        data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * 2 * length(groupingVars) * length(statsFUNs))
       }
     }
   } else {
     if(is.null(timeDiffTarget)) {
-      if(ncol(data) +
-         (length(lags) + length(periods)) * tarNum * length(statsFUNs) > data.table::truelength(data)) {
-        data.table::alloc.col(DT = data,
-                              n = ncol(data) +
-                                (length(lags) + length(periods)) * tarNum * length(statsFUNs))
+      if(ncol(data) + (length(lags) + length(periods)) * tarNum * length(statsFUNs) > data.table::truelength(data)) {
+        data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * length(statsFUNs))
       }
     } else {
-      if(ncol(data) +
-         (length(lags) + length(periods)) * tarNum * 2 * length(statsFUNs) > data.table::truelength(data)) {
-        data.table::alloc.col(DT = data,
-                              n = ncol(data) +
-                                (length(lags) + length(periods)) * tarNum * 2 * length(statsFUNs))
+      if(ncol(data) + (length(lags) + length(periods)) * tarNum * 2 * length(statsFUNs) > data.table::truelength(data)) {
+        data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * 2 * length(statsFUNs))
       }
     }
   }

@@ -41,15 +41,15 @@ AutoCatBoostRegression(
   MetricPeriods = 10L,
   langevin = FALSE,
   diffusion_temperature = 10000,
-  Trees = 50L,
-  Depth = 6,
+  Trees = 500L,
+  Depth = 9,
   L2_Leaf_Reg = 3,
   RandomStrength = 1,
-  BorderCount = 128,
+  BorderCount = 254,
   LearningRate = NULL,
-  RSM = NULL,
+  RSM = 1,
   BootStrapType = NULL,
-  GrowPolicy = NULL
+  GrowPolicy = "SymmetricTree"
 )
 }
 \arguments{
@@ -125,23 +125,23 @@ AutoCatBoostRegression(
 
 \item{diffusion_temperature}{Defaults to 10000}
 
-\item{Trees}{Bandit grid partitioned. The maximum number of trees you want in your models}
+\item{Trees}{Standard + Grid Tuning. Bandit grid partitioned. The maximum number of trees you want in your models}
 
-\item{Depth}{Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
+\item{Depth}{Standard + Grid Tuning. Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)}
 
-\item{L2_Leaf_Reg}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)}
+\item{L2_Leaf_Reg}{Standard + Grid Tuning. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)}
 
-\item{RandomStrength}{A multiplier of randomness added to split evaluations. Default value is 1 which adds no randomness.}
+\item{RandomStrength}{Standard + Grid Tuning. A multiplier of randomness added to split evaluations. Default value is 1 which adds no randomness.}
 
-\item{BorderCount}{Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU}
+\item{BorderCount}{Standard + Grid Tuning. Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU}
 
-\item{LearningRate}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
+\item{LearningRate}{Standard + Grid Tuning. Default varies if RMSE, MultiClass, or Logloss is utilized. Otherwise default is 0.03. Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)}
 
-\item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
+\item{RSM}{CPU only. Standard + Grid Tuning. If GPU is set, this is turned off. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
-\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
+\item{BootStrapType}{Standard + Grid Tuning. NULL value to default to catboost default (Bayesian for GPU and MVS for CPU). Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
-\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
+\item{GrowPolicy}{Standard + Grid Tuning. Catboost default of SymmetricTree. Random testing. Default "SymmetricTree", character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
@@ -277,9 +277,9 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     RandomStrength = 1,
     BorderCount = 128,
     LearningRate = seq(0.01,0.10,0.01),
-    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+    RSM = 1,
+    BootStrapType = NULL,
+    GrowPolicy = "SymmetricTree")
 
 # Output
  TestModel$Model

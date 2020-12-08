@@ -38,15 +38,15 @@
 #' @param MetricPeriods Number of periods to use between Catboost evaluations
 #' @param langevin Set to TRUE to enable
 #' @param diffusion_temperature Defaults to 10000
-#' @param Trees Bandit grid partitioned. The maximum number of trees you want in your models
-#' @param Depth Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
-#' @param L2_Leaf_Reg Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
-#' @param RandomStrength A multiplier of randomness added to split evaluations. Default value is 1 which adds no randomness.
-#' @param BorderCount Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU
-#' @param LearningRate Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
-#' @param RSM CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
-#' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
-#' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
+#' @param Trees Standard + Grid Tuning. Bandit grid partitioned. The maximum number of trees you want in your models
+#' @param Depth Standard + Grid Tuning. Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
+#' @param L2_Leaf_Reg Standard + Grid Tuning. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the L2_Leaf_Reg values to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
+#' @param RandomStrength Standard + Grid Tuning. A multiplier of randomness added to split evaluations. Default value is 1 which adds no randomness.
+#' @param BorderCount Standard + Grid Tuning. Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU
+#' @param LearningRate Standard + Grid Tuning. Default varies if RMSE, MultiClass, or Logloss is utilized. Otherwise default is 0.03. Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
+#' @param RSM CPU only. Standard + Grid Tuning. If GPU is set, this is turned off. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
+#' @param BootStrapType Standard + Grid Tuning. NULL value to default to catboost default (Bayesian for GPU and MVS for CPU). Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
+#' @param GrowPolicy Standard + Grid Tuning. Catboost default of SymmetricTree. Random testing. Default "SymmetricTree", character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
 #' @param Shuffles Number of times to randomize grid possibilities
 #' @examples
 #' \dontrun{
@@ -176,9 +176,9 @@
 #'     RandomStrength = 1,
 #'     BorderCount = 128,
 #'     LearningRate = seq(0.01,0.10,0.01),
-#'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-#'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-#'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+#'     RSM = 1,
+#'     BootStrapType = NULL,
+#'     GrowPolicy = "SymmetricTree")
 #'
 #' # Output
 #'  TestModel$Model
@@ -234,15 +234,15 @@ AutoCatBoostRegression <- function(data,
                                    MetricPeriods = 10L,
                                    langevin = FALSE,
                                    diffusion_temperature = 10000,
-                                   Trees = 50L,
-                                   Depth = 6,
+                                   Trees = 500L,
+                                   Depth = 9,
                                    L2_Leaf_Reg = 3.0,
                                    RandomStrength = 1,
-                                   BorderCount = 128,
+                                   BorderCount = 254,
                                    LearningRate = NULL,
-                                   RSM = NULL,
+                                   RSM = 1,
                                    BootStrapType = NULL,
-                                   GrowPolicy = NULL) {
+                                   GrowPolicy = "SymmetricTree") {
   # Load catboost ----
   loadNamespace(package = "catboost")
 
@@ -358,6 +358,17 @@ AutoCatBoostRegression <- function(data,
     task_type <- "CPU"
     print("task_type switched to CPU to enable langevin boosting")
   }
+  if(task_type == "GPU") {
+    RSM <- NULL
+  } else if(is.null(RSM)) {
+    RSM <- 1
+  }
+  if(is.null(BootStrapType)) {
+    if(task_type == "GPU") BootStrapType <- "Bayesian"
+    if(task_type == "CPU") BootStrapType <- "MVS"
+  } else if(task_type == "GPU" & BootStrapType == "MVS") {
+    BootStrapType <- "Bayesian"
+  }
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {
@@ -365,7 +376,7 @@ AutoCatBoostRegression <- function(data,
     if(is.null(Depth)) return("Depth cannot be NULL when GridTune = TRUE")
     if(is.null(LearningRate)) return("LearningRate cannot be NULL when GridTune = TRUE")
     if(is.null(L2_Leaf_Reg)) return("L2_Leaf_Reg cannot be NULL when GridTune = TRUE")
-    if(is.null(RSM)) return("RSM cannot be NULL when GridTune = TRUE and task_type = 'CPU'")
+    if(is.null(RSM) & task_type == "CPU") return("RSM cannot be NULL when GridTune = TRUE and task_type = 'CPU'")
     if(is.null(BootStrapType)) return("BootStrapType cannot be NULL when GridTune = TRUE")
     if(is.null(GrowPolicy)) return("GrowPolicy cannot be NULL when GridTune = TRUE")
   }
@@ -1036,80 +1047,184 @@ AutoCatBoostRegression <- function(data,
 
   # Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
-    if(!is.null(LearningRate) && langevin) {
-      base_params <- list(
-        use_best_model        = TRUE,
-        best_model_min_trees  = 10L,
-        metric_period         = MetricPeriods,
-        langevin              = langevin,
-        diffusion_temperature = diffusion_temperature,
-        iterations            = Trees,
-        depth                 = Depth,
-        learning_rate         = LearningRate,
-        l2_leaf_reg           = L2_Leaf_Reg,
-        random_strength       = RandomStrength,
-        border_count          = BorderCount,
-        loss_function         = LossFunction,
-        eval_metric           = EvalMetric,
-        has_time              = HasTime,
-        task_type             = task_type,
-        devices               = NumGPUs,
-        thread_count          = parallel::detectCores(),
-        allow_writing_files   = FALSE)
-    } else if(is.null(LearningRate) && langevin) {
-      base_params <- list(
-        use_best_model        = TRUE,
-        best_model_min_trees  = 10L,
-        metric_period         = MetricPeriods,
-        langevin              = langevin,
-        diffusion_temperature = diffusion_temperature,
-        iterations            = Trees,
-        depth                 = Depth,
-        l2_leaf_reg           = L2_Leaf_Reg,
-        random_strength       = RandomStrength,
-        border_count          = BorderCount,
-        loss_function         = LossFunction,
-        eval_metric           = EvalMetric,
-        has_time              = HasTime,
-        task_type             = task_type,
-        devices               = NumGPUs,
-        thread_count          = parallel::detectCores(),
-        allow_writing_files   = FALSE)
-    } else if(!is.null(LearningRate)) {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = MetricPeriods,
-        iterations           = Trees,
-        depth                = Depth,
-        learning_rate        = LearningRate,
-        l2_leaf_reg          = L2_Leaf_Reg,
-        random_strength      = RandomStrength,
-        border_count         = BorderCount,
-        loss_function        = LossFunction,
-        eval_metric          = EvalMetric,
-        has_time             = HasTime,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        allow_writing_files  = FALSE)
+    if(task_type == "CPU") {
+      if(!is.null(LearningRate) && langevin) {
+        base_params <- list(
+          use_best_model        = TRUE,
+          best_model_min_trees  = 10L,
+          metric_period         = MetricPeriods,
+          langevin              = langevin,
+          diffusion_temperature = diffusion_temperature,
+          iterations            = Trees,
+          depth                 = Depth,
+          learning_rate         = LearningRate,
+          l2_leaf_reg           = L2_Leaf_Reg,
+          random_strength       = RandomStrength,
+          border_count          = BorderCount,
+          rsm                   = RSM,
+          grow_policy           = GrowPolicy,
+          bootstrap_type        = BootStrapType,
+          loss_function         = LossFunction,
+          eval_metric           = EvalMetric,
+          has_time              = HasTime,
+          task_type             = task_type,
+          devices               = NumGPUs,
+          thread_count          = parallel::detectCores(),
+          allow_writing_files   = FALSE)
+      } else if(is.null(LearningRate) && langevin) {
+        base_params <- list(
+          use_best_model        = TRUE,
+          best_model_min_trees  = 10L,
+          metric_period         = MetricPeriods,
+          langevin              = langevin,
+          diffusion_temperature = diffusion_temperature,
+          iterations            = Trees,
+          depth                 = Depth,
+          l2_leaf_reg           = L2_Leaf_Reg,
+          random_strength       = RandomStrength,
+          border_count          = BorderCount,
+          rsm                   = RSM,
+          grow_policy           = GrowPolicy,
+          bootstrap_type        = BootStrapType,
+          loss_function         = LossFunction,
+          eval_metric           = EvalMetric,
+          has_time              = HasTime,
+          task_type             = task_type,
+          devices               = NumGPUs,
+          thread_count          = parallel::detectCores(),
+          allow_writing_files   = FALSE)
+      } else if(!is.null(LearningRate)) {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          depth                = Depth,
+          learning_rate        = LearningRate,
+          l2_leaf_reg          = L2_Leaf_Reg,
+          random_strength      = RandomStrength,
+          border_count         = BorderCount,
+          rsm                  = RSM,
+          grow_policy          = GrowPolicy,
+          bootstrap_type       = BootStrapType,
+          loss_function        = LossFunction,
+          eval_metric          = EvalMetric,
+          has_time             = HasTime,
+          task_type            = task_type,
+          devices              = NumGPUs,
+          thread_count         = parallel::detectCores(),
+          allow_writing_files  = FALSE)
+      } else {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          depth                = Depth,
+          l2_leaf_reg          = L2_Leaf_Reg,
+          random_strength      = RandomStrength,
+          border_count         = BorderCount,
+          rsm                  = RSM,
+          grow_policy          = GrowPolicy,
+          bootstrap_type       = BootStrapType,
+          loss_function        = LossFunction,
+          eval_metric          = EvalMetric,
+          has_time             = HasTime,
+          task_type            = task_type,
+          devices              = NumGPUs,
+          thread_count         = parallel::detectCores(),
+          allow_writing_files  = FALSE)
+      }
     } else {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = MetricPeriods,
-        iterations           = Trees,
-        depth                = Depth,
-        l2_leaf_reg          = L2_Leaf_Reg,
-        random_strength      = RandomStrength,
-        border_count         = BorderCount,
-        loss_function        = LossFunction,
-        eval_metric          = EvalMetric,
-        has_time             = HasTime,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        allow_writing_files  = FALSE)
+
+      # GPU TaskType
+      if(!is.null(LearningRate) && langevin) {
+        base_params <- list(
+          use_best_model        = TRUE,
+          best_model_min_trees  = 10L,
+          metric_period         = MetricPeriods,
+          #langevin              = langevin,
+          #diffusion_temperature = diffusion_temperature,
+          iterations            = Trees,
+          depth                 = Depth,
+          learning_rate         = LearningRate,
+          l2_leaf_reg           = L2_Leaf_Reg,
+          random_strength       = RandomStrength,
+          border_count          = BorderCount,
+          #rsm                   = RSM,
+          grow_policy           = GrowPolicy,
+          bootstrap_type        = BootStrapType,
+          loss_function         = LossFunction,
+          eval_metric           = EvalMetric,
+          has_time              = HasTime,
+          task_type             = task_type,
+          devices               = NumGPUs,
+          thread_count          = parallel::detectCores(),
+          allow_writing_files   = FALSE)
+      } else if(is.null(LearningRate) && langevin) {
+        base_params <- list(
+          use_best_model        = TRUE,
+          best_model_min_trees  = 10L,
+          metric_period         = MetricPeriods,
+          #langevin              = langevin,
+          #diffusion_temperature = diffusion_temperature,
+          iterations            = Trees,
+          depth                 = Depth,
+          l2_leaf_reg           = L2_Leaf_Reg,
+          random_strength       = RandomStrength,
+          border_count          = BorderCount,
+          #rsm                   = RSM,
+          grow_policy           = GrowPolicy,
+          bootstrap_type        = BootStrapType,
+          loss_function         = LossFunction,
+          eval_metric           = EvalMetric,
+          has_time              = HasTime,
+          task_type             = task_type,
+          devices               = NumGPUs,
+          thread_count          = parallel::detectCores(),
+          allow_writing_files   = FALSE)
+      } else if(!is.null(LearningRate)) {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          depth                = Depth,
+          learning_rate        = LearningRate,
+          l2_leaf_reg          = L2_Leaf_Reg,
+          random_strength      = RandomStrength,
+          border_count         = BorderCount,
+          #rsm                  = RSM,
+          grow_policy          = GrowPolicy,
+          bootstrap_type       = BootStrapType,
+          loss_function        = LossFunction,
+          eval_metric          = EvalMetric,
+          has_time             = HasTime,
+          task_type            = task_type,
+          devices              = NumGPUs,
+          thread_count         = parallel::detectCores(),
+          allow_writing_files  = FALSE)
+      } else {
+        base_params <- list(
+          use_best_model       = TRUE,
+          best_model_min_trees = 10L,
+          metric_period        = MetricPeriods,
+          iterations           = Trees,
+          depth                = Depth,
+          l2_leaf_reg          = L2_Leaf_Reg,
+          random_strength      = RandomStrength,
+          border_count         = BorderCount,
+          #rsm                  = RSM,
+          grow_policy          = GrowPolicy,
+          bootstrap_type       = BootStrapType,
+          loss_function        = LossFunction,
+          eval_metric          = EvalMetric,
+          has_time             = HasTime,
+          task_type            = task_type,
+          devices              = NumGPUs,
+          thread_count         = parallel::detectCores(),
+          allow_writing_files  = FALSE)
+      }
     }
   }
 
@@ -1370,8 +1485,11 @@ AutoCatBoostRegression <- function(data,
           }
         } else {
           VariableImportance <- NULL
+          Interaction <- NULL
+          Imp <- NULL
+          ShapValues <- NULL
         }
-      } else {
+      } else if(GrowPolicy == "SymmetricTree") {
 
         # Feature Information ----
         if(!is.null(TestData)) {
@@ -1412,6 +1530,11 @@ AutoCatBoostRegression <- function(data,
             data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
           }
         }
+      } else {
+        VariableImportance <- NULL
+        Interaction <- NULL
+        Imp <- NULL
+        ShapValues <- NULL
       }
     } else {
       if(GridTune) {
@@ -1458,8 +1581,11 @@ AutoCatBoostRegression <- function(data,
           }
         } else {
           VariableImportance <- NULL
+          Interaction <- NULL
+          Imp <- NULL
+          ShapValues <- NULL
         }
-      } else {
+      } else if(GrowPolicy == "SymmetricTree") {
 
         # Feature Information ----
         if(!is.null(TestData)) {
@@ -1500,6 +1626,11 @@ AutoCatBoostRegression <- function(data,
             data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
           }
         }
+      } else {
+        VariableImportance <- NULL
+        Interaction <- NULL
+        Imp <- NULL
+        ShapValues <- NULL
       }
     }
 

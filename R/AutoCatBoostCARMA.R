@@ -61,7 +61,9 @@
 #' @param L2_Leaf_Reg l2 reg parameter
 #' @param RandomStrength Default is 1
 #' @param BorderCount Default is 254
-#' @param BootStrapType Select from Catboost list
+#' @param RSM CPU only. If TaskType is GPU then RSM will not be used
+#' @param BootStrapType If NULL, then if TaskType is GPU then Bayesian will be used. If CPU then MVS will be used. If MVS is selected when TaskType is GPU, then BootStrapType will be switched to Bayesian
+#' @param GrowPolicy Default is SymmetricTree. Others include Lossguide and Depthwise
 #' @examples
 #' \dontrun{
 #'
@@ -312,6 +314,7 @@ AutoCatBoostCARMA <- function(data,
                               ZeroPadSeries = NULL,
                               DataTruncate = FALSE,
                               SplitRatios = c(0.7, 0.2, 0.1),
+                              PartitionType = "timeseries",
                               TaskType = "GPU",
                               NumGPU = 1,
                               EvalMetric = "RMSE",
@@ -330,8 +333,9 @@ AutoCatBoostCARMA <- function(data,
                               RandomStrength = 1,
                               BorderCount = 254,
                               Depth = 6,
-                              BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-                              PartitionType = "timeseries",
+                              RSM = 1,
+                              BootStrapType = NULL,
+                              GrowPolicy = "SymmetricTree",
                               Timer = TRUE,
                               DebugMode = FALSE) {
   # Load catboost----
@@ -365,6 +369,19 @@ AutoCatBoostCARMA <- function(data,
     if(length(TimeWeights) != 1L) {
       TimeWeights <- NULL
     }
+  }
+
+  # Other ML Args
+  if(is.null(GrowPolicy)) {
+    GrowPolicy <- "SymmetricTree"
+  } else {
+    if(tolower(GrowPolicy) == "lossguide") GrowPolicy <- "Lossguide"
+    if(tolower(GrowPolicy) == "depthwise") GrowPolicy <- "Depthwise"
+  }
+  if(is.null(BootStrapType)) {
+    if(TaskType == "GPU") BootStrapType <- "Bayesian" else BootStrapType <- "MVS"
+  } else {
+    if(TaskType == "GPU" & BootStrapType == "MVS") BootStrapType <- "Bayesian"
   }
 
   # Variables for Program: Redefine HoldOutPerids----
@@ -1186,9 +1203,9 @@ AutoCatBoostCARMA <- function(data,
       L2_Leaf_Reg = L2_Leaf_Reg,
       RandomStrength = RandomStrength,
       BorderCount = BorderCount,
-      RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+      RSM = if(TaskType == "GPU") NULL else RSM,
       BootStrapType = BootStrapType,
-      GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+      GrowPolicy = GrowPolicy)
 
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) return(TestModel)
