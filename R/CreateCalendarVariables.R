@@ -177,11 +177,11 @@ CreateCalendarVariables <- function(data,
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
-      } else if(tolower(j) == "isoweek") {
+      } else if(tolower(j) == "month") {
         if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::month(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::month(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "wom") {
         if (AsFactor) {
