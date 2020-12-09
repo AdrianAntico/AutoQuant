@@ -2251,7 +2251,7 @@ data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_tra
 # Set negative numbers to 0
 data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
 
-# Subset for Stores / Departments with Full Series Available: (143 time points each)----
+# Subset for Stores / Departments with Full Series Available: (143 time points each)
 data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
 
 # Subset Columns (remove IsHoliday column)----
