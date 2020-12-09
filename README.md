@@ -2280,19 +2280,22 @@ N1 <- xregs[, .N, by = c("STORE","DEPT")][1, N]
 
 # Setup Grid Tuning & Feature Tuning
 Tuning <- data.table::CJ(
-  TimeWeights = c("None",0.9999,0.999),
-  HierachGroups = c("FALSE"),
+  TimeWeights = c("None",0.999),
   MaxTimeGroups = c("weeks","months"),
   TargetTransformation = c("TRUE","FALSE"),
   Difference = c("TRUE","FALSE"),
-  TimeTrendVariable = c("TRUE","FALSE"),
-  EvalMetric = c("RMSE"),
-  LossFunction = c("RMSE"),
+  HoldoutTrain = c(6,18),
   Langevin = c("TRUE","FALSE"),
-  L2_Leaf_Reg = c(3.0,4.0))
+  NTrees = c(2500,5000),
+  Depth = c(6,9),
+  RandomStrength = c(0.75,1),
+  L2_Leaf_Reg = c(3.0,4.0),
+  RSM = c(0.75,"NULL"),
+  GrowPolicy = c("SymmetricTree","Lossguide","Depthwise"),
+  BootStrapType = c("Bayesian","MVS","No"))
 
-# Plot list
-PlotList <- list()
+# Keep valid instances
+Tuning <- Tuning[Langevin == "TRUE" | (Langevin == "FALSE" & RSM == "NULL" & BootStrapType %in% c("Bayesian","No"))]
 
 # Total runs
 TotalRuns <- Tuning[,.N]
@@ -2327,14 +2330,14 @@ for(Run in (RunStart+1L):TotalRuns) {
     TimeWeights = if(Tuning[Run, TimeWeights] == "None") NULL else as.numeric(Tuning[Run, TimeWeights]),
     TargetColumnName = "Weekly_Sales",
     DateColumnName = "Date",
-    HierarchGroups = if(as.logical(Tuning[Run, HierachGroups])) c("Store","Dept") else NULL,
+    HierarchGroups = NULL,
     GroupVariables = c("Store","Dept"),
     TimeUnit = "weeks",
     TimeGroups = if(Tuning[Run, MaxTimeGroups] == "weeks") "weeks" else if(Tuning[Run, MaxTimeGroups] == "months") c("weeks","months") else c("weeks","months","quarters"),
 
     # Production args
     TrainOnFull = TRUE,
-    SplitRatios = c(N / N1, 1 - N / N1),
+    SplitRatios = c(1 - Tuning[Run, HoldoutTrain] / N1, Tuning[Run, HoldoutTrain] / N1),
     PartitionType = "random",
     FC_Periods = N1-N,
     TaskType = "GPU",
@@ -2356,8 +2359,8 @@ for(Run in (RunStart+1L):TotalRuns) {
     HolidayMovingAverages = c(2,3),
 
     # Time series features
-    Lags = list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12)),
-    MA_Periods = list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12)),
+    Lags = if(Tuning[Run, MaxTimeGroups] == "weeks") c(1,2,3,4,5,8,9,12,13,51,52,53) else if(Tuning[Run, MaxTimeGroups] == "months") list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12)) else list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12), "quarters" = c(1,2,3,4)),
+    MA_Periods = if(Tuning[Run, MaxTimeGroups] == "weeks") c(2,3,4,5,8,9,12,13,51,52,53) else if(Tuning[Run, MaxTimeGroups] == "months") list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12)) else list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12), "quarters" = c(2,3,4)),
     SD_Periods = NULL,
     Skew_Periods = NULL,
     Kurt_Periods = NULL,
@@ -2368,20 +2371,9 @@ for(Run in (RunStart+1L):TotalRuns) {
     AnomalyDetection = NULL,
     XREGS = xregs_new,
     FourierTerms = 0,
-    TimeTrendVariable = as.logical(Tuning[Run, TimeTrendVariable]),
+    TimeTrendVariable = TRUE,
     ZeroPadSeries = NULL,
     DataTruncate = FALSE,
-
-    # ML evaluation output
-    PDFOutputPath = NULL,
-    SaveDataPath = NULL,
-    NumOfParDepPlots = 0L,
-
-    # ML loss functions
-    EvalMetric = Tuning[Run, EvalMetric],
-    EvalMetricValue = 10,
-    LossFunction = Tuning[Run, LossFunction],
-    LossFunctionValue = 10,
 
     # ML grid tuning args
     GridTune = FALSE,
@@ -2390,15 +2382,28 @@ for(Run in (RunStart+1L):TotalRuns) {
     MaxRunsWithoutNewWinner = 50,
     MaxRunMinutes = 60*60,
 
+    # ML evaluation output
+    PDFOutputPath = NULL,
+    SaveDataPath = NULL,
+    NumOfParDepPlots = 0L,
+
+    # ML loss functions
+    EvalMetric = "RMSE",
+    EvalMetricValue = 1,
+    LossFunction = "RMSE",
+    LossFunctionValue = 1,
+
     # ML tuning args
-    NTrees = 5000,
-    Depth = 9,
+    NTrees = Tuning[Run, NTrees],
+    Depth = Tuning[Run, Depth],
     L2_Leaf_Reg = Tuning[Run, L2_Leaf_Reg],
     Langevin = as.logical(Tuning[Run, Langevin]),
     DiffusionTemperature = 10000,
-    RandomStrength = 1,
+    RandomStrength = Tuning[Run, RandomStrength],
     BorderCount = 254,
-    BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"))
+    RSM = if(Tuning[Run, RSM] == "NULL") NULL else as.numeric(Tuning[Run, RSM]),
+    GrowPolicy = Tuning[Run, GrowPolicy],
+    BootStrapType = Tuning[Run, BootStrapType])
 
   # Timer
   EndTime <- Sys.time()
@@ -2434,17 +2439,6 @@ for(Run in (RunStart+1L):TotalRuns) {
   temp[, Monthly_MAPE := Monthly_MAE / Weekly_Sales]
   Monthly_MAPE <- temp[, list(Monthly_MAPE = mean(Monthly_MAPE)), by = list(Store,Dept)]
 
-  # Create ts plot of actuals and predicted
-  Totals <- Results[Store == "Total" & Dept == "Total"]
-  Totals <- data.table::melt.data.table(data = Totals, id.vars = "Date", measure.vars = c("Predictions","Weekly_Sales"), variable.name = "Series", value.name = "Weekly_Sales")
-  PlotList[[Run]] <- eval(ggplot2::ggplot(data = Totals, ggplot2::aes(x = Date, y = Weekly_Sales, color = Series)) +
-    ggplot2::geom_line() +
-    ggplot2::scale_color_manual(values = c("red","blue")) +
-    ggplot2::labs(
-      title = "Walmart Data Forecast",
-      subtitle = paste0("Weekly MAPE = ", round(100 * Weekly_MAPE[Store == "Total" & Dept == "Total", Weekly_MAPE],1),"%", " :: Monthly MAPE = ", round(100 * Monthly_MAPE[Store == "Total" & Dept == "Total", Monthly_MAPE],1),"%")) +
-    RemixAutoML::ChartTheme(Size = 10, AngleX = 0, AngleY = 0))
-
   # Collect metrics
   Metrics <- data.table::data.table(
     RunNumber = Run,
@@ -2459,6 +2453,7 @@ for(Run in (RunStart+1L):TotalRuns) {
   # GC
   gc()
 }
+
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # ML-Based Vector AutoRegression CARMA ----
