@@ -2251,7 +2251,7 @@ data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_tra
 # Set negative numbers to 0
 data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
 
-# Subset for Stores / Departments with Full Series Available: (143 time points each)
+# Subset for Stores / Departments with Full Series Available: (143 time points each)----
 data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
 
 # Subset Columns (remove IsHoliday column)----
@@ -2271,14 +2271,14 @@ xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept
 data.table::setnames(xregs, c("Store","Dept"), c("STORE","DEPT"))
 
 # Subset data so we have an out of time sample
-data1 <- data.table::copy(data[, ID := 1:.N, by = c("Store","Dept")][ID <= 125][, ID := NULL])
+data1 <- data.table::copy(data[, ID := 1L:.N, by = c("Store","Dept")][ID <= 125L][, ID := NULL])
 data[, ID := NULL]
 
-# Define Holdout windows
-N <- data1[, .N, by = c("Store","Dept")][1, N]
-N1 <- xregs[, .N, by = c("STORE","DEPT")][1, N]
+# Define values for SplitRatios and FCWindow Args
+N1 <- data1[, .N, by = c("Store","Dept")][1L, N]
+N2 <- xregs[, .N, by = c("STORE","DEPT")][1L, N]
 
-# Setup Grid Tuning & Feature Tuning
+# Setup Grid Tuning & Feature Tuning data.table using a cross join of vectors
 Tuning <- data.table::CJ(
   TimeWeights = c("None",0.999),
   MaxTimeGroups = c("weeks","months"),
@@ -2294,28 +2294,31 @@ Tuning <- data.table::CJ(
   GrowPolicy = c("SymmetricTree","Lossguide","Depthwise"),
   BootStrapType = c("Bayesian","MVS","No"))
 
-# Keep valid instances
+# Remove options that are not compatible with GPU (skip over this otherwise)
 Tuning <- Tuning[Langevin == "TRUE" | (Langevin == "FALSE" & RSM == "NULL" & BootStrapType %in% c("Bayesian","No"))]
 
-# Total runs
-TotalRuns <- Tuning[,.N]
+# Randomize order of Tuning data.table
+Tuning <- Tuning[order(runif(.N))]
 
-# Load grid results
+# Load grid results and remove rows that have already been tested
 if(file.exists(file.path(Path, "Walmart_CARMA_Metrics.csv"))) {
   Metrics <- data.table::fread(file.path(Path, "Walmart_CARMA_Metrics.csv"))
-  RunStart <- Metrics[, .N]
-  rm(Metrics)
-} else {
-  RunStart <- 0L
+  temp <- data.table::rbindlist(list(Metrics,Tuning), fill = TRUE)
+  temp <- unique(temp, by = c(4:(ncol(temp)-1)))
+  Tuning <- temp[is.na(RunTime)][, .SD, .SDcols = names(Tuning)]
+  rm(Metrics,temp)
 }
 
-# Run models
-for(Run in (RunStart+1L):TotalRuns) {
+# Define the total number of runs
+TotalRuns <- Tuning[,.N]
 
-  # Print Run
+# Kick off feature + grid tuning
+for(Run in seq_len(TotalRuns)) {
+
+  # Print Run number
   for(zz in seq_len(100)) print(Run)
 
-  # Use clean data each run
+  # Use fresh data for each run
   xregs_new <- data.table::copy(xregs)
   data_new <- data.table::copy(data1)
 
@@ -2337,28 +2340,28 @@ for(Run in (RunStart+1L):TotalRuns) {
 
     # Production args
     TrainOnFull = TRUE,
-    SplitRatios = c(1 - Tuning[Run, HoldoutTrain] / N1, Tuning[Run, HoldoutTrain] / N1),
+    SplitRatios = c(1 - Tuning[Run, HoldoutTrain] / N2, Tuning[Run, HoldoutTrain] / N2),
     PartitionType = "random",
-    FC_Periods = N1-N,
-    TaskType = "GPU",
+    FC_Periods = N2-N1,
+    TaskType = TaskType,
     NumGPU = 1,
     Timer = TRUE,
     DebugMode = TRUE,
 
-    # Target transformations
+    # Target variable transformations
     TargetTransformation = as.logical(Tuning[Run, TargetTransformation]),
     Methods = c("BoxCox","Asinh","Log","LogPlus1","YeoJohnson"),
     Difference = as.logical(Tuning[Run, Difference]),
     NonNegativePred = TRUE,
-    RoundPreds = as.logical(Tuning[Run, RoundPreds]),
+    RoundPreds = FALSE,
 
-    # Calendar features
+    # Calendar-related features
     CalendarVariables = c("week","wom","month","quarter"),
     HolidayVariable = c("USPublicHolidays"),
     HolidayLags = c(1,2,3),
     HolidayMovingAverages = c(2,3),
 
-    # Time series features
+    # Lags, Moving Averages, and Other Rolling Stats
     Lags = if(Tuning[Run, MaxTimeGroups] == "weeks") c(1,2,3,4,5,8,9,12,13,51,52,53) else if(Tuning[Run, MaxTimeGroups] == "months") list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12)) else list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12), "quarters" = c(1,2,3,4)),
     MA_Periods = if(Tuning[Run, MaxTimeGroups] == "weeks") c(2,3,4,5,8,9,12,13,51,52,53) else if(Tuning[Run, MaxTimeGroups] == "months") list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12)) else list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12), "quarters" = c(2,3,4)),
     SD_Periods = NULL,
@@ -2412,8 +2415,7 @@ for(Run in (RunStart+1L):TotalRuns) {
   Results <- Results$Forecast
   data.table::setnames(Results, "Weekly_Sales", "Old")
   Results <- merge(Results, data, by = c("Store","Dept","Date"), all = FALSE)
-  Results <- Results[is.na(Old)]
-  Results[, Old := NULL]
+  Results <- Results[is.na(bla)][, bla := NULL]
 
   # Create totals and subtotals
   Results <- data.table::groupingsets(
@@ -2421,15 +2423,16 @@ for(Run in (RunStart+1L):TotalRuns) {
     j = list(Predictions = sum(Predictions), Weekly_Sales = sum(Weekly_Sales)),
     by = c("Date", "Store", "Dept"),
     sets = list(c("Date", "Store", "Dept"), c("Store", "Dept"), "Store", "Dept", "Date"))
-  Results[, Store := data.table::fifelse(is.na(Store), "Total", Store)]
-  Results[, Dept := data.table::fifelse(is.na(Dept), "Total", Dept)]
+
+  # Fill NAs with "Total" for totals and subtotals
+  for(cols in c("Store","Dept")) Results[, eval(cols) := data.table::fifelse(is.na(get(cols)), "Total", get(cols))]
 
   # Add error measures
   Results[, Weekly_MAE := abs(Weekly_Sales - Predictions)]
   Results[, Weekly_MAPE := Weekly_MAE / Weekly_Sales]
 
   # Weekly results
-  Weekly_MAPE <- Results[, list(Weekly_MAPE = mean(Weekly_MAPE)), by = list(Store,Dept)]
+  Weekly_MAPE <- Results[, list(Weekly_MAPE = mean(Weekly_MAPE)), by = list(Store, Dept)]
 
   # Monthly results
   temp <- data.table::copy(Results)
@@ -2437,7 +2440,7 @@ for(Run in (RunStart+1L):TotalRuns) {
   temp <- temp[, lapply(.SD, sum), by = c("Date","Store","Dept"), .SDcols = c("Predictions", "Weekly_Sales")]
   temp[, Monthly_MAE := abs(Weekly_Sales - Predictions)]
   temp[, Monthly_MAPE := Monthly_MAE / Weekly_Sales]
-  Monthly_MAPE <- temp[, list(Monthly_MAPE = mean(Monthly_MAPE)), by = list(Store,Dept)]
+  Monthly_MAPE <- temp[, list(Monthly_MAPE = mean(Monthly_MAPE)), by = list(Store, Dept)]
 
   # Collect metrics
   Metrics <- data.table::data.table(
@@ -2450,7 +2453,10 @@ for(Run in (RunStart+1L):TotalRuns) {
   # Append to file
   data.table::fwrite(Metrics, file = file.path(Path, "Walmart_CARMA_Metrics.csv"), append = TRUE)
 
-  # GC
+  # Remove objects
+  rm(Results, temp, Weekly_MAE, Weekly_MAPE, Monthly_MAE, Monthly_MAPE)
+
+  # Garbage collection because of GPU
   gc()
 }
 
@@ -2562,7 +2568,6 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
   Depth = 6)
 
 
-
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Intermittent Demand CARMA ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2656,6 +2661,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
   BorderCount = 254,
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   Depth = 6)
+  
   
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # XGBoost Version ----
@@ -2809,7 +2815,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 </p>
 </details>
 
-##### **AutoCatBoostVectorCARMA()**, **AutoCatBoostHurdleCARMA()**, **AutoCatBoostCARMA()**, **AutoXGBoostCARMA()**, **AutoH2OCARMA()**
+<img src="Images/TimeSeriesMethods.PNG" align="right" width="80" />
 <code>AutoCatBoostVectorCARMA</code> For Panel Data with multiple series to forecast. An example would be, predicting revenue and transactions across a large number of stores over time.
 
 <code>AutoHurdleCARMA()</code> utilizes the AutoCatBoostHurdleModel() function internally in order to model zeros that naturally show up in intermittent demand data sets.
