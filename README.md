@@ -2815,7 +2815,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 </p>
 </details>
 
-<img src="Images/TimeSeriesMethods.PNG" align="right" width="80" />
+<img src="Images/TimeSeriesMethods.PNG" align="center" width="350" />
 <code>AutoCatBoostVectorCARMA</code> For Panel Data with multiple series to forecast. An example would be, predicting revenue and transactions across a large number of stores over time.
 
 <code>AutoHurdleCARMA()</code> utilizes the AutoCatBoostHurdleModel() function internally in order to model zeros that naturally show up in intermittent demand data sets.
@@ -2872,8 +2872,6 @@ Results <- RemixAutoML::AutoH2OCARMA(
 </details>
   
 ### **AutoBanditSarima()**
-
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/AutoBanditSarimaFCPlot.png" align="center" width="350" />
 
 <details><summary>Code Example</summary>
 <p>
