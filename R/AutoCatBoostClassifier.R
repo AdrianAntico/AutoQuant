@@ -908,14 +908,14 @@ AutoCatBoostClassifier <- function(data,
           Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
           ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "ShapValues"))
 
+        } else if(!is.null(ValidationData)) {
+          Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+          Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
+          ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
         } else if(TrainOnFull) {
           Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
           Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
           ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "ShapValues"))
-        } else {
-          Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
-          Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
-          ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
         }
 
         # Gather importances ----
@@ -952,14 +952,14 @@ AutoCatBoostClassifier <- function(data,
         Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
         ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "ShapValues"))
 
+      } else if(!is.null(ValidationData)) {
+        Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+        Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
+        ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
       } else if(TrainOnFull) {
         Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
         Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
         ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "ShapValues"))
-      } else {
-        Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
-        Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
-        ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
       }
 
       # Gather importances ----
@@ -994,14 +994,14 @@ AutoCatBoostClassifier <- function(data,
       Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
       ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "ShapValues"))
 
+    } else if(!is.null(ValidationData)) {
+      Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+      Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
+      ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
     } else if(TrainOnFull) {
       Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
       Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
       ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "ShapValues"))
-    } else {
-      Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
-      Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
-      ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
     }
 
     # Gather importances ----
