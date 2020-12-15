@@ -2400,6 +2400,7 @@ for(Run in seq_len(TotalRuns)) {
     NTrees = Tuning[Run, NTrees],
     Depth = Tuning[Run, Depth],
     L2_Leaf_Reg = Tuning[Run, L2_Leaf_Reg],
+    LearningRate = NULL,
     Langevin = as.logical(Tuning[Run, Langevin]),
     DiffusionTemperature = 10000,
     RandomStrength = Tuning[Run, RandomStrength],
