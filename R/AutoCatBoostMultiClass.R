@@ -30,6 +30,8 @@
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param MetricPeriods Number of trees to build before evaluating intermediate metrics. Default is 10L
+#' @param langevin TRUE or FALSE. Enable stochastic gradient langevin boosting
+#' @param diffusion_temperature Default is 10000 and is only used when langevin is set to TRUE
 #' @param Trees Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
 #' @param Depth Bandit grid partitioned. Number, or vector for depth to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(4L, 16L, 2L)
 #' @param LearningRate Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
@@ -142,6 +144,8 @@
 #'     #   will be used
 #'     # GrowPolicy is turned off for CPU runs
 #'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+#'     langevin = FALSE,
+#'     diffusion_temperature = 10000,
 #'     Trees = seq(100L, 500L, 50L),
 #'     Depth = seq(4L, 8L, 1L),
 #'     LearningRate = seq(0.01,0.10,0.01),
@@ -192,6 +196,8 @@ AutoCatBoostMultiClass <- function(data,
                                    Shuffles = 1L,
                                    BaselineComparison = "default",
                                    MetricPeriods = 10L,
+                                   langevin = FALSE,
+                                   diffusion_temperature = 10000,
                                    Trees = 50L,
                                    Depth = 6,
                                    LearningRate = NULL,
@@ -234,6 +240,21 @@ AutoCatBoostMultiClass <- function(data,
   if(!GridTune & length(BorderCount) > 1L) BorderCount <- max(BorderCount)
   if(!GridTune & length(LearningRate) > 1L) LearningRate <- max(LearningRate)
   if(!GridTune & length(RSM) > 1L) RSM <- max(RSM)
+  if(langevin & task_type == "GPU") {
+    task_type <- "CPU"
+    print("task_type switched to CPU to enable langevin boosting")
+  }
+  if(task_type == "GPU") {
+    RSM <- NULL
+  } else if(is.null(RSM)) {
+    RSM <- 1
+  }
+  if(is.null(BootStrapType)) {
+    if(task_type == "GPU") BootStrapType <- "Bayesian"
+    if(task_type == "CPU") BootStrapType <- "MVS"
+  } else if(task_type == "GPU" & BootStrapType == "MVS") {
+    BootStrapType <- "Bayesian"
+  }
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
   if(GridTune) {
@@ -827,72 +848,33 @@ AutoCatBoostMultiClass <- function(data,
   }
 
   # Define parameters Not pass in GridMetric and not grid tuning----
-  if(is.null(PassInGrid) & GridTune == FALSE) {
-    if(!is.null(ClassWeights)) {
-      if(!is.null(LearningRate)) {
-        base_params <- list(
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          metric_period        = MetricPeriods,
-          iterations           = Trees,
-          depth                = Depth,
-          learning_rate        = LearningRate,
-          random_strength      = RandomStrength,
-          border_count         = BorderCount,
-          thread_count         = parallel::detectCores(),
-          loss_function        = loss_function,
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          task_type            = task_type,
-          class_weights        = ClassWeights)
-      } else {
-        base_params <- list(
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          metric_period        = MetricPeriods,
-          iterations           = Trees,
-          depth                = Depth,
-          random_strength      = RandomStrength,
-          border_count         = BorderCount,
-          thread_count         = parallel::detectCores(),
-          loss_function        = loss_function,
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          task_type            = task_type,
-          class_weights        = ClassWeights)
-      }
-    } else {
-      if(!is.null(LearningRate)) {
-        base_params <- list(
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          metric_period        = MetricPeriods,
-          iterations           = Trees,
-          depth                = Depth,
-          learning_rate        = LearningRate,
-          thread_count         = parallel::detectCores(),
-          random_strength      = RandomStrength,
-          border_count         = BorderCount,
-          loss_function        = loss_function,
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          task_type            = task_type)
-      } else {
-        base_params <- list(
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          metric_period        = MetricPeriods,
-          iterations           = Trees,
-          depth                = Depth,
-          random_strength      = RandomStrength,
-          thread_count         = parallel::detectCores(),
-          border_count         = BorderCount,
-          loss_function        = loss_function,
-          eval_metric          = eval_metric,
-          has_time             = HasTime,
-          task_type            = task_type)
-      }
-    }
+  if(is.null(PassInGrid) & !GridTune) {
+
+    # Base Parameters
+    base_params <- list()
+    base_params[["use_best_model"]] <- TRUE
+    base_params[["best_model_min_trees"]] <- 10L
+    base_params[["allow_writing_files"]] <- FALSE
+    base_params[["thread_count"]] <- parallel::detectCores()
+
+    # Additional Parameters
+    base_params[["metric_period"]] <- MetricPeriods
+    base_params[["iterations"]] <- Trees
+    base_params[["depth"]] <- Depth
+    base_params[["langevin"]] <- langevin
+    base_params[["diffusion_temperature"]] <- diffusion_temperature
+    base_params[["learning_rate"]] <- LearningRate
+    base_params[["l2_leaf_reg"]] <- L2_Leaf_Reg
+    base_params[["random_strength"]] <- RandomStrength
+    base_params[["border_count"]] <- BorderCount
+    base_params[["rsm"]] <- RSM
+    base_params[["grow_policy"]] <- GrowPolicy
+    base_params[["bootstrap_type"]] <- BootStrapType
+    base_params[["eval_metric"]] <- eval_metric
+    base_params[["has_time"]] <- HasTime
+    base_params[["task_type"]] <- task_type
+    base_params[["devices"]] <- NumGPUs
+    base_params[["class_weights"]] <- ClassWeights
   }
 
   # MultiClass Train Final Model----
