@@ -1667,11 +1667,7 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             k <- k + 1L
-            if(all(c("plotly","dplyr") %chin% installed.packages())) {
-              ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- plotly::ggplotly(Out1)
-            } else {
-              ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
-            }
+            ParDepBoxPlots[[paste0(VariableImportance[k, Variable])]] <- Out1
           }, error = function(x) "skip")
         }
 
