@@ -59,6 +59,7 @@
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param Depth Depth of catboost model
 #' @param L2_Leaf_Reg l2 reg parameter
+#' @param LearningRate Defaults to NULL. Catboost will dynamically define this if L2_Leaf_Reg is NULL and RMSE is chosen (otherwise catboost will default it to 0.03). Then you can pull it out of the model object and pass it back in should you wish.
 #' @param RandomStrength Default is 1
 #' @param BorderCount Default is 254
 #' @param RSM CPU only. If TaskType is GPU then RSM will not be used
@@ -213,6 +214,7 @@
 #'     NTrees = 12000,
 #'     Depth = 9,
 #'     L2_Leaf_Reg = Tuning[Run, L2_Leaf_Reg],
+#'     LearningRate = NULL,
 #'     Langevin = as.logical(Tuning[Run, Langevin]),
 #'     DiffusionTemperature = 10000,
 #'     RandomStrength = 1,
@@ -330,6 +332,7 @@ AutoCatBoostCARMA <- function(data,
                               DiffusionTemperature = 10000,
                               NTrees = 1000,
                               L2_Leaf_Reg = 3.0,
+                              LearningRate = NULL,
                               RandomStrength = 1,
                               BorderCount = 254,
                               Depth = 6,
@@ -1199,7 +1202,7 @@ AutoCatBoostCARMA <- function(data,
       diffusion_temperature = DiffusionTemperature,
       Trees = NTrees,
       Depth = Depth,
-      LearningRate = if(GridTune) seq(0.01,0.15,0.01) else NULL,
+      LearningRate = LearningRate,
       L2_Leaf_Reg = L2_Leaf_Reg,
       RandomStrength = RandomStrength,
       BorderCount = BorderCount,

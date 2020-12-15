@@ -59,6 +59,7 @@ AutoCatBoostCARMA(
   DiffusionTemperature = 10000,
   NTrees = 1000,
   L2_Leaf_Reg = 3,
+  LearningRate = NULL,
   RandomStrength = 1,
   BorderCount = 254,
   Depth = 6,
@@ -173,6 +174,8 @@ AutoCatBoostCARMA(
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
 \item{L2_Leaf_Reg}{l2 reg parameter}
+
+\item{LearningRate}{Defaults to NULL. Catboost will dynamically define this if L2_Leaf_Reg is NULL and RMSE is chosen (otherwise catboost will default it to 0.03). Then you can pull it out of the model object and pass it back in should you wish.}
 
 \item{RandomStrength}{Default is 1}
 
@@ -345,6 +348,7 @@ for(Run in seq_len(TotalRuns)) {
     NTrees = 12000,
     Depth = 9,
     L2_Leaf_Reg = Tuning[Run, L2_Leaf_Reg],
+    LearningRate = NULL,
     Langevin = as.logical(Tuning[Run, Langevin]),
     DiffusionTemperature = 10000,
     RandomStrength = 1,
