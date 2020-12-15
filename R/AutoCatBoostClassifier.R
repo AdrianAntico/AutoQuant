@@ -684,80 +684,33 @@ AutoCatBoostClassifier <- function(data,
 
   # Define parameters Not pass in GridMetric and not grid tuning----
   if(is.null(PassInGrid) & !GridTune) {
-    if(!is.null(LearningRate) && langevin) {
-      base_params <- list(
-        use_best_model        = TRUE,
-        best_model_min_trees  = 10L,
-        metric_period         = MetricPeriods,
-        iterations            = Trees,
-        depth                 = Depth,
-        learning_rate         = LearningRate,
-        langevin              = langevin,
-        diffusion_temperature = diffusion_temperature,
-        random_strength       = RandomStrength,
-        border_count          = BorderCount,
-        loss_function         = LossFunction,
-        eval_metric           = eval_metric,
-        has_time              = HasTime,
-        task_type             = task_type,
-        devices               = NumGPUs,
-        thread_count          = parallel::detectCores(),
-        class_weights         = ClassWeights)
 
-    } else if(is.null(LearningRate) && langevin) {
-      base_params <- list(
-        use_best_model        = TRUE,
-        best_model_min_trees  = 10L,
-        metric_period         = MetricPeriods,
-        iterations            = Trees,
-        depth                 = Depth,
-        langevin              = langevin,
-        diffusion_temperature = diffusion_temperature,
-        random_strength       = RandomStrength,
-        border_count          = BorderCount,
-        loss_function         = LossFunction,
-        eval_metric           = eval_metric,
-        has_time              = HasTime,
-        task_type             = task_type,
-        devices               = NumGPUs,
-        thread_count          = parallel::detectCores(),
-        class_weights         = ClassWeights)
+    # Base Parameters
+    base_params <- list()
+    base_params[["use_best_model"]] <- TRUE
+    base_params[["best_model_min_trees"]] <- 10L
+    base_params[["allow_writing_files"]] <- FALSE
+    base_params[["thread_count"]] <- parallel::detectCores()
 
-    } else if(!is.null(LearningRate)) {
-      base_params <- list(
-        use_best_model        = TRUE,
-        best_model_min_trees  = 10L,
-        metric_period         = MetricPeriods,
-        iterations            = Trees,
-        depth                 = Depth,
-        learning_rate         = LearningRate,
-        random_strength       = RandomStrength,
-        border_count          = BorderCount,
-        loss_function         = LossFunction,
-        eval_metric           = eval_metric,
-        has_time              = HasTime,
-        task_type             = task_type,
-        devices               = NumGPUs,
-        thread_count          = parallel::detectCores(),
-        class_weights         = ClassWeights)
-
-    } else {
-      base_params <- list(
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        metric_period        = MetricPeriods,
-        iterations           = Trees,
-        depth                = Depth,
-        random_strength      = RandomStrength,
-        border_count         = BorderCount,
-        loss_function        = LossFunction,
-        eval_metric          = eval_metric,
-        has_time             = HasTime,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        class_weights        = ClassWeights)
-    }
+    # Additional Parameters
+    base_params[["metric_period"]] <- MetricPeriods
+    base_params[["iterations"]] <- Trees
+    base_params[["depth"]] <- Depth
+    base_params[["langevin"]] <- langevin
+    base_params[["diffusion_temperature"]] <- diffusion_temperature
+    base_params[["learning_rate"]] <- LearningRate
+    base_params[["l2_leaf_reg"]] <- L2_Leaf_Reg
+    base_params[["random_strength"]] <- RandomStrength
+    base_params[["border_count"]] <- BorderCount
+    base_params[["rsm"]] <- RSM
+    base_params[["grow_policy"]] <- GrowPolicy
+    base_params[["bootstrap_type"]] <- BootStrapType
+    base_params[["loss_function"]] <- LossFunction
+    base_params[["eval_metric"]] <- eval_metric
+    base_params[["has_time"]] <- HasTime
+    base_params[["task_type"]] <- task_type
+    base_params[["devices"]] <- NumGPUs
+    base_params[["class_weights"]] <- ClassWeights
   }
 
   # Binary Train Final Model----
