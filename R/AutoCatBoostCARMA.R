@@ -411,7 +411,9 @@ AutoCatBoostCARMA <- function(data,
       DateColumnName = eval(DateColumnName),
       GroupVariables = GroupVariables,
       TimeUnit = TimeUnit,
-      FillType = ZeroPadSeries)
+      FillType = "maxmax")
+    temp[, Check := sum(is.na(get(TargetColumnName))), by = GroupVariables]
+    temp <- temp[Check == 0][, Check := NULL]
 
     # If not, stop and explain to the user what to do
     if(temp[,.N] != data[,.N]) {
@@ -452,23 +454,27 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("merging xregs to data")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
+
+      # I need GroupVar in the xregs. if not there, add it
+      if(!"GroupVar" %chin% names(xregs)) {
+        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
+
+      # I need the GroupVariable names to be different from data
+      if(any(GroupVariables %chin% names(XREGS))) {
+        for(g in GroupVariables) {
+          data.table::setnames(x = XREGS, old = eval(g), new = paste0("Add_",eval(g)))
+        }
+      }
+
+      # Merge data and XREGS
       if(length(GroupVariables) > 1) {
-        if(!"GroupVar" %chin% names(XREGS)) {
-          data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c(GroupVariables, eval(DateColumnName)), all.x = TRUE)
-          data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-        } else {
-          data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-          data <- merge(data, XREGS, by = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
-          data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-        }
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+        data <- merge(data, XREGS, by = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
+        data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
       } else {
-        if(!"GroupVar" %chin% names(XREGS)) {
-          data <- merge(data, XREGS, by = c(eval(GroupVariables), eval(DateColumnName)), all.x = TRUE)
-          data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-        } else {
-          data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
-          data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-        }
+        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
+        data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
       }
     } else {
       data <- merge(data, XREGS, by = c(eval(DateColumnName)), all.x = TRUE)
