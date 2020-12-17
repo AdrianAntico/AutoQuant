@@ -697,7 +697,7 @@ AutoCatBoostClassifier <- function(data,
     base_params[["iterations"]] <- Trees
     base_params[["depth"]] <- Depth
     base_params[["langevin"]] <- langevin
-    base_params[["diffusion_temperature"]] <- diffusion_temperature
+    base_params[["diffusion_temperature"]] <- if(langevin) diffusion_temperature else NULL
     base_params[["learning_rate"]] <- LearningRate
     base_params[["l2_leaf_reg"]] <- L2_Leaf_Reg
     base_params[["random_strength"]] <- RandomStrength
