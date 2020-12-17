@@ -403,6 +403,20 @@ AutoCatBoostCARMA <- function(data,
       GroupVariables = GroupVariables,
       TimeUnit = TimeUnit,
       FillType = ZeroPadSeries)
+  } else {
+
+    # Ensure series are filled
+    temp <- TimeSeriesFill(
+      data,
+      DateColumnName = eval(DateColumnName),
+      GroupVariables = GroupVariables,
+      TimeUnit = TimeUnit,
+      FillType = ZeroPadSeries)
+
+    # If not, stop and explain to the user what to do
+    if(temp[,.N] != data[,.N]) {
+      stop("There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function")
+    }
   }
 
   # Feature Engineering: Add XREGS----
@@ -448,8 +462,13 @@ AutoCatBoostCARMA <- function(data,
           data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
         }
       } else {
-        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
-        data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+        if(!"GroupVar" %chin% names(XREGS)) {
+          data <- merge(data, XREGS, by = c(eval(GroupVariables), eval(DateColumnName)), all.x = TRUE)
+          data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+        } else {
+          data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
+          data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+        }
       }
     } else {
       data <- merge(data, XREGS, by = c(eval(DateColumnName)), all.x = TRUE)
