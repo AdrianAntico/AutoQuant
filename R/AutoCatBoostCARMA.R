@@ -39,7 +39,7 @@
 #' @param HolidayMovingAverages Number of moving averages to build off of the holiday count variable.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
-#' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
+#' @param ZeroPadSeries NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type
 #' @param PartitionType Select "random" for random data partitioning "timeseries" for partitioning by time frames
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
 #' @param NumOfParDepPlots Supply a number for the number of partial dependence plots you want returned
@@ -394,6 +394,17 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Convert data to data.table----")
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
+  # Feature Engineering: Add Zero Padding for missing dates----
+  if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
+  if(!is.null(ZeroPadSeries)) {
+    data <- TimeSeriesFill(
+      data,
+      DateColumnName = eval(DateColumnName),
+      GroupVariables = GroupVariables,
+      TimeUnit = TimeUnit,
+      FillType = ZeroPadSeries)
+  }
+
   # Feature Engineering: Add XREGS----
   if(DebugMode) print("Feature Engineering: Add XREGS----")
 
@@ -429,16 +440,20 @@ AutoCatBoostCARMA <- function(data,
     if(!is.null(GroupVariables)) {
       if(length(GroupVariables) > 1) {
         if(!"GroupVar" %chin% names(XREGS)) {
-          data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c(GroupVariables, eval(DateColumnName)), all = FALSE)
+          data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c(GroupVariables, eval(DateColumnName)), all.x = TRUE)
+          data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
         } else {
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-          data <- merge(data, XREGS, by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+          data <- merge(data, XREGS, by = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
+          data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
         }
       } else {
-        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
+        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
+        data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
       }
     } else {
-      data <- merge(data, XREGS, by = c(eval(DateColumnName)), all = FALSE)
+      data <- merge(data, XREGS, by = c(eval(DateColumnName)), all.x = TRUE)
+      data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
     }
   }
 
@@ -483,46 +498,6 @@ AutoCatBoostCARMA <- function(data,
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       if(GroupVariables != "GroupVar") data[, eval(GroupVariables) := NULL]
-    }
-  }
-
-  # Feature Engineering: Add Zero Padding for missing dates----
-  if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
-  if(!is.null(ZeroPadSeries)) {
-    if(!is.null(GroupVariables)) {
-      if(tolower(ZeroPadSeries) == "all") {
-        data <- TimeSeriesFill(
-          data,
-          DateColumnName = eval(DateColumnName),
-          GroupVariables = "GroupVar",
-          TimeUnit = TimeUnit,
-          FillType = "all")
-      } else {
-        data <- TimeSeriesFill(
-          data,
-          DateColumnName = eval(DateColumnName),
-          GroupVariables = "GroupVar",
-          TimeUnit = TimeUnit,
-          FillType = "inner")
-      }
-    } else {
-      if(tolower(ZeroPadSeries) == "all") {
-        data <- TimeSeriesFill(
-          data,
-          DateColumnName = eval(DateColumnName),
-          GroupVariables = NULL,
-          TimeUnit = TimeUnit,
-          FillType = "all")
-      }
-    }
-
-    # Convert TimeUnit back to original argument name because TimeSeriesFill() coerces them to a modified version
-    if(TimeUnit == "weeks") {
-      TimeUnit <- "week"
-    } else if(TimeUnit == "secs") {
-      TimeUnit <- "second"
-    } else if(TimeUnit == "min") {
-      TimeUnit <- "minute"
     }
   }
 

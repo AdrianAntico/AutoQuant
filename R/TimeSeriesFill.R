@@ -7,7 +7,8 @@
 #' @param DateColumnName Supply the name of your date column
 #' @param GroupVariables Supply the column names of your group variables. E.g. "Group" or c("Group1","Group2")
 #' @param TimeUnit Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"
-#' @param FillType Choose from "all" or "inner". Only relevant for when you have GroupVariables. The "all" option will take the max date and the min date of the entire data set and fill according to those. The "inner" option will grab the max and min dates by group levels and fill each group level based on those.
+#' @param FillType Choose from maxmax - Fill from the absolute min date to the absolute max date, minmax - Fill from the max date of the min set to the absolute max date, maxmin - Fill from the absolute min date to the min of the max dates, or minmin - Fill from the max date of the min dates to the min date of the max dates
+#' @param SimpleImpute Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"
 #' @examples
 #' \dontrun{
 #' data <- TimeSeriesFill(
@@ -15,266 +16,80 @@
 #'   DateColumnName = "Date",
 #'   GroupVariables = "GroupVar",
 #'   TimeUnit = "days",
-#'   FillType = "inner")
+#'   FillType = "maxmax",
+#'   SimpleImpute = FALSE)
 #' }
 #' @return Returns a data table with missing time series records filled (currently just zeros)
 #' @export
 TimeSeriesFill <- function(data = data,
                            DateColumnName = "Date",
-                           GroupVariables = NULL,
-                           TimeUnit = "days",
-                           FillType = "all") {
+                           GroupVariables = c("Store","Dept"),
+                           TimeUnit = "weeks",
+                           FillType = c("maxmax","minmax","maxmin","minmin"),
+                           SimpleImpute = FALSE) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+  # Grab args
+  if(length(FillType) > 1) FillType <- FillType[1]
 
-  # Ensure data.table----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  # Set up list
+  CJList <- list()
 
-  # Check Args----
-  if(!is.character(DateColumnName)) {
-    warning("DateColumnName needs to be a character value")
-    return(data)
-  }
-  if(!(FillType %chin% c("all", "inner"))) {
-    warning("TimeUnit is not one of 'all' 'inner'")
-    return(data)
-  }
-  if(!(TimeUnit %chin% c("second","minute","hour", "day", "week", "month", "quarter", "year"))) {
-    warning("TimeUnit needs to be one of 'hour' 'day' 'week' 'month' 'quarter' 'year'")
-    return(data)
-  }
-
-  # Ensure date column is a date----
-  x <- class(data[[eval(DateColumnName)]])
-  if(is.character(x) | is.factor(x) | is.numeric(x) | is.integer(x)) {
-    if(TimeUnit %chin% c("day", "week", "month", "quarter", "year")) {
-      data.table::set(data, j = eval(DateColumnName), value = as.Date(data[[eval(DateColumnName)]]))
-    } else {
-      data.table::set(data, j = eval(DateColumnName), value = as.POSIXct(data[[eval(DateColumnName)]]))
-    }
-  }
-
-  # Modify GroupVariables----
+  # Get list of unique vectors
   if(!is.null(GroupVariables)) {
-    if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      data[, eval(GroupVariables) := NULL]
-    } else {
-      data.table::setnames(data, eval(GroupVariables), "GroupVar")
+    for(group in GroupVariables) {
+      CJList[[eval(group)]] <- unique(data[[eval(group)]])
     }
   }
 
-  # Modify TimeUnit for Week----
-  if(TimeUnit == "week") {
-    TimeUnit <- "weeks"
-  } else if(TimeUnit == "second") {
-    TimeUnit <- "secs"
-  } else if (TimeUnit == "minute") {
-    TimeUnit <- "min"
+  # Fill from the absolute min date to the absolute max date
+  if(FillType == "maxmax") {
+    MinDate <- data[, min(get(DateColumnName))]
+    MaxDate <- data[, max(get(DateColumnName))]
+    CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
   }
 
-  # Manage data to modify----
-  if(!is.null(GroupVariables) & tolower(FillType) == "all") {
-
-    # Define date range----
-    MinRange <- data[, min(get(DateColumnName))]
-    MaxRange <- data[, max(get(DateColumnName))]
-
-    # Figure out which series need treatment ----
-    FullSeriesLength <- length(seq(from = MinRange, to = MaxRange, by = TimeUnit))
-    GroupSeriesLengths <- data[, .N, by = "GroupVar"]
-    GroupSeriesLengths[, FullLength := FullSeriesLength]
-
-    # ***** temp to test
-    # data.table::set(GroupSeriesLengths, i = c(1,5), j = "FullLength", value = 500)
-
-    ModGroups <- GroupSeriesLengths[N != FullLength, GroupVar]
-    KeepGroups <- GroupSeriesLengths[N == FullLength, GroupVar]
-    if(GroupSeriesLengths[N == FullLength][,.N] != 0) {
-      NoModData <- data[GroupVar %chin% eval(KeepGroups)]
-      data <- data[!(GroupVar %chin% eval(KeepGroups))]
-    }
-
-    # Modify data
-    Groups <- unique(data[["GroupVar"]])
-    counter <- 0L
-    total_length <- length(Groups)
-    range_vec <- seq(from = MinRange, to = MaxRange, by = eval(TimeUnit))
-    for(i in Groups) {
-      counter <- counter + 1
-      tempData <- data.table::CJ(i, range_vec)
-      print(round(counter / total_length, 3))
-      FinalData <- merge(x = tempData,
-                         y = data,
-                         by.x = c("i","range_vec"),
-                         by.y = c("GroupVar",eval(DateColumnName)),
-                         all.x = TRUE)
-
-      # Zero Fill----
-      FinalData <- RemixAutoML::ModelDataPrep(
-        data = FinalData,
-        Impute = TRUE,
-        CharToFactor = FALSE,
-        RemoveDates = FALSE,
-        MissFactor = "0",
-        MissNum = 0,
-        IgnoreCols = NULL)
-      data.table::setnames(
-        FinalData,
-        old = c("i","range_vec"),
-        new = c("GroupVar", eval(DateColumnName)))
-      if(counter == 1) {
-        ReturnData <- FinalData
-      } else {
-        ReturnData <- data.table::rbindlist(
-          list(ReturnData, FinalData))
-      }
-    }
-
-    # Reverse group variables concatenation----
-    if(!is.null(GroupVariables)) {
-      if(length(GroupVariables) > 1L) {
-        if(Rows == TRUE & length(KeepGroups) != 0L) {
-          ReturnData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-          NoModData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-        }
-
-        # Return data----
-        return(data.table::rbindlist(list(NoModData,ReturnData)))
-      } else {
-        if(Rows == TRUE & length(KeepGroups) != 0) {
-          data.table::setnames(ReturnData, "GroupVar", eval(GroupVariables))
-          data.table::setnames(NoModData, "GroupVar", eval(GroupVariables))
-
-          # Return data----
-          return(
-            data.table::rbindlist(
-              list(NoModData,ReturnData)))
-        } else {
-          data.table::setnames(ReturnData, "GroupVar", eval(GroupVariables))
-
-          # Return data----
-          return(ReturnData)
-        }
-      }
-    }
-
-    # Return data----
-    if(Rows == TRUE & length(KeepGroups) != 0L) {
-      return(data.table::rbindlist(list(ReturnData, NoModData)))
-    } else if(Rows) {
-      return(ReturnData)
-    } else {
-      return(ReturnData)
-    }
-  } else if(!is.null(GroupVariables) & tolower(FillType) == "inner") {
-    MinRange <- data[, min(get(DateColumnName)), by = "GroupVar"]
-    data.table::setnames(MinRange, "V1", "MinDate")
-    MaxRange <- data[, max(get(DateColumnName)), by = "GroupVar"]
-    data.table::setnames(MaxRange, "V1", "MaxDate")
-    MinMax <- merge(MinRange, MaxRange, by = "GroupVar", all = FALSE)
-    NGroup <- data[, .N, by = "GroupVar"]
-
-    # Store logical----
-    data.table::set(MinMax, j = "Length", value = as.numeric(1 + difftime(MinMax[["MaxDate"]], MinMax[["MinDate"]], units = eval(TimeUnit))))
-    MinMax <- merge(MinMax, NGroup, by = "GroupVar", all = FALSE)
-    Rows <- MinMax[Length > N, GroupVar]
-    Len <- unique(MinMax[["GroupVar"]])
-    counter <- 0L
-
-    # Some or all levels----
-    if(length(Rows) != 0L) {
-      NoModData <- data[GroupVar %chin% MinMax[Length == N, GroupVar]]
-      for(i in Rows) {
-        counter <- counter + 1L
-        tempData <- data.table::CJ(
-          i,
-          seq(from = MinRange[GroupVar == eval(i), MinDate],
-              MaxRange[GroupVar == eval(i), MaxDate],
-              by = eval(TimeUnit)))
-        tempData2 <- data[GroupVar == eval(i)]
-        FinalData <- merge(x = tempData,
-                           y = tempData2,
-                           by.x = c("i","V2"),
-                           by.y = c("GroupVar",eval(DateColumnName)),
-                           all.x = TRUE)
-
-        # Zero Fill----
-        FinalData <- RemixAutoML::ModelDataPrep(
-          data = FinalData,
-          Impute = TRUE,
-          CharToFactor = FALSE,
-          RemoveDates = FALSE,
-          MissFactor = "0",
-          MissNum = 0,
-          IgnoreCols = NULL)
-        data.table::setnames(
-          FinalData,
-          old = c("i","V2"),
-          new = c("GroupVar",eval(DateColumnName)))
-        if(counter == 1L) {
-          ReturnData <- FinalData
-        } else {
-          ReturnData <- data.table::rbindlist(list(ReturnData, FinalData))
-        }
-      }
-
-      # Reverse group variables concatenation----
-      if(length(GroupVariables) > 1) {
-        ReturnData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-        NoModData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-
-        # Return data----
-        return(
-          data.table::rbindlist(
-            list(NoModData,ReturnData)))
-      }
-    } else {
-      if(length(GroupVariables) > 1) {
-        return(
-          data[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL])
-
-      } else {
-        return(data.table::setnames(data, "GroupVar", eval(GroupVariables)))
-      }
-    }
-  } else {
-
-    # Store logical
-    Rows <- length(
-      seq(from = data[, min(get(DateColumnName))],
-          to = data[, max(get(DateColumnName))],
-          by = TimeUnit)) != data[, .N]
-
-    # Fill----
-    if(Rows) {
-      tempData <- data.table::as.data.table(
-        seq(from = data[, min(get(DateColumnName))],
-            to = data[, max(get(DateColumnName))],
-            by = eval(TimeUnit)))
-
-      # Join data----
-      FinalData <- merge(x = tempData,
-                         y = data,
-                         by.x = c("V1"),
-                         by.y = c(eval(DateColumnName)),
-                         all.x = TRUE)
-
-      # Zero Fill----
-      FinalData <- RemixAutoML::ModelDataPrep(
-        data = FinalData,
-        Impute = TRUE,
-        CharToFactor = FALSE,
-        RemoveDates = FALSE,
-        MissFactor = "0",
-        MissNum = 0,
-        IgnoreCols = NULL)
-
-      # Return data----
-      return(data.table::setnames(FinalData, old = c("V1"), new = c(eval(DateColumnName))))
-    } else {
-      return(data)
-    }
+  # Fill from the max date of the min set to the absolute max date
+  if(FillType == "minmax") {
+    MinDate <- data[, min(get(DateColumnName)), by = c(eval(GroupVariables))][, max(V1)]
+    MaxDate <- data[, max(get(DateColumnName))]
+    CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
   }
+
+  # Fill from the absolute min date to the min of the max dates
+  if(FillType == "maxmin") {
+    MinDate <- data[, min(get(DateColumnName))]
+    MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
+    CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+  }
+
+  # Fill from the max date of the min dates to the min date of the max dates
+  if(FillType == "minmin") {
+    MinDate <- data[, min(get(DateColumnName))]
+    MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
+    CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+  }
+
+  # Cross join keys
+  FillData <- do.call(data.table::CJ, CJList)
+
+  # Join data back to FillData
+  FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+
+  # Impute
+  if(SimpleImpute) {
+    FillData <- RemixAutoML::ModelDataPrep(
+      FillData,
+      Impute = TRUE,
+      CharToFactor = FALSE,
+      FactorToChar = FALSE,
+      IntToNumeric = FALSE,
+      DateToChar = FALSE,
+      RemoveDates = FALSE,
+      MissFactor = "0",
+      MissNum = -1,
+      IgnoreCols = NULL)
+  }
+
+  # Return data
+  return(FillData)
 }

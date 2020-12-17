@@ -137,7 +137,7 @@ AutoCatBoostCARMA(
 
 \item{TimeTrendVariable}{Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.}
 
-\item{ZeroPadSeries}{Set to "all", "inner", or NULL. See TimeSeriesFill for explanation}
+\item{ZeroPadSeries}{NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type}
 
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 

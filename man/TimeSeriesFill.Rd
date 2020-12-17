@@ -7,9 +7,10 @@
 TimeSeriesFill(
   data = data,
   DateColumnName = "Date",
-  GroupVariables = NULL,
-  TimeUnit = "days",
-  FillType = "all"
+  GroupVariables = c("Store", "Dept"),
+  TimeUnit = "weeks",
+  FillType = c("maxmax", "minmax", "maxmin", "minmin"),
+  SimpleImpute = FALSE
 )
 }
 \arguments{
@@ -21,7 +22,9 @@ TimeSeriesFill(
 
 \item{TimeUnit}{Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"}
 
-\item{FillType}{Choose from "all" or "inner". Only relevant for when you have GroupVariables. The "all" option will take the max date and the min date of the entire data set and fill according to those. The "inner" option will grab the max and min dates by group levels and fill each group level based on those.}
+\item{FillType}{Choose from maxmax - Fill from the absolute min date to the absolute max date, minmax - Fill from the max date of the min set to the absolute max date, maxmin - Fill from the absolute min date to the min of the max dates, or minmin - Fill from the max date of the min dates to the min date of the max dates}
+
+\item{SimpleImpute}{Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"}
 }
 \value{
 Returns a data table with missing time series records filled (currently just zeros)
@@ -36,7 +39,8 @@ data <- TimeSeriesFill(
   DateColumnName = "Date",
   GroupVariables = "GroupVar",
   TimeUnit = "days",
-  FillType = "inner")
+  FillType = "maxmax",
+  SimpleImpute = FALSE)
 }
 }
 \seealso{
