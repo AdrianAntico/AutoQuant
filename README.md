@@ -2233,8 +2233,6 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <details><summary>Code Example</summary>
 <p>
  
-<script src="https://gist.github.com/AdrianAntico/960c82591ff6b77d69f91e36b015a54c.js"></script>
-
 ```
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
