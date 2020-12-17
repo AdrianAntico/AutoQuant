@@ -15,9 +15,6 @@
 <details><summary>Expand to view content</summary>
 <p>
  
-<script src="https://gist.github.com/AdrianAntico/960c82591ff6b77d69f91e36b015a54c.js">
-</script>
- 
 > Automated Machine Learning - In my view, AutoML should consist of functions to help make professional model development and operationalization more efficient. Most ML projects include at least one of the following: data wrangling, feature engineering, feature selection, model development, model evaluation, model interpretation, model optimization, and model operationalization. The functions in this package have been tested across a variety of industries and have consistently out-performd "state of the art" deep learning methods. I've watched coworkers spend months tuning and reconfiguring deep learning models just to have them lose to the functions here, in a matter of a day or two. My recommendation is to first utilize the functions here to establish a legit baseline performance. Then go and test out all the other methods. But please don't come to me and say that you built a deep learning model that outperforms a linear or logistic regression. Those comparisons are for research, when you are trying something completely new, where a better performance than a linear regression means you are heading in the right direction.
 
 ### Package Details
