@@ -831,7 +831,35 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if(DataTruncate) data <- data[val:.N]
+  if(DataTruncate & !is.null(Lags)) {
+    mindate <- data[, min(get(DateColumnName))]
+    if(tolower(TimeUnit) %chin% c("hour","hours")) {
+      newdate <- mindate + lubridate::hours(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
+      newdate <- mindate + lubridate::minutes(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
+      newdate <- mindate + lubridate::minutes(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
+      newdate <- mindate + lubridate::minutes(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
+      newdate <- mindate + lubridate::minutes(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
+      newdate <- mindate + lubridate::minutes(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("day","days")) {
+      newdate <- mindate + lubridate::days(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("week","weeks")) {
+      newdate <- mindate + lubridate::weeks(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("month","months")) {
+      newdate <- mindate %m+% months(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("quarter","quarters")) {
+      newdate <- mindate %m+% months(val + 1)
+    } else if(tolower(TimeUnit) %chin% c("years","year")) {
+      newdate <- mindate + lubridate::years(val + 1)
+    }
+
+    # Update date
+    data <- data[get(DateColumnName) >= eval(newdate)]
+  }
 
   # Feature Engineering: Add TimeTrend Variable----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
