@@ -416,7 +416,7 @@ AutoCatBoostCARMA <- function(data,
       GroupVariables = GroupVariables,
       TimeUnit = TimeUnit,
       FillType = "maxmax",
-      MaxMissingPercent = 0.0,
+      MaxMissingPercent = 0.25,
       SimpleImpute = FALSE)
 
     # If not, stop and explain to the user what to do
