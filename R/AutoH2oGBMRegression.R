@@ -800,7 +800,8 @@ AutoH2oGBMRegression <- function(data,
       ggplot2::coord_flip() +
       ggplot2::labs(title = "Global Variable Importance") +
       ggplot2::xlab("Top Model Features") +
-      ggplot2::ylab("Value")
+      ggplot2::ylab("Value") +
+      ggplot2::theme(legend.position = "none")
   }
 
   # Regression Return Objects----
