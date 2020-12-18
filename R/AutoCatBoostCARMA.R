@@ -456,7 +456,7 @@ AutoCatBoostCARMA <- function(data,
     if(!is.null(GroupVariables)) {
 
       # I need GroupVar in the xregs. if not there, add it
-      if(!"GroupVar" %chin% names(xregs)) {
+      if(!"GroupVar" %chin% names(XREGS)) {
         XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       }
 
