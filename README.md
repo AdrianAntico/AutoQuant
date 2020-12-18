@@ -2421,6 +2421,181 @@ for(Run in seq_len(TotalRuns)) {
   # Create totals and subtotals
   Results <- data.table::groupingsets(
     x = Results,
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Create complete series
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = "Date",
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  FillType = "maxmax")
+
+# Remove Store & Dept combinations that never existed
+data[, Check := sum(is.na(Weekly_Sales)), by = c("Store", "Dept")]
+data <- data[Check == 0][, Check := NULL]
+
+# Subset Columns (remove IsHoliday column)----
+data <- data[, .SD, .SDcols = c("Store", "Dept", "Date", "Weekly_Sales")]
+
+# Setup xregs
+xregs <- data[, .SD, .SDcols = c("Date", "Store", "Dept")]
+
+# Change data types
+data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+
+# Subset data so we have an out of time sample
+data1 <- data.table::copy(data[, ID := 1L:.N, by = c("Store","Dept")][ID <= 125L][, ID := NULL])
+data[, ID := NULL]
+
+# Define values for SplitRatios and FCWindow Args
+N1 <- data1[, .N, by = c("Store","Dept")][1L, N]
+N2 <- xregs[, .N, by = c("Store","Dept")][1L, N]
+
+# Setup Grid Tuning & Feature Tuning data.table using a cross join of vectors
+Tuning <- data.table::CJ(
+  TimeWeights = c("None",0.999),
+  MaxTimeGroups = c("weeks","months"),
+  TargetTransformation = c("TRUE","FALSE"),
+  Difference = c("TRUE","FALSE"),
+  HoldoutTrain = c(6,18),
+  Langevin = c("TRUE","FALSE"),
+  NTrees = c(2500,5000),
+  Depth = c(6,9),
+  RandomStrength = c(0.75,1),
+  L2_Leaf_Reg = c(3.0,4.0),
+  RSM = c(0.75,"NULL"),
+  GrowPolicy = c("SymmetricTree","Lossguide","Depthwise"),
+  BootStrapType = c("Bayesian","MVS","No"))
+
+# Remove options that are not compatible with GPU (skip over this otherwise)
+Tuning <- Tuning[Langevin == "TRUE" | (Langevin == "FALSE" & RSM == "NULL" & BootStrapType %in% c("Bayesian","No"))]
+
+# Randomize order of Tuning data.table
+Tuning <- Tuning[order(runif(.N))]
+
+# Load grid results and remove rows that have already been tested
+if(file.exists(file.path(Path, "Walmart_CARMA_Metrics.csv"))) {
+  Metrics <- data.table::fread(file.path(Path, "Walmart_CARMA_Metrics.csv"))
+  temp <- data.table::rbindlist(list(Metrics,Tuning), fill = TRUE)
+  temp <- unique(temp, by = c(4:(ncol(temp)-1)))
+  Tuning <- temp[is.na(RunTime)][, .SD, .SDcols = names(Tuning)]
+  rm(Metrics,temp)
+}
+
+# Define the total number of runs
+TotalRuns <- Tuning[,.N]
+
+# Kick off feature + grid tuning
+for(Run in seq_len(TotalRuns)) {
+
+  # Print Run number
+  for(zz in seq_len(100)) print(Run)
+
+  # Use fresh data for each run
+  xregs_new <- data.table::copy(xregs)
+  data_new <- data.table::copy(data1)
+
+  # Timer
+  StartTime <- Sys.time()
+
+  # Run carma system
+  CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
+
+    # data args
+    data = data_new,
+    TimeWeights = if(Tuning[Run, TimeWeights] == "None") NULL else as.numeric(Tuning[Run, TimeWeights]),
+    TargetColumnName = "Weekly_Sales",
+    DateColumnName = "Date",
+    HierarchGroups = c("Store","Dept"),
+    GroupVariables = c("Store","Dept"),
+    TimeUnit = "weeks",
+    TimeGroups = if(Tuning[Run, MaxTimeGroups] == "weeks") "weeks" else if(Tuning[Run, MaxTimeGroups] == "months") c("weeks","months") else c("weeks","months","quarters"),
+
+    # Production args
+    TrainOnFull = FALSE, #TRUE,
+    SplitRatios = c(1 - 18 / N2, 18 / N2), #c(1 - Tuning[Run, HoldoutTrain] / N2, Tuning[Run, HoldoutTrain] / N2),
+    PartitionType = "random",
+    FC_Periods = N2-N1,
+    TaskType = TaskType,
+    NumGPU = 1,
+    Timer = TRUE,
+    DebugMode = TRUE,
+
+    # Target variable transformations
+    TargetTransformation = as.logical(Tuning[Run, TargetTransformation]),
+    Methods = c("BoxCox","Asinh","Log","LogPlus1","YeoJohnson"),
+    Difference = as.logical(Tuning[Run, Difference]),
+    NonNegativePred = TRUE,
+    RoundPreds = FALSE,
+
+    # Calendar-related features
+    CalendarVariables = c("week","wom","month","quarter"),
+    HolidayVariable = c("USPublicHolidays"),
+    HolidayLags = c(1,2,3),
+    HolidayMovingAverages = c(2,3),
+
+    # Lags, Moving Averages, and Other Rolling Stats
+    Lags = if(Tuning[Run, MaxTimeGroups] == "weeks") c(1,2,3,4,5,8,9,12,13,51,52,53) else if(Tuning[Run, MaxTimeGroups] == "months") list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12)) else list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12), "quarters" = c(1,2,3,4)),
+    MA_Periods = if(Tuning[Run, MaxTimeGroups] == "weeks") c(2,3,4,5,8,9,12,13,51,52,53) else if(Tuning[Run, MaxTimeGroups] == "months") list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12)) else list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12), "quarters" = c(2,3,4)),
+    SD_Periods = NULL,
+    Skew_Periods = NULL,
+    Kurt_Periods = NULL,
+    Quantile_Periods = NULL,
+    Quantiles_Selected = NULL,
+
+    # Bonus features
+    AnomalyDetection = NULL,
+    XREGS = xregs_new,
+    FourierTerms = 0,
+    TimeTrendVariable = TRUE,
+    ZeroPadSeries = NULL,
+    DataTruncate = FALSE,
+
+    # ML grid tuning args
+    GridTune = FALSE,
+    PassInGrid = NULL,
+    ModelCount = 5,
+    MaxRunsWithoutNewWinner = 50,
+    MaxRunMinutes = 60*60,
+
+    # ML evaluation output
+    PDFOutputPath = NULL,
+    SaveDataPath = NULL,
+    NumOfParDepPlots = 10L,
+
+    # ML loss functions
+    EvalMetric = "RMSE",
+    EvalMetricValue = 1,
+    LossFunction = "RMSE",
+    LossFunctionValue = 1,
+
+    # ML tuning args
+    NTrees = 7500, #Tuning[Run, NTrees],
+    Depth = Tuning[Run, Depth],
+    L2_Leaf_Reg = Tuning[Run, L2_Leaf_Reg],
+    Langevin = as.logical(Tuning[Run, Langevin]),
+    DiffusionTemperature = 10000,
+    RandomStrength = Tuning[Run, RandomStrength],
+    BorderCount = 254,
+    RSM = if(Tuning[Run, RSM] == "NULL") NULL else as.numeric(Tuning[Run, RSM]),
+    GrowPolicy = "SymmetricTree", #Tuning[Run, GrowPolicy],
+    BootStrapType = Tuning[Run, BootStrapType])
+
+  # Timer
+  EndTime <- Sys.time()
+
+  # Prepare data for evaluation
+  Results <- CatBoostResults$Forecast
+  data.table::setnames(Results, "Weekly_Sales", "bla")
+  Results <- merge(Results, data, by = c("Store","Dept","Date"), all = FALSE)
+  Results <- Results[is.na(bla)][, bla := NULL]
+
+  # Create totals and subtotals
+  Results <- data.table::groupingsets(
+    x = Results,
     j = list(Predictions = sum(Predictions), Weekly_Sales = sum(Weekly_Sales)),
     by = c("Date", "Store", "Dept"),
     sets = list(c("Date", "Store", "Dept"), c("Store", "Dept"), "Store", "Dept", "Date"))
@@ -2460,7 +2635,6 @@ for(Run in seq_len(TotalRuns)) {
   # Garbage collection because of GPU
   gc()
 }
-
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # ML-Based Vector AutoRegression CARMA ----
