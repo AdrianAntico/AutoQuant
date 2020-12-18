@@ -85,7 +85,7 @@ TimeSeriesFill <- function(data = data,
   FillData <- merge(FillData, temp, by = GroupVariables, all = FALSE)
   FillData[, Check := sum(!is.na(Weekly_Sales)), by = eval(GroupVariables)]
   CompareVal <- FillData[, quantile(Check, 0.95)[[1L]]]
-  FillData <- FillData[Check > eval(MaxMissingPercent) * eval(CompareVal)][, Check := NULL]
+  FillData <- FillData[Check > (1 - eval(MaxMissingPercent)) * eval(CompareVal)][, Check := NULL]
 
   # Impute
   if(SimpleImpute) {
