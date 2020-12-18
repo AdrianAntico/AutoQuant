@@ -36,18 +36,16 @@ TimeSeriesFill <- function(data = data,
   # Set up list
   CJList <- list()
 
-  # Get list of unique vectors
-  if(!is.null(GroupVariables)) {
-    for(group in GroupVariables) {
-      CJList[[eval(group)]] <- unique(data[[eval(group)]])
-    }
-  }
-
   # Fill from the absolute min date to the absolute max date
   if(FillType == "maxmax") {
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName))]
     CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    if(!is.null(GroupVariables)) {
+      for(group in GroupVariables) {
+        CJList[[eval(group)]] <- unique(data[[eval(group)]])
+      }
+    }
     FillData <- do.call(data.table::CJ, CJList)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
   }
@@ -57,6 +55,11 @@ TimeSeriesFill <- function(data = data,
     MinDate <- data[, min(get(DateColumnName)), by = c(eval(GroupVariables))][, max(V1)]
     MaxDate <- data[, max(get(DateColumnName))]
     CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    if(!is.null(GroupVariables)) {
+      for(group in GroupVariables) {
+        CJList[[eval(group)]] <- unique(data[[eval(group)]])
+      }
+    }
     FillData <- do.call(data.table::CJ, CJList)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
@@ -67,6 +70,11 @@ TimeSeriesFill <- function(data = data,
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
     CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    if(!is.null(GroupVariables)) {
+      for(group in GroupVariables) {
+        CJList[[eval(group)]] <- unique(data[[eval(group)]])
+      }
+    }
     FillData <- do.call(data.table::CJ, CJList)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
   }
@@ -76,6 +84,11 @@ TimeSeriesFill <- function(data = data,
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
     CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    if(!is.null(GroupVariables)) {
+      for(group in GroupVariables) {
+        CJList[[eval(group)]] <- unique(data[[eval(group)]])
+      }
+    }
     FillData <- do.call(data.table::CJ, CJList)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
   }
