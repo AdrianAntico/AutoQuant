@@ -3211,7 +3211,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Utilities, EDA, and Misc. Functions: <img src="Images/MiscImage.png" align="right" width="80" />
+## Utilities, EDA, and Misc. <img src="Images/MiscImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
  
