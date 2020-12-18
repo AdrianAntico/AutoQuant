@@ -87,9 +87,6 @@ TimeSeriesFill <- function(data = data,
   CompareVal <- FillData[, quantile(Check, 0.95)[[1L]]]
   FillData <- FillData[Check > eval(MaxMissingPercent) * eval(CompareVal)]
 
-  View(FillData[Store == 1 & Dept == 18])
-  View(FillData[Store == 45 & Dept == 98])
-
   # Impute
   if(SimpleImpute) {
     FillData <- RemixAutoML::ModelDataPrep(
