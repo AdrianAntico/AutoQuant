@@ -106,7 +106,7 @@
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %chin%
+#'     FeatureColNames = names(data)[!names(data) %in%
 #'         c("IDcol_1","IDcol_2","Adrian")],
 #'     PrimaryDateColumn = NULL,
 #'     ClassWeights = c(1L,1L),
@@ -859,16 +859,15 @@ AutoCatBoostClassifier <- function(data,
 
         # Feature Information ----
         if(!is.null(TestData)) {
-          Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))
+          Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))}, error = function(x) NULL)
           Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
           ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "ShapValues"))
-
         } else if(!is.null(ValidationData)) {
-          Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+          Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))}, error = function(x) NULL)
           Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
           ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
         } else if(TrainOnFull) {
-          Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
+          Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))}, error = function(x) NULL)
           Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
           ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "ShapValues"))
         }
@@ -878,13 +877,16 @@ AutoCatBoostClassifier <- function(data,
         data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_temp",temp[[1L]]), "Predictions"))
         ShapValues[, Predictions := NULL]
         ShapValues <- cbind(ValidationData, ShapValues)
-        Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
-        data.table::setnames(Interaction, "ColNames", "Features1")
-        Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
-        data.table::setnames(Interaction, "ColNames", "Features2")
-        Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
-        data.table::setcolorder(Interaction, c(2L,3L,1L))
-        data.table::setorderv(Interaction, "score", -1)
+        if(!is.null(Interaction)) {
+          Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+          data.table::setnames(Interaction, "ColNames", "Features1")
+          Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+          data.table::setnames(Interaction, "ColNames", "Features2")
+          Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
+          data.table::setcolorder(Interaction, c(2L,3L,1L))
+          data.table::setorderv(Interaction, "score", -1)
+        }
+
         VariableImportance <- data.table::data.table(cbind(Variable = rownames(Imp), Imp))
         tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
         VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
@@ -903,16 +905,16 @@ AutoCatBoostClassifier <- function(data,
 
       # Feature Information ----
       if(!is.null(TestData)) {
-        Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))
+        Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))}, error = function(x) NULL)
         Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
         ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "ShapValues"))
 
       } else if(!is.null(ValidationData)) {
-        Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+        Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))}, error = function(x) NULL)
         Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
         ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
       } else if(TrainOnFull) {
-        Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
+        Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))}, error = function(x) NULL)
         Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
         ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "ShapValues"))
       }
@@ -922,13 +924,15 @@ AutoCatBoostClassifier <- function(data,
       data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_temp",temp[[1L]]), "Predictions"))
       ShapValues[, Predictions := NULL]
       ShapValues <- cbind(ValidationData, ShapValues)
-      Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
-      data.table::setnames(Interaction, "ColNames", "Features1")
-      Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
-      data.table::setnames(Interaction, "ColNames", "Features2")
-      Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
-      data.table::setcolorder(Interaction, c(2L,3L,1L))
-      data.table::setorderv(Interaction, "score", -1)
+      if(!is.null(Interaction)) {
+        Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+        data.table::setnames(Interaction, "ColNames", "Features1")
+        Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+        data.table::setnames(Interaction, "ColNames", "Features2")
+        Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
+        data.table::setcolorder(Interaction, c(2L,3L,1L))
+        data.table::setorderv(Interaction, "score", -1)
+      }
       VariableImportance <- data.table::data.table(cbind(Variable = rownames(Imp), Imp))
       tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
       VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
@@ -945,16 +949,15 @@ AutoCatBoostClassifier <- function(data,
 
     # Feature Information ----
     if(!is.null(TestData)) {
-      Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))
+      Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "Interaction"))}, error = function(x) NULL)
       Imp <- catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "PredictionValuesChange")
       ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = FinalTestPool, type = "ShapValues"))
-
     } else if(!is.null(ValidationData)) {
-      Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
+      Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))}, error = function(x) NULL)
       Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
       ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "ShapValues"))
     } else if(TrainOnFull) {
-      Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))
+      Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "Interaction"))}, error = function(x) NULL)
       Imp <- catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "PredictionValuesChange")
       ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TrainPool, type = "ShapValues"))
     }
@@ -964,13 +967,15 @@ AutoCatBoostClassifier <- function(data,
     data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_temp",temp[[1L]]), "Predictions"))
     ShapValues[, Predictions := NULL]
     ShapValues <- cbind(ValidationData, ShapValues)
-    Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
-    data.table::setnames(Interaction, "ColNames", "Features1")
-    Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
-    data.table::setnames(Interaction, "ColNames", "Features2")
-    Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
-    data.table::setcolorder(Interaction, c(2L,3L,1L))
-    data.table::setorderv(Interaction, "score", -1)
+    if(!is.null(Interaction)) {
+      Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+      data.table::setnames(Interaction, "ColNames", "Features1")
+      Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+      data.table::setnames(Interaction, "ColNames", "Features2")
+      Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
+      data.table::setcolorder(Interaction, c(2L,3L,1L))
+      data.table::setorderv(Interaction, "score", -1)
+    }
     VariableImportance <- data.table::data.table(cbind(Variable = rownames(Imp), Imp))
     tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
     VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
