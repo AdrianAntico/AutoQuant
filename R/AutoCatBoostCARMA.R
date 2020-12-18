@@ -402,18 +402,22 @@ AutoCatBoostCARMA <- function(data,
       DateColumnName = eval(DateColumnName),
       GroupVariables = GroupVariables,
       TimeUnit = TimeUnit,
-      FillType = ZeroPadSeries)
+      FillType = ZeroPadSeries,
+      MaxMissingPercent = 0.0,
+      SimpleImpute = FALSE)
+    data <- RemixAutoML::ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = 0, IgnoreCols = NULL)
+
   } else {
 
     # Ensure series are filled
-    temp <- TimeSeriesFill(
+    temp <- RemixAutoML::TimeSeriesFill(
       data,
       DateColumnName = eval(DateColumnName),
       GroupVariables = GroupVariables,
       TimeUnit = TimeUnit,
-      FillType = "maxmax")
-    temp[, Check := sum(is.na(get(TargetColumnName))), by = GroupVariables]
-    temp <- temp[Check == 0][, Check := NULL]
+      FillType = "maxmax",
+      MaxMissingPercent = 0.0,
+      SimpleImpute = FALSE)
 
     # If not, stop and explain to the user what to do
     if(temp[,.N] != data[,.N]) {
