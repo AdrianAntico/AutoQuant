@@ -350,6 +350,8 @@ AutoCatBoostRegression <- function(data,
   if(!GridTune & length(BorderCount) > 1L) BorderCount <- max(BorderCount)
   if(!GridTune & length(LearningRate) > 1L) LearningRate <- max(LearningRate)
   if(!GridTune & length(RSM) > 1L) RSM <- max(RSM)
+  if(!GridTune & length(GrowPolicy) > 1L) GrowPolicy <- max(GrowPolicy)
+  if(!GridTune & length(BootStrapType) > 1L) BootStrapType <- max(BootStrapType)
   if(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE") {
     task_type <- "CPU"
     TransformNumericColumns <- NULL
