@@ -432,7 +432,7 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("# Convert XREGS to data.table")
   if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
 
-  # Check lengths of XREGS
+  # Modify FC_Periods ----
   if(DebugMode) print(names(XREGS))
   if(DebugMode) print("# Check lengths of XREGS")
   if(!is.null(XREGS) & TrainOnFull) {
@@ -450,11 +450,11 @@ AutoCatBoostCARMA <- function(data,
     HoldOutPeriods <- FC_Periods
   }
 
-  # Check for any Target Variable hiding in XREGS
+  # Check for any Target Variable hiding in XREGS ----
   if(DebugMode) print("# Check for any Target Variable hiding in XREGS")
   if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
 
-  # Merge data and XREG for Training
+  # Merge data and XREG for Training ----
   if(DebugMode) print("merging xregs to data")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
