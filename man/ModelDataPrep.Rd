@@ -10,6 +10,7 @@ ModelDataPrep(
   CharToFactor = TRUE,
   FactorToChar = FALSE,
   IntToNumeric = TRUE,
+  LogicalToBinary = FALSE,
   DateToChar = FALSE,
   RemoveDates = FALSE,
   MissFactor = "0",
@@ -27,6 +28,8 @@ ModelDataPrep(
 \item{FactorToChar}{Converts to character}
 
 \item{IntToNumeric}{Defaults to TRUE which tells the function to convert integers to numeric}
+
+\item{LogicalToBinary}{Converts logical values to binary numeric values}
 
 \item{DateToChar}{Converts date columns into character columns}
 
@@ -67,6 +70,7 @@ data <- RemixAutoML::ModelDataPrep(
   CharToFactor = FALSE,
   FactorToChar = TRUE,
   IntToNumeric = TRUE,
+  LogicalToBinary = FALSE,
   DateToChar   = FALSE,
   RemoveDates  = TRUE,
   MissFactor   = "0",

@@ -10,6 +10,7 @@ TimeSeriesFill(
   GroupVariables = c("Store", "Dept"),
   TimeUnit = "weeks",
   FillType = c("maxmax", "minmax", "maxmin", "minmin"),
+  MaxMissingPercent = 0.05,
   SimpleImpute = FALSE
 )
 }
@@ -23,6 +24,8 @@ TimeSeriesFill(
 \item{TimeUnit}{Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"}
 
 \item{FillType}{Choose from maxmax - Fill from the absolute min date to the absolute max date, minmax - Fill from the max date of the min set to the absolute max date, maxmin - Fill from the absolute min date to the min of the max dates, or minmin - Fill from the max date of the min dates to the min date of the max dates}
+
+\item{MaxMissingPercent}{The maximum amount of missing values an individual series can have to remain and be imputed. Otherwise, they are discarded.}
 
 \item{SimpleImpute}{Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"}
 }

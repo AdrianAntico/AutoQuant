@@ -10,6 +10,7 @@
 #' @param FactorToChar Converts to character
 #' @param IntToNumeric Defaults to TRUE which tells the function to convert integers to numeric
 #' @param DateToChar Converts date columns into character columns
+#' @param LogicalToBinary Converts logical values to binary numeric values
 #' @param RemoveDates Defaults to FALSE. Set to TRUE to remove date columns from your data.table
 #' @param MissFactor Supply the value to impute missing factor levels
 #' @param MissNum Supply  the value to impute missing numeric values
@@ -37,6 +38,7 @@
 #'   CharToFactor = FALSE,
 #'   FactorToChar = TRUE,
 #'   IntToNumeric = TRUE,
+#'   LogicalToBinary = FALSE,
 #'   DateToChar   = FALSE,
 #'   RemoveDates  = TRUE,
 #'   MissFactor   = "0",
@@ -49,15 +51,16 @@
 #' @return Returns the original data table with corrected values
 #' @export
 ModelDataPrep <- function(data,
-                          Impute       = TRUE,
-                          CharToFactor = TRUE,
-                          FactorToChar = FALSE,
-                          IntToNumeric = TRUE,
-                          DateToChar   = FALSE,
-                          RemoveDates  = FALSE,
-                          MissFactor   = "0",
-                          MissNum      = -1,
-                          IgnoreCols   = NULL) {
+                          Impute          = TRUE,
+                          CharToFactor    = TRUE,
+                          FactorToChar    = FALSE,
+                          IntToNumeric    = TRUE,
+                          LogicalToBinary = FALSE,
+                          DateToChar      = FALSE,
+                          RemoveDates     = FALSE,
+                          MissFactor      = "0",
+                          MissNum         = -1,
+                          IgnoreCols      = NULL) {
 
   # Full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
@@ -82,7 +85,8 @@ ModelDataPrep <- function(data,
   if(IntToNumeric) for(col in x) if(is.integer(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
 
   # Turn logical columns into numeric----
-  if(IntToNumeric) for(col in x) if(is.logical(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
+  if(IntToNumeric & !LogicalToBinary) LogicalToBinary <- TRUE # backwards compatability
+  if(LogicalToBinary) for(col in x) if(is.logical(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
 
   # Impute missing values----
   if(Impute) {
