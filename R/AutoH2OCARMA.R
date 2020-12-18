@@ -819,16 +819,6 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     }
   }
 
-  # Feature Engineering: Add TimeTrend Variable----
-  if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
-  if(TimeTrendVariable) {
-    if(!is.null(GroupVariables)) {
-      data[, TimeTrend := 1:.N, by = "GroupVar"]
-    } else {
-      data[, TimeTrend := 1:.N]
-    }
-  }
-
   # Data Wrangling: ModelDataPrep() to prepare data----
   if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data----")
   data <- ModelDataPrep(
@@ -842,6 +832,16 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
   if(DataTruncate) data <- data[val:.N]
+
+  # Feature Engineering: Add TimeTrend Variable----
+  if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
+  if(TimeTrendVariable) {
+    if(!is.null(GroupVariables)) {
+      data[, TimeTrend := 1:.N, by = "GroupVar"]
+    } else {
+      data[, TimeTrend := 1:.N]
+    }
+  }
 
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")

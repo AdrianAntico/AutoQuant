@@ -765,16 +765,6 @@ AutoXGBoostCARMA <- function(data,
     }
   }
 
-  # Feature Engineering: Add TimeTrend Variable----
-  if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
-  if(TimeTrendVariable) {
-    if(!is.null(GroupVariables)) {
-      data[, TimeTrend := 1L:.N, by = "GroupVar"]
-    } else {
-      data[, TimeTrend := 1L:.N]
-    }
-  }
-
   # Data Wrangling: ModelDataPrep() to prepare data----
   if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data----")
   data <- ModelDataPrep(
@@ -791,6 +781,16 @@ AutoXGBoostCARMA <- function(data,
     mindate <- data[, min(get(DateColumnName))]
     newdate <- mindate + val + 1
     data <- data[get(DateColumnName) >= eval(newdate)]
+  }
+
+  # Feature Engineering: Add TimeTrend Variable----
+  if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
+  if(TimeTrendVariable) {
+    if(!is.null(GroupVariables)) {
+      data[, TimeTrend := 1L:.N, by = "GroupVar"]
+    } else {
+      data[, TimeTrend := 1L:.N]
+    }
   }
 
   # Store Date Info----
