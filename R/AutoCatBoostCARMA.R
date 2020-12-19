@@ -1107,6 +1107,7 @@ AutoCatBoostCARMA <- function(data,
       train[, Weights := eval(TimeWeights) ^ PowerValue]
       Weightss <- train[["Weights"]]
       train[, ":=" (PowerValue = NULL, Weights = NULL)]
+      data.table::setorderv(x = train, cols = names(train)[1L:2L], order = c(1,1))
     }
   } else {
     Weightss <- NULL
