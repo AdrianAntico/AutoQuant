@@ -486,6 +486,9 @@ AutoCatBoostCARMA <- function(data,
     }
   }
 
+  # Check for duplication in the data ----
+  if(data[, .N] != unique(data)[, .N]) stop("There is duplicates in your data")
+
   # Set Keys for data.table usage----
   if(DebugMode) print("# Set Keys for data.table usage----")
   if(!is.null(GroupVariables)) {
@@ -1115,7 +1118,8 @@ AutoCatBoostCARMA <- function(data,
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
-  if(TrainOnFull) Step1SCore <- data.table::copy(data) else Step1SCore <- data.table::copy(train)
+  #if(TrainOnFull || !is.null(SplitRatios)) Step1SCore <- data.table::copy(data) else Step1SCore <- data.table::copy(train)
+  Step1SCore <- data.table::copy(data)
 
   # Machine Learning: Build Model----
   if(DebugMode) print("Machine Learning: Build Model----")
