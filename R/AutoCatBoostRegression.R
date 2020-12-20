@@ -14,7 +14,7 @@
 #' @param DummifyCols Logical. Will coerce to TRUE if loss_function or eval_metric is set to 'MultiRMSE'.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
-#' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
+#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param NumGPUs Set to 1, 2, 3, etc.
 #' @param eval_metric Select from 'RMSE', 'MAE', 'MAPE', 'R2', 'Poisson', 'MedianAbsoluteError', 'SMAPE', 'MSLE', 'NumErrors', 'FairLoss', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile'
@@ -36,6 +36,7 @@
 #' @param MaxRunMinutes Maximum number of minutes to let this run
 #' @param MaxRunsWithoutNewWinner Number of models built before calling it quits
 #' @param MetricPeriods Number of periods to use between Catboost evaluations
+#' @param Shuffles Number of times to randomize grid possibilities
 #' @param langevin Set to TRUE to enable
 #' @param diffusion_temperature Defaults to 10000
 #' @param Trees Standard + Grid Tuning. Bandit grid partitioned. The maximum number of trees you want in your models
@@ -47,7 +48,12 @@
 #' @param RSM CPU only. Standard + Grid Tuning. If GPU is set, this is turned off. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
 #' @param BootStrapType Standard + Grid Tuning. NULL value to default to catboost default (Bayesian for GPU and MVS for CPU). Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
 #' @param GrowPolicy Standard + Grid Tuning. Catboost default of SymmetricTree. Random testing. Default "SymmetricTree", character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
-#' @param Shuffles Number of times to randomize grid possibilities
+#' @param model_size_reg Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.
+#' @param feature_border_type Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy
+#' @param sampling_unit Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the loss_function is YetiRankPairWise
+#' @param subsample Default is NULL. Catboost will turn this into 0.66 for BootStrapTypes Poisson and Bernoulli. 0.80 for MVS. Doesn't apply to others.
+#' @param score_function Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)
+#' @param min_data_in_leaf Default is 1. Cannot be used with SymmetricTree is GrowPolicy
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
@@ -120,7 +126,7 @@
 #'     IDcols = c("IDcol_1","IDcol_2"),
 #'     TransformNumericColumns = "Adrian",
 #'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'       "LogPlus1", "Logit", "YeoJohnson"),
+#'       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 #'
 #'     # Model evaluation:
 #'     #   'eval_metric' is the measure catboost uses when evaluting
@@ -178,7 +184,13 @@
 #'     LearningRate = seq(0.01,0.10,0.01),
 #'     RSM = 1,
 #'     BootStrapType = NULL,
-#'     GrowPolicy = "SymmetricTree")
+#'     GrowPolicy = "SymmetricTree",
+#'     model_size_reg = 0.5,
+#'     feature_border_type = "GreedyLogSum",
+#'     sampling_unit = "Group",
+#'     subsample = NULL,
+#'     score_function = "Cosine",
+#'     min_data_in_leaf = 1)
 #'
 #' # Output
 #'  TestModel$Model
@@ -209,7 +221,7 @@ AutoCatBoostRegression <- function(data,
                                    DummifyCols = FALSE,
                                    IDcols = NULL,
                                    TransformNumericColumns = NULL,
-                                   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+                                   Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                                    task_type = "GPU",
                                    NumGPUs = 1,
                                    eval_metric = "RMSE",
@@ -242,7 +254,13 @@ AutoCatBoostRegression <- function(data,
                                    LearningRate = NULL,
                                    RSM = 1,
                                    BootStrapType = NULL,
-                                   GrowPolicy = "SymmetricTree") {
+                                   GrowPolicy = "SymmetricTree",
+                                   model_size_reg = 0.5,
+                                   feature_border_type = "GreedyLogSum",
+                                   sampling_unit = "Group",
+                                   subsample = NULL,
+                                   score_function = "Cosine",
+                                   min_data_in_leaf = 1) {
   # Load catboost ----
   loadNamespace(package = "catboost")
 
@@ -328,16 +346,16 @@ AutoCatBoostRegression <- function(data,
   if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
 
   # Regression Check Arguments----
-  if(!(tolower(task_type) %chin% c("gpu", "cpu"))) return("task_type needs to be either 'GPU' or 'CPU'")
+  if(!(tolower(task_type) %chin% c("gpu", "cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
   if(is.null(NumGPUs)) NumGPUs <- '0' else if(NumGPUs > 1L) NumGPUs <- paste0('0-', NumGPUs-1L) else NumGPUs <- '0'
-  if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
-  if(!is.null(model_path)) if(!is.character(model_path)) return("model_path needs to be a character type")
-  if(!is.null(metadata_path)) if(!is.character(metadata_path)) return("metadata_path needs to be a character type")
-  if(!is.character(ModelID)) return("ModelID needs to be a character type")
-  if(NumOfParDepPlots < 0L) return("NumOfParDepPlots needs to be a positive number")
-  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
-  if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
+  if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
+  if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
+  if(!is.null(metadata_path)) if(!is.character(metadata_path)) stop("metadata_path needs to be a character type")
+  if(!is.character(ModelID)) stop("ModelID needs to be a character type")
+  if(NumOfParDepPlots < 0L) stop("NumOfParDepPlots needs to be a positive number")
+  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if(!is.null(PassInGrid)) GridTune <- FALSE
   if(!GridTune & length(Trees) > 1L) Trees <- max(Trees)
   if(GridTune) {
@@ -370,6 +388,22 @@ AutoCatBoostRegression <- function(data,
     if(task_type == "CPU") BootStrapType <- "MVS"
   } else if(task_type == "GPU" & BootStrapType == "MVS") {
     BootStrapType <- "Bayesian"
+  }
+
+  # Sampling Unit management
+  if(!is.null(sampling_unit) && task_type == "GPU" && LossFunction != "YetiRankPairWise") sampling_unit <- NULL
+
+  # score_function management
+  if(!is.null(score_function)) {
+    if(task_type == "CPU" && score_function %chin% c("NewtonL2","NewtonCosine")) {
+      if(!is.null(GrowPolicy)) {
+        if(GrowPolicy == "Lossguide") score_function <- "L2"
+      } else {
+        score_function <- "Cosine"
+      }
+    } else if(!is.null(GrowPolicy)) {
+      if(GrowPolicy == "Lossguide" && score_function == "NewtonCosine") score_function <- "NewtonL2"
+    }
   }
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
@@ -1058,23 +1092,44 @@ AutoCatBoostRegression <- function(data,
     base_params[["thread_count"]] <- parallel::detectCores()
 
     # Additional Parameters
-    base_params[["metric_period"]] <- MetricPeriods
     base_params[["iterations"]] <- Trees
     base_params[["depth"]] <- Depth
     base_params[["langevin"]] <- langevin
     base_params[["diffusion_temperature"]] <- if(langevin) diffusion_temperature else NULL
     base_params[["learning_rate"]] <- LearningRate
+
     base_params[["l2_leaf_reg"]] <- L2_Leaf_Reg
     base_params[["random_strength"]] <- RandomStrength
     base_params[["border_count"]] <- BorderCount
     base_params[["rsm"]] <- RSM
+    base_params[["sampling_unit"]] <- sampling_unit
+
+    # Speedup
+    base_params[["metric_period"]] <- MetricPeriods
+
+    # Style of model
     base_params[["grow_policy"]] <- GrowPolicy
     base_params[["bootstrap_type"]] <- BootStrapType
+
+    # Loss functions
     base_params[["loss_function"]] <- LossFunction
     base_params[["eval_metric"]] <- EvalMetric
+    base_params[["score_function"]] <- score_function
+
+    # Data ordering for quality improvement
     base_params[["has_time"]] <- HasTime
+
+    # Hardware
     base_params[["task_type"]] <- task_type
     base_params[["devices"]] <- NumGPUs
+
+    # Categorical Feature Args
+    base_params[["model_size_reg"]] <- model_size_reg
+
+    # Numerical Feature Args
+    base_params[["feature_border_type"]] <- feature_border_type
+    base_params[["subsample"]] <- if(any(BootStrapType %chin% c("Bayesian","No"))) NULL else if(!is.null(subsample)) subsample else NULL
+    base_params[["min_data_in_leaf"]] <- if(GrowPolicy %chin% c("SymmetricTree")) NULL else if(!is.null(min_data_in_leaf)) min_data_in_leaf else NULL
   }
 
   # Regression Train Final Model----

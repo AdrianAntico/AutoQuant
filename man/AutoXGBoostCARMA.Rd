@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoXGBoostCARMA.R
 \name{AutoXGBoostCARMA}
 \alias{AutoXGBoostCARMA}
-\title{AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting}
+\title{Feature Rich ML Panel Forecasting}
 \usage{
 AutoXGBoostCARMA(
   data,
@@ -17,7 +17,8 @@ AutoXGBoostCARMA(
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit"),
   AnomalyDetection = NULL,
   XREGS = NULL,
   Lags = c(1:5),
@@ -30,7 +31,7 @@ AutoXGBoostCARMA(
   Difference = TRUE,
   FourierTerms = 6,
   CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
-    "isoweek", "month", "quarter", "year"),
+    "wom", "isoweek", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
   HolidayLags = 1L,
@@ -46,7 +47,7 @@ AutoXGBoostCARMA(
   GridEvalMetric = "mae",
   ModelCount = 1L,
   NTrees = 1000L,
-  PartitionType = "timeseries",
+  PartitionType = "random",
   Timer = TRUE,
   DebugMode = FALSE
 )
@@ -76,23 +77,23 @@ AutoXGBoostCARMA(
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
-\item{Methods}{Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
 
 \item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
-\item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52)}
+\item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52) or list("day" = c(1:10), "weeks" = c(1:4))}
 
-\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52)}
+\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52)}
+\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52)}
+\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)}
+\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)}
+\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
 \item{Quantiles_Selected}{Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
 
@@ -100,7 +101,7 @@ AutoXGBoostCARMA(
 
 \item{FourierTerms}{Set to the max number of pairs}
 
-\item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
+\item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "wom", "isoweek", "month", "quarter", "year"}
 
 \item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
 
@@ -112,7 +113,7 @@ AutoXGBoostCARMA(
 
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 
-\item{ZeroPadSeries}{Set to "all", "inner", or NULL. See TimeSeriesFill for explanation}
+\item{ZeroPadSeries}{NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type}
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
@@ -137,33 +138,39 @@ AutoXGBoostCARMA(
 \item{DebugMode}{Setting to TRUE generates printout of all header code comments during run time of function}
 }
 \value{
-Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+See examples
 }
 \description{
-AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+AutoXGBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 }
 \examples{
 \dontrun{
 
-# Load Walmart Data from Dropbox----
-data <- data.table::fread(
-  "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+# Load data
+data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
-# Subset for Stores / Departments With Full Series
-data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
-  , Counts := NULL]
+# Ensure series have no missing dates (also remove series with more than 25\% missing values)
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = "Date",
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  FillType = "maxmax",
+  MaxMissingPercent = 0.25,
+  SimpleImpute = TRUE)
 
-# Subset Columns (remove IsHoliday column)----
-keep <- c("Store","Dept","Date","Weekly_Sales")
-data <- data[, ..keep]
-data <- data[Store \%in\% c(1,2)]
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
 
-xregs <- data.table::copy(data)
-xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-xregs[, c("Store","Dept") := NULL]
-data.table::setnames(xregs, "Weekly_Sales", "Other")
-xregs[, Other := jitter(Other, factor = 25)]
-data <- data[as.Date(Date) < as.Date('2012-09-28')]
+# Remove IsHoliday column
+data[, IsHoliday := NULL]
+
+# Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
+xregs <- data[, .SD, .SDcols = c("Date", "Store", "Dept")]
+
+# Change data types
+data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 
  # Build forecast
 XGBoostResults <- AutoXGBoostCARMA(
@@ -200,7 +207,7 @@ XGBoostResults <- AutoXGBoostCARMA(
   # Target Transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1","Logit","YeoJohnson"),
+              "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
   Difference = FALSE,
 
   # Features
@@ -217,7 +224,7 @@ XGBoostResults <- AutoXGBoostCARMA(
   Quantiles_Selected = c("q5","q95"),
   XREGS = xregs,
   FourierTerms = 4,
-  CalendarVariables = c("week", "month", "quarter"),
+  CalendarVariables = c("week", "wom", "month", "quarter"),
   HolidayVariable = c("USPublicHolidays","EasterGroup",
     "ChristmasGroup","OtherEcclesticalFeasts"),
   TimeTrendVariable = TRUE,

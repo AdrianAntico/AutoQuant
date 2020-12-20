@@ -17,7 +17,7 @@
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
-#' @param Methods Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
+#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
 #' @param Timer Set to FALSE to turn off the updating print statements for progress
 #' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
@@ -104,13 +104,13 @@
 #'   # Target transformations
 #'   TargetTransformation = TRUE,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'     "LogPlus1", "Logit", "YeoJohnson"),
+#'     "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
 #'   RoundPreds = FALSE,
 #'
 #'   # Date features
-#'   CalendarVariables = c("week", "month", "quarter"),
+#'   CalendarVariables = c("week", "wom", "month", "quarter"),
 #'   HolidayVariable = c("USPublicHolidays",
 #'     "EasterGroup",
 #'     "ChristmasGroup","OtherEcclesticalFeasts"),
@@ -205,14 +205,14 @@
 #'   # Target transformations
 #'   TargetTransformation = TRUE,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'               "LogPlus1", "Logit", "YeoJohnson"),
+#'               "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 #'   Difference = FALSE,
 #'   NonNegativePred = FALSE,
 #'   Threshold = NULL,
 #'   RoundPreds = FALSE,
 #'
 #'   # Date features
-#'   CalendarVariables = c("week", "month", "quarter"),
+#'   CalendarVariables = c("week", "wom", "month", "quarter"),
 #'   HolidayVariable = c("USPublicHolidays",
 #'                       "EasterGroup",
 #'                       "ChristmasGroup","OtherEcclesticalFeasts"),
@@ -272,7 +272,7 @@ AutoCatBoostHurdleCARMA <- function(data,
                                     TimeGroups = c("weeks","months"),
                                     NumOfParDepPlots = 10L,
                                     TargetTransformation = FALSE,
-                                    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+                                    Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                                     AnomalyDetection = NULL,
                                     XREGS = NULL,
                                     Lags = c(1L:5L),
@@ -284,7 +284,7 @@ AutoCatBoostHurdleCARMA <- function(data,
                                     Quantiles_Selected = c("q5","q95"),
                                     Difference = TRUE,
                                     FourierTerms = 6L,
-                                    CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+                                    CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "wom", "isoweek", "month", "quarter", "year"),
                                     HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                                     HolidayLags = 1L,
                                     HolidayMovingAverages = 1L:2L,
@@ -362,7 +362,7 @@ AutoCatBoostHurdleCARMA <- function(data,
     }
 
     # Stop if XREGS doesn't supply forward looking data
-    if(FC_Periods < 1) return("Your XREGS does not have forward looking data")
+    if(FC_Periods < 1) stop("Your XREGS does not have forward looking data")
 
   } else if(!is.null(XREGS)) {
     FC_Periods <- HoldOutPeriods

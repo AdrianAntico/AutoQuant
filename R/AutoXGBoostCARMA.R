@@ -1,6 +1,6 @@
-#' AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting
+#' Feature Rich ML Panel Forecasting
 #'
-#' AutoXGBoostCARMA Automated XGBoost Calendar, Holiday, ARMA, and Trend Variables Forecasting. Create hundreds of thousands of time series forecasts using this function.
+#' AutoXGBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 #'
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
@@ -16,25 +16,25 @@
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
-#' @param Methods Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"
+#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
-#' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52)
-#' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52)
-#' @param SD_Periods Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52)
-#' @param Skew_Periods Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52)
-#' @param Kurt_Periods Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)
-#' @param Quantile_Periods Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)
+#' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52) or list("day" = c(1:10), "weeks" = c(1:4))
+#' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))
+#' @param SD_Periods Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))
+#' @param Skew_Periods Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))
+#' @param Kurt_Periods Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))
+#' @param Quantile_Periods Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))
 #' @param Quantiles_Selected Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
 #' @param Difference Set to TRUE to put the I in ARIMA
 #' @param AnomalyDetection NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)
 #' @param FourierTerms Set to the max number of pairs
-#' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
+#' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "wom", "isoweek", "month", "quarter", "year"
 #' @param HolidayVariable NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"
 #' @param HolidayLags Number of lags for the holiday counts
 #' @param HolidayMovingAverages Number of moving averages for holiday counts
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
-#' @param ZeroPadSeries Set to "all", "inner", or NULL. See TimeSeriesFill for explanation
+#' @param ZeroPadSeries NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
 #' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
@@ -49,25 +49,31 @@
 #' @examples
 #' \dontrun{
 #'
-#' # Load Walmart Data from Dropbox----
-#' data <- data.table::fread(
-#'   "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#' # Load data
+#' data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 #'
-#' # Subset for Stores / Departments With Full Series
-#' data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
-#'   , Counts := NULL]
+#' # Ensure series have no missing dates (also remove series with more than 25% missing values)
+#' data <- RemixAutoML::TimeSeriesFill(
+#'   data,
+#'   DateColumnName = "Date",
+#'   GroupVariables = c("Store","Dept"),
+#'   TimeUnit = "weeks",
+#'   FillType = "maxmax",
+#'   MaxMissingPercent = 0.25,
+#'   SimpleImpute = TRUE)
 #'
-#' # Subset Columns (remove IsHoliday column)----
-#' keep <- c("Store","Dept","Date","Weekly_Sales")
-#' data <- data[, ..keep]
-#' data <- data[Store %in% c(1,2)]
+#' # Set negative numbers to 0
+#' data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
 #'
-#' xregs <- data.table::copy(data)
-#' xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-#' xregs[, c("Store","Dept") := NULL]
-#' data.table::setnames(xregs, "Weekly_Sales", "Other")
-#' xregs[, Other := jitter(Other, factor = 25)]
-#' data <- data[as.Date(Date) < as.Date('2012-09-28')]
+#' # Remove IsHoliday column
+#' data[, IsHoliday := NULL]
+#'
+#' # Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
+#' xregs <- data[, .SD, .SDcols = c("Date", "Store", "Dept")]
+#'
+#' # Change data types
+#' data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+#' xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 #'
 #'  # Build forecast
 #' XGBoostResults <- AutoXGBoostCARMA(
@@ -104,7 +110,7 @@
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
 #'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'               "LogPlus1","Logit","YeoJohnson"),
+#'               "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
 #'   Difference = FALSE,
 #'
 #'   # Features
@@ -121,7 +127,7 @@
 #'   Quantiles_Selected = c("q5","q95"),
 #'   XREGS = xregs,
 #'   FourierTerms = 4,
-#'   CalendarVariables = c("week", "month", "quarter"),
+#'   CalendarVariables = c("week", "wom", "month", "quarter"),
 #'   HolidayVariable = c("USPublicHolidays","EasterGroup",
 #'     "ChristmasGroup","OtherEcclesticalFeasts"),
 #'   TimeTrendVariable = TRUE,
@@ -136,7 +142,7 @@
 #' XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
 #' XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
 #' }
-#' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+#' @return See examples
 #' @export
 AutoXGBoostCARMA <- function(data,
                              NonNegativePred = FALSE,
@@ -150,7 +156,7 @@ AutoXGBoostCARMA <- function(data,
                              TimeUnit = "week",
                              TimeGroups = c("weeks","months"),
                              TargetTransformation = FALSE,
-                             Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+                             Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                              AnomalyDetection = NULL,
                              XREGS = NULL,
                              Lags = c(1:5),
@@ -162,7 +168,7 @@ AutoXGBoostCARMA <- function(data,
                              Quantiles_Selected = NULL,
                              Difference = TRUE,
                              FourierTerms = 6,
-                             CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+                             CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "wom", "isoweek", "month", "quarter", "year"),
                              HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                              HolidayLags = 1L,
                              HolidayMovingAverages = 3L,
@@ -177,7 +183,7 @@ AutoXGBoostCARMA <- function(data,
                              GridEvalMetric = "mae",
                              ModelCount = 1L,
                              NTrees = 1000L,
-                             PartitionType = "timeseries",
+                             PartitionType = "random",
                              Timer = TRUE,
                              DebugMode = FALSE) {
 
@@ -208,6 +214,37 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Convert data to data.table----")
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
+  # Feature Engineering: Add Zero Padding for missing dates----
+  if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
+  if(!is.null(ZeroPadSeries)) {
+    data <- TimeSeriesFill(
+      data,
+      DateColumnName = eval(DateColumnName),
+      GroupVariables = GroupVariables,
+      TimeUnit = TimeUnit,
+      FillType = ZeroPadSeries,
+      MaxMissingPercent = 0.0,
+      SimpleImpute = FALSE)
+    data <- RemixAutoML::ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = 0, IgnoreCols = NULL)
+
+  } else {
+
+    # Ensure series are filled
+    temp <- RemixAutoML::TimeSeriesFill(
+      data,
+      DateColumnName = eval(DateColumnName),
+      GroupVariables = GroupVariables,
+      TimeUnit = TimeUnit,
+      FillType = "maxmax",
+      MaxMissingPercent = 0.25,
+      SimpleImpute = FALSE)
+
+    # If not, stop and explain to the user what to do
+    if(temp[,.N] != data[,.N]) {
+      stop("There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function")
+    }
+  }
+
   # Feature Engineering: Add XREGS----
   if(DebugMode) print("Feature Engineering: Add XREGS----")
 
@@ -215,7 +252,7 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("# Convert XREGS to data.table")
   if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
 
-  # Check lengths of XREGS
+  # Modify FC_Periods ----
   if(DebugMode) print(names(XREGS))
   if(DebugMode) print("# Check lengths of XREGS")
   if(!is.null(XREGS) & TrainOnFull) {
@@ -233,28 +270,44 @@ AutoXGBoostCARMA <- function(data,
     HoldOutPeriods <- FC_Periods
   }
 
-  # Check for any Target Variable hiding in XREGS
+  # Check for any Target Variable hiding in XREGS ----
   if(DebugMode) print("# Check for any Target Variable hiding in XREGS")
   if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
 
-  # Merge data and XREG for Training
+  # Merge data and XREG for Training ----
   if(DebugMode) print("merging xregs to data")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      if(length(GroupVariables) > 1) {
-        if(!"GroupVar" %chin% names(XREGS)) {
-          data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c(GroupVariables, eval(DateColumnName)), all = FALSE)
-        } else {
-          data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-          data <- merge(data, XREGS, by = c("GroupVar", eval(DateColumnName)), all = FALSE)
+
+      # I need GroupVar in the xregs. if not there, add it
+      if(!"GroupVar" %chin% names(XREGS)) {
+        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      }
+
+      # I need the GroupVariable names to be different from data
+      if(any(GroupVariables %chin% names(XREGS))) {
+        for(g in GroupVariables) {
+          data.table::setnames(x = XREGS, old = eval(g), new = paste0("Add_",eval(g)))
         }
+      }
+
+      # Merge data and XREGS
+      if(length(GroupVariables) > 1) {
+        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+        data <- merge(data, XREGS, by = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
+        data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
       } else {
-        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all = FALSE)
+        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
+        data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
       }
     } else {
-      data <- merge(data, XREGS, by = c(eval(DateColumnName)), all = FALSE)
+      data <- merge(data, XREGS, by = c(eval(DateColumnName)), all.x = TRUE)
+      data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
     }
   }
+
+  # Check for duplication in the data ----
+  if(data[, .N] != unique(data)[, .N]) stop("There is duplicates in your data")
 
   # Set Keys for data.table usage----
   if(DebugMode) print("# Set Keys for data.table usage----")
@@ -297,46 +350,6 @@ AutoXGBoostCARMA <- function(data,
     } else {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       if(GroupVariables != "GroupVar") data[, eval(GroupVariables) := NULL]
-    }
-  }
-
-  # Feature Engineering: Add Zero Padding for missing dates----
-  if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
-  if(!is.null(ZeroPadSeries)) {
-    if(!is.null(GroupVariables)) {
-      if(tolower(ZeroPadSeries) == "all") {
-        data <- TimeSeriesFill(
-          data,
-          DateColumnName = eval(DateColumnName),
-          GroupVariables = "GroupVar",
-          TimeUnit = TimeUnit,
-          FillType = "all")
-      } else {
-        data <- TimeSeriesFill(
-          data,
-          DateColumnName = eval(DateColumnName),
-          GroupVariables = "GroupVar",
-          TimeUnit = TimeUnit,
-          FillType = "inner")
-      }
-    } else {
-      if(tolower(ZeroPadSeries) == "all") {
-        data <- TimeSeriesFill(
-          data,
-          DateColumnName = eval(DateColumnName),
-          GroupVariables = NULL,
-          TimeUnit = TimeUnit,
-          FillType = "all")
-      }
-    }
-
-    # Convert TimeUnit back to original argument name because TimeSeriesFill() coerces them to a modified version
-    if(TimeUnit == "weeks") {
-      TimeUnit <- "week"
-    } else if(TimeUnit == "secs") {
-      TimeUnit <- "second"
-    } else if(TimeUnit == "min") {
-      TimeUnit <- "minute"
     }
   }
 

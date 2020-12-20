@@ -13,7 +13,8 @@ AutoH2oMLRegression(
   FeatureColNames = NULL,
   ExcludeAlgos = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit"),
   eval_metric = "RMSE",
   Trees = 50,
   MaxMem = "32G",
@@ -47,7 +48,7 @@ AutoH2oMLRegression(
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
-\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
 
@@ -167,7 +168,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
       c("IDcol_1", "IDcol_2","Adrian")],
     TransformNumericColumns = NULL,
     Methods = c("BoxCox", "Asinh", "Asin", "Log",
-      "LogPlus1", "Logit", "YeoJohnson"),
+      "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
     # Model args
     ExcludeAlgos = NULL,

@@ -37,11 +37,16 @@ TimeSeriesFill For Completing Time Series Data For Single Series or Time Series 
 }
 \examples{
 \dontrun{
+
+# Pull in data
+data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+# Run function
 data <- TimeSeriesFill(
   data,
   DateColumnName = "Date",
-  GroupVariables = "GroupVar",
-  TimeUnit = "days",
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
   FillType = "maxmax",
   SimpleImpute = FALSE)
 }

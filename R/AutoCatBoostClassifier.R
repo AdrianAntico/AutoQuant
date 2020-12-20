@@ -42,6 +42,12 @@
 #' @param RSM CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
 #' @param BootStrapType Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
 #' @param GrowPolicy Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
+#' @param model_size_reg Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.
+#' @param feature_border_type Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy
+#' @param sampling_unit Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the loss_function is YetiRankPairWise
+#' @param subsample Default is NULL. Catboost will turn this into 0.66 for BootStrapTypes Poisson and Bernoulli. 0.80 for MVS. Doesn't apply to others.
+#' @param score_function Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)
+#' @param min_data_in_leaf Default is 1. Cannot be used with SymmetricTree is GrowPolicy
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
@@ -165,7 +171,13 @@
 #'     BorderCount = 128,
 #'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
 #'     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-#'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+#'     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+#'     model_size_reg = 0.5,
+#'     feature_border_type = "GreedyLogSum",
+#'     sampling_unit = "Group",
+#'     subsample = NULL,
+#'     score_function = "Cosine",
+#'     min_data_in_leaf = 1)
 #'
 #' # Output
 #' TestModel$Model
@@ -221,7 +233,13 @@ AutoCatBoostClassifier <- function(data,
                                    BorderCount = 128,
                                    RSM = NULL,
                                    BootStrapType = NULL,
-                                   GrowPolicy = NULL) {
+                                   GrowPolicy = NULL,
+                                   model_size_reg = 0.5,
+                                   feature_border_type = "GreedyLogSum",
+                                   sampling_unit = "Group",
+                                   subsample = NULL,
+                                   score_function = "Cosine",
+                                   min_data_in_leaf = 1) {
 
   # Load catboost----
   loadNamespace(package = "catboost")
@@ -267,6 +285,22 @@ AutoCatBoostClassifier <- function(data,
   if(langevin & task_type == "GPU") {
     task_type <- "CPU"
     print("task_type switched to CPU to enable langevin boosting")
+  }
+
+  # Sampling Unit management
+  if(!is.null(sampling_unit) && task_type == "GPU" && LossFunction != "YetiRankPairWise") sampling_unit <- NULL
+
+  # score_function management
+  if(!is.null(score_function)) {
+    if(task_type == "CPU" && score_function %chin% c("NewtonL2","NewtonCosine")) {
+      if(!is.null(GrowPolicy)) {
+        if(GrowPolicy == "Lossguide") score_function <- "L2"
+      } else {
+        score_function <- "Cosine"
+      }
+    } else if(!is.null(GrowPolicy)) {
+      if(GrowPolicy == "Lossguide" && score_function == "NewtonCosine") score_function <- "NewtonL2"
+    }
   }
 
   # Ensure GridTune features are all not null if GridTune = TRUE----
@@ -695,24 +729,44 @@ AutoCatBoostClassifier <- function(data,
     base_params[["thread_count"]] <- parallel::detectCores()
 
     # Additional Parameters
-    base_params[["metric_period"]] <- MetricPeriods
     base_params[["iterations"]] <- Trees
     base_params[["depth"]] <- Depth
     base_params[["langevin"]] <- langevin
     base_params[["diffusion_temperature"]] <- if(langevin) diffusion_temperature else NULL
     base_params[["learning_rate"]] <- LearningRate
+
     base_params[["l2_leaf_reg"]] <- L2_Leaf_Reg
     base_params[["random_strength"]] <- RandomStrength
     base_params[["border_count"]] <- BorderCount
     base_params[["rsm"]] <- RSM
+    base_params[["sampling_unit"]] <- sampling_unit
+
+    # Speedup
+    base_params[["metric_period"]] <- MetricPeriods
+
+    # Style of model
     base_params[["grow_policy"]] <- GrowPolicy
     base_params[["bootstrap_type"]] <- BootStrapType
+
+    # Loss functions
     base_params[["loss_function"]] <- LossFunction
-    base_params[["eval_metric"]] <- eval_metric
+    base_params[["eval_metric"]] <- EvalMetric
+    base_params[["score_function"]] <- score_function
+
+    # Data ordering for quality improvement
     base_params[["has_time"]] <- HasTime
+
+    # Hardware
     base_params[["task_type"]] <- task_type
     base_params[["devices"]] <- NumGPUs
-    base_params[["class_weights"]] <- ClassWeights
+
+    # Categorical Feature Args
+    base_params[["model_size_reg"]] <- model_size_reg
+
+    # Numerical Feature Args
+    base_params[["feature_border_type"]] <- feature_border_type
+    base_params[["subsample"]] <- if(any(BootStrapType %chin% c("Bayesian","No"))) NULL else if(!is.null(subsample)) subsample else NULL
+    base_params[["min_data_in_leaf"]] <- if(GrowPolicy %chin% c("SymmetricTree")) NULL else if(!is.null(min_data_in_leaf)) min_data_in_leaf else NULL
   }
 
   # Binary Train Final Model----

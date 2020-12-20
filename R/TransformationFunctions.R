@@ -33,31 +33,31 @@ Test_YeoJohnson <- function(x,
 #' @param upper the upper bound for search
 #' @param eps erorr tolerance
 #' @return YeoJohnson results
-Estimate_YeoJohnson_Lambda <-
-  function(x,
-           lower = -5,
-           upper = 5,
-           eps = 0.001) {
-    n <- length(x)
-    ccID <- !is.na(x)
-    x <- x[ccID]
+Estimate_YeoJohnson_Lambda <- function(x,
+                                       lower = -5,
+                                       upper = 5,
+                                       eps = 0.001) {
 
-    # See references, Yeo & Johnson Biometrika (2000)
-    yj_loglik <- function(lambda) {
-      x_t <- Apply_YeoJohnson(x, lambda, eps)
-      x_t_bar <- mean(x_t)
-      x_t_var <- var(x_t) * (n - 1) / n
-      constant <- sum(sign(x) * log(abs(x) + 1))
-      - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
-    }
+  n <- length(x)
+  ccID <- !is.na(x)
+  x <- x[ccID]
 
-    results <- optimize(
-      yj_loglik,
-      lower = lower,
-      upper = upper,
-      maximum = TRUE,
-      tol = .0001)
-    return(results$maximum)
+  # See references, Yeo & Johnson Biometrika (2000)
+  yj_loglik <- function(lambda) {
+    x_t <- Apply_YeoJohnson(x, lambda, eps)
+    x_t_bar <- mean(x_t)
+    x_t_var <- var(x_t) * (n - 1) / n
+    constant <- sum(sign(x) * log(abs(x) + 1))
+    - 0.5 * n * log(x_t_var) + (lambda - 1) * constant
+  }
+
+  results <- optimize(
+    yj_loglik,
+    lower = lower,
+    upper = upper,
+    maximum = TRUE,
+    tol = .0001)
+  return(results$maximum)
   }
 
 #' Apply YeoJohnson Transformation
@@ -448,6 +448,46 @@ InvApply_LogPlus1 <- function(x) {
   return(exp(x)-1)
 }
 
+#' Test Sqrt Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Sqrt results
+Test_Sqrt <- function(x) {
+  stopifnot(is.numeric(x))
+  trans_data <- sqrt(x)
+  mu <- mean(trans_data, na.rm = TRUE)
+  sigma <- sd(trans_data, na.rm = TRUE)
+  trans_data_standardized <- (trans_data - mu) / sigma
+  ptest <- nortest::pearson.test(trans_data_standardized)
+  val <- list(Name = "Sqrt", Data = trans_data, Lambda = NA, Normalized_Statistic = unname(ptest$statistic / ptest$df))
+  return(val)
+}
+
+#' Apply Sqrt Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Log results
+Apply_Sqrt <- function(x) {
+  return(sqrt(x))
+}
+
+#' Inverse Sqrt Transformation
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#' @noRd
+#' @param x The data in numerical vector form
+#' @return Log results
+InvApply_Sqrt <- function(x) {
+  return(x^2)
+}
+
 #' AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified.
 #'
 #' AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Asin, and Logit) and find the one that produces data that is the closest to normally distributed data. It then makes the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects (always) or saving them to file (optional).
@@ -487,17 +527,17 @@ InvApply_LogPlus1 <- function(x) {
 #' @export
 AutoTransformationCreate <- function(data,
                                      ColumnNames = NULL,
-                                     Methods = c("BoxCox","YeoJohnson","Asinh","Log","LogPlus1","Asin","Logit","Identity"),
+                                     Methods = c("BoxCox","YeoJohnson","Asinh","Log","LogPlus1","Sqrt","Asin","Logit","Identity"),
                                      Path = NULL,
                                      TransID = "ModelID",
                                      SaveOutput = FALSE) {
 
   # Check arguments----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "log", "logplus1", "asin", "logit"))) return("Methods not supported")
+  if(!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "sqrt", "log", "logplus1", "asin", "logit"))) stop("Methods not supported")
   if(!"Identity" %chin% Methods) Methods <- c(Methods, "Identity")
   if(is.numeric(ColumnNames) | is.integer(ColumnNames)) ColumnNames <- names(data)[ColumnNames]
-  for(i in ColumnNames) if(!(class(data[[eval(i)]]) %chin% c("numeric", "integer"))) return("ColumnNames must be for numeric or integer columns")
+  for(i in ColumnNames) if(!(class(data[[eval(i)]]) %chin% c("numeric", "integer"))) stop("ColumnNames must be for numeric or integer columns")
 
   # Loop through ColumnNames----
   for(colNames in seq_along(ColumnNames)) {
@@ -528,7 +568,7 @@ AutoTransformationCreate <- function(data,
 
     # Update Methods----
     if(MinVal <= 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox","log","logit"))]
-    if(MinVal < 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("logplus1"))]
+    if(MinVal < 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("logplus1","sqrt"))]
     if(MaxVal > 1) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asin"))]
     if(MaxVal >= 1) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("logit"))]
 
@@ -563,6 +603,17 @@ AutoTransformationCreate <- function(data,
       data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
       output <- Test_LogPlus1(x)
       DataCollection[["logplus1"]] <- output$Data
+      data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
+      data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = NA)
+      data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
+    }
+
+    # Sqrt----
+    if(any(tolower(FinalMethods) %chin% "sqrt")) {
+      Counter <- Counter + 1L
+      data.table::set(EvaluationTable, i = Counter, j = "ColumnName", value = eval(ColumnNames[colNames]))
+      output <- Test_Sqrt(x)
+      DataCollection[["sqrt"]] <- output$Data
       data.table::set(EvaluationTable, i = Counter, j = "MethodName", value = output$Name)
       data.table::set(EvaluationTable, i = Counter, j = "Lambda", value = NA)
       data.table::set(EvaluationTable, i = Counter, j = "NormalizedStatistics", value = output$Normalized_Statistic)
@@ -712,6 +763,15 @@ AutoTransformationScore <- function(ScoringData,
         data.table::set(ScoringData, j = eval(colNames), value = Apply_LogPlus1(ScoringData[[eval(colNames)]]))
       } else {
         data.table::set(ScoringData, j = eval(colNames), value = InvApply_LogPlus1(x = ScoringData[[eval(colNames)]]))
+      }
+    }
+
+    # Sqrt----
+    if(Results[ColumnName == eval(colNames), MethodName] == "Sqrt") {
+      if(tolower(Type) != "inverse") {
+        data.table::set(ScoringData, j = eval(colNames), value = Apply_Sqrt(ScoringData[[eval(colNames)]]))
+      } else {
+        data.table::set(ScoringData, j = eval(colNames), value = InvApply_Sqrt(x = ScoringData[[eval(colNames)]]))
       }
     }
 

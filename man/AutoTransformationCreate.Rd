@@ -7,8 +7,8 @@
 AutoTransformationCreate(
   data,
   ColumnNames = NULL,
-  Methods = c("BoxCox", "YeoJohnson", "Asinh", "Log", "LogPlus1", "Asin", "Logit",
-    "Identity"),
+  Methods = c("BoxCox", "YeoJohnson", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit", "Identity"),
   Path = NULL,
   TransID = "ModelID",
   SaveOutput = FALSE

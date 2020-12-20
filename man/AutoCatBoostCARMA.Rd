@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoCatBoostCARMA.R
 \name{AutoCatBoostCARMA}
 \alias{AutoCatBoostCARMA}
-\title{AutoCatBoostCARMA}
+\title{Feature Rich ML Panel Forecasting}
 \usage{
 AutoCatBoostCARMA(
   data,
@@ -46,6 +46,7 @@ AutoCatBoostCARMA(
   PartitionType = "timeseries",
   TaskType = "GPU",
   NumGPU = 1,
+  DebugMode = FALSE,
   EvalMetric = "RMSE",
   EvalMetricValue = 1.5,
   LossFunction = "RMSE",
@@ -67,7 +68,12 @@ AutoCatBoostCARMA(
   BootStrapType = NULL,
   GrowPolicy = "SymmetricTree",
   Timer = TRUE,
-  DebugMode = FALSE
+  ModelSizeReg = 0.5,
+  FeatureBorderType = "GreedyLogSum",
+  SamplingUnit = "Group",
+  SubSample = NULL,
+  ScoreFunction = "Cosine",
+  MinDataInLeaf = 1
 )
 }
 \arguments{
@@ -101,25 +107,25 @@ AutoCatBoostCARMA(
 
 \item{NumOfParDepPlots}{Supply a number for the number of partial dependence plots you want returned}
 
-\item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
+\item{TargetTransformation}{TRUE or FALSE. If TRUE, select the methods in the Methods arg you want tested. The best one will be applied.}
 
-\item{Methods}{Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
 
 \item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
-\item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52)}
+\item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52) or list("day" = c(1:10), "weeks" = c(1:4))}
 
-\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52)}
+\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52)}
+\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52)}
+\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)}
+\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)}
+\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
 \item{Quantiles_Selected}{Select from the following "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"}
 
@@ -148,6 +154,8 @@ AutoCatBoostCARMA(
 \item{TaskType}{Default is "GPU" but you can also set it to "CPU"}
 
 \item{NumGPU}{Defaults to 1. If CPU is set this argument will be ignored.}
+
+\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
 
 \item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
 
@@ -191,10 +199,20 @@ AutoCatBoostCARMA(
 
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
-\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
+\item{ModelSizeReg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
+
+\item{FeatureBorderType}{Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
+
+\item{SamplingUnit}{Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the loss_function is YetiRankPairWise}
+
+\item{SubSample}{Can use if BootStrapType is neither Bayesian nor No. Pass NULL to use Catboost default. Used for bagging.}
+
+\item{ScoreFunction}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
+
+\item{MinDataInLeaf}{Defaults to 1. Used if GrowPolicy is not SymmetricTree}
 }
 \value{
-Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+See examples
 }
 \description{
 AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
@@ -202,116 +220,135 @@ AutoCatBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday coun
 \examples{
 \dontrun{
 
-# Set up path
-Path <- "C:/Users/Bizon/Documents/GitHub"
+# Set up your output file path for saving results as a .csv
+Path <- "C:/YourPathHere"
 
-# Set up environment
-data.table::setDTthreads(percent = 100)
+# Run on GPU or CPU (some options in the grid tuning force usage of CPU for some runs)
+TaskType = "GPU"
+
+# Define number of CPU threads to allow data.table to utilize
+data.table::setDTthreads(percent = max(1L, parallel::detectCores()-2L))
 
 # Load data
-data <- data.table::fread(file = file.path(Path, "walmart.csv"),index = c("Store","Dept"))
+data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+# Ensure series have no missing dates (also remove series with more than 25\% missing values)
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = "Date",
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  FillType = "maxmax",
+  MaxMissingPercent = 0.25,
+  SimpleImpute = TRUE)
 
 # Set negative numbers to 0
 data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
 
-# Subset for Stores / Departments with Full Series Available: (143 time points each)----
-data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
+# Remove IsHoliday column
+data[, IsHoliday := NULL]
 
-# Subset Columns (remove IsHoliday column)----
-data <- data[, .SD, .SDcols = c("Store","Dept","Date","Weekly_Sales")]
-
-# Setup xregs
-xregs <- data[, .SD, .SDcols = c("Date","Store","Dept")]
+# Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
+xregs <- data[, .SD, .SDcols = c("Date", "Store", "Dept")]
 
 # Change data types
 data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 
-# Add GroupVar to xregs
-xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-
-# Change names of categoricals in xregs
-data.table::setnames(xregs, c("Store","Dept"), c("STORE","DEPT"))
-
 # Subset data so we have an out of time sample
-data1 <- data.table::copy(data[, ID := 1:.N, by = c("Store","Dept")][ID <= 125][, ID := NULL])
+data1 <- data.table::copy(data[, ID := 1L:.N, by = c("Store","Dept")][ID <= 125L][, ID := NULL])
 data[, ID := NULL]
 
-# Define Holdout windows
-N <- data1[, .N, by = c("Store","Dept")][1, N]
-N1 <- xregs[, .N, by = c("STORE","DEPT")][1, N]
+# Define values for SplitRatios and FCWindow Args
+N1 <- data1[, .N, by = c("Store","Dept")][1L, N]
+N2 <- xregs[, .N, by = c("Store","Dept")][1L, N]
 
-# Setup Grid Tuning & Feature Tuning
+# Setup Grid Tuning & Feature Tuning data.table using a cross join of vectors
 Tuning <- data.table::CJ(
-  TimeWeights = c("None",0.9999,0.999,0.99),
-  HierachGroups = c("TRUE","FALSE"),
-  MaxTimeGroups = c("weeks","months","quarters"),
+  TimeWeights = c("None",0.999),
+  MaxTimeGroups = c("weeks","months"),
   TargetTransformation = c("TRUE","FALSE"),
   Difference = c("TRUE","FALSE"),
-  TimeTrendVariable = c("TRUE","FALSE"),
-  EvalMetric = c("RMSE","Huber"),
-  LossFunction = c("RMSE","Huber"),
+  HoldoutTrain = c(6,18),
   Langevin = c("TRUE","FALSE"),
-  L2_Leaf_Reg = c(1.0,2.0,3.0,4.0))
+  NTrees = c(2500,5000),
+  Depth = c(6,9),
+  RandomStrength = c(0.75,1),
+  L2_Leaf_Reg = c(3.0,4.0),
+  RSM = c(0.75,"NULL"),
+  GrowPolicy = c("SymmetricTree","Lossguide","Depthwise"),
+  BootStrapType = c("Bayesian","MVS","No"))
 
-# Plot list
-PlotList <- list()
+# Remove options that are not compatible with GPU (skip over this otherwise)
+Tuning <- Tuning[Langevin == "TRUE" | (Langevin == "FALSE" & RSM == "NULL" & BootStrapType \%in\% c("Bayesian","No"))]
 
-# Total runs
+# Randomize order of Tuning data.table
+Tuning <- Tuning[order(runif(.N))]
+
+# Load grid results and remove rows that have already been tested
+if(file.exists(file.path(Path, "Walmart_CARMA_Metrics.csv"))) {
+  Metrics <- data.table::fread(file.path(Path, "Walmart_CARMA_Metrics.csv"))
+  temp <- data.table::rbindlist(list(Metrics,Tuning), fill = TRUE)
+  temp <- unique(temp, by = c(4:(ncol(temp)-1)))
+  Tuning <- temp[is.na(RunTime)][, .SD, .SDcols = names(Tuning)]
+  rm(Metrics,temp)
+}
+
+# Define the total number of runs
 TotalRuns <- Tuning[,.N]
 
-# Run models
+# Kick off feature + grid tuning
 for(Run in seq_len(TotalRuns)) {
 
-  # Print Run
+  # Print run number
   for(zz in seq_len(100)) print(Run)
 
-  # Use clean data each run
+  # Use fresh data for each run
   xregs_new <- data.table::copy(xregs)
   data_new <- data.table::copy(data1)
 
-  # Timer
+  # Timer start
   StartTime <- Sys.time()
 
   # Run carma system
-  Results <- RemixAutoML::AutoCatBoostCARMA(
+  CatBoostResults <- RemixAutoML::AutoCatBoostCARMA(
 
     # data args
     data = data_new,
     TimeWeights = if(Tuning[Run, TimeWeights] == "None") NULL else as.numeric(Tuning[Run, TimeWeights]),
     TargetColumnName = "Weekly_Sales",
     DateColumnName = "Date",
-    HierarchGroups = if(as.logical(Tuning[Run, HierachGroups])) c("Store","Dept") else NULL,
+    HierarchGroups = NULL,
     GroupVariables = c("Store","Dept"),
     TimeUnit = "weeks",
     TimeGroups = if(Tuning[Run, MaxTimeGroups] == "weeks") "weeks" else if(Tuning[Run, MaxTimeGroups] == "months") c("weeks","months") else c("weeks","months","quarters"),
 
     # Production args
     TrainOnFull = TRUE,
-    SplitRatios = c(N / N1, 1 - N / N1),
+    SplitRatios = c(1 - Tuning[Run, HoldoutTrain] / N2, Tuning[Run, HoldoutTrain] / N2),
     PartitionType = "random",
-    FC_Periods = N1-N,
-    TaskType = "GPU",
+    FC_Periods = N2-N1,
+    TaskType = TaskType,
     NumGPU = 1,
     Timer = TRUE,
     DebugMode = TRUE,
 
-    # Target transformations
+    # Target variable transformations
     TargetTransformation = as.logical(Tuning[Run, TargetTransformation]),
     Methods = c("BoxCox","Asinh","Log","LogPlus1","YeoJohnson"),
     Difference = as.logical(Tuning[Run, Difference]),
     NonNegativePred = TRUE,
-    RoundPreds = as.logical(Tuning[Run, RoundPreds]),
+    RoundPreds = FALSE,
 
-    # Calendar features
+    # Calendar-related features
     CalendarVariables = c("week","wom","month","quarter"),
-    HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+    HolidayVariable = c("USPublicHolidays"),
     HolidayLags = c(1,2,3),
     HolidayMovingAverages = c(2,3),
 
-    # Time series features
-    Lags = list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12)),
-    MA_Periods = list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12)),
+    # Lags, moving averages, and other rolling stats
+    Lags = if(Tuning[Run, MaxTimeGroups] == "weeks") c(1,2,3,4,5,8,9,12,13,51,52,53) else if(Tuning[Run, MaxTimeGroups] == "months") list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12)) else list("weeks" = c(1,2,3,4,5,8,9,12,13,51,52,53), "months" = c(1,2,6,12), "quarters" = c(1,2,3,4)),
+    MA_Periods = if(Tuning[Run, MaxTimeGroups] == "weeks") c(2,3,4,5,8,9,12,13,51,52,53) else if(Tuning[Run, MaxTimeGroups] == "months") list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12)) else list("weeks" = c(2,3,4,5,8,9,12,13,51,52,53), "months" = c(2,6,12), "quarters" = c(2,3,4)),
     SD_Periods = NULL,
     Skew_Periods = NULL,
     Kurt_Periods = NULL,
@@ -322,20 +359,9 @@ for(Run in seq_len(TotalRuns)) {
     AnomalyDetection = NULL,
     XREGS = xregs_new,
     FourierTerms = 0,
-    TimeTrendVariable = as.logical(Tuning[Run, TimeTrendVariable]),
+    TimeTrendVariable = TRUE,
     ZeroPadSeries = NULL,
     DataTruncate = FALSE,
-
-    # ML evaluation output
-    PDFOutputPath = NULL,
-    SaveDataPath = NULL,
-    NumOfParDepPlots = 0L,
-
-    # ML loss functions
-    EvalMetric = Tuning[Run, EvalMetric],
-    EvalMetricValue = 10,
-    LossFunction = Tuning[Run, LossFunction],
-    LossFunctionValue = 10,
 
     # ML grid tuning args
     GridTune = FALSE,
@@ -344,26 +370,44 @@ for(Run in seq_len(TotalRuns)) {
     MaxRunsWithoutNewWinner = 50,
     MaxRunMinutes = 60*60,
 
+    # ML evaluation output
+    PDFOutputPath = NULL,
+    SaveDataPath = NULL,
+    NumOfParDepPlots = 0L,
+
+    # ML loss functions
+    EvalMetric = "RMSE",
+    EvalMetricValue = 1,
+    LossFunction = "RMSE",
+    LossFunctionValue = 1,
+
     # ML tuning args
-    NTrees = 12000,
-    Depth = 9,
+    NTrees = Tuning[Run, NTrees],
+    Depth = Tuning[Run, Depth],
     L2_Leaf_Reg = Tuning[Run, L2_Leaf_Reg],
-    LearningRate = NULL,
+    LearningRate = 0.03,
     Langevin = as.logical(Tuning[Run, Langevin]),
     DiffusionTemperature = 10000,
-    RandomStrength = 1,
+    RandomStrength = Tuning[Run, RandomStrength],
     BorderCount = 254,
-    BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"))
+    RSM = if(Tuning[Run, RSM] == "NULL") NULL else as.numeric(Tuning[Run, RSM]),
+    GrowPolicy = Tuning[Run, GrowPolicy],
+    BootStrapType = Tuning[Run, BootStrapType],
+    ModelSizeReg = 0.5,
+    FeatureBorderType = "GreedyLogSum",
+    SamplingUnit = "Group",
+    SubSample = NULL,
+    ScoreFunction = "Cosine",
+    MinDataInLeaf = 1)
 
-  # Timer
+  # Timer End
   EndTime <- Sys.time()
 
   # Prepare data for evaluation
-  Results <- Results$Forecast
-  data.table::setnames(Results, "Weekly_Sales", "Old")
+  Results <- CatBoostResults$Forecast
+  data.table::setnames(Results, "Weekly_Sales", "bla")
   Results <- merge(Results, data, by = c("Store","Dept","Date"), all = FALSE)
-  Results <- Results[is.na(Old)]
-  Results[, Old := NULL]
+  Results <- Results[is.na(bla)][, bla := NULL]
 
   # Create totals and subtotals
   Results <- data.table::groupingsets(
@@ -371,8 +415,9 @@ for(Run in seq_len(TotalRuns)) {
     j = list(Predictions = sum(Predictions), Weekly_Sales = sum(Weekly_Sales)),
     by = c("Date", "Store", "Dept"),
     sets = list(c("Date", "Store", "Dept"), c("Store", "Dept"), "Store", "Dept", "Date"))
-  Results[, Store := data.table::fifelse(is.na(Store), "Total", Store)]
-  Results[, Dept := data.table::fifelse(is.na(Dept), "Total", Dept)]
+
+  # Fill NAs with "Total" for totals and subtotals
+  for(cols in c("Store","Dept")) Results[, eval(cols) := data.table::fifelse(is.na(get(cols)), "Total", get(cols))]
 
   # Add error measures
   Results[, Weekly_MAE := abs(Weekly_Sales - Predictions)]
@@ -389,18 +434,7 @@ for(Run in seq_len(TotalRuns)) {
   temp[, Monthly_MAPE := Monthly_MAE / Weekly_Sales]
   Monthly_MAPE <- temp[, list(Monthly_MAPE = mean(Monthly_MAPE)), by = list(Store,Dept)]
 
-  # Create ts plot of actuals and predicted
-  Totals <- Results[Store == "Total" & Dept == "Total"]
-  Totals <- data.table::melt.data.table(data = Totals, id.vars = "Date", measure.vars = c("Predictions","Weekly_Sales"), variable.name = "Series", value.name = "Weekly_Sales")
-  PlotList[[Run]] <- eval(ggplot2::ggplot(data = Totals, ggplot2::aes(x = Date, y = Weekly_Sales, color = Series)) +
-                            ggplot2::geom_line() +
-                            ggplot2::scale_color_manual(values = c("red","blue")) +
-                            ggplot2::labs(
-                              title = "Walmart Data Forecast",
-                              subtitle = paste0("Weekly MAPE = ", round(100 * Weekly_MAPE[Store == "Total" & Dept == "Total", Weekly_MAPE],1),"\%", " :: Monthly MAPE = ", round(100 * Monthly_MAPE[Store == "Total" & Dept == "Total", Monthly_MAPE],1),"\%")) +
-                            RemixAutoML::ChartTheme(Size = 10, AngleX = 0, AngleY = 0))
-
-  # Collect metrics
+  # Collect metrics for Total (feel free to switch to something else or no filter at all)
   Metrics <- data.table::data.table(
     RunNumber = Run,
     Total_Weekly_MAPE = Weekly_MAPE[Store == "Total" & Dept == "Total", Weekly_MAPE],
@@ -408,8 +442,14 @@ for(Run in seq_len(TotalRuns)) {
     Tuning[Run],
     RunTime = EndTime - StartTime)
 
-  # Append to file
+  # Append to file (not overwrite)
   data.table::fwrite(Metrics, file = file.path(Path, "Walmart_CARMA_Metrics.csv"), append = TRUE)
+
+  # Remove objects (clear space before new runs)
+  rm(CatBoostResults, Results, temp, Weekly_MAE, Weekly_MAPE, Monthly_MAE, Monthly_MAPE)
+
+  # Garbage collection because of GPU
+  gc()
 }
 }
 }

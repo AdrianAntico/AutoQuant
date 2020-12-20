@@ -12,11 +12,16 @@
 #' @param SimpleImpute Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"
 #' @examples
 #' \dontrun{
+#'
+#' # Pull in data
+#' data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#'
+#' # Run function
 #' data <- TimeSeriesFill(
 #'   data,
 #'   DateColumnName = "Date",
-#'   GroupVariables = "GroupVar",
-#'   TimeUnit = "days",
+#'   GroupVariables = c("Store","Dept"),
+#'   TimeUnit = "weeks",
 #'   FillType = "maxmax",
 #'   SimpleImpute = FALSE)
 #' }
@@ -38,6 +43,8 @@ TimeSeriesFill <- function(data = data,
 
   # Fill from the absolute min date to the absolute max date
   if(FillType == "maxmax") {
+
+    # Setup vectors for crossjoin
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName))]
     CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
@@ -46,12 +53,16 @@ TimeSeriesFill <- function(data = data,
         CJList[[eval(group)]] <- unique(data[[eval(group)]])
       }
     }
+
+    # Cross join and then merge back original features
     FillData <- do.call(data.table::CJ, CJList)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
   }
 
   # Fill from the max date of the min set to the absolute max date
   if(FillType == "minmax") {
+
+    # Setup vectors for crossjoin
     MinDate <- data[, min(get(DateColumnName)), by = c(eval(GroupVariables))][, max(V1)]
     MaxDate <- data[, max(get(DateColumnName))]
     CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
@@ -60,13 +71,16 @@ TimeSeriesFill <- function(data = data,
         CJList[[eval(group)]] <- unique(data[[eval(group)]])
       }
     }
+
+    # Cross join and then merge back original features
     FillData <- do.call(data.table::CJ, CJList)
-    FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
   }
 
   # Fill from the absolute min date to the min of the max dates
   if(FillType == "maxmin") {
+
+    # Setup vectors for crossjoin
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
     CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
@@ -75,12 +89,16 @@ TimeSeriesFill <- function(data = data,
         CJList[[eval(group)]] <- unique(data[[eval(group)]])
       }
     }
+
+    # Cross join and then merge back original features
     FillData <- do.call(data.table::CJ, CJList)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
   }
 
   # Fill from the max date of the min dates to the min date of the max dates
   if(FillType == "minmin") {
+
+    # Setup vectors for crossjoin
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
     CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
@@ -89,6 +107,8 @@ TimeSeriesFill <- function(data = data,
         CJList[[eval(group)]] <- unique(data[[eval(group)]])
       }
     }
+
+    # Cross join and then merge back original features
     FillData <- do.call(data.table::CJ, CJList)
     FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
   }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2OCARMA.R
 \name{AutoH2OCARMA}
 \alias{AutoH2OCARMA}
-\title{AutoH2OCARMA}
+\title{Feature Rich ML Panel Forecasting}
 \usage{
 AutoH2OCARMA(
   AlgoType = "drf",
@@ -19,7 +19,8 @@ AutoH2OCARMA(
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit"),
   XREGS = NULL,
   Lags = c(1:5),
   MA_Periods = c(1:5),
@@ -32,7 +33,7 @@ AutoH2OCARMA(
   Difference = TRUE,
   FourierTerms = 6,
   CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
-    "isoweek", "month", "quarter", "year"),
+    "wom", "isoweek", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
   HolidayLags = 1,
@@ -81,21 +82,21 @@ AutoH2OCARMA(
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
-\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
-\item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52)}
+\item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52) or list("day" = c(1:10), "weeks" = c(1:4))}
 
-\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52)}
+\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52)}
+\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52)}
+\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52)}
+\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
-\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52)}
+\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
 
 \item{Quantiles_Selected}{Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
 
@@ -117,7 +118,7 @@ AutoH2OCARMA(
 
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 
-\item{ZeroPadSeries}{Set to "all", "inner", or NULL. See TimeSeriesFill for explanation}
+\item{ZeroPadSeries}{NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type}
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
@@ -140,30 +141,39 @@ AutoH2OCARMA(
 \item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
 }
 \value{
-Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
+See examples
 }
 \description{
-AutoH2OCARMA Automated Panel Data and Time Series Forecasting using H2O algorithms, Calendar and Holiday variables, ARIMA features, Fouier variables, time trend, and transformations.
+AutoH2OCARMA Mutlivariate Forecasting with calendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 }
 \examples{
 \dontrun{
 
-# Load Walmart Data from Dropbox----
-data <- data.table::fread(
-  "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+# Load data
+data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
-# Subset for Stores / Departments With Full Series
-data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][
-  , Counts := NULL]
+# Ensure series have no missing dates (also remove series with more than 25\% missing values)
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = "Date",
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  FillType = "maxmax",
+  MaxMissingPercent = 0.25,
+  SimpleImpute = TRUE)
 
-# Subset Columns (remove IsHoliday column)----
-keep <- c("Store","Dept","Date","Weekly_Sales")
-data <- data[, ..keep]
-data <- data[Store == 1][, Store := NULL]
-xregs <- data.table::copy(data)
-data.table::setnames(xregs, "Dept", "GroupVar")
-data.table::setnames(xregs, "Weekly_Sales", "Other")
-data <- data[as.Date(Date) < as.Date('2012-09-28')]
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Remove IsHoliday column
+data[, IsHoliday := NULL]
+
+# Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
+xregs <- data[, .SD, .SDcols = c("Date", "Store", "Dept")]
+
+# Change data types
+data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 
 # Build forecast
 Results <- RemixAutoML::AutoH2OCARMA(
@@ -198,7 +208,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
   # Target Transformations
   TargetTransformation = FALSE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-    "LogPlus1", "Logit", "YeoJohnson"),
+    "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
@@ -216,7 +226,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
   Quantiles_Selected = NULL,
   XREGS = NULL,
   FourierTerms = 2L,
-  CalendarVariables = c("week", "month", "quarter", "year"),
+  CalendarVariables = c("week", "wom", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays","EasterGroup",
     "ChristmasGroup","OtherEcclesticalFeasts"),
   TimeTrendVariable = TRUE,

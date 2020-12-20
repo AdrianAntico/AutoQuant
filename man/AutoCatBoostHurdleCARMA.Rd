@@ -19,7 +19,8 @@ AutoCatBoostHurdleCARMA(
   TimeGroups = c("weeks", "months"),
   NumOfParDepPlots = 10L,
   TargetTransformation = FALSE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit"),
   AnomalyDetection = NULL,
   XREGS = NULL,
   Lags = c(1L:5L),
@@ -32,7 +33,7 @@ AutoCatBoostHurdleCARMA(
   Difference = TRUE,
   FourierTerms = 6L,
   CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
-    "isoweek", "month", "quarter", "year"),
+    "wom", "isoweek", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
   HolidayLags = 1L,
@@ -91,7 +92,7 @@ AutoCatBoostHurdleCARMA(
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
-\item{Methods}{Transformation options to test which include "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"}
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
 
@@ -221,13 +222,13 @@ AutoCatBoostHurdleCARMA is an intermittent demand, Mutlivariate Forecasting algo
   # Target transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-    "LogPlus1", "Logit", "YeoJohnson"),
+    "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
 
   # Date features
-  CalendarVariables = c("week", "month", "quarter"),
+  CalendarVariables = c("week", "wom", "month", "quarter"),
   HolidayVariable = c("USPublicHolidays",
     "EasterGroup",
     "ChristmasGroup","OtherEcclesticalFeasts"),
@@ -322,14 +323,14 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
   # Target transformations
   TargetTransformation = TRUE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1", "Logit", "YeoJohnson"),
+              "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   Threshold = NULL,
   RoundPreds = FALSE,
 
   # Date features
-  CalendarVariables = c("week", "month", "quarter"),
+  CalendarVariables = c("week", "wom", "month", "quarter"),
   HolidayVariable = c("USPublicHolidays",
                       "EasterGroup",
                       "ChristmasGroup","OtherEcclesticalFeasts"),

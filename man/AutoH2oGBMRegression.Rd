@@ -12,7 +12,8 @@ AutoH2oGBMRegression(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit"),
   Alpha = NULL,
   Distribution = "poisson",
   eval_metric = "RMSE",
@@ -47,7 +48,7 @@ AutoH2oGBMRegression(
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
-\item{Methods}{Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.}
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{Alpha}{This is the quantile value you want to use for quantile regression. Must be a decimal between 0 and 1.}
 
@@ -132,7 +133,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
       c("IDcol_1", "IDcol_2","Adrian")],
     TransformNumericColumns = NULL,
     Methods = c("BoxCox", "Asinh", "Asin", "Log",
-                "LogPlus1","Logit","YeoJohnson"),
+                "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
 
     # Model args
     Trees = 50,
