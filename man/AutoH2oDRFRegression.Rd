@@ -46,6 +46,8 @@ AutoH2oDRFRegression(
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
+
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
 
 \item{Trees}{The maximum number of trees you want in your models}
@@ -75,8 +77,6 @@ AutoH2oDRFRegression(
 \item{H2OShutdown}{For use in other functions.}
 
 \item{HurdleModel}{Leave it set to FALSE}
-
-\item{MethodsChoose}{from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
