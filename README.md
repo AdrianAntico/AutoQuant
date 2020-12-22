@@ -149,6 +149,8 @@ Supply a data.table to run the functions below:
 
 <details><summary>Expand to view content</summary>
 <p>
+ 
+[The Most Feature Rich ML Forecasting Methods Available](https://adrianantico.medium.com/the-most-feature-rich-ml-forecasting-methods-available-compliments-of-remixautoml-61b53daf42e6)
 
 [AutoML Frameworks in R & Python](https://iamnagdev.com/2020/04/01/automl-frameworks-in-r-python/)
 
