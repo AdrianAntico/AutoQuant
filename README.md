@@ -1,4 +1,4 @@
-![Version: 0.2.7](https://img.shields.io/static/v1?label=Version&message=0.2.7&color=blue&?style=plastic)
+![Version: 0.2.8](https://img.shields.io/static/v1?label=Version&message=0.2.8&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -149,6 +149,8 @@ Supply a data.table to run the functions below:
 
 <details><summary>Expand to view content</summary>
 <p>
+ 
+[The Most Feature Rich ML Forecasting Methods Available](https://adrianantico.medium.com/the-most-feature-rich-ml-forecasting-methods-available-compliments-of-remixautoml-61b53daf42e6)
 
 [AutoML Frameworks in R & Python](https://iamnagdev.com/2020/04/01/automl-frameworks-in-r-python/)
 
