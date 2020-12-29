@@ -19,7 +19,9 @@ AutoH2oGBMHurdleModel(
   MetaDataPaths = NULL,
   SaveModelObjects = TRUE,
   IfSaveModel = "mojo",
-  MaxMem = "28G",
+  MaxMem = {     gc()    
+    paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
+    intern = TRUE))/1e+06)), "G") },
   NThreads = max(1L, parallel::detectCores() - 2L),
   Trees = 1000L,
   GridTune = TRUE,
@@ -89,6 +91,7 @@ Output <- RemixAutoML::AutoH2oGBMHurdleModel(
   TransformNumericColumns = NULL,
   Distribution = "gaussian",
   SplitRatios = c(0.7, 0.2, 0.1),
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
   NThreads = max(1L, parallel::detectCores()-2L),
   ModelID = "ModelID",
   Paths = normalizePath("./"),

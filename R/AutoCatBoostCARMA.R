@@ -30,10 +30,10 @@
 #' @param Kurt_Periods Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))
 #' @param Quantile_Periods Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))
 #' @param Quantiles_Selected Select from the following "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"
-#' @param AnomalyDetection NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)
+#' @param AnomalyDetection NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, "tstat_low" = -4)
 #' @param Difference Puts the I in ARIMA for single series and grouped series.
 #' @param FourierTerms Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.
-#' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
+#' @param CalendarVariables NULL, or select from "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
 #' @param HolidayVariable NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"
 #' @param HolidayLags Number of lags to build off of the holiday count variable.
 #' @param HolidayMovingAverages Number of moving averages to build off of the holiday count variable.
@@ -189,7 +189,7 @@
 #'
 #'     # Target variable transformations
 #'     TargetTransformation = as.logical(Tuning[Run, TargetTransformation]),
-#'     Methods = c("BoxCox","Asinh","Log","LogPlus1","YeoJohnson"),
+#'     Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
 #'     Difference = as.logical(Tuning[Run, Difference]),
 #'     NonNegativePred = TRUE,
 #'     RoundPreds = FALSE,
@@ -324,7 +324,7 @@ AutoCatBoostCARMA <- function(data,
                               SaveDataPath = NULL,
                               NumOfParDepPlots = 10L,
                               TargetTransformation = FALSE,
-                              Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+                              Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                               AnomalyDetection = NULL,
                               XREGS = NULL,
                               Lags = c(1L:5L),
@@ -336,7 +336,7 @@ AutoCatBoostCARMA <- function(data,
                               Quantiles_Selected = c("q5","q95"),
                               Difference = TRUE,
                               FourierTerms = 6L,
-                              CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
+                              CalendarVariables = c("minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"),
                               HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                               HolidayLags = 1L,
                               HolidayMovingAverages = 1L:2L,
@@ -541,11 +541,11 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)[c(1,3)]),c(DateColumnName, TargetColumnName, GroupVariables)))
+      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data), names(XREGS)), c(DateColumnName, TargetColumnName, GroupVariables)))
       xx <- xx[!xx %chin% "GroupVar"]
       data <- data[, .SD, .SDcols = xx]
     } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data), names(XREGS)), c(DateColumnName, TargetColumnName)))]
     }
   } else {
     if(!is.null(GroupVariables)) {
@@ -558,7 +558,7 @@ AutoCatBoostCARMA <- function(data,
   # Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----
   if(DebugMode) print("Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----")
   if(!is.null(GroupVariables)) {
-    if(length(GroupVariables) > 1) {
+    if(length(GroupVariables) > 1L) {
       data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
       data[, eval(GroupVariables) := NULL]
     } else {

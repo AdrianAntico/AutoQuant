@@ -39,7 +39,7 @@
 #' TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 #'
 #'     # Compute management
-#'     MaxMem = "32G",
+#'     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'     NThreads = max(1, parallel::detectCores()-2),
 #'     H2OShutdown = FALSE,
 #'     IfSaveModel = "mojo",
@@ -81,7 +81,7 @@ AutoH2oGBMClassifier <- function(data,
                                  eval_metric = "auc",
                                  Trees = 50L,
                                  GridTune = FALSE,
-                                 MaxMem = "32G",
+                                 MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                                  NThreads = max(1L, parallel::detectCores()-2L),
                                  MaxModelsInGrid = 2L,
                                  model_path = NULL,

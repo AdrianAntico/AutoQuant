@@ -7,7 +7,7 @@
 #' @param ProjectName This is the name of a project which will be the name of the file created in the root folder
 #' @param RootPath This is the path file to the root folder
 #' @param ExistsButNoProjectList Set to TRUE if the folder exists but not the ProjectList file
-#' @param Local a
+#' @param Local Local or cloud
 #' @return Returns a proper path file string
 #' @export
 CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
@@ -23,7 +23,7 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
 
   # Define Project Folder Root Path----
   if(Local) {
-    ProjectPath <- file.path(normalizePath(RootPath),ProjectName)
+    ProjectPath <- file.path(normalizePath(RootPath), ProjectName)
   } else {
     ProjectPath <- paste0("./",ProjectName)
   }
@@ -34,23 +34,22 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
   if(!ExistsButNoProjectList) {
 
     # Create Data folder----
-    DataPath <- file.path(ProjectPath,"Data")
+    DataPath <- file.path(ProjectPath, "Data")
     dir.create(path =  DataPath, showWarnings = TRUE, recursive = TRUE)
     ProjectList[["DataFolderPath"]] <- DataPath
 
     # Create Models folder----
-    ModelsPath <- file.path(ProjectPath,"Models")
+    ModelsPath <- file.path(ProjectPath, "Models")
     dir.create(path =  ModelsPath, showWarnings = TRUE, recursive = TRUE)
     ProjectList[["ModelsFolderPath"]] <- ModelsPath
 
     # Create MetaData folder----
-    MetaDataPath <- file.path(ProjectPath,"MetaData")
-    dir.create(path =  MetaDataPath,
-               showWarnings = TRUE, recursive = TRUE)
+    MetaDataPath <- file.path(ProjectPath, "MetaData")
+    dir.create(path =  MetaDataPath, showWarnings = TRUE, recursive = TRUE)
     ProjectList[["MetaDataPath"]] <- MetaDataPath
 
     # Save ProjectList to File----
-    save(ProjectList, file = file.path(MetaDataPath,paste0(ProjectName,"_ProjectList.Rdata")))
+    save(ProjectList, file = file.path(MetaDataPath, "ProjectList.Rdata"))
 
   } else {
 

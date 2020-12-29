@@ -3,7 +3,7 @@
 #' RPM_Binomial_Bandit computes randomized probability matching probabilities for each arm being best in a multi-armed bandit. Close cousin to Thomson Sampling.
 #'
 #' @author Adrian Antico
-#' @family Misc
+#' @family Reinforcement Learning
 #' @param Success Vector of successes. One slot per arm.
 #' @param Trials Vector of trials. One slot per arm.
 #' @param Alpha Prior parameter for success

@@ -40,7 +40,8 @@ BanditProbs <- RL_Start[["BanditProbs"]]
 \seealso{
 Other Reinforcement Learning: 
 \code{\link{RL_ML_Update}()},
-\code{\link{RL_Update}()}
+\code{\link{RL_Update}()},
+\code{\link{RPM_Binomial_Bandit}()}
 }
 \author{
 Adrian Antico

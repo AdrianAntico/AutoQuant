@@ -21,7 +21,8 @@ AutoCatBoostCARMA(
   SaveDataPath = NULL,
   NumOfParDepPlots = 10L,
   TargetTransformation = FALSE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit"),
   AnomalyDetection = NULL,
   XREGS = NULL,
   Lags = c(1L:5L),
@@ -111,7 +112,7 @@ AutoCatBoostCARMA(
 
 \item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
-\item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
+\item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, "tstat_low" = -4)}
 
 \item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
 
@@ -335,7 +336,7 @@ for(Run in seq_len(TotalRuns)) {
 
     # Target variable transformations
     TargetTransformation = as.logical(Tuning[Run, TargetTransformation]),
-    Methods = c("BoxCox","Asinh","Log","LogPlus1","YeoJohnson"),
+    Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
     Difference = as.logical(Tuning[Run, Difference]),
     NonNegativePred = TRUE,
     RoundPreds = FALSE,

@@ -48,7 +48,7 @@ PrintToPDF
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
 \code{\link{ChartTheme}()},
-\code{\link{RPM_Binomial_Bandit}()},
+\code{\link{VaporWaveTheme}()},
 \code{\link{tokenizeH2O}()}
 }
 \author{

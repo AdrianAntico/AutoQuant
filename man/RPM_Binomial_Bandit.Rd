@@ -30,13 +30,12 @@ Probability of each arm being the best arm compared to all other arms.
 RPM_Binomial_Bandit computes randomized probability matching probabilities for each arm being best in a multi-armed bandit. Close cousin to Thomson Sampling.
 }
 \seealso{
-Other Misc: 
-\code{\link{AutoH2OTextPrepScoring}()},
-\code{\link{ChartTheme}()},
-\code{\link{PrintToPDF}()},
-\code{\link{tokenizeH2O}()}
+Other Reinforcement Learning: 
+\code{\link{RL_Initialize}()},
+\code{\link{RL_ML_Update}()},
+\code{\link{RL_Update}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Misc}
+\concept{Reinforcement Learning}

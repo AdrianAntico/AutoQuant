@@ -166,6 +166,49 @@ ChartTheme <- function(Size = 12,
   chart_theme
 }
 
+
+
+#' VaporWaveTheme
+#'
+#' @author Adrian Antico
+#' @family Misc
+#'
+#' @param Size1 Grid line size
+#' @param Size2 Axis line sizes
+#' @param Size3 Legend line sizes
+#' @param LegendPosition "bottom" is default
+#' @export
+VaporWaveTheme <- function(Size1 = 1,
+                           Size2 = 0.5,
+                           Size3 = 12,
+                           LegendPosition = "bottom") {
+  theme(
+    # Plot / Panel
+    plot.background = element_rect(fill = clr_bg, colour = clr_bg),
+    # plot.margin = margin(1.5, 2, 1.5, 1.5, "cm"),
+    panel.background = element_rect(fill = clr_bg, color = clr_bg),
+    # Grid
+    panel.grid = element_line(colour = clr_grid, size = Size1),
+    panel.grid.major = element_line(colour = clr_grid, size = Size1),
+    panel.grid.minor = element_line(colour = clr_grid, size = Size1),
+    axis.ticks.x = element_line(colour = clr_grid, size = Size1),
+    axis.line.y = element_line(colour = clr_grid, size = Size2),
+    axis.line.x = element_line(colour = clr_grid, size = Size2),
+    # Text
+    plot.title = element_text(colour = clr_text),
+    plot.subtitle = element_text(colour = clr_text),
+    axis.text = element_text(colour = clr_text),
+    axis.title = element_text(colour = clr_text),
+    # Legend
+    legend.background = element_blank(),
+    legend.key = element_blank(),
+    legend.title = element_text(colour = clr_text),
+    legend.text = element_text(colour = "gray80", size = Size3, face = "bold"),
+    legend.position = LegendPosition,
+    # Strip
+    strip.background = element_rect(fill = clr_bg2, color = clr_bg2))
+}
+
 #' TimeSeriesPlotter
 #'
 #' TimeSeriesPlotter is a function to plot single or multiple lines on a single plot
@@ -244,16 +287,16 @@ TimeSeriesPlotter <- function(data = data,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # Ensure arguments are correct----
-  if(data[, .N] <= 1) return("You're data contains <= 1 row")
-  if(!is.null(TargetVariable)) if(!is.character(TargetVariable)) return("TargetVariable did not pass through as string")
-  if(!is.null(DateVariable)) if(!is.character(DateVariable)) return("DateVariable did not pass through as string")
+  if(data[, .N] <= 1) stop("You're data contains <= 1 row")
+  if(!is.null(TargetVariable)) if(!is.character(TargetVariable)) stop("TargetVariable did not pass through as string")
+  if(!is.null(DateVariable)) if(!is.character(DateVariable)) stop("DateVariable did not pass through as string")
   if(!is.null(GroupVariables)) {
-    if(!is.character(GroupVariables)) return("GroupVariables did not pass through as string")
+    if(!is.character(GroupVariables)) stop("GroupVariables did not pass through as string")
     if(length(GroupVariables) > 1) Forecast <- FALSE
   }
-  if(!is.null(Aggregate)) if(!is.character(Aggregate)) return("Aggregate did not pass through as string")
-  if(!is.null(NumberGroupsDisplay)) if(is.character(NumberGroupsDisplay) | is.factor(NumberGroupsDisplay)) return("NumberGroupsDisplay needs to be a number")
-  if(!is.null(OtherGroupLabel)) if(!is.character(OtherGroupLabel)) return("OtherGroupLabel did not pass through as string")
+  if(!is.null(Aggregate)) if(!is.character(Aggregate)) stop("Aggregate did not pass through as string")
+  if(!is.null(NumberGroupsDisplay)) if(is.character(NumberGroupsDisplay) | is.factor(NumberGroupsDisplay)) stop("NumberGroupsDisplay needs to be a number")
+  if(!is.null(OtherGroupLabel)) if(!is.character(OtherGroupLabel)) stop("OtherGroupLabel did not pass through as string")
 
   # Forecast----
   if(Forecast) {
@@ -373,10 +416,10 @@ TimeSeriesPlotter <- function(data = data,
         }
 
         if(tolower(Aggregate) == "sum") {
-          tempData <- tempData[, sum(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables),eval(DateVariable))]
+          tempData <- tempData[, sum(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
           data.table::setnames(tempData, "V1", eval(TargetVariable))
         } else {
-          tempData <- tempData[, mean(get(TargetVariable), na.rm = TRUE), by = c("GroupVars",eval(DateVariable))]
+          tempData <- tempData[, mean(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
           data.table::setnames(tempData, "V1", eval(TargetVariable))
         }
 

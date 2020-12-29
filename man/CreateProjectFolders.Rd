@@ -18,7 +18,7 @@ CreateProjectFolders(
 
 \item{ExistsButNoProjectList}{Set to TRUE if the folder exists but not the ProjectList file}
 
-\item{Local}{a}
+\item{Local}{Local or cloud}
 }
 \value{
 Returns a proper path file string

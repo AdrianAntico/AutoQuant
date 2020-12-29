@@ -102,7 +102,7 @@
 #'   EvalMetric = "RMSE",
 #'   GridTune = FALSE,
 #'   ModelCount = 5,
-#'   MaxMem = "28G",
+#'   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'   NThreads = parallel::detectCores(),
 #'   Timer = TRUE,
 #'
@@ -189,7 +189,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          ModelCount = 1,
                          NTrees = 1000,
                          PartitionType = "timeseries",
-                         MaxMem = "32G",
+                         MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                          NThreads = max(1, parallel::detectCores() - 2),
                          Timer = TRUE,
                          DebugMode = FALSE) {

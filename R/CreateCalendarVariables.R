@@ -74,7 +74,7 @@ CreateCalendarVariables <- function(data,
     return(data)
   }
   if(!(any(tolower(TimeUnits) %chin% c("second","minute","hour","wday","mday","yday","week","isoweek","wom","month","quarter","year")))) {
-    print("TimeUnits needs to be one of 'minute', 'hour', 'wday','mday', 'yday','week','wom','month', 'quarter', 'year'")
+    print("TimeUnits needs to be one of 'second', 'minute', 'hour', 'wday','mday', 'yday','week','wom','month', 'quarter', 'year'")
     return(data)
   }
 

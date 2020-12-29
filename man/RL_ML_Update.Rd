@@ -87,7 +87,8 @@ NewGrid <- RL_Update_Output[["NewGrid"]]
 \seealso{
 Other Reinforcement Learning: 
 \code{\link{RL_Initialize}()},
-\code{\link{RL_Update}()}
+\code{\link{RL_Update}()},
+\code{\link{RPM_Binomial_Bandit}()}
 }
 \author{
 Adrian Antico

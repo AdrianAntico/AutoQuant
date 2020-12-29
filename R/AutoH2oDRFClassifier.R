@@ -39,7 +39,7 @@
 #' TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 #'
 #'     # Compute management
-#'     MaxMem = "32G",
+#'     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'     NThreads = max(1L, parallel::detectCores() - 2L),
 #'     IfSaveModel = "mojo",
 #'     H2OShutdown = FALSE,
@@ -80,7 +80,7 @@ AutoH2oDRFClassifier <- function(data,
                                  eval_metric = "auc",
                                  Trees = 50L,
                                  GridTune = FALSE,
-                                 MaxMem = "32G",
+                                 MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                                  NThreads = max(1, parallel::detectCores()-2),
                                  MaxModelsInGrid = 2,
                                  model_path = NULL,
