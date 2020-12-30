@@ -34,8 +34,8 @@ AutoCatBoostCARMA(
   Quantiles_Selected = c("q5", "q95"),
   Difference = TRUE,
   FourierTerms = 6L,
-  CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
-    "isoweek", "month", "quarter", "year"),
+  CalendarVariables = c("minute", "hour", "wday", "mday", "yday", "week", "isoweek",
+    "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
   HolidayLags = 1L,
@@ -134,7 +134,7 @@ AutoCatBoostCARMA(
 
 \item{FourierTerms}{Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.}
 
-\item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
+\item{CalendarVariables}{NULL, or select from "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
 \item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
 
