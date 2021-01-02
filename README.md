@@ -15,25 +15,23 @@
 <details><summary>Expand to view content</summary>
 <p>
  
-> Automated Machine Learning - In my view, AutoML should consist of functions to help make professional model development and operationalization more efficient. Most ML projects include at least one of the following: data wrangling, feature engineering, feature selection, model development, model evaluation, model interpretation, model optimization, and model operationalization. The functions in this package have been tested across a variety of industries and have consistently out-performd "state of the art" deep learning methods. I've watched coworkers spend months tuning and reconfiguring deep learning models just to have them lose to the functions here, in a matter of a day or two. My recommendation is to first utilize the functions here to establish a legit baseline performance. Then go and test out all the other methods. But please don't come to me and say that you built a deep learning model that outperforms a linear or logistic regression. Those comparisons are for research, when you are trying something completely new, where a better performance than a linear regression means you are heading in the right direction.
+> Automated Machine Learning - In my view, AutoML should consist of functions to help make professional model development and operationalization more efficient. Most ML projects include at least one of the following: data wrangling, feature engineering, feature selection, model development, model evaluation, model interpretation, model optimization, and model operationalization. The functions in this package have been tested across a variety of industries and have consistently out-performd "state of the art" deep learning methods. I've watched coworkers spend months tuning and reconfiguring deep learning models just to have them lose to the functions here, in a matter of a day or two. My recommendation is to first utilize the functions here to establish a legit baseline performance. Then go and test out all the other methods. 
 
 ### Package Details
 > Supervised Learning - Currently, I'm utilizing CatBoost, XGBoost, and H2O for all of the automated Machine Learning related functions. GPU's can be utilized with CatBoost and XGBoost. Multi-armed bandit grid tuning is available for CatBoost and XGBoost models, which utilize the concept of randomized probability matching, which is detailed in the R pacakge "bandit". 
 
-> Time series forecasting - Automated functions for single series, panel data, vector autoregression, and intermittent demand. The panel data models utilize the machine learning algos from above and the feature engineering functions below. They are extremely feature rich and the combination of all possible feature settings is huge. The models for individual series are fully optimized versions from the R package "forecast". I utilize the multi-armed bandit grid tuning algo used in the supervised learning models and apply it to the SARIMA and NNETAR models from the forecast package. I also measure performance on hold out data (and training data, or a blend of the two).
+> Time series forecasting - Automated functions for single series, panel data, vector autoregression, intermittent demand, and cohort panel data. The panel data models utilize the machine learning algos from above and the feature engineering functions below. They are extremely feature rich and the combination of all possible feature settings is huge. The models for individual series are fully optimized versions from the R package "forecast". I utilize the multi-armed bandit grid tuning algo used in the supervised learning models and apply it to the SARIMA and NNETAR models from the forecast package. I also measure performance on hold out data (and training data, or a blend of the two).
 
 > Feature Engineering - Some of the feature engineering functions you can only find in this package, such as the <code>AutoLagRollStats()</code> and <code>AutoLagRollStatsScoring()</code> functions. You could classify the above functions into several buckets: categorical encoding, target encoding, and distributed lag. You can generate any number of discontiguous lags and rolling statistics (mean, sd, skewness, kurtosis, and every 5th percentile) along with time between records and their associated lags and rolling statistics for transactional level data. The function runs extremely fast if you don't utilize rolling stats other than mean (I still use <code>data.table::frollapply()</code> but the data.table guys admit it isn't optimized like the <code>data.table::frollmean()</code> function). Furthermore, you can generate all these features by any number of categorical variables and their interactions PLUS you can request those sets of features to be generated for differnt levels of time aggregations such as transactional, hourly, daily, weekly, monthly, quarterly, and yearly, all in one shot (that is, you do not have to run the function repeatedly to generate the features). Lastly, generating these kinds of time series features on the fly for only a subset of records in a data.table (typically for on-demand model scoring) is not an easy task to do correctly and quickly. However, I spent the time to make it run as fast as I could but I am open to suggestions for making it faster (that goes for any of the functions in RemixAutoML).
 
 > Data Management - Every function here is written with fully-optimized data.table code so they run blazingly fast and are as memory efficient as possible. The current set of machine learning algorithms were chosen for their ability to work with big data and their ability to outperform other models, as demonstrated across a variety of real world use cases. The focus of the package is quality, not quantity.
 
-> Documentation - For every exported function in the package you can pull up the help file, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files that you can run to get a feel for how to set the parameters. There's also a full listing of all exported functions by category at the bottom of this readme and you can jump into the R folder here to dig into the code. 
-
-> Contact - You can reach me via <a href="https://www.linkedin.com/in/adrian-antico/" target="_blank">LinkedIn</a> for any questions about the package. If you want to contribute shoot me an email on there.
+> Documentation - Each exported function in the package has a help file and can be viewed in your RStudio session, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files (at the bottom) that you can run to get a feel for how to set the parameters. There's also a listing of exported functions by category with code examples at the bottom of this readme. You can also jump into the R folder here to dig into the source code. 
 
 </p>
 </details>
 
-## Installation:
+## Installation
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -145,7 +143,7 @@ Supply a data.table to run the functions below:
 </p>
 </details>
 
-## A Few Blogs: 
+## RemixAutoML Blogs
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -171,7 +169,7 @@ Supply a data.table to run the functions below:
 
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/FunctionsReference.png" align="center" width="350" />
 
-## Feature Engineering: <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
+## Feature Engineering <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -547,11 +545,11 @@ TestData <- dataSets$TestData
 </p>
 </details>
 
-## Supervised Learning: <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
+## Supervised Learning <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary> 
 <p>
   
-#### Regression:
+#### Regression
 ____________________________________________________________________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
@@ -1126,7 +1124,7 @@ TestModel <- RemixAutoML::AutoH2oGAMRegression(
 </p>
 </details>
 
-#### Binary Classification:
+#### Binary Classification
 ____________________________________________________________________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
@@ -1592,7 +1590,7 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
 </p>
 </details>
 
-#### Multinomial Classification:
+#### Multinomial Classification
 ____________________________________________________________________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
@@ -1973,7 +1971,7 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 </p>
 </details>
 
-#### Generalized Hurdle Models:
+#### Generalized Hurdle Models
 ____________________________________________________________________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
@@ -2003,7 +2001,7 @@ First step is to build either a binary classification model (in the case of a si
 </p>
 </details>
 
-#### General Purpose H2O Automated Modeling:
+#### General Purpose H2O Automated Modeling
 ____________________________________________________________________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
@@ -2020,7 +2018,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-#### Nonlinear Regression Modeling:
+#### Nonlinear Regression Modeling
 ____________________________________________________________________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
@@ -2048,7 +2046,7 @@ ________________________________________________________________________________
 </p>
 </details>
 
-## Model Scoring: <img src="Images/ModelScoringImage.png" align="right" width="80" />
+## Model Scoring <img src="Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -2194,7 +2192,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 </p>
 </details>
 
-## Model Evaluation: <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
+## Model Evaluation <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
   
@@ -2226,7 +2224,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 </p>
 </details>
 
-## Time Series and Panel Data: <img src="Images/AutoCARMA2.png" align="right" width="80" />
+## Time Series and Panel Data Forecasting <img src="Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
  
@@ -2855,6 +2853,9 @@ Results <- RemixAutoML::AutoH2OCARMA(
 ###### **Optimal transformations:** the target variable along with the associated lags and moving average features were transformed. This is really useful for regression models with categorical features that have associated target values that significantly differ from each other. The transformation options that are tested (using a Pearson test for normality) include: 
   * YeoJohnson
   * BoxCox
+  * Log
+  * LogPlus1
+  * Sqrt
   * arcsinh
   * Identity
   * arcsin(sqrt(x)): proportion data only
@@ -2870,6 +2871,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 * <code>AutoH2oDRFRegression()</code>
 * <code>AutoH2oGBMRegression()</code>
 * <code>AutoH2oGLMRegression()</code>
+* <code>AutoH2oGAMRegression()</code>
 * <code>AutoH2oAutoMLRegression()</code>
 
 ###### **GPU:** With the CatBoost and XGBoost functions, you can build the models utilizing GPU (I run them with a GeForce 1080ti) which results in an average 10x speedup in model training time (compared to running on CPU with 8 threads).
@@ -3000,7 +3002,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Recommender Systems: <img src="Images/RecommenderSystemImage2.png" align="right" width="80" />
+## Recommender Systems <img src="Images/RecommenderSystemImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
   
@@ -3024,7 +3026,7 @@ For each of the models tested internally, several aspects should be noted:
 </p>
 </details>
 
-## Unsupervised Learning: <img src="Images/UnsupervisedLearningImage.png" align="right" width="80" />
+## Unsupervised Learning <img src="Images/UnsupervisedLearningImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
  
