@@ -8,7 +8,7 @@
 
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
-## Background: 
+## Background
 
 ![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
 
@@ -99,7 +99,7 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-## Common Workflows:
+## Common Workflows
 
 <details><summary>Expand to view content</summary>
 <p>
