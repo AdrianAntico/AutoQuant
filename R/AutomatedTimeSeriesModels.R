@@ -179,7 +179,7 @@ AutoBanditSarima <- function(data,
   if(DebugMode) for(jj in 1:10) print(paste0("ParallelAutoARIMA() finished successfully"))
 
   # Reutrn if no suitable models were fit----
-  if(Arima_ExperimentGrid[1]$Train_MSE == -7) return(paste0("Unable to fit an arima to this data"))
+  if(Arima_ExperimentGrid[1]$Train_MSE == -7) stop(paste0("Unable to fit an arima to this data"))
 
   # 3. Create Final Build Data----
   if(!is.null(Arima_ExperimentGrid)) {
@@ -312,7 +312,7 @@ AutoBanditSarima <- function(data,
       PredictionIntervalColorOuter = "darkblue")}, error = function(x) NULL)
     Output$ErrorLagMA2x2 <- AutoBanditSarima2x2LagMA(Output)
     rm(envir = .GlobalEnv, Arima_ExperimentGrid, Arima_Artifacts_Build, Arima_Artifacts_Score, FC_Data, FinalFC, FinalForecastData, ForecastOutput, Forecasts, RawOutput, Results, ReturnData,ScoreGrid, Train_Score, TrainArtifacts, TSGridList,XREG, XREGFC, counter, Counter1, FC_MaxValue, FCPeriods, lambda,RunSuccess, Successs, TrainRows)
-    if(!is.null(Output)) return(Output) else return(print("Unable to build arima on given data"))
+    if(!is.null(Output)) return(Output) else stop(print("Unable to build arima on given data"))
   }
 }
 

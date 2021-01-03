@@ -15,62 +15,71 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
                                  ExistsButNoProjectList = FALSE,
                                  Local = FALSE) {
 
-  # Create Collection List----
-  ProjectList <- list()
+  # Check for validity in path
+  RootPath <- tryCatch({normalizePath(RootPath, mustWork = TRUE)}, error = function(x) NULL)
 
-  # Store Project Name----
-  ProjectList[["ProjectName"]] <- ProjectName
+  # Proceed or stop
+  if(!is.null(RootPath)) {
+    # Create Collection List----
+    ProjectList <- list()
 
-  # Define Project Folder Root Path----
-  if(Local) {
-    ProjectPath <- file.path(normalizePath(RootPath), ProjectName)
+    # Store Project Name----
+    ProjectList[["ProjectName"]] <- ProjectName
+
+    # Define Project Folder Root Path----
+    if(Local) {
+      ProjectPath <- file.path(normalizePath(RootPath), ProjectName)
+    } else {
+      ProjectPath <- paste0("./",ProjectName)
+    }
+
+    ProjectList[["ProjectFolderPath"]] <- ProjectPath
+
+    # Create Project Folder----
+    if(!ExistsButNoProjectList) {
+
+      # Create Data folder----
+      DataPath <- normalizePath(file.path(ProjectPath, "Data"), mustWork = TRUE)
+      dir.create(path =  DataPath, showWarnings = TRUE, recursive = TRUE)
+      ProjectList[["DataFolderPath"]] <- DataPath
+
+      # Create Models folder----
+      ModelsPath <- file.path(ProjectPath, "Models")
+      dir.create(path =  ModelsPath, showWarnings = TRUE, recursive = TRUE)
+      ProjectList[["ModelsFolderPath"]] <- ModelsPath
+
+      # Create MetaData folder----
+      MetaDataPath <- file.path(ProjectPath, "MetaData")
+      dir.create(path =  MetaDataPath, showWarnings = TRUE, recursive = TRUE)
+      ProjectList[["MetaDataPath"]] <- MetaDataPath
+
+      # Save ProjectList to File----
+      save(ProjectList, file = file.path(MetaDataPath, "ProjectList.Rdata"))
+
+    } else {
+
+      # Create Data folder----
+      DataPath <- file.path(ProjectPath,"Data")
+      ProjectList[["DataFolderPath"]] <- DataPath
+
+      # Create Models folder----
+      ModelsPath <- file.path(ProjectPath,"Models")
+      ProjectList[["ModelsFolderPath"]] <- ModelsPath
+
+      # Create MetaData folder----
+      MetaDataPath <- file.path(ProjectPath,"MetaData")
+      ProjectList[["MetaDataPath"]] <- MetaDataPath
+
+      # Save ProjectList to File----
+      save(ProjectList, file = file.path(MetaDataPath,paste0(ProjectName,"_ProjectList.Rdata")))
+    }
+
+    # Return List to Use in Other Modules----
+    return(ProjectList)
+
   } else {
-    ProjectPath <- paste0("./",ProjectName)
+    return(NULL)
   }
-
-  ProjectList[["ProjectFolderPath"]] <- ProjectPath
-
-  # Create Project Folder----
-  if(!ExistsButNoProjectList) {
-
-    # Create Data folder----
-    DataPath <- file.path(ProjectPath, "Data")
-    dir.create(path =  DataPath, showWarnings = TRUE, recursive = TRUE)
-    ProjectList[["DataFolderPath"]] <- DataPath
-
-    # Create Models folder----
-    ModelsPath <- file.path(ProjectPath, "Models")
-    dir.create(path =  ModelsPath, showWarnings = TRUE, recursive = TRUE)
-    ProjectList[["ModelsFolderPath"]] <- ModelsPath
-
-    # Create MetaData folder----
-    MetaDataPath <- file.path(ProjectPath, "MetaData")
-    dir.create(path =  MetaDataPath, showWarnings = TRUE, recursive = TRUE)
-    ProjectList[["MetaDataPath"]] <- MetaDataPath
-
-    # Save ProjectList to File----
-    save(ProjectList, file = file.path(MetaDataPath, "ProjectList.Rdata"))
-
-  } else {
-
-    # Create Data folder----
-    DataPath <- file.path(ProjectPath,"Data")
-    ProjectList[["DataFolderPath"]] <- DataPath
-
-    # Create Models folder----
-    ModelsPath <- file.path(ProjectPath,"Models")
-    ProjectList[["ModelsFolderPath"]] <- ModelsPath
-
-    # Create MetaData folder----
-    MetaDataPath <- file.path(ProjectPath,"MetaData")
-    ProjectList[["MetaDataPath"]] <- MetaDataPath
-
-    # Save ProjectList to File----
-    save(ProjectList, file = file.path(MetaDataPath,paste0(ProjectName,"_ProjectList.Rdata")))
-  }
-
-  # Return List to Use in Other Modules----
-  return(ProjectList)
 }
 
 #' DownloadCSVFromStorageExplorer
