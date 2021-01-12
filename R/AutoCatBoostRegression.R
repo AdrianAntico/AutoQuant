@@ -1301,11 +1301,7 @@ AutoCatBoostRegression <- function(data,
         aggrfun = function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
-      if(all(c("plotly","dplyr") %chin% installed.packages())) {
-        if(!TrainOnFull) EvaluationPlot <- plotly::ggplotly(EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L))))
-      } else {
-        if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
-      }
+      if(!TrainOnFull) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[Metric == "R2", MetricValue], 3L)))
 
       # Save plot to file
       if(!TrainOnFull) {
@@ -1561,11 +1557,7 @@ AutoCatBoostRegression <- function(data,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
-            if(all(c("plotly","dplyr") %chin% installed.packages())) {
-              ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
-            } else {
-              ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
-            }
+            ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
           }, error = function(x) "skip")
           tryCatch({
             Out1 <- ParDepCalPlots(
