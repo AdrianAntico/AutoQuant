@@ -1986,18 +1986,22 @@ AutoCatBoostRegression <- function(data,
     PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "EvaluationPlots",
+      Tables = FALSE,
       ObjectList = EvalPlotList,
       Title = "Model Evaluation Plots",
       Width = 10,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
     PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "PartialDependencePlots",
+      Tables = FALSE,
       ObjectList = ParDepList,
       Title = "Partial Dependence Calibration Plots",
       Width = 10,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
     PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "Metrics_and_Importances",
+      Tables = TRUE,
+      MaxPages = 100,
       ObjectList = TableMetrics,
       Title = "Model Metrics and Variable Importances",
       Width = 10,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
