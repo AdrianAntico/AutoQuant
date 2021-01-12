@@ -1675,11 +1675,7 @@ AutoCatBoostRegression <- function(data,
           aggrfun = function(x) mean(x, na.rm = TRUE))
 
         # Add Number of Trees to Title
-        if(all(c("plotly","dplyr") %chin% installed.packages())) {
-          if(!TrainOnFull) EvaluationPlot[[TargetColumnName[TV]]] <- plotly::ggplotly(EvaluationPlot[[TargetColumnName[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[[TargetColumnName[TV]]][Metric == "R2", MetricValue], 3L))))
-        } else {
-          if(!TrainOnFull) EvaluationPlot[[TargetColumnName[TV]]] <- EvaluationPlot[[TargetColumnName[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[[TargetColumnName[TV]]][Metric == "R2", MetricValue], 3L)))
-        }
+        if(!TrainOnFull) EvaluationPlot[[TargetColumnName[TV]]] <- EvaluationPlot[[TargetColumnName[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics[[TargetColumnName[TV]]][Metric == "R2", MetricValue], 3L)))
 
         # Save plot to file
         if(!TrainOnFull) {
@@ -1815,7 +1811,6 @@ AutoCatBoostRegression <- function(data,
               } else {
                 Interaction <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = TestPool, type = "Interaction"))
                 Imp <- catboost::catboost.get_feature_importance(model, pool = TestPool, type = "PredictionValuesChange")
-
               }
 
               # Gather importances ----
@@ -1899,11 +1894,7 @@ AutoCatBoostRegression <- function(data,
                 FactLevels = 10L,
                 Function = function(x) mean(x, na.rm = TRUE))
               j <- j + 1L
-              if(all(c("plotly","dplyr") %chin% installed.packages())) {
-                ParDepPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[j, Variable])]] <- plotly::ggplotly(Out)
-              } else {
-                ParDepPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[j, Variable])]] <- Out
-              }
+              ParDepPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[j, Variable])]] <- Out
             }, error = function(x) "skip")
             tryCatch({
               Out1 <- ParDepCalPlots(
@@ -1916,11 +1907,7 @@ AutoCatBoostRegression <- function(data,
                 FactLevels = 10L,
                 Function = function(x) mean(x, na.rm = TRUE))
               k <- k + 1L
-              if(all(c("plotly","dplyr") %chin% installed.packages())) {
-                ParDepBoxPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[k, Variable])]] <- plotly::ggplotly(Out1)
-              } else {
-                ParDepBoxPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[k, Variable])]] <- Out1
-              }
+              ParDepBoxPlots[[paste0(TargetColumnName[TV],"_",VariableImportance[k, Variable])]] <- Out1
             }, error = function(x) "skip")
           }
 
@@ -2001,7 +1988,7 @@ AutoCatBoostRegression <- function(data,
 
   # Save PDF of model information ----
   if(!TrainOnFull & SaveInfoToPDF) {
-    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL)
+    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
     ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL, if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL)
     TableMetrics <- list(EvaluationMetrics, if(!is.null(VariableImportance)) VariableImportance else NULL, if(!is.null(VariableImportance)) Interaction else NULL)
     PrintToPDF(
@@ -2031,14 +2018,14 @@ AutoCatBoostRegression <- function(data,
       return(list(
         Model = model,
         ValidationData = ValidationData,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationBoxPlot = EvaluationBoxPlot,
+        EvaluationPlot = if(!is.null(EvaluationPlot)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(EvaluationPlot) else EvaluationPlot} else NULL,
+        EvaluationBoxPlot = if(!is.null(EvaluationPlot)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(EvaluationBoxPlot) else EvaluationBoxPlot} else NULL,
         EvaluationMetrics = EvaluationMetrics,
         VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
         InteractionImportance = if(!is.null(VariableImportance)) Interaction else NULL,
         VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(VariableImportance)) else VI_Plot(VariableImportance)}, error = NULL) else NULL,
-        PartialDependencePlots = if(!is.null(ParDepPlots)) ParDepPlots else NULL,
-        PartialDependenceBoxPlots = if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL,
+        PartialDependencePlots = if(!is.null(ParDepPlots)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(ParDepPlots) else ParDepPlots} else NULL,
+        PartialDependenceBoxPlots = if(!is.null(ParDepBoxPlots)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(ParDepBoxPlots) else ParDepBoxPlots} else NULL,
         GridList = if(exists("ExperimentalGrid")) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
         ColNames = Names,
         TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
