@@ -101,19 +101,9 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     if(!is.null(TransformationObject)) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
-      ScoringData <- AutoTransformationScore(
-        ScoringData = ScoringData,
-        FinalResults = tempTrans,
-        Type = "Apply",
-        TransID = TransID,
-        Path = NULL)
+      ScoringData <- AutoTransformationScore(ScoringData = ScoringData, FinalResults = tempTrans, Type = "Apply", TransID = TransID, Path = NULL)
     } else {
-      ScoringData <- AutoTransformationScore(
-        ScoringData = ScoringData,
-        FinalResults = tempTrans,
-        Type = "Apply",
-        TransID = TransID,
-        Path = TransPath)
+      ScoringData <- AutoTransformationScore(ScoringData = ScoringData, FinalResults = tempTrans, Type = "Apply", TransID = TransID, Path = TransPath)
     }
   }
 
@@ -142,39 +132,16 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   # DummifyDT categorical columns----
   if(!is.null(CatFeatures)) {
     if(!is.null(FactorLevelsList)) {
-      ScoringData <- DummifyDT(
-        data = ScoringData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = OneHot,
-        SaveFactorLevels = FALSE,
-        SavePath = ModelPath,
-        ImportFactorLevels = FALSE,
-        FactorLevelsList = FactorLevelsList,
-        ReturnFactorLevels = FALSE,
-        ClustScore = FALSE)
+      ScoringData <- DummifyDT(data = ScoringData, cols = CatFeatures, KeepFactorCols = FALSE, OneHot = OneHot, SaveFactorLevels = FALSE, SavePath = ModelPath,
+        ImportFactorLevels = FALSE, FactorLevelsList = FactorLevelsList, ReturnFactorLevels = FALSE, ClustScore = FALSE, GroupVar = TRUE)
     } else {
-      ScoringData <- DummifyDT(
-        data = ScoringData,
-        cols = CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = OneHot,
-        SaveFactorLevels = FALSE,
-        SavePath = ModelPath,
-        ImportFactorLevels = TRUE,
-        ReturnFactorLevels = FALSE,
-        ClustScore = FALSE)
+      ScoringData <- DummifyDT(data = ScoringData, cols = CatFeatures, KeepFactorCols = FALSE, OneHot = OneHot, SaveFactorLevels = FALSE, SavePath = ModelPath,
+        ImportFactorLevels = TRUE, ReturnFactorLevels = FALSE,  ClustScore = FALSE, GroupVar = TRUE)
     }
   }
 
   # ModelDataPrep Check----
-  ScoringData <- ModelDataPrep(
-    data = ScoringData,
-    Impute = MDP_Impute,
-    CharToFactor = MDP_CharToFactor,
-    RemoveDates = MDP_RemoveDates,
-    MissFactor = MDP_MissFactor,
-    MissNum = MDP_MissNum)
+  ScoringData <- ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
 
   # Initialize XGBoost Data Conversion----
   ScoringMatrix <- xgboost::xgb.DMatrix(as.matrix(ScoringData))
@@ -206,12 +173,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       predict <- Final
     } else {
       data.table::setnames(predict, "V1", "Predictions")
-      predict <- merge(
-        predict,
-        TargetLevels,
-        by.x = "Predictions",
-        by.y = "NewLevels",
-        all = FALSE)
+      predict <- merge(predict, TargetLevels, by.x = "Predictions", by.y = "NewLevels", all = FALSE)
       predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
     }
   }
@@ -228,12 +190,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
 
     # Run Back-Transform----
-    predict <- AutoTransformationScore(
-      ScoringData = predict,
-      Type = "Inverse",
-      FinalResults = grid_trans_results,
-      TransID = NULL,
-      Path = NULL)
+    predict <- AutoTransformationScore(ScoringData = predict, Type = "Inverse", FinalResults = grid_trans_results, TransID = NULL, Path = NULL)
   }
 
   # Return data----

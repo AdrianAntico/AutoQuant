@@ -1,4 +1,4 @@
-![Version: 0.2.8](https://img.shields.io/static/v1?label=Version&message=0.2.8&color=blue&?style=plastic)
+![Version: 0.2.9](https://img.shields.io/static/v1?label=Version&message=0.2.9&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -561,99 +561,99 @@ ________________________________________________________________________________
 <p>
  
  ```
- # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
-
-# Run function
-TestModel <- RemixAutoML::AutoCatBoostRegression(
-
-    # GPU or CPU and the number of available GPUs
-    task_type = "GPU",
-    NumGPUs = 1,
-
-    # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-    ModelID = "Test_Model_1",
-    model_path = normalizePath("./"),
-    metadata_path = NULL,
-    SaveModelObjects = FALSE,
-    ReturnModelObjects = TRUE,
-
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    Weights = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    PrimaryDateColumn = NULL,
-    IDcols = c("IDcol_1","IDcol_2"),
-    TransformNumericColumns = "Adrian",
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-
-    # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'loss_function' the loss function used in training optimization
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
-    eval_metric = "RMSE",
-    loss_function = "RMSE",
-    MetricPeriods = 10L,
-    NumOfParDepPlots = ncol(data)-1L-2L,
-
-    # Grid tuning arguments:
-    #   'PassInGrid' is for retraining using a previous grid winning args
-    #   'MaxModelsInGrid' is a cap on the number of models that will run
-    #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
-    #   'MaxRunMinutes' is a cap on the number of minutes that will run
-    #   'Shuffles' is the number of times you want the random grid arguments shuffled
-    #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
-    #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    MaxModelsInGrid = 100L,
-    MaxRunsWithoutNewWinner = 100L,
-    MaxRunMinutes = 60*60,
-    Shuffles = 4L,
-    BaselineComparison = "default",
-
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used
-    # GrowPolicy is turned off for CPU runs
-    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
-    langevin = FALSE,
-    diffusion_temperature = 10000,
-    Trees = seq(100L, 500L, 50L),
-    Depth = seq(4L, 8L, 1L),
-    LearningRate = seq(0.01,0.10,0.01),
-    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
-    RandomStrength = 1,
-    BorderCount = 254,
-    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+#' # Create some dummy correlated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 10000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run function
+#' TestModel <- RemixAutoML::AutoCatBoostRegression(
+#'
+#'     # GPU or CPU and the number of available GPUs
+#'     task_type = "GPU",
+#'     NumGPUs = 1,
+#'
+#'     # Metadata args
+#'     ModelID = "Test_Model_1",
+#'     model_path = normalizePath("./"),
+#'     metadata_path = normalizePath("./"),
+#'     SaveModelObjects = FALSE,
+#'     SaveInfoToPDF = FALSE,
+#'     ReturnModelObjects = TRUE,
+#'
+#'     # Data args
+#'     data = data,
+#'     TrainOnFull = FALSE,
+#'     ValidationData = NULL,
+#'     TestData = NULL,
+#'     Weights = NULL,
+#'     TargetColumnName = "Adrian",
+#'     FeatureColNames = names(data)[!names(data) %in%
+#'       c("IDcol_1", "IDcol_2","Adrian")],
+#'     PrimaryDateColumn = NULL,
+#'     DummifyCols = FALSE,
+#'     IDcols = c("IDcol_1","IDcol_2"),
+#'     TransformNumericColumns = "Adrian",
+#'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+#'
+#'     # Model evaluation
+#'     eval_metric = "RMSE",
+#'     eval_metric_value = 1.5,
+#'     loss_function = "RMSE",
+#'     loss_function_value = 1.5,
+#'     MetricPeriods = 10L,
+#'     NumOfParDepPlots = ncol(data)-1L-2L,
+#'     EvalPlots = TRUE,
+#'
+#'     # Grid tuning args
+#'     PassInGrid = NULL,
+#'     GridTune = FALSE,
+#'     MaxModelsInGrid = 30L,
+#'     MaxRunsWithoutNewWinner = 20L,
+#'     MaxRunMinutes = 60*60,
+#'     Shuffles = 4L,
+#'     BaselineComparison = "default",
+#'
+#'     # ML args
+#'     langevin = FALSE,
+#'     diffusion_temperature = 10000,
+#'     Trees = 1000,
+#'     Depth = 6,
+#'     L2_Leaf_Reg = 3.0,
+#'     RandomStrength = 1,
+#'     BorderCount = 128,
+#'     LearningRate = NULL,
+#'     RSM = 1,
+#'     BootStrapType = NULL,
+#'     GrowPolicy = "SymmetricTree",
+#'     model_size_reg = 0.5,
+#'     feature_border_type = "GreedyLogSum",
+#'     sampling_unit = "Group",
+#'     subsample = NULL,
+#'     score_function = "Cosine",
+#'     min_data_in_leaf = 1)
+#'
+#'  # Output
+#'  TestModel$Model
+#'  TestModel$ValidationData
+#'  TestModel$EvaluationPlot
+#'  TestModel$EvaluationBoxPlot
+#'  TestModel$EvaluationMetrics
+#'  TestModel$VariableImportance
+#'  TestModel$InteractionImportance
+#'  TestModel$ShapValuesDT
+#'  TestModel$VI_Plot
+#'  TestModel$PartialDependencePlots
+#'  TestModel$PartialDependenceBoxPlots
+#'  TestModel$GridList
+#'  TestModel$ColNames
+#'  TestModel$TransformationResults
  ```
  
 </p>
@@ -666,78 +666,67 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 <p>
  
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
-
-# Run function
-TestModel <- RemixAutoML::AutoXGBoostRegression(
-
-    # GPU or CPU
-    TreeMethod = "hist",
-    NThreads = 8L,
-
-    # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-    model_path = normalizePath("./"),
-    metadata_path = NULL,
-    ModelID = "Test_Model_1",
-    ReturnFactorLevels = TRUE,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    IDcols = c("IDcols_1","IDcols_2"),
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-
-    # Model evaluation
-    eval_metric = "rmse",
-    NumOfParDepPlots = 3L,
-
-    # Grid tuning arguments - PassInGrid is the best of GridMetrics
-    PassInGrid = NULL,
-    GridTune = TRUE,
-    grid_eval_metric = "mse",
-    BaselineComparison = "default",
-    MaxModelsInGrid = 10L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Verbose = 1L,
-
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used
-    Shuffles = 1L,
-    Trees = seq(50L, 500L, 50L),
-    eta = seq(0.05,0.40,0.05),
-    max_depth = seq(4L, 16L, 2L),
-    min_child_weight = seq(1.0, 10.0, 1.0),
-    subsample = seq(0.55, 1.0, 0.05),
-    colsample_bytree = seq(0.55, 1.0, 0.05))
+#' # Create some dummy correlated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run function
+#' TestModel <- RemixAutoML::AutoXGBoostRegression(
+#'
+#'     # GPU or CPU
+#'     TreeMethod = "hist",
+#'     NThreads = parallel::detectCores(),
+#'     LossFunction = 'reg:squarederror',
+#'
+#'     # Metadata args
+#'     model_path = normalizePath("./"),
+#'     metadata_path = NULL,
+#'     ModelID = "Test_Model_1",
+#'     ReturnFactorLevels = TRUE,
+#'     ReturnModelObjects = TRUE,
+#'     SaveModelObjects = FALSE,
+#'
+#'     # Data args
+#'     data = data,
+#'     TrainOnFull = FALSE,
+#'     ValidationData = NULL,
+#'     TestData = NULL,
+#'     TargetColumnName = "Adrian",
+#'     FeatureColNames = names(data)[!names(data) %in%
+#'       c("IDcol_1", "IDcol_2","Adrian")],
+#'     IDcols = c("IDcol_1","IDcol_2"),
+#'     TransformNumericColumns = NULL,
+#'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
+#'       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+#'
+#'     # Model evaluation args
+#'     eval_metric = "rmse",
+#'     NumOfParDepPlots = 3L,
+#'
+#'     # Grid tuning args
+#'     PassInGrid = NULL,
+#'     GridTune = FALSE,
+#'     grid_eval_metric = "mse",
+#'     BaselineComparison = "default",
+#'     MaxModelsInGrid = 10L,
+#'     MaxRunsWithoutNewWinner = 20L,
+#'     MaxRunMinutes = 24L*60L,
+#'     Verbose = 1L,
+#'
+#'     # ML args
+#'     Shuffles = 1L,
+#'     Trees = 50L,
+#'     eta = 0.05,
+#'     max_depth = 4L,
+#'     min_child_weight = 1.0,
+#'     subsample = 0.55,
+#'     colsample_bytree = 0.55)
 ```
  
 </p>
@@ -748,68 +737,75 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 
 <details><summary>Code Example</summary>
 <p>
- 
+
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGBMRegression(
 
     # Compute management
-    MaxMem = "32G",
+    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
     NThreads = max(1, parallel::detectCores()-2),
     H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
     IfSaveModel = "mojo",
-    Alpha = NULL,
-    Distribution = "poisson",
 
-    # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
-    eval_metric = "RMSE",
+    # Model evaluation
     NumOfParDepPlots = 3,
 
     # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-    model_path = NULL,
-    metadata_path = NULL,
+    model_path = normalizePath("./"),
+    metadata_path = file.path(normalizePath("./")),
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+    # Data arguments
+    data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    WeightsColumn = NULL,
     TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
+
+    # ML grid tuning args
+    GridTune = FALSE,
+    GridStrategy = "Cartesian",
+    MaxRuntimeSecs = 60*60*24,
+    StoppingRounds = 10,
+    MaxModelsInGrid = 2,
 
     # Model args
     Trees = 50,
-    GridTune = FALSE,
-    MaxModelsInGrid = 10)
+    LearnRate = 0.10,
+    LearnRateAnnealing = 1,
+    eval_metric = "RMSE",
+    Alpha = NULL,
+    Distribution = "poisson",
+    MaxDepth = 20,
+    SampleRate = 0.632,
+    ColSampleRate = 1,
+    ColSampleRatePerTree = 1,
+    ColSampleRatePerTreeLevel  = 1,
+    MinRows = 1,
+    NBins = 20,
+    NBinsCats = 1024,
+    NBinsTopLevel = 1024,
+    HistogramType = "AUTO",
+    CategoricalEncoding = "AUTO")
 ```
  
 </p>
@@ -822,66 +818,69 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
 <p>
  
 ```
- # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oDRFRegression(
 
     # Compute management
-    MaxMem = "32G",
-    NThreads = max(1, parallel::detectCores()-2),
+    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+    NThreads = max(1L, parallel::detectCores() - 2L),
     H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
     IfSaveModel = "mojo",
 
     # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
     eval_metric = "RMSE",
     NumOfParDepPlots = 3,
 
     # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-    model_path = NULL,
+    model_path = normalizePath("./"),
     metadata_path = NULL,
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+    # Data Args
+    data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    WeightsColumn = NULL,
     TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
-    # Model args
-    Trees = 50,
+    # Grid Tuning Args
+    GridStrategy = "Cartesian",
     GridTune = FALSE,
-    MaxModelsInGrid = 10)
+    MaxModelsInGrid = 10,
+    MaxRuntimeSecs = 60*60*24,
+    StoppingRounds = 10,
+
+    # ML Args
+    Trees = 50,
+    MaxDepth = 20,
+    SampleRate = 0.632,
+    MTries = -1,
+    ColSampleRatePerTree = 1,
+    ColSampleRatePerTreeLevel = 1,
+    MinRows = 1,
+    NBins = 20,
+    NBinsCats = 1024,
+    NBinsTopLevel = 1024,
+    HistogramType = "AUTO",
+    CategoricalEncoding = "AUTO")
 ```
  
 </p>
@@ -894,67 +893,72 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
 <p>
  
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMRegression(
 
     # Compute management
-    MaxMem = "32G",
+    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
     NThreads = max(1, parallel::detectCores()-2),
     H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
     IfSaveModel = "mojo",
 
     # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
     eval_metric = "RMSE",
     NumOfParDepPlots = 3,
 
     # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
     model_path = NULL,
     metadata_path = NULL,
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
     # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+    data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    RandomColNumbers = NULL,
+    InteractionColNumbers = NULL,
+    WeightsColumn = NULL,
     TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
     # Model args
     GridTune = FALSE,
+    GridStrategy = "Cartesian",
+    StoppingRounds = 10,
+    MaxRunTimeSecs = 3600 * 24 * 7,
     MaxModelsInGrid = 10,
-    Distribution = "binomial",
-    link = NULL)
+    Distribution = "gaussian",
+    Link = "identity",
+    TweedieLinkPower = NULL,
+    TweedieVariancePower = NULL,
+    RandomDistribution = NULL,
+    RandomLink = NULL,
+    Solver = "AUTO",
+    Alpha = NULL,
+    Lambda = NULL,
+    LambdaSearch = FALSE,
+    NLambdas = -1,
+    Standardize = TRUE,
+    RemoveCollinearColumns = FALSE,
+    InterceptInclude = TRUE,
+    NonNegativeCoefficients = FALSE)
 ```
  
 </p>
@@ -1058,41 +1062,59 @@ GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 # Run function
 TestModel <- RemixAutoML::AutoH2oGAMRegression(
 
-  # Compute management
-  MaxMem = "32G",
-  NThreads = max(1, parallel::detectCores()-2),
-  H2OShutdown = TRUE,
-  IfSaveModel = "mojo",
+ # Compute management
+ MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+ NThreads = max(1, parallel::detectCores()-2),
+ H2OShutdown = TRUE,
+ H2OStartUp = TRUE,
+ IfSaveModel = "mojo",
 
-  # Model evaluation:
-  eval_metric = "RMSE",
-  NumOfParDepPlots = 3,
+ # Model evaluation:
+ eval_metric = "RMSE",
+ NumOfParDepPlots = 3,
 
-  # Metadata arguments:
-  model_path = NULL,
-  metadata_path = NULL,
-  ModelID = "FirstModel",
-  ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE,
+ # Metadata arguments:
+ model_path = NULL,
+ metadata_path = NULL,
+ ModelID = "FirstModel",
+ ReturnModelObjects = TRUE,
+ SaveModelObjects = FALSE,
+ SaveInfoToPDF = FALSE,
 
-  # Data arguments:
-  data = data,
-  TrainOnFull = FALSE,
-  ValidationData = NULL,
-  TestData = NULL,
-  TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %chin%
-    c("IDcol_1", "IDcol_2","Adrian")],
-  GamColNames = GamCols,
-  TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1", "Logit", "YeoJohnson"),
+ # Data arguments:
+ data = data,
+ TrainOnFull = FALSE,
+ ValidationData = NULL,
+ TestData = NULL,
+ TargetColumnName = "Adrian",
+ FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+ InteractionColNumbers = NULL,
+ WeightsColumn = NULL,
+ GamColNames = GamCols,
+ TransformNumericColumns = NULL,
+ Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
-  # Model args
-  GridTune = FALSE,
-  MaxModelsInGrid = 10,
-  Distribution = "gaussian",
-  link = "Family_Default")
+ # Model args
+ num_knots = NULL,
+ keep_gam_cols = TRUE,
+ GridTune = FALSE,
+ GridStrategy = "Cartesian",
+ StoppingRounds = 10,
+ MaxRunTimeSecs = 3600 * 24 * 7,
+ MaxModelsInGrid = 10,
+ Distribution = "gaussian",
+ Link = "Family_Default",
+ TweedieLinkPower = NULL,
+ TweedieVariancePower = NULL,
+ Solver = "AUTO",
+ Alpha = NULL,
+ Lambda = NULL,
+ LambdaSearch = FALSE,
+ NLambdas = -1,
+ Standardize = TRUE,
+ RemoveCollinearColumns = FALSE,
+ InterceptInclude = TRUE,
+ NonNegativeCoefficients = FALSE)
 ```
  
 </p>
@@ -1136,8 +1158,15 @@ ________________________________________________________________________________
 <p>
 
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 10000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostClassifier(
@@ -1146,85 +1175,72 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     task_type = "GPU",
     NumGPUs = 1,
 
-    # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_ROC_Plot.png' and 'Model_ID_EvaluationPlot.png' calibration plot
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix measures across all thresholds
+    # Metadata args
     ModelID = "Test_Model_1",
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    metadata_path = normalizePath("./"),
     SaveModelObjects = FALSE,
     ReturnModelObjects = TRUE,
+    SaveInfoToPDF = FALSE,
 
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+    # Data args
     data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian")],
     PrimaryDateColumn = NULL,
     ClassWeights = c(1L,1L),
-    IDcols = c("IDcols_1","IDcols_2"),
+    IDcols = c("IDcol_1","IDcol_2"),
 
-    # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'loss_function' the loss function used in training optimization
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+    # Evaluation args
     eval_metric = "AUC",
     loss_function = "Logloss",
     MetricPeriods = 10L,
     NumOfParDepPlots = ncol(data)-1L-2L,
 
-    # Grid tuning arguments:
-    #   'PassInGrid' is for retraining using a previous grid winning args
-    #   'MaxModelsInGrid' is a cap on the number of models that will run
-    #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
-    #   'MaxRunMinutes' is a cap on the number of minutes that will run
-    #   'Shuffles' is the number of times you want the random grid arguments shuffled
-    #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
-    #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
+    # Grid tuning args
     PassInGrid = NULL,
-    GridTune = FALSE,
-    MaxModelsInGrid = 100L,
+    GridTune = TRUE,
+    MaxModelsInGrid = 30L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Shuffles = 4L,
     BaselineComparison = "default",
 
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used
-    # GrowPolicy is turned off for CPU runs
-    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    # ML args
     Trees = seq(100L, 500L, 50L),
     Depth = seq(4L, 8L, 1L),
     LearningRate = seq(0.01,0.10,0.01),
     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
     RandomStrength = 1,
-    BorderCount = 254,
+    BorderCount = 128,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+    langevin = FALSE,
+    diffusion_temperature = 10000,
+    model_size_reg = 0.5,
+    feature_border_type = "GreedyLogSum",
+    sampling_unit = "Group",
+    subsample = NULL,
+    score_function = "Cosine",
+    min_data_in_leaf = 1)
+
+# Output
+TestModel$Model
+TestModel$ValidationData
+TestModel$ROC_Plot
+TestModel$EvaluationPlot
+TestModel$EvaluationMetrics
+TestModel$VariableImportance
+TestModel$InteractionImportance
+TestModel$ShapValuesDT
+TestModel$VI_Plot
+TestModel$PartialDependencePlots
+TestModel$GridMetrics
+TestModel$ColNames
 ```
 
 </p>
@@ -1237,56 +1253,63 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 <p>
  
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
     # GPU or CPU
     TreeMethod = "hist",
-    NThreads = 8L,
+    NThreads = parallel::detectCores(),
 
-    # Metadata arguments
+    # Metadata args
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    metadata_path = NULL,
     ModelID = "Test_Model_1",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
 
-    # Data arguments
+    # Data args
     data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    IDcols = c("IDcols_1","IDcols_2"),
+    FeatureColNames = names(data)[!names(data) %in%
+      c("IDcol_1", "IDcol_2","Adrian")],
+    IDcols = c("IDcol_1","IDcol_2"),
 
     # Model evaluation
+    LossFunction = 'reg:logistic',
     eval_metric = "auc",
     NumOfParDepPlots = 3L,
 
-    # Grid tuning arguments - PassInGrid is the best of GridMetrics
+    # Grid tuning args
     PassInGrid = NULL,
-    GridTune = TRUE,
+    GridTune = FALSE,
     BaselineComparison = "default",
     MaxModelsInGrid = 10L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Verbose = 1L,
 
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used
+    # ML args
     Shuffles = 1L,
-    Trees = seq(50L, 500L, 50L),
-    eta = seq(0.05,0.40,0.05),
-    max_depth = seq(4L, 16L, 2L),
-    min_child_weight = seq(1.0, 10.0, 1.0),
-    subsample = seq(0.55, 1.0, 0.05),
-    colsample_bytree = seq(0.55, 1.0, 0.05))
+    Trees = 50L,
+    eta = 0.05,
+    max_depth = 4L,
+    min_child_weight = 1.0,
+    subsample = 0.55,
+    colsample_bytree = 0.55)
 ```
  
 </p>
@@ -1297,62 +1320,74 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
 <details><summary>Code Example</summary>
 <p>
- 
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+
+
+``` 
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
 
 TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 
     # Compute management
-    MaxMem = "32G",
+    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
     NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = FALSE,
+    H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
     IfSaveModel = "mojo",
 
-    # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
-    eval_metric = "auc",
-    NumOfParDepPlots = 3L,
+    # Model evaluation
+    NumOfParDepPlots = 3,
 
     # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix metrics for all thresholds
-    ModelID = "FirstModel",
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"), "MetaData"),
+    metadata_path = file.path(normalizePath("./")),
+    ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    data,
+    # Data arguments
+    data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
-    TargetColumnName = "Target",
+    TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    WeightsColumn = NULL,
+
+    # ML grid tuning args
+    GridTune = FALSE,
+    GridStrategy = "Cartesian",
+    MaxRuntimeSecs = 60*60*24,
+    StoppingRounds = 10,
+    MaxModelsInGrid = 2,
 
     # Model args
     Trees = 50,
-    GridTune = FALSE,
-    MaxModelsInGrid = 10L)
- 
+    LearnRate = 0.10,
+    LearnRateAnnealing = 1,
+    eval_metric = "auc",
+    Distribution = "bernoulli",
+    MaxDepth = 20,
+    SampleRate = 0.632,
+    ColSampleRate = 1,
+    ColSampleRatePerTree = 1,
+    ColSampleRatePerTreeLevel  = 1,
+    MinRows = 1,
+    NBins = 20,
+    NBinsCats = 1024,
+    NBinsTopLevel = 1024,
+    HistogramType = "AUTO",
+    CategoricalEncoding = "AUTO")
+```
+
 </p>
 </details> 
 
@@ -1363,64 +1398,65 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 <p>
  
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
 
 TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 
     # Compute management
-    MaxMem = "32G",
+    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
     NThreads = max(1L, parallel::detectCores() - 2L),
     IfSaveModel = "mojo",
     H2OShutdown = FALSE,
+    H2OStartUp = TRUE,
 
-    # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+    # Metadata arguments:
     eval_metric = "auc",
     NumOfParDepPlots = 3L,
 
-    #'     # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+    # Data arguments:
     model_path = normalizePath("./"),
     metadata_path = NULL,
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
 
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+    # Model evaluation:
     data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2", "Adrian")],
+    WeightsColumn = NULL,
+
+    # Grid Tuning Args
+    GridStrategy = "Cartesian",
+    GridTune = FALSE,
+    MaxModelsInGrid = 10,
+    MaxRuntimeSecs = 60*60*24,
+    StoppingRounds = 10,
 
     # Model args
     Trees = 50L,
-    GridTune = FALSE,
-    MaxModelsInGrid = 10L)
+    MaxDepth = 20,
+    SampleRate = 0.632,
+    MTries = -1,
+    ColSampleRatePerTree = 1,
+    ColSampleRatePerTreeLevel = 1,
+    MinRows = 1,
+    NBins = 20,
+    NBinsCats = 1024,
+    NBinsTopLevel = 1024,
+    HistogramType = "AUTO",
+    CategoricalEncoding = "AUTO")
 ```
  
 </p>
@@ -1434,32 +1470,70 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
  
 ```
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMClassifier(
-   data,
-   TrainOnFull = FALSE,
-   ValidationData = NULL,
-   TestData = NULL,
-   TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-   Distribution = "binomial",
-   link = NULL,
-   eval_metric = "auc",
-   GridTune = FALSE,
-   MaxMem = "32G",
-   NThreads = max(1, parallel::detectCores()-2),
-   MaxModelsInGrid = 10,
-   model_path = NULL,
-   metadata_path = NULL,
-   ModelID = "FirstModel",
-   NumOfParDepPlots = 3,
-   ReturnModelObjects = TRUE,
-   SaveModelObjects = FALSE,
-   IfSaveModel = "mojo",
-   H2OShutdown = FALSE,
-   HurdleModel = FALSE)
+
+    # Compute management
+    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+    NThreads = max(1, parallel::detectCores()-2),
+    H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
+    IfSaveModel = "mojo",
+
+    # Model evaluation args
+    eval_metric = "auc",
+    NumOfParDepPlots = 3,
+
+    # Metadata args
+    model_path = NULL,
+    metadata_path = NULL,
+    ModelID = "FirstModel",
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
+
+    # Data args
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[!names(data) %in%
+      c("IDcol_1", "IDcol_2","Adrian")],
+    RandomColNumbers = NULL,
+    InteractionColNumbers = NULL,
+    WeightsColumn = NULL,
+    TransformNumericColumns = NULL,
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+
+    # ML args
+    GridTune = FALSE,
+    GridStrategy = "Cartesian",
+    StoppingRounds = 10,
+    MaxRunTimeSecs = 3600 * 24 * 7,
+    MaxModelsInGrid = 10,
+    Distribution = "binomial",
+    Link = "logit",
+    RandomDistribution = NULL,
+    RandomLink = NULL,
+    Solver = "AUTO",
+    Alpha = NULL,
+    Lambda = NULL,
+    LambdaSearch = FALSE,
+    NLambdas = -1,
+    Standardize = TRUE,
+    RemoveCollinearColumns = FALSE,
+    InterceptInclude = TRUE,
+    NonNegativeCoefficients = FALSE)
 ```
  
 </p>
@@ -1527,13 +1601,14 @@ GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 TestModel <- RemixAutoML::AutoH2oGAMClassifier(
 
   # Compute management
-  MaxMem = "32G",
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
   NThreads = max(1, parallel::detectCores()-2),
   H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
   IfSaveModel = "mojo",
 
   # Model evaluation:
-  eval_metric = "RMSE",
+  eval_metric = "auc",
   NumOfParDepPlots = 3,
 
   # Metadata arguments:
@@ -1549,18 +1624,29 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %chin% c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumn = NULL,
   GamColNames = GamCols,
-  TransformNumericColumns = NULL,
-  Methods = c("BoxCox","Asinh", "Asin","Log","LogPlus1","Logit","YeoJohnson"),
 
-  # Model args
+  # ML args
+  num_knots = NULL,
+  keep_gam_cols = TRUE,
   GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
   MaxModelsInGrid = 10,
   Distribution = "binomial",
-  link = "Family_Default",
-  HurdleModel = FALSE)
- 
+  Link = "logit",
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 ```
  
 </p>
@@ -1602,41 +1688,31 @@ ________________________________________________________________________________
 <p>
 
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 10000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
 
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 
     # GPU or CPU and the number of available GPUs
     task_type = "GPU",
+    NumGPUs = 1,
 
-    # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains all confusion matrix measures across all thresholds
+    # Metadata args
     ModelID = "Test_Model_1",
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    metadata_path = normalizePath("./"),
     SaveModelObjects = FALSE,
     ReturnModelObjects = TRUE,
 
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
+    # Data args
     data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
@@ -1645,36 +1721,26 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
     PrimaryDateColumn = NULL,
     ClassWeights = c(1L,1L,1L,1L,1L),
-    IDcols = c("IDcols_1","IDcols_2"),
+    IDcols = c("IDcol_1","IDcol_2"),
 
-    # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'loss_function' the loss function used in training optimization
-    eval_metric = "MultiClass",
+    # Model evaluation
+    eval_metric = "MCC",
+    loss_function = "MultiClassOneVsAll",
     grid_eval_metric = "Accuracy",
     MetricPeriods = 10L,
 
-    # Grid tuning arguments:
-    #   'PassInGrid' is for retraining using a previous grid winning args
-    #   'MaxModelsInGrid' is a cap on the number of models that will run
-    #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
-    #   'MaxRunMinutes' is a cap on the number of minutes that will run
-    #   'Shuffles' is the number of times you want the random grid arguments shuffled
-    #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
-    #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
+    # Grid tuning args
     PassInGrid = NULL,
-    GridTune = FALSE,
-    MaxModelsInGrid = 100L,
+    GridTune = TRUE,
+    MaxModelsInGrid = 30L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Shuffles = 4L,
     BaselineComparison = "default",
 
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used
-    # GrowPolicy is turned off for CPU runs
-    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    # ML args
+    langevin = FALSE,
+    diffusion_temperature = 10000,
     Trees = seq(100L, 500L, 50L),
     Depth = seq(4L, 8L, 1L),
     LearningRate = seq(0.01,0.10,0.01),
@@ -1683,7 +1749,25 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     BorderCount = 254,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
     BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+    model_size_reg = 0.5,
+    feature_border_type = "GreedyLogSum",
+    sampling_unit = "Group",
+    subsample = NULL,
+    score_function = "Cosine",
+    min_data_in_leaf = 1)
+
+# Output
+TestModel$Model
+TestModel$ValidationData
+TestModel$EvaluationMetrics
+TestModel$Evaluation
+TestModel$VI_Plot
+TestModel$VariableImportance
+TestModel$InteractionImportance
+TestModel$GridMetrics
+TestModel$ColNames = Names
+TestModel$TargetLevels
 ```
 
 </p>
@@ -1696,58 +1780,63 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 <p>
 
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
 
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 
     # GPU or CPU
     TreeMethod = "hist",
-    NThreads = 8L,
+    NThreads = parallel::detectCores(),
 
-    # Metadata arguments
+    # Metadata args
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),"R_Model_Testing"),
+    metadata_path = normalizePath("./"),
     ModelID = "Test_Model_1",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
 
-    # Data arguments
+    # Data args
     data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    IDcols = c("IDcols_1","IDcols_2"),
+    IDcols = c("IDcol_1","IDcol_2"),
 
-    # Model evaluation
-    eval_metric = "auc",
-    Objective = 'multi:softmax',
+    # Model evaluation args
+    eval_metric = "merror",
+    LossFunction = 'multi:softmax',
     grid_eval_metric = "accuracy",
     NumOfParDepPlots = 3L,
 
-    # Grid tuning arguments - PassInGrid is the best of GridMetrics
+    # Grid tuning args
     PassInGrid = NULL,
-    GridTune = TRUE,
+    GridTune = FALSE,
     BaselineComparison = "default",
     MaxModelsInGrid = 10L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Verbose = 1L,
 
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example will be used
+    # ML args
     Shuffles = 1L,
-    Trees = seq(50L, 500L, 50L),
-    eta = seq(0.05,0.40,0.05),
-    max_depth = seq(4L, 16L, 2L),
-    min_child_weight = seq(1.0, 10.0, 1.0),
-    subsample = seq(0.55, 1.0, 0.05),
-    colsample_bytree = seq(0.55, 1.0, 0.05))
+    Trees = 50L,
+    eta = 0.05,
+    max_depth = 4L,
+    min_child_weight = 1.0,
+    subsample = 0.55,
+    colsample_bytree = 0.55)
 ```
 
 </p>
@@ -1760,8 +1849,15 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 <p>
 
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
@@ -1769,22 +1865,43 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
    TrainOnFull = FALSE,
    ValidationData = NULL,
    TestData = NULL,
-   TargetColumnName = "Target",
+   TargetColumnName = "Adrian",
    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   WeightsColumn = NULL,
    eval_metric = "logloss",
-   Trees = 50,
-   GridTune = FALSE,
-   MaxMem = "32G",
+   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
    NThreads = max(1, parallel::detectCores()-2),
-   MaxModelsInGrid = 10,
    model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   metadata_path = file.path(normalizePath("./")),
    ModelID = "FirstModel",
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
-   H2OShutdown = FALSE,
-   HurdleModel = FALSE)
+   H2OShutdown = TRUE,
+   H2OStartUp = TRUE,
+
+   # Model args
+   GridTune = FALSE,
+   GridStrategy = "Cartesian",
+   MaxRuntimeSecs = 60*60*24,
+   StoppingRounds = 10,
+   MaxModelsInGrid = 2,
+   Trees = 50,
+   LearnRate = 0.10,
+   LearnRateAnnealing = 1,
+   eval_metric = "RMSE",
+   Distribution = "multinomial",
+   MaxDepth = 20,
+   SampleRate = 0.632,
+   ColSampleRate = 1,
+   ColSampleRatePerTree = 1,
+   ColSampleRatePerTreeLevel  = 1,
+   MinRows = 1,
+   NBins = 20,
+   NBinsCats = 1024,
+   NBinsTopLevel = 1024,
+   HistogramType = "AUTO",
+   CategoricalEncoding = "AUTO")
 ```
 
 </p>
@@ -1797,8 +1914,15 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
 <p>
 
 ```
-# Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
@@ -1808,20 +1932,39 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
    TestData = NULL,
    TargetColumnName = "Adrian",
    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   WeightsColumn = NULL,
    eval_metric = "logloss",
-   Trees = 50,
-   GridTune = FALSE,
-   MaxMem = "32G",
+   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
    NThreads = max(1, parallel::detectCores()-2),
-   MaxModelsInGrid = 10,
    model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   metadata_path = file.path(normalizePath("./")),
    ModelID = "FirstModel",
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
    H2OShutdown = FALSE,
-   HurdleModel = FALSE)
+   H2OStartUp = TRUE,
+
+   # Grid Tuning Args
+   GridStrategy = "Cartesian",
+   GridTune = FALSE,
+   MaxModelsInGrid = 10,
+   MaxRuntimeSecs = 60*60*24,
+   StoppingRounds = 10,
+
+   # ML args
+   Trees = 50,
+   MaxDepth = 20,
+   SampleRate = 0.632,
+   MTries = -1,
+   ColSampleRatePerTree = 1,
+   ColSampleRatePerTreeLevel = 1,
+   MinRows = 1,
+   NBins = 20,
+   NBinsCats = 1024,
+   NBinsTopLevel = 1024,
+   HistogramType = "AUTO",
+   CategoricalEncoding = "AUTO")
 ```
 
 </p>
@@ -1835,29 +1978,69 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
 
 ```
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
-   data,
-   TrainOnFull = FALSE,
-   ValidationData = NULL,
-   TestData = NULL,
-   TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-   eval_metric = "logloss",
-   GridTune = FALSE,
-   MaxMem = "32G",
-   NThreads = max(1, parallel::detectCores()-2),
-   MaxModelsInGrid = 10,
-   model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./"), "MetaData"),
-   ModelID = "FirstModel",
-   ReturnModelObjects = TRUE,
-   SaveModelObjects = FALSE,
-   IfSaveModel = "mojo",
-   H2OShutdown = FALSE,
-   HurdleModel = FALSE)
+
+    # Compute management
+    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+    NThreads = max(1, parallel::detectCores()-2),
+    H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
+    IfSaveModel = "mojo",
+
+    # Model evaluation:
+    eval_metric = "logloss",
+    NumOfParDepPlots = 3,
+
+    # Metadata arguments:
+    model_path = NULL,
+    metadata_path = NULL,
+    ModelID = "FirstModel",
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
+
+    # Data arguments:
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    RandomColNumbers = NULL,
+    InteractionColNumbers = NULL,
+    WeightsColumn = NULL,
+    TransformNumericColumns = NULL,
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+
+    # Model args
+    GridTune = FALSE,
+    GridStrategy = "Cartesian",
+    StoppingRounds = 10,
+    MaxRunTimeSecs = 3600 * 24 * 7,
+    MaxModelsInGrid = 10,
+    Distribution = "multinomial",
+    Link = "family_default",
+    RandomDistribution = NULL,
+    RandomLink = NULL,
+    Solver = "AUTO",
+    Alpha = NULL,
+    Lambda = NULL,
+    LambdaSearch = FALSE,
+    NLambdas = -1,
+    Standardize = TRUE,
+    RemoveCollinearColumns = FALSE,
+    InterceptInclude = TRUE,
+    NonNegativeCoefficients = FALSE)
 ```
 
 </p>
@@ -1928,22 +2111,40 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) %chin%
-     c("IDcol_1", "IDcol_2","Adrian")],
+   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+   WeightsColumn = NULL,
    GamColNames = GamCols,
    eval_metric = "logloss",
-   GridTune = FALSE,
-   MaxMem = "32G",
+   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
    NThreads = max(1, parallel::detectCores()-2),
-   MaxModelsInGrid = 10,
    model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   metadata_path = NULL,
    ModelID = "FirstModel",
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
    H2OShutdown = FALSE,
-   HurdleModel = FALSE)
+   H2OStartUp = TRUE,
+
+   # ML args
+   num_knots = NULL,
+   keep_gam_cols = TRUE,
+   GridTune = FALSE,
+   GridStrategy = "Cartesian",
+   StoppingRounds = 10,
+   MaxRunTimeSecs = 3600 * 24 * 7,
+   MaxModelsInGrid = 10,
+   Distribution = "multinomial",
+   Link = "Family_Default",
+   Solver = "AUTO",
+   Alpha = NULL,
+   Lambda = NULL,
+   LambdaSearch = FALSE,
+   NLambdas = -1,
+   Standardize = TRUE,
+   RemoveCollinearColumns = FALSE,
+   InterceptInclude = TRUE,
+   NonNegativeCoefficients = FALSE)
 ```
 
 </p>

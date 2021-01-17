@@ -9,6 +9,7 @@ AutoH2OMLScoring(
   ModelObject = NULL,
   ModelType = "mojo",
   H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
@@ -37,7 +38,9 @@ AutoH2OMLScoring(
 
 \item{ModelType}{Set to either "mojo" or "standard" depending on which version you saved}
 
-\item{H2OShutdown}{Set to TRUE is you are scoring a "standard" model file and you aren't planning on continuing to score.}
+\item{H2OShutdown}{Set to TRUE to shutdown H2O inside the function.}
+
+\item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 
 \item{MaxMem}{Set to you dedicated amount of memory. E.g. "28G"}
 
@@ -86,6 +89,7 @@ Preds <- AutoH2OMLScoring(
   ModelObject = NULL,
   ModelType = "mojo",
   H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
   NThreads = max(1, parallel::detectCores()-2),
   JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',

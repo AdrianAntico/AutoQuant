@@ -73,46 +73,15 @@
 #'     task_type = "GPU",
 #'     NumGPUs = 1,
 #'
-#'     # Metadata arguments:
-#'     #   'ModelID' is used to create part of the file
-#'     #       names generated when saving to file'
-#'     #   'model_path' is where the minimal model objects
-#'     #       for scoring will be stored
-#'     #   'ModelID' will be the name of the saved model object
-#'     #   'metadata_path' is where model evaluation and model
-#'     #       interpretation files are saved
-#'     #    objects saved to model_path if metadata_path is null
-#'     #    Saved objects include:
-#'     #    'ModelID_ValidationData.csv' is the supplied or generated
-#'     #       TestData with predicted values
-#'     #    'ModelID_ROC_Plot.png' and 'Model_ID_EvaluationPlot.png'
-#'     #        calibration plot
-#'     #    'ModelID_VariableImportance.csv' is the variable importance.
-#'     #        This won't be saved to file if GrowPolicy is either
-#'     #          "Depthwise" or "Lossguide" was used
-#'     #    'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-#'     #        Results of all model builds including parameter settings,
-#'     #          bandit probs, and grid IDs
-#'     #    'ModelID_EvaluationMetrics.csv' which contains all confusion
-#'     #           matrix measures across all thresholds
+#'     # Metadata args
 #'     ModelID = "Test_Model_1",
 #'     model_path = normalizePath("./"),
-#'     metadata_path = NULL,
+#'     metadata_path = normalizePath("./"),
 #'     SaveModelObjects = FALSE,
 #'     SaveInfoToPDF = FALSE,
 #'     ReturnModelObjects = TRUE,
 #'
-#'     # Data arguments:
-#'     #   'TrainOnFull' is to train a model with 100 percent of
-#'     #      your data.
-#'     #   That means no holdout data will be used for evaluation
-#'     #   If ValidationData and TestData are NULL and TrainOnFull
-#'     #      is FALSE then data will be split 70 20 10
-#'     #   'PrimaryDateColumn' is a date column in data that is
-#'     #      meaningful when sorted.
-#'     #    CatBoost categorical treatment is enhanced when supplied
-#'     #   'IDcols' are columns in your data that you don't use for
-#'     #      modeling but get returned with ValidationData
+#'     # Data args
 #'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
@@ -128,18 +97,7 @@
 #'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
 #'       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 #'
-#'     # Model evaluation:
-#'     #   'eval_metric' is the measure catboost uses when evaluting
-#'     #       on holdout data during its bandit style process
-#'     #   'loss_function' the loss function used in training optimization
-#'     #   'NumOfParDepPlots' Number of partial dependence calibration plots
-#'     #       generated.
-#'     #     A value of 3 will return plots for the top 3 variables based
-#'     #       on variable importance
-#'     #     Won't be returned if GrowPolicy is either "Depthwise" or
-#'     #       "Lossguide" is used
-#'     #     Can run the RemixAutoML::ParDepCalPlots() with the outputted
-#'     #        ValidationData
+#'     # Model evaluation
 #'     eval_metric = "RMSE",
 #'     eval_metric_value = 1.5,
 #'     loss_function = "RMSE",
@@ -148,32 +106,16 @@
 #'     NumOfParDepPlots = ncol(data)-1L-2L,
 #'     EvalPlots = TRUE,
 #'
-#'     # Grid tuning arguments:
-#'     #   'PassInGrid' is for retraining using a previous grid winning args
-#'     #   'MaxModelsInGrid' is a cap on the number of models that will run
-#'     #   'MaxRunsWithoutNewWinner' number of runs without a new winner
-#'     #      before exiting grid tuning
-#'     #   'MaxRunMinutes' is a cap on the number of minutes that will run
-#'     #   'Shuffles' is the number of times you want the random grid
-#'     #      arguments shuffled
-#'     #   'BaselineComparison' default means to compare each model build
-#'     #      with a default built of catboost using max(Trees)
-#'     #   'MetricPeriods' is the number of trees built before evaluting
-#'     #      holdoutdata internally. Used in finding actual Trees used.
+#'     # Grid tuning args
 #'     PassInGrid = NULL,
 #'     GridTune = FALSE,
-#'     MaxModelsInGrid = 100L,
-#'     MaxRunsWithoutNewWinner = 100L,
+#'     MaxModelsInGrid = 30L,
+#'     MaxRunsWithoutNewWinner = 20L,
 #'     MaxRunMinutes = 60*60,
 #'     Shuffles = 4L,
 #'     BaselineComparison = "default",
 #'
-#'     # Trees, Depth, and LearningRate used in the bandit grid tuning
-#'     # Must set Trees to a single value if you are not grid tuning
-#'     # The ones below can be set to NULL and the values in the example
-#'     #   will be used
-#'     # GrowPolicy is turned off for CPU runs
-#'     # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+#'     # ML args
 #'     langevin = FALSE,
 #'     diffusion_temperature = 10000,
 #'     Trees = 1000,
@@ -181,7 +123,7 @@
 #'     L2_Leaf_Reg = 3.0,
 #'     RandomStrength = 1,
 #'     BorderCount = 128,
-#'     LearningRate = seq(0.01,0.10,0.01),
+#'     LearningRate = NULL,
 #'     RSM = 1,
 #'     BootStrapType = NULL,
 #'     GrowPolicy = "SymmetricTree",
@@ -192,7 +134,7 @@
 #'     score_function = "Cosine",
 #'     min_data_in_leaf = 1)
 #'
-#' # Output
+#'  # Output
 #'  TestModel$Model
 #'  TestModel$ValidationData
 #'  TestModel$EvaluationPlot
@@ -238,7 +180,7 @@ AutoCatBoostRegression <- function(data,
                                    SaveModelObjects = FALSE,
                                    PassInGrid = NULL,
                                    GridTune = FALSE,
-                                   MaxModelsInGrid = 10L,
+                                   MaxModelsInGrid = 30L,
                                    MaxRunsWithoutNewWinner = 20L,
                                    MaxRunMinutes = 24L*60L,
                                    Shuffles = 1L,
@@ -345,11 +287,34 @@ AutoCatBoostRegression <- function(data,
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
   if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
 
-  # Regression Check Arguments----
+  # Multi Arg Check ----
+  if(!GridTune && length(MetricPeriods) > 1) stop("MetricPeriods cannot have more than one value supplied")
+  if(!GridTune && length(langevin) > 1) stop("langevin cannot have more than one value supplied")
+  if(!GridTune && length(diffusion_temperature) > 1) stop("diffusion_temperature cannot have more than one value supplied")
+  if(!GridTune && length(Trees) > 1) stop("Trees cannot have more than one value supplied")
+  if(!GridTune && length(Depth) > 1) stop("Depth cannot have more than one value supplied")
+  if(!GridTune && length(LearningRate) > 1) stop("LearningRate cannot have more than one value supplied")
+  if(!GridTune && length(L2_Leaf_Reg) > 1) stop("L2_Leaf_Reg cannot have more than one value supplied")
+  if(!GridTune && length(RandomStrength) > 1) stop("RandomStrength cannot have more than one value supplied")
+  if(!GridTune && length(BorderCount) > 1) stop("BorderCount cannot have more than one value supplied")
+  if(!GridTune && length(RSM) > 1) stop("RSM cannot have more than one value supplied")
+  if(!GridTune && length(BootStrapType) > 1) stop("BootStrapType cannot have more than one value supplied")
+  if(!GridTune && length(GrowPolicy) > 1) stop("GrowPolicy cannot have more than one value supplied")
+  if(!GridTune && length(model_size_reg) > 1) stop("model_size_reg cannot have more than one value supplied")
+  if(!GridTune && length(feature_border_type) > 1) stop("feature_border_type cannot have more than one value supplied")
+  if(!GridTune && length(sampling_unit) > 1) stop("sampling_unit cannot have more than one value supplied")
+  if(!GridTune && length(subsample) > 1) stop("subsample cannot have more than one value supplied")
+  if(!GridTune && length(score_function) > 1) stop("score_function cannot have more than one value supplied")
+  if(!GridTune && length(min_data_in_leaf) > 1) stop("min_data_in_leaf cannot have more than one value supplied")
+
+  # Logic arg check ----
   if(!(tolower(task_type) %chin% c("gpu", "cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
-  if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
   if(is.null(NumGPUs)) NumGPUs <- '0' else if(NumGPUs > 1L) NumGPUs <- paste0('0-', NumGPUs-1L) else NumGPUs <- '0'
+  if(is.null(ClassWeights)) ClassWeights <- c(1,1)
+  if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
+  if(any(Trees < 1L)) stop("Trees must be greater than 1")
   if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
+  if(MaxModelsInGrid < 1L & GridTune) stop("MaxModelsInGrid needs to be at least 1")
   if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
   if(!is.null(metadata_path)) if(!is.character(metadata_path)) stop("metadata_path needs to be a character type")
   if(!is.character(ModelID)) stop("ModelID needs to be a character type")
@@ -357,43 +322,20 @@ AutoCatBoostRegression <- function(data,
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if(!is.null(PassInGrid)) GridTune <- FALSE
-  if(!GridTune & length(Trees) > 1L) Trees <- max(Trees)
-  if(GridTune) {
-    if(any(Depth > 16)) Depth <- Depth[!Depth > 16]
-  } else {
-    if(length(Depth) > 1) Depth <- max(Depth)
-  }
-  if(!GridTune & length(L2_Leaf_Reg) > 1L) L2_Leaf_Reg <- max(L2_Leaf_Reg)
-  if(!GridTune & length(RandomStrength) > 1L) RandomStrength <- max(RandomStrength)
-  if(!GridTune & length(BorderCount) > 1L) BorderCount <- max(BorderCount)
-  if(!GridTune & length(LearningRate) > 1L) LearningRate <- max(LearningRate)
-  if(!GridTune & length(RSM) > 1L) RSM <- max(RSM)
-  if(!GridTune & length(GrowPolicy) > 1L) GrowPolicy <- max(GrowPolicy)
-  if(!GridTune & length(BootStrapType) > 1L) BootStrapType <- max(BootStrapType)
-  if(LossFunction == "MultiRMSE" || EvalMetric == "MultiRMSE") {
-    task_type <- "CPU"
-    TransformNumericColumns <- NULL
-  }
-  if(langevin & task_type == "GPU") {
-    task_type <- "CPU"
-    print("task_type switched to CPU to enable langevin boosting")
+  if(GridTune & any(Depth > 16)) {
+    Depth <- Depth[!Depth > 16]
+    if(length(Depth) == 0) Depth <- 6
   }
   if(task_type == "GPU") {
     RSM <- NULL
   } else if(is.null(RSM)) {
     RSM <- 1
   }
-  if(is.null(BootStrapType)) {
-    if(task_type == "GPU") BootStrapType <- "Bayesian"
-    if(task_type == "CPU") BootStrapType <- "MVS"
-  } else if(task_type == "GPU" & BootStrapType == "MVS") {
-    BootStrapType <- "Bayesian"
+  if(langevin & task_type == "GPU") {
+    task_type <- "CPU"
+    print("task_type switched to CPU to enable langevin boosting")
   }
-
-  # Sampling Unit management
   if(!is.null(sampling_unit) && task_type == "GPU" && LossFunction != "YetiRankPairWise") sampling_unit <- NULL
-
-  # score_function management
   if(!is.null(score_function)) {
     if(task_type == "CPU" && score_function %chin% c("NewtonL2","NewtonCosine")) {
       if(!is.null(GrowPolicy)) {
@@ -405,16 +347,13 @@ AutoCatBoostRegression <- function(data,
       if(GrowPolicy == "Lossguide" && score_function == "NewtonCosine") score_function <- "NewtonL2"
     }
   }
-
-  # Ensure GridTune features are all not null if GridTune = TRUE----
-  if(GridTune) {
-    if(is.null(Trees)) return("Trees cannot be NULL")
-    if(is.null(Depth)) return("Depth cannot be NULL when GridTune = TRUE")
-    if(is.null(LearningRate)) return("LearningRate cannot be NULL when GridTune = TRUE")
-    if(is.null(L2_Leaf_Reg)) return("L2_Leaf_Reg cannot be NULL when GridTune = TRUE")
-    if(is.null(RSM) & task_type == "CPU") return("RSM cannot be NULL when GridTune = TRUE and task_type = 'CPU'")
-    if(is.null(BootStrapType)) return("BootStrapType cannot be NULL when GridTune = TRUE")
-    if(is.null(GrowPolicy)) return("GrowPolicy cannot be NULL when GridTune = TRUE")
+  if(is.null(BootStrapType)) {
+    if(task_type == "GPU") BootStrapType <- "Bayesian"
+    if(task_type == "CPU") BootStrapType <- "MVS"
+  } else if(task_type == "GPU" & any(BootStrapType %chin% "MVS")) {
+    if(GridTune & length(BootStrapType) > 1L) {
+      BootStrapType <- BootStrapType[!BootStrapType %chin% "MVS"]
+    }
   }
 
   # Regression Ensure data is a data.table----
@@ -459,13 +398,13 @@ AutoCatBoostRegression <- function(data,
     }
   }
 
-  # Regression Target Name Storage----
+  # Regression Target Name Storage ----
   if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
 
-  # Regression IDcol Name Storage----
+  # Regression IDcol Name Storage ----
   if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
 
-  # Regression Data Partition----
+  # Regression Data Partition ----
   if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     if(!is.null(TransformNumericColumns)) {
       dataSets <- AutoDataPartition(
@@ -847,7 +786,7 @@ AutoCatBoostRegression <- function(data,
     # Add bandit probs columns to ExperimentalGrid----
     data.table::set(ExperimentalGrid, j = paste0("BanditProbs_", names(GridClusters)), value = -10)
 
-    # Binary Grid Tuning Main Loop----
+    # Regression Grid Tuning Main Loop----
     counter <- 0L
     NewGrid <- 1L
     repeat {
@@ -1989,14 +1928,14 @@ AutoCatBoostRegression <- function(data,
       Tables = FALSE,
       ObjectList = EvalPlotList,
       Title = "Model Evaluation Plots",
-      Width = 10,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
     PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "PartialDependencePlots",
       Tables = FALSE,
       ObjectList = ParDepList,
       Title = "Partial Dependence Calibration Plots",
-      Width = 10,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
     PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "Metrics_and_Importances",
@@ -2004,7 +1943,7 @@ AutoCatBoostRegression <- function(data,
       MaxPages = 100,
       ObjectList = TableMetrics,
       Title = "Model Metrics and Variable Importances",
-      Width = 10,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
     while(grDevices::dev.cur() > 1) grDevices::dev.off()
   }
 

@@ -16,21 +16,20 @@ AutoH2oMLRegression(
   Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
     "Logit"),
   eval_metric = "RMSE",
-  Trees = 50,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
-  MaxModelsInGrid = 2,
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
   NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
-  HurdleModel = FALSE
+  H2OStartUp = TRUE
 )
 }
 \arguments{
@@ -54,13 +53,9 @@ AutoH2oMLRegression(
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
 
-\item{Trees}{The maximum number of trees you want in your models}
-
 \item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
 
 \item{NThreads}{Set the number of threads you want to dedicate to the model building}
-
-\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -74,11 +69,13 @@ AutoH2oMLRegression(
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
+\item{SaveInfoToPDF}{Set to TRUE to save insights to PDF}
+
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
-\item{H2OShutdown}{For use in other functions.}
+\item{H2OShutdown}{Set to TRUE to shutdown H2O inside the function}
 
-\item{HurdleModel}{Set to FALSE}
+\item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
@@ -105,6 +102,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
     NThreads = max(1, parallel::detectCores()-2),
     H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
     IfSaveModel = "mojo",
 
     # Model evaluation:
@@ -138,7 +136,6 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     #            importance.
     #            This won't be saved to file if GrowPolicy is either
     #            "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
     #            Results of all model builds including parameter
     #            settings, bandit probs, and grid IDs
     #         'ModelID_EvaluationMetrics.csv' which contains MSE,
@@ -148,6 +145,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
     # Data arguments:
     #   'TrainOnFull' is to train a model with 100
@@ -166,16 +164,12 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%chin\%
-      c("IDcol_1", "IDcol_2","Adrian")],
+    FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
     TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log",
-      "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
     # Model args
-    ExcludeAlgos = NULL,
-    Trees = 50,
-    MaxModelsInGrid = 10)
+    ExcludeAlgos = NULL)
 }
 }
 \seealso{

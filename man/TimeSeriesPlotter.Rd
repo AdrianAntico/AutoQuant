@@ -9,6 +9,7 @@ TimeSeriesPlotter(
   TargetVariable = "TargetVariableName",
   DateVariable = "DateVariableName",
   GroupVariables = "GroupVariableName",
+  EvaluationMode = FALSE,
   VLineDate = NULL,
   Aggregate = NULL,
   NumberGroupsDisplay = 5,
@@ -19,7 +20,6 @@ TimeSeriesPlotter(
   LineWidth = 1,
   Color = "blue",
   XTickMarks = "1 year",
-  Size = 12,
   AngleX = 35,
   AngleY = 0,
   ChartColor = "lightsteelblue1",
@@ -31,7 +31,6 @@ TimeSeriesPlotter(
   LegendTextColor = "darkblue",
   LegendTextSize = 10,
   ForecastLineColor = "black",
-  Forecast = FALSE,
   PredictionIntervals = FALSE,
   TS_ModelID = NULL,
   PredictionIntervalColorInner = "aquamarine1",
@@ -46,6 +45,8 @@ TimeSeriesPlotter(
 \item{DateVariable}{Date variable}
 
 \item{GroupVariables}{Group variables}
+
+\item{EvaluationMode}{TRUE means two lines are displayed for Actual and Forecast}
 
 \item{VLineDate}{Date of last actual target value}
 
@@ -66,8 +67,6 @@ TimeSeriesPlotter(
 \item{Color}{Set to "blue", "red", etc}
 
 \item{XTickMarks}{Number of tick marks on x-axis. "1 minute","15 minutes","30 minutes","1 hour","3 hour","6 hour","12 hour","1 day","3 day","1 week","2 week","1 month","3 month","6 month","1 year","2 year","5 year","10 year"}
-
-\item{Size}{Size of text on plot}
 
 \item{AngleX}{Angle of text on x axis}
 
@@ -90,8 +89,6 @@ TimeSeriesPlotter(
 \item{LegendTextSize}{Text size}
 
 \item{ForecastLineColor}{Forecast line color}
-
-\item{Forecast}{Set to TRUE to use forecast plots}
 
 \item{PredictionIntervals}{Set to TRUE to plot prediction intervals}
 

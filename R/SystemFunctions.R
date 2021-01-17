@@ -15,18 +15,22 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
                                  ExistsButNoProjectList = FALSE,
                                  Local = FALSE) {
 
+  # First pass validity check
+  RootPath <- gsub("\\\\", "/", RootPath)
+
   # Check for validity in path
   RootPath <- tryCatch({normalizePath(RootPath, mustWork = TRUE)}, error = function(x) NULL)
 
   # Proceed or stop
   if(!is.null(RootPath)) {
-    # Create Collection List----
+
+    # Create Collection List ----
     ProjectList <- list()
 
-    # Store Project Name----
+    # Store Project Name ----
     ProjectList[["ProjectName"]] <- ProjectName
 
-    # Define Project Folder Root Path----
+    # Define Project Folder Root Path ----
     if(Local) {
       ProjectPath <- file.path(normalizePath(RootPath), ProjectName)
     } else {
@@ -35,42 +39,42 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
 
     ProjectList[["ProjectFolderPath"]] <- ProjectPath
 
-    # Create Project Folder----
+    # Create Project Folder ----
     if(!ExistsButNoProjectList) {
 
-      # Create Data folder----
-      DataPath <- normalizePath(file.path(ProjectPath, "Data"), mustWork = TRUE)
+      # Create Data folder ----
+      DataPath <- normalizePath(file.path(ProjectPath, "Data"), mustWork = FALSE)
       dir.create(path =  DataPath, showWarnings = TRUE, recursive = TRUE)
       ProjectList[["DataFolderPath"]] <- DataPath
 
-      # Create Models folder----
-      ModelsPath <- file.path(ProjectPath, "Models")
+      # Create Models folder ----
+      ModelsPath <- file.path(ProjectPath, "Models", mustWork = FALSE)
       dir.create(path =  ModelsPath, showWarnings = TRUE, recursive = TRUE)
       ProjectList[["ModelsFolderPath"]] <- ModelsPath
 
-      # Create MetaData folder----
-      MetaDataPath <- file.path(ProjectPath, "MetaData")
+      # Create MetaData folder ----
+      MetaDataPath <- file.path(ProjectPath, "MetaData", mustWork = FALSE)
       dir.create(path =  MetaDataPath, showWarnings = TRUE, recursive = TRUE)
       ProjectList[["MetaDataPath"]] <- MetaDataPath
 
-      # Save ProjectList to File----
+      # Save ProjectList to File ----
       save(ProjectList, file = file.path(MetaDataPath, "ProjectList.Rdata"))
 
     } else {
 
-      # Create Data folder----
-      DataPath <- file.path(ProjectPath,"Data")
+      # Create Data folder ----
+      DataPath <- file.path(ProjectPath,"Data", mustWork = FALSE)
       ProjectList[["DataFolderPath"]] <- DataPath
 
-      # Create Models folder----
-      ModelsPath <- file.path(ProjectPath,"Models")
+      # Create Models folder ----
+      ModelsPath <- file.path(ProjectPath,"Models", mustWork = FALSE)
       ProjectList[["ModelsFolderPath"]] <- ModelsPath
 
-      # Create MetaData folder----
-      MetaDataPath <- file.path(ProjectPath,"MetaData")
+      # Create MetaData folder ----
+      MetaDataPath <- file.path(ProjectPath,"MetaData", mustWork = FALSE)
       ProjectList[["MetaDataPath"]] <- MetaDataPath
 
-      # Save ProjectList to File----
+      # Save ProjectList to File ----
       save(ProjectList, file = file.path(MetaDataPath,paste0(ProjectName,"_ProjectList.Rdata")))
     }
 

@@ -10,6 +10,7 @@
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
+#' @param LossFunction Select from 'reg:logistic', "binary:logistic"
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param TreeMethod Choose from "hist", "gpu_hist"
@@ -53,7 +54,7 @@
 #'     TreeMethod = "hist",
 #'     NThreads = parallel::detectCores(),
 #'
-#'     # Metadata arguments
+#'     # Metadata args
 #'     model_path = normalizePath("./"),
 #'     metadata_path = NULL,
 #'     ModelID = "Test_Model_1",
@@ -61,40 +62,38 @@
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,
 #'
-#'     # Data arguments
+#'     # Data args
 #'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %chin%
+#'     FeatureColNames = names(data)[!names(data) %in%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
 #'     IDcols = c("IDcol_1","IDcol_2"),
 #'
 #'     # Model evaluation
+#'     LossFunction = 'reg:logistic',
 #'     eval_metric = "auc",
 #'     NumOfParDepPlots = 3L,
 #'
-#'     # Grid tuning arguments
+#'     # Grid tuning args
 #'     PassInGrid = NULL,
-#'     GridTune = TRUE,
+#'     GridTune = FALSE,
 #'     BaselineComparison = "default",
 #'     MaxModelsInGrid = 10L,
 #'     MaxRunsWithoutNewWinner = 20L,
 #'     MaxRunMinutes = 24L*60L,
 #'     Verbose = 1L,
 #'
-#'     # Trees, Depth, and LearningRate used in the bandit grid tuning
-#'     # Must set Trees to a single value if you are not grid tuning
-#'     # The ones below can be set to NULL and the values in the
-#'     #    example will be used
+#'     # ML args
 #'     Shuffles = 1L,
-#'     Trees = seq(50L, 500L, 50L),
-#'     eta = seq(0.05,0.40,0.05),
-#'     max_depth = seq(4L, 16L, 2L),
-#'     min_child_weight = seq(1.0, 10.0, 1.0),
-#'     subsample = seq(0.55, 1.0, 0.05),
-#'     colsample_bytree = seq(0.55, 1.0, 0.05))
+#'     Trees = 50L,
+#'     eta = 0.05,
+#'     max_depth = 4L,
+#'     min_child_weight = 1.0,
+#'     subsample = 0.55,
+#'     colsample_bytree = 0.55)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -114,6 +113,7 @@ AutoXGBoostClassifier <- function(data,
                                   Verbose = 0L,
                                   NumOfParDepPlots = 3L,
                                   NThreads = parallel::detectCores(),
+                                  LossFunction = 'reg:logistic',
                                   eval_metric = "auc",
                                   TreeMethod = "hist",
                                   GridTune = FALSE,
@@ -499,13 +499,14 @@ AutoXGBoostClassifier <- function(data,
       counter <- counter + 1L
 
       # Check if grid still has elements in it----
-      if(!is.null(GridClusters[[paste0("Grid_",max(1L,counter-1L))]][["Depth"]][1L])) {
+      if(!exists("NewGrid")) zz <- counter else zz <- NewGrid
+      if(!is.null(GridClusters[[paste0("Grid_",max(1L,zz-1L))]][["Depth"]][1L])) {
 
         # Define parameters----
         if(!exists("NewGrid")) {
-          base_params <- XGBoostClassifierParams(counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- XGBoostClassifierParams(counter=counter,Objective=LossFunction,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         } else {
-          base_params <- XGBoostClassifierParams(NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
+          base_params <- XGBoostClassifierParams(NewGrid=NewGrid,Objective=LossFunction,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
         }
 
         # Run model----
@@ -621,7 +622,7 @@ AutoXGBoostClassifier <- function(data,
   if(!is.null(PassInGrid)) {
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:logistic',
+      objective             = LossFunction,
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,
@@ -646,7 +647,7 @@ AutoXGBoostClassifier <- function(data,
     if(BestGrid$RunNumber == 1L) {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:logistic',
+        objective             = LossFunction,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -660,7 +661,7 @@ AutoXGBoostClassifier <- function(data,
     } else {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:logistic',
+        objective             = LossFunction,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -680,7 +681,7 @@ AutoXGBoostClassifier <- function(data,
   if(is.null(PassInGrid) & !GridTune) {
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:logistic',
+      objective             = LossFunction,
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,
@@ -743,9 +744,6 @@ AutoXGBoostClassifier <- function(data,
     ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity")
-  if("plotly" %chin% installed.packages()) {
-    ROC_Plot <- plotly::ggplotly(ROROC_Plot)
-  }
 
   # Save plot to file----
   if(SaveModelObjects) {
@@ -767,9 +765,6 @@ AutoXGBoostClassifier <- function(data,
 
   # Add Number of Trees to Title
   EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: AUC = ", round(AUC_Metrics$auc, 3)))
-  if("plotly" %chin% installed.packages()) {
-    EvaluationPlot <- plotly::ggplotly(EvaluationPlot)
-  }
 
   # Save plot to file----
   if(SaveModelObjects) {
@@ -818,11 +813,7 @@ AutoXGBoostClassifier <- function(data,
           FactLevels = 10L,
           Function = function(x) mean(x, na.rm = TRUE))
         j <- j + 1L
-        if("plotly" %chin% installed.packages()) {
-          ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- plotly::ggplotly(Out)
-        } else {
-          ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
-        }
+        ParDepPlots[[paste0(VariableImportance[j, Feature])]] <- Out
       }, error = function(x) "skip")
     }
   }
@@ -859,11 +850,7 @@ AutoXGBoostClassifier <- function(data,
   }
 
   # VI_Plot----
-  if("plotly" %chin% installed.packages()) {
-    VI_Plot_Object <- plotly::ggplotly(VI_Plot(VI_Data = VariableImportance))
-  } else {
-    VI_Plot_Object <- VI_Plot(VI_Data = VariableImportance)
-  }
+  VI_Plot_Object <- VI_Plot(VI_Data = VariableImportance)
 
   # Binary Return Model Objects----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL

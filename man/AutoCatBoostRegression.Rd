@@ -34,7 +34,7 @@ AutoCatBoostRegression(
   SaveModelObjects = FALSE,
   PassInGrid = NULL,
   GridTune = FALSE,
-  MaxModelsInGrid = 10L,
+  MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
   Shuffles = 1L,
@@ -187,46 +187,15 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     task_type = "GPU",
     NumGPUs = 1,
 
-    # Metadata arguments:
-    #   'ModelID' is used to create part of the file
-    #       names generated when saving to file'
-    #   'model_path' is where the minimal model objects
-    #       for scoring will be stored
-    #   'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model
-    #       interpretation files are saved
-    #    objects saved to model_path if metadata_path is null
-    #    Saved objects include:
-    #    'ModelID_ValidationData.csv' is the supplied or generated
-    #       TestData with predicted values
-    #    'ModelID_ROC_Plot.png' and 'Model_ID_EvaluationPlot.png'
-    #        calibration plot
-    #    'ModelID_VariableImportance.csv' is the variable importance.
-    #        This won't be saved to file if GrowPolicy is either
-    #          "Depthwise" or "Lossguide" was used
-    #    'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #        Results of all model builds including parameter settings,
-    #          bandit probs, and grid IDs
-    #    'ModelID_EvaluationMetrics.csv' which contains all confusion
-    #           matrix measures across all thresholds
+    # Metadata args
     ModelID = "Test_Model_1",
     model_path = normalizePath("./"),
-    metadata_path = NULL,
+    metadata_path = normalizePath("./"),
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
     ReturnModelObjects = TRUE,
 
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of
-    #      your data.
-    #   That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull
-    #      is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is
-    #      meaningful when sorted.
-    #    CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for
-    #      modeling but get returned with ValidationData
+    # Data args
     data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
@@ -242,18 +211,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     Methods = c("BoxCox", "Asinh", "Asin", "Log",
       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
-    # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting
-    #       on holdout data during its bandit style process
-    #   'loss_function' the loss function used in training optimization
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots
-    #       generated.
-    #     A value of 3 will return plots for the top 3 variables based
-    #       on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or
-    #       "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted
-    #        ValidationData
+    # Model evaluation
     eval_metric = "RMSE",
     eval_metric_value = 1.5,
     loss_function = "RMSE",
@@ -262,32 +220,16 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     NumOfParDepPlots = ncol(data)-1L-2L,
     EvalPlots = TRUE,
 
-    # Grid tuning arguments:
-    #   'PassInGrid' is for retraining using a previous grid winning args
-    #   'MaxModelsInGrid' is a cap on the number of models that will run
-    #   'MaxRunsWithoutNewWinner' number of runs without a new winner
-    #      before exiting grid tuning
-    #   'MaxRunMinutes' is a cap on the number of minutes that will run
-    #   'Shuffles' is the number of times you want the random grid
-    #      arguments shuffled
-    #   'BaselineComparison' default means to compare each model build
-    #      with a default built of catboost using max(Trees)
-    #   'MetricPeriods' is the number of trees built before evaluting
-    #      holdoutdata internally. Used in finding actual Trees used.
+    # Grid tuning args
     PassInGrid = NULL,
     GridTune = FALSE,
-    MaxModelsInGrid = 100L,
-    MaxRunsWithoutNewWinner = 100L,
+    MaxModelsInGrid = 30L,
+    MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 60*60,
     Shuffles = 4L,
     BaselineComparison = "default",
 
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the example
-    #   will be used
-    # GrowPolicy is turned off for CPU runs
-    # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+    # ML args
     langevin = FALSE,
     diffusion_temperature = 10000,
     Trees = 1000,
@@ -295,7 +237,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     L2_Leaf_Reg = 3.0,
     RandomStrength = 1,
     BorderCount = 128,
-    LearningRate = seq(0.01,0.10,0.01),
+    LearningRate = NULL,
     RSM = 1,
     BootStrapType = NULL,
     GrowPolicy = "SymmetricTree",
@@ -306,7 +248,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
     score_function = "Cosine",
     min_data_in_leaf = 1)
 
-# Output
+ # Output
  TestModel$Model
  TestModel$ValidationData
  TestModel$EvaluationPlot

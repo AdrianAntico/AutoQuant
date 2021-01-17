@@ -11,27 +11,47 @@ AutoH2oGLMRegression(
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
-  Distribution = "gaussian",
-  link = "identity",
-  TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
-  eval_metric = "RMSE",
-  GridTune = FALSE,
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
-  MaxModelsInGrid = 2,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
   model_path = NULL,
   metadata_path = NULL,
-  ModelID = "FirstModel",
-  NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
-  HurdleModel = FALSE
+  H2OStartUp = TRUE,
+  TransformNumericColumns = NULL,
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit"),
+  NumOfParDepPlots = 3,
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 2,
+  Distribution = "gaussian",
+  Link = "identity",
+  TweedieLinkPower = NULL,
+  TweedieVariancePower = NULL,
+  eval_metric = "RMSE",
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE
 )
 }
 \arguments{
@@ -47,41 +67,81 @@ AutoH2oGLMRegression(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
-\item{Distribution}{"binomial", "quasibinomial"}
+\item{RandomColNumbers}{Random effects column number indicies}
 
-\item{link}{identity, logit, log, inverse, tweedie}
+\item{InteractionColNumbers}{Column numbers of the features you want to be pairwise interacted}
 
-\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
-
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
-
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
-
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+\item{WeightsColumn}{Column name of a weights column}
 
 \item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
 
 \item{NThreads}{Set the number of threads you want to dedicate to the model building}
 
-\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
+\item{ModelID}{A character string to name your model and output}
+
+\item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
-\item{ModelID}{A character string to name your model and output}
-
-\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
-
-\item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
-
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{SaveInfoToPDF}{Set to TRUE to save insights to PDF}
 
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
-\item{H2OShutdown}{For use in other functions.}
+\item{H2OShutdown}{Set to TRUE to shutdown H2O inside the function}
 
-\item{HurdleModel}{Set to FALSE}
+\item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
+
+\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
+
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
+
+\item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
+
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{GridStrategy}{"RandomDiscrete" or "Cartesian"}
+
+\item{StoppingRounds}{Iterations in grid tuning}
+
+\item{MaxRunTimeSecs}{Max run time in seconds}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
+
+\item{Distribution}{"AUTO", "gaussian", "poisson", "gamma", "tweedie", "negativebinomial"}
+
+\item{Link}{"family_default", "identity", "log", "inverse", "tweedie"}
+
+\item{TweedieLinkPower}{See h2o docs for background}
+
+\item{TweedieVariancePower}{See h2o docs for background}
+
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
+
+\item{RandomDistribution}{Random effects family. Defaults NULL, otherwise it will run a hierarchical glm}
+
+\item{RandomLink}{Random effects link. Defaults NULL, otherwise it will run a hierarchical glm}
+
+\item{Solver}{Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"}
+
+\item{Alpha}{Default NULL. Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.}
+
+\item{Lambda}{Default NULL. Regularization strength.}
+
+\item{LambdaSearch}{Default FALSE.}
+
+\item{NLambdas}{Default -1}
+
+\item{Standardize}{Default TRUE. Standardize numerical columns}
+
+\item{RemoveCollinearColumns}{Default FALSE. Removes some of the linearly dependent columns}
+
+\item{InterceptInclude}{Default TRUE}
+
+\item{NonNegativeCoefficients}{Default FALSE}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
@@ -108,6 +168,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
     NThreads = max(1, parallel::detectCores()-2),
     H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
     IfSaveModel = "mojo",
 
     # Model evaluation:
@@ -120,23 +181,43 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
     # Data arguments:
+    data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%chin\%
+    FeatureColNames = names(data)[!names(data) \%in\%
       c("IDcol_1", "IDcol_2","Adrian")],
+    RandomColNumbers = NULL,
+    InteractionColNumbers = NULL,
+    WeightsColumn = NULL,
     TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log",
-                "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
     # Model args
     GridTune = FALSE,
+    GridStrategy = "Cartesian",
+    StoppingRounds = 10,
+    MaxRunTimeSecs = 3600 * 24 * 7,
     MaxModelsInGrid = 10,
     Distribution = "gaussian",
-    link = "identity")
+    Link = "identity",
+    TweedieLinkPower = NULL,
+    TweedieVariancePower = NULL,
+    RandomDistribution = NULL,
+    RandomLink = NULL,
+    Solver = "AUTO",
+    Alpha = NULL,
+    Lambda = NULL,
+    LambdaSearch = FALSE,
+    NLambdas = -1,
+    Standardize = TRUE,
+    RemoveCollinearColumns = FALSE,
+    InterceptInclude = TRUE,
+    NonNegativeCoefficients = FALSE)
 }
 }
 \seealso{

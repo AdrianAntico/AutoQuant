@@ -9,12 +9,16 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param WeightsColumn Weighted classification
 #' @param GamColNames GAM column names. Up to 9 features
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param GridStrategy "RandomDiscrete" or "Cartesian"
+#' @param MaxRunTimeSecs Max run time in seconds
+#' @param StoppingRounds Iterations in grid tuning
+#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
 #' @param NThreads Set the number of threads you want to dedicate to the model building
-#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
@@ -22,7 +26,18 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
 #' @param H2OShutdown Set to TRUE to have H2O shutdown after running this function
-#' @param HurdleModel Set to FALSE
+#' @param H2OStartUp Set to TRUE to start up H2O inside function
+#' @param num_knots Numeric values for gam
+#' @param keep_gam_cols Logical
+#' @param Solver Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"
+#' @param Alpha Default NULL. Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.
+#' @param Lambda Default NULL. Regularization strength.
+#' @param LambdaSearch Default FALSE.
+#' @param NLambdas Default -1
+#' @param Standardize Default TRUE. Standardize numerical columns
+#' @param RemoveCollinearColumns Default FALSE. Removes some of the linearly dependent columns
+#' @param InterceptInclude Default TRUE
+#' @param NonNegativeCoefficients Default FALSE
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
@@ -47,14 +62,12 @@
 #'    ValidationData = NULL,
 #'    TestData = NULL,
 #'    TargetColumnName = "Adrian",
-#'    FeatureColNames = names(data)[!names(data) %in%
-#'      c("IDcol_1", "IDcol_2","Adrian")],
+#'    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+#'    WeightsColumn = NULL,
 #'    GamColNames = GamCols,
 #'    eval_metric = "logloss",
-#'    GridTune = FALSE,
 #'    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'    NThreads = max(1, parallel::detectCores()-2),
-#'    MaxModelsInGrid = 10,
 #'    model_path = normalizePath("./"),
 #'    metadata_path = NULL,
 #'    ModelID = "FirstModel",
@@ -62,7 +75,27 @@
 #'    SaveModelObjects = FALSE,
 #'    IfSaveModel = "mojo",
 #'    H2OShutdown = FALSE,
-#'    HurdleModel = FALSE)
+#'    H2OStartUp = TRUE,
+#'
+#'    # ML args
+#'    num_knots = NULL,
+#'    keep_gam_cols = TRUE,
+#'    GridTune = FALSE,
+#'    GridStrategy = "Cartesian",
+#'    StoppingRounds = 10,
+#'    MaxRunTimeSecs = 3600 * 24 * 7,
+#'    MaxModelsInGrid = 10,
+#'    Distribution = "multinomial",
+#'    Link = "Family_Default",
+#'    Solver = "AUTO",
+#'    Alpha = NULL,
+#'    Lambda = NULL,
+#'    LambdaSearch = FALSE,
+#'    NLambdas = -1,
+#'    Standardize = TRUE,
+#'    RemoveCollinearColumns = FALSE,
+#'    InterceptInclude = TRUE,
+#'    NonNegativeCoefficients = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
@@ -72,12 +105,11 @@ AutoH2oGAMMultiClass <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
+                                 WeightsColumn = NULL,
                                  GamColNames = NULL,
                                  eval_metric = "logloss",
-                                 GridTune = FALSE,
                                  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                                  NThreads = max(1, parallel::detectCores()-2),
-                                 MaxModelsInGrid = 2,
                                  model_path = NULL,
                                  metadata_path = NULL,
                                  ModelID = "FirstModel",
@@ -85,7 +117,25 @@ AutoH2oGAMMultiClass <- function(data,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = FALSE,
-                                 HurdleModel = FALSE) {
+                                 H2OStartUp = TRUE,
+                                 GridTune = FALSE,
+                                 GridStrategy = "Cartesian",
+                                 StoppingRounds = 10,
+                                 MaxRunTimeSecs = 3600 * 24 * 7,
+                                 MaxModelsInGrid = 2,
+                                 Distribution = "multinomial",
+                                 Link = "Family_Default",
+                                 num_knots = NULL,
+                                 keep_gam_cols = TRUE,
+                                 Solver = "AUTO",
+                                 Alpha = NULL,
+                                 Lambda = NULL,
+                                 LambdaSearch = FALSE,
+                                 NLambdas = -1,
+                                 Standardize = TRUE,
+                                 RemoveCollinearColumns = FALSE,
+                                 InterceptInclude = TRUE,
+                                 NonNegativeCoefficients = FALSE) {
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -130,15 +180,26 @@ AutoH2oGAMMultiClass <- function(data,
       PartitionType = "random",
       StratifyColumnNames = TargetColumnName,
       TimeColumnName = NULL)
-    data <- dataSets$TrainData
-    ValidationData <- dataSets$ValidationData
+    dataTrain <- dataSets$TrainData
+    dataTest <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
 
-  # MultiClass ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
-  if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
-  if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
+  # Create dataTrain if not exists ----
+  if(!exists("dataTrain")) dataTrain <- data
+  if(!exists("dataTest") && !TrainOnFull) dataTest <- ValidationData
+
+  # Regression ModelDataPrep----
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  if(!TrainOnFull) {
+    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  }
+  if(!is.null(TestData)) {
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  }
 
   # MultiClass Ensure Target Is a Factor Type----
   if(!is.factor(dataTrain[[eval(TargetColumnName)]])) dataTrain[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
@@ -147,7 +208,7 @@ AutoH2oGAMMultiClass <- function(data,
 
   # MultiClass Save Names of data----
   if(is.numeric(FeatureColNames)) {
-    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    Names <- data.table::as.data.table(names(dataTrain)[FeatureColNames])
     data.table::setnames(Names, "V1", "ColNames")
   } else {
     Names <- data.table::as.data.table(FeatureColNames)
@@ -161,22 +222,30 @@ AutoH2oGAMMultiClass <- function(data,
 
   # MultiClass Grid Tune Check----
   if(GridTune & !TrainOnFull) {
-    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+    if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
 
     # MultiClass Grid Tune Search Criteria----
     search_criteria  <- list(
-      strategy             = "RandomDiscrete",
-      max_runtime_secs     = 3600 * 24 * 7,
-      max_models           = MaxModelsInGrid,
-      seed                 = 1234,
-      stopping_rounds      = 10L,
-      stopping_metric      = eval_metric,
-      stopping_tolerance   = 1e-3)
+      strategy = GridStrategy,
+      max_runtime_secs = MaxRunTimeSecs,
+      max_models = MaxModelsInGrid,
+      seed = 1234,
+      stopping_rounds = StoppingRounds,
+      stopping_metric = toupper(eval_metric),
+      stopping_tolerance = 1e-3)
 
-    # MultiClass Grid Parameters----
-    hyper_params <- list(alpha = c(0,0.25,0.5,0.75,1), lambda = c(0,0.01,0.05,0.10), theta = c(1e-10, 0.01, 0.05, 0.10))
+    # Hyperparameters ----
+    hyper_params <- list()
+    hyper_params[["solver"]] <- Solver
+    hyper_params[["alpha"]] <- Alpha
+    hyper_params[["lambda"]] <- Lambda
+    hyper_params[["lambda_search"]] <- LambdaSearch
+    hyper_params[["standardize"]] <- Standardize
+    hyper_params[["remove_collinear_columns"]] <- RemoveCollinearColumns
+    hyper_params[["intercept"]] <- InterceptInclude
+    hyper_params[["non_negative"]] <- NonNegativeCoefficients
 
     # MultiClass Grid Train Model----
     grid <- h2o::h2o.grid(
@@ -184,7 +253,7 @@ AutoH2oGAMMultiClass <- function(data,
       search_criteria      = search_criteria,
       is_supervised        = TRUE,
       algorithm            = "gam",
-      family               = "multinomial",
+      family               = Distribution,
       grid_id              = paste0(ModelID, "_Grid"),
       x                    = FeatureColNames,
       gam_columns          = GamColNames[1L:(min(length(GamColNames),9L))],
@@ -205,30 +274,34 @@ AutoH2oGAMMultiClass <- function(data,
 
   # MultiClass Start Up H2O----
   if(!GridTune) {
-    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    datatrain    <- h2o::as.h2o(dataTrain)
-    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
+    if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+    datatrain <- h2o::as.h2o(dataTrain, use_datatable = TRUE)
+    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
   }
 
-  # MultiClass Build Baseline Model----
-  if(!TrainOnFull) {
-    base_model <- h2o::h2o.gam(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      gam_columns      = GamColNames[1L:(min(length(GamColNames),9L))],
-      training_frame   = datatrain,
-      validation_frame = datavalidate,
-      family           = "multinomial",
-      model_id         = ModelID)
-  } else {
-    base_model <- h2o::h2o.gam(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      gam_columns      = GamColNames[1L:(min(length(GamColNames),9L))],
-      training_frame   = datatrain,
-      family           = "multinomial",
-      model_id         = ModelID)
-  }
+  # Define args ----
+  H2OArgs <- list()
+  H2OArgs[["x"]] <- FeatureColNames
+  H2OArgs[["y"]] <- TargetColumnName
+  H2OArgs[["gam_columns"]] <- GamColNames[1L:(min(length(GamColNames),9L))]
+  H2OArgs[["weights_column"]] <- WeightsColumn[1L]
+  H2OArgs[["training_frame"]] <- datatrain
+  H2OArgs[["validation_frame"]] <- datavalidate
+  H2OArgs[["family"]] <- Distribution[1L]
+  H2OArgs[["link"]] <- Link[1L]
+  H2OArgs[["model_id"]] <- ModelID[1L]
+  H2OArgs[["solver"]] <- Solver[1L]
+  H2OArgs[["alpha"]] <- Alpha[1L]
+  H2OArgs[["lambda"]] <- Lambda[1L]
+  H2OArgs[["lambda_search"]] <- LambdaSearch[1L]
+  H2OArgs[["nlambdas"]] <- NLambdas
+  H2OArgs[["standardize"]] <- Standardize[1L]
+  H2OArgs[["remove_collinear_columns"]] <- RemoveCollinearColumns
+  H2OArgs[["intercept"]] <- InterceptInclude[1L]
+  H2OArgs[["non_negative"]] <- NonNegativeCoefficients[1L]
+
+  # Build model ----
+  base_model <- do.call(h2o::h2o.gam, H2OArgs)
 
   # MultiClass Get Metrics----
   if(GridTune) {
@@ -388,8 +461,10 @@ AutoH2oGAMMultiClass <- function(data,
   }
 
   # MultiClass Evaluation Metrics Table----
-  EvaluationMetrics <- data.table::data.table(Metric = c("Accuracy", "MicroAUC", "temp"), Value = c(round(MetricAcc, 4),NA,round(EvalMetric, 4L)))
-  data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
+  if(!TrainOnFull) {
+    EvaluationMetrics <- data.table::data.table(Metric = c("Accuracy", "MicroAUC", "temp"), Value = c(round(MetricAcc, 4),NA,round(EvalMetric, 4L)))
+    data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
+  }
 
   # MultiClass Save Validation Data to File----
   if(SaveModelObjects & !TrainOnFull) {
@@ -412,7 +487,7 @@ AutoH2oGAMMultiClass <- function(data,
   # VI_Plot_Function
   if(!TrainOnFull) {
     VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-      ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
+      ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
         ggplot2::geom_bar(stat = "identity") +
         ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
         ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +

@@ -21,6 +21,7 @@ AutoXGBoostClassifier(
   Verbose = 0L,
   NumOfParDepPlots = 3L,
   NThreads = parallel::detectCores(),
+  LossFunction = "reg:logistic",
   eval_metric = "auc",
   TreeMethod = "hist",
   GridTune = FALSE,
@@ -70,6 +71,8 @@ AutoXGBoostClassifier(
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create.}
 
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
+
+\item{LossFunction}{Select from 'reg:logistic', "binary:logistic"}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
 
@@ -126,7 +129,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     TreeMethod = "hist",
     NThreads = parallel::detectCores(),
 
-    # Metadata arguments
+    # Metadata args
     model_path = normalizePath("./"),
     metadata_path = NULL,
     ModelID = "Test_Model_1",
@@ -134,40 +137,38 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
 
-    # Data arguments
+    # Data args
     data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%chin\%
+    FeatureColNames = names(data)[!names(data) \%in\%
       c("IDcol_1", "IDcol_2","Adrian")],
     IDcols = c("IDcol_1","IDcol_2"),
 
     # Model evaluation
+    LossFunction = 'reg:logistic',
     eval_metric = "auc",
     NumOfParDepPlots = 3L,
 
-    # Grid tuning arguments
+    # Grid tuning args
     PassInGrid = NULL,
-    GridTune = TRUE,
+    GridTune = FALSE,
     BaselineComparison = "default",
     MaxModelsInGrid = 10L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Verbose = 1L,
 
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL and the values in the
-    #    example will be used
+    # ML args
     Shuffles = 1L,
-    Trees = seq(50L, 500L, 50L),
-    eta = seq(0.05,0.40,0.05),
-    max_depth = seq(4L, 16L, 2L),
-    min_child_weight = seq(1.0, 10.0, 1.0),
-    subsample = seq(0.55, 1.0, 0.05),
-    colsample_bytree = seq(0.55, 1.0, 0.05))
+    Trees = 50L,
+    eta = 0.05,
+    max_depth = 4L,
+    min_child_weight = 1.0,
+    subsample = 0.55,
+    colsample_bytree = 0.55)
 }
 }
 \seealso{

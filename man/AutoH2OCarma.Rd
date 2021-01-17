@@ -6,8 +6,8 @@
 \usage{
 AutoH2OCARMA(
   AlgoType = "drf",
-  ExcludeAlgos = "XGBoost",
   data,
+  ModelPath = getwd(),
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
   TrainOnFull = FALSE,
@@ -42,23 +42,56 @@ AutoH2OCARMA(
   DataTruncate = FALSE,
   ZeroPadSeries = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
-  EvalMetric = "MAE",
-  GridTune = FALSE,
-  ModelCount = 1,
-  NTrees = 1000,
+  EvalMetric = "rmse",
+  NumOfParDepPlots = 0L,
   PartitionType = "timeseries",
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
   Timer = TRUE,
-  DebugMode = FALSE
+  DebugMode = FALSE,
+  ExcludeAlgos = "XGBoost",
+  GridTune = FALSE,
+  ModelCount = 1,
+  GridStrategy = "Cartesian",
+  MaxRuntimeSecs = 60 * 60 * 24,
+  StoppingRounds = 10,
+  NTrees = 1000,
+  LearnRate = 0.1,
+  LearnRateAnnealing = 1,
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRate = 1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO",
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
+  Distribution = "gaussian",
+  Link = "identity",
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE
 )
 }
 \arguments{
 \item{AlgoType}{Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, "automl" for H2O's AutoML algo, and "gam" for H2O's Generalized Additive Model.}
-
-\item{ExcludeAlgos}{For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
 
 \item{data}{Supply your full series data set here}
 
@@ -126,11 +159,7 @@ AutoH2OCARMA(
 
 \item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
 
-\item{GridTune}{Set to TRUE to run a grid tune}
-
-\item{ModelCount}{Set the number of models to try in the grid tune}
-
-\item{NTrees}{Select the number of trees you want to have built to train the model}
+\item{NumOfParDepPlots}{Set to zeros if you do not want any returned. Can set to a very large value and it will adjust to the max number of features if it's too high}
 
 \item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
 
@@ -141,6 +170,50 @@ AutoH2OCARMA(
 \item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
 \item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
+
+\item{ExcludeAlgos}{For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
+
+\item{GridTune}{Set to TRUE to run a grid tune}
+
+\item{ModelCount}{Set the number of models to try in the grid tune}
+
+\item{GridStrategy}{Default "Cartesian", models available include}
+
+\item{MaxRuntimeSecs}{Default 60*60*24, models available include}
+
+\item{StoppingRounds}{Default 10, models available include}
+
+\item{NTrees}{Select the number of trees you want to have built to train the model}
+
+\item{LearnRate}{Default 0.10, models available include gbm}
+
+\item{LearnRateAnnealing}{Default 1, models available include gbm}
+
+\item{MaxDepth}{Default 20, models available include drf, gbm}
+
+\item{SampleRate}{Default 0.632, models available include drf, gbm}
+
+\item{MTries}{Default 1, models available include drf}
+
+\item{ColSampleRate}{Default 1, model available include gbm}
+
+\item{ColSampleRatePerTree}{Default 1, models available include drf, gbm}
+
+\item{ColSampleRatePerTreeLevel}{Default  1, models available include drf, gbm}
+
+\item{MinRows}{Default 1, models available include drf, gbm}
+
+\item{NBins}{Default 20, models available include drf, gbm}
+
+\item{NBinsCats}{Default 1024, models available include drf, gbm}
+
+\item{NBinsTopLevel}{Default 1024, models available include drf, gbm}
+
+\item{HistogramType}{Default "AUTO". Select from AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"}
+
+\item{CategoricalEncoding}{Default "AUTO" models available include drf, gbm}
+
+\item{WeightsColumn}{NULL}
 }
 \value{
 See examples
@@ -152,7 +225,7 @@ AutoH2OCARMA Mutlivariate Forecasting with calendar variables, Holiday counts, h
 \dontrun{
 
 # Load data
-data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Ensure series have no missing dates (also remove series with more than 25\% missing values)
 data <- RemixAutoML::TimeSeriesFill(
@@ -192,20 +265,16 @@ Results <- RemixAutoML::AutoH2OCARMA(
   TimeGroups = c("weeks","months"),
 
   # Data Wrangling Features
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 138, 10 / 138),
   PartitionType = "random",
 
-  # Productionize
+  # Production args
   FC_Periods = 4L,
   TrainOnFull = FALSE,
-  EvalMetric = "RMSE",
-  GridTune = FALSE,
-  ModelCount = 5,
-  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  MaxMem = {gc();paste0(as.character(floor(max(32, as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) -32) / 1000000)),"G")},
   NThreads = parallel::detectCores(),
   Timer = TRUE,
+  DebugMode = TRUE,
 
   # Target Transformations
   TargetTransformation = FALSE,
@@ -215,10 +284,15 @@ Results <- RemixAutoML::AutoH2OCARMA(
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
 
-  # Features
-  AnomalyDetection = NULL,
+  # Calendar features
+  CalendarVariables = c("week", "wom", "month", "quarter", "year"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup",
+    "ChristmasGroup","OtherEcclesticalFeasts"),
+  TimeTrendVariable = TRUE,
   HolidayLags = 1:7,
   HolidayMovingAverages = 2:7,
+
+  # Time series features
   Lags = list("weeks" = c(1:4), "months" = c(1:3)),
   MA_Periods = list("weeks" = c(2:8), "months" = c(6:12)),
   SD_Periods = NULL,
@@ -226,14 +300,56 @@ Results <- RemixAutoML::AutoH2OCARMA(
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
   Quantiles_Selected = NULL,
+
+  # Bonus Features
   XREGS = NULL,
   FourierTerms = 2L,
-  CalendarVariables = c("week", "wom", "month", "quarter", "year"),
-  HolidayVariable = c("USPublicHolidays","EasterGroup",
-    "ChristmasGroup","OtherEcclesticalFeasts"),
-  TimeTrendVariable = TRUE,
+  AnomalyDetection = NULL,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+
+  # ML evaluation args
+  EvalMetric = "RMSE",
+  NumOfParDepPlots = 0L,
+
+  # ML grid tuning args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  ModelCount = 5,
+  MaxRuntimeSecs = 60*60*24,
+  StoppingRounds = 10,
+
+  # ML Args
   NTrees = 1000L,
-  DebugMode = TRUE)
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel  = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO",
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
+
+
+  Distribution = "gaussian",
+  Link = "identity",
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 
 UpdateMetrics <-
   Results$ModelInformation$EvaluationMetrics[

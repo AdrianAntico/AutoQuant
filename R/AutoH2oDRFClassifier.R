@@ -9,21 +9,36 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"
-#' @param Trees The maximum number of trees you want in your models
-#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
-#' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
-#' @param NThreads Set the number of threads you want to dedicate to the model building
-#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
-#' @param model_path A character string of your path file to where you want your output saved
-#' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
-#' @param ModelID A character string to name your model and output
-#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
+#' @param WeightsColumn Column name of a weights column
+#' @param H2OShutdown Set to TRUE to shutdown H2O after running the function
+#' @param H2OStartUp Defaults to TRUE which means H2O will be started inside the function
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
-#' @param H2OShutdown Set to TRUE to shutdown H2O after running the function
-#' @param HurdleModel Leave it set to FALSE
+#' @param ModelID A character string to name your model and output
+#' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
+#' @param NThreads Set the number of threads you want to dedicate to the model building
+#' @param model_path A character string of your path file to where you want your output saved
+#' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
+#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
+#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"
+#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param GridStrategy Default "Cartesian"
+#' @param MaxRuntimeSecs Default 86400
+#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
+#' @param StoppingRounds Default 10
+#' @param Trees The maximum number of trees you want in your models
+#' @param MaxDepth Default 20
+#' @param SampleRate Default 0.632
+#' @param MTries Default -1 means it will default to number of features divided by 3
+#' @param ColSampleRatePerTree Default 1
+#' @param ColSampleRatePerTreeLevel Default 1
+#' @param MinRows Default 1
+#' @param NBins Default 20
+#' @param NBinsCats Default 1024
+#' @param NBinsTopLevel Default 1024
+#' @param HistogramType Default "AUTO"
+#' @param CategoricalEncoding Default "AUTO"
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
@@ -43,6 +58,7 @@
 #'     NThreads = max(1L, parallel::detectCores() - 2L),
 #'     IfSaveModel = "mojo",
 #'     H2OShutdown = FALSE,
+#'     H2OStartUp = TRUE,
 #'
 #'     # Metadata arguments:
 #'     eval_metric = "auc",
@@ -61,13 +77,29 @@
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %chin%
-#'       c("IDcol_1", "IDcol_2","Adrian")],
+#'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2", "Adrian")],
+#'     WeightsColumn = NULL,
+#'
+#'     # Grid Tuning Args
+#'     GridStrategy = "Cartesian",
+#'     GridTune = FALSE,
+#'     MaxModelsInGrid = 10,
+#'     MaxRuntimeSecs = 60*60*24,
+#'     StoppingRounds = 10,
 #'
 #'     # Model args
 #'     Trees = 50L,
-#'     GridTune = FALSE,
-#'     MaxModelsInGrid = 10L)
+#'     MaxDepth = 20,
+#'     SampleRate = 0.632,
+#'     MTries = -1,
+#'     ColSampleRatePerTree = 1,
+#'     ColSampleRatePerTreeLevel = 1,
+#'     MinRows = 1,
+#'     NBins = 20,
+#'     NBinsCats = 1024,
+#'     NBinsTopLevel = 1024,
+#'     HistogramType = "AUTO",
+#'     CategoricalEncoding = "AUTO")
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -77,12 +109,9 @@ AutoH2oDRFClassifier <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
-                                 eval_metric = "auc",
-                                 Trees = 50L,
-                                 GridTune = FALSE,
+                                 WeightsColumn = NULL,
                                  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-                                 NThreads = max(1, parallel::detectCores()-2),
-                                 MaxModelsInGrid = 2,
+                                 NThreads = max(1L, parallel::detectCores() - 2L),
                                  model_path = NULL,
                                  metadata_path = NULL,
                                  ModelID = "FirstModel",
@@ -91,33 +120,51 @@ AutoH2oDRFClassifier <- function(data,
                                  SaveModelObjects = FALSE,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = FALSE,
-                                 HurdleModel = FALSE) {
+                                 H2OStartUp = TRUE,
+                                 GridTune = FALSE,
+                                 GridStrategy = "Cartesian",
+                                 MaxRuntimeSecs = 60*60*24,
+                                 StoppingRounds = 10,
+                                 MaxModelsInGrid = 2,
+                                 eval_metric = "auc",
+                                 Trees = 50L,
+                                 MaxDepth = 20L,
+                                 SampleRate = 0.632,
+                                 MTries = -1,
+                                 ColSampleRatePerTree = 1,
+                                 ColSampleRatePerTreeLevel  = 1,
+                                 MinRows = 1,
+                                 NBins = 20,
+                                 NBinsCats = 1024,
+                                 NBinsTopLevel = 1024,
+                                 HistogramType = "AUTO",
+                                 CategoricalEncoding = "AUTO") {
 
-  # data.table optimize----
+  # data.table optimize ----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
 
-  # Ensure model_path and metadata_path exists----
+  # Ensure model_path and metadata_path exists ----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
   if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
 
-  # Binary Check Arguments----
-  if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) return("eval_metric not in AUC, logloss")
-  if(Trees < 1L) return("Trees must be greater than 1")
-  if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1 & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1")
-  if(!is.null(model_path)) if(!is.character(model_path)) return("model_path needs to be a character type")
-  if(!is.null(metadata_path)) if(!is.character(metadata_path)) return("metadata_path needs to be a character type")
-  if(!is.character(ModelID) & !is.null(ModelID)) return("ModelID needs to be a character type")
-  if(NumOfParDepPlots < 0) return("NumOfParDepPlots needs to be a positive number")
-  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
-  if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
+  # Binary Check Arguments ----
+  if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) stop("eval_metric not in AUC, logloss")
+  if(Trees < 1L) stop("Trees must be greater than 1")
+  if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
+  if(MaxModelsInGrid < 1 & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1")
+  if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
+  if(!is.null(metadata_path)) if(!is.character(metadata_path)) stop("metadata_path needs to be a character type")
+  if(!is.character(ModelID) & !is.null(ModelID)) stop("ModelID needs to be a character type")
+  if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
+  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if(!(tolower(eval_metric) == "auc")) eval_metric <- tolower(eval_metric) else eval_metric <- toupper(eval_metric)
   if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
 
-  # Binary Target Name Storage----
+  # Binary Target Name Storage ----
   if(!is.character(TargetColumnName)) TargetColumnName <- names(data)[TargetColumnName]
 
-  # Binary Ensure data is a data.table----
+  # Binary Ensure data is a data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
@@ -129,8 +176,8 @@ AutoH2oDRFClassifier <- function(data,
     if(!is.null(TestData)) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
   }
 
-  # Binary Data Partition----
-  if(is.null(ValidationData) & is.null(TestData) & TrainOnFull == FALSE) {
+  # Binary Data Partition ----
+  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3L,
@@ -138,23 +185,30 @@ AutoH2oDRFClassifier <- function(data,
       PartitionType = "random",
       StratifyColumnNames = TargetColumnName,
       TimeColumnName = NULL)
-    data <- dataSets$TrainData
-    ValidationData <- dataSets$ValidationData
+    dataTrain <- dataSets$TrainData
+    dataTest <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
 
-  # Binary ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
+  # Create dataTrain if not exists ----
+  if(!exists("dataTrain")) dataTrain <- data
+  if(!exists("dataTest") && !TrainOnFull) dataTest <- ValidationData
 
-  # Binary ModelDataPrep----
-  if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
+  # Regression ModelDataPrep----
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  if(!TrainOnFull) {
+    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  }
+  if(!is.null(TestData)) {
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  }
 
-  # Binary ModelDataPrep----
-  if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
-
-  # Binary Save Names of data----
+  # Binary Save Names of data ----
   if(is.numeric(FeatureColNames)) {
-    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    Names <- data.table::as.data.table(names(dataTrain)[FeatureColNames])
     data.table::setnames(Names, "V1", "ColNames")
   } else {
     Names <- data.table::as.data.table(FeatureColNames)
@@ -166,39 +220,42 @@ AutoH2oDRFClassifier <- function(data,
   }
   if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
 
-  # Binary Grid Tune Check----
+  # Binary Grid Tune Check ----
   if(GridTune & !TrainOnFull) {
 
     # Binary Start Up H2O----
-    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+    if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
 
     # Binary Define data sets----
     datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
 
-    # Binary Grid Tune Search Criteria----
+    # Binary Grid Tune Search Criteria ----
     search_criteria  <- list(
-      strategy             = "RandomDiscrete",
-      max_runtime_secs     = 3600 * 24 * 7,
-      max_models           = MaxModelsInGrid,
-      seed                 = 1234,
-      stopping_rounds      = 10,
-      stopping_metric      = eval_metric,
-      stopping_tolerance   = 1e-3)
+      strategy = GridStrategy,
+      max_runtime_secs = MaxRuntimeSecs,
+      max_models = MaxModelsInGrid,
+      seed = 1234,
+      stopping_rounds = StoppingRounds,
+      stopping_metric = toupper(eval_metric),
+      stopping_tolerance = 1e-3)
 
-    # Binary Grid Parameters----
-    hyper_params <- list(
-      max_depth                        = c(4, 8, 12, 15),
-      balance_classes                  = c(TRUE, FALSE),
-      sample_rate                      = c(0.5, 0.75, 1.0),
-      col_sample_rate_per_tree         = c(0.5, 0.75, 1.0),
-      col_sample_rate_change_per_level = c(0.9, 1.0, 1.1),
-      min_rows                         = c(1, 5),
-      nbins                            = c(10, 20, 30),
-      nbins_cats                       = c(64, 256, 512),
-      histogram_type                   = c("UniformAdaptive","QuantilesGlobal","RoundRobin"))
+    # Binary Grid Parameters ----
+    hyper_params <- list()
+    hyper_params[["ntrees"]] <- Trees
+    hyper_params[["max_depth"]] <- MaxDepth
+    hyper_params[["sample_rate"]] <- SampleRate
+    hyper_params[["col_sample_rate_per_tree"]] <- ColSampleRatePerTree
+    hyper_params[["col_sample_rate_change_per_level"]] <- ColSampleRatePerTreeLevel
+    hyper_params[["min_rows"]] <- MinRows
+    hyper_params[["nbins"]] <- NBins
+    hyper_params[["nbins_cats"]] <- NBinsCats
+    hyper_params[["histogram_type"]] <- HistogramType
+    hyper_params[["nbins_top_level"]] <- NBinsTopLevel
+    hyper_params[["categorical_encoding"]] <- CategoricalEncoding
+    hyper_params[["mtries"]] <- MTries
 
-    # Binary Grid Train Model----
+    # Binary Grid Train Model ----
     grid <- h2o::h2o.grid(
       hyper_params         = hyper_params,
       search_criteria      = search_criteria,
@@ -217,40 +274,46 @@ AutoH2oDRFClassifier <- function(data,
       score_tree_interval  = 10,
       seed                 = 1234)
 
-    # Binary Get Best Model----
+    # Binary Get Best Model ----
     Grid_Out <- h2o::h2o.getGrid(
       grid_id = paste0(ModelID, "_Grid"),
       sort_by = eval_metric,
       decreasing = Decreasing)
 
-    # Binary Collect Best Grid Model----
+    # Binary Collect Best Grid Model ----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1L]])
   }
 
-  # Binary Start Up H2O----
+  # Binary Start Up H2O ----
   if(!GridTune) {
-    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    datatrain <- h2o::as.h2o(dataTrain)
-    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
+    if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+    datatrain <- h2o::as.h2o(dataTrain, use_datatable = TRUE)
+    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
   }
 
-  # Binary Build Baseline Model----
-  if(!TrainOnFull) {
-    base_model <- h2o::h2o.randomForest(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      training_frame   = datatrain,
-      validation_frame = datavalidate,
-      model_id         = ModelID,
-      ntrees           = Trees)
-  } else {
-    base_model <- h2o::h2o.randomForest(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      training_frame   = datatrain,
-      model_id         = ModelID,
-      ntrees           = Trees)
-  }
+  # Define args ----
+  H2OArgs <- list()
+  H2OArgs[["x"]] <- FeatureColNames
+  H2OArgs[["y"]] <- TargetColumnName
+  H2OArgs[["weights_column"]] <- WeightsColumn[1L]
+  H2OArgs[["training_frame"]] <- datatrain
+  H2OArgs[["validation_frame"]] <- datavalidate
+  H2OArgs[["model_id"]] <- ModelID[1L]
+  H2OArgs[["ntrees"]] <- Trees[1L]
+  H2OArgs[["max_depth"]] <- MaxDepth[1L]
+  H2OArgs[["sample_rate"]] <- SampleRate[1L]
+  H2OArgs[["col_sample_rate_per_tree"]] <- ColSampleRatePerTree[1L]
+  H2OArgs[["col_sample_rate_change_per_level"]] <- ColSampleRatePerTreeLevel[1L]
+  H2OArgs[["min_rows"]] <- MinRows[1L]
+  H2OArgs[["nbins"]] <- NBins[1L]
+  H2OArgs[["nbins_cats"]] <- NBinsCats[1L]
+  H2OArgs[["histogram_type"]] <- HistogramType[1L]
+  H2OArgs[["nbins_top_level"]] <- NBinsTopLevel[1L]
+  H2OArgs[["categorical_encoding"]] <- CategoricalEncoding[1L]
+  H2OArgs[["mtries"]] <- MTries[1L]
+
+  # Build model ----
+  base_model <- do.call(h2o::h2o.randomForest, H2OArgs)
 
   # Binary Get Metrics----
   if(GridTune & !TrainOnFull) {
@@ -419,7 +482,7 @@ AutoH2oDRFClassifier <- function(data,
     }
   }
 
-  # Binary Evaluation Calibration Plot----
+  # Binary Evaluation Calibration Plot ----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     EvaluationPlot <- EvalPlot(
       data = ValidationData,
@@ -557,7 +620,7 @@ AutoH2oDRFClassifier <- function(data,
 
   # VI_Plot_Function----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Variable, Percentage), y = Percentage, fill = Percentage)) +
+    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
       ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +

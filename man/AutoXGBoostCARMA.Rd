@@ -42,14 +42,19 @@ AutoXGBoostCARMA(
   SplitRatios = c(1 - 10/100, 10/100),
   TreeMethod = "hist",
   NThreads = max(1, parallel::detectCores() - 2L),
+  PartitionType = "random",
+  Timer = TRUE,
+  DebugMode = FALSE,
   EvalMetric = "MAE",
   GridTune = FALSE,
   GridEvalMetric = "mae",
   ModelCount = 1L,
   NTrees = 1000L,
-  PartitionType = "random",
-  Timer = TRUE,
-  DebugMode = FALSE
+  LearningRate = 0.03,
+  MaxDepth = 9L,
+  MinChildWeight = 1,
+  SubSample = 1,
+  ColSampleByTree = 1
 )
 }
 \arguments{
@@ -121,6 +126,12 @@ AutoXGBoostCARMA(
 
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
 
+\item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
+
+\item{Timer}{Setting to TRUE prints out the forecast number while it is building}
+
+\item{DebugMode}{Setting to TRUE generates printout of all header code comments during run time of function}
+
 \item{EvalMetric}{Select from "r2", "RMSE", "MSE", "MAE"}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
@@ -131,11 +142,15 @@ AutoXGBoostCARMA(
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
-\item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
+\item{LearningRate}{Learning Rate}
 
-\item{Timer}{Setting to TRUE prints out the forecast number while it is building}
+\item{MaxDepth}{Depth}
 
-\item{DebugMode}{Setting to TRUE generates printout of all header code comments during run time of function}
+\item{MinChildWeight}{Records in leaf}
+
+\item{SubSample}{Random forecast setting}
+
+\item{ColSampleByTree}{Self explanatory}
 }
 \value{
 See examples
@@ -228,7 +243,12 @@ XGBoostResults <- AutoXGBoostCARMA(
   HolidayVariable = c("USPublicHolidays","EasterGroup",
     "ChristmasGroup","OtherEcclesticalFeasts"),
   TimeTrendVariable = TRUE,
-  NTrees = 300)
+  NTrees = 300,
+  LearningRate = 0.03,
+  MaxDepth = 9L,
+  MinChildWeight = 1.0,
+  SubSample = 1.0,
+  ColSampleByTree = 1.0)
 
 UpdateMetrics <- print(
   XGBoostResults$ModelInformation$EvaluationMetrics[

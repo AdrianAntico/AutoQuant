@@ -326,15 +326,15 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @family Supervised Learning
 #' @param TaskType "GPU" or "CPU"
 #' @param Shuffles The number of shuffles you want to apply to each grid
-#' @param BootStrapType c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
 #' @param NTrees seq(1000L, 10000L, 1000L)
 #' @param Depth seq(4L, 16L, 2L)
 #' @param LearningRate seq(0.01,.10,0.01)
 #' @param L2_Leaf_Reg c(1.0:10.0)
 #' @param RandomStrength seq(1, 2, 0.1)
 #' @param BorderCount seq(32,256,32)
-#' @param GrowPolicy c("SymmetricTree", "Depthwise", "Lossguide")
 #' @param RSM CPU ONLY, Random subspace method.c(0.80, 0.85, 0.90, 0.95, 1.0)
+#' @param BootStrapType c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
+#' @param GrowPolicy c("SymmetricTree", "Depthwise", "Lossguide")
 #' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
 #' @export
 CatBoostParameterGrids <- function(TaskType = "CPU",
@@ -350,20 +350,19 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
                                    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide")) {
 
   # Create grid sets----
-  Grid <- data.table::CJ(
+  GridList <- list()
+  if(!is.null(NTrees)) GridList[["NTrees"]] <- sort(NTrees, decreasing = FALSE) else GridList[["NTrees"]] <- seq(1000L, 10000L, 1000L)
+  if(!is.null(Depth)) GridList[["Depth"]] <- sort(Depth, decreasing = FALSE) else GridList[["Depth"]] <- seq(4L, 16L, 2L)
+  if(!is.null(LearningRate)) GridList[["LearningRate"]] <- sort(LearningRate, decreasing = FALSE) else GridList[["LearningRate"]] <- seq(0.01,0.10,0.01)
+  if(!is.null(L2_Leaf_Reg)) GridList[["L2_Leaf_Reg"]] <- L2_Leaf_Reg else GridList[["L2_Leaf_Reg"]] <- seq(1.0, 10.0, 1.0)
+  if(!is.null(RandomStrength)) GridList[["RandomStrength"]] <- RandomStrength else GridList[["RandomStrength"]] <- seq(1,2,0.1)
+  if(!is.null(BorderCount)) GridList[["BorderCount"]] <- BorderCount else GridList[["BorderCount"]] <- seq(32,256,32)
+  if(!is.null(RSM)) GridList[["RSM"]] <- RSM else GridList[["RSM"]] <- c(0.80, 0.85, 0.90, 0.95, 1.0)
+  if(!is.null(BootStrapType)) GridList[["BootStrapType"]] <- BootStrapType else GridList[["BootStrapType"]] <- c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
+  if(!is.null(GrowPolicy)) GridList[["GrowPolicy"]] <- GrowPolicy else GridList[["GrowPolicy"]] <- c("SymmetricTree", "Depthwise", "Lossguide")
 
-    # Basis for creating parsimonous buckets----
-    NTrees = if(!is.null(NTrees)) sort(NTrees, decreasing = FALSE) else seq(1000L, 10000L, 1000L),
-    Depth = if(!is.null(Depth)) sort(Depth, decreasing = FALSE) else seq(4L, 16L, 2L),
-    LearningRate = if(!is.null(LearningRate)) sort(LearningRate, decreasing = FALSE) else seq(0.01,0.10,0.01),
-
-    # Random hyperparameters----
-    BorderCount = if(!is.null(BorderCount)) BorderCount else seq(32,256,32),
-    RandomStrength = if(!is.null(RandomStrength)) RandomStrength else seq(1,2,0.1),
-    L2_Leaf_Reg = if(!is.null(L2_Leaf_Reg)) L2_Leaf_Reg else seq(1.0, 10.0, 1.0),
-    RSM = if(!is.null(RSM)) RSM else c(0.80, 0.85, 0.90, 0.95, 1.0),
-    BootStrapType = if(!is.null(BootStrapType)) BootStrapType else c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = if(!is.null(GrowPolicy)) GrowPolicy else c("SymmetricTree", "Depthwise", "Lossguide"))
+  # Create grid ----
+  Grid <- do.call(data.table::CJ, GridList)
 
   # Filter out invalid grids----
   if(tolower(TaskType) == "gpu") {
@@ -385,8 +384,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   # Create grid sets----
   for(i in seq_len(Runs)) {
     if(i == 1L) {
-      Grids[[paste0("Grid_",i)]] <-
-        Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]]
+      Grids[[paste0("Grid_",i)]] <- Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]]
     } else {
       Grids[[paste0("Grid_",i)]] <- data.table::fsetdiff(
         Grid[NTrees <= unique(Grid[["NTrees"]])[min(i,N_NTrees)] & Depth <= unique(Grid[["Depth"]])[min(i,N_Depth)] & LearningRate <= unique(Grid[["LearningRate"]])[min(i,N_LearningRate)]],
@@ -932,6 +930,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
 #' @author Adrian Antico
 #' @family Supervised Learning
 #' @param counter Passthrough
+#' @param Objective Passthrough
 #' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
 #' @param eval_metric Passthrough
@@ -944,6 +943,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
 #' @export
 XGBoostClassifierParams <- function(counter = NULL,
                                     NThreads = -1L,
+                                    Objective = 'reg:logistic',
                                     BanditArmsN = NULL,
                                     eval_metric = NULL,
                                     task_type = NULL,
@@ -961,7 +961,7 @@ XGBoostClassifierParams <- function(counter = NULL,
     if(counter == 1L) {
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:logistic',
+        objective             = Objective,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -972,7 +972,7 @@ XGBoostClassifierParams <- function(counter = NULL,
       if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
       base_params <- list(
         booster               = "gbtree",
-        objective             = 'reg:logistic',
+        objective             = Objective,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -987,7 +987,7 @@ XGBoostClassifierParams <- function(counter = NULL,
     data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
     base_params <- list(
       booster               = "gbtree",
-      objective             = 'reg:logistic',
+      objective             = Objective,
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,
@@ -1089,7 +1089,7 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
                                      MinVal,
                                      calibEval) {
   if(tolower(grid_eval_metric) == "poisson") {
-    if(MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
+    if(MinVal > 0L && min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
       calibEval[, Metric := p1 - Target * log(p1 + 1)]
       Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
     }
@@ -1103,12 +1103,12 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
     calibEval[, Metric := (Target - p1) ^ 2L]
     Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
   } else if(tolower(grid_eval_metric) == "msle") {
-    if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
+    if(MinVal > 0L && min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
       calibEval[, Metric := (log(Target + 1) - log(p1 + 1)) ^ 2L]
       Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
     }
   } else if(tolower(grid_eval_metric) == "kl") {
-    if (MinVal > 0L & min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
+    if(MinVal > 0L && min(calibEval[["p1"]], na.rm = TRUE) > 0L) {
       calibEval[, Metric := Target * log((Target + 1) / (p1 + 1))]
       Metric <- calibEval[, mean(Metric, na.rm = TRUE)]
     }
@@ -1127,6 +1127,7 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
 #' @family Supervised Learning
 #' @param counter Passthrough
 #' @param num_class NULL
+#' @param Objective Passthrough
 #' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
 #' @param eval_metric Passthrough
@@ -1139,6 +1140,7 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
 #' @export
 XGBoostMultiClassParams <- function(counter = NULL,
                                     num_class=NULL,
+                                    Objective = 'multi:softmax',
                                     NThreads = -1L,
                                     BanditArmsN = NULL,
                                     eval_metric = NULL,
@@ -1158,7 +1160,7 @@ XGBoostMultiClassParams <- function(counter = NULL,
       base_params <- list(
         num_class             = num_class,
         booster               = "gbtree",
-        objective             = 'multi:softmax',
+        objective             = Objective,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -1169,7 +1171,7 @@ XGBoostMultiClassParams <- function(counter = NULL,
       base_params <- list(
         num_class             = num_class,
         booster               = "gbtree",
-        objective             = 'multi:softmax',
+        objective             = Objective,
         eval_metric           = tolower(eval_metric),
         nthread               = NThreads,
         max_bin               = 64L,
@@ -1185,7 +1187,7 @@ XGBoostMultiClassParams <- function(counter = NULL,
     base_params <- list(
       num_class             = num_class,
       booster               = "gbtree",
-      objective             = 'multi:softmax',
+      objective             = Objective,
       eval_metric           = tolower(eval_metric),
       nthread               = NThreads,
       max_bin               = 64L,

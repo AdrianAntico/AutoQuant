@@ -401,7 +401,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       # type
       grid_eval_metric = grid_eval_metric,
       eval_metric = "merror",
-      Objective = 'multi:softprob',
+      LossFunction = 'multi:softprob',
 
       # general args----
       TrainOnFull = TrainOnFull,

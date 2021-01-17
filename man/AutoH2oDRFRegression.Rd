@@ -11,26 +11,42 @@ AutoH2oDRFRegression(
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
-  TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
-  eval_metric = "RMSE",
-  Trees = 50,
-  GridTune = FALSE,
+  WeightsColumn = NULL,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
-  MaxModelsInGrid = 2,
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  IfSaveModel = "mojo",
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
+  TransformNumericColumns = NULL,
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
+    "Logit"),
   NumOfParDepPlots = 3,
-  ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE,
-  IfSaveModel = "mojo",
-  H2OShutdown = TRUE,
-  HurdleModel = FALSE
+  eval_metric = "RMSE",
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  MaxRuntimeSecs = 60 * 60 * 24,
+  StoppingRounds = 10,
+  MaxModelsInGrid = 2,
+  Trees = 50,
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO"
 )
 }
 \arguments{
@@ -46,21 +62,23 @@ AutoH2oDRFRegression(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
-\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
-
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
-
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
-
-\item{Trees}{The maximum number of trees you want in your models}
-
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+\item{WeightsColumn}{Column name of a weights column}
 
 \item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
 
 \item{NThreads}{Set the number of threads you want to dedicate to the model building}
 
-\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
+\item{H2OShutdown}{Set to TRUE to shutdown H2O inside the function}
+
+\item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
+
+\item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
+
+\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{SaveInfoToPDF}{Set to TRUE to save insights to PDF}
+
+\item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -68,17 +86,47 @@ AutoH2oDRFRegression(
 
 \item{ModelID}{A character string to name your model and output}
 
+\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
+
+\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
+
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
 
-\item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
 
-\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
-\item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
+\item{GridStrategy}{Default "Cartesian"}
 
-\item{H2OShutdown}{For use in other functions.}
+\item{MaxRuntimeSecs}{Default 86400}
 
-\item{HurdleModel}{Leave it set to FALSE}
+\item{StoppingRounds}{Default 10}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
+
+\item{Trees}{The maximum number of trees you want in your models}
+
+\item{MaxDepth}{Default 20}
+
+\item{SampleRate}{Default 0.632}
+
+\item{MTries}{Default -1 means it will default to number of features divided by 3}
+
+\item{ColSampleRatePerTree}{Default 1}
+
+\item{ColSampleRatePerTreeLevel}{Default 1}
+
+\item{MinRows}{Default 1}
+
+\item{NBins}{Default 20}
+
+\item{NBinsCats}{Default 1024}
+
+\item{NBinsTopLevel}{Default 1024}
+
+\item{HistogramType}{Default "AUTO". Select from AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"}
+
+\item{CategoricalEncoding}{Default "AUTO"}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
@@ -103,8 +151,9 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
 
     # Compute management
     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1, parallel::detectCores()-2),
+    NThreads = max(1L, parallel::detectCores() - 2L),
     H2OShutdown = TRUE,
+    H2OStartUp = TRUE,
     IfSaveModel = "mojo",
 
     # Model evaluation:
@@ -117,22 +166,41 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
-    # Data arguments:
+    # Data Args
+    data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%chin\%
+    FeatureColNames = names(data)[!names(data) \%in\%
       c("IDcol_1", "IDcol_2","Adrian")],
+    WeightsColumn = NULL,
     TransformNumericColumns = NULL,
     Methods = c("BoxCox", "Asinh", "Asin", "Log",
       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
-    # Model args
-    Trees = 50,
+    # Grid Tuning Args
+    GridStrategy = "Cartesian",
     GridTune = FALSE,
-    MaxModelsInGrid = 10)
+    MaxModelsInGrid = 10,
+    MaxRuntimeSecs = 60*60*24,
+    StoppingRounds = 10,
+
+    # ML Args
+    Trees = 50,
+    MaxDepth = 20,
+    SampleRate = 0.632,
+    MTries = -1,
+    ColSampleRatePerTree = 1,
+    ColSampleRatePerTreeLevel = 1,
+    MinRows = 1,
+    NBins = 20,
+    NBinsCats = 1024,
+    NBinsTopLevel = 1024,
+    HistogramType = "AUTO",
+    CategoricalEncoding = "AUTO")
 }
 }
 \seealso{

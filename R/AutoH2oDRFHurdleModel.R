@@ -191,8 +191,7 @@ AutoH2oDRFHurdleModel <- function(data,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
       IfSaveModel = IfSaveModel,
-      H2OShutdown = FALSE,
-      HurdleModel = TRUE)
+      H2OShutdown = FALSE)
 
     # data = data
     # ValidationData = ValidationData
@@ -234,8 +233,7 @@ AutoH2oDRFHurdleModel <- function(data,
       ReturnModelObjects = TRUE,
       SaveModelObjects = SaveModelObjects,
       IfSaveModel = IfSaveModel,
-      H2OShutdown = FALSE,
-      HurdleModel = TRUE)
+      H2OShutdown = FALSE)
   }
 
   # Store metadata----
@@ -268,27 +266,6 @@ AutoH2oDRFHurdleModel <- function(data,
     MDP_RemoveDates = TRUE,
     MDP_MissFactor = "0",
     MDP_MissNum = -1)
-
-  # ScoringData = data
-  # ModelObject = ClassModel
-  # ModelType = "mojo"
-  # H2OShutdown = FALSE
-  # MaxMem = "28G"
-  # JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m'
-  # ModelPath = Paths
-  # ModelID = "ModelTest"
-  # ReturnFeatures = TRUE
-  # TransformNumeric = FALSE
-  # BackTransNumeric = FALSE
-  # TargetColumnName = NULL
-  # TransformationObject = NULL
-  # TransID = NULL
-  # TransPath = NULL
-  # MDP_Impute = TRUE
-  # MDP_CharToFactor = TRUE
-  # MDP_RemoveDates = TRUE
-  # MDP_MissFactor = "0"
-  # MDP_MissNum = -1
 
   # Change name for classification----
   if(length(Buckets) == 1L) {
@@ -383,30 +360,7 @@ AutoH2oDRFHurdleModel <- function(data,
           ReturnModelObjects = TRUE,
           SaveModelObjects = SaveModelObjects,
           IfSaveModel = IfSaveModel,
-          H2OShutdown = FALSE,
-          HurdleModel = TRUE)
-
-        # data = trainBucket
-        # ValidationData = validBucket
-        # TestData = testBucket
-        # TargetColumnName = TargetColumnName
-        # FeatureColNames = FeatureNames
-        # TransformNumericColumns = TransformNumericColumns
-        # eval_metric = "RMSE"
-        # Trees = Trees
-        # GridTune = GridTune
-        # MaxMem = MaxMem
-        # NThreads = NThreads
-        # MaxModelsInGrid = MaxModelsInGrid
-        # model_path = Paths
-        # metadata_path = MetaDataPaths
-        # ModelID = ModelIDD
-        # NumOfParDepPlots = NumOfParDepPlots
-        # ReturnModelObjects = TRUE
-        # SaveModelObjects = SaveModelObjects
-        # IfSaveModel = IfSaveModel
-        # H2OShutdown = FALSE
-        # HurdleModel = TRUE
+          H2OShutdown = FALSE)
 
         # Store Model----
         RegressionModel <- RegressionModel$Model

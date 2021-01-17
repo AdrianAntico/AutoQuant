@@ -11,14 +11,13 @@ AutoH2oGAMMultiClass(
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
+  WeightsColumn = NULL,
   GamColNames = NULL,
   eval_metric = "logloss",
-  GridTune = FALSE,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
-  MaxModelsInGrid = 2,
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
@@ -26,7 +25,25 @@ AutoH2oGAMMultiClass(
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
   H2OShutdown = FALSE,
-  HurdleModel = FALSE
+  H2OStartUp = TRUE,
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 2,
+  Distribution = "multinomial",
+  Link = "Family_Default",
+  num_knots = NULL,
+  keep_gam_cols = TRUE,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE
 )
 }
 \arguments{
@@ -42,17 +59,15 @@ AutoH2oGAMMultiClass(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
+\item{WeightsColumn}{Weighted classification}
+
 \item{GamColNames}{GAM column names. Up to 9 features}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"}
 
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
-
 \item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
 
 \item{NThreads}{Set the number of threads you want to dedicate to the model building}
-
-\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
@@ -68,7 +83,39 @@ AutoH2oGAMMultiClass(
 
 \item{H2OShutdown}{Set to TRUE to have H2O shutdown after running this function}
 
-\item{HurdleModel}{Set to FALSE}
+\item{H2OStartUp}{Set to TRUE to start up H2O inside function}
+
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{GridStrategy}{"RandomDiscrete" or "Cartesian"}
+
+\item{StoppingRounds}{Iterations in grid tuning}
+
+\item{MaxRunTimeSecs}{Max run time in seconds}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
+
+\item{num_knots}{Numeric values for gam}
+
+\item{keep_gam_cols}{Logical}
+
+\item{Solver}{Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"}
+
+\item{Alpha}{Default NULL. Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.}
+
+\item{Lambda}{Default NULL. Regularization strength.}
+
+\item{LambdaSearch}{Default FALSE.}
+
+\item{NLambdas}{Default -1}
+
+\item{Standardize}{Default TRUE. Standardize numerical columns}
+
+\item{RemoveCollinearColumns}{Default FALSE. Removes some of the linearly dependent columns}
+
+\item{InterceptInclude}{Default TRUE}
+
+\item{NonNegativeCoefficients}{Default FALSE}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -100,14 +147,12 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) \%in\%
-     c("IDcol_1", "IDcol_2","Adrian")],
+   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+   WeightsColumn = NULL,
    GamColNames = GamCols,
    eval_metric = "logloss",
-   GridTune = FALSE,
    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
    NThreads = max(1, parallel::detectCores()-2),
-   MaxModelsInGrid = 10,
    model_path = normalizePath("./"),
    metadata_path = NULL,
    ModelID = "FirstModel",
@@ -115,7 +160,27 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
    H2OShutdown = FALSE,
-   HurdleModel = FALSE)
+   H2OStartUp = TRUE,
+
+   # ML args
+   num_knots = NULL,
+   keep_gam_cols = TRUE,
+   GridTune = FALSE,
+   GridStrategy = "Cartesian",
+   StoppingRounds = 10,
+   MaxRunTimeSecs = 3600 * 24 * 7,
+   MaxModelsInGrid = 10,
+   Distribution = "multinomial",
+   Link = "Family_Default",
+   Solver = "AUTO",
+   Alpha = NULL,
+   Lambda = NULL,
+   LambdaSearch = FALSE,
+   NLambdas = -1,
+   Standardize = TRUE,
+   RemoveCollinearColumns = FALSE,
+   InterceptInclude = TRUE,
+   NonNegativeCoefficients = FALSE)
 }
 }
 \seealso{

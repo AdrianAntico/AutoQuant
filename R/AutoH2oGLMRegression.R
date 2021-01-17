@@ -9,24 +9,44 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param Distribution "binomial", "quasibinomial"
-#' @param link identity, logit, log, inverse, tweedie
+#' @param RandomColNumbers Random effects column number indicies
+#' @param InteractionColNumbers Column numbers of the features you want to be pairwise interacted
+#' @param WeightsColumn Column name of a weights column
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param GridStrategy "RandomDiscrete" or "Cartesian"
+#' @param MaxRunTimeSecs Max run time in seconds
+#' @param StoppingRounds Iterations in grid tuning
+#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
 #' @param NThreads Set the number of threads you want to dedicate to the model building
-#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param SaveInfoToPDF Set to TRUE to save insights to PDF
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
-#' @param H2OShutdown For use in other functions.
-#' @param HurdleModel Set to FALSE
+#' @param H2OStartUp Defaults to TRUE which means H2O will be started inside the function
+#' @param H2OShutdown Set to TRUE to shutdown H2O inside the function
+#' @param Distribution "AUTO", "gaussian", "poisson", "gamma", "tweedie", "negativebinomial"
+#' @param Link "family_default", "identity", "log", "inverse", "tweedie"
+#' @param TweedieLinkPower See h2o docs for background
+#' @param TweedieVariancePower See h2o docs for background
+#' @param RandomDistribution Random effects family. Defaults NULL, otherwise it will run a hierarchical glm
+#' @param RandomLink Random effects link. Defaults NULL, otherwise it will run a hierarchical glm
+#' @param Solver Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"
+#' @param Alpha Default NULL. Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.
+#' @param Lambda Default NULL. Regularization strength.
+#' @param LambdaSearch Default FALSE.
+#' @param NLambdas Default -1
+#' @param Standardize Default TRUE. Standardize numerical columns
+#' @param RemoveCollinearColumns Default FALSE. Removes some of the linearly dependent columns
+#' @param InterceptInclude Default TRUE
+#' @param NonNegativeCoefficients Default FALSE
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data
@@ -46,6 +66,7 @@
 #'     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'     NThreads = max(1, parallel::detectCores()-2),
 #'     H2OShutdown = TRUE,
+#'     H2OStartUp = TRUE,
 #'     IfSaveModel = "mojo",
 #'
 #'     # Model evaluation:
@@ -58,23 +79,43 @@
 #'     ModelID = "FirstModel",
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,
+#'     SaveInfoToPDF = FALSE,
 #'
 #'     # Data arguments:
+#'     data = data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
 #'     TestData = NULL,
 #'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %chin%
+#'     FeatureColNames = names(data)[!names(data) %in%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
+#'     RandomColNumbers = NULL,
+#'     InteractionColNumbers = NULL,
+#'     WeightsColumn = NULL,
 #'     TransformNumericColumns = NULL,
-#'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'                 "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+#'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 #'
 #'     # Model args
 #'     GridTune = FALSE,
+#'     GridStrategy = "Cartesian",
+#'     StoppingRounds = 10,
+#'     MaxRunTimeSecs = 3600 * 24 * 7,
 #'     MaxModelsInGrid = 10,
 #'     Distribution = "gaussian",
-#'     link = "identity")
+#'     Link = "identity",
+#'     TweedieLinkPower = NULL,
+#'     TweedieVariancePower = NULL,
+#'     RandomDistribution = NULL,
+#'     RandomLink = NULL,
+#'     Solver = "AUTO",
+#'     Alpha = NULL,
+#'     Lambda = NULL,
+#'     LambdaSearch = FALSE,
+#'     NLambdas = -1,
+#'     Standardize = TRUE,
+#'     RemoveCollinearColumns = FALSE,
+#'     InterceptInclude = TRUE,
+#'     NonNegativeCoefficients = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export
@@ -84,24 +125,44 @@ AutoH2oGLMRegression <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
-                                 Distribution = "gaussian",
-                                 link = "identity",
-                                 TransformNumericColumns = NULL,
-                                 Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
-                                 eval_metric = "RMSE",
-                                 GridTune = FALSE,
+                                 RandomColNumbers = NULL,
+                                 InteractionColNumbers = NULL,
+                                 WeightsColumn = NULL,
                                  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                                  NThreads = max(1, parallel::detectCores()-2),
-                                 MaxModelsInGrid = 2,
+                                 ModelID = "FirstModel",
+                                 ReturnModelObjects = TRUE,
                                  model_path = NULL,
                                  metadata_path = NULL,
-                                 ModelID = "FirstModel",
-                                 NumOfParDepPlots = 3,
-                                 ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
+                                 SaveInfoToPDF = FALSE,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = TRUE,
-                                 HurdleModel = FALSE) {
+                                 H2OStartUp = TRUE,
+                                 TransformNumericColumns = NULL,
+                                 Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                                 NumOfParDepPlots = 3,
+                                 GridTune = FALSE,
+                                 GridStrategy = "Cartesian",
+                                 StoppingRounds = 10,
+                                 MaxRunTimeSecs = 3600 * 24 * 7,
+                                 MaxModelsInGrid = 2,
+                                 Distribution = "gaussian",
+                                 Link = "identity",
+                                 TweedieLinkPower = NULL,
+                                 TweedieVariancePower = NULL,
+                                 eval_metric = "RMSE",
+                                 RandomDistribution = NULL,
+                                 RandomLink = NULL,
+                                 Solver = "AUTO",
+                                 Alpha = NULL,
+                                 Lambda = NULL,
+                                 LambdaSearch = FALSE,
+                                 NLambdas = -1,
+                                 Standardize = TRUE,
+                                 RemoveCollinearColumns = FALSE,
+                                 InterceptInclude = TRUE,
+                                 NonNegativeCoefficients = FALSE) {
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -131,7 +192,6 @@ AutoH2oGLMRegression <- function(data,
 
   # Transform data, ValidationData, and TestData----
   if(!is.null(ValidationData) & !is.null(TransformNumericColumns)) {
-    MeanTrainTarget <- data[, mean(get(TargetColumnName))]
     Output <- AutoTransformationCreate(
       data,
       ColumnNames = TransformNumericColumns,
@@ -143,7 +203,7 @@ AutoH2oGLMRegression <- function(data,
     TransformationResults <- Output$FinalResults
 
     # Transform ValidationData----
-    ValidationData <- AutoTransformationScore(
+    dataTest <- AutoTransformationScore(
       ScoringData = ValidationData,
       Type = "Apply",
       FinalResults = TransformationResults,
@@ -171,27 +231,25 @@ AutoH2oGLMRegression <- function(data,
         PartitionType = "random",
         StratifyColumnNames = NULL,
         TimeColumnName = NULL)
-      data <- dataSets$TrainData
-      ValidationData <- dataSets$ValidationData
+      dataTrain <- dataSets$TrainData
+      dataTest <- dataSets$ValidationData
       TestData <- dataSets$TestData
-
-      # Mean of data----
-      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+      rm(dataSets)
 
       # Transform data sets----
       Output <- AutoTransformationCreate(
-        data,
+        dataTrain,
         ColumnNames = TransformNumericColumns,
         Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
         Path = model_path,
         TransID = ModelID,
         SaveOutput = SaveModelObjects)
-      data <- Output$Data
+      dataTrain <- Output$Data
       TransformationResults <- Output$FinalResults
 
-      # Transform ValidationData----
-      ValidationData <- AutoTransformationScore(
-        ScoringData = ValidationData,
+      # Transform dataTest ----
+      dataTest <- AutoTransformationScore(
+        ScoringData = dataTest,
         Type = "Apply",
         FinalResults = TransformationResults,
         TransID = NULL,
@@ -214,23 +272,31 @@ AutoH2oGLMRegression <- function(data,
         PartitionType = "random",
         StratifyColumnNames = NULL,
         TimeColumnName = NULL)
-      data <- dataSets$TrainData
-      ValidationData <- dataSets$ValidationData
+      dataTrain <- dataSets$TrainData
+      dataTest <- dataSets$ValidationData
       TestData <- dataSets$TestData
-      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
+      rm(dataSets)
     }
   }
 
-  # Regression ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
+  # Create dataTrain if not exists ----
+  if(!exists("dataTrain")) dataTrain <- data
+  if(!exists("dataTest") && !TrainOnFull) dataTest <- ValidationData
 
   # Regression ModelDataPrep----
-  if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
-  if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
-  if(is.character(TargetColumnName)) Target <- TargetColumnName else Target <- names(data)[TargetColumnName]
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  if(!TrainOnFull) {
+    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  }
+  if(!is.null(TestData)) {
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  }
 
   # Regression Get Min Value of Target Data----
-  MinVal <- min(data[[eval(Target)]], na.rm = TRUE)
+  MinVal <- min(data[[eval(TargetColumnName)]], na.rm = TRUE)
 
   # Regression Save Names of data----
   if(is.numeric(FeatureColNames)) {
@@ -248,52 +314,53 @@ AutoH2oGLMRegression <- function(data,
 
   # Regression Grid Tune Check----
   if(GridTune & !TrainOnFull) {
-    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+
+    # H2O init and data load
+    if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
     datatrain    <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
 
     # Regression Grid Tune Search Criteria----
     search_criteria  <- list(
-      strategy             = "RandomDiscrete",
-      max_runtime_secs     = 3600 * 24 * 7,
-      max_models           = MaxModelsInGrid,
-      seed                 = 1234,
-      stopping_rounds      = 10L,
-      stopping_metric      = toupper(eval_metric),
-      stopping_tolerance   = 1e-3)
+      strategy = GridStrategy,
+      max_runtime_secs = MaxRunTimeSecs,
+      max_models = MaxModelsInGrid,
+      seed = 1234,
+      stopping_rounds = StoppingRounds,
+      stopping_metric = toupper(eval_metric),
+      stopping_tolerance = 1e-3)
 
-    # Regression Grid Parameters----
-    if(Distribution == "tweedie") {
-      hyper_params <- list(
-        alpha = c(0,0.25,0.5,0.75,1),
-        lambda = c(0,0.01,0.05,0.10),
-        theta = c(1e-10, 0.01, 0.05, 0.10),
-        tweedie_link_power = c(1, 0.95, 0.90, 0.75),
-        tweedie_variance_power = c(0,0.25,0.50,0.75,1))
-    } else {
-      hyper_params <- list(
-        alpha = c(0,0.25,0.5,0.75,1),
-        lambda = c(0,0.01,0.05,0.10),
-        theta = c(1e-10, 0.01, 0.05, 0.10))
-    }
+    # Regression Grid Parameters ----
+    hyper_params <- list()
+    hyper_params[["solver"]] <- Solver
+    hyper_params[["alpha"]] <- Alpha
+    hyper_params[["lambda"]] <- Lambda
+    hyper_params[["lambda_search"]] <- LambdaSearch
+    hyper_params[["standardize"]] <- Standardize
+    hyper_params[["remove_collinear_columns"]] <- RemoveCollinearColumns
+    hyper_params[["intercept"]] <- InterceptInclude
+    hyper_params[["non_negative"]] <- NonNegativeCoefficients
+    hyper_params[["tweedie_link_power"]] <- TweedieLinkPower
+    hyper_params[["tweedie_variance_power"]] <- TweedieVariancePower
 
     # Link----
-    if(!is.null(link)) Link <- link else Link <- "identity"
+    if(is.null(Link)) Link <- "identity"
 
     # Regression Grid Train Model----
     grid <- h2o::h2o.grid(
-      hyper_params         = hyper_params,
-      search_criteria      = search_criteria,
-      is_supervised        = TRUE,
-      algorithm            = "glm",
-      grid_id              = paste0(ModelID, "_Grid"),
-      x                    = FeatureColNames,
-      y                    = TargetColumnName,
-      training_frame       = datatrain,
-      validation_frame     = datavalidate,
-      family               = Distribution,
-      link                 = Link,
-      seed                 = 1234)
+      hyper_params = hyper_params,
+      search_criteria = search_criteria,
+      is_supervised = TRUE,
+      algorithm = "glm",
+      grid_id = paste0(ModelID, "_Grid"),
+      x = FeatureColNames,
+      y = TargetColumnName,
+      weights_column = WeightsColumn,
+      training_frame = datatrain,
+      validation_frame = datavalidate,
+      family = Distribution,
+      link = Link,
+      seed = 1234)
 
     # Regression Get Best Model----
     Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID, "_Grid"), sort_by = eval_metric, decreasing = FALSE)
@@ -304,35 +371,43 @@ AutoH2oGLMRegression <- function(data,
 
   # Regression Start Up H2O----
   if(!GridTune) {
-    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    datatrain <- h2o::as.h2o(dataTrain)
-    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
-  } else {
-    datatrain <- h2o::as.h2o(data)
+    if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+    datatrain <- h2o::as.h2o(dataTrain, use_datatable = TRUE)
+    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
   }
 
   # Define link----
-  if(!GridTune) if(!is.null(link)) Link <- link else Link <- "identity"
+  if(!GridTune) if(is.null(Link)) Link <- "identity"
 
-  # Binary Build Baseline Model----
-  if(!TrainOnFull) {
-    base_model <- h2o::h2o.glm(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      training_frame   = datatrain,
-      validation_frame = datavalidate,
-      family           = Distribution,
-      link             = Link,
-      model_id         = ModelID)
-  } else {
-    base_model <- h2o::h2o.glm(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      training_frame   = datatrain,
-      family           = Distribution,
-      link             = Link,
-      model_id         = ModelID)
-  }
+  # Define ml args ----
+  H2OArgs <- list()
+  H2OArgs[["x"]] <- FeatureColNames
+  H2OArgs[["y"]] <- TargetColumnName
+  H2OArgs[["interactions"]] <- InteractionColNumbers
+  H2OArgs[["weights_column"]] <- WeightsColumn
+  if(!is.null(RandomDistribution) & !is.null(RandomLink)) H2OArgs[["HGLM"]] <- TRUE else H2OArgs[["HGLM"]] <- FALSE
+  H2OArgs[["training_frame"]] <- datatrain
+  H2OArgs[["validation_frame"]] <- datavalidate
+  H2OArgs[["family"]] <- Distribution[1L]
+  H2OArgs[["link"]] <- Link[1L]
+  H2OArgs[["model_id"]] <- ModelID
+  H2OArgs[["rand_family"]] <- RandomDistribution[1L]
+  H2OArgs[["rand_link"]] <- RandomLink[1L]
+  H2OArgs[["random_columns"]] <- RandomColNumbers
+  H2OArgs[["solver"]] <- Solver[1L]
+  H2OArgs[["alpha"]] <- Alpha[1L]
+  H2OArgs[["lambda"]] <- Lambda[1L]
+  H2OArgs[["lambda_search"]] <- LambdaSearch[1L]
+  H2OArgs[["nlambdas"]] <- NLambdas
+  H2OArgs[["standardize"]] <- Standardize[1L]
+  H2OArgs[["remove_collinear_columns"]] <- RemoveCollinearColumns
+  H2OArgs[["intercept"]] <- InterceptInclude[1L]
+  H2OArgs[["non_negative"]] <- NonNegativeCoefficients[1L]
+  H2OArgs[["tweedie_link_power"]] <- TweedieLinkPower[1L]
+  H2OArgs[["tweedie_variance_power"]] <- TweedieVariancePower[1L]
+
+  # Build model ----
+  base_model <- do.call(what = h2o::h2o.glm, args = H2OArgs)
 
   # Regression Grab Evaluation Metric----
   if(GridTune & !TrainOnFull) {
@@ -415,7 +490,7 @@ AutoH2oGLMRegression <- function(data,
   # Regression Save Model----
   if(SaveModelObjects) {
     if(tolower(IfSaveModel) == "mojo") {
-      SaveModel <- h2o::h2o.saveMojo(object = FinalModel, path = model_path, force = TRUE)
+      SaveModel <- h2o::h2o.save_mojo(object = FinalModel, path = model_path, force = TRUE)
       h2o::h2o.download_mojo(
         model = FinalModel,
         path = model_path,
@@ -523,7 +598,7 @@ AutoH2oGLMRegression <- function(data,
     EvaluationPlot <- EvalPlot(
       data = ValidationData,
       PredictionColName = "Predict",
-      TargetColName = Target,
+      TargetColName = TargetColumnName,
       GraphType = "calibration",
       PercentileBucket = 0.05,
       aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -549,7 +624,7 @@ AutoH2oGLMRegression <- function(data,
     EvaluationBoxPlot <- EvalPlot(
       data = ValidationData,
       PredictionColName = "Predict",
-      TargetColName = Target,
+      TargetColName = TargetColumnName,
       GraphType = "boxplot",
       PercentileBucket = 0.05,
       aggrfun = function(x) mean(x, na.rm = TRUE))
@@ -617,7 +692,7 @@ AutoH2oGLMRegression <- function(data,
           Out <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "Predict",
-            TargetColName = Target,
+            TargetColName = TargetColumnName,
             IndepVar = gsub("\\..*","",VariableImportance[i, Variable]),
             GraphType = "calibration",
             PercentileBucket = 0.05,
@@ -630,7 +705,7 @@ AutoH2oGLMRegression <- function(data,
           Out1 <- ParDepCalPlots(
             data = ValidationData,
             PredictionColName = "Predict",
-            TargetColName = Target,
+            TargetColName = TargetColumnName,
             IndepVar = gsub("\\..*","",VariableImportance[i, Variable]),
             GraphType = "boxplot",
             PercentileBucket = 0.05,
@@ -666,13 +741,13 @@ AutoH2oGLMRegression <- function(data,
     if(TargetColumnName == "Target") {
       TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
     } else {
-      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", eval(TargetColumnName)))]
     }
   }
 
-  # VI_Plot_Function
+  # VI_Plot_Function ----
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1L:min(10L, .N)], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
+    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
       ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
@@ -681,6 +756,36 @@ AutoH2oGLMRegression <- function(data,
       ggplot2::xlab("Top Model Features") +
       ggplot2::ylab("Value") +
       ggplot2::theme(legend.position = "none")
+  }
+
+  # Save PDF of model information ----
+  if(!TrainOnFull & SaveInfoToPDF) {
+    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
+    ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL, if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL)
+    TableMetrics <- list(EvaluationMetrics, if(!is.null(VariableImportance)) VariableImportance else NULL)
+    PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "EvaluationPlots",
+      Tables = FALSE,
+      ObjectList = EvalPlotList,
+      Title = "Model Evaluation Plots",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "PartialDependencePlots",
+      Tables = FALSE,
+      ObjectList = ParDepList,
+      Title = "Partial Dependence Calibration Plots",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "Metrics_and_Importances",
+      Tables = TRUE,
+      MaxPages = 100,
+      ObjectList = TableMetrics,
+      Title = "Model Metrics and Variable Importances",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    while(grDevices::dev.cur() > 1) grDevices::dev.off()
   }
 
   # Regression Return Objects----

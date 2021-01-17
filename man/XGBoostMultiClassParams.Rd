@@ -7,6 +7,7 @@
 XGBoostMultiClassParams(
   counter = NULL,
   num_class = NULL,
+  Objective = "multi:softmax",
   NThreads = -1L,
   BanditArmsN = NULL,
   eval_metric = NULL,
@@ -22,6 +23,8 @@ XGBoostMultiClassParams(
 \item{counter}{Passthrough}
 
 \item{num_class}{NULL}
+
+\item{Objective}{Passthrough}
 
 \item{NThreads}{= -1L,}
 

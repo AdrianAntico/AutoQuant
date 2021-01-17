@@ -1,7 +1,7 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
-Version: 0.2.8
-Date: 2020-12-20
+Version: 0.2.9
+Date: 2021-01-17
 Authors@R: 
     c(person(given = "Adrian",
              family = "Antico",
@@ -11,7 +11,7 @@ Authors@R:
       person("Jan","Gorecki", role="ctb"),
       person("Solomon","Daner", role="ctb"))
 Maintainer: Adrian Antico <adrianantico@gmail.com>
-Description: R package for the automation of machine learning, forecasting, feature engineering, model evaluation, model interpretation, data generation, and recommenders. Build using data.table for all tabular data-related tasks.
+Description: R package for the automation of machine learning, forecasting, feature engineering, model evaluation, model interpretation, data generation, and recommenders. Built using data.table for all tabular data-related tasks.
 License: MPL-2.0 | file LICENSE
 URL: https://github.com/AdrianAntico/RemixAutoML
 BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
@@ -29,7 +29,7 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 NeedsCompilation: no
-Packaged: 2020-12-20 14:00:00 UTC
+Packaged: 2021-01-17 14:00:00 UTC
 RoxygenNote: 7.1.1
 SystemRequirements: Java (>= 7.0)
 Author: Adrian Antico [aut, cre], Douglas Pestana [ctb]

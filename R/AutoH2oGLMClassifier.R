@@ -7,24 +7,44 @@
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
-#' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
+#' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param Distribution "binomial", "quasibinomial"
-#' @param link identity, logit, log, inverse, tweedie
-#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"
+#' @param RandomColNumbers Random effects column number indicies
+#' @param InteractionColNumbers Column numbers of the features you want to be pairwise interacted
+#' @param WeightsColumn Column name of a weights column
+#' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
+#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
+#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "auc"
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param GridStrategy "RandomDiscrete" or "Cartesian"
+#' @param MaxRunTimeSecs Max run time in seconds
+#' @param StoppingRounds Iterations in grid tuning
+#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
 #' @param NThreads Set the number of threads you want to dedicate to the model building
-#' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
-#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
+#' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param SaveInfoToPDF Set to TRUE to save insights to PDF
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
-#' @param H2OShutdown Set to TRUE to shutdown H2O after running the function
-#' @param HurdleModel Set to FALSE
+#' @param H2OStartUp Defaults to TRUE which means H2O will be started inside the function
+#' @param H2OShutdown Set to TRUE to shutdown H2O inside the function
+#' @param Distribution "binomial", "fractionalbinomial", "quasibinomial"
+#' @param link identity, logit, log, inverse, tweedie
+#' @param RandomDistribution Random effects family. Defaults NULL, otherwise it will run a hierarchical glm
+#' @param RandomLink Random effects link. Defaults NULL, otherwise it will run a hierarchical glm
+#' @param Solver Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"
+#' @param Alpha Default NULL. Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.
+#' @param Lambda Default NULL. Regularization strength.
+#' @param LambdaSearch Default FALSE.
+#' @param NLambdas Default -1
+#' @param Standardize Default TRUE. Standardize numerical columns
+#' @param RemoveCollinearColumns Default FALSE. Removes some of the linearly dependent columns
+#' @param InterceptInclude Default TRUE
+#' @param NonNegativeCoefficients Default FALSE
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
@@ -39,28 +59,59 @@
 #'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGLMClassifier(
-#'    data,
-#'    TrainOnFull = FALSE,
-#'    ValidationData = NULL,
-#'    TestData = NULL,
-#'    TargetColumnName = "Adrian",
-#'    FeatureColNames = names(data)[!names(data) %chin% c("IDcol_1", "IDcol_2","Adrian")],
-#'    Distribution = "binomial",
-#'    link = "logit",
-#'    eval_metric = "auc",
-#'    GridTune = FALSE,
-#'    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-#'    NThreads = max(1, parallel::detectCores()-2),
-#'    MaxModelsInGrid = 10,
-#'    model_path = NULL,
-#'    metadata_path = NULL,
-#'    ModelID = "FirstModel",
-#'    NumOfParDepPlots = 3,
-#'    ReturnModelObjects = TRUE,
-#'    SaveModelObjects = FALSE,
-#'    IfSaveModel = "mojo",
-#'    H2OShutdown = FALSE,
-#'    HurdleModel = FALSE)
+#'
+#'     # Compute management
+#'     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+#'     NThreads = max(1, parallel::detectCores()-2),
+#'     H2OShutdown = TRUE,
+#'     H2OStartUp = TRUE,
+#'     IfSaveModel = "mojo",
+#'
+#'     # Model evaluation args
+#'     eval_metric = "auc",
+#'     NumOfParDepPlots = 3,
+#'
+#'     # Metadata args
+#'     model_path = NULL,
+#'     metadata_path = NULL,
+#'     ModelID = "FirstModel",
+#'     ReturnModelObjects = TRUE,
+#'     SaveModelObjects = FALSE,
+#'     SaveInfoToPDF = FALSE,
+#'
+#'     # Data args
+#'     data = data,
+#'     TrainOnFull = FALSE,
+#'     ValidationData = NULL,
+#'     TestData = NULL,
+#'     TargetColumnName = "Adrian",
+#'     FeatureColNames = names(data)[!names(data) %in%
+#'       c("IDcol_1", "IDcol_2","Adrian")],
+#'     RandomColNumbers = NULL,
+#'     InteractionColNumbers = NULL,
+#'     WeightsColumn = NULL,
+#'     TransformNumericColumns = NULL,
+#'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+#'
+#'     # ML args
+#'     GridTune = FALSE,
+#'     GridStrategy = "Cartesian",
+#'     StoppingRounds = 10,
+#'     MaxRunTimeSecs = 3600 * 24 * 7,
+#'     MaxModelsInGrid = 10,
+#'     Distribution = "binomial",
+#'     Link = "logit",
+#'     RandomDistribution = NULL,
+#'     RandomLink = NULL,
+#'     Solver = "AUTO",
+#'     Alpha = NULL,
+#'     Lambda = NULL,
+#'     LambdaSearch = FALSE,
+#'     NLambdas = -1,
+#'     Standardize = TRUE,
+#'     RemoveCollinearColumns = FALSE,
+#'     InterceptInclude = TRUE,
+#'     NonNegativeCoefficients = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -70,47 +121,67 @@ AutoH2oGLMClassifier <- function(data,
                                  TestData = NULL,
                                  TargetColumnName = NULL,
                                  FeatureColNames = NULL,
-                                 Distribution = "binomial",
-                                 link = "logit",
-                                 eval_metric = "auc",
-                                 GridTune = FALSE,
+                                 RandomColNumbers = NULL,
+                                 InteractionColNumbers = NULL,
+                                 WeightsColumn = NULL,
                                  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                                  NThreads = max(1, parallel::detectCores()-2),
-                                 MaxModelsInGrid = 2,
+                                 ModelID = "FirstModel",
+                                 ReturnModelObjects = TRUE,
                                  model_path = NULL,
                                  metadata_path = NULL,
-                                 ModelID = "FirstModel",
-                                 NumOfParDepPlots = 3,
-                                 ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
+                                 SaveInfoToPDF = FALSE,
                                  IfSaveModel = "mojo",
-                                 H2OShutdown = FALSE,
-                                 HurdleModel = FALSE) {
+                                 H2OShutdown = TRUE,
+                                 H2OStartUp = TRUE,
+                                 TransformNumericColumns = NULL,
+                                 Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                                 MaxModelsInGrid = 2,
+                                 NumOfParDepPlots = 3,
+                                 GridTune = FALSE,
+                                 GridStrategy = "Cartesian",
+                                 StoppingRounds = 10,
+                                 MaxRunTimeSecs = 3600 * 24 * 7,
+                                 Distribution = "binomial",
+                                 Link = "logit",
+                                 eval_metric = "auc",
+                                 RandomDistribution = NULL,
+                                 RandomLink = NULL,
+                                 Solver = "AUTO",
+                                 Alpha = NULL,
+                                 Lambda = NULL,
+                                 LambdaSearch = FALSE,
+                                 NLambdas = -1,
+                                 Standardize = TRUE,
+                                 RemoveCollinearColumns = FALSE,
+                                 InterceptInclude = TRUE,
+                                 NonNegativeCoefficients = FALSE) {
 
-  # data.table optimize----
+  # data.table optimize ----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
 
-  # Ensure model_path and metadata_path exists----
+  # Ensure model_path and metadata_path exists ----
   if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
   if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
 
-  # Binary Check Arguments----
-  if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) return("eval_metric not in AUC, logloss")
-  if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1 & GridTune) return("MaxModelsInGrid needs to be at least 1")
-  if(!is.null(model_path)) if(!is.character(model_path)) return("model_path needs to be a character type")
-  if(!is.null(metadata_path)) if(!is.character(metadata_path)) return("metadata_path needs to be a character type")
-  if(!is.character(ModelID) & !is.null(ModelID)) return("ModelID needs to be a character type")
-  if(NumOfParDepPlots < 0) return("NumOfParDepPlots needs to be a positive number")
-  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
-  if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
+  # Binary Check Arguments ----
+  if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) stop("eval_metric not in AUC, logloss")
+  if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
+  if(MaxModelsInGrid < 1 & GridTune) stop("MaxModelsInGrid needs to be at least 1")
+  if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
+  if(!is.null(metadata_path)) if(!is.character(metadata_path)) stop("metadata_path needs to be a character type")
+  if(!is.character(ModelID) & !is.null(ModelID)) stop("ModelID needs to be a character type")
+  if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
+  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if(!(tolower(eval_metric) == "auc")) eval_metric <- tolower(eval_metric) else eval_metric <- toupper(eval_metric)
   if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
 
-  # Binary Target Name Storage----
+  # Binary Target Name Storage ----
   if(!is.character(TargetColumnName)) TargetColumnName <- names(data)[TargetColumnName]
 
-  # Binary Ensure data is a data.table----
+  # Binary Ensure data is a data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
@@ -122,7 +193,7 @@ AutoH2oGLMClassifier <- function(data,
     if(!is.null(TestData)) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
   }
 
-  # Binary Data Partition----
+  # Binary Data Partition ----
   if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
     dataSets <- AutoDataPartition(
       data,
@@ -131,19 +202,30 @@ AutoH2oGLMClassifier <- function(data,
       PartitionType = "random",
       StratifyColumnNames = TargetColumnName,
       TimeColumnName = NULL)
-    data <- dataSets$TrainData
-    ValidationData <- dataSets$ValidationData
+    dataTrain <- dataSets$TrainData
+    dataTest <- dataSets$ValidationData
     TestData <- dataSets$TestData
   }
 
-  # Binary ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = data, Impute = FALSE, CharToFactor = TRUE)
-  if(!TrainOnFull) dataTest <- ModelDataPrep(data = ValidationData, Impute = FALSE, CharToFactor = TRUE)
-  if(!is.null(TestData)) TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE)
+  # Create dataTrain if not exists ----
+  if(!exists("dataTrain")) dataTrain <- data
+  if(!exists("dataTest") && !TrainOnFull) dataTest <- ValidationData
+
+  # Regression ModelDataPrep----
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  if(!TrainOnFull) {
+    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  }
+  if(!is.null(TestData)) {
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
+  }
 
   # Binary Save Names of data----
   if(is.numeric(FeatureColNames)) {
-    Names <- data.table::as.data.table(names(data)[FeatureColNames])
+    Names <- data.table::as.data.table(names(dataTrain)[FeatureColNames])
     data.table::setnames(Names, "V1", "ColNames")
   } else {
     Names <- data.table::as.data.table(FeatureColNames)
@@ -157,80 +239,93 @@ AutoH2oGLMClassifier <- function(data,
 
   # Binary Grid Tune Check----
   if(GridTune & !TrainOnFull) {
-    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+    if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     datavalidate <- h2o::as.h2o(dataTest)
 
     # Binary Grid Tune Search Criteria----
-    search_criteria <- list(
-      strategy             = "RandomDiscrete",
-      max_runtime_secs     = 3600 * 24 * 7,
-      max_models           = MaxModelsInGrid,
-      seed                 = 1234,
-      stopping_rounds      = 10,
-      stopping_metric      = eval_metric,
-      stopping_tolerance   = 1e-3)
+    search_criteria  <- list(
+      strategy = GridStrategy,
+      max_runtime_secs = MaxRunTimeSecs,
+      max_models = MaxModelsInGrid,
+      seed = 1234,
+      stopping_rounds = StoppingRounds,
+      stopping_metric = toupper(eval_metric),
+      stopping_tolerance = 1e-3)
 
-    # Binary Grid Parameters----
-    hyper_params <- list(
-      alpha = c(0,0.25,0.5,0.75,1),
-      lambda = c(0,0.01,0.05,0.10),
-      theta = c(1e-10, 0.01, 0.05, 0.10))
+    # Binary Grid Parameters ----
+    hyper_params <- list()
+    hyper_params[["solver"]] <- Solver
+    hyper_params[["alpha"]] <- Alpha
+    hyper_params[["lambda"]] <- Lambda
+    hyper_params[["lambda_search"]] <- LambdaSearch
+    hyper_params[["standardize"]] <- Standardize
+    hyper_params[["remove_collinear_columns"]] <- RemoveCollinearColumns
+    hyper_params[["intercept"]] <- InterceptInclude
+    hyper_params[["non_negative"]] <- NonNegativeCoefficients
 
-    # Link----
-    if(!is.null(link)) Link <- link else Link <- "logit"
+    # Link ----
+    if(is.null(Link)) Link <- "logit"
 
-    # Binary Grid Train Model----
+    # Binary Grid Train Model ----
     grid <- h2o::h2o.grid(
-      hyper_params         = hyper_params,
-      search_criteria      = search_criteria,
-      is_supervised        = TRUE,
-      algorithm            = "glm",
-      grid_id              = paste0(ModelID, "_Grid"),
-      x                    = FeatureColNames,
-      y                    = TargetColumnName,
-      training_frame       = datatrain,
-      validation_frame     = datavalidate,
-      link                 = Link)
+      hyper_params = hyper_params,
+      search_criteria = search_criteria,
+      is_supervised = TRUE,
+      algorithm = "glm",
+      grid_id = paste0(ModelID, "_Grid"),
+      x = FeatureColNames,
+      y = TargetColumnName,
+      training_frame = datatrain,
+      validation_frame = datavalidate,
+      link = Link)
 
-    # Binary Get Best Model----
+    # Binary Get Best Model ----
     Grid_Out   <- h2o::h2o.getGrid(grid_id = paste0(ModelID, "_Grid"), sort_by = eval_metric, decreasing = Decreasing)
 
-    # Binary Collect Best Grid Model----
+    # Binary Collect Best Grid Model ----
     grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1L]])
   }
 
-  # Binary Start Up H2O----
+  # Binary Start Up H2O ----
   if(!GridTune) {
-    if(!HurdleModel) h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-    datatrain <- h2o::as.h2o(dataTrain)
-    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest)
+    if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+    datatrain <- h2o::as.h2o(dataTrain, use_datatable = TRUE)
+    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
   }
 
-  # Define link----
-  if(!GridTune) if(!is.null(link)) Link <- link else Link <- "logit"
+  # Define link ----
+  if(!GridTune) if(is.null(Link)) Link <- "logit"
 
-  # Binary Build Baseline Model----
-  if(!TrainOnFull) {
-    base_model <- h2o::h2o.glm(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      training_frame   = datatrain,
-      validation_frame = datavalidate,
-      family           = Distribution,
-      link             = Link,
-      model_id         = ModelID)
-  } else {
-    base_model <- h2o::h2o.glm(
-      x                = FeatureColNames,
-      y                = TargetColumnName,
-      training_frame   = datatrain,
-      family           = Distribution,
-      link             = Link,
-      model_id         = ModelID)
-  }
+  # Define ml args ----
+  H2OArgs <- list()
+  H2OArgs[["x"]] <- FeatureColNames
+  H2OArgs[["y"]] <- TargetColumnName
+  H2OArgs[["interactions"]] <- InteractionColNumbers
+  H2OArgs[["weights_column"]] <- WeightsColumn[1L]
+  if(!is.null(RandomDistribution) & !is.null(RandomLink)) H2OArgs[["HGLM"]] <- TRUE else H2OArgs[["HGLM"]] <- FALSE
+  H2OArgs[["training_frame"]] <- datatrain
+  H2OArgs[["validation_frame"]] <- datavalidate
+  H2OArgs[["family"]] <- Distribution[1L]
+  H2OArgs[["link"]] <- Link[1L]
+  H2OArgs[["model_id"]] <- ModelID[1L]
+  H2OArgs[["rand_family"]] <- RandomDistribution[1L]
+  H2OArgs[["rand_link"]] <- RandomLink[1L]
+  H2OArgs[["random_columns"]] <- RandomColNumbers
+  H2OArgs[["solver"]] <- Solver[1L]
+  H2OArgs[["alpha"]] <- Alpha[1L]
+  H2OArgs[["lambda"]] <- Lambda[1L]
+  H2OArgs[["lambda_search"]] <- LambdaSearch[1L]
+  H2OArgs[["nlambdas"]] <- NLambdas[1L]
+  H2OArgs[["standardize"]] <- Standardize[1L]
+  H2OArgs[["remove_collinear_columns"]] <- RemoveCollinearColumns
+  H2OArgs[["intercept"]] <- InterceptInclude[1L]
+  H2OArgs[["non_negative"]] <- NonNegativeCoefficients[1L]
 
-  # Binary Get Metrics----
+  # Build model ----
+  base_model <- do.call(what = h2o::h2o.glm, args = H2OArgs)
+
+  # Binary Get Metrics ----
   if(GridTune & !TrainOnFull) {
     if(!is.null(TestData)) {
       datatest <- h2o::as.h2o(TestData)
@@ -251,7 +346,7 @@ AutoH2oGLMClassifier <- function(data,
     BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatrain)
   }
 
-  # Binary Evaluate Metrics----
+  # Binary Evaluate Metrics ----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     if(GridTune & !TrainOnFull) {
       if(tolower(eval_metric) == "auc") {
@@ -314,7 +409,7 @@ AutoH2oGLMClassifier <- function(data,
     FinalModel <- base_model
   }
 
-  # Binary Save Final Model----
+  # Binary Save Final Model ----
   if(SaveModelObjects) {
     if(tolower(IfSaveModel) == "mojo") {
       SaveModel <- h2o::h2o.saveMojo(object = FinalModel, path = model_path,force = TRUE)
@@ -329,7 +424,7 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary Score Final Test Data----
+  # Binary Score Final Test Data ----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     if(!is.null(TestData)) {
       Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datatest))
@@ -354,17 +449,17 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary Variable Importance----
+  # Binary Variable Importance ----
   VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
 
-  # Binary Format Variable Importance Table----
+  # Binary Format Variable Importance Table ----
   data.table::setnames(VariableImportance, c("variable","relative_importance","scaled_importance","percentage"), c("Variable","RelativeImportance","ScaledImportance","Percentage"))
   VariableImportance[, ':=' (
     RelativeImportance = round(RelativeImportance, 4L),
     ScaledImportance = round(ScaledImportance, 4L),
     Percentage = round(Percentage, 4L))]
 
-  # Binary Save Variable Importance----
+  # Binary Save Variable Importance ----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
@@ -373,10 +468,10 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary H2O Shutdown----
+  # Binary H2O Shutdown ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # Binary Create Validation Data----
+  # Binary Create Validation Data ----
   if(!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
   } else if(!TrainOnFull) {
@@ -385,10 +480,10 @@ AutoH2oGLMClassifier <- function(data,
     ValidationData <- data.table::as.data.table(cbind(dataTrain, Predict))
   }
 
-  # Binary Change Prediction Name----
+  # Binary Change Prediction Name ----
   data.table::setnames(ValidationData, "predict", "Predict")
 
-  # Binary Save Validation Data to File----
+  # Binary Save Validation Data to File ----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
@@ -397,7 +492,7 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary Evaluation Calibration Plot----
+  # Binary Evaluation Calibration Plot ----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     EvaluationPlot <- EvalPlot(
       data = ValidationData,
@@ -416,7 +511,7 @@ AutoH2oGLMClassifier <- function(data,
       aggrfun = function(x) mean(x, na.rm = TRUE))
   }
 
-  # Binary Evaluation Plot Update Title----
+  # Binary Evaluation Plot Update Title ----
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     if(GridTune) {
       EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("GLM Calibration Evaluation Plot: ", toupper(eval_metric)," = ", round(EvalMetric, 3L)))
@@ -425,7 +520,7 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary Save plot to file----
+  # Binary Save plot to file ----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID,"_EvaluationPlot.png")))
@@ -434,7 +529,7 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary AUC Object Create----
+  # Binary AUC Object Create ----
   temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:min(100000L, ValidationData[,.N])]
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
     AUC_Metrics <- pROC::roc(response = temp[[eval(TargetColumnName)]],
@@ -453,13 +548,13 @@ AutoH2oGLMClassifier <- function(data,
   }
   rm(temp)
 
-  # Binary AUC Conversion to data.table----
+  # Binary AUC Conversion to data.table ----
   AUC_Data <- data.table::data.table(
     ModelNumber = 0,
     Sensitivity = AUC_Metrics$sensitivities,
     Specificity = AUC_Metrics$specificities)
 
-  # Binary Plot ROC Curve----
+  # Binary Plot ROC Curve ----
   ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
     ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
     ggplot2::geom_abline(slope = 1, color = "black") +
@@ -467,7 +562,7 @@ AutoH2oGLMClassifier <- function(data,
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity")
 
-  # Save plot to file----
+  # Save plot to file ----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_ROC_Plot.png")))
@@ -476,7 +571,7 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary Save EvaluationMetrics to File----
+  # Binary Save EvaluationMetrics to File ----
   if(exists("FinalThresholdTable")) {
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
@@ -487,7 +582,7 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary Partial Dependence----
+  # Binary Partial Dependence ----
   ParDepPlots <- list()
   j <- 0L
   if(!is.numeric(data[[eval(TargetColumnName)]])) {
@@ -524,7 +619,7 @@ AutoH2oGLMClassifier <- function(data,
     }
   }
 
-  # Binary Save ParDepPlots to file----
+  # Binary Save ParDepPlots to file ----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
       save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepPlots.R")))
@@ -535,7 +630,7 @@ AutoH2oGLMClassifier <- function(data,
 
   # VI_Plot_Function
   VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, Percentage), y = Percentage, fill = Percentage)) +
+    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
       ggplot2::geom_bar(stat = "identity") +
       ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
       ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
@@ -546,7 +641,7 @@ AutoH2oGLMClassifier <- function(data,
       ggplot2::theme(legend.position = "none")
   }
 
-  # Binary Return Objects----
+  # Binary Return Objects ----
   if(ReturnModelObjects) {
     if(!is.numeric(data[[eval(TargetColumnName)]])) {
       return(list(

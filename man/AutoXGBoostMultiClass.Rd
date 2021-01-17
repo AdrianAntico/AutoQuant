@@ -15,7 +15,7 @@ AutoXGBoostMultiClass(
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
-  Objective = "multi:softmax",
+  LossFunction = "multi:softmax",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
@@ -61,7 +61,7 @@ AutoXGBoostMultiClass(
 
 \item{ModelID}{A character string to name your model and output}
 
-\item{Objective}{'multi:softmax'}
+\item{LossFunction}{'multi:softmax'}
 
 \item{ReturnFactorLevels}{TRUE or FALSE. Set to FALSE to not return factor levels.}
 
@@ -132,51 +132,47 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     TreeMethod = "hist",
     NThreads = parallel::detectCores(),
 
-    # Metadata arguments
+    # Metadata args
     model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./"),
-      "R_Model_Testing"),
+    metadata_path = normalizePath("./"),
     ModelID = "Test_Model_1",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
 
-    # Data arguments
+    # Data args
     data = data,
     TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%chin\%
+    FeatureColNames = names(data)[!names(data) \%in\%
       c("IDcol_1", "IDcol_2","Adrian")],
     IDcols = c("IDcol_1","IDcol_2"),
 
-    # Model evaluation
-    eval_metric = "auc",
-    Objective = 'multi:softmax',
+    # Model evaluation args
+    eval_metric = "merror",
+    LossFunction = 'multi:softmax',
     grid_eval_metric = "accuracy",
     NumOfParDepPlots = 3L,
 
-    # Grid tuning arguments
+    # Grid tuning args
     PassInGrid = NULL,
-    GridTune = TRUE,
+    GridTune = FALSE,
     BaselineComparison = "default",
     MaxModelsInGrid = 10L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Verbose = 1L,
 
-    # Trees, Depth, and LearningRate used in the bandit grid tuning
-    # Must set Trees to a single value if you are not grid tuning
-    # The ones below can be set to NULL
-    #   and the values in the example will be used
+    # ML args
     Shuffles = 1L,
-    Trees = seq(50L, 500L, 50L),
-    eta = seq(0.05,0.40,0.05),
-    max_depth = seq(4L, 16L, 2L),
-    min_child_weight = seq(1.0, 10.0, 1.0),
-    subsample = seq(0.55, 1.0, 0.05),
-    colsample_bytree = seq(0.55, 1.0, 0.05))
+    Trees = 50L,
+    eta = 0.05,
+    max_depth = 4L,
+    min_child_weight = 1.0,
+    subsample = 0.55,
+    colsample_bytree = 0.55)
 }
 }
 \seealso{

@@ -11,22 +11,37 @@ AutoH2oDRFMultiClass(
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
-  eval_metric = "logloss",
-  Trees = 50,
-  GridTune = FALSE,
+  WeightsColumn = NULL,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
-  MaxModelsInGrid = 2,
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
-  ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE,
-  IfSaveModel = "mojo",
   H2OShutdown = FALSE,
-  HurdleModel = FALSE
+  H2OStartUp = TRUE,
+  eval_metric = "logloss",
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  MaxRuntimeSecs = 60 * 60 * 24,
+  StoppingRounds = 10,
+  MaxModelsInGrid = 2,
+  Trees = 50,
+  MaxDepth = 20L,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO"
 )
 }
 \arguments{
@@ -42,23 +57,7 @@ AutoH2oDRFMultiClass(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"}
-
-\item{Trees}{The maximum number of trees you want in your models}
-
-\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
-
-\item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
-
-\item{NThreads}{Set the number of threads you want to dedicate to the model building}
-
-\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
-
-\item{model_path}{A character string of your path file to where you want your output saved}
-
-\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
-
-\item{ModelID}{A character string to name your model and output}
+\item{WeightsColumn}{Column name of a weights column}
 
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
@@ -66,9 +65,55 @@ AutoH2oDRFMultiClass(
 
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
+\item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
+
+\item{NThreads}{Set the number of threads you want to dedicate to the model building}
+
+\item{model_path}{A character string of your path file to where you want your output saved}
+
+\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
+
+\item{ModelID}{A character string to name your model and output}
+
 \item{H2OShutdown}{Set to TRUE to have H2O shutdown after running this function}
 
-\item{HurdleModel}{Leave set to FALSE}
+\item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
+
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"}
+
+\item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
+
+\item{GridStrategy}{Default "Cartesian"}
+
+\item{MaxRuntimeSecs}{Default 86400}
+
+\item{StoppingRounds}{Default 10}
+
+\item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
+
+\item{Trees}{The maximum number of trees you want in your models}
+
+\item{MaxDepth}{Default 20}
+
+\item{SampleRate}{Default 0.632}
+
+\item{MTries}{Default -1 means it will default to number of features divided by 3}
+
+\item{ColSampleRatePerTree}{Default 1}
+
+\item{ColSampleRatePerTreeLevel}{Default 1}
+
+\item{MinRows}{Default 1}
+
+\item{NBins}{Default 20}
+
+\item{NBinsCats}{Default 1024}
+
+\item{NBinsTopLevel}{Default 1024}
+
+\item{HistogramType}{Default "AUTO"}
+
+\item{CategoricalEncoding}{Default "AUTO"}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -95,23 +140,40 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) \%chin\%
-     c("IDcol_1", "IDcol_2","Adrian")],
+   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+   WeightsColumn = NULL,
    eval_metric = "logloss",
-   Trees = 50,
-   GridTune = FALSE,
    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
    NThreads = max(1, parallel::detectCores()-2),
-   MaxModelsInGrid = 10,
    model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./"),
-     "MetaData"),
+   metadata_path = file.path(normalizePath("./")),
    ModelID = "FirstModel",
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
    H2OShutdown = FALSE,
-   HurdleModel = FALSE)
+   H2OStartUp = TRUE,
+
+   # Grid Tuning Args
+   GridStrategy = "Cartesian",
+   GridTune = FALSE,
+   MaxModelsInGrid = 10,
+   MaxRuntimeSecs = 60*60*24,
+   StoppingRounds = 10,
+
+   # ML args
+   Trees = 50,
+   MaxDepth = 20,
+   SampleRate = 0.632,
+   MTries = -1,
+   ColSampleRatePerTree = 1,
+   ColSampleRatePerTreeLevel = 1,
+   MinRows = 1,
+   NBins = 20,
+   NBinsCats = 1024,
+   NBinsTopLevel = 1024,
+   HistogramType = "AUTO",
+   CategoricalEncoding = "AUTO")
 }
 }
 \seealso{

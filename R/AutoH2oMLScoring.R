@@ -7,7 +7,8 @@
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param ModelObject Supply a model object from AutoH2oDRF__()
 #' @param ModelType Set to either "mojo" or "standard" depending on which version you saved
-#' @param H2OShutdown Set to TRUE is you are scoring a "standard" model file and you aren't planning on continuing to score.
+#' @param H2OStartUp Defaults to TRUE which means H2O will be started inside the function
+#' @param H2OShutdown Set to TRUE to shutdown H2O inside the function.
 #' @param MaxMem Set to you dedicated amount of memory. E.g. "28G"
 #' @param NThreads Default set to max(1, parallel::detectCores()-2)
 #' @param JavaOptions Change the default to your machines specification if needed. Default is '-Xmx1g -XX:ReservedCodeCacheSize=256m',
@@ -32,6 +33,7 @@
 #'   ModelObject = NULL,
 #'   ModelType = "mojo",
 #'   H2OShutdown = TRUE,
+#'   H2OStartUp = TRUE,
 #'   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'   NThreads = max(1, parallel::detectCores()-2),
 #'   JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
@@ -56,6 +58,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
                              ModelObject = NULL,
                              ModelType = "mojo",
                              H2OShutdown = TRUE,
+                             H2OStartUp = TRUE,
                              MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                              NThreads = max(1, parallel::detectCores()-2),
                              JavaOptions = '-Xmx1g -XX:ReservedCodeCacheSize=256m',
@@ -74,10 +77,10 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
                              MDP_MissFactor = "0",
                              MDP_MissNum = -1) {
 
-  # data.table optimize----
+  # data.table optimize ----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
 
-  # Check arguments----
+  # Check arguments ----
   if(is.null(ScoringData)) return("ScoringData cannot be NULL")
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
   if(!is.logical(MDP_Impute)) return("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
@@ -86,7 +89,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
   if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
   if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
 
-  # Pull In Transformation Object----
+  # Pull In Transformation Object ----
   if(is.null(TransformationObject)) {
     if(TransformNumeric | BackTransNumeric) {
       if(is.null(TargetColumnName)) return("TargetColumnName needs to be supplied")
@@ -94,7 +97,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     }
   }
 
-  # Apply Transform Numeric Variables----
+  # Apply Transform Numeric Variables ----
   if(!is.null(TransformationObject)) {
     if(TransformNumeric | BackTransNumeric) {
       tempTrans <- data.table::copy(TransformationObject)
@@ -108,19 +111,13 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     }
   }
 
-  # Initialize H2O----
-  if(tolower(ModelType) == "standard") h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+  # Initialize H2O ----
+  if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
 
-  # ModelDataPrep Check----
-  ScoringData <- ModelDataPrep(
-    data = ScoringData,
-    Impute = MDP_Impute,
-    CharToFactor = MDP_CharToFactor,
-    RemoveDates = MDP_RemoveDates,
-    MissFactor = MDP_MissFactor,
-    MissNum = MDP_MissNum)
+  # ModelDataPrep Check ----
+  ScoringData <- ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
 
-  # Initialize H2O Data Conversion----
+  # Initialize H2O Data Conversion ----
   if(!is.null(ModelType)) {
     if(tolower(ModelType) != "mojo" | !is.null(ModelObject)) {
       ScoreData <- h2o::as.h2o(ScoringData)
@@ -129,7 +126,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     }
   }
 
-  # Make Predictions----
+  # Make Predictions ----
   if(!is.null(ModelObject)) {
     predict <- data.table::as.data.table(h2o::h2o.predict(ModelObject, newdata = ScoreData))
   } else {
@@ -147,32 +144,32 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
     }
   }
 
-  # Change column name----
+  # Change column name ----
   data.table::setnames(predict, "predict", "Predictions")
 
   # Shut down H2O----
-  if(tolower(ModelType) != "mojo") if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
+  if(tolower(ModelType) != "mojo") if(H2OShutdown) try(h2o::h2o.shutdown(prompt = FALSE))
 
-  # Merge features back on----
+  # Merge features back on ----
   if(ReturnFeatures) predict <- cbind(predict, ScoringData)
 
-  # Back Transform Numeric Variables----
+  # Back Transform Numeric Variables ----
   if(BackTransNumeric) {
 
-    # Make copy of TransformationResults----
+    # Make copy of TransformationResults ----
     grid_trans_results <- data.table::copy(TransformationObject)
 
-    # Append record for Predicted Column----
+    # Append record for Predicted Column ----
     data.table::set(
       grid_trans_results,
       i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)),
       j = "ColumnName",
       value = "Predictions")
 
-    # Remove target variable----
+    # Remove target variable ----
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
 
-    # Run Back-Transform----
+    # Run Back-Transform ----
     predict <- AutoTransformationScore(
       ScoringData = predict,
       Type = "Inverse",
@@ -181,6 +178,6 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
       Path = NULL)
   }
 
-  # Return data----
+  # Return data ----
   return(predict)
 }

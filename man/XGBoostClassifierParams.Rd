@@ -7,6 +7,7 @@
 XGBoostClassifierParams(
   counter = NULL,
   NThreads = -1L,
+  Objective = "reg:logistic",
   BanditArmsN = NULL,
   eval_metric = NULL,
   task_type = NULL,
@@ -21,6 +22,8 @@ XGBoostClassifierParams(
 \item{counter}{Passthrough}
 
 \item{NThreads}{= -1L,}
+
+\item{Objective}{Passthrough}
 
 \item{BanditArmsN}{Passthrough}
 

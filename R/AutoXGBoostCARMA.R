@@ -36,6 +36,9 @@
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param ZeroPadSeries NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
+#' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
+#' @param Timer Setting to TRUE prints out the forecast number while it is building
+#' @param DebugMode Setting to TRUE generates printout of all header code comments during run time of function
 #' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param EvalMetric Select from "r2", "RMSE", "MSE", "MAE"
@@ -43,9 +46,11 @@
 #' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
-#' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
-#' @param Timer Setting to TRUE prints out the forecast number while it is building
-#' @param DebugMode Setting to TRUE generates printout of all header code comments during run time of function
+#' @param LearningRate Learning Rate
+#' @param MaxDepth Depth
+#' @param MinChildWeight Records in leaf
+#' @param SubSample Random forecast setting
+#' @param ColSampleByTree Self explanatory
 #' @examples
 #' \dontrun{
 #'
@@ -131,7 +136,12 @@
 #'   HolidayVariable = c("USPublicHolidays","EasterGroup",
 #'     "ChristmasGroup","OtherEcclesticalFeasts"),
 #'   TimeTrendVariable = TRUE,
-#'   NTrees = 300)
+#'   NTrees = 300,
+#'   LearningRate = 0.03,
+#'   MaxDepth = 9L,
+#'   MinChildWeight = 1.0,
+#'   SubSample = 1.0,
+#'   ColSampleByTree = 1.0)
 #'
 #' UpdateMetrics <- print(
 #'   XGBoostResults$ModelInformation$EvaluationMetrics[
@@ -178,14 +188,19 @@ AutoXGBoostCARMA <- function(data,
                              SplitRatios = c(1 - 10/100, 10/100),
                              TreeMethod = "hist",
                              NThreads = max(1, parallel::detectCores()-2L),
+                             PartitionType = "random",
+                             Timer = TRUE,
+                             DebugMode = FALSE,
                              EvalMetric = "MAE",
                              GridTune = FALSE,
                              GridEvalMetric = "mae",
                              ModelCount = 1L,
                              NTrees = 1000L,
-                             PartitionType = "random",
-                             Timer = TRUE,
-                             DebugMode = FALSE) {
+                             LearningRate = 0.03,
+                             MaxDepth = 9L,
+                             MinChildWeight = 1.0,
+                             SubSample = 1.0,
+                             ColSampleByTree = 1.0) {
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -327,11 +342,11 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)[c(1,3)]),c(DateColumnName, TargetColumnName, GroupVariables)))
+      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data), names(XREGS)), c(DateColumnName, TargetColumnName, GroupVariables)))
       xx <- xx[!xx %chin% "GroupVar"]
       data <- data[, .SD, .SDcols = xx]
     } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data), names(XREGS)), c(DateColumnName, TargetColumnName)))]
     }
   } else {
     if(!is.null(GroupVariables)) {
@@ -912,7 +927,7 @@ AutoXGBoostCARMA <- function(data,
     Step1SCore <- data.table::copy(data)
   }
 
-  # Machine Learning: Build Model----
+  # Define features ----
   if(DebugMode) print("Machine Learning: Build Model----")
 
   # Define CARMA feature names
@@ -930,7 +945,7 @@ AutoXGBoostCARMA <- function(data,
     ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
   }
 
-  # Return warnings to default since warning about not supplying validation data (TrainOnFull = TRUE has issue with this)
+  # Machine Learning: Build Model ----
   if(DebugMode) options(warn = 0)
   TestModel <- RemixAutoML::AutoXGBoostRegression(
 
@@ -938,19 +953,7 @@ AutoXGBoostCARMA <- function(data,
       TreeMethod = TreeMethod,
       NThreads = NThreads,
 
-      # Metadata arguments:
-      #   'ModelID' is used to create part of the file names generated when saving to file'
-      #   'model_path' is where the minimal model objects for scoring will be stored
-      #      'ModelID' will be the name of the saved model object
-      #   'metadata_path' is where model evaluation and model interpretation files are saved
-      #      objects saved to model_path if metadata_path is null
-      #      Saved objects include:
-      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-      #         'ModelID_VariableImportance.csv' is the variable importance.
-      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      # Metadata arguments
       model_path = getwd(),
       metadata_path = getwd(),
       ModelID = "TestModel",
@@ -958,14 +961,7 @@ AutoXGBoostCARMA <- function(data,
       ReturnModelObjects = TRUE,
       SaveModelObjects = FALSE,
 
-      # Data arguments:
-      #   'TrainOnFull' is to train a model with 100 percent of your data.
-      #     That means no holdout data will be used for evaluation
-      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-      #     CatBoost categorical treatment is enhanced when supplied
-      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      # Data arguments
       data = train,
       TrainOnFull = TrainOnFull,
       ValidationData = valid,
@@ -977,6 +973,7 @@ AutoXGBoostCARMA <- function(data,
       Methods = NULL,
 
       # Model evaluation
+      LossFunction = 'reg:squarederror',
       eval_metric = EvalMetric,
       NumOfParDepPlots = 10,
 
@@ -988,18 +985,16 @@ AutoXGBoostCARMA <- function(data,
       MaxModelsInGrid = ModelCount,
       MaxRunsWithoutNewWinner = 20L,
       MaxRunMinutes = 24L*60L,
+      Shuffles = 1L,
       Verbose = 1L,
 
-      # Trees, Depth, and LearningRate used in the bandit grid tuning
-      # Must set Trees to a single value if you are not grid tuning
-      # The ones below can be set to NULL and the values in the example will be used
-      Shuffles = 1L,
+      # ML Args
       Trees = NTrees,
-      eta = seq(0.05,0.40,0.05),
-      max_depth = seq(4L, 16L, 2L),
-      min_child_weight = seq(1.0, 10.0, 1.0),
-      subsample = seq(0.55, 1.0, 0.05),
-      colsample_bytree = seq(0.55, 1.0, 0.05))
+      eta = LearningRate,
+      max_depth = MaxDepth,
+      min_child_weight = MinChildWeight,
+      subsample = SubSample,
+      colsample_bytree = ColSampleByTree)
 
   # Return if TrainOnFull is FALSE----
   if(!TrainOnFull) return(TestModel)
@@ -1023,7 +1018,7 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
   if(!is.null(GroupVariables)) {
     if(Difference) {
-      if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L else N <- as.integer(train[, .N, by = "GroupVar"][, max(N)]) - 2L
+      if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) else N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
     } else {
       N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
     }
@@ -1131,7 +1126,7 @@ AutoXGBoostCARMA <- function(data,
         if(eval(TargetColumnName) %chin% names(Step1SCore)) if(eval(TargetColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
-        UpdateData <- cbind(FutureDateData[2L:(N+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
+        UpdateData <- cbind(FutureDateData[1L:N], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
         data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
       } else {
         if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
@@ -1601,7 +1596,7 @@ AutoXGBoostCARMA <- function(data,
       }
 
       # No Group with or without Diff
-      if(!is.null(GroupVariables)) {
+      if(is.null(GroupVariables)) {
 
         # Calendar and Holiday----
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
@@ -1897,9 +1892,11 @@ AutoXGBoostCARMA <- function(data,
 
   # Return data----
   if(!is.null(GroupVariables)) {
+
+    # Group Variables back to original
     if("GroupVar" %chin% names(UpdateData)) {
       keep <- c("GroupVar", eval(DateColumnName), eval(TargetColumnName), "Predictions")
-      tryCatch({data.table::set(UpdateData, j = setdiff(keep,names(UpdateData)), value = NULL)}, error = function(x) NULL)
+      tryCatch({data.table::set(UpdateData, j = setdiff(keep, names(UpdateData)), value = NULL)}, error = function(x) NULL)
     }
 
     # Return

@@ -13,7 +13,6 @@ AutoH2oMLMultiClass(
   FeatureColNames = NULL,
   ExcludeAlgos = NULL,
   eval_metric = "logloss",
-  Trees = 50,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
@@ -25,8 +24,8 @@ AutoH2oMLMultiClass(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
-  H2OShutdown = FALSE,
-  HurdleModel = FALSE
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE
 )
 }
 \arguments{
@@ -45,8 +44,6 @@ AutoH2oMLMultiClass(
 \item{ExcludeAlgos}{"DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"}
-
-\item{Trees}{The maximum number of trees you want in your models}
 
 \item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
 
@@ -68,7 +65,7 @@ AutoH2oMLMultiClass(
 
 \item{H2OShutdown}{Set to TRUE to have H2O shutdown after running this function}
 
-\item{HurdleModel}{Set to FALSE}
+\item{H2OStartUp}{Set to FALSE}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -95,21 +92,20 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
    ValidationData = NULL,
    TestData = NULL,
    TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) \%chin\% c("IDcol_1", "IDcol_2","Adrian")],
+   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
    ExcludeAlgos = NULL,
    eval_metric = "logloss",
-   Trees = 50,
    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
    NThreads = max(1, parallel::detectCores()-2),
    MaxModelsInGrid = 10,
    model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./"), "MetaData"),
+   metadata_path = normalizePath("./"),
    ModelID = "FirstModel",
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
    IfSaveModel = "mojo",
-   H2OShutdown = FALSE,
-   HurdleModel = FALSE)
+   H2OShutdown = TRUE,
+   H2OStartUp = TRUE)
 }
 }
 \seealso{

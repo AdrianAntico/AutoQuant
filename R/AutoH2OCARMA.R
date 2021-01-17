@@ -9,6 +9,7 @@
 #' @param data Supply your full series data set here
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
+#' @param WeightsColumn NULL
 #' @param NonNegativePred TRUE or FALSE
 #' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
@@ -17,6 +18,11 @@
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
+#' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
+#' @param MaxMem Set to the maximum amount of memory you want to allow for running this function. Default is "32G".
+#' @param NThreads Set to the number of threads you want to dedicate to this function.
+#' @param Timer Set to FALSE to turn off the updating print statements for progress
+#' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
@@ -39,19 +45,32 @@
 #' @param ZeroPadSeries NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
 #' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
+#' @param NumOfParDepPlots Set to zeros if you do not want any returned. Can set to a very large value and it will adjust to the max number of features if it's too high
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param NTrees Select the number of trees you want to have built to train the model
-#' @param PartitionType Select "random" for random data partitioning "time" for partitioning by time frames
-#' @param MaxMem Set to the maximum amount of memory you want to allow for running this function. Default is "32G".
-#' @param NThreads Set to the number of threads you want to dedicate to this function.
-#' @param Timer Set to FALSE to turn off the updating print statements for progress
-#' @param DebugMode Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function
+#' @param LearnRate Default 0.10, models available include gbm
+#' @param LearnRateAnnealing Default 1, models available include gbm
+#' @param GridStrategy Default "Cartesian", models available include
+#' @param MaxRuntimeSecs Default 60*60*24, models available include
+#' @param StoppingRounds Default 10, models available include
+#' @param MaxDepth Default 20, models available include drf, gbm
+#' @param SampleRate Default 0.632, models available include drf, gbm
+#' @param MTries Default 1, models available include drf
+#' @param ColSampleRate Default 1, model available include gbm
+#' @param ColSampleRatePerTree Default 1, models available include drf, gbm
+#' @param ColSampleRatePerTreeLevel Default  1, models available include drf, gbm
+#' @param MinRows Default 1, models available include drf, gbm
+#' @param NBins Default 20, models available include drf, gbm
+#' @param NBinsCats Default 1024, models available include drf, gbm
+#' @param NBinsTopLevel Default 1024, models available include drf, gbm
+#' @param CategoricalEncoding Default "AUTO" models available include drf, gbm
+#' @param HistogramType Default "AUTO". Select from AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"
 #' @examples
 #' \dontrun{
 #'
 #' # Load data
-#' data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#' data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 #'
 #' # Ensure series have no missing dates (also remove series with more than 25% missing values)
 #' data <- RemixAutoML::TimeSeriesFill(
@@ -91,20 +110,16 @@
 #'   TimeGroups = c("weeks","months"),
 #'
 #'   # Data Wrangling Features
-#'   ZeroPadSeries = NULL,
-#'   DataTruncate = FALSE,
 #'   SplitRatios = c(1 - 10 / 138, 10 / 138),
 #'   PartitionType = "random",
 #'
-#'   # Productionize
+#'   # Production args
 #'   FC_Periods = 4L,
 #'   TrainOnFull = FALSE,
-#'   EvalMetric = "RMSE",
-#'   GridTune = FALSE,
-#'   ModelCount = 5,
-#'   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+#'   MaxMem = {gc();paste0(as.character(floor(max(32, as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) -32) / 1000000)),"G")},
 #'   NThreads = parallel::detectCores(),
 #'   Timer = TRUE,
+#'   DebugMode = TRUE,
 #'
 #'   # Target Transformations
 #'   TargetTransformation = FALSE,
@@ -114,10 +129,15 @@
 #'   NonNegativePred = FALSE,
 #'   RoundPreds = FALSE,
 #'
-#'   # Features
-#'   AnomalyDetection = NULL,
+#'   # Calendar features
+#'   CalendarVariables = c("week", "wom", "month", "quarter", "year"),
+#'   HolidayVariable = c("USPublicHolidays","EasterGroup",
+#'     "ChristmasGroup","OtherEcclesticalFeasts"),
+#'   TimeTrendVariable = TRUE,
 #'   HolidayLags = 1:7,
 #'   HolidayMovingAverages = 2:7,
+#'
+#'   # Time series features
 #'   Lags = list("weeks" = c(1:4), "months" = c(1:3)),
 #'   MA_Periods = list("weeks" = c(2:8), "months" = c(6:12)),
 #'   SD_Periods = NULL,
@@ -125,14 +145,56 @@
 #'   Kurt_Periods = NULL,
 #'   Quantile_Periods = NULL,
 #'   Quantiles_Selected = NULL,
+#'
+#'   # Bonus Features
 #'   XREGS = NULL,
 #'   FourierTerms = 2L,
-#'   CalendarVariables = c("week", "wom", "month", "quarter", "year"),
-#'   HolidayVariable = c("USPublicHolidays","EasterGroup",
-#'     "ChristmasGroup","OtherEcclesticalFeasts"),
-#'   TimeTrendVariable = TRUE,
+#'   AnomalyDetection = NULL,
+#'   ZeroPadSeries = NULL,
+#'   DataTruncate = FALSE,
+#'
+#'   # ML evaluation args
+#'   EvalMetric = "RMSE",
+#'   NumOfParDepPlots = 0L,
+#'
+#'   # ML grid tuning args
+#'   GridTune = FALSE,
+#'   GridStrategy = "Cartesian",
+#'   ModelCount = 5,
+#'   MaxRuntimeSecs = 60*60*24,
+#'   StoppingRounds = 10,
+#'
+#'   # ML Args
 #'   NTrees = 1000L,
-#'   DebugMode = TRUE)
+#'   MaxDepth = 20,
+#'   SampleRate = 0.632,
+#'   MTries = -1,
+#'   ColSampleRatePerTree = 1,
+#'   ColSampleRatePerTreeLevel  = 1,
+#'   MinRows = 1,
+#'   NBins = 20,
+#'   NBinsCats = 1024,
+#'   NBinsTopLevel = 1024,
+#'   HistogramType = "AUTO",
+#'   CategoricalEncoding = "AUTO",
+#'   RandomColNumbers = NULL,
+#'   InteractionColNumbers = NULL,
+#'   WeightsColumn = NULL,
+#'
+#'
+#'   Distribution = "gaussian",
+#'   Link = "identity",
+#'   RandomDistribution = NULL,
+#'   RandomLink = NULL,
+#'   Solver = "AUTO",
+#'   Alpha = NULL,
+#'   Lambda = NULL,
+#'   LambdaSearch = FALSE,
+#'   NLambdas = -1,
+#'   Standardize = TRUE,
+#'   RemoveCollinearColumns = FALSE,
+#'   InterceptInclude = TRUE,
+#'   NonNegativeCoefficients = FALSE)
 #'
 #' UpdateMetrics <-
 #'   Results$ModelInformation$EvaluationMetrics[
@@ -151,8 +213,8 @@
 #' @return See examples
 #' @export
 AutoH2OCARMA <- function(AlgoType = "drf",
-                         ExcludeAlgos = "XGBoost",
                          data,
+                         ModelPath = getwd(),
                          NonNegativePred = FALSE,
                          RoundPreds = FALSE,
                          TrainOnFull = FALSE,
@@ -184,15 +246,50 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          DataTruncate = FALSE,
                          ZeroPadSeries = NULL,
                          SplitRatios = c(0.7, 0.2, 0.1),
-                         EvalMetric = "MAE",
-                         GridTune = FALSE,
-                         ModelCount = 1,
-                         NTrees = 1000,
+                         EvalMetric = "rmse",
+                         NumOfParDepPlots = 0L,
                          PartitionType = "timeseries",
                          MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                          NThreads = max(1, parallel::detectCores() - 2),
                          Timer = TRUE,
-                         DebugMode = FALSE) {
+                         DebugMode = FALSE,
+                         ExcludeAlgos = "XGBoost",
+                         GridTune = FALSE,
+                         ModelCount = 1,
+                         GridStrategy = "Cartesian",
+                         MaxRuntimeSecs = 60*60*24,
+                         StoppingRounds = 10,
+                         NTrees = 1000,
+                         LearnRate = 0.10,
+                         LearnRateAnnealing = 1,
+                         MaxDepth = 20,
+                         SampleRate = 0.632,
+                         MTries = -1,
+                         ColSampleRate = 1,
+                         ColSampleRatePerTree = 1,
+                         ColSampleRatePerTreeLevel  = 1,
+                         MinRows = 1,
+                         NBins = 20,
+                         NBinsCats = 1024,
+                         NBinsTopLevel = 1024,
+                         HistogramType = "AUTO",
+                         CategoricalEncoding = "AUTO",
+                         RandomColNumbers = NULL,
+                         InteractionColNumbers = NULL,
+                         WeightsColumn = NULL,
+                         Distribution = "gaussian",
+                         Link = "identity",
+                         RandomDistribution = NULL,
+                         RandomLink = NULL,
+                         Solver = "AUTO",
+                         Alpha = NULL,
+                         Lambda = NULL,
+                         LambdaSearch = FALSE,
+                         NLambdas = -1,
+                         Standardize = TRUE,
+                         RemoveCollinearColumns = FALSE,
+                         InterceptInclude = TRUE,
+                         NonNegativeCoefficients = FALSE) {
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -293,7 +390,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
       # I need GroupVar in the xregs. if not there, add it
       if(!"GroupVar" %chin% names(XREGS)) {
-        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c(GroupVariables)]
       }
 
       # I need the GroupVariable names to be different from data
@@ -326,11 +423,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(!is.null(GroupVariables)) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
     if(!is.null(XREGS)) {
-      if(length(GroupVariables) > 1) {
-        data.table::setkeyv(x = XREGS, cols = c(eval(GroupVariables), eval(DateColumnName)))
-      } else {
-        data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
-      }
+      data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
     }
   } else {
     data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
@@ -343,11 +436,11 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
   if(!is.null(XREGS)) {
     if(!is.null(GroupVariables)) {
-      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data),names(XREGS)[c(1,3)]),c(DateColumnName, TargetColumnName, GroupVariables)))
+      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data), names(XREGS)), c(DateColumnName, TargetColumnName, GroupVariables)))
       xx <- xx[!xx %chin% "GroupVar"]
       data <- data[, .SD, .SDcols = xx]
     } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data),names(XREGS)),c(DateColumnName, TargetColumnName)))]
+      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data), names(XREGS)), c(DateColumnName, TargetColumnName)))]
     }
   } else {
     if(!is.null(GroupVariables)) {
@@ -499,21 +592,12 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
   if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
-    if(length(GroupVariables) > 1) {
-      data <- CreateHolidayVariables(
-        data,
-        DateCols = eval(DateColumnName),
-        HolidayGroups = HolidayVariable,
-        Holidays = NULL,
-        GroupingVars = eval(GroupVariables))
-    } else {
-      data <- CreateHolidayVariables(
-        data,
-        DateCols = eval(DateColumnName),
-        HolidayGroups = HolidayVariable,
-        Holidays = NULL,
-        GroupingVars = "GroupVar")
-    }
+    data <- CreateHolidayVariables(
+      data,
+      DateCols = eval(DateColumnName),
+      HolidayGroups = HolidayVariable,
+      Holidays = NULL,
+      GroupingVars = if("GroupVar" %chin% names(data)) "GroupVar" else GroupVariables)
 
     # Convert to lubridate as_date() or POSIXct----
     if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
@@ -600,10 +684,6 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
   }
 
-  # Store Date Info----
-  if(DebugMode) print("Store Date Info----")
-  FutureDateData <- unique(data[, get(DateColumnName)])
-
   # Feature Engineering: Add Difference Data----
   if(DebugMode) print("Feature Engineering: Add Difference Data----")
   if(!is.null(GroupVariables) & Difference == TRUE) {
@@ -627,7 +707,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     FC_Periods <- FC_Periods + 1L
   }
 
-  # Feature Engineering: Add GDL Features based on the TargetColumnName----
+  # Feature Engineering: Add GDL Features based on the TargetColumnName ----
   if(DebugMode) print("Feature Engineering: Add GDL Features based on the TargetColumnName----")
 
   # Group and !Difference
@@ -668,38 +748,11 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       Quantiles_Selected    = Quantiles_Selected,
       Debug                 = FALSE)
 
-    # Args to jump into AutLagRollStats----
-    # DateColumn           = eval(DateColumnName)
-    # Targets              = eval(TargetColumnName)
-    # HierarchyGroups      = HierarchSupplyValue
-    # IndependentGroups    = IndependentSupplyValue
-    #
-    # # Services
-    # TimeBetween          = NULL
-    # TimeUnit             = TimeUnit
-    # TimeUnitAgg          = TimeUnit
-    # TimeGroups           = TimeGroups
-    # RollOnLag1           = TRUE
-    # Type                 = "Lag"
-    # SimpleImpute         = TRUE
-    #
-    # # Calculated Columns
-    # Lags                  = c(Lags)
-    # MA_RollWindows        = c(MA_Periods)
-    # SD_RollWindows        = c(SD_Periods)
-    # Skew_RollWindows      = c(Skew_Periods)
-    # Kurt_RollWindows      = c(Kurt_Periods)
-    # Quantile_RollWindows  = c(Quantile_Periods)
-    # Quantiles_Selected    = c(Quantiles_Selected)
-    # Debug                 = TRUE
-    # Fact                  = Categoricals[1]
-    # timeaggs              = TimeGroups[1]
-
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1L) {
+    if(length(GroupVariables) > 1) {
       if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
-      GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
+      if(!is.null(HierarchGroups)) Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      if(!is.null(HierarchGroups)) GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")] else GroupVarVector <- data[, .SD, .SDcols = c("GroupVar")]
     } else {
       if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
@@ -744,12 +797,10 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       Debug                = DebugMode)
 
     # Keep interaction group as GroupVar----
-    if(length(GroupVariables) > 1) {
-      if(!"GroupVar" %chin% names(data)) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
-        GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")]
-      }
+    if(length(GroupVariables) > 1L) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(!is.null(HierarchGroups)) Categoricals <- FullFactorialCatFeatures(GroupVars = HierarchGroups, BottomsUp = TRUE)
+      if(!is.null(HierarchGroups)) GroupVarVector <- data[, .SD, .SDcols = c(Categoricals,"GroupVar")] else GroupVarVector <- data[, .SD, .SDcols = c("GroupVar")]
     } else {
       if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
@@ -896,7 +947,11 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     }
   }
 
-  # Data Wrangling: Partition data with AutoDataPartition()----
+  # Store Date Info----
+  if(DebugMode) print("Store Date Info----")
+  FutureDateData <- unique(data[, get(DateColumnName)])
+
+  # Data Wrangling: Partition data with AutoDataPartition() ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
   if(!TrainOnFull) {
     if(Difference & !is.null(GroupVariables)) {
@@ -988,10 +1043,12 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
   }
 
-  # Initialize H2O
-  if(DebugMode) print("Initialize H2O----")
-  tryCatch({h2o::h2o.init(startH2O = FALSE, nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)},
-           error = function(x) h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE))
+  # Initialize H2O ----
+
+  ####
+  #if(DebugMode) print("Initialize H2O----")
+  #tryCatch({h2o::h2o.init(startH2O = FALSE)}, error = function(x) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE))
+  ####
 
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
@@ -1005,58 +1062,53 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Compute management
       MaxMem = MaxMem,
       NThreads = NThreads,
-      H2OShutdown = FALSE,
+      H2OShutdown = TRUE,
+      H2OStartUp = TRUE,
       IfSaveModel = "mojo",
 
-      # Model evaluation:
-      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-      #     A value of 3 will return plots for the top 3 variables based on variable importance
-      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      # Model evaluation
       eval_metric = EvalMetric,
-      NumOfParDepPlots = 0,
+      NumOfParDepPlots = NumOfParDepPlots,
+      SaveInfoToPDF = FALSE,
 
-      # Metadata arguments:
-      #   'ModelID' is used to create part of the file names generated when saving to file'
-      #   'model_path' is where the minimal model objects for scoring will be stored
-      #      'ModelID' will be the name of the saved model object
-      #   'metadata_path' is where model evaluation and model interpretation files are saved
-      #      objects saved to model_path if metadata_path is null
-      #      Saved objects include:
-      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-      #         'ModelID_VariableImportance.csv' is the variable importance.
-      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-      model_path = getwd(),
+      # Metadata arguments
+      model_path = ModelPath,
       metadata_path = getwd(),
-      ModelID = "ModelTest",
+      ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = FALSE,
+      SaveModelObjects = TRUE,
 
-      # Data arguments:
-      #   'TrainOnFull' is to train a model with 100 percent of your data.
-      #     That means no holdout data will be used for evaluation
-      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-      #     CatBoost categorical treatment is enhanced when supplied
-      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      # Data arguments
       data = train,
       TrainOnFull = TrainOnFull,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
+      WeightsColumn = NULL,
       TransformNumericColumns = NULL,
       Methods = NULL,
 
-      # Model args
-      Trees = NTrees,
+      # Grid tuning args
       GridTune = GridTune,
-      MaxModelsInGrid = ModelCount)
+      MaxModelsInGrid = ModelCount,
+      GridStrategy = GridStrategy,
+      MaxRuntimeSecs = MaxRuntimeSecs,
+      StoppingRounds = StoppingRounds,
+
+      # ML Args
+      Trees = NTrees,
+      MaxDepth = MaxDepth,
+      SampleRate = SampleRate,
+      MTries = MTries,
+      ColSampleRatePerTree = ColSampleRatePerTree,
+      ColSampleRatePerTreeLevel = ColSampleRatePerTreeLevel,
+      MinRows = MinRows,
+      NBins = NBins,
+      NBinsCats = NBinsCats,
+      NBinsTopLevel = NBinsTopLevel,
+      CategoricalEncoding = CategoricalEncoding,
+      HistogramType = "AUTO")
 
   } else if(tolower(AlgoType) == "gbm") {
 
@@ -1066,57 +1118,56 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Compute management
       MaxMem = MaxMem,
       NThreads = NThreads,
-      H2OShutdown = FALSE,
+      H2OShutdown = TRUE,
+      H2OStartUp = TRUE,
       IfSaveModel = "mojo",
       Alpha = NULL,
       Distribution = "gaussian",
 
-      # Model evaluation:
-      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-      #     A value of 3 will return plots for the top 3 variables based on variable importance
-      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      # Model evaluation
       eval_metric = EvalMetric,
-      NumOfParDepPlots = 0,
+      NumOfParDepPlots = NumOfParDepPlots,
 
-      # Metadata arguments:
-      #   'ModelID' is used to create part of the file names generated when saving to file'
-      #   'model_path' is where the minimal model objects for scoring will be stored
-      #      'ModelID' will be the name of the saved model object
-      #   'metadata_path' is where model evaluation and model interpretation files are saved
-      #      objects saved to model_path if metadata_path is null
-      #      Saved objects include:
-      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-      #         'ModelID_VariableImportance.csv' is the variable importance.
-      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-      model_path = getwd(),
+      # Metadata arguments
+      model_path = ModelPath,
       metadata_path = getwd(),
-      ModelID = "ModelTest",
+      ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = FALSE,
+      SaveModelObjects = TRUE,
 
-      # Data arguments:
-      #   'TrainOnFull' is to train a model with 100 percent of your data.
-      #     That means no holdout data will be used for evaluation
-      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-      #     CatBoost categorical treatment is enhanced when supplied
-      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      # Data arguments
       data = train,
       TrainOnFull = TrainOnFull,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
+      WeightsColumn = NULL,
       TransformNumericColumns = NULL,
       Methods = NULL,
 
       # Model args
-      Trees = NTrees,
       GridTune = GridTune,
-      MaxModelsInGrid = ModelCount)
+      MaxModelsInGrid = ModelCount,
+      GridStrategy = GridStrategy,
+      MaxRuntimeSecs = MaxRuntimeSecs,
+      StoppingRounds = StoppingRounds,
+
+      # ML args
+      Trees = NTrees,
+      LearnRate = LearnRate,
+      LearnRateAnnealing = LearnRateAnnealing,
+      MaxDepth = MaxDepth,
+      SampleRate = SampleRate,
+      ColSampleRate = ColSampleRate,
+      ColSampleRatePerTree = ColSampleRatePerTree,
+      ColSampleRatePerTreeLevel = ColSampleRatePerTreeLevel,
+      MinRows = MinRows,
+      NBins = NBins,
+      NBinsCats = NBinsCats,
+      NBinsTopLevel = NBinsTopLevel,
+      HistogramType = HistogramType,
+      CategoricalEncoding = CategoricalEncoding)
 
   } else if(tolower(AlgoType) == "glm") {
 
@@ -1127,58 +1178,50 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       MaxMem = MaxMem,
       NThreads = NThreads,
       H2OShutdown = TRUE,
+      H2OStartUp = TRUE,
       IfSaveModel = "mojo",
 
-      # Model evaluation:
-      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-      #     A value of 3 will return plots for the top 3 variables based on variable importance
-      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      # Model evaluation
       eval_metric = EvalMetric,
-      NumOfParDepPlots = 0,
+      NumOfParDepPlots = NumOfParDepPlots,
 
-      # Metadata arguments:
-      #   'ModelID' is used to create part of the file names generated when saving to file'
-      #   'model_path' is where the minimal model objects for scoring will be stored
-      #      'ModelID' will be the name of the saved model object
-      #   'metadata_path' is where model evaluation and model interpretation files are saved
-      #      objects saved to model_path if metadata_path is null
-      #      Saved objects include:
-      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-      #         'ModelID_VariableImportance.csv' is the variable importance.
-      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-      model_path = getwd(),
+      # Metadata arguments
+      model_path = ModelPath,
       metadata_path = getwd(),
-      ModelID = "ModelTest",
+      ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = FALSE,
+      SaveModelObjects = TRUE,
 
-      # Data arguments:
-      #   'TrainOnFull' is to train a model with 100 percent of your data.
-      #     That means no holdout data will be used for evaluation
-      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-      #     CatBoost categorical treatment is enhanced when supplied
-      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      # Data arguments
       data = train,
       TrainOnFull = TrainOnFull,
       ValidationData = valid,
       TestData = test,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
+      RandomColNumbers = RandomColNumbers,
+      InteractionColNumbers = InteractionColNumbers,
+      WeightsColumn = WeightsColumn,
       TransformNumericColumns = NULL,
       Methods = NULL,
 
       # Model args
       GridTune = GridTune,
       MaxModelsInGrid = ModelCount,
-      Distribution = "gaussian",
-      link = "identity")
+      Distribution = Distribution,
+      Link = Link,
+      RandomDistribution = RandomDistribution,
+      RandomLink = RandomLink,
+      Solver = Solver,
+      Alpha = Alpha,
+      Lambda = Lambda,
+      LambdaSearch = LambdaSearch,
+      NLambdas = NLambdas,
+      Standardize = Standardize,
+      RemoveCollinearColumns = RemoveCollinearColumns,
+      InterceptInclude = InterceptInclude,
+      NonNegativeCoefficients = NonNegativeCoefficients)
+
   } else if(tolower(AlgoType) == "automl") {
 
     # H2O AutoML ----
@@ -1187,45 +1230,22 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Compute management
       MaxMem = MaxMem,
       NThreads = NThreads,
-      H2OShutdown = FALSE,
+      H2OShutdown = TRUE,
+      H2OStartUp = TRUE,
       IfSaveModel = "mojo",
 
-      # Model evaluation:
-      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-      #     A value of 3 will return plots for the top 3 variables based on variable importance
-      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      # Model evaluation
       eval_metric = EvalMetric,
-      NumOfParDepPlots = 0,
+      NumOfParDepPlots = NumOfParDepPlots,
 
-      # Metadata arguments:
-      #   'ModelID' is used to create part of the file names generated when saving to file'
-      #   'model_path' is where the minimal model objects for scoring will be stored
-      #      'ModelID' will be the name of the saved model object
-      #   'metadata_path' is where model evaluation and model interpretation files are saved
-      #      objects saved to model_path if metadata_path is null
-      #      Saved objects include:
-      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-      #         'ModelID_VariableImportance.csv' is the variable importance.
-      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-      model_path = getwd(),
+      # Metadata arguments
+      model_path = ModelPath,
       metadata_path = getwd(),
-      ModelID = "FirstModel",
+      ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = FALSE,
+      SaveModelObjects = TRUE,
 
-      # Data arguments:
-      #   'TrainOnFull' is to train a model with 100 percent of your data.
-      #     That means no holdout data will be used for evaluation
-      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-      #     CatBoost categorical treatment is enhanced when supplied
-      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      # Data arguments
       data = data,
       TrainOnFull = TrainOnFull,
       ValidationData = valid,
@@ -1243,6 +1263,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
     # Define Gam Cols ----
     GamCols <- names(which(unlist(lapply(data[, .SD, .SDcols = ModelFeatures], is.numeric))))
+    GamCols <- GamCols[!GamCols %like% "HolidayCounts" & !GamCols %like% "wom" & !GamCols %like% "quarter" & !GamCols %like% "year"]
     GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
     # Build GAM ----
@@ -1251,44 +1272,23 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Compute management
       MaxMem = MaxMem,
       NThreads = NThreads,
-      H2OShutdown = FALSE,
+      H2OShutdown = TRUE,
+      H2OStartUp = TRUE,
       IfSaveModel = "mojo",
-      Alpha = NULL,
       Distribution = "gaussian",
 
-      # Model evaluation:
-      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-      #     A value of 3 will return plots for the top 3 variables based on variable importance
-      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      # Model evaluation
       eval_metric = EvalMetric,
-      NumOfParDepPlots = 0,
+      NumOfParDepPlots = NumOfParDepPlots,
 
-      # Metadata arguments:
-      #   'ModelID' is used to create part of the file names generated when saving to file'
-      #   'model_path' is where the minimal model objects for scoring will be stored
-      #      'ModelID' will be the name of the saved model object
-      #   'metadata_path' is where model evaluation and model interpretation files are saved
-      #      objects saved to model_path if metadata_path is null
-      #      Saved objects include:
-      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-      #         'ModelID_VariableImportance.csv' is the variable importance.
-      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-      model_path = getwd(),
+      # Metadata arguments
+      model_path = ModelPath,
       metadata_path = getwd(),
-      ModelID = "ModelTest",
+      ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = FALSE,
+      SaveModelObjects = TRUE,
 
-      # Data arguments:
-      #   'TrainOnFull' is to train a model with 100 percent of your data.
-      #     That means no holdout data will be used for evaluation
-      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-      #     CatBoost categorical treatment is enhanced when supplied
-      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      # Data arguments
       data = train,
       TrainOnFull = TrainOnFull,
       ValidationData = valid,
@@ -1300,21 +1300,15 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       Methods = NULL,
 
       # Model args
-      Trees = NTrees,
       GridTune = GridTune,
       MaxModelsInGrid = ModelCount)
-
   }
-
 
   # Return model object for when TrainOnFull is FALSE ----
-  if(!TrainOnFull) {
-    try(h2o::h2o.shutdown(prompt = FALSE), silent = TRUE)
-    return(TestModel)
-  }
+  if(!TrainOnFull) return(TestModel)
 
   # Turn warnings into errors back on
-  if(DebugMode) options(warn = 2)
+  if(DebugMode) options(warn = 0)
 
   # Variable for storing ML model: Pull model object out of TestModel list----
   if(DebugMode) print("Variable for storing ML model: Pull model object out of TestModel list----")
@@ -1340,7 +1334,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
   #----
 
-  # ARMA PROCESS FORECASTING----
+  # ARMA PROCESS FORECASTING ----
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
@@ -1356,21 +1350,21 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     # ML Scoring
     ###############
 
-    # Machine Learning: Generate predictions----
+    # Machine Learning: Generate predictions ----
     if(DebugMode) print("Machine Learning: Generate predictions----")
     if(i == 1L) {
 
-      # i = 1 Score Model With Group Variables----
+      # i = 1 Score Model With Group Variables ----
       if(DebugMode) print("# i = 1 Score Model With Group Variables----")
       Preds <- AutoH2OMLScoring(
         ScoringData = Step1SCore,
-        ModelObject = Model,
+        ModelObject = NULL,
         ModelType = "mojo",
         H2OShutdown = TRUE,
-        MaxMem = "28G",
+        MaxMem = MaxMem,
         JavaOptions = NULL,
-        ModelPath = NULL,
-        ModelID = "ModelTest",
+        ModelPath = ModelPath,
+        ModelID = paste0(AlgoType, "_Carma"),
         ReturnFeatures = TRUE,
         TransformNumeric = FALSE,
         BackTransNumeric = FALSE,
@@ -1384,26 +1378,19 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         MDP_MissFactor = "0",
         MDP_MissNum = -1)
 
-      # Data Wrangline: grab historical data and one more future record----
+      # Data Wrangline: grab historical data and one more future record ----
       if(Difference) {
         if(eval(TargetColumnName) %chin% names(Step1SCore)) {
           if(eval(TargetColumnName) %chin% names(Preds)) {
             data.table::set(Preds, j = eval(TargetColumnName), value = NULL)
           }
         }
-        if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
-        if(!is.null(GroupVariables)) {
-          UpdateData <- cbind(FutureDateData, Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
-        } else {
-          UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
-        }
-        data.table::setnames(UpdateData, "FutureDateData", eval(DateColumnName))
+        UpdateData <- cbind(Step1SCore[, .SD, .SDcols = c(eval(TargetColumnName), eval(DateColumnName))],Preds)
       } else {
         if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
         if(RoundPreds) Preds[, Predictions := round(Predictions)]
-        UpdateData <- cbind(FutureDateData[1L:N],Preds)
-        data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
+        UpdateData <- Preds
       }
 
     } else {
@@ -1412,23 +1399,23 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
         # GroupVar or Hierarchical----
         if(!is.null(HierarchGroups)) {
-          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = c(eval(GroupVariables))])
+          temp <- data.table::copy(UpdateData[, ID := 1L:.N, by = c(eval(GroupVariables))])
           temp <- temp[ID == N][, ID := NULL]
         } else {
-          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = "GroupVar"])
+          temp <- data.table::copy(UpdateData[, ID := 1L:.N, by = "GroupVar"])
           temp <- temp[ID == N][, ID := NULL]
         }
 
         # Score model----
         Preds <- AutoH2OMLScoring(
           ScoringData = temp,
-          ModelObject = Model,
+          ModelObject = NULL,
           ModelType = "mojo",
           H2OShutdown = TRUE,
-          MaxMem = "28G",
+          MaxMem = MaxMem,
           JavaOptions = NULL,
-          ModelPath = NULL,
-          ModelID = "ModelTest",
+          ModelPath = ModelPath,
+          ModelID = paste0(AlgoType, "_Carma"),
           ReturnFeatures = FALSE,
           TransformNumeric = FALSE,
           BackTransNumeric = FALSE,
@@ -1453,7 +1440,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         UpdateData <- UpdateData[ID != N]
         if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
-        if(Difference) UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
+        if(Difference) UpdateData[ID %in% c(N-1L,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
         UpdateData[, ID := NULL]
 
       } else {
@@ -1461,13 +1448,13 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         # Score Model----
         Preds <- AutoH2OMLScoring(
           ScoringData = UpdateData[.N],
-          ModelObject = Model,
+          ModelObject = NULL,
           ModelType = "mojo",
           H2OShutdown = TRUE,
-          MaxMem = "28G",
+          MaxMem = MaxMem,
           JavaOptions = NULL,
-          ModelPath = NULL,
-          ModelID = "ModelTest",
+          ModelPath = ModelPath,
+          ModelID = paste0(AlgoType, "_Carma"),
           ReturnFeatures = TRUE,
           TransformNumeric = FALSE,
           BackTransNumeric = FALSE,
@@ -1483,8 +1470,8 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
         # Update data non-group case----
         if(DebugMode) print("Update data non-group case----")
-        if(RoundPreds) Preds[, eval(names(Preds)[1]) := round(Preds[[1]])]
-        data.table::set(UpdateData, i = N, j = as.integer(2:3), value = Preds[[1]])
+        if(RoundPreds) Preds[, eval(names(Preds)[1L]) := round(Preds[[1L]])]
+        data.table::set(UpdateData, i = N, j = 2L:3L, value = Preds[[1L]])
       }
     }
 
@@ -1625,7 +1612,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1674,7 +1661,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1740,7 +1727,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1793,7 +1780,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
           # Create copy of data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1855,7 +1842,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         temp <- CarmaCatBoostKeepVarsGDL(
           IndepVarPassTRUE = NULL,
           data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
         Temporary <- temp$data
         keep <- temp$keep
         if("GroupVar" %chin% keep) keep <- keep[!keep %chin% "GroupVar"]
@@ -1902,7 +1889,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
           # Copy data----
           temp <- CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
                                            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+                                           GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName,Preds)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -2113,6 +2100,9 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   } else {
     UpdateData[!get(DateColumnName) %in% FutureDateData, eval(TargetColumnName) := NA]
   }
+
+  # Shutdown h2o ----
+  try(h2o::h2o.shutdown(prompt = FALSE), silent = TRUE)
 
   # Return data----
   if(DebugMode) print("Return data----")

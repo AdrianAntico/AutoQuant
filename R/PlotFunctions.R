@@ -219,6 +219,7 @@ VaporWaveTheme <- function(Size1 = 1,
 #' @param TargetVariable Target variable
 #' @param DateVariable Date variable
 #' @param GroupVariables Group variables
+#' @param EvaluationMode TRUE means two lines are displayed for Actual and Forecast
 #' @param VLineDate Date of last actual target value
 #' @param Aggregate Choose from 'sum' or 'mean'
 #' @param TextSize Default 12
@@ -229,7 +230,6 @@ VaporWaveTheme <- function(Size1 = 1,
 #' @param LineWidth Numeric value. Default is 1
 #' @param Color Set to "blue", "red", etc
 #' @param XTickMarks Number of tick marks on x-axis. "1 minute","15 minutes","30 minutes","1 hour","3 hour","6 hour","12 hour","1 day","3 day","1 week","2 week","1 month","3 month","6 month","1 year","2 year","5 year","10 year"
-#' @param Size Size of text on plot
 #' @param AngleX Angle of text on x axis
 #' @param AngleY Angle of text on y axis
 #' @param ChartColor Color of chart background
@@ -241,7 +241,6 @@ VaporWaveTheme <- function(Size1 = 1,
 #' @param LegendTextColor Text color
 #' @param LegendTextSize Text size
 #' @param ForecastLineColor Forecast line color
-#' @param Forecast Set to TRUE to use forecast plots
 #' @param PredictionIntervals Set to TRUE to plot prediction intervals
 #' @param TS_ModelID Select a model from the list for forecasting viewer
 #' @param PredictionIntervalColorInner Fills 20th to 80th percentiles
@@ -251,6 +250,7 @@ TimeSeriesPlotter <- function(data = data,
                               TargetVariable = "TargetVariableName",
                               DateVariable = "DateVariableName",
                               GroupVariables = "GroupVariableName",
+                              EvaluationMode = FALSE,
                               VLineDate = NULL,
                               Aggregate = NULL,
                               NumberGroupsDisplay = 5,
@@ -261,7 +261,6 @@ TimeSeriesPlotter <- function(data = data,
                               LineWidth = 1,
                               Color = "blue",
                               XTickMarks = "1 year",
-                              Size = 12,
                               AngleX = 35,
                               AngleY = 0,
                               ChartColor = "lightsteelblue1",
@@ -273,7 +272,6 @@ TimeSeriesPlotter <- function(data = data,
                               LegendTextColor = "darkblue",
                               LegendTextSize = 10,
                               ForecastLineColor = "black",
-                              Forecast = FALSE,
                               PredictionIntervals = FALSE,
                               TS_ModelID = NULL,
                               PredictionIntervalColorInner = "aquamarine1",
@@ -287,273 +285,222 @@ TimeSeriesPlotter <- function(data = data,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # Ensure arguments are correct----
-  if(data[, .N] <= 1) stop("You're data contains <= 1 row")
   if(!is.null(TargetVariable)) if(!is.character(TargetVariable)) stop("TargetVariable did not pass through as string")
   if(!is.null(DateVariable)) if(!is.character(DateVariable)) stop("DateVariable did not pass through as string")
-  if(!is.null(GroupVariables)) {
-    if(!is.character(GroupVariables)) stop("GroupVariables did not pass through as string")
-    if(length(GroupVariables) > 1) Forecast <- FALSE
-  }
   if(!is.null(Aggregate)) if(!is.character(Aggregate)) stop("Aggregate did not pass through as string")
   if(!is.null(NumberGroupsDisplay)) if(is.character(NumberGroupsDisplay) | is.factor(NumberGroupsDisplay)) stop("NumberGroupsDisplay needs to be a number")
   if(!is.null(OtherGroupLabel)) if(!is.character(OtherGroupLabel)) stop("OtherGroupLabel did not pass through as string")
 
-  # Forecast----
-  if(Forecast) {
-
-    # Subset data----
-    if("ModelID" %chin% names(data) & !is.null(TS_ModelID)) {
-      dataSubset <- data[ModelID == eval(TS_ModelID)]
+  # Melt if multiple targets----
+  if("ModelID" %chin% names(data)) data <- data[ModelID == eval(TS_ModelID)]
+  if(length(TargetVariable) > 1 & !EvaluationMode) {
+    if(!is.null(GroupVariables)) {
+      data <- TimeSeriesMelt(data = data, TargetVariable = TargetVariable, DateVariable = DateVariable, GroupVariables = c(GroupVariables))
+      TargetVariable <- "TargetSeries"
+      GroupVariables <- c("GroupVar", GroupVariables)
     } else {
-      dataSubset <- data
+      data <- TimeSeriesMelt(data = data, TargetVariable = TargetVariable, DateVariable = DateVariable)
+      TargetVariable <- "TargetSeries"
+      GroupVariables <- "GroupVar"
     }
+  }
 
-    # Groupvariables
-    if(length(dataSubset[[eval(DateVariable)]]) != length(unique(dataSubset[[eval(DateVariable)]]))) {
-      dataSubset <- dataSubset[, .(temp1 = mean(get(TargetVariable),na.rm = TRUE), Forecast = mean(Forecast,na.rm = TRUE)), by = eval(DateVariable)]
-      data.table::setnames(dataSubset,"temp1",eval(TargetVariable[1]))
-    }
+  # Ensure GroupVariables are character type----
+  if(!is.null(GroupVariables)) data[, eval(GroupVariables) := lapply(.SD, as.character), .SDcols = c(eval(GroupVariables))]
 
-    # Plot data----
-    Plot <- ggplot2::ggplot(dataSubset, ggplot2::aes(x = as.POSIXct(get(DateVariable)))) +
-      ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[2]), color = "Forecast")) +
-      ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[1]), color = "Actuals")) +
-      ggplot2::scale_color_manual("", breaks = c("Forecast","Actuals"), values = c(ForecastLineColor, Color)) +
-      ggplot2::xlab(eval(DateVariable)) + ggplot2::ylab(eval(TargetVariable))
+  # Make copy of data----
+  PlotData <- data.table::copy(data)
 
-    # Title: add metrics----
-    Plot <- Plot + ggplot2::labs(
-      title = paste0("SARIMA: (",Output$PerformanceGrid$Lags[1][[1]],
-                     ", ",Output$PerformanceGrid$Differences[1][[1]],
-                     ", ",Output$PerformanceGrid$MovingAverages[1][[1]],
-                     ") (",Output$PerformanceGrid$SeasonalLags[1][[1]],
-                     ", ",Output$PerformanceGrid$SeasonalDifferences[1][[1]],
-                     ", ",Output$PerformanceGrid$SeasonalMovingAverages[1][[1]],"); ",
-                     "BoxCox = '",Output$PerformanceGrid$BoxCox[1][[1]],"'; ",
-                     "Include Drift = ",as.character(Output$PerformanceGrid$IncludeDrift[1][[1]])),
-      subtitle = paste0(
-        "MAPE = ", round(100 * min(Output$PerformanceGrid$Blended_MAPE, na.rm = TRUE), 2L),"%",
-        " :: ",
-        "MAE = ", round(min(Output$PerformanceGrid$Blended_MAE, na.rm = TRUE), 2L),
-        " :: ",
-        "RMSE = ", round(sqrt(min(Output$PerformanceGrid$Blended_MSE, na.rm = TRUE)), 2L))) +
-      ChartTheme(Size=TextSize, AngleX=AngleX, AngleY=AngleY, ChartColor=ChartColor, BorderColor=BorderColor, TextColor=TextColor, GridColor=GridColor, BackGroundColor=BackGroundColor, LegendPosition=LegendPosition)
+  # Subset columns for plotting----
+  if(!is.null(GroupVariables)) {
+    PlotData <- PlotData[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
+  } else {
+    PlotData <- PlotData[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
+  }
 
-    # Check if it works correctly
+  # Ensure DateVariable is date type----
+  PlotData[, eval(DateVariable) := as.POSIXct(get(DateVariable))]
+
+  # Evaluate mode ----
+  if(EvaluationMode) {
+
+    # Rename Target Variable
+    data.table::setnames(PlotData, eval(TargetVariable[2L]), "Actual")
+
+    # Legend definition
+    Colors <- c("Actual" = "red", "Forecast" = "blue")
+
+    # Eval Measures ----
+    AvgError <- PlotData[, round(mean(Actual - Forecast),1L)]
+    MAE <- PlotData[, round(mean(abs(Actual - Forecast)), 1L)]
+    AvgPercError <- PlotData[, round(100*mean(Forecast / Actual - 1), 1L)]
+    MAPE <- PlotData[, round(100*mean(abs(Forecast / Actual - 1)), 1L)]
+
+    # Plot
+    Plot <- ggplot2::ggplot(PlotData, ggplot2::aes(x = PlotData[, get(DateVariable)])) +
+      ggplot2::geom_line(ggplot2::aes(y = PlotData[["Forecast"]], color = "Forecast"), lwd = LineWidth) +
+      ggplot2::geom_line(ggplot2::aes(y = PlotData[["Actual"]], color = "Actual"), lwd = LineWidth) +
+      ggplot2::xlab(DateVariable) + ggplot2::ylab("Forecast | Actual") +
+      ggplot2::scale_color_manual(values = Colors) +
+      ggplot2::labs(title = "Evaluation Plot", subtitle = paste0("MAPE = ",MAPE, "  ::  Avg % Error = ",AvgPercError, "%  ::  MAE = ",MAE, "  ::  Avg Error = ",AvgError)) +
+      ggplot2::theme(legend.position = LegendPosition) +
+      ggplot2::theme(legend.title = ggplot2::element_blank()) +
+      ChartTheme(
+        Size = TextSize,
+        AngleX = AngleX,
+        AngleY = AngleY,
+        ChartColor = ChartColor,
+        BorderColor = BorderColor,
+        TextColor = TextColor,
+        GridColor = GridColor,
+        BackGroundColor = BackGroundColor,
+        LegendPosition = LegendPosition)
+
+    # Update axis lables
     if(!is.null(XTickMarks)) {
-      if(as.numeric(difftime(time1 = dataSubset[2,1][[1]],dataSubset[1,1][[1]], units = "hour")) >= 1) {
-        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-      }
+      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
     } else {
-      if(as.numeric(difftime(time1 = dataSubset[2,1][[1]],dataSubset[1,1][[1]], units = "hour")) >= 1) {
-        Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
-      }
-    }
-
-    # Prediction Intervals
-    if(PredictionIntervals) {
-      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$High80, ymax = dataSubset$High95), fill = PredictionIntervalColorOuter, alpha = 0.25)
-      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$Low80, ymax = dataSubset$High80), fill = PredictionIntervalColorInner, alpha = 0.25)
-      Plot <- Plot + ggplot2::geom_ribbon(ggplot2::aes(ymin = dataSubset$Low80, ymax = dataSubset$Low95), fill = PredictionIntervalColorOuter, alpha = 0.25)
-      Plot <- Plot + ggplot2::geom_line(ggplot2::aes(y = dataSubset$Low95), color = ForecastLineColor, lwd = 0.25) +
-        ggplot2::geom_line(ggplot2::aes(y = dataSubset$Low80), color = ForecastLineColor, lwd = 0.25) +
-        ggplot2::geom_line(ggplot2::aes(y = dataSubset$High80), color = ForecastLineColor, lwd = 0.25) +
-        ggplot2::geom_line(ggplot2::aes(y = dataSubset$High95), color = ForecastLineColor, lwd = 0.25)
+      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
     }
 
     # Return
     return(Plot)
-  } else {
+  }
 
-    # Melt if multiple targets----
-    if("ModelID" %chin% names(data)) data <- data[ModelID == eval(TS_ModelID)]
-    if(length(TargetVariable) > 1) {
-      if(!is.null(GroupVariables)) {
-        data <- TimeSeriesMelt(data = data, TargetVariable = TargetVariable, DateVariable = DateVariable, GroupVariables = c(GroupVariables))
-        TargetVariable <- "TargetSeries"
-        GroupVariables <- c("GroupVar",GroupVariables)
+  # Plot data----
+  if(!is.null(GroupVariables)) {
+
+    # If more than 1 grouping variable----
+    if(length(GroupVariables) > 1) {
+
+      # Combine Group Variables----
+      for (i in seq_len(length(GroupVariables))) PlotData[, eval(GroupVariables[i]) := paste0(eval(GroupVariables[i]),"_", get(GroupVariables[i]))]
+      PlotData[, GroupVars := do.call(paste, c(.SD, sep = "_")), .SDcols = c(eval(GroupVariables))]
+      PlotData[, paste0(eval(GroupVariables)) := NULL]
+
+      # Collapse groups----
+      SumTable <- PlotData[, sum(get(TargetVariable), na.rm = TRUE), by = "GroupVars"][order(-V1)]
+      if(is.null(LevelsToDisplay)) {
+        Levels <- as.character(SumTable[1:NumberGroupsDisplay, .SD, .SDcols = "GroupVars"][[1]])
+        tempData <- PlotData[GroupVars %chin% Levels]
       } else {
-        data <- TimeSeriesMelt(data = data, TargetVariable = TargetVariable, DateVariable = DateVariable)
-        TargetVariable <- "TargetSeries"
-        GroupVariables <- "GroupVar"
+        tempData <- PlotData[GroupVars %chin% LevelsToDisplay]
       }
-    }
 
-    # Ensure GroupVariables are character type----
-    if(!is.null(GroupVariables)) data[, eval(GroupVariables) := lapply(.SD, as.character), .SDcols = c(eval(GroupVariables))]
+      if(tolower(Aggregate) == "sum") {
+        tempData <- tempData[, sum(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
+        data.table::setnames(tempData, "V1", eval(TargetVariable))
+      } else {
+        tempData <- tempData[, mean(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
+        data.table::setnames(tempData, "V1", eval(TargetVariable))
+      }
 
-    # Make copy of data----
-    PlotData <- data.table::copy(data)
-
-    # Subset columns for plotting----
-    if(!is.null(GroupVariables)) {
-      PlotData <- PlotData[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
-    } else {
-      PlotData <- PlotData[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
-    }
-
-    # Ensure DateVariable is date type----
-    PlotData[, eval(DateVariable) := as.POSIXct(get(DateVariable))]
-
-    # Plot data----
-    if(!is.null(GroupVariables)) {
-
-      # If more than 1 grouping variable----
-      if(length(GroupVariables) > 1) {
-
-        # Combine Group Variables----
-        for (i in seq_len(length(GroupVariables))) PlotData[, eval(GroupVariables[i]) := paste0(eval(GroupVariables[i]),"_", get(GroupVariables[i]))]
-        PlotData[, GroupVars := do.call(paste, c(.SD, sep = "_")), .SDcols = c(eval(GroupVariables))]
-        PlotData[, paste0(eval(GroupVariables)) := NULL]
-
-        # Collapse groups----
-        SumTable <- PlotData[, sum(get(TargetVariable),na.rm = TRUE), by = "GroupVars"][order(-V1)]
-        if(is.null(LevelsToDisplay)) {
-          Levels <- as.character(SumTable[1:NumberGroupsDisplay, .SD, .SDcols = "GroupVars"][[1]])
-          tempData <- PlotData[GroupVars %chin% Levels]
-        } else {
-          tempData <- PlotData[GroupVars %chin% LevelsToDisplay]
-        }
-
+      # Care to see all other groups as a single group level----
+      if(DisplayOtherGroup) {
+        tempData2 <- PlotData[!(GroupVars %chin% LevelsToDisplay)]
+        tempData2[, GroupVars := eval(OtherGroupLabel)]
         if(tolower(Aggregate) == "sum") {
-          tempData <- tempData[, sum(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
-          data.table::setnames(tempData, "V1", eval(TargetVariable))
-        } else {
-          tempData <- tempData[, mean(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
-          data.table::setnames(tempData, "V1", eval(TargetVariable))
+          tempData2 <- tempData2[, sum(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
+          data.table::setnames(tempData2, "V1", eval(TargetVariable))
+        } else if(tolower(Aggregate) == "mean") {
+          tempData2 <- tempData2[, mean(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
+          data.table::setnames(tempData2, "V1", eval(TargetVariable))
         }
 
-        # Care to see all other groups as a single group level----
-        if(DisplayOtherGroup) {
-          tempData2 <- PlotData[!(GroupVars %chin% LevelsToDisplay)]
-          tempData2[, GroupVars := eval(OtherGroupLabel)]
-          if(tolower(Aggregate) == "sum") {
-            tempData2 <- tempData2[, sum(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
-            data.table::setnames(tempData2, "V1", eval(TargetVariable))
-          } else if(tolower(Aggregate) == "mean") {
-            tempData2 <- tempData2[, mean(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
-            data.table::setnames(tempData2, "V1", eval(TargetVariable))
-          }
+        # Recombine data sets----
+        tempData2 <- data.table::rbindlist(list(tempData, tempData2), use.names = TRUE)
 
-          # Recombine data sets----
-          tempData2 <- data.table::rbindlist(list(tempData, tempData2), use.names = TRUE)
-
-        } else {
-
-          # Recombine data sets----
-          tempData2 <- tempData
-        }
-
-        # Grouping variables----
-        Plot <- ggplot2::ggplot(
-          tempData2,
-          ggplot2::aes(x = get(DateVariable), y = get(TargetVariable), color = GroupVars)) +
-          ggplot2::geom_line() +
-          ggplot2::theme(legend.title = ggplot2::element_blank()) +
-          ggplot2::xlab(DateVariable) + ggplot2::ylab(TargetVariable) +
-          ChartTheme(
-            Size = TextSize,
-            AngleX = AngleX,
-            AngleY = AngleY,
-            ChartColor = ChartColor,
-            BorderColor = BorderColor,
-            TextColor = TextColor,
-            GridColor = GridColor,
-            BackGroundColor = BackGroundColor,
-            LegendPosition = LegendPosition) +
-          ggplot2::theme(legend.title = ggplot2::element_blank()) +
-          ggplot2::theme(legend.text = ggplot2::element_text(
-            colour = LegendTextColor,
-            size = LegendTextSize))
-        if(!is.null(XTickMarks)) {
-          Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-        } else {
-          Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
-        }
-
-      } else if(length(unique(PlotData[, get(GroupVariables)])) > 1) {
-
-        # Collapse groups----
-        SumTable <- PlotData[, sum(get(TargetVariable)), by = eval(GroupVariables)][order(-V1)]
-
-        # Single group treatment----
-        Levels <- as.character(SumTable[1:NumberGroupsDisplay][[1]])
-        tempData <- PlotData[get(GroupVariables) %chin% Levels]
-
-        # Other groups----
-        if(DisplayOtherGroup) {
-          tempData2 <- PlotData[!(get(GroupVariables) %chin% Levels)]
-          tempData2 <- tempData2[, eval(GroupVariables) := eval(OtherGroupLabel)]
-          if(tolower(Aggregate) == "sum") {
-            tempData2 <- tempData2[, sum(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
-            tempData <- tempData[, sum(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
-            data.table::setnames(tempData2, "V1", eval(TargetVariable))
-            data.table::setnames(tempData, "V1", eval(TargetVariable))
-          } else if(tolower(Aggregate) == "mean") {
-            tempData2 <- tempData2[, mean(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
-            tempData <- tempData[, mean(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
-            data.table::setnames(tempData2, "V1", eval(TargetVariable))
-            data.table::setnames(tempData, "V1", eval(TargetVariable))
-          }
-
-          # Combine data
-          tempData2 <- data.table::rbindlist(list(tempData,tempData2))
-        } else {
-          tempData2 <- tempData
-        }
-
-        # Grouping variables----
-        Plot <- ggplot2::ggplot(
-          tempData2,
-          ggplot2::aes(x = get(DateVariable), y = get(TargetVariable), color = get(GroupVariables))) +
-          ggplot2::geom_line() +
-          ggplot2::theme(legend.title=ggplot2::element_blank()) +
-          ggplot2::xlab(DateVariable) + ggplot2::ylab(TargetVariable) +
-          ChartTheme(
-            Size = TextSize,
-            AngleX = AngleX,
-            AngleY = AngleY,
-            ChartColor = ChartColor,
-            BorderColor = BorderColor,
-            TextColor = TextColor,
-            GridColor = GridColor,
-            BackGroundColor = BackGroundColor,
-            LegendPosition = LegendPosition) +
-          ggplot2::theme(legend.title = ggplot2::element_blank()) +
-          ggplot2::theme(legend.text = ggplot2::element_text(
-            colour = LegendTextColor,
-            size = LegendTextSize))
-        if(!is.null(XTickMarks)) {
-          Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-        } else {
-          Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
-        }
       } else {
-        Plot <- ggplot2::ggplot(
-          PlotData,
-          ggplot2::aes(x = PlotData[, get(DateVariable)])) +
-          ggplot2::geom_line(ggplot2::aes(y = PlotData[[eval(TargetVariable)]]), color = Color, lwd = LineWidth) +
-          ggplot2::xlab(DateVariable) + ggplot2::ylab(TargetVariable) +
-          ChartTheme(
-            Size = TextSize,
-            AngleX = AngleX,
-            AngleY = AngleY,
-            ChartColor = ChartColor,
-            BorderColor = BorderColor,
-            TextColor = TextColor,
-            GridColor = GridColor,
-            BackGroundColor = BackGroundColor,
-            LegendPosition = LegendPosition)
-        if(!is.null(XTickMarks)) {
-          Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-        } else {
-          Plot <- Plot +
-            ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+
+        # Recombine data sets----
+        tempData2 <- tempData
+      }
+
+      # Grouping variables ----
+      Plot <- ggplot2::ggplot(
+        tempData2,
+        ggplot2::aes(x = get(DateVariable), y = get(TargetVariable), color = GroupVars)) +
+        ggplot2::geom_line() +
+        ggplot2::theme(legend.title = ggplot2::element_blank()) +
+        ggplot2::xlab(DateVariable) + ggplot2::ylab(TargetVariable) +
+        ChartTheme(
+          Size = TextSize,
+          AngleX = AngleX,
+          AngleY = AngleY,
+          ChartColor = ChartColor,
+          BorderColor = BorderColor,
+          TextColor = TextColor,
+          GridColor = GridColor,
+          BackGroundColor = BackGroundColor,
+          LegendPosition = LegendPosition) +
+        ggplot2::theme(legend.title = ggplot2::element_blank()) +
+        ggplot2::theme(legend.text = ggplot2::element_text(
+          colour = LegendTextColor,
+          size = LegendTextSize))
+      if(!is.null(XTickMarks)) {
+        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+      } else {
+        Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+      }
+
+    } else if(length(unique(PlotData[, get(GroupVariables)])) > 1) {
+
+      # Collapse groups----
+      SumTable <- PlotData[, sum(get(TargetVariable)), by = eval(GroupVariables)][order(-V1)]
+
+      # Single group treatment----
+      Levels <- as.character(SumTable[1:NumberGroupsDisplay][[1]])
+      tempData <- PlotData[get(GroupVariables) %chin% Levels]
+
+      # Other groups----
+      if(DisplayOtherGroup) {
+        tempData2 <- PlotData[!(get(GroupVariables) %chin% Levels)]
+        tempData2 <- tempData2[, eval(GroupVariables) := eval(OtherGroupLabel)]
+        if(tolower(Aggregate) == "sum") {
+          tempData2 <- tempData2[, sum(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
+          tempData <- tempData[, sum(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
+          data.table::setnames(tempData2, "V1", eval(TargetVariable))
+          data.table::setnames(tempData, "V1", eval(TargetVariable))
+        } else if(tolower(Aggregate) == "mean") {
+          tempData2 <- tempData2[, mean(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
+          tempData <- tempData[, mean(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
+          data.table::setnames(tempData2, "V1", eval(TargetVariable))
+          data.table::setnames(tempData, "V1", eval(TargetVariable))
         }
+
+        # Combine data
+        tempData2 <- data.table::rbindlist(list(tempData,tempData2))
+      } else {
+        tempData2 <- tempData
+      }
+
+      # Grouping variables----
+      Plot <- ggplot2::ggplot(
+        tempData2,
+        ggplot2::aes(x = get(DateVariable), y = get(TargetVariable), color = get(GroupVariables))) +
+        ggplot2::geom_line() +
+        ggplot2::theme(legend.title=ggplot2::element_blank()) +
+        ggplot2::xlab(DateVariable) + ggplot2::ylab(TargetVariable) +
+        ChartTheme(
+          Size = TextSize,
+          AngleX = AngleX,
+          AngleY = AngleY,
+          ChartColor = ChartColor,
+          BorderColor = BorderColor,
+          TextColor = TextColor,
+          GridColor = GridColor,
+          BackGroundColor = BackGroundColor,
+          LegendPosition = LegendPosition) +
+        ggplot2::theme(legend.title = ggplot2::element_blank()) +
+        ggplot2::theme(legend.text = ggplot2::element_text(
+          colour = LegendTextColor,
+          size = LegendTextSize))
+      if(!is.null(XTickMarks)) {
+        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+      } else {
+        Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
       }
     } else {
-
-      # No grouping variables----
       Plot <- ggplot2::ggplot(
         PlotData,
         ggplot2::aes(x = PlotData[, get(DateVariable)])) +
@@ -572,13 +519,38 @@ TimeSeriesPlotter <- function(data = data,
       if(!is.null(XTickMarks)) {
         Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
       } else {
-        Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+        Plot <- Plot +
+          ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
       }
     }
+  } else {
 
-    # Return plot object----
-    return(Plot)
+    # No grouping variables----
+    Plot <- ggplot2::ggplot(
+      PlotData,
+      ggplot2::aes(x = PlotData[, get(DateVariable)])) +
+      ggplot2::geom_line(ggplot2::aes(y = PlotData[[eval(TargetVariable)]]), color = Color, lwd = LineWidth) +
+      ggplot2::xlab(DateVariable) + ggplot2::ylab(TargetVariable) +
+      ChartTheme(
+        Size = TextSize,
+        AngleX = AngleX,
+        AngleY = AngleY,
+        ChartColor = ChartColor,
+        BorderColor = BorderColor,
+        TextColor = TextColor,
+        GridColor = GridColor,
+        BackGroundColor = BackGroundColor,
+        LegendPosition = LegendPosition)
+    if(!is.null(XTickMarks)) {
+      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+    } else {
+      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+    }
   }
+
+  # Return plot object----
+  return(Plot)
+
 }
 
 #' AutoBanditSarima2x2LagMA
