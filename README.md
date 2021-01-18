@@ -561,99 +561,99 @@ ________________________________________________________________________________
 <p>
  
  ```
-#' # Create some dummy correlated data
-#' data <- RemixAutoML::FakeDataGenerator(
-#'   Correlation = 0.85,
-#'   N = 10000,
-#'   ID = 2,
-#'   ZIP = 0,
-#'   AddDate = FALSE,
-#'   Classification = FALSE,
-#'   MultiClass = FALSE)
-#'
-#' # Run function
-#' TestModel <- RemixAutoML::AutoCatBoostRegression(
-#'
-#'     # GPU or CPU and the number of available GPUs
-#'     task_type = "GPU",
-#'     NumGPUs = 1,
-#'
-#'     # Metadata args
-#'     ModelID = "Test_Model_1",
-#'     model_path = normalizePath("./"),
-#'     metadata_path = normalizePath("./"),
-#'     SaveModelObjects = FALSE,
-#'     SaveInfoToPDF = FALSE,
-#'     ReturnModelObjects = TRUE,
-#'
-#'     # Data args
-#'     data = data,
-#'     TrainOnFull = FALSE,
-#'     ValidationData = NULL,
-#'     TestData = NULL,
-#'     Weights = NULL,
-#'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %in%
-#'       c("IDcol_1", "IDcol_2","Adrian")],
-#'     PrimaryDateColumn = NULL,
-#'     DummifyCols = FALSE,
-#'     IDcols = c("IDcol_1","IDcol_2"),
-#'     TransformNumericColumns = "Adrian",
-#'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
-#'
-#'     # Model evaluation
-#'     eval_metric = "RMSE",
-#'     eval_metric_value = 1.5,
-#'     loss_function = "RMSE",
-#'     loss_function_value = 1.5,
-#'     MetricPeriods = 10L,
-#'     NumOfParDepPlots = ncol(data)-1L-2L,
-#'     EvalPlots = TRUE,
-#'
-#'     # Grid tuning args
-#'     PassInGrid = NULL,
-#'     GridTune = FALSE,
-#'     MaxModelsInGrid = 30L,
-#'     MaxRunsWithoutNewWinner = 20L,
-#'     MaxRunMinutes = 60*60,
-#'     Shuffles = 4L,
-#'     BaselineComparison = "default",
-#'
-#'     # ML args
-#'     langevin = FALSE,
-#'     diffusion_temperature = 10000,
-#'     Trees = 1000,
-#'     Depth = 6,
-#'     L2_Leaf_Reg = 3.0,
-#'     RandomStrength = 1,
-#'     BorderCount = 128,
-#'     LearningRate = NULL,
-#'     RSM = 1,
-#'     BootStrapType = NULL,
-#'     GrowPolicy = "SymmetricTree",
-#'     model_size_reg = 0.5,
-#'     feature_border_type = "GreedyLogSum",
-#'     sampling_unit = "Group",
-#'     subsample = NULL,
-#'     score_function = "Cosine",
-#'     min_data_in_leaf = 1)
-#'
-#'  # Output
-#'  TestModel$Model
-#'  TestModel$ValidationData
-#'  TestModel$EvaluationPlot
-#'  TestModel$EvaluationBoxPlot
-#'  TestModel$EvaluationMetrics
-#'  TestModel$VariableImportance
-#'  TestModel$InteractionImportance
-#'  TestModel$ShapValuesDT
-#'  TestModel$VI_Plot
-#'  TestModel$PartialDependencePlots
-#'  TestModel$PartialDependenceBoxPlots
-#'  TestModel$GridList
-#'  TestModel$ColNames
-#'  TestModel$TransformationResults
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 10000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run function
+TestModel <- RemixAutoML::AutoCatBoostRegression(
+
+    # GPU or CPU and the number of available GPUs
+    task_type = "GPU",
+    NumGPUs = 1,
+
+    # Metadata args
+    ModelID = "Test_Model_1",
+    model_path = normalizePath("./"),
+    metadata_path = normalizePath("./"),
+    SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
+    ReturnModelObjects = TRUE,
+
+    # Data args
+    data = data,
+    TrainOnFull = FALSE,
+    ValidationData = NULL,
+    TestData = NULL,
+    Weights = NULL,
+    TargetColumnName = "Adrian",
+    FeatureColNames = names(data)[!names(data) %in%
+      c("IDcol_1", "IDcol_2","Adrian")],
+    PrimaryDateColumn = NULL,
+    DummifyCols = FALSE,
+    IDcols = c("IDcol_1","IDcol_2"),
+    TransformNumericColumns = "Adrian",
+    Methods = c("BoxCox", "Asinh", "Asin", "Log",
+      "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+
+    # Model evaluation
+    eval_metric = "RMSE",
+    eval_metric_value = 1.5,
+    loss_function = "RMSE",
+    loss_function_value = 1.5,
+    MetricPeriods = 10L,
+    NumOfParDepPlots = ncol(data)-1L-2L,
+    EvalPlots = TRUE,
+
+    # Grid tuning args
+    PassInGrid = NULL,
+    GridTune = FALSE,
+    MaxModelsInGrid = 30L,
+    MaxRunsWithoutNewWinner = 20L,
+    MaxRunMinutes = 60*60,
+    Shuffles = 4L,
+    BaselineComparison = "default",
+
+    # ML args
+    langevin = FALSE,
+    diffusion_temperature = 10000,
+    Trees = 1000,
+    Depth = 6,
+    L2_Leaf_Reg = 3.0,
+    RandomStrength = 1,
+    BorderCount = 128,
+    LearningRate = NULL,
+    RSM = 1,
+    BootStrapType = NULL,
+    GrowPolicy = "SymmetricTree",
+    model_size_reg = 0.5,
+    feature_border_type = "GreedyLogSum",
+    sampling_unit = "Group",
+    subsample = NULL,
+    score_function = "Cosine",
+    min_data_in_leaf = 1)
+
+ # Output
+ TestModel$Model
+ TestModel$ValidationData
+ TestModel$EvaluationPlot
+ TestModel$EvaluationBoxPlot
+ TestModel$EvaluationMetrics
+ TestModel$VariableImportance
+ TestModel$InteractionImportance
+ TestModel$ShapValuesDT
+ TestModel$VI_Plot
+ TestModel$PartialDependencePlots
+ TestModel$PartialDependenceBoxPlots
+ TestModel$GridList
+ TestModel$ColNames
+ TestModel$TransformationResults
  ```
  
 </p>

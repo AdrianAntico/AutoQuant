@@ -342,7 +342,7 @@ TimeSeriesPlotter <- function(data = data,
       ggplot2::geom_line(ggplot2::aes(y = PlotData[["Actual"]], color = "Actual"), lwd = LineWidth) +
       ggplot2::xlab(DateVariable) + ggplot2::ylab("Forecast | Actual") +
       ggplot2::scale_color_manual(values = Colors) +
-      ggplot2::labs(title = "Evaluation Plot", subtitle = paste0("MAPE = ",MAPE, "  ::  Avg % Error = ",AvgPercError, "%  ::  MAE = ",MAE, "  ::  Avg Error = ",AvgError)) +
+      ggplot2::labs(title = "Evaluation Plot", subtitle = paste0("MAPE = ",MAPE, "%  ::  Avg % Error = ",AvgPercError, "%  ::  MAE = ",MAE, "  ::  Avg Error = ",AvgError)) +
       ggplot2::theme(legend.position = LegendPosition) +
       ggplot2::theme(legend.title = ggplot2::element_blank()) +
       ChartTheme(
