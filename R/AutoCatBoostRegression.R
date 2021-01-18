@@ -310,7 +310,6 @@ AutoCatBoostRegression <- function(data,
   # Logic arg check ----
   if(!(tolower(task_type) %chin% c("gpu", "cpu"))) stop("task_type needs to be either 'GPU' or 'CPU'")
   if(is.null(NumGPUs)) NumGPUs <- '0' else if(NumGPUs > 1L) NumGPUs <- paste0('0-', NumGPUs-1L) else NumGPUs <- '0'
-  if(is.null(ClassWeights)) ClassWeights <- c(1,1)
   if(!is.null(PrimaryDateColumn)) HasTime <- TRUE else HasTime <- FALSE
   if(any(Trees < 1L)) stop("Trees must be greater than 1")
   if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
