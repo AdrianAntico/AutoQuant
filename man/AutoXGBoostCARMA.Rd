@@ -14,6 +14,8 @@ AutoXGBoostCARMA(
   HierarchGroups = NULL,
   GroupVariables = NULL,
   FC_Periods = 5,
+  SaveDataPath = NULL,
+  PDFOutputPath = NULL,
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
@@ -46,9 +48,12 @@ AutoXGBoostCARMA(
   Timer = TRUE,
   DebugMode = FALSE,
   EvalMetric = "MAE",
+  LossFunction = "reg:squarederror",
   GridTune = FALSE,
   GridEvalMetric = "mae",
-  ModelCount = 1L,
+  ModelCount = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L * 60L,
   NTrees = 1000L,
   LearningRate = 0.03,
   MaxDepth = 9L,
@@ -75,6 +80,10 @@ AutoXGBoostCARMA(
 \item{GroupVariables}{Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.}
 
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
+
+\item{SaveDataPath}{Path to save modeling data}
+
+\item{PDFOutputPath}{Supply a path to save model insights to PDF}
 
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"}
 
@@ -134,11 +143,17 @@ AutoXGBoostCARMA(
 
 \item{EvalMetric}{Select from "r2", "RMSE", "MSE", "MAE"}
 
+\item{LossFunction}{Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'}
+
 \item{GridTune}{Set to TRUE to run a grid tune}
 
 \item{GridEvalMetric}{This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'}
 
 \item{ModelCount}{Set the number of models to try in the grid tune}
+
+\item{MaxRunsWithoutNewWinner}{Number of consecutive runs without a new winner in order to terminate procedure}
+
+\item{MaxRunMinutes}{Default 24L*60L}
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
@@ -209,15 +224,13 @@ XGBoostResults <- AutoXGBoostCARMA(
   AnomalyDetection = NULL,
 
   # Productionize
-  FC_Periods = 4,
+  FC_Periods = 0,
   TrainOnFull = FALSE,
-  TreeMethod = "hist",
-  EvalMetric = "RMSE",
-  GridTune = FALSE,
-  ModelCount = 5,
   NThreads = 8,
   Timer = TRUE,
   DebugMode = FALSE,
+  SaveDataPath = NULL,
+  PDFOutputPath = NULL,
 
   # Target Transformations
   TargetTransformation = TRUE,
@@ -243,6 +256,19 @@ XGBoostResults <- AutoXGBoostCARMA(
   HolidayVariable = c("USPublicHolidays","EasterGroup",
     "ChristmasGroup","OtherEcclesticalFeasts"),
   TimeTrendVariable = TRUE,
+
+  # ML eval args
+  TreeMethod = "hist",
+  EvalMetric = "RMSE",
+  LossFunction = 'reg:squarederror',
+
+  # ML grid tuning
+  GridTune = FALSE,
+  ModelCount = 5,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+
+  # ML args
   NTrees = 300,
   LearningRate = 0.03,
   MaxDepth = 9L,

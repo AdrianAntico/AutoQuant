@@ -9,6 +9,8 @@
 #' @param data Supply your full series data set here
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
+#' @param PDFOutputPath NULL or a path file to output PDFs to a specified folder
+#' @param SaveDataPath NULL Or supply a path. Data saved will be called 'ModelID'_data.csv
 #' @param WeightsColumn NULL
 #' @param NonNegativePred TRUE or FALSE
 #' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
@@ -118,6 +120,8 @@
 #'   TrainOnFull = FALSE,
 #'   MaxMem = {gc();paste0(as.character(floor(max(32, as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) -32) / 1000000)),"G")},
 #'   NThreads = parallel::detectCores(),
+#'   PDFOutputPath = NULL,
+#'   SaveDataPath = NULL,
 #'   Timer = TRUE,
 #'   DebugMode = TRUE,
 #'
@@ -222,6 +226,8 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          DateColumnName = "DateTime",
                          HierarchGroups = NULL,
                          GroupVariables = NULL,
+                         PDFOutputPath = NULL,
+                         SaveDataPath = NULL,
                          FC_Periods = 30,
                          TimeUnit = "week",
                          TimeGroups = c("weeks","months"),
@@ -951,6 +957,11 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Store Date Info----")
   FutureDateData <- unique(data[, get(DateColumnName)])
 
+  # Return engineered data before Partitioning ----
+  if(!is.null(SaveDataPath)) {
+    data.table::fwrite(data, file.path(SaveDataPath, "ModelData.csv"))
+  }
+
   # Data Wrangling: Partition data with AutoDataPartition() ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
   if(!TrainOnFull) {
@@ -1073,7 +1084,8 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
       # Metadata arguments
       model_path = ModelPath,
-      metadata_path = getwd(),
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,
@@ -1130,7 +1142,8 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
       # Metadata arguments
       model_path = ModelPath,
-      metadata_path = getwd(),
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,
@@ -1187,7 +1200,8 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
       # Metadata arguments
       model_path = ModelPath,
-      metadata_path = getwd(),
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,
@@ -1283,7 +1297,8 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
       # Metadata arguments
       model_path = ModelPath,
-      metadata_path = getwd(),
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,

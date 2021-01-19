@@ -22,6 +22,7 @@ AutoH2oGBMClassifier(
   NumOfParDepPlots = 3L,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
   IfSaveModel = "mojo",
   H2OShutdown = FALSE,
   H2OStartUp = TRUE,
@@ -30,6 +31,7 @@ AutoH2oGBMClassifier(
   StoppingRounds = 10,
   MaxModelsInGrid = 2,
   eval_metric = "auc",
+  CostMatrixWeights = c(1, 0, 0, 1),
   Trees = 50L,
   GridTune = FALSE,
   LearnRate = 0.1,
@@ -37,7 +39,6 @@ AutoH2oGBMClassifier(
   Distribution = "bernoulli",
   MaxDepth = 20,
   SampleRate = 0.632,
-  MTries = -1,
   ColSampleRate = 1,
   ColSampleRatePerTree = 1,
   ColSampleRatePerTreeLevel = 1,
@@ -80,6 +81,8 @@ AutoH2oGBMClassifier(
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
+\item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
+
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{Set to TRUE to shutdown H2O inside the function}
@@ -95,6 +98,8 @@ AutoH2oGBMClassifier(
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "auc","logloss","aucpr", "lift_top_group","misclassification","mean_per_class_error"}
+
+\item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),}
 
 \item{Trees}{The maximum number of trees you want in your models}
 
@@ -127,8 +132,6 @@ AutoH2oGBMClassifier(
 \item{HistogramType}{Default "AUTO"}
 
 \item{CategoricalEncoding}{Default "AUTO"}
-
-\item{SaveInfoToPDF}{Set to TRUE to save insights to PDF}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -158,6 +161,8 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
     IfSaveModel = "mojo",
 
     # Model evaluation
+    CostMatrixWeights = c(1,0,0,1),
+    eval_metric = "auc",
     NumOfParDepPlots = 3,
 
     # Metadata arguments:
@@ -188,7 +193,6 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
     Trees = 50,
     LearnRate = 0.10,
     LearnRateAnnealing = 1,
-    eval_metric = "auc",
     Distribution = "bernoulli",
     MaxDepth = 20,
     SampleRate = 0.632,

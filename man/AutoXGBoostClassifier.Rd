@@ -14,6 +14,7 @@ AutoXGBoostClassifier(
   IDcols = NULL,
   model_path = NULL,
   metadata_path = NULL,
+  SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
@@ -22,6 +23,7 @@ AutoXGBoostClassifier(
   NumOfParDepPlots = 3L,
   NThreads = parallel::detectCores(),
   LossFunction = "reg:logistic",
+  CostMatrixWeights = c(1, 0, 0, 1),
   eval_metric = "auc",
   TreeMethod = "hist",
   GridTune = FALSE,
@@ -58,6 +60,8 @@ AutoXGBoostClassifier(
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
+\item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
+
 \item{ModelID}{A character string to name your model and output}
 
 \item{ReturnFactorLevels}{TRUE or FALSE. Set to FALSE to not return factor levels.}
@@ -73,6 +77,8 @@ AutoXGBoostClassifier(
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
 
 \item{LossFunction}{Select from 'reg:logistic', "binary:logistic"}
+
+\item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
 
@@ -136,6 +142,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
     # Data args
     data = data,
@@ -149,6 +156,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
     # Model evaluation
     LossFunction = 'reg:logistic',
+    CostMatrixWeights = c(1,0,0,1),
     eval_metric = "auc",
     NumOfParDepPlots = 3L,
 

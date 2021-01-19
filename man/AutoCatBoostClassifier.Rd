@@ -13,6 +13,7 @@ AutoCatBoostClassifier(
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
   ClassWeights = c(1, 1),
+  CostMatrixWeights = c(1, 0, 0, 1),
   IDcols = NULL,
   task_type = "GPU",
   NumGPUs = 1,
@@ -68,6 +69,8 @@ AutoCatBoostClassifier(
 \item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
 
 \item{ClassWeights}{Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.}
+
+\item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -189,6 +192,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
     IDcols = c("IDcol_1","IDcol_2"),
 
     # Evaluation args
+    CostMatrixWeights = c(1,0,0,1),
     eval_metric = "AUC",
     loss_function = "Logloss",
     MetricPeriods = 10L,

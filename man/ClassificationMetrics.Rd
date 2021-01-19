@@ -8,7 +8,7 @@ ClassificationMetrics(
   TestData,
   Thresholds,
   Target,
-  Predict,
+  PredictColumnName,
   PositiveOutcome,
   NegativeOutcome,
   CostMatrix = c(1, 0, 0, 1)
@@ -21,7 +21,7 @@ ClassificationMetrics(
 
 \item{Target}{Name of your target variable}
 
-\item{Predict}{Name of your predicted value variable}
+\item{PredictColumnName}{Name of your predicted value variable}
 
 \item{PositiveOutcome}{The value of the positive outcome level}
 

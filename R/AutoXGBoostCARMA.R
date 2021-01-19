@@ -15,6 +15,8 @@
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
+#' @param PDFOutputPath Supply a path to save model insights to PDF
+#' @param SaveDataPath Path to save modeling data
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
@@ -42,9 +44,12 @@
 #' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param EvalMetric Select from "r2", "RMSE", "MSE", "MAE"
+#' @param LossFunction Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param ModelCount Set the number of models to try in the grid tune
+#' @param MaxRunsWithoutNewWinner Number of consecutive runs without a new winner in order to terminate procedure
+#' @param MaxRunMinutes Default 24L*60L
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param LearningRate Learning Rate
 #' @param MaxDepth Depth
@@ -102,15 +107,13 @@
 #'   AnomalyDetection = NULL,
 #'
 #'   # Productionize
-#'   FC_Periods = 4,
+#'   FC_Periods = 0,
 #'   TrainOnFull = FALSE,
-#'   TreeMethod = "hist",
-#'   EvalMetric = "RMSE",
-#'   GridTune = FALSE,
-#'   ModelCount = 5,
 #'   NThreads = 8,
 #'   Timer = TRUE,
 #'   DebugMode = FALSE,
+#'   SaveDataPath = NULL,
+#'   PDFOutputPath = NULL,
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
@@ -136,6 +139,19 @@
 #'   HolidayVariable = c("USPublicHolidays","EasterGroup",
 #'     "ChristmasGroup","OtherEcclesticalFeasts"),
 #'   TimeTrendVariable = TRUE,
+#'
+#'   # ML eval args
+#'   TreeMethod = "hist",
+#'   EvalMetric = "RMSE",
+#'   LossFunction = 'reg:squarederror',
+#'
+#'   # ML grid tuning
+#'   GridTune = FALSE,
+#'   ModelCount = 5,
+#'   MaxRunsWithoutNewWinner = 20L,
+#'   MaxRunMinutes = 24L*60L,
+#'
+#'   # ML args
 #'   NTrees = 300,
 #'   LearningRate = 0.03,
 #'   MaxDepth = 9L,
@@ -163,6 +179,8 @@ AutoXGBoostCARMA <- function(data,
                              HierarchGroups = NULL,
                              GroupVariables = NULL,
                              FC_Periods = 5,
+                             SaveDataPath = NULL,
+                             PDFOutputPath = NULL,
                              TimeUnit = "week",
                              TimeGroups = c("weeks","months"),
                              TargetTransformation = FALSE,
@@ -192,9 +210,12 @@ AutoXGBoostCARMA <- function(data,
                              Timer = TRUE,
                              DebugMode = FALSE,
                              EvalMetric = "MAE",
+                             LossFunction = 'reg:squarederror',
                              GridTune = FALSE,
                              GridEvalMetric = "mae",
-                             ModelCount = 1L,
+                             ModelCount = 30L,
+                             MaxRunsWithoutNewWinner = 20L,
+                             MaxRunMinutes = 24L*60L,
                              NTrees = 1000L,
                              LearningRate = 0.03,
                              MaxDepth = 9L,
@@ -849,6 +870,11 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Store Date Info----")
   FutureDateData <- unique(data[, get(DateColumnName)])
 
+  # Return engineered data before Partitioning ----
+  if(!is.null(SaveDataPath)) {
+    data.table::fwrite(data, file.path(SaveDataPath, "ModelData.csv"))
+  }
+
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
   if(!TrainOnFull) {
@@ -955,11 +981,12 @@ AutoXGBoostCARMA <- function(data,
 
       # Metadata arguments
       model_path = getwd(),
-      metadata_path = getwd(),
-      ModelID = "TestModel",
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      ModelID = "XGBoost",
       ReturnFactorLevels = TRUE,
       ReturnModelObjects = TRUE,
       SaveModelObjects = FALSE,
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
 
       # Data arguments
       data = train,
@@ -973,7 +1000,7 @@ AutoXGBoostCARMA <- function(data,
       Methods = NULL,
 
       # Model evaluation
-      LossFunction = 'reg:squarederror',
+      LossFunction = LossFunction,
       eval_metric = EvalMetric,
       NumOfParDepPlots = 10,
 
@@ -983,8 +1010,8 @@ AutoXGBoostCARMA <- function(data,
       grid_eval_metric = GridEvalMetric,
       BaselineComparison = "default",
       MaxModelsInGrid = ModelCount,
-      MaxRunsWithoutNewWinner = 20L,
-      MaxRunMinutes = 24L*60L,
+      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+      MaxRunMinutes = MaxRunMinutes,
       Shuffles = 1L,
       Verbose = 1L,
 

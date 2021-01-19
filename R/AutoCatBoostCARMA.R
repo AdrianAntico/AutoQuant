@@ -1141,7 +1141,7 @@ AutoCatBoostCARMA <- function(data,
       train[, Weights := eval(TimeWeights) ^ PowerValue]
       Weightss <- train[["Weights"]]
       train[, ":=" (PowerValue = NULL, Weights = NULL)]
-      data.table::setorderv(x = train, cols = names(train)[1L:2L], order = c(1,1))
+      data.table::setorderv(x = train, cols = c("GroupVar", DateColumnName), order = c(1,1))
     }
   } else {
     Weightss <- NULL
@@ -1211,7 +1211,7 @@ AutoCatBoostCARMA <- function(data,
       #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
       #            Results of all model builds including parameter settings, bandit probs, and grid IDs
       #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-      ModelID = "ModelTest",
+      ModelID = "CatBoost",
       model_path = getwd(),
       metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
       SaveModelObjects = FALSE,

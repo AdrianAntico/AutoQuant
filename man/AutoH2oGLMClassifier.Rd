@@ -39,6 +39,7 @@ AutoH2oGLMClassifier(
   Distribution = "binomial",
   Link = "logit",
   eval_metric = "auc",
+  CostMatrixWeights = c(1, 0, 0, 1),
   RandomDistribution = NULL,
   RandomLink = NULL,
   Solver = "AUTO",
@@ -85,7 +86,7 @@ AutoH2oGLMClassifier(
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
-\item{SaveInfoToPDF}{Set to TRUE to save insights to PDF}
+\item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
 
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
@@ -112,6 +113,8 @@ AutoH2oGLMClassifier(
 \item{Distribution}{"binomial", "fractionalbinomial", "quasibinomial"}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "auc"}
+
+\item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),}
 
 \item{RandomDistribution}{Random effects family. Defaults NULL, otherwise it will run a hierarchical glm}
 
@@ -166,6 +169,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
     IfSaveModel = "mojo",
 
     # Model evaluation args
+    CostMatrixWeights = c(1,0,0,1),
     eval_metric = "auc",
     NumOfParDepPlots = 3,
 

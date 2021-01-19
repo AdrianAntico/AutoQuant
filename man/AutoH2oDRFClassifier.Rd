@@ -22,6 +22,7 @@ AutoH2oDRFClassifier(
   NumOfParDepPlots = 3L,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
   IfSaveModel = "mojo",
   H2OShutdown = FALSE,
   H2OStartUp = TRUE,
@@ -31,6 +32,7 @@ AutoH2oDRFClassifier(
   StoppingRounds = 10,
   MaxModelsInGrid = 2,
   eval_metric = "auc",
+  CostMatrixWeights = c(1, 0, 0, 1),
   Trees = 50L,
   MaxDepth = 20L,
   SampleRate = 0.632,
@@ -76,6 +78,8 @@ AutoH2oDRFClassifier(
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
+\item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
+
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{Set to TRUE to shutdown H2O after running the function}
@@ -94,6 +98,8 @@ AutoH2oDRFClassifier(
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"}
 
+\item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),}
+
 \item{Trees}{The maximum number of trees you want in your models}
 
 \item{MaxDepth}{Default 20}
@@ -107,8 +113,6 @@ AutoH2oDRFClassifier(
 \item{ColSampleRatePerTreeLevel}{Default 1}
 
 \item{MinRows}{Default 1}
-
-\item{NBins}{Default 20}
 
 \item{NBinsCats}{Default 1024}
 
@@ -138,25 +142,27 @@ data <- RemixAutoML::FakeDataGenerator(
 
 TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 
-    # Compute management
+    # Compute management args
     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
     NThreads = max(1L, parallel::detectCores() - 2L),
     IfSaveModel = "mojo",
     H2OShutdown = FALSE,
     H2OStartUp = TRUE,
 
-    # Metadata arguments:
+    # Model evaluation args
     eval_metric = "auc",
     NumOfParDepPlots = 3L,
+    CostMatrixWeights = c(1,0,0,1),
 
-    # Data arguments:
+    # Metadata args
     model_path = normalizePath("./"),
     metadata_path = NULL,
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
-    # Model evaluation:
+    # Data args
     data,
     TrainOnFull = FALSE,
     ValidationData = NULL,

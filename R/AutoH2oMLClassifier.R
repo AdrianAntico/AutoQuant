@@ -11,6 +11,7 @@
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param ExcludeAlgos "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"
+#' @param CostMatrixWeights A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
 #' @param NThreads Set the number of threads you want to dedicate to the model building
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
@@ -44,6 +45,7 @@
 #'    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'    ExcludeAlgos = NULL,
 #'    eval_metric = "auc",
+#'    CostMatrixWeights = c(1,0,0,1),
 #'    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'    NThreads = max(1, parallel::detectCores()-2),
 #'    MaxModelsInGrid = 10,
@@ -67,6 +69,7 @@ AutoH2oMLClassifier <- function(data,
                                 FeatureColNames = NULL,
                                 ExcludeAlgos = NULL,
                                 eval_metric = "auc",
+                                CostMatrixWeights = c(1,0,0,1),
                                 MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                                 NThreads = max(1, parallel::detectCores()-2),
                                 MaxModelsInGrid = 2,
@@ -211,18 +214,10 @@ AutoH2oMLClassifier <- function(data,
       BaseMetric <- BaseMetrics@metrics$AUC
       FinalModel <- base_model
       EvalMetric <- BaseMetric
-      FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-      data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
-      FinalThresholdTable[, idx := NULL]
-      FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
     } else {
       BaseMetric <- BaseMetrics@metrics$logloss
       FinalModel <- base_model
       EvalMetric <- BaseMetric
-      FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-      data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
-      FinalThresholdTable[, idx := NULL]
-      FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
     }
   } else {
     FinalModel <- base_model
@@ -373,14 +368,12 @@ AutoH2oMLClassifier <- function(data,
     }
   }
 
-  # Binary Save EvaluationMetrics to File----
-  if(exists("FinalThresholdTable")) {
-    if(SaveModelObjects) {
-      if(!is.null(metadata_path)) {
-        data.table::fwrite(FinalThresholdTable, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-      } else {
-        data.table::fwrite(FinalThresholdTable, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-      }
+  # Binary Save EvaluationMetrics to File ----
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(RemixClassificationMetrics(MLModels="h2oautoml",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oAutoMLTestData=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
+    } else {
+      data.table::fwrite(RemixClassificationMetrics(MLModels="h2oautoml",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oAutoMLTestData=ValidationData), file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
 
@@ -451,7 +444,7 @@ AutoH2oMLClassifier <- function(data,
         ValidationData = ValidationData,
         ROC_Plot = ROC_Plot,
         EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = FinalThresholdTable,
+        EvaluationMetrics = RemixClassificationMetrics(MLModels="h2oautoml",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oAutoMLTestData=ValidationData),
         VariableImportance = VariableImportance,
         VI_Plot = VI_Plot(VI_Data = VariableImportance),
         PartialDependencePlots = ParDepPlots,

@@ -27,8 +27,9 @@
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param SaveInfoToPDF Set to TRUE to save model insights to pdf
 #' @param PassInGrid Default is NULL. Provide a data.table of grid options from a previous run.
-#' @param MaxRunsWithoutNewWinner A number
+#' @param MaxRunsWithoutNewWinner Runs without new winner to end procedure
 #' @param MaxRunMinutes In minutes
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
@@ -65,6 +66,7 @@
 #'     ReturnFactorLevels = TRUE,
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,
+#'     SaveInfoToPDF = FALSE,
 #'
 #'     # Data args
 #'     data = data,
@@ -113,6 +115,7 @@ AutoXGBoostRegression <- function(data,
                                   IDcols = NULL,
                                   model_path = NULL,
                                   metadata_path = NULL,
+                                  SaveInfoToPDF = FALSE,
                                   ModelID = "FirstModel",
                                   ReturnFactorLevels = TRUE,
                                   ReturnModelObjects = TRUE,
@@ -1091,6 +1094,35 @@ AutoXGBoostRegression <- function(data,
       ggplot2::theme(legend.position = "none")
   }
 
+  # Save PDF of model information ----
+  if(!TrainOnFull & SaveInfoToPDF) {
+    EvalPlotList <- list(EvaluationPlot, EvaluationBoxPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
+    ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL, if(!is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL)
+    TableMetrics <- list(EvaluationMetrics, if(!is.null(VariableImportance)) VariableImportance else NULL)
+    PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "EvaluationPlots",
+      Tables = FALSE,
+      ObjectList = EvalPlotList,
+      Title = "Model Evaluation Plots",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "PartialDependencePlots",
+      Tables = FALSE,
+      ObjectList = ParDepList,
+      Title = "Partial Dependence Calibration Plots",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "Metrics_and_Importances",
+      Tables = TRUE,
+      MaxPages = 100,
+      ObjectList = TableMetrics,
+      Title = "Model Metrics and Variable Importances",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black")
+    while(grDevices::dev.cur() > 1) grDevices::dev.off()
+  }
 
   # FactorLevelsList ----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL

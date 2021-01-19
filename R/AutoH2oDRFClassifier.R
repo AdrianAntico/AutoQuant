@@ -9,12 +9,14 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param CostMatrixWeights A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),
 #' @param WeightsColumn Column name of a weights column
 #' @param H2OShutdown Set to TRUE to shutdown H2O after running the function
 #' @param H2OStartUp Defaults to TRUE which means H2O will be started inside the function
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
+#' @param SaveInfoToPDF Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory
 #' @param ModelID A character string to name your model and output
 #' @param MaxMem Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"
 #' @param NThreads Set the number of threads you want to dedicate to the model building
@@ -34,7 +36,6 @@
 #' @param ColSampleRatePerTree Default 1
 #' @param ColSampleRatePerTreeLevel Default 1
 #' @param MinRows Default 1
-#' @param NBins Default 20
 #' @param NBinsCats Default 1024
 #' @param NBinsTopLevel Default 1024
 #' @param HistogramType Default "AUTO"
@@ -53,25 +54,27 @@
 #'
 #' TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 #'
-#'     # Compute management
+#'     # Compute management args
 #'     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'     NThreads = max(1L, parallel::detectCores() - 2L),
 #'     IfSaveModel = "mojo",
 #'     H2OShutdown = FALSE,
 #'     H2OStartUp = TRUE,
 #'
-#'     # Metadata arguments:
+#'     # Model evaluation args
 #'     eval_metric = "auc",
 #'     NumOfParDepPlots = 3L,
+#'     CostMatrixWeights = c(1,0,0,1),
 #'
-#'     # Data arguments:
+#'     # Metadata args
 #'     model_path = normalizePath("./"),
 #'     metadata_path = NULL,
 #'     ModelID = "FirstModel",
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,
+#'     SaveInfoToPDF = FALSE,
 #'
-#'     # Model evaluation:
+#'     # Data args
 #'     data,
 #'     TrainOnFull = FALSE,
 #'     ValidationData = NULL,
@@ -118,6 +121,7 @@ AutoH2oDRFClassifier <- function(data,
                                  NumOfParDepPlots = 3L,
                                  ReturnModelObjects = TRUE,
                                  SaveModelObjects = FALSE,
+                                 SaveInfoToPDF = FALSE,
                                  IfSaveModel = "mojo",
                                  H2OShutdown = FALSE,
                                  H2OStartUp = TRUE,
@@ -127,6 +131,7 @@ AutoH2oDRFClassifier <- function(data,
                                  StoppingRounds = 10,
                                  MaxModelsInGrid = 2,
                                  eval_metric = "auc",
+                                 CostMatrixWeights = c(1,0,0,1),
                                  Trees = 50L,
                                  MaxDepth = 20L,
                                  SampleRate = 0.632,
@@ -345,17 +350,9 @@ AutoH2oDRFClassifier <- function(data,
         if(GridMetric > BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          FinalThresholdTable <- data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
-          data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
-          FinalThresholdTable[, idx := NULL]
-          FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4), Value = round(Value, 4))]
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-          data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
-          FinalThresholdTable[, idx := NULL]
-          FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
         }
       } else if (tolower(eval_metric) == "logloss") {
         BaseMetric <- BaseMetrics@metrics$logloss
@@ -363,17 +360,9 @@ AutoH2oDRFClassifier <- function(data,
         if(GridMetric < BaseMetric) {
           FinalModel <- grid_model
           EvalMetric <- GridMetric
-          FinalThresholdTable <- data.table::as.data.table(GridMetrics@metrics$max_criteria_and_metric_scores)
-          data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
-          FinalThresholdTable[, idx := NULL]
-          FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
         } else {
           FinalModel <- base_model
           EvalMetric <- BaseMetric
-          FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-          data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
-          FinalThresholdTable[, idx := NULL]
-          FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
         }
       }
     } else {
@@ -381,18 +370,10 @@ AutoH2oDRFClassifier <- function(data,
         BaseMetric <- BaseMetrics@metrics$AUC
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-        data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
-        FinalThresholdTable[, idx := NULL]
-        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
       } else {
         BaseMetric <- BaseMetrics@metrics$logloss
         FinalModel <- base_model
         EvalMetric <- BaseMetric
-        FinalThresholdTable <- data.table::as.data.table(BaseMetrics@metrics$max_criteria_and_metric_scores)
-        data.table::setnames(FinalThresholdTable,c("metric", "threshold", "value"),c("Metric", "Threshold", "Value"))
-        FinalThresholdTable[, idx := NULL]
-        FinalThresholdTable[, ':=' (Threshold = round(Threshold, 4),Value = round(Value, 4))]
       }
     }
   } else {
@@ -562,13 +543,11 @@ AutoH2oDRFClassifier <- function(data,
   }
 
   # Binary Save EvaluationMetrics to File----
-  if(exists("FinalThresholdTable")) {
-    if(SaveModelObjects) {
-      if(!is.null(metadata_path)) {
-        data.table::fwrite(FinalThresholdTable, file = file.path(normalizePath(metadata_path), paste0(ModelID,"_EvaluationMetrics.csv")))
-      } else {
-        data.table::fwrite(FinalThresholdTable, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-      }
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      data.table::fwrite(RemixClassificationMetrics(MLModels="h2odrf",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oDRFTestData=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID,"_EvaluationMetrics.csv")))
+    } else {
+      data.table::fwrite(RemixClassificationMetrics(MLModels="h2odrf",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oDRFTestData=ValidationData), file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
 
@@ -631,6 +610,34 @@ AutoH2oDRFClassifier <- function(data,
       ggplot2::theme(legend.position = "none")
   }
 
+  # Save PDF of model information ----
+  if(!TrainOnFull & SaveInfoToPDF) {
+    EvalPlotList <- list(EvaluationPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
+    ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL)
+    TableMetrics <- list(RemixClassificationMetrics(MLModels="h2odrf",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oDRFTestData=ValidationData), if(!is.null(VariableImportance)) VariableImportance else NULL)
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "EvaluationPlots",
+      ObjectList = EvalPlotList,
+      Title = "Model Evaluation Plots",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "PartialDependencePlots",
+      ObjectList = ParDepList,
+      Title = "Partial Dependence Calibration Plots",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "Metrics_and_Importances",
+      ObjectList = TableMetrics,
+      MaxPages = 100,
+      Tables = TRUE,
+      Title = "Model Metrics and Variable Importances",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    while(dev.cur() > 1) grDevices::dev.off()
+  }
+
   # Binary Return Objects----
   if(ReturnModelObjects) {
     if(!is.numeric(data[[eval(TargetColumnName)]])) {
@@ -639,7 +646,7 @@ AutoH2oDRFClassifier <- function(data,
         ValidationData = ValidationData,
         ROC_Plot = ROC_Plot,
         EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = FinalThresholdTable,
+        EvaluationMetrics = RemixClassificationMetrics(MLModels="h2odrf",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oDRFTestData=ValidationData),
         VariableImportance = VariableImportance,
         VI_Plot = VI_Plot(VI_Data = VariableImportance),
         PartialDependencePlots = ParDepPlots,

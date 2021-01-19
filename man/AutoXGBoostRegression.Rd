@@ -14,6 +14,7 @@ AutoXGBoostRegression(
   IDcols = NULL,
   model_path = NULL,
   metadata_path = NULL,
+  SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
@@ -62,6 +63,8 @@ AutoXGBoostRegression(
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
+\item{SaveInfoToPDF}{Set to TRUE to save model insights to pdf}
+
 \item{ModelID}{A character string to name your model and output}
 
 \item{ReturnFactorLevels}{Set to TRUE to have the factor levels returned with the other model objects}
@@ -94,7 +97,7 @@ AutoXGBoostRegression(
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (243 total possible options)}
 
-\item{MaxRunsWithoutNewWinner}{A number}
+\item{MaxRunsWithoutNewWinner}{Runs without new winner to end procedure}
 
 \item{MaxRunMinutes}{In minutes}
 
@@ -147,6 +150,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
+    SaveInfoToPDF = FALSE,
 
     # Data args
     data = data,

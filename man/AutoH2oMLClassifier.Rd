@@ -13,6 +13,7 @@ AutoH2oMLClassifier(
   FeatureColNames = NULL,
   ExcludeAlgos = NULL,
   eval_metric = "auc",
+  CostMatrixWeights = c(1, 0, 0, 1),
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
@@ -45,6 +46,8 @@ AutoH2oMLClassifier(
 \item{ExcludeAlgos}{"DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"}
+
+\item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),}
 
 \item{MaxMem}{Set the maximum amount of memory you'd like to dedicate to the model run. E.g. "32G"}
 
@@ -97,6 +100,7 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
    FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
    ExcludeAlgos = NULL,
    eval_metric = "auc",
+   CostMatrixWeights = c(1,0,0,1),
    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
    NThreads = max(1, parallel::detectCores()-2),
    MaxModelsInGrid = 10,

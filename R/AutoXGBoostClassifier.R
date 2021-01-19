@@ -11,10 +11,12 @@
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param LossFunction Select from 'reg:logistic', "binary:logistic"
+#' @param CostMatrixWeights A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param model_path A character string of your path file to where you want your output saved
+#' @param SaveInfoToPDF Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
@@ -61,6 +63,7 @@
 #'     ReturnFactorLevels = TRUE,
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,
+#'     SaveInfoToPDF = FALSE,
 #'
 #'     # Data args
 #'     data = data,
@@ -74,6 +77,7 @@
 #'
 #'     # Model evaluation
 #'     LossFunction = 'reg:logistic',
+#'     CostMatrixWeights = c(1,0,0,1),
 #'     eval_metric = "auc",
 #'     NumOfParDepPlots = 3L,
 #'
@@ -106,6 +110,7 @@ AutoXGBoostClassifier <- function(data,
                                   IDcols = NULL,
                                   model_path = NULL,
                                   metadata_path = NULL,
+                                  SaveInfoToPDF = FALSE,
                                   ModelID = "FirstModel",
                                   ReturnFactorLevels = TRUE,
                                   ReturnModelObjects = TRUE,
@@ -114,6 +119,7 @@ AutoXGBoostClassifier <- function(data,
                                   NumOfParDepPlots = 3L,
                                   NThreads = parallel::detectCores(),
                                   LossFunction = 'reg:logistic',
+                                  CostMatrixWeights = c(1,0,0,1),
                                   eval_metric = "auc",
                                   TreeMethod = "hist",
                                   GridTune = FALSE,
@@ -778,9 +784,9 @@ AutoXGBoostClassifier <- function(data,
   # Save EvaluationMetrics to File
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData), file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
+      data.table::fwrite(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),XGBoostTestData=ValidationData), file = paste0(metadata_path, "/", ModelID, "_EvaluationMetrics.csv"))
     } else {
-      data.table::fwrite(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData), file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
+      data.table::fwrite(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),XGBoostTestData=ValidationData), file = paste0(model_path, "/", ModelID, "_EvaluationMetrics.csv"))
     }
   }
 
@@ -852,6 +858,34 @@ AutoXGBoostClassifier <- function(data,
   # VI_Plot----
   VI_Plot_Object <- VI_Plot(VI_Data = VariableImportance)
 
+  # Save PDF of model information ----
+  if(!TrainOnFull & SaveInfoToPDF) {
+    EvalPlotList <- list(EvaluationPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
+    ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL)
+    TableMetrics <- list(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),XGBoostTestData=ValidationData), if(!is.null(VariableImportance)) VariableImportance else NULL)
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "EvaluationPlots",
+      ObjectList = EvalPlotList,
+      Title = "Model Evaluation Plots",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "PartialDependencePlots",
+      ObjectList = ParDepList,
+      Title = "Partial Dependence Calibration Plots",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    try(PrintToPDF(
+      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
+      OutputName = "Metrics_and_Importances",
+      ObjectList = TableMetrics,
+      MaxPages = 100,
+      Tables = TRUE,
+      Title = "Model Metrics and Variable Importances",
+      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
+    while(dev.cur() > 1) grDevices::dev.off()
+  }
+
   # Binary Return Model Objects----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
 
@@ -863,7 +897,7 @@ AutoXGBoostClassifier <- function(data,
         ValidationData = ValidationData,
         ROC_Plot = ROC_Plot,
         EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData),
+        EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),XGBoostTestData=ValidationData),
         VariableImportance = VariableImportance,
         VI_Plot = VI_Plot_Object,
         PartialDependencePlots = ParDepPlots,
@@ -878,7 +912,7 @@ AutoXGBoostClassifier <- function(data,
         ValidationData = ValidationData,
         ROC_Plot = ROC_Plot,
         EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(1,0,0,1),ClassLabels=c(1,0),XGBoostTestData=ValidationData),
+        EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),XGBoostTestData=ValidationData),
         VariableImportance = VariableImportance,
         VI_Plot = VI_Plot_Object,
         PartialDependencePlots = ParDepPlots,

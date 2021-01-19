@@ -11,6 +11,7 @@
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param ClassWeights Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.
+#' @param CostMatrixWeights A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
 #' @param NumGPUs Numeric. If you have 4 GPUs supply 4 as a value.
@@ -88,6 +89,7 @@
 #'     IDcols = c("IDcol_1","IDcol_2"),
 #'
 #'     # Evaluation args
+#'     CostMatrixWeights = c(1,0,0,1),
 #'     eval_metric = "AUC",
 #'     loss_function = "Logloss",
 #'     MetricPeriods = 10L,
@@ -145,6 +147,7 @@ AutoCatBoostClassifier <- function(data,
                                    FeatureColNames = NULL,
                                    PrimaryDateColumn = NULL,
                                    ClassWeights = c(1,1),
+                                   CostMatrixWeights = c(1,0,0,1),
                                    IDcols = NULL,
                                    task_type = "GPU",
                                    NumGPUs = 1,
@@ -1074,10 +1077,10 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Save PDF of model information ----
-  if(!TrainOnFull & SaveInfoToPDF) {
+  if(!TrainOnFull && SaveInfoToPDF) {
     EvalPlotList <- list(EvaluationPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
     ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL)
-    TableMetrics <- list(EvaluationMetrics, if(!is.null(VariableImportance)) VariableImportance else NULL, if(!is.null(VariableImportance)) Interaction else NULL)
+    TableMetrics <- list(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),CatBoostTestData=ValidationData), if(!is.null(VariableImportance)) VariableImportance else NULL, if(!is.null(VariableImportance)) Interaction else NULL)
     try(PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "EvaluationPlots",

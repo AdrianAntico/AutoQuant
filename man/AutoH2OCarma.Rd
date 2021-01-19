@@ -15,6 +15,8 @@ AutoH2OCARMA(
   DateColumnName = "DateTime",
   HierarchGroups = NULL,
   GroupVariables = NULL,
+  PDFOutputPath = NULL,
+  SaveDataPath = NULL,
   FC_Periods = 30,
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
@@ -108,6 +110,10 @@ AutoH2OCARMA(
 \item{HierarchGroups}{Vector of hierachy categorical columns.}
 
 \item{GroupVariables}{Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.}
+
+\item{PDFOutputPath}{NULL or a path file to output PDFs to a specified folder}
+
+\item{SaveDataPath}{NULL Or supply a path. Data saved will be called 'ModelID'_data.csv}
 
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
@@ -273,6 +279,8 @@ Results <- RemixAutoML::AutoH2OCARMA(
   TrainOnFull = FALSE,
   MaxMem = {gc();paste0(as.character(floor(max(32, as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) -32) / 1000000)),"G")},
   NThreads = parallel::detectCores(),
+  PDFOutputPath = NULL,
+  SaveDataPath = NULL,
   Timer = TRUE,
   DebugMode = TRUE,
 

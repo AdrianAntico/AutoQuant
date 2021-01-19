@@ -147,7 +147,7 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
 #' @param TestData Test data from your modeling
 #' @param Thresholds Value
 #' @param Target Name of your target variable
-#' @param Predict Name of your predicted value variable
+#' @param PredictColumnName Name of your predicted value variable
 #' @param PositiveOutcome The value of the positive outcome level
 #' @param NegativeOutcome The value of the negative outcome level
 #' @param CostMatrix c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost)
@@ -155,7 +155,7 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
 ClassificationMetrics <- function(TestData,
                                   Thresholds,
                                   Target,
-                                  Predict,
+                                  PredictColumnName,
                                   PositiveOutcome,
                                   NegativeOutcome,
                                   CostMatrix = c(1,0,0,1)) {
@@ -188,17 +188,17 @@ ClassificationMetrics <- function(TestData,
   for(Thresh in Thresholds) {
     counter <- counter + 1L
     if(PositiveOutcome == 1L) {
-      TN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == NegativeOutcome, 1, 0))]
-      TP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == PositiveOutcome, 1, 0))]
-      FN <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == PositiveOutcome, 1, 0))]
-      FP <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == NegativeOutcome, 1, 0))]
+      TN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
+      TP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
+      FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
+      FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
       N  <- TestData[,.N]
       P  <- TestData[get(Target) == 1, .N]
     } else {
-      TN <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == NegativeOutcome, 1, 0))]
-      TP <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == PositiveOutcome, 1, 0))]
-      FN <- TestData[, sum(data.table::fifelse(get(Predict) > Thresh & get(Target) == PositiveOutcome, 1, 0))]
-      FP <- TestData[, sum(data.table::fifelse(get(Predict) < Thresh & get(Target) == NegativeOutcome, 1, 0))]
+      TN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
+      TP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
+      FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
+      FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
       N  <- TestData[,.N]
       P  <- TestData[get(Target) == 1, .N]
     }
@@ -253,7 +253,7 @@ ClassificationMetrics <- function(TestData,
 #'
 #' @author Adrian Antico
 #' @family Model Evaluation
-#' @param MLModels A vector of model names from remixautoml. e.g. c("catboost","h2oautoml","h2ogbm","h2odrf","h2oglm","xgboost")
+#' @param MLModels A vector of model names from remixautoml. e.g. c("catboost","h2oautoml","h2ogbm","h2odrf","h2oglm","h2ogam","xgboost")
 #' @param TargetVariable Name of your target variable
 #' @param Thresholds seq(0.01,0.99,0.01),
 #' @param CostMatrix c(1,0,0,1),
@@ -261,51 +261,50 @@ ClassificationMetrics <- function(TestData,
 #' @param CatBoostTestData Test data returned from AutoCatBoostClassifier
 #' @param H2oAutoMLTestData Test data returned from AutoCatBoostClassifier
 #' @param H2oGBMTestData Test data returned from AutoH2oGBMClassifier
-#' @param H2oDRFTestData Test data returned from AutoH2oDRFClassifier
+#' @param H2oGAMTestData Test data returned from AutoH2oGAMClassifier
+#' @param H2oGAMTestData Test data returned from AutoH2oDRFClassifier
 #' @param H2oGLMTestData Test data returned from AutoH2oGLMClassifier
 #' @param XGBoostTestData Test data returned from AutoXGBoostClassifier
 #' @examples
 #' \dontrun{
 #' RemixClassificationMetrics <- function(
-#'   MLModels = c("catboost",
-#'                "h2oautoml",
-#'                "h2ogbm",
-#'                "h2odrf",
-#'                "xgboost"),
-#'   TargetVariable = "Value",
+#'   MLModels = "catboost",
+#'   TargetVariable = "Adrian",
 #'   Thresholds = seq(0.01,0.99,0.01),
 #'   CostMatrix = c(1,0,0,1),
 #'   ClassLabels = c(1,0),
 #'   CatBoostTestData = NULL,
 #'   H2oAutoMLTestData = NULL,
 #'   H2oGBMTestData = NULL,
+#'   H2oGAMTestData = NULL,
 #'   H2oDRFTestData = NULL,
 #'   H2oGLMTestData = NULL,
 #'   XGBoostTestData = NULL)
 #' }
 #' @export
-RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2ogbm","h2odrf","xgboost"),
-                                       TargetVariable = "Value",
+RemixClassificationMetrics <- function(MLModels = NULL,
+                                       TargetVariable = NULL,
                                        Thresholds = seq(0.01,0.99,0.01),
                                        CostMatrix = c(1,0,0,1),
                                        ClassLabels = c(1,0),
                                        CatBoostTestData = NULL,
                                        H2oAutoMLTestData = NULL,
                                        H2oGBMTestData = NULL,
+                                       H2oGAMTestData = NULL,
                                        H2oDRFTestData = NULL,
                                        H2oGLMTestData = NULL,
                                        XGBoostTestData = NULL) {
 
-  # Store output----
+  # Store output ----
   ThresholdOutput <- list()
 
-  # CatBoost----
+  # CatBoost ----
   if(any(tolower(MLModels) == "catboost")) {
     if(!"p1" %chin% names(CatBoostTestData)) data.table::setnames(CatBoostTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = CatBoostTestData,
       Target = eval(TargetVariable),
-      Predict = "p1",
+      PredictColumnName = "p1",
       Thresholds = Thresholds,
       PositiveOutcome = ClassLabels[1L],
       NegativeOutcome = ClassLabels[2L],
@@ -318,13 +317,13 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
     ThresholdOutput[["catboost"]] <- temp
   }
 
-  # H2oAutoML----
+  # H2oAutoML ----
   if(any(tolower(MLModels) == "h2oautoml")) {
-    if(!"p1" %chin% names(H2oAutoMLTestData)) data.table::setnames(H2oGBMTestData, "Predict", "p1")
+    if(!"p1" %chin% names(H2oAutoMLTestData)) data.table::setnames(H2oAutoMLTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oAutoMLTestData,
       Target = eval(TargetVariable),
-      Predict = "p1",
+      PredictColumnName = "p1",
       Thresholds = Thresholds,
       PositiveOutcome = ClassLabels[1L],
       NegativeOutcome = ClassLabels[2L],
@@ -334,17 +333,16 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
       temp,
       c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
       c("H2oML_N","H2oML_P","H2oML_TN","H2oML_TP","H2oML_FP","H2oML_FN","H2oML_Utility","H2oML_MCC","H2oML_Acc","H2oML_F1_Score","H2oML_F0.5_Score","H2oML_F2_Score","H2oML_NPV","H2oML_TPR","H2oML_TNR","H2oML_FNR","H2oML_FPR","H2oML_FDR","H2oML_FOR","H2oML_PPV","H2oML_ThreatScore"))
-    print("h2ogbm here")
-    ThresholdOutput[["h2ogbm"]] <- temp
+    ThresholdOutput[["h2oautoml"]] <- temp
   }
 
-  # H2oGBM----
+  # H2oGBM ----
   if(any(tolower(MLModels) == "h2ogbm")) {
     if(!"p1" %chin% names(H2oGBMTestData)) data.table::setnames(H2oGBMTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oGBMTestData,
       Target = eval(TargetVariable),
-      Predict = "p1",
+      PredictColumnName = "p1",
       Thresholds = Thresholds,
       PositiveOutcome = ClassLabels[1L],
       NegativeOutcome = ClassLabels[2L],
@@ -354,17 +352,16 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
       temp,
       c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
       c("H2oGBM_N","H2oGBM_P","H2oGBM_TN","H2oGBM_TP","H2oGBM_FP","H2oGBM_FN","H2oGBM_Utility","H2oGBM_MCC","H2oGBM_Acc","H2oGBM_F1_Score","H2oGBM_F0.5_Score","H2oGBM_F2_Score","H2oGBM_NPV","H2oGBM_TPR","H2oGBM_TNR","H2oGBM_FNR","H2oGBM_FPR","H2oGBM_FDR","H2oGBM_FOR","H2oGBM_PPV","H2oGBM_ThreatScore"))
-    print("h2ogbm here")
     ThresholdOutput[["h2ogbm"]] <- temp
   }
 
-  # H2oDRF----
+  # H2oDRF ----
   if(any(tolower(MLModels) == "h2odrf")) {
     if(!"p1" %chin% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oDRFTestData,
       Target = eval(TargetVariable),
-      Predict = "p1",
+      PredictColumnName = "p1",
       Thresholds = Thresholds,
       PositiveOutcome = ClassLabels[1L],
       NegativeOutcome = ClassLabels[2L],
@@ -374,17 +371,16 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
       temp,
       c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
       c("H2oDRF_N","H2oDRF_P","H2oDRF_TN","H2oDRF_TP","H2oDRF_FP","H2oDRF_FN","H2oDRF_Utility","H2oDRF_MCC","H2oDRF_Acc","H2oDRF_F1_Score","H2oDRF_F0.5_Score","H2oDRF_F2_Score","H2oDRF_NPV","H2oDRF_TPR","H2oDRF_TNR","H2oDRF_FNR","H2oDRF_FPR","H2oDRF_FDR","H2oDRF_FOR","H2oDRF_PPV","H2oDRF_ThreatScore"))
-    print("h2odrf here")
     ThresholdOutput[["h2odrf"]] <- temp
   }
 
-  # H2oGLM----
+  # H2oGLM ----
   if(any(tolower(MLModels) == "h2oglm")) {
-    if(!"p1" %chin% names(H2oDRFTestData)) data.table::setnames(H2oDRFTestData, "Predict", "p1")
+    if(!"p1" %chin% names(H2oGLMTestData)) data.table::setnames(H2oGLMTestData, "Predict", "p1")
     temp <- ClassificationMetrics(
       TestData = H2oGLMTestData,
       Target = eval(TargetVariable),
-      Predict = "p1",
+      PredictColumnName = "p1",
       Thresholds = Thresholds,
       PositiveOutcome = ClassLabels[1L],
       NegativeOutcome = ClassLabels[2L],
@@ -393,19 +389,37 @@ RemixClassificationMetrics <- function(MLModels = c("catboost","h2oautoml","h2og
     data.table::setnames(
       temp,
       c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
-      c("H2oDRF_N","H2oDRF_P","H2oDRF_TN","H2oDRF_TP","H2oDRF_FP","H2oDRF_FN","H2oDRF_Utility","H2oDRF_MCC","H2oDRF_Acc","H2oDRF_F1_Score","H2oDRF_F0.5_Score","H2oDRF_F2_Score","H2oDRF_NPV","H2oDRF_TPR","H2oDRF_TNR","H2oDRF_FNR","H2oDRF_FPR","H2oDRF_FDR","H2oDRF_FOR","H2oDRF_PPV","H2oDRF_ThreatScore"))
-    print("h2odrf here")
-    ThresholdOutput[["h2odrf"]] <- temp
+      c("H2oGLM_N","H2oGLM_P","H2oGLM_TN","H2oGLM_TP","H2oGLM_FP","H2oGLM_FN","H2oGLM_Utility","H2oGLM_MCC","H2oGLM_Acc","H2oGLM_F1_Score","H2oGLM_F0.5_Score","H2oGLM_F2_Score","H2oGLM_NPV","H2oGLM_TPR","H2oGLM_TNR","H2oGLM_FNR","H2oGLM_FPR","H2oGLM_FDR","H2oGLM_FOR","H2oGLM_PPV","H2oGLM_ThreatScore"))
+    ThresholdOutput[["h2oglm"]] <- temp
   }
 
-  # XGBoost----
+  # H2oGAM ----
+  if(any(tolower(MLModels) == "h2ogam")) {
+    if(!"p1" %chin% names(H2oGAMTestData)) data.table::setnames(H2oGAMTestData, "Predict", "p1")
+    temp <- ClassificationMetrics(
+      TestData = H2oGAMTestData,
+      Target = eval(TargetVariable),
+      PredictColumnName = "p1",
+      Thresholds = Thresholds,
+      PositiveOutcome = ClassLabels[1L],
+      NegativeOutcome = ClassLabels[2L],
+      CostMatrix = CostMatrix)
+    data.table::setorderv(temp, cols = "MCC", order = -1L)
+    data.table::setnames(
+      temp,
+      c("N","P","TN","TP","FP","FN","Utility","MCC","Accuracy","F1_Score","F0.5_Score","F2_Score","NPV","TPR","TNR","FNR","FPR","FDR","FOR","PPV","ThreatScore"),
+      c("H2oGAM_N","H2oGAM_P","H2oGAM_TN","H2oGAM_TP","H2oGAM_FP","H2oGAM_FN","H2oGAM_Utility","H2oGAM_MCC","H2oGAM_Acc","H2oGAM_F1_Score","H2oGAM_F0.5_Score","H2oGAM_F2_Score","H2oGAM_NPV","H2oGAM_TPR","H2oGAM_TNR","H2oGAM_FNR","H2oGAM_FPR","H2oGAM_FDR","H2oGAM_FOR","H2oGAM_PPV","H2oGAM_ThreatScore"))
+    ThresholdOutput[["h2ogam"]] <- temp
+  }
+
+  # XGBoost ----
   if(any(tolower(MLModels) == "xgboost")) {
     if(!"p1" %chin% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Predict", "p1")
     if(!TargetVariable %chin% names(XGBoostTestData)) data.table::setnames(XGBoostTestData, "Target", eval(TargetVariable))
     temp <- ClassificationMetrics(
       TestData = XGBoostTestData,
       Target = eval(TargetVariable),
-      Predict = "p1",
+      PredictColumnName = "p1",
       Thresholds = Thresholds,
       PositiveOutcome = ClassLabels[1L],
       NegativeOutcome = ClassLabels[2L],
