@@ -8,7 +8,7 @@
 #' @param Tables TRUE for data tables, FALSE for plots
 #' @param MaxPages Default of 500
 #' @param Title The title of the pdf
-#' @param Width Default is 7
+#' @param Width Default is 12
 #' @param Height Default is 7
 #' @param Paper 'USr' for landscape. 'special' means that Width and Height are used to determine page size
 #' @param BackgroundColor Default is 'transparent'
@@ -20,7 +20,7 @@ PrintToPDF <- function(Path,
                        Tables = FALSE,
                        MaxPages = 500,
                        Title = "Model Output",
-                       Width = 7,
+                       Width = 12,
                        Height = 7,
                        Paper = "USr",
                        BackgroundColor = "transparent",

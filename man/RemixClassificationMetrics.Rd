@@ -36,9 +36,7 @@ RemixClassificationMetrics(
 
 \item{H2oGBMTestData}{Test data returned from AutoH2oGBMClassifier}
 
-\item{H2oGAMTestData}{Test data returned from AutoH2oGAMClassifier}
-
-\item{H2oDRFTestData}{Test data returned from AutoH2oDRFClassifier}
+\item{H2oGAMTestData}{Test data returned from AutoH2oDRFClassifier}
 
 \item{H2oGLMTestData}{Test data returned from AutoH2oGLMClassifier}
 

@@ -37,6 +37,7 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
       ProjectPath <- paste0("./",ProjectName)
     }
 
+    # Store value
     ProjectList[["ProjectFolderPath"]] <- ProjectPath
 
     # Create Project Folder ----
@@ -48,12 +49,12 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
       ProjectList[["DataFolderPath"]] <- DataPath
 
       # Create Models folder ----
-      ModelsPath <- file.path(ProjectPath, "Models", mustWork = FALSE)
+      ModelsPath <- normalizePath(file.path(ProjectPath, "Models"), mustWork = FALSE)
       dir.create(path =  ModelsPath, showWarnings = TRUE, recursive = TRUE)
       ProjectList[["ModelsFolderPath"]] <- ModelsPath
 
       # Create MetaData folder ----
-      MetaDataPath <- file.path(ProjectPath, "MetaData", mustWork = FALSE)
+      MetaDataPath <- normalizePath(file.path(ProjectPath, "MetaData"), mustWork = FALSE)
       dir.create(path =  MetaDataPath, showWarnings = TRUE, recursive = TRUE)
       ProjectList[["MetaDataPath"]] <- MetaDataPath
 
@@ -63,15 +64,15 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
     } else {
 
       # Create Data folder ----
-      DataPath <- file.path(ProjectPath,"Data", mustWork = FALSE)
+      DataPath <- normalizePath(file.path(ProjectPath,"Data"), mustWork = FALSE)
       ProjectList[["DataFolderPath"]] <- DataPath
 
       # Create Models folder ----
-      ModelsPath <- file.path(ProjectPath,"Models", mustWork = FALSE)
+      ModelsPath <- normalizePath(file.path(ProjectPath,"Models"), mustWork = FALSE)
       ProjectList[["ModelsFolderPath"]] <- ModelsPath
 
       # Create MetaData folder ----
-      MetaDataPath <- file.path(ProjectPath,"MetaData", mustWork = FALSE)
+      MetaDataPath <- normalizePath(file.path(ProjectPath,"MetaData"), mustWork = FALSE)
       ProjectList[["MetaDataPath"]] <- MetaDataPath
 
       # Save ProjectList to File ----

@@ -2161,7 +2161,7 @@ AutoCatBoostCARMA <- function(data,
   # Return data----
   if(DebugMode) print("Return data----")
   if(!is.null(GroupVariables)) {
-    keep <- c("GroupVar",eval(DateColumnName),eval(TargetColumnName),"Predictions")
+    keep <- c("GroupVar", eval(DateColumnName), eval(TargetColumnName), "Predictions")
     UpdateData <- UpdateData[, ..keep]
     if(length(GroupVariables) > 1L) {
       UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]

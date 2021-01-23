@@ -153,7 +153,7 @@
 #'
 #'   # ML args
 #'   NTrees = 300,
-#'   LearningRate = 0.03,
+#'   LearningRate = 0.3,
 #'   MaxDepth = 9L,
 #'   MinChildWeight = 1.0,
 #'   SubSample = 1.0,
@@ -217,7 +217,7 @@ AutoXGBoostCARMA <- function(data,
                              MaxRunsWithoutNewWinner = 20L,
                              MaxRunMinutes = 24L*60L,
                              NTrees = 1000L,
-                             LearningRate = 0.03,
+                             LearningRate = 0.3,
                              MaxDepth = 9L,
                              MinChildWeight = 1.0,
                              SubSample = 1.0,
@@ -501,6 +501,8 @@ AutoXGBoostCARMA <- function(data,
           data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
         }
       }
+    } else if(!is.null(HierarchGroups)) {
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
     }
   }
 
@@ -524,7 +526,7 @@ AutoXGBoostCARMA <- function(data,
       DateCols = eval(DateColumnName),
       HolidayGroups = HolidayVariable,
       Holidays = NULL,
-      GroupingVars = "GroupVar")
+      GroupingVars = if("GroupVar" %chin% names(data)) "GroupVar" else GroupVariables)
 
     # Convert to lubridate as_date() or POSIXct----
     if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
@@ -1154,12 +1156,12 @@ AutoXGBoostCARMA <- function(data,
         if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         UpdateData <- cbind(FutureDateData[1L:N], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
-        data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
+        data.table::setnames(UpdateData, c("V1"), c(eval(DateColumnName)))
       } else {
         if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
         if(RoundPreds) Preds[, Predictions := round(Predictions)]
         UpdateData <- cbind(FutureDateData[1L:N], Preds)
-        data.table::setnames(UpdateData,c("V1"),c(eval(DateColumnName)))
+        data.table::setnames(UpdateData, c("V1"), c(eval(DateColumnName)))
       }
     } else {
       if(!is.null(GroupVariables)) {
@@ -1328,13 +1330,17 @@ AutoXGBoostCARMA <- function(data,
       # Add fouier terms----
       if(DebugMode) print("Add fouier terms----")
       if(is.null(GroupVariables) & FourierTerms > 0) {
-        if(i == 1) {
+        if(i == 1L) {
           CalendarFeatures <- cbind(CalendarFeatures, XREG[nrow(Step1SCore)+1])
         } else {
           CalendarFeatures <- cbind(CalendarFeatures, XREGFC[i-1])
         }
       } else if(FourierTerms > 0) {
-        CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+        if(exists("FourierFC")) {
+          if(length(FourierFC) != 0) {
+            CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = c("GroupVar",eval(DateColumnName)), all = FALSE)
+          }
+        }
       }
 
       # Prepare for more feature engineering----
@@ -1366,21 +1372,12 @@ AutoXGBoostCARMA <- function(data,
       # Update holiday feature----
       if(DebugMode) print("Update holiday feature----")
       if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
-        if(IndepentVariablesPass %chin% names(UpdateData)) {
-          UpdateData <- CreateHolidayVariables(
-            UpdateData,
-            DateCols = eval(DateColumnName),
-            HolidayGroups = HolidayVariable,
-            Holidays = NULL,
-            GroupingVars = IndepentVariablesPass)
-        } else {
-          UpdateData <- CreateHolidayVariables(
-            UpdateData,
-            DateCols = eval(DateColumnName),
-            HolidayGroups = HolidayVariable,
-            Holidays = NULL,
-            GroupingVars = if("GroupVar" %chin% names(UpdateData)) "GroupVar" else GroupVariables)
-        }
+        UpdateData <- CreateHolidayVariables(
+          UpdateData,
+          DateCols = eval(DateColumnName),
+          HolidayGroups = HolidayVariable,
+          Holidays = NULL,
+          GroupingVars = if("GroupVar" %chin% names(UpdateData)) "GroupVar" else GroupVariables)
       } else if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
@@ -1445,11 +1442,11 @@ AutoXGBoostCARMA <- function(data,
           Quantiles_Selected   = Quantiles_Selected,
           Debug                = TRUE)
 
-        # Lag / Lead, MA Holiday Variables----
+        # Lag / Lead, MA Holiday Variables ----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
         if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
 
-          # Calendar and Holiday----
+          # Calendar and Holiday ----
           if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
           if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
@@ -1457,10 +1454,10 @@ AutoXGBoostCARMA <- function(data,
           if(DebugMode) print("Generate GDL Features for Updated Records----")
           IndepentVariablesPass <- CARMA_Get_IndepentVariablesPass(HierarchGroups)
 
-          # Create data for GDL----
-          temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+          # Create data for GDL ----
+          temp <- CarmaXGBoostKeepVarsGDL(
+            IndepVarPassTRUE = IndepentVariablesPass, data, UpdateData, CalendarFeatures, XREGS, Difference, HierarchGroups,
+            GroupVariables, GroupVarVector, CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName, DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1508,7 +1505,6 @@ AutoXGBoostCARMA <- function(data,
         # Update data for scoring next iteration----
         if(DebugMode) print("Update data for scoring next iteration----")
         UpdateData <- data.table::rbindlist(list(UpdateData[ID != 1], Temporary), fill = TRUE, use.names = TRUE)
-
       }
 
       # Group and No Diff
@@ -1518,10 +1514,11 @@ AutoXGBoostCARMA <- function(data,
         if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
         if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
-        # Create data for GDL----
-        temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = NULL,
-          data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-          GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+        # Create data for GDL ----
+        temp <- CarmaXGBoostKeepVarsGDL(
+          IndepVarPassTRUE = NULL, data, UpdateData, CalendarFeatures, XREGS, Difference, HierarchGroups,
+          GroupVariables, GroupVarVector, CalendarVariables=CalVar, HolidayVariable=HolVar,
+          TargetColumnName,DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
 
@@ -1557,22 +1554,23 @@ AutoXGBoostCARMA <- function(data,
           Quantiles_Selected   = Quantiles_Selected,
           Debug                = DebugMode)
 
-        # Lag / Lead, MA Holiday Variables----
+        # Lag / Lead, MA Holiday Variables ----
         if(DebugMode) print("Lag / Lead, MA Holiday Variables----")
         if(!is.null(HolidayVariable) & max(HolidayLags) > 0 & max(HolidayMovingAverages) > 0) {
 
-          # Calendar and Holiday----
+          # Calendar and Holiday ----
           if(!is.null(CalendarVariables)) CalVar <- TRUE else CalVar <- FALSE
           if(!is.null(HolidayVariable)) HolVar <- TRUE else HolVar <- FALSE
 
-          # Generate GDL Features for Updated Records----
+          # Generate GDL Features for Updated Records ----
           if(DebugMode) print("Generate GDL Features for Updated Records----")
           IndepentVariablesPass <- CARMA_Get_IndepentVariablesPass(HierarchGroups)
 
-          # Create data for GDL----
-          temp <- CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,
-            data,UpdateData,CalendarFeatures,XREGS,Difference,HierarchGroups,GroupVariables,
-            GroupVarVector,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName,DateColumnName)
+          # Create data for GDL ----
+          temp <- CarmaXGBoostKeepVarsGDL(
+            IndepVarPassTRUE = IndepentVariablesPass, data, UpdateData, CalendarFeatures, XREGS,
+            Difference, HierarchGroups, GroupVariables, GroupVarVector, CalendarVariables=CalVar,
+            HolidayVariable=HolVar,TargetColumnName,DateColumnName)
           Temporary1 <- temp$data
           keep <- temp$keep
 
@@ -1631,20 +1629,9 @@ AutoXGBoostCARMA <- function(data,
 
         # Create data for GDL----
         temp <- CarmaXGBoostKeepVarsGDL(
-            IndepVarPassTRUE = NULL,
-            data,
-            UpdateData,
-            CalendarFeatures,
-            XREGS,
-            Difference,
-            HierarchGroups,
-            GroupVariables,
-            GroupVarVector,
-            CalendarVariables=CalVar,
-            HolidayVariable=HolVar,
-            TargetColumnName,
-            DateColumnName
-        )
+            IndepVarPassTRUE = NULL, data, UpdateData, CalendarFeatures, XREGS, Difference,
+            HierarchGroups, GroupVariables, GroupVarVector, CalendarVariables=CalVar,
+            HolidayVariable=HolVar, TargetColumnName, DateColumnName)
         Temporary <- temp$data
         keep <- temp$keep
         if("GroupVar" %chin% keep) keep <- keep[!keep %chin% "GroupVar"]
@@ -1739,10 +1726,7 @@ AutoXGBoostCARMA <- function(data,
 
           # Join Holiday Lags and Moving Averages back to UpdateData----
           keep <- c(eval(DateColumnName),setdiff(names(Temporary1), names(Temporary)))
-          Temporary <- merge(Temporary,
-                             Temporary1[, .SD, .SDcols = c(keep)],
-                             by = c(eval(DateColumnName)),
-                             all = FALSE)
+          Temporary <- merge(Temporary, Temporary1[, .SD, .SDcols = c(keep)], by = c(eval(DateColumnName)), all = FALSE)
         }
 
         # Update data for scoring next iteration----
@@ -1919,14 +1903,13 @@ AutoXGBoostCARMA <- function(data,
 
   # Return data----
   if(!is.null(GroupVariables)) {
-
-    # Group Variables back to original
-    if("GroupVar" %chin% names(UpdateData)) {
-      keep <- c("GroupVar", eval(DateColumnName), eval(TargetColumnName), "Predictions")
-      tryCatch({data.table::set(UpdateData, j = setdiff(keep, names(UpdateData)), value = NULL)}, error = function(x) NULL)
+    keep <- c("GroupVar", eval(DateColumnName), eval(TargetColumnName), "Predictions")
+    UpdateData <- UpdateData[, ..keep]
+    if(length(GroupVariables) > 1L) {
+      UpdateData[, eval(GroupVariables) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
+    } else {
+      UpdateData[, eval(GroupVariables) := GroupVar][, GroupVar := NULL]
     }
-
-    # Return
     if(TargetTransformation) {
       return(
         list(

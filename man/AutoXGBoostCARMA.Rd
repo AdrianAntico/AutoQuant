@@ -55,7 +55,7 @@ AutoXGBoostCARMA(
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
   NTrees = 1000L,
-  LearningRate = 0.03,
+  LearningRate = 0.3,
   MaxDepth = 9L,
   MinChildWeight = 1,
   SubSample = 1,
@@ -270,7 +270,7 @@ XGBoostResults <- AutoXGBoostCARMA(
 
   # ML args
   NTrees = 300,
-  LearningRate = 0.03,
+  LearningRate = 0.3,
   MaxDepth = 9L,
   MinChildWeight = 1.0,
   SubSample = 1.0,

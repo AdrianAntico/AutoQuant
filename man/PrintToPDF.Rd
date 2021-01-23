@@ -11,7 +11,7 @@ PrintToPDF(
   Tables = FALSE,
   MaxPages = 500,
   Title = "Model Output",
-  Width = 7,
+  Width = 12,
   Height = 7,
   Paper = "USr",
   BackgroundColor = "transparent",
@@ -31,7 +31,7 @@ PrintToPDF(
 
 \item{Title}{The title of the pdf}
 
-\item{Width}{Default is 7}
+\item{Width}{Default is 12}
 
 \item{Height}{Default is 7}
 
