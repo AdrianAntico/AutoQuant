@@ -37,7 +37,7 @@
 #' @param RandomDistribution Random effects family. Defaults NULL, otherwise it will run a hierarchical glm
 #' @param RandomLink Random effects link. Defaults NULL, otherwise it will run a hierarchical glm
 #' @param Solver Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"
-#' @param Alpha Default NULL. Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.
+#' @param Alpha Default 0.5 Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.
 #' @param Lambda Default NULL. Regularization strength.
 #' @param LambdaSearch Default FALSE.
 #' @param NLambdas Default -1
@@ -103,7 +103,7 @@
 #'     RandomDistribution = NULL,
 #'     RandomLink = NULL,
 #'     Solver = "AUTO",
-#'     Alpha = NULL,
+#'     Alpha = 0.5,
 #'     Lambda = NULL,
 #'     LambdaSearch = FALSE,
 #'     NLambdas = -1,
@@ -148,7 +148,7 @@ AutoH2oGLMMultiClass <- function(data,
                                  RandomDistribution = NULL,
                                  RandomLink = NULL,
                                  Solver = "AUTO",
-                                 Alpha = NULL,
+                                 Alpha = 0.5,
                                  Lambda = NULL,
                                  LambdaSearch = FALSE,
                                  NLambdas = -1,

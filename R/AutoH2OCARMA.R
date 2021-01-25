@@ -46,7 +46,7 @@
 #' @param DataTruncate Set to TRUE to remove records with missing values from the lags and moving average features created
 #' @param ZeroPadSeries NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type
 #' @param SplitRatios E.g c(0.7,0.2,0.1) for train, validation, and test sets
-#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
+#' @param EvalMetric Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"
 #' @param NumOfParDepPlots Set to zeros if you do not want any returned. Can set to a very large value and it will adjust to the max number of features if it's too high
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param ModelCount Set the number of models to try in the grid tune
@@ -66,8 +66,23 @@
 #' @param NBins Default 20, models available include drf, gbm
 #' @param NBinsCats Default 1024, models available include drf, gbm
 #' @param NBinsTopLevel Default 1024, models available include drf, gbm
-#' @param CategoricalEncoding Default "AUTO" models available include drf, gbm
-#' @param HistogramType Default "AUTO". Select from AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"
+#' @param CategoricalEncoding Default "AUTO". Choices include :  "AUTO", "Enum", "OneHotInternal", "OneHotExplicit", "Binary", "Eigen", "LabelEncoder", "Sort-ByResponse", "EnumLimited"
+#' @param HistogramType Default "AUTO". Select from "AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"
+#' @param Distribution Model family
+#' @param Link Link for model family
+#' @param RandomDistribution Default NULL
+#' @param RandomLink Default NULL
+#' @param Solver Model optimizer
+#' @param Alpha Default NULL
+#' @param Lambda Default NULL
+#' @param LambdaSearch Default FALSE,
+#' @param NLambdas Default -1
+#' @param Standardize Default TRUE
+#' @param RemoveCollinearColumns Default FALSE
+#' @param InterceptInclude Default TRUE
+#' @param NonNegativeCoefficients Default FALSE
+#' @param RandomColNumbers NULL
+#' @param InteractionColNumbers NULL
 #' @examples
 #' \dontrun{
 #'
@@ -185,7 +200,7 @@
 #'   InteractionColNumbers = NULL,
 #'   WeightsColumn = NULL,
 #'
-#'
+#'   # ML args
 #'   Distribution = "gaussian",
 #'   Link = "identity",
 #'   RandomDistribution = NULL,
@@ -217,20 +232,26 @@
 #' @return See examples
 #' @export
 AutoH2OCARMA <- function(AlgoType = "drf",
+                         ExcludeAlgos = "XGBoost",
                          data,
-                         ModelPath = getwd(),
-                         NonNegativePred = FALSE,
-                         RoundPreds = FALSE,
                          TrainOnFull = FALSE,
                          TargetColumnName = "Target",
-                         DateColumnName = "DateTime",
-                         HierarchGroups = NULL,
-                         GroupVariables = NULL,
                          PDFOutputPath = NULL,
                          SaveDataPath = NULL,
-                         FC_Periods = 30,
+                         WeightsColumn = NULL,
+                         NonNegativePred = FALSE,
+                         RoundPreds = FALSE,
+                         DateColumnName = "DateTime",
+                         GroupVariables = NULL,
+                         HierarchGroups = NULL,
                          TimeUnit = "week",
                          TimeGroups = c("weeks","months"),
+                         FC_Periods = 30,
+                         PartitionType = "timeseries",
+                         MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+                         NThreads = max(1, parallel::detectCores() - 2),
+                         Timer = TRUE,
+                         DebugMode = FALSE,
                          TargetTransformation = FALSE,
                          Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                          XREGS = NULL,
@@ -254,20 +275,14 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          SplitRatios = c(0.7, 0.2, 0.1),
                          EvalMetric = "rmse",
                          NumOfParDepPlots = 0L,
-                         PartitionType = "timeseries",
-                         MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-                         NThreads = max(1, parallel::detectCores() - 2),
-                         Timer = TRUE,
-                         DebugMode = FALSE,
-                         ExcludeAlgos = "XGBoost",
                          GridTune = FALSE,
                          ModelCount = 1,
-                         GridStrategy = "Cartesian",
-                         MaxRuntimeSecs = 60*60*24,
-                         StoppingRounds = 10,
                          NTrees = 1000,
                          LearnRate = 0.10,
                          LearnRateAnnealing = 1,
+                         GridStrategy = "Cartesian",
+                         MaxRuntimeSecs = 60*60*24,
+                         StoppingRounds = 10,
                          MaxDepth = 20,
                          SampleRate = 0.632,
                          MTries = -1,
@@ -278,11 +293,8 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          NBins = 20,
                          NBinsCats = 1024,
                          NBinsTopLevel = 1024,
-                         HistogramType = "AUTO",
                          CategoricalEncoding = "AUTO",
-                         RandomColNumbers = NULL,
-                         InteractionColNumbers = NULL,
-                         WeightsColumn = NULL,
+                         HistogramType = "AUTO",
                          Distribution = "gaussian",
                          Link = "identity",
                          RandomDistribution = NULL,
@@ -295,7 +307,9 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          Standardize = TRUE,
                          RemoveCollinearColumns = FALSE,
                          InterceptInclude = TRUE,
-                         NonNegativeCoefficients = FALSE) {
+                         NonNegativeCoefficients = FALSE,
+                         RandomColNumbers = NULL,
+                         InteractionColNumbers = NULL) {
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -1080,7 +1094,6 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Model evaluation
       eval_metric = EvalMetric,
       NumOfParDepPlots = NumOfParDepPlots,
-      SaveInfoToPDF = FALSE,
 
       # Metadata arguments
       model_path = ModelPath,

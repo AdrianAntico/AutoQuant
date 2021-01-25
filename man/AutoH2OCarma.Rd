@@ -6,20 +6,28 @@
 \usage{
 AutoH2OCARMA(
   AlgoType = "drf",
+  ExcludeAlgos = "XGBoost",
   data,
-  ModelPath = getwd(),
-  NonNegativePred = FALSE,
-  RoundPreds = FALSE,
   TrainOnFull = FALSE,
   TargetColumnName = "Target",
-  DateColumnName = "DateTime",
-  HierarchGroups = NULL,
-  GroupVariables = NULL,
   PDFOutputPath = NULL,
   SaveDataPath = NULL,
-  FC_Periods = 30,
+  WeightsColumn = NULL,
+  NonNegativePred = FALSE,
+  RoundPreds = FALSE,
+  DateColumnName = "DateTime",
+  GroupVariables = NULL,
+  HierarchGroups = NULL,
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
+  FC_Periods = 30,
+  PartitionType = "timeseries",
+  MaxMem = {     gc()    
+    paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
+    intern = TRUE))/1e+06)), "G") },
+  NThreads = max(1, parallel::detectCores() - 2),
+  Timer = TRUE,
+  DebugMode = FALSE,
   TargetTransformation = FALSE,
   Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
     "Logit"),
@@ -46,22 +54,14 @@ AutoH2OCARMA(
   SplitRatios = c(0.7, 0.2, 0.1),
   EvalMetric = "rmse",
   NumOfParDepPlots = 0L,
-  PartitionType = "timeseries",
-  MaxMem = {     gc()    
-    paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
-  NThreads = max(1, parallel::detectCores() - 2),
-  Timer = TRUE,
-  DebugMode = FALSE,
-  ExcludeAlgos = "XGBoost",
   GridTune = FALSE,
   ModelCount = 1,
-  GridStrategy = "Cartesian",
-  MaxRuntimeSecs = 60 * 60 * 24,
-  StoppingRounds = 10,
   NTrees = 1000,
   LearnRate = 0.1,
   LearnRateAnnealing = 1,
+  GridStrategy = "Cartesian",
+  MaxRuntimeSecs = 60 * 60 * 24,
+  StoppingRounds = 10,
   MaxDepth = 20,
   SampleRate = 0.632,
   MTries = -1,
@@ -72,11 +72,8 @@ AutoH2OCARMA(
   NBins = 20,
   NBinsCats = 1024,
   NBinsTopLevel = 1024,
-  HistogramType = "AUTO",
   CategoricalEncoding = "AUTO",
-  RandomColNumbers = NULL,
-  InteractionColNumbers = NULL,
-  WeightsColumn = NULL,
+  HistogramType = "AUTO",
   Distribution = "gaussian",
   Link = "identity",
   RandomDistribution = NULL,
@@ -89,37 +86,53 @@ AutoH2OCARMA(
   Standardize = TRUE,
   RemoveCollinearColumns = FALSE,
   InterceptInclude = TRUE,
-  NonNegativeCoefficients = FALSE
+  NonNegativeCoefficients = FALSE,
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL
 )
 }
 \arguments{
 \item{AlgoType}{Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, "automl" for H2O's AutoML algo, and "gam" for H2O's Generalized Additive Model.}
 
+\item{ExcludeAlgos}{For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
+
 \item{data}{Supply your full series data set here}
-
-\item{NonNegativePred}{TRUE or FALSE}
-
-\item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
 \item{TargetColumnName}{List the column name of your target variables column. E.g. "Target"}
 
-\item{DateColumnName}{List the column name of your date column. E.g. "DateTime"}
-
-\item{HierarchGroups}{Vector of hierachy categorical columns.}
-
-\item{GroupVariables}{Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.}
-
 \item{PDFOutputPath}{NULL or a path file to output PDFs to a specified folder}
 
 \item{SaveDataPath}{NULL Or supply a path. Data saved will be called 'ModelID'_data.csv}
 
-\item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
+\item{WeightsColumn}{NULL}
+
+\item{NonNegativePred}{TRUE or FALSE}
+
+\item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
+
+\item{DateColumnName}{List the column name of your date column. E.g. "DateTime"}
+
+\item{GroupVariables}{Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.}
+
+\item{HierarchGroups}{Vector of hierachy categorical columns.}
 
 \item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".}
 
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
+
+\item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
+
+\item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
+
+\item{MaxMem}{Set to the maximum amount of memory you want to allow for running this function. Default is "32G".}
+
+\item{NThreads}{Set to the number of threads you want to dedicate to this function.}
+
+\item{Timer}{Set to FALSE to turn off the updating print statements for progress}
+
+\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
@@ -163,37 +176,25 @@ AutoH2OCARMA(
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
-\item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
+\item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
 
 \item{NumOfParDepPlots}{Set to zeros if you do not want any returned. Can set to a very large value and it will adjust to the max number of features if it's too high}
-
-\item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
-
-\item{MaxMem}{Set to the maximum amount of memory you want to allow for running this function. Default is "32G".}
-
-\item{NThreads}{Set to the number of threads you want to dedicate to this function.}
-
-\item{Timer}{Set to FALSE to turn off the updating print statements for progress}
-
-\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
-
-\item{ExcludeAlgos}{For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
 
 \item{ModelCount}{Set the number of models to try in the grid tune}
-
-\item{GridStrategy}{Default "Cartesian", models available include}
-
-\item{MaxRuntimeSecs}{Default 60*60*24, models available include}
-
-\item{StoppingRounds}{Default 10, models available include}
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
 \item{LearnRate}{Default 0.10, models available include gbm}
 
 \item{LearnRateAnnealing}{Default 1, models available include gbm}
+
+\item{GridStrategy}{Default "Cartesian", models available include}
+
+\item{MaxRuntimeSecs}{Default 60*60*24, models available include}
+
+\item{StoppingRounds}{Default 10, models available include}
 
 \item{MaxDepth}{Default 20, models available include drf, gbm}
 
@@ -215,11 +216,39 @@ AutoH2OCARMA(
 
 \item{NBinsTopLevel}{Default 1024, models available include drf, gbm}
 
-\item{HistogramType}{Default "AUTO". Select from AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"}
+\item{CategoricalEncoding}{Default "AUTO". Choices include :  "AUTO", "Enum", "OneHotInternal", "OneHotExplicit", "Binary", "Eigen", "LabelEncoder", "Sort-ByResponse", "EnumLimited"}
 
-\item{CategoricalEncoding}{Default "AUTO" models available include drf, gbm}
+\item{HistogramType}{Default "AUTO". Select from "AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"}
 
-\item{WeightsColumn}{NULL}
+\item{Distribution}{Model family}
+
+\item{Link}{Link for model family}
+
+\item{RandomDistribution}{Default NULL}
+
+\item{RandomLink}{Default NULL}
+
+\item{Solver}{Model optimizer}
+
+\item{Alpha}{Default NULL}
+
+\item{Lambda}{Default NULL}
+
+\item{LambdaSearch}{Default FALSE,}
+
+\item{NLambdas}{Default -1}
+
+\item{Standardize}{Default TRUE}
+
+\item{RemoveCollinearColumns}{Default FALSE}
+
+\item{InterceptInclude}{Default TRUE}
+
+\item{NonNegativeCoefficients}{Default FALSE}
+
+\item{RandomColNumbers}{NULL}
+
+\item{InteractionColNumbers}{NULL}
 }
 \value{
 See examples
@@ -344,7 +373,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
   InteractionColNumbers = NULL,
   WeightsColumn = NULL,
 
-
+  # ML args
   Distribution = "gaussian",
   Link = "identity",
   RandomDistribution = NULL,

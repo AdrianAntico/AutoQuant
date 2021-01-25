@@ -30,7 +30,7 @@
 #' @param num_knots Numeric values for gam
 #' @param keep_gam_cols Logical
 #' @param Solver Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"
-#' @param Alpha Default NULL. Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.
+#' @param Alpha Default 0.5 Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.
 #' @param Lambda Default NULL. Regularization strength.
 #' @param LambdaSearch Default FALSE.
 #' @param NLambdas Default -1
@@ -88,7 +88,7 @@
 #'    Distribution = "multinomial",
 #'    Link = "Family_Default",
 #'    Solver = "AUTO",
-#'    Alpha = NULL,
+#'    Alpha = 0.5,
 #'    Lambda = NULL,
 #'    LambdaSearch = FALSE,
 #'    NLambdas = -1,
@@ -128,7 +128,7 @@ AutoH2oGAMMultiClass <- function(data,
                                  num_knots = NULL,
                                  keep_gam_cols = TRUE,
                                  Solver = "AUTO",
-                                 Alpha = NULL,
+                                 Alpha = 0.5,
                                  Lambda = NULL,
                                  LambdaSearch = FALSE,
                                  NLambdas = -1,
