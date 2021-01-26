@@ -262,11 +262,11 @@ AutoBanditSarima <- function(data,
         } else {
           Arima_ExperimentGrid <<- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <<- counter + 1L
-          if(counter > 25) break
+          if(counter > MaxConsecutiveFails) break
         }
       } else {
         counter <<- counter + 1L
-        if(counter > 25) break
+        if(counter > MaxConsecutiveFails) break
       }
     }
   } else {
@@ -480,16 +480,16 @@ AutoBanditNNet <- function(data,
         } else {
           NNET_ExperimentGrid <- NNET_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > 10L) {
-            return(print("Unable to build a model"))
+          if(counter > MaxConsecutiveFails) {
+            stop(print("Unable to build a model"))
           }
         }
       } else {
-        return(print("Unable to build a model"))
+        stop(print("Unable to build a model"))
       }
     }
   } else {
-    return(print("Unable to build a model"))
+    stop(print("Unable to build a model"))
   }
 }
 
@@ -532,9 +532,7 @@ AutoTBATS <- function(data,
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
-  if(x != xx) {
-    return(print("Non unique values detected in data"))
-  }
+  if(x != xx) stop(print("Non unique values detected in data"))
 
   # Lags----
   if(!is.integer(MaxLags) | length(MaxLags) > 1L) {
@@ -623,12 +621,12 @@ AutoTBATS <- function(data,
       if(nrow(Forecast) != 0 & ((FC_MaxValue - MaxValue) * NumFCPeriods / data[,.N]) < 10 * ((MaxValue - AvgValue))) {
         return(list(Forecast = Forecast, PerformanceGrid = TBATS_ExperimentGrid))
       } else {
-        return(print("Unable to build model"))
+        stop(print("Unable to build model"))
       }
     } else {
-      return(print("Unable to build model"))
+      stop(print("Unable to build model"))
     }
   } else {
-    return(print("Unable to build model"))
+    stop(print("Unable to build model"))
   }
 }
