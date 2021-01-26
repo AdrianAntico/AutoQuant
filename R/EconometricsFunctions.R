@@ -1060,17 +1060,18 @@ TimeSeriesDataPrepare <- function(data,
   # Convert to data.table if not already
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
+  # Ensure correct ordering and subsetting of data
+  keep <- c(DateName, TargetName)
+  data <- data[, ..keep]
+
   # Time series fill----
   data <- TimeSeriesFill(
     data = data,
     DateColumnName = DateName,
     GroupVariables = NULL,
-    TimeUnit = TimeUnit,
+    TimeUnit = TimeUnit, MaxMissingPercent = 0.05,
+    SimpleImpute = FALSE,
     FillType = "maxmax")
-
-  # Ensure correct ordering and subsetting of data
-  keep <- c(DateName, TargetName)
-  data <- data[, ..keep]
 
   # Convert to lubridate as_date() or POSIXct----
   if(!tolower(TimeUnit) %chin% tolower(c("1min","1mins","5min","5mins","10min","10mins","15min","15mins","30min","30mins","hour","hours","hr","hrs"))) {

@@ -79,74 +79,104 @@ AutoBanditSarima <- function(data,
                              NumberCores = max(1L, parallel::detectCores()),
                              DebugMode = FALSE) {
 
-  # Check for data issues----
+  # Debug
+  if(DebugMode) print("here 1")
+
+  # Ensure only the required columns are used ----
+  data <- data.table::copy(data[, .SD, .SDcols = c(DateColumnName, TargetVariableName)])
+
+  # Debug
+  if(DebugMode) print("here 2")
+
+  # Check for data issues ----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
   if(x != xx) return(print("Non unique values detected in data"))
 
+  # Debug
+  if(DebugMode) print("here 3")
+
   # Lags----
-  if(!is.integer(MaxLags) | length(MaxLags) > 1L) {
+  if(!is.integer(MaxLags) || length(MaxLags) > 1L) {
     ARIMA_Lags <- as.integer(max(MaxLags))
   } else {
     ARIMA_Lags <- MaxLags
   }
 
   # Seasonal Lags----
-  if(!is.integer(MaxSeasonalLags) | length(MaxSeasonalLags) > 1L) {
+  if(!is.integer(MaxSeasonalLags) || length(MaxSeasonalLags) > 1L) {
     ARIMA_SeasonalLags <- as.integer(max(MaxSeasonalLags))
   } else {
     ARIMA_SeasonalLags <- MaxSeasonalLags
   }
 
   # Moving Averages----
-  if(!is.integer(MaxMovingAverages) | length(MaxMovingAverages) > 1L) {
+  if(!is.integer(MaxMovingAverages) || length(MaxMovingAverages) > 1L) {
     ARIMA_MovingAverages <- as.integer(max(MaxMovingAverages))
   } else {
     ARIMA_MovingAverages <- MaxMovingAverages
   }
 
   # Moving Averages----
-  if(!is.integer(MaxSeasonalMovingAverages) | length(MaxSeasonalMovingAverages) > 1L) {
+  if(!is.integer(MaxSeasonalMovingAverages) || length(MaxSeasonalMovingAverages) > 1L) {
     ARIMA_SeasonalMovingAverages <- as.integer(max(MaxSeasonalMovingAverages))
   } else {
     ARIMA_SeasonalMovingAverages <- MaxSeasonalMovingAverages
   }
 
   # Fourier Pairs----
-  if(!is.integer(MaxFourierPairs) | length(MaxFourierPairs) > 1L) {
+  if(!is.integer(MaxFourierPairs) || length(MaxFourierPairs) > 1L) {
     ARIMA_MaxFourierTerms <- as.integer(max(MaxFourierPairs))
   } else {
     ARIMA_MaxFourierTerms <- MaxFourierPairs
   }
 
-  # Train Share Evaluate----
+  # Debug
+  if(DebugMode) print("here 4")
+
+  # Train Share Evaluate ----
   ARIMA_TrainShareEvaluate <- TrainWeighting
 
+  # Debug
+  if(DebugMode) print("here 5")
+
   # MaxConsecutiveFails----
-  if(!is.integer(MaxConsecutiveFails) | length(MaxConsecutiveFails) > 1L) {
+  if(!is.integer(MaxConsecutiveFails) || length(MaxConsecutiveFails) > 1L) {
     ARIMA_RunsWithoutWinner <- as.integer(MaxConsecutiveFails)
   } else {
     ARIMA_RunsWithoutWinner <- MaxConsecutiveFails
   }
 
+  # Debug
+  if(DebugMode) print("here 6")
+
   # MaxConsecutiveFails----
-  if(!is.integer(MaxNumberModels) | length(MaxNumberModels) > 1L) {
+  if(!is.integer(MaxNumberModels) || length(MaxNumberModels) > 1L) {
     ARIMA_MaxNumberModels <- as.integer(MaxNumberModels)
   } else {
     ARIMA_MaxNumberModels <- MaxNumberModels
   }
 
+  # Debug
+  if(DebugMode) print("here 7")
+
   # MaxConsecutiveFails----
-  if(!is.integer(MaxRunTimeMinutes) | length(MaxRunTimeMinutes) > 1L) {
+  if(!is.integer(MaxRunTimeMinutes) || length(MaxRunTimeMinutes) > 1L) {
     ARIMA_MaxRunTime <- as.integer(MaxRunTimeMinutes)
   } else {
     ARIMA_MaxRunTime <- MaxRunTimeMinutes
   }
 
+  # Debug
+  if(DebugMode) print("here 8")
+
   # Values----
   MinValue <- min(data[[eval(TargetVariableName)]], na.rm = TRUE)
   AvgValue <- mean(data[[eval(TargetVariableName)]], na.rm = TRUE)
   MaxValue <- max(data[[eval(TargetVariableName)]], na.rm = TRUE)
+
+  # Debug
+  if(DebugMode) print("here 9")
 
   # 1. Create time series artifacts----
   Arima_Artifacts_Build <- TimeSeriesDataPrepare(
@@ -352,27 +382,30 @@ AutoBanditNNet <- function(data,
                            MaxNumberModels = 100L,
                            MaxRunTimeMinutes = 10L) {
 
+  # Ensure only the required columns are used ----
+  data <- data.table::copy(data[, .SD, .SDcols = c(DateColumnName, TargetVariableName)])
+
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
   if(x != xx) return(print("Non unique values detected in data"))
 
   # Lags----
-  if(!is.integer(MaxLags) | length(MaxLags) > 1L) {
+  if(!is.integer(MaxLags) || length(MaxLags) > 1L) {
     NNET_Lags <- as.integer(max(MaxLags))
   } else {
     NNET_Lags <- MaxLags
   }
 
   # Seasonal Lags----
-  if(!is.integer(MaxSeasonalLags) | length(MaxSeasonalLags) > 1L) {
+  if(!is.integer(MaxSeasonalLags) || length(MaxSeasonalLags) > 1L) {
     NNET_SeasonalLags <- as.integer(max(MaxSeasonalLags))
   } else {
     NNET_SeasonalLags <- MaxSeasonalLags
   }
 
   # Fourier Pairs----
-  if(!is.integer(MaxFourierPairs) | length(MaxFourierPairs) > 1L) {
+  if(!is.integer(MaxFourierPairs) || length(MaxFourierPairs) > 1L) {
     NNET_MaxFourierTerms <- as.integer(max(MaxFourierPairs))
   } else {
     NNET_MaxFourierTerms <- MaxFourierPairs
@@ -386,21 +419,21 @@ AutoBanditNNet <- function(data,
   }
 
   # Runs without winner----
-  if(!is.integer(MaxConsecutiveFails) | length(MaxConsecutiveFails) > 1L) {
+  if(!is.integer(MaxConsecutiveFails) || length(MaxConsecutiveFails) > 1L) {
     NNET_RunsWithoutWinner <- as.integer(max(MaxConsecutiveFails))
   } else {
     NNET_RunsWithoutWinner <- MaxConsecutiveFails
   }
 
   # Max Number Models----
-  if(!is.integer(MaxNumberModels) | length(MaxNumberModels) > 1L) {
+  if(!is.integer(MaxNumberModels) || length(MaxNumberModels) > 1L) {
     NNET_MaxNumberModels <- as.integer(max(MaxNumberModels))
   } else {
     NNET_MaxNumberModels <- MaxNumberModels
   }
 
   # Max Run Time----
-  if(!is.integer(MaxRunTimeMinutes) | length(MaxRunTimeMinutes) > 1L) {
+  if(!is.integer(MaxRunTimeMinutes) || length(MaxRunTimeMinutes) > 1L) {
     NNET_MaxRunTime <- as.integer(max(MaxRunTimeMinutes))
   } else {
     NNET_MaxRunTime <- MaxRunTimeMinutes
@@ -529,27 +562,30 @@ AutoTBATS <- function(data,
                       MaxNumberModels = 100L,
                       MaxRunTimeMinutes = 10L) {
 
+  # Ensure only the required columns are used ----
+  data <- data.table::copy(data[, .SD, .SDcols = c(DateColumnName, TargetVariableName)])
+
   # Check for data issues----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
   if(x != xx) stop(print("Non unique values detected in data"))
 
   # Lags----
-  if(!is.integer(MaxLags) | length(MaxLags) > 1L) {
+  if(!is.integer(MaxLags) || length(MaxLags) > 1L) {
     TBATS_Lags <- as.integer(max(MaxLags))
   } else {
     TBATS_Lags <- MaxLags
   }
 
   # Moving Averages----
-  if(!is.integer(MaxMovingAverages) | length(MaxMovingAverages) > 1L) {
+  if(!is.integer(MaxMovingAverages) || length(MaxMovingAverages) > 1L) {
     TBATS_MovingAverages <- as.integer(max(MaxMovingAverages))
   } else {
     TBATS_MovingAverages <- MaxMovingAverages
   }
 
   # Moving Averages----
-  if(!is.numeric(TrainWeighting) | length(TrainWeighting) > 1L) {
+  if(!is.numeric(TrainWeighting) || length(TrainWeighting) > 1L) {
     TBATS_TrainShareEvaluate <- as.numeric(TrainWeighting)
   } else {
     TBATS_TrainShareEvaluate <- TrainWeighting
@@ -562,18 +598,18 @@ AutoTBATS <- function(data,
 
   # 1. Create time series artifacts----
   TBATS_Artifacts_Build <- TimeSeriesDataPrepare(
-    data                   = data,
-    TargetName             = TargetVariableName,
-    DateName               = DateColumnName,
-    Lags                   = TBATS_Lags,
-    SeasonalLags           = MaxSeasonalPeriods,
-    MovingAverages         = TBATS_MovingAverages,
+    data = data,
+    TargetName = TargetVariableName,
+    DateName = DateColumnName,
+    Lags = TBATS_Lags,
+    SeasonalLags = MaxSeasonalPeriods,
+    MovingAverages = TBATS_MovingAverages,
     SeasonalMovingAverages = MaxSeasonalPeriods,
-    TimeUnit               = TimeAggLevel,
-    FCPeriods              = NumFCPeriods,
-    HoldOutPeriods         = NumHoldOutPeriods,
-    TSClean                = TRUE,
-    ModelFreq              = TRUE)
+    TimeUnit = TimeAggLevel,
+    FCPeriods = NumFCPeriods,
+    HoldOutPeriods = NumHoldOutPeriods,
+    TSClean = TRUE,
+    ModelFreq = TRUE)
 
   # 2. Find Best TBATS Models----
   TBATS_ExperimentGrid <- tryCatch({ParallelAutoTBATS(
@@ -585,19 +621,19 @@ AutoTBATS <- function(data,
   # 3. Create Final Build Data----
   if(!is.null(TBATS_ExperimentGrid)) {
     TBATS_Artifacts_Score <- TimeSeriesDataPrepare(
-      data                   = data,
-      TargetName             = TargetVariableName,
-      DateName               = DateColumnName,
-      Lags                   = TBATS_Lags,
-      SeasonalLags           = MaxSeasonalPeriods,
-      MovingAverages         = TBATS_MovingAverages,
+      data = data,
+      TargetName = TargetVariableName,
+      DateName = DateColumnName,
+      Lags = TBATS_Lags,
+      SeasonalLags = MaxSeasonalPeriods,
+      MovingAverages = TBATS_MovingAverages,
       SeasonalMovingAverages = MaxSeasonalPeriods,
-      TimeUnit               = TimeAggLevel,
-      FCPeriods              = NumFCPeriods,
-      HoldOutPeriods         = 0,
-      TSClean                = TRUE,
-      ModelFreq              = TRUE,
-      FinalBuild             = TRUE)
+      TimeUnit = TimeAggLevel,
+      FCPeriods = NumFCPeriods,
+      HoldOutPeriods = 0,
+      TSClean = TRUE,
+      ModelFreq = TRUE,
+      FinalBuild = TRUE)
 
     # 4. Generate Final TBATS Forecasts----
     Forecast <- tryCatch({FinalBuildTBATS(
