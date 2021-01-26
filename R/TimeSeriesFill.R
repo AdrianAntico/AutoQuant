@@ -44,10 +44,16 @@ TimeSeriesFill <- function(data = data,
   # Fill from the absolute min date to the absolute max date
   if(FillType == "maxmax") {
 
-    # Setup vectors for crossjoin
+    # Date variables
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName))]
-    CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    if(any(TimeUnit %chin% c("1min","5min","10min","15min","30min","45min"))) {
+      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = 60 * as.numeric(gsub("([0-9]+).*$", "\\1", TimeUnit)))
+    } else {
+      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    }
+
+    # Group variables
     if(!is.null(GroupVariables)) {
       for(group in GroupVariables) {
         CJList[[eval(group)]] <- unique(data[[eval(group)]])
@@ -68,10 +74,16 @@ TimeSeriesFill <- function(data = data,
   # Fill from the max date of the min set to the absolute max date
   if(FillType == "minmax") {
 
-    # Setup vectors for crossjoin
+    # Date variables
     MinDate <- data[, min(get(DateColumnName)), by = c(eval(GroupVariables))][, max(V1)]
     MaxDate <- data[, max(get(DateColumnName))]
-    CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    if(any(TimeUnit %chin% c("1min","5min","10min","15min","30min","45min"))) {
+      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = 60 * as.numeric(gsub("([0-9]+).*$", "\\1", TimeUnit)))
+    } else {
+      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    }
+
+    # Group variable
     if(!is.null(GroupVariables)) {
       for(group in GroupVariables) {
         CJList[[eval(group)]] <- unique(data[[eval(group)]])
@@ -92,10 +104,16 @@ TimeSeriesFill <- function(data = data,
   # Fill from the absolute min date to the min of the max dates
   if(FillType == "maxmin") {
 
-    # Setup vectors for crossjoin
+    # Date variable
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
-    CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    if(any(TimeUnit %chin% c("1min","5min","10min","15min","30min","45min"))) {
+      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = 60 * as.numeric(gsub("([0-9]+).*$", "\\1", TimeUnit)))
+    } else {
+      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    }
+
+    # Group variables
     if(!is.null(GroupVariables)) {
       for(group in GroupVariables) {
         CJList[[eval(group)]] <- unique(data[[eval(group)]])
@@ -116,10 +134,16 @@ TimeSeriesFill <- function(data = data,
   # Fill from the max date of the min dates to the min date of the max dates
   if(FillType == "minmin") {
 
-    # Setup vectors for crossjoin
+    # Date variables
     MinDate <- data[, min(get(DateColumnName))]
     MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
-    CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    if(any(TimeUnit %chin% c("1min","5min","10min","15min","30min","45min"))) {
+      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = 60 * as.numeric(gsub("([0-9]+).*$", "\\1", TimeUnit)))
+    } else {
+      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+    }
+
+    # Group variables
     if(!is.null(GroupVariables)) {
       for(group in GroupVariables) {
         CJList[[eval(group)]] <- unique(data[[eval(group)]])
