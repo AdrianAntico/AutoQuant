@@ -56,7 +56,13 @@ TimeSeriesFill <- function(data = data,
 
     # Cross join and then merge back original features
     FillData <- do.call(data.table::CJ, CJList)
-    FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+
+    # Merge
+    if(!is.null(GroupVariables)) {
+      FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+    } else {
+      FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
+    }
   }
 
   # Fill from the max date of the min set to the absolute max date
@@ -74,7 +80,13 @@ TimeSeriesFill <- function(data = data,
 
     # Cross join and then merge back original features
     FillData <- do.call(data.table::CJ, CJList)
-    FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+
+    # Merge
+    if(!is.null(GroupVariables)) {
+      FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+    } else {
+      FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
+    }
   }
 
   # Fill from the absolute min date to the min of the max dates
@@ -92,7 +104,13 @@ TimeSeriesFill <- function(data = data,
 
     # Cross join and then merge back original features
     FillData <- do.call(data.table::CJ, CJList)
-    FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+
+    # Merge
+    if(!is.null(GroupVariables)) {
+      FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+    } else {
+      FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
+    }
   }
 
   # Fill from the max date of the min dates to the min date of the max dates
@@ -110,7 +128,13 @@ TimeSeriesFill <- function(data = data,
 
     # Cross join and then merge back original features
     FillData <- do.call(data.table::CJ, CJList)
-    FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+
+    # Merge
+    if(!is.null(GroupVariables)) {
+      FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+    } else {
+      FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
+    }
   }
 
   # Remove combinations that never existed

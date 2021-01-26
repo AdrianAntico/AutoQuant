@@ -1066,7 +1066,7 @@ TimeSeriesDataPrepare <- function(data,
     DateColumnName = DateName,
     GroupVariables = NULL,
     TimeUnit = TimeUnit,
-    FillType = "Inner")
+    FillType = "maxmax")
 
   # Ensure correct ordering and subsetting of data
   keep <- c(DateName, TargetName)
