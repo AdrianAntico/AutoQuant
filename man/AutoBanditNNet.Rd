@@ -18,7 +18,9 @@ AutoBanditNNet(
   TrainWeighting = 0.5,
   MaxConsecutiveFails = 12L,
   MaxNumberModels = 100L,
-  MaxRunTimeMinutes = 10L
+  MaxRunTimeMinutes = 10L,
+  NumberCores = max(1L, min(4L, parallel::detectCores() - 2L)),
+  Debug = FALSE
 )
 }
 \arguments{
@@ -48,15 +50,51 @@ AutoBanditNNet(
 
 \item{MaxNumberModels}{Indicate the maximum number of models to test.}
 
-\item{MaxRunTimeMinutes}{Indicate the maximum number of minutes to wait for a result.}
+\item{MaxRunTimeMinutes}{Indicate the maximum number of minutes to wait for a result}
+
+\item{NumberCores}{Default max(1L, min(4L, parallel::detectCores()-2L))}
+
+\item{Debug}{Set to TRUE to print some steps}
 }
 \description{
 AutoBanditNNet is a multi-armed bandit model testing framework for AR and SAR NNets. Randomized probability matching is the underlying bandit algorithm. Model evaluation is done by blending the training error and the validation error from testing the model on out of sample data. The bandit algorithm compares the performance of the current build against the previous builds which starts with the classic nnetar model from the forecast package. Depending on how many lags, seasonal lags, and fourier pairs you test the number of combinations of features to test begins to approach 10,000 different combinations of settings. The function tests out transformations, differencing, and variations of the lags, seasonal lags, and fourier pairs. The paramter space is broken up into various buckets that are increasing in sophistication. The bandit algorithm samples from those buckets and based on many rounds of testing it determines which buckets to generate samples from more frequently based on the models performance coming from that bucket. All of the models have performance data collected on them and a final rebuild is initiated when a winner is found. The rebuild process begins by retraining the model with the settings that produced the best performance. If the model fails to build, for whatever reason, the next best buildable model is rebuilt.
 }
+\examples{
+\dontrun{
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
+
+# Build models
+Output <- RemixAutoML::AutoBanditNNet(
+  data = data,
+  TargetVariableName = "Weekly_Sales",
+  DateColumnName = "Date",
+  TimeAggLevel = "day",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 5L,
+  NumFCPeriods = 5L,
+  MaxLags = 5L,
+  MaxSeasonalLags = 1L,
+  MaxFourierPairs = 2L,
+  TrainWeighting = 0.50,
+  MaxConsecutiveFails = 12L,
+  MaxNumberModels = 100L,
+  MaxRunTimeMinutes = 10L,
+  NumberCores = max(1L, min(4L, parallel::detectCores()-2L)),
+  Debug = FALSE)
+
+# Output
+Output$ForecastPlot
+Output$Forecast
+Output$PerformanceGrid
+}
+}
 \seealso{
 Other Automated Time Series: 
+\code{\link{AutoArfima}()},
 \code{\link{AutoBanditSarima}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoETS}()},
 \code{\link{AutoH2oGBMFreqSizeScoring}()},
 \code{\link{AutoTBATS}()},
 \code{\link{AutoTS}()}

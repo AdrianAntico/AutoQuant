@@ -1069,7 +1069,8 @@ TimeSeriesDataPrepare <- function(data,
     data = data,
     DateColumnName = DateName,
     GroupVariables = NULL,
-    TimeUnit = TimeUnit, MaxMissingPercent = 0.05,
+    TimeUnit = TimeUnit,
+    MaxMissingPercent = 0.05,
     SimpleImpute = FALSE,
     FillType = "maxmax")
 
@@ -1111,42 +1112,41 @@ TimeSeriesDataPrepare <- function(data,
   FC_Data <- data.table::data.table(Date = seq_len(FCPeriods))
 
   # Define TS Frequency----
-  if(tolower(TimeUnit) == "hour") {
+  if(tolower(TimeUnit) %chin% c("hour","hours","hr","hrs")) {
     UserSuppliedFreq <- 24
     FC_Data[, Date := MaxDate + lubridate::hours(Date)]
-  } else if(tolower(TimeUnit) == "1min") {
+  } else if(tolower(TimeUnit) %chin% c("1min","1mins")) {
     UserSuppliedFreq <- 60
     FC_Data[, Date := MaxDate + lubridate::minutes(Date)]
-  } else if(tolower(TimeUnit) == "5min") {
+  } else if(tolower(TimeUnit) %chin% c("5min","5mins")) {
     UserSuppliedFreq <- 12
     FC_Data[, Date := MaxDate + lubridate::minutes(5 * Date)]
-  } else if(tolower(TimeUnit) == "10min") {
+  } else if(tolower(TimeUnit) %chin% c("10min","10mins")) {
     UserSuppliedFreq <- 6
     FC_Data[, Date := MaxDate + lubridate::minutes(10 * Date)]
-  } else if(tolower(TimeUnit) == "15min") {
+  } else if(tolower(TimeUnit) %chin% c("15min","15mins")) {
     UserSuppliedFreq <- 4
     FC_Data[, Date := MaxDate + lubridate::minutes(15 * Date)]
-  } else if(tolower(TimeUnit) == "30min") {
+  } else if(tolower(TimeUnit) %chin% c("30min","30mins")) {
     UserSuppliedFreq <- 2
     FC_Data[, Date := MaxDate + lubridate::minutes(30 * Date)]
-  } else if (tolower(TimeUnit) == "day") {
+  } else if (tolower(TimeUnit) %chin% c("day","days","dy","dys")) {
     UserSuppliedFreq <- 365
     FC_Data[, Date := MaxDate + lubridate::days(Date)]
-  } else if (tolower(TimeUnit) == "week") {
+  } else if (tolower(TimeUnit) %chin% c("week","weeks","wk","wks")) {
     UserSuppliedFreq <- 52
     FC_Data[, Date := MaxDate + lubridate::weeks(Date)]
-  } else if (tolower(TimeUnit) == "month") {
+  } else if (tolower(TimeUnit) %chin% c("month","months","mth","mths")) {
     UserSuppliedFreq <- 12
     FC_Data[, Date := as.Date(MaxDate) %m+% months(Date)]
-  } else if (tolower(TimeUnit) == "quarter") {
+  } else if (tolower(TimeUnit) %chin% c("quarter","quarters","qtr","qtrs")) {
     UserSuppliedFreq <- 4
     FC_Data[, Date := as.Date(MaxDate)  %m+% months(3 * Date)]
-  } else if (tolower(TimeUnit) == "year") {
+  } else if (tolower(TimeUnit) %chin% c("year","years","yr","yrs")) {
     UserSuppliedFreq <- 1
     FC_Data[, Date := MaxDate + lubridate::years(Date)]
   } else {
-    return("TimeUnit is not in hour, day, week, month,
-    quarter, or year")
+    stop("TimeUnit is not an approved value to supply")
   }
 
   # Coerce SeasonalLags if too large----
@@ -1367,7 +1367,7 @@ OptimizeArima <- function(Output,
     RunsWithoutNewWinner <- 0L
 
     # Build models----
-    repeat {
+    repeat{
 
       # Increment Counter----
       run <- run + 1L
@@ -2200,10 +2200,10 @@ OptimizeNNET <- function(Output,
                          MaxRunMinutes = NULL,
                          FinalGrid = NULL) {
 
-  # Turn on full speed ahead----
+  # Turn on full speed ahead ----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
-  # Go to scoring model if FinalGrid is supplied----
+  # Go to scoring model if FinalGrid is supplied ----
   if(is.null(FinalGrid)) {
 
     # Get grid objects----
@@ -2334,7 +2334,7 @@ OptimizeNNET <- function(Output,
 
       # Build Models----
       if(run == 1L) {
-        if (MinVal > 0L) {
+        if(MinVal > 0L) {
           Results <- tryCatch({forecast::nnetar(y = train, p = Lags, P = SeasonalLags, lambda = "auto")}, error = function(x) NULL)
         } else {
           Results <- tryCatch({forecast::nnetar(y = train, p = Lags, P = SeasonalLags)}, error = function(x) NULL)
@@ -2409,35 +2409,34 @@ OptimizeNNET <- function(Output,
     # Forecast Code
   } else {
 
-    # Remove Validation Metrics but Fill in the Train Metrics to Compare Against Initial Train----
+    # Remove Validation Metrics but Fill in the Train Metrics to Compare Against Initial Train ----
     FinalGrid[, ':=' (Validate_MSE = NULL, Validate_MAE = NULL, Blended_MSE = NULL, Blended_MAE = NULL, Blended_MAPE = NULL)]
 
-    # Create list to extract elements for modeling----
+    # Create list to extract elements for modeling ----
     TSGridList <- as.list(FinalGrid)
 
-    # Train number of rows----
+    # Train number of rows ----
     TrainRows <- length(train)
 
-    # Build models----
+    # Build models ----
     for(run in seq_len(FinalGrid[, .N])) {
 
-      if(run != 1L) {
-        if(TSGridList$Lambda[1L] == "skip") {
-          lambda <- NULL
-        } else {
-          lambda <- "auto"
-        }
+      # Define lambda ----
+      if(TSGridList$Lambda[1L] == "skip") {
+        lambda <- NULL
+      } else {
+        lambda <- "auto"
       }
 
       # Build Models----
-      if(FinalGrid[1L, GridName] == "DefaultAutoArima") {
-        if (MinVal > 0L) {
+      if(FinalGrid[1L, GridName] == "DefaultAutoNNet") {
+        if(MinVal > 0L) {
           Results <- tryCatch({forecast::nnetar(y = train, p = Lags, P = SeasonalLags, lambda = "auto")}, error = function(x) NULL)
         } else {
           Results <- tryCatch({forecast::nnetar(y = train, p = Lags, P = SeasonalLags)}, error = function(x) NULL)
         }
       } else {
-        if(TSGridList[["MaxFourierTerms"]][1L] != 0L) {
+        if(TSGridList[["MaxFourierTerms"]][1L] > 0L) {
           XREG <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][1])}, error = function(x) FALSE)
           XREGFC <- tryCatch({forecast::fourier(train, K = TSGridList[["MaxFourierTerms"]][1], h = FCPeriods)}, error = function(x) FALSE)
           if(is.numeric(XREG) & is.numeric(XREGFC)) {
@@ -2468,7 +2467,7 @@ OptimizeNNET <- function(Output,
         Train_Score[, Forecast := as.numeric(Results$fitted)]
 
         # Forecast----
-        if(TSGridList[["MaxFourierTerms"]][run] != 0) {
+        if(TSGridList[["MaxFourierTerms"]][run] > 0) {
           xx <- forecast::forecast(Results, PI=TRUE, xreg = XREGFC, h = FCPeriods)
           FC_Data[, Forecast := as.numeric(xx$mean)]
           FC_Data[, Low95 := as.numeric(xx$lower)[1L:FCPeriods]]
@@ -2484,14 +2483,11 @@ OptimizeNNET <- function(Output,
             FC_Data[, High80 := NA]
             FC_Data[, High95 := NA]
           })
-          if(ncol(FC_Data) != 3) {
-            xx <- forecast::forecast(Results, h = FCPeriods)
-            FC_Data[, Forecast := as.numeric(xx$mean)]
-            FC_Data[, Low95 := as.numeric(xx$lower)[1L:FCPeriods]]
-            FC_Data[, Low80 := as.numeric(xx$lower)[(FCPeriods + 1L):(2L * FCPeriods)]]
-            FC_Data[, High80 := as.numeric(xx$upper)[1L:FCPeriods]]
-            FC_Data[, High95 := as.numeric(xx$upper)[(FCPeriods + 1L):(2L * FCPeriods)]]
-          }
+          FC_Data[, Forecast := as.numeric(xx$mean)]
+          FC_Data[, Low95 := as.numeric(xx$lower)[1L:FCPeriods]]
+          FC_Data[, Low80 := as.numeric(xx$lower)[(FCPeriods + 1L):(2L * FCPeriods)]]
+          FC_Data[, High80 := as.numeric(xx$upper)[1L:FCPeriods]]
+          FC_Data[, High95 := as.numeric(xx$upper)[(FCPeriods + 1L):(2L * FCPeriods)]]
         }
 
         # If model fails to rebuild----
@@ -2922,7 +2918,7 @@ OptimizeTSLM <- function(Output,
 #' @param MaxNumberModels 20
 #' @param MaxRunMinutes 5
 #' @param MaxRunsWithoutNewWinner 12
-#' @param NumCores Value
+#' @param NumCores Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
@@ -2932,7 +2928,8 @@ OptimizeTSLM <- function(Output,
 #'   MaxRunsWithoutNewWinner = 20,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
-#'   MaxRunMinutes = 5)
+#'   MaxRunMinutes = 5,
+#'   NumCores = max(1L, min(4L, parallel::detectCores())))
 #' }
 #' @export
 ParallelAutoARIMA <- function(
@@ -2943,7 +2940,7 @@ ParallelAutoARIMA <- function(
   MaxNumberModels = 20,
   MaxRunMinutes = 5L,
   MaxRunsWithoutNewWinner = 12,
-  NumCores = max(1L, parallel::detectCores()-2L)) {
+  NumCores = max(1L, min(4L, parallel::detectCores()))) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -2977,13 +2974,13 @@ ParallelAutoARIMA <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores    <- min(NumCores, parallel::detectCores() - 2L)
-  cl       <- parallel::makePSOCKcluster(cores)
+  cl       <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
   library(doParallel)
-  ParallelSets <- floor(cores / Counter)
+  ParallelSets <- floor(NumCores / Counter)
   Results <- foreach::foreach(
-    i = c(rep(seq_len(Counter), ParallelSets), c(seq_len(Counter)[seq_len(cores %% Counter)])),
+    i = c(rep(seq_len(Counter), ParallelSets), c(seq_len(Counter)[seq_len(NumCores %% Counter)])),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
     .multicombine = TRUE,
     .packages = packages) %dopar% {
@@ -3011,10 +3008,6 @@ ParallelAutoARIMA <- function(
         MaxRunMinutes = MaxRunMinutes)
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
-
   # Add final rank by all data----
   Results <- Results[Validate_MSE != -10]
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
@@ -3035,19 +3028,22 @@ ParallelAutoARIMA <- function(
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
+#' @param NumCores Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
 #' ParallelAutoETS(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
-#'   TrainValidateShare = c(0.50,0.50))
+#'   TrainValidateShare = c(0.50,0.50),
+#'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
 #' @export
 ParallelAutoETS <- function(
   Output,
   MetricSelection = "MAE",
-  TrainValidateShare = c(0.50, 0.50)) {
+  TrainValidateShare = c(0.50, 0.50),
+  NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
@@ -3085,9 +3081,9 @@ ParallelAutoETS <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores    <- parallel::detectCores()
-  cl       <- parallel::makePSOCKcluster(cores)
+  cl       <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
   Results <- foreach::foreach(
     i = seq_len(Counter),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
@@ -3108,10 +3104,6 @@ ParallelAutoETS <- function(
         FinalGrid = NULL)
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
-
   # Add final rank by all data----
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
 
@@ -3128,19 +3120,22 @@ ParallelAutoETS <- function(
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
+#' @param NumCores Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
 #' ParallelAutoTBATS(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
-#'   TrainValidateShare = c(0.50,0.50))
+#'   TrainValidateShare = c(0.50,0.50),
+#'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
 #' @export
 ParallelAutoTBATS <- function(
   Output,
   MetricSelection = "MAE",
-  TrainValidateShare = c(0.50, 0.50)) {
+  TrainValidateShare = c(0.50, 0.50),
+  NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -3174,9 +3169,9 @@ ParallelAutoTBATS <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
+  cl <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
   Results <- foreach::foreach(
     i = seq_len(Counter),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
@@ -3199,10 +3194,6 @@ ParallelAutoTBATS <- function(
         FinalGrid = NULL)
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
-
   # Add final rank by all data----
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
 
@@ -3222,6 +3213,7 @@ ParallelAutoTBATS <- function(
 #' @param MaxNumberModels 20
 #' @param MaxRunMinutes 5
 #' @param MaxRunsWithoutNewWinner 12
+#' @param NumCores Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
@@ -3231,7 +3223,8 @@ ParallelAutoTBATS <- function(
 #'   MaxRunsWithoutNewWinner = 20,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
-#'   MaxRunMinutes = 5)
+#'   MaxRunMinutes = 5,
+#'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
 #' @export
 ParallelAutoNNET <- function(
@@ -3241,7 +3234,8 @@ ParallelAutoNNET <- function(
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 20,
   MaxRunMinutes = 5,
-  MaxRunsWithoutNewWinner = 12) {
+  MaxRunsWithoutNewWinner = 12,
+  NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -3275,9 +3269,9 @@ ParallelAutoNNET <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
+  cl <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
   Results <- foreach::foreach(
     i = seq_len(Counter),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
@@ -3303,10 +3297,6 @@ ParallelAutoNNET <- function(
         MaxRunMinutes = MaxRunMinutes)
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
-
   # Add final rank by all data----
   Results <- Results[Validate_MSE != -10]
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
@@ -3327,19 +3317,22 @@ ParallelAutoNNET <- function(
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
+#' @param NumCores Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
 #' ParallelAutoArfima(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
-#'   TrainValidateShare = c(0.50,0.50))
+#'   TrainValidateShare = c(0.50,0.50),
+#'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
 #' @export
 ParallelAutoArfima <- function(
   Output,
   MetricSelection = "MAE",
-  TrainValidateShare = c(0.50,0.50)) {
+  TrainValidateShare = c(0.50,0.50),
+  NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -3373,9 +3366,9 @@ ParallelAutoArfima <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
+  cl <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
   Results <- foreach::foreach(
     i = seq_len(Counter),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
@@ -3398,10 +3391,6 @@ ParallelAutoArfima <- function(
         FinalGrid = NULL)
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
-
   # Add final rank by all data----
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
 
@@ -3418,19 +3407,22 @@ ParallelAutoArfima <- function(
 #' @param Output The output returned from TimeSeriesDataPrepare()
 #' @param MetricSelection Choose from MAE, MSE, and MAPE
 #' @param TrainValidateShare The value returned from TimeSeriesPrepare()
+#' @param NumCores Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
 #' ParallelAutoTSLM(
 #'   MetricSelection = "MAE",
 #'   Output = NULL,
-#'   TrainValidateShare = c(0.50,0.50))
+#'   TrainValidateShare = c(0.50,0.50),
+#'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
 #' @export
 ParallelAutoTSLM <- function(
   Output,
   MetricSelection = "MAE",
-  TrainValidateShare = c(0.50, 0.50)) {
+  TrainValidateShare = c(0.50, 0.50),
+  NumCores = max(1L, min(4L, parallel::detectCores()-2L))) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
@@ -3464,9 +3456,9 @@ ParallelAutoTSLM <- function(
 
   # Setup the parallel environment----
   packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
+  cl <- parallel::makePSOCKcluster(NumCores)
   doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
   Results <- foreach::foreach(
     i = seq_len(Counter),
     .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
@@ -3486,10 +3478,6 @@ ParallelAutoTSLM <- function(
         TrainValidateShare = TrainValidateShare,
         FinalGrid = NULL)
     }
-
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
 
   # Add final rank by all data----
   Results <- Results[order(Blended_MAE)][, ModelRank := seq_len(Results[, .N])]
@@ -3520,7 +3508,9 @@ ParallelAutoTSLM <- function(
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
-#'   MaxRunMinutes = 5)
+#'   MaxRunMinutes = 5,
+#'   ByDataType = FALSE,
+#'   DebugMode = TRUE)
 #' }
 #' @export
 FinalBuildArima <- function(
@@ -3529,7 +3519,7 @@ FinalBuildArima <- function(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 1,
-  ByDataType = TRUE,
+  ByDataType = FALSE,
   DebugMode = FALSE) {
 
   # Turn on full speed ahead----
@@ -3630,31 +3620,6 @@ FinalBuildArima <- function(
         MaxRunMinutes = 100,
         FinalGrid = eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]),
         DebugMode = DebugMode)
-
-      # #DebugMode----
-      # Output = TimeSeriesPrepareOutput
-      # MetricSelection = MetricSelection
-      # DataSetName = TrainArtifacts[[ModelNum]][["Name"]]
-      # train = TrainArtifacts[[ModelNum]][["Data"]]
-      # test = ModelOutputGrid$TestData
-      # Lags = TimeSeriesPrepareOutput$Lags
-      # SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags
-      # MovingAverages = TimeSeriesPrepareOutput$MovingAverages
-      # SeasonalMovingAverages = TimeSeriesPrepareOutput$SeasonalMovingAverages
-      # Differences = TrainArtifacts[[ModelNum]][["Diff"]]
-      # SeasonalDifferences = TrainArtifacts[[ModelNum]][["SDiff"]]
-      # FullData = TimeSeriesPrepareOutput$FullData
-      # HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods
-      # MinVal = TimeSeriesPrepareOutput$MinVal
-      # TargetName = TimeSeriesPrepareOutput$TargetName
-      # DateName = TimeSeriesPrepareOutput$DateName
-      # MaxFourierTerms = 0
-      # TrainValidateShare = c(1.0,0.0)
-      # MaxNumberModels = NumberModelsScore
-      # MaxRunMinutes = 100
-      # FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]
-      if(DebugMode) if(Forecasts[is.na(Forecast)][,.N] == Forecasts[!is.na(Target), .N]) for(kk in 1:10) print(paste0("Final call to OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("Final call to OptimizeArima() was NOT successful"))
-
     } else {
       Forecasts <<- OptimizeArima(
         Output = eval(TimeSeriesPrepareOutput),
@@ -3691,6 +3656,8 @@ FinalBuildArima <- function(
       if(Forecasts[,.N] != 0) {
         FinalFC <<- data.table::copy(Forecasts)
         Successs <<- Successs + 1L
+      } else {
+        stop("No suitable model was found")
       }
     } else {
       if(Forecasts[,.N] != 0) {
@@ -3698,6 +3665,8 @@ FinalBuildArima <- function(
         Successs <<- Successs + 1L
         FinalFC <<- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
         rm(temp)
+      } else {
+        stop("No suitable model was found")
       }
     }
   }
@@ -3719,6 +3688,7 @@ FinalBuildArima <- function(
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
+#' @param DebugMode Set to TRUE to print steps
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
@@ -3728,7 +3698,9 @@ FinalBuildArima <- function(
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
-#'   MaxRunMinutes = 5)
+#'   MaxRunMinutes = 5,
+#'   ByDataType = FALSE,
+#'   DebugMode = FALSE)
 #' }
 #' @export
 FinalBuildETS <- function(
@@ -3737,7 +3709,8 @@ FinalBuildETS <- function(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 12,
-  ByDataType = TRUE) {
+  ByDataType = FALSE,
+  DebugMode = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -3794,63 +3767,84 @@ FinalBuildETS <- function(
       Name = "TSCleanModelFrequency"))
 
   # Idenity the number of non-null data sets to run through OptimizeArima----
-  Counter <- 0L
-  for(i in seq_len(ScoreGrid[, .N])) {
-    if(!is.null(TrainArtifacts[[i]][["Data"]])) {
-      Counter <- Counter + 1L
+  Counter1 <<- 0L
+  for(iii in seq_len(ScoreGrid[, .N])) {
+    if(!is.null(TrainArtifacts[[iii]][["Data"]])) {
+      Counter1 <<- Counter1 + 1L
     }
   }
 
-  # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
-  doParallel::registerDoParallel(cl)
-  Results <- foreach::foreach(
-    i = seq_len(Counter),
-    .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
-    .multicombine = TRUE,
-    .packages = packages) %dopar% {
+  # Score models----
+  Successs <<- 1L
+  for(ModelNum in seq_len(Counter1)) {
 
-      # Score models----
-      if(ByDataType) {
-        Forecasts <- OptimizeETS(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[i]][["Name"]],
-          train = TrainArtifacts[[i]][["Data"]],
-          test = ModelOutputGrid$TestData,
-          FullData = ModelOutputGrid$FullData,
-          HoldOutPeriods = ModelOutputGrid$HoldOutPeriods,
-          MinVal = ModelOutputGrid$MinVal,
-          TargetName = ModelOutputGrid$TargetName,
-          DateName = ModelOutputGrid$DateName,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
-      } else {
-        Forecasts <- OptimizeETS(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]],
-          train = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]],
-          test = ModelOutputGrid$TestData,
-          FullData = ModelOutputGrid$FullData,
-          HoldOutPeriods = ModelOutputGrid$HoldOutPeriods,
-          MinVal = ModelOutputGrid$MinVal,
-          TargetName = ModelOutputGrid$TargetName,
-          DateName = ModelOutputGrid$DateName,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          FinalGrid = ScoreGrid[i])
-      }
-      Forecasts
+    # Score models----
+    if(ByDataType) {
+
+      # Debugging
+      if(DebugMode) print(eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]))
+      if(DebugMode) print(eval(TrainArtifacts[[ModelNum]][["Name"]]))
+      if(DebugMode) print(TimeSeriesPrepareOutput)
+
+      # Forecast
+      Return <- OptimizeETS(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ModelNum]][["Name"]],
+        train = TrainArtifacts[[ModelNum]][["Data"]],
+        test = ModelOutputGrid$TestData,
+        FullData = ModelOutputGrid$FullData,
+        HoldOutPeriods = ModelOutputGrid$HoldOutPeriods,
+        MinVal = ModelOutputGrid$MinVal,
+        TargetName = ModelOutputGrid$TargetName,
+        DateName = ModelOutputGrid$DateName,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]])
+    } else {
+      Return <- OptimizeETS(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
+        train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
+        test = ModelOutputGrid$TestData,
+        FullData = ModelOutputGrid$FullData,
+        HoldOutPeriods = ModelOutputGrid$HoldOutPeriods,
+        MinVal = ModelOutputGrid$MinVal,
+        TargetName = ModelOutputGrid$TargetName,
+        DateName = ModelOutputGrid$DateName,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        FinalGrid = ScoreGrid[ModelNum])
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
+    # Debug output
+    if(DebugMode) {
+      print(paste0("Forecast output for scoring iteration: ", ModelNum))
+      print(Return)
+    }
+
+    # Combine----
+    if(Successs == 1L) {
+      if(Return[,.N] != 0) {
+        FinalFC <<- data.table::copy(Return)
+        Successs <<- Successs + 1L
+      } else {
+        stop("No suitable model was found")
+      }
+    } else {
+      if(Return[,.N] != 0) {
+        temp <- data.table::copy(Return)
+        Successs <<- Successs + 1L
+        FinalFC <<- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
+        rm(temp)
+      } else {
+        stop("No suitable model was found")
+      }
+    }
+  }
 
   # Return----
-  return(Results[!is.na(Forecast)])
+  if(DebugMode) print(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
+  return(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
 }
 
 #' FinalBuildTBATS
@@ -3865,6 +3859,7 @@ FinalBuildETS <- function(
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
+#' @param DebugMode Set to TRUE to print steps
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
@@ -3874,7 +3869,9 @@ FinalBuildETS <- function(
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
-#'   MaxRunMinutes = 5)
+#'   MaxRunMinutes = 5,
+#'   ByDataType = FALSE,
+#'   DebugMode = FALSE)
 #' }
 #' @export
 FinalBuildTBATS <- function(
@@ -3883,7 +3880,8 @@ FinalBuildTBATS <- function(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 1,
-  ByDataType = TRUE) {
+  ByDataType = FALSE,
+  DebugMode = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -3940,59 +3938,84 @@ FinalBuildTBATS <- function(
       Name = "TSCleanModelFrequency"))
 
   # Idenity the number of non-null data sets to run through OptimizeArima----
-  Counter <- 0L
-  for(i in seq_len(ScoreGrid[, .N])) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
+  Counter1 <<- 0L
+  for(iii in seq_len(ScoreGrid[, .N])) {
+    if(!is.null(TrainArtifacts[[iii]][["Data"]])) {
+      Counter1 <<- Counter1 + 1L
+    }
+  }
 
-  # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
-  doParallel::registerDoParallel(cl)
-  Results <- foreach::foreach(
-    i = seq_len(Counter),
-    .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
-    .multicombine = TRUE,
-    .packages = packages) %dopar% {
+  # Score models----
+  Successs <<- 1L
+  for(ModelNum in seq_len(Counter1)) {
 
-      # Score models----
-      if(ByDataType) {
-        Forecasts <- OptimizeTBATS(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[i]][["Name"]],
-          train = TrainArtifacts[[i]][["Data"]],
-          test = TimeSeriesPrepareOutput$TestData,
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
-      } else {
-        Forecasts <- OptimizeTBATS(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]],
-          train = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]],
-          test = TimeSeriesPrepareOutput$TestData,
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          FinalGrid = ScoreGrid[i])
-      }
-      Forecasts
+    # Score models----
+    if(ByDataType) {
+
+      # Debugging
+      if(DebugMode) print(eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]))
+      if(DebugMode) print(eval(TrainArtifacts[[ModelNum]][["Name"]]))
+      if(DebugMode) print(TimeSeriesPrepareOutput)
+
+      # Forecast
+      Return <- OptimizeTBATS(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ModelNum]][["Name"]],
+        train = TrainArtifacts[[ModelNum]][["Data"]],
+        test = TimeSeriesPrepareOutput$TestData,
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]])
+    } else {
+      Return <- OptimizeTBATS(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
+        train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
+        test = TimeSeriesPrepareOutput$TestData,
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        FinalGrid = ScoreGrid[ModelNum])
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
+    # Debug output
+    if(DebugMode) {
+      print(paste0("Forecast output for scoring iteration: ", ModelNum))
+      print(Return)
+    }
+
+    # Combine----
+    if(Successs == 1L) {
+      if(Return[,.N] != 0) {
+        FinalFC <<- data.table::copy(Return)
+        Successs <<- Successs + 1L
+      } else {
+        stop("No suitable model was found")
+      }
+    } else {
+      if(Return[,.N] != 0) {
+        temp <- data.table::copy(Return)
+        Successs <<- Successs + 1L
+        FinalFC <<- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
+        rm(temp)
+      } else {
+        stop("No suitable model was found")
+      }
+    }
+  }
 
   # Return----
-  return(Results[!is.na(Forecast)])
+  if(DebugMode) print(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
+  return(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
 }
 
 #' FinalBuildNNET
@@ -4007,6 +4030,7 @@ FinalBuildTBATS <- function(
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
+#' @param DebugMode Set to TRUE to print steps
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
@@ -4016,7 +4040,9 @@ FinalBuildTBATS <- function(
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
-#'   MaxRunMinutes = 5)
+#'   MaxRunMinutes = 5,
+#'   ByDataType = FALSE,
+#'   DebugMode = FALSE)
 #' }
 #' @export
 FinalBuildNNET <- function(
@@ -4025,7 +4051,8 @@ FinalBuildNNET <- function(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 1,
-  ByDataType = TRUE) {
+  ByDataType = FALSE,
+  DebugMode = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -4082,68 +4109,93 @@ FinalBuildNNET <- function(
       Name = "TSCleanModelFrequency"))
 
   # Idenity the number of non-null data sets to run through OptimizeArima----
-  Counter <- 0L
-  for(i in seq_len(ScoreGrid[, .N])) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
+  Counter1 <<- 0L
+  for(iii in seq_len(ScoreGrid[, .N])) {
+    if(!is.null(TrainArtifacts[[iii]][["Data"]])) {
+      Counter1 <<- Counter1 + 1L
+    }
+  }
 
-  # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
-  doParallel::registerDoParallel(cl)
-  Results <- foreach::foreach(
-    i = seq_len(Counter),
-    .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
-    .multicombine = TRUE,
-    .packages = packages) %dopar% {
+  # Score models----
+  Successs <<- 1L
+  for(ModelNum in seq_len(Counter1)) {
 
-      # Score models----
-      if(ByDataType) {
-        Forecasts <- OptimizeNNET(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[i]][["Name"]],
-          train = TrainArtifacts[[i]][["Data"]],
-          test = TimeSeriesPrepareOutput$TestData,
-          Lags = TimeSeriesPrepareOutput$Lags,
-          SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          MaxFourierTerms = 0,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          MaxNumberModels = NumberModelsScore,
-          MaxRunMinutes = 100,
-          FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
-      } else {
-        Forecasts <- OptimizeNNET(
-          Output = TimeSeriesPrepareOutput,
-          DataSetName = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]],
-          train = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]],
-          test = TimeSeriesPrepareOutput$TestData,
-          Lags = TimeSeriesPrepareOutput$Lags,
-          SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          MaxFourierTerms = 0,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          MaxNumberModels = NumberModelsScore,
-          MaxRunMinutes = 100,
-          FinalGrid = ScoreGrid[i])
-      }
-      Forecasts
+    # Score models----
+    if(ByDataType) {
+
+      # Debugging
+      if(DebugMode) print(eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]))
+      if(DebugMode) print(eval(TrainArtifacts[[ModelNum]][["Name"]]))
+      if(DebugMode) print(TimeSeriesPrepareOutput)
+
+      # Forecast
+      Return <- OptimizeNNET(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ModelNum]][["Name"]],
+        train = TrainArtifacts[[ModelNum]][["Data"]],
+        test = TimeSeriesPrepareOutput$TestData,
+        Lags = TimeSeriesPrepareOutput$Lags,
+        SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        MaxFourierTerms = 0,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        MaxNumberModels = NumberModelsScore,
+        MaxRunMinutes = 100,
+        FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]])
+    } else {
+      Return <- OptimizeNNET(
+        Output = TimeSeriesPrepareOutput,
+        DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
+        train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
+        test = TimeSeriesPrepareOutput$TestData,
+        Lags = TimeSeriesPrepareOutput$Lags,
+        SeasonalLags = TimeSeriesPrepareOutput$SeasonalLags,
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        MaxFourierTerms = 0,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        MaxNumberModels = NumberModelsScore,
+        MaxRunMinutes = 100,
+        FinalGrid = ScoreGrid[ModelNum])
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
+    # Debug output
+    if(DebugMode) {
+      print(paste0("Forecast output for scoring iteration: ", ModelNum))
+      print(Return)
+    }
 
-  # Return----
-  return(Results[!is.na(Forecast)])
+    # Combine ----
+    if(Successs == 1L) {
+      if(Return[,.N] != 0) {
+        FinalFC <<- data.table::copy(Return)
+        Successs <<- Successs + 1L
+      } else {
+        stop("No suitable model was found")
+      }
+    } else {
+      if(Return[,.N] != 0) {
+        temp <- data.table::copy(Return)
+        Successs <<- Successs + 1L
+        FinalFC <<- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
+        rm(temp)
+      } else {
+        stop("No suitable model was found")
+      }
+    }
+  }
+
+  # Return ----
+  if(DebugMode) print(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
+  return(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
 }
 
 #' FinalBuildArfima
@@ -4158,6 +4210,7 @@ FinalBuildNNET <- function(
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
+#' @param DebugMode Set to TRUE to print steps
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
@@ -4167,7 +4220,9 @@ FinalBuildNNET <- function(
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
-#'   MaxRunMinutes = 5)
+#'   MaxRunMinutes = 5,
+#'   ByDataType = FALSE,
+#'   DebugMode = FALSE)
 #' }
 #' @export
 FinalBuildArfima <- function(
@@ -4176,7 +4231,8 @@ FinalBuildArfima <- function(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 1,
-  ByDataType = TRUE) {
+  ByDataType = FALSE,
+  DebugMode = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
@@ -4233,59 +4289,84 @@ FinalBuildArfima <- function(
       Name = "TSCleanModelFrequency"))
 
   # Idenity the number of non-null data sets to run through OptimizeArima----
-  Counter <- 0L
-  for(i in seq_len(ScoreGrid[, .N])) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
+  Counter1 <<- 0L
+  for(iii in seq_len(ScoreGrid[, .N])) {
+    if(!is.null(TrainArtifacts[[iii]][["Data"]])) {
+      Counter1 <<- Counter1 + 1L
+    }
+  }
 
-  # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
-  doParallel::registerDoParallel(cl)
-  Results <- foreach::foreach(
-    i = seq_len(Counter),
-    .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
-    .multicombine = TRUE,
-    .packages = packages) %dopar% {
+  # Score models----
+  Successs <<- 1L
+  for(ModelNum in seq_len(Counter1)) {
 
-      # Score models----
-      if(ByDataType) {
-        Forecasts <- OptimizeArfima(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[i]][["Name"]],
-          train = TrainArtifacts[[i]][["Data"]],
-          test = TimeSeriesPrepareOutput$TestData,
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
-      } else {
-        Forecasts <- OptimizeArfima(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]],
-          train = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]],
-          test = TimeSeriesPrepareOutput$TestData,
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          FinalGrid = ScoreGrid[i])
-      }
-      Forecasts
+    # Score models----
+    if(ByDataType) {
+
+      # Debugging
+      if(DebugMode) print(eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]))
+      if(DebugMode) print(eval(TrainArtifacts[[ModelNum]][["Name"]]))
+      if(DebugMode) print(TimeSeriesPrepareOutput)
+
+      # Forecast
+      Return <- OptimizeArfima(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ModelNum]][["Name"]],
+        train = TrainArtifacts[[ModelNum]][["Data"]],
+        test = TimeSeriesPrepareOutput$TestData,
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]])
+    } else {
+      Return <- OptimizeArfima(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
+        train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
+        test = TimeSeriesPrepareOutput$TestData,
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        FinalGrid = ScoreGrid[ModelNum])
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
+    # Debug output
+    if(DebugMode) {
+      print(paste0("Forecast output for scoring iteration: ", ModelNum))
+      print(Return)
+    }
 
-  # Return----
-  return(Results[!is.na(Forecast)])
+    # Combine ----
+    if(Successs == 1L) {
+      if(Return[,.N] != 0) {
+        FinalFC <<- data.table::copy(Return)
+        Successs <<- Successs + 1L
+      } else {
+        stop("No suitable model was found")
+      }
+    } else {
+      if(Return[,.N] != 0) {
+        temp <- data.table::copy(Return)
+        Successs <<- Successs + 1L
+        FinalFC <<- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
+        rm(temp)
+      } else {
+        stop("No suitable model was found")
+      }
+    }
+  }
+
+  # Return ----
+  if(DebugMode) print(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
+  return(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
 }
 
 #' FinalBuildTSLM
@@ -4300,6 +4381,7 @@ FinalBuildArfima <- function(
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
 #' @param NumberModelsScore The value returned from TimeSeriesPrepare()
 #' @param ByDataType Set to TRUE if you want to have models represented from all data sets utilized in training
+#' @param DebugMode TRUE to print out steps
 #' @return Time series data sets to pass onto auto modeling functions
 #' @examples
 #' \dontrun{
@@ -4309,7 +4391,8 @@ FinalBuildArfima <- function(
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
 #'   MaxNumberModels = 5,
-#'   MaxRunMinutes = 5)
+#'   MaxRunMinutes = 5,
+#'   DebugMode = FALSE)
 #' }
 #' @export
 FinalBuildTSLM <- function(
@@ -4318,7 +4401,8 @@ FinalBuildTSLM <- function(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 1,
-  ByDataType = TRUE) {
+  ByDataType = FALSE,
+  DebugMode = FALSE) {
 
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2))
@@ -4375,59 +4459,84 @@ FinalBuildTSLM <- function(
       Name = "TSCleanModelFrequency"))
 
   # Idenity the number of non-null data sets to run through OptimizeArima----
-  Counter <- 0L
-  for(i in seq_len(ScoreGrid[, .N])) if(!is.null(TrainArtifacts[[i]][["Data"]])) Counter <- Counter + 1L
+  Counter1 <<- 0L
+  for(iii in seq_len(ScoreGrid[, .N])) {
+    if(!is.null(TrainArtifacts[[iii]][["Data"]])) {
+      Counter1 <<- Counter1 + 1L
+    }
+  }
 
-  # Setup the parallel environment----
-  packages <- c("RemixAutoML","data.table","forecast")
-  cores <- parallel::detectCores()
-  cl <- parallel::makePSOCKcluster(cores)
-  doParallel::registerDoParallel(cl)
-  Results <- foreach::foreach(
-    i = seq_len(Counter),
-    .combine = function(...) data.table::rbindlist(list(...), fill = TRUE),
-    .multicombine = TRUE,
-    .packages = packages) %dopar% {
+  # Score models----
+  Successs <<- 1L
+  for(ModelNum in seq_len(Counter1)) {
 
-      # Score models----
-      if(ByDataType) {
-        Forecasts <- OptimizeTSLM(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[i]][["Name"]],
-          train = TrainArtifacts[[i]][["Data"]],
-          test = ModelOutputGrid$TestData,
-          FullData = ModelOutputGrid$FullData,
-          HoldOutPeriods = ModelOutputGrid$HoldOutPeriods,
-          MinVal = ModelOutputGrid$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]]])
-      } else {
-        Forecasts <- OptimizeTSLM(
-          Output = TimeSeriesPrepareOutput,
-          MetricSelection = MetricSelection,
-          DataSetName = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Name"]],
-          train = TrainArtifacts[[ScoreGrid[i,1][[1]]]][["Data"]],
-          test = TimeSeriesPrepareOutput$TestData,
-          FullData = TimeSeriesPrepareOutput$FullData,
-          HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
-          MinVal = TimeSeriesPrepareOutput$MinVal,
-          TargetName = TimeSeriesPrepareOutput$TargetName,
-          DateName = TimeSeriesPrepareOutput$DateName,
-          TrainValidateShare = c(1.0,0.0,0.0),
-          FinalGrid = ScoreGrid[i])
-      }
-      Forecasts
+    # Score models----
+    if(ByDataType) {
+
+      # Debugging
+      if(DebugMode) print(eval(ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]]))
+      if(DebugMode) print(eval(TrainArtifacts[[ModelNum]][["Name"]]))
+      if(DebugMode) print(TimeSeriesPrepareOutput)
+
+      # Forecast
+      Return <- OptimizeTSLM(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ModelNum]][["Name"]],
+        train = TrainArtifacts[[ModelNum]][["Data"]],
+        test = ModelOutputGrid$TestData,
+        FullData = ModelOutputGrid$FullData,
+        HoldOutPeriods = ModelOutputGrid$HoldOutPeriods,
+        MinVal = ModelOutputGrid$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        FinalGrid = ScoreGrid[DataSetName == TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]])
+    } else {
+      Return <- OptimizeTSLM(
+        Output = TimeSeriesPrepareOutput,
+        MetricSelection = MetricSelection,
+        DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
+        train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
+        test = TimeSeriesPrepareOutput$TestData,
+        FullData = TimeSeriesPrepareOutput$FullData,
+        HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
+        MinVal = TimeSeriesPrepareOutput$MinVal,
+        TargetName = TimeSeriesPrepareOutput$TargetName,
+        DateName = TimeSeriesPrepareOutput$DateName,
+        TrainValidateShare = c(1.0,0.0,0.0),
+        FinalGrid = ScoreGrid[ModelNum])
     }
 
-  # shut down parallel objects----
-  parallel::stopCluster(cl)
-  rm(cl)
+    # Debug output
+    if(DebugMode) {
+      print(paste0("Forecast output for scoring iteration: ", ModelNum))
+      print(Return)
+    }
 
-  # Return----
-  return(Results[!is.na(Forecast)])
+    # Combine ----
+    if(Successs == 1L) {
+      if(Return[,.N] != 0) {
+        FinalFC <<- data.table::copy(Return)
+        Successs <<- Successs + 1L
+      } else {
+        stop("No suitable model was found")
+      }
+    } else {
+      if(Return[,.N] != 0) {
+        temp <- data.table::copy(Return)
+        Successs <<- Successs + 1L
+        FinalFC <<- data.table::rbindlist(list(FinalFC, temp), use.names = TRUE, fill = TRUE)
+        rm(temp)
+      } else {
+        stop("No suitable model was found")
+      }
+    }
+  }
+
+  # Return ----
+  if(DebugMode) print(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
+  return(FinalFC[!ModelRank %in% unique(FinalFC[is.na(Target) & is.na(Forecast), ModelRank])])
 }
 
 #' TimeSeriesEnsembleForecast

@@ -10,7 +10,7 @@ FinalBuildArima(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 1,
-  ByDataType = TRUE,
+  ByDataType = FALSE,
   DebugMode = FALSE
 )
 }
@@ -43,7 +43,9 @@ FinalBuildArima(
   MaxFourierTerms = 0,
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
-  MaxRunMinutes = 5)
+  MaxRunMinutes = 5,
+  ByDataType = FALSE,
+  DebugMode = TRUE)
 }
 }
 \seealso{

@@ -11,7 +11,8 @@ ParallelAutoNNET(
   TrainValidateShare = c(0.5, 0.5),
   MaxNumberModels = 20,
   MaxRunMinutes = 5,
-  MaxRunsWithoutNewWinner = 12
+  MaxRunsWithoutNewWinner = 12,
+  NumCores = max(1L, min(4L, parallel::detectCores() - 2L))
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ ParallelAutoNNET(
 \item{MaxRunMinutes}{5}
 
 \item{MaxRunsWithoutNewWinner}{12}
+
+\item{NumCores}{Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.}
 }
 \value{
 Time series data sets to pass onto auto modeling functions
@@ -43,7 +46,8 @@ ParallelAutoNNET(
   MaxRunsWithoutNewWinner = 20,
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
-  MaxRunMinutes = 5)
+  MaxRunMinutes = 5,
+  NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 }
 }
 \seealso{

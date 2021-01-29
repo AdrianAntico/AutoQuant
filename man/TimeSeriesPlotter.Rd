@@ -33,6 +33,7 @@ TimeSeriesPlotter(
   ForecastLineColor = "black",
   PredictionIntervals = FALSE,
   TS_ModelID = NULL,
+  SSForecast = FALSE,
   PredictionIntervalColorInner = "aquamarine1",
   PredictionIntervalColorOuter = "peachpuff1"
 )
@@ -93,6 +94,8 @@ TimeSeriesPlotter(
 \item{PredictionIntervals}{Set to TRUE to plot prediction intervals}
 
 \item{TS_ModelID}{Select a model from the list for forecasting viewer}
+
+\item{SSForecast}{Default FALSE. Set to TRUE for single series models}
 
 \item{PredictionIntervalColorInner}{Fills 20th to 80th percentiles}
 

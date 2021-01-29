@@ -22,7 +22,7 @@ AutoBanditSarima(
   MaxConsecutiveFails = 25L,
   MaxNumberModels = 100L,
   MaxRunTimeMinutes = 10L,
-  NumberCores = max(1L, parallel::detectCores()),
+  NumberCores = max(1L, min(4L, parallel::detectCores() - 2L)),
   DebugMode = FALSE
 )
 }
@@ -61,7 +61,7 @@ AutoBanditSarima(
 
 \item{MaxRunTimeMinutes}{Indicate the maximum number of minutes to wait for a result.}
 
-\item{NumberCores}{Number of cores to use in parallelism. E.g. if you have a 4 core CPU then supply 4 if you want to utilize all four cores}
+\item{NumberCores}{Default max(1L, min(4L, parallel::detectCores()-2L))}
 
 \item{DebugMode}{Set to TRUE to get print outs of particular steps helpful in tracing errors}
 }
@@ -73,11 +73,10 @@ AutoBanditSarima is a multi-armed bandit model testing framework for SARIMA. Ran
 }
 \examples{
 \dontrun{
-# Build model
-data <- RemixAutoML::FakeDataGenerator(
-  TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "days")
 
-# Pimping
+# Build models
 Output <- RemixAutoML::AutoBanditSarima(
   data = data,
   ByDataType = FALSE,
@@ -96,7 +95,7 @@ Output <- RemixAutoML::AutoBanditSarima(
   MaxConsecutiveFails = 50L,
   MaxNumberModels = 100L,
   MaxRunTimeMinutes = 10L,
-  NumberCores = 12,
+  NumberCores Default max(1L, min(4L, parallel::detectCores()-2L)),
   DebugMode = FALSE)
 
 # Output
@@ -108,8 +107,10 @@ Output$ErrorLagMA2x2
 }
 \seealso{
 Other Automated Time Series: 
+\code{\link{AutoArfima}()},
 \code{\link{AutoBanditNNet}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoETS}()},
 \code{\link{AutoH2oGBMFreqSizeScoring}()},
 \code{\link{AutoTBATS}()},
 \code{\link{AutoTS}()}

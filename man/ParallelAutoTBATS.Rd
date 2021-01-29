@@ -7,7 +7,8 @@
 ParallelAutoTBATS(
   Output,
   MetricSelection = "MAE",
-  TrainValidateShare = c(0.5, 0.5)
+  TrainValidateShare = c(0.5, 0.5),
+  NumCores = max(1L, min(4L, parallel::detectCores() - 2L))
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ ParallelAutoTBATS(
 \item{MetricSelection}{Choose from MAE, MSE, and MAPE}
 
 \item{TrainValidateShare}{The value returned from TimeSeriesPrepare()}
+
+\item{NumCores}{Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.}
 }
 \value{
 Time series data sets to pass onto auto modeling functions
@@ -28,7 +31,8 @@ ParallelAutoTBATS to run the 4 data sets at once
 ParallelAutoTBATS(
   MetricSelection = "MAE",
   Output = NULL,
-  TrainValidateShare = c(0.50,0.50))
+  TrainValidateShare = c(0.50,0.50),
+  NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 }
 }
 \seealso{

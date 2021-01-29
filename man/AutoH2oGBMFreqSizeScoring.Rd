@@ -53,9 +53,11 @@ FinalData <- AutoH2oGBMFreqSizeScoring(
 }
 \seealso{
 Other Automated Time Series: 
+\code{\link{AutoArfima}()},
 \code{\link{AutoBanditNNet}()},
 \code{\link{AutoBanditSarima}()},
 \code{\link{AutoCatBoostFreqSizeScoring}()},
+\code{\link{AutoETS}()},
 \code{\link{AutoTBATS}()},
 \code{\link{AutoTS}()}
 }

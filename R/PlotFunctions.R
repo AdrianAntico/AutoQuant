@@ -243,6 +243,7 @@ VaporWaveTheme <- function(Size1 = 1,
 #' @param ForecastLineColor Forecast line color
 #' @param PredictionIntervals Set to TRUE to plot prediction intervals
 #' @param TS_ModelID Select a model from the list for forecasting viewer
+#' @param SSForecast Default FALSE. Set to TRUE for single series models
 #' @param PredictionIntervalColorInner Fills 20th to 80th percentiles
 #' @param PredictionIntervalColorOuter Fills 5th to 20th and 80th to 95th percentiles
 #' @export
@@ -274,6 +275,7 @@ TimeSeriesPlotter <- function(data = data,
                               ForecastLineColor = "black",
                               PredictionIntervals = FALSE,
                               TS_ModelID = NULL,
+                              SSForecast = FALSE,
                               PredictionIntervalColorInner = "aquamarine1",
                               PredictionIntervalColorOuter = "peachpuff1") {
 
@@ -290,6 +292,69 @@ TimeSeriesPlotter <- function(data = data,
   if(!is.null(Aggregate)) if(!is.character(Aggregate)) stop("Aggregate did not pass through as string")
   if(!is.null(NumberGroupsDisplay)) if(is.character(NumberGroupsDisplay) | is.factor(NumberGroupsDisplay)) stop("NumberGroupsDisplay needs to be a number")
   if(!is.null(OtherGroupLabel)) if(!is.character(OtherGroupLabel)) stop("OtherGroupLabel did not pass through as string")
+
+  # Forecast----
+  if(SSForecast) {
+
+    # Subset data----
+    if("ModelID" %chin% names(data)) {
+      dataSubset <- data[ModelID == eval(TS_ModelID)]
+    } else {
+      dataSubset <- data
+    }
+
+    # Groupvariables
+    if(length(dataSubset[[eval(DateVariable)]]) != length(unique(dataSubset[[eval(DateVariable)]]))) {
+      dataSubset <- dataSubset[, .(temp1 = mean(get(TargetVariable),na.rm = TRUE),
+                                   Forecast = mean(Forecast,na.rm = TRUE)),
+                               by = eval(DateVariable)]
+      data.table::setnames(dataSubset, "temp1", eval(TargetVariable[1L]))
+    }
+
+    # Plot data----
+    Plot <- ggplot2::ggplot(dataSubset, ggplot2::aes(as.POSIXct(get(DateVariable)))) +
+      ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[2L]), color = "Forecast")) +
+      ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[1L]), color = "Actuals")) +
+      ggplot2::scale_color_manual("", breaks = c("Forecast","Actuals"), values = c(ForecastLineColor, "blue")) +
+      ChartTheme(
+        Size = TextSize,
+        AngleX = AngleX,
+        AngleY = AngleY,
+        ChartColor = ChartColor,
+        BorderColor = BorderColor,
+        TextColor = TextColor,
+        GridColor = GridColor,
+        BackGroundColor = BackGroundColor,
+        LegendPosition = LegendPosition)
+    if(!is.null(XTickMarks)) {
+      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+    } else {
+      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+    }
+
+    # Prediction Intervals
+    if(PredictionIntervals) {
+      Plot <- Plot + ggplot2::geom_ribbon(
+        ggplot2::aes(ymin = dataSubset[[7L]], ymax = dataSubset[[6L]]),
+        fill = PredictionIntervalColorOuter, alpha = 0.25)
+      Plot <- Plot + ggplot2::geom_ribbon(
+        ggplot2::aes(ymin = dataSubset[[6L]], ymax = dataSubset[[5L]]),
+        fill = PredictionIntervalColorInner, alpha = 0.25)
+      Plot <- Plot + ggplot2::geom_ribbon(
+        ggplot2::aes(ymin = dataSubset[[4L]], ymax = dataSubset[[5L]]),
+        fill = PredictionIntervalColorOuter, alpha = 0.25) +
+        ggplot2::geom_line(ggplot2::aes(y = as.numeric(dataSubset$Low95)), color = ForecastLineColor, lwd = 0.25) +
+        ggplot2::geom_line(ggplot2::aes(y = as.numeric(dataSubset$Low80)), color = ForecastLineColor, lwd = 0.25) +
+        ggplot2::geom_line(ggplot2::aes(y = as.numeric(dataSubset$High80)), color = ForecastLineColor, lwd = 0.25) +
+        ggplot2::geom_line(ggplot2::aes(y = as.numeric(dataSubset$High95)), color = ForecastLineColor, lwd = 0.25)
+    }
+
+    # Add labels----
+    Plot <- Plot + ggplot2::xlab(eval(DateVariable)) + ggplot2::ylab(eval(TargetVariable[1]))
+
+    # Return
+    return(Plot)
+  }
 
   # Melt if multiple targets----
   if("ModelID" %chin% names(data)) data <- data[ModelID == eval(TS_ModelID)]

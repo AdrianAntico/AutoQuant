@@ -12,7 +12,7 @@ ParallelAutoARIMA(
   MaxNumberModels = 20,
   MaxRunMinutes = 5L,
   MaxRunsWithoutNewWinner = 12,
-  NumCores = max(1L, parallel::detectCores() - 2L)
+  NumCores = max(1L, min(4L, parallel::detectCores()))
 )
 }
 \arguments{
@@ -30,7 +30,7 @@ ParallelAutoARIMA(
 
 \item{MaxRunsWithoutNewWinner}{12}
 
-\item{NumCores}{Value}
+\item{NumCores}{Default of max(1L, min(4L, parallel::detectCores())). Up to 4 cores can be utilized.}
 }
 \value{
 Time series data sets to pass onto auto modeling functions
@@ -46,7 +46,8 @@ ParallelAutoARIMA(
   MaxRunsWithoutNewWinner = 20,
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
-  MaxRunMinutes = 5)
+  MaxRunMinutes = 5,
+  NumCores = max(1L, min(4L, parallel::detectCores())))
 }
 }
 \seealso{

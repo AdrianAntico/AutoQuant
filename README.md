@@ -1,4 +1,4 @@
-![Version: 0.3.2](https://img.shields.io/static/v1?label=Version&message=0.3.2&color=blue&?style=plastic)
+![Version: 0.3.3](https://img.shields.io/static/v1?label=Version&message=0.3.3&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -133,7 +133,8 @@ If you're having still having trouble installing see if the issue below helps ou
 <p>
  
 Supply a data.table to run the functions below:
-1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, or <code>AutoTS()</code> (older function; no longer developing)
+1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, 
+<code>AutoETS()</code>, <code>AutoArfima()</code>, or <code>AutoTS()</code> (older function; no longer developing)
 2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2OCARMA()</code>,<code>AutoCatBoostHurdleCARMA</code> or <code>AutoCatBoostVectorCARMA</code> or build a loop and run functions from (1)
 3. If you have to do any funnel forecasting, check out AutoCatBoostChainLadder(). First you need to structure you data like the help example. When you think you have found a good configuration, set the parameter SaveModelObjects = TRUE. Then you can run the AutoMLChainLadderForecasting(). 
 
@@ -3138,6 +3139,12 @@ Same as AutoBanditArima except it uses the forecast::nnetar model behind the sce
 ### **AutoTBATS()**
 AutoTBATS uses forecast::tbats behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
 
+### **AutoETS()**
+AutoETS uses forecast::ets behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
+
+### **AutoArfima()**
+AutoArfima uses forecast::arfima behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
+
 ### **AutoTS()** <img src="Images/AutoTS.png" align="right" width="300" />
 <code>AutoTS()</code> 
 
@@ -3181,11 +3188,12 @@ For each of the models tested internally, several aspects should be noted:
 ### Intermittent Demand Forecasting Functions
 
 ##### **TimeSeriesFill()**
-<code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are three ways to use this function:
-* Grouped data 1 - find the minimum and maximum dates regardless of grouping variables and use those values to ensure all group levels have all the dates represented within the series bounds (if missing, fill with zeros)
-* Grouped data 2 - find the minimum and maximum dates with respect to each unique grouping variable level (grouping variables must be hierarchical) and zero pads missing dates within in each group level.
-* Single series - Zero pad any missing dates within series bounds
-* Used internally with the CARMA suite of functions by specifying the argument to enable this functionality
+<code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are four ways to use this function:
+Choose from:
+  * maxmax - Fill from the absolute min date to the absolute max date (single series and panel data)
+  * minmax - Fill from the max date of the min set to the absolute max date (panel data)
+  * maxmin - Fill from the absolute min date to the min of the max dates (panel data)
+  * minmin - Fill from the max date of the min dates to the min date of the max dates (panel data)
 
 ##### **ContinuousTimeDataGenerator()**
 <code>ContinuousTimeDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.

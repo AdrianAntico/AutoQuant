@@ -10,7 +10,8 @@ FinalBuildETS(
   FCPeriods = 1,
   MetricSelection = "MAE",
   NumberModelsScore = 12,
-  ByDataType = TRUE
+  ByDataType = FALSE,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ FinalBuildETS(
 \item{NumberModelsScore}{The value returned from TimeSeriesPrepare()}
 
 \item{ByDataType}{Set to TRUE if you want to have models represented from all data sets utilized in training}
+
+\item{DebugMode}{Set to TRUE to print steps}
 }
 \value{
 Time series data sets to pass onto auto modeling functions
@@ -40,7 +43,9 @@ FinalBuildETS(
   MaxFourierTerms = 0,
   TrainValidateShare = c(0.50,0.50),
   MaxNumberModels = 5,
-  MaxRunMinutes = 5)
+  MaxRunMinutes = 5,
+  ByDataType = FALSE,
+  DebugMode = FALSE)
 }
 }
 \seealso{

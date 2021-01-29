@@ -92,6 +92,7 @@ RedYellowGreen <- function(data,
   parts    <- floor(nrow(new) / bat)
   cl       <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
+  on.exit(parallel::stopCluster(cl))
 
   # Kick off run
   results <- foreach::foreach(
@@ -205,9 +206,6 @@ RedYellowGreen <- function(data,
       # Return data table
       data
     }
-
-  # Shut down cluster
-  parallel::stopCluster(cl)
 
   # 3D Scatterplot
   s3d <- scatterplot3d::scatterplot3d(
