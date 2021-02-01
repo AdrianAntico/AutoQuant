@@ -61,7 +61,6 @@ p <- p + ChartTheme(Size = 12)
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
 \code{\link{PrintToPDF}()},
-\code{\link{VaporWaveTheme}()},
 \code{\link{tokenizeH2O}()}
 }
 \author{

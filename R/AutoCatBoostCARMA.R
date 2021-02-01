@@ -1142,6 +1142,13 @@ AutoCatBoostCARMA <- function(data,
       Weightss <- train[["Weights"]]
       train[, ":=" (PowerValue = NULL, Weights = NULL)]
       data.table::setorderv(x = train, cols = c("GroupVar", DateColumnName), order = c(1,1))
+    } else {
+      data.table::setorderv(x = train, cols = c(DateColumnName), order = c(-1))
+      train[, PowerValue := 1:.N]
+      train[, Weights := eval(TimeWeights) ^ PowerValue]
+      Weightss <- train[["Weights"]]
+      train[, ":=" (PowerValue = NULL, Weights = NULL)]
+      data.table::setorderv(x = train, cols = c(DateColumnName), order = c(1))
     }
   } else {
     Weightss <- NULL
@@ -1198,19 +1205,7 @@ AutoCatBoostCARMA <- function(data,
       task_type = TaskType,
       NumGPUs = NumGPU,
 
-      # Metadata arguments:
-      #   'ModelID' is used to create part of the file names generated when saving to file'
-      #   'model_path' is where the minimal model objects for scoring will be stored
-      #      'ModelID' will be the name of the saved model object
-      #   'metadata_path' is where model evaluation and model interpretation files are saved
-      #      objects saved to model_path if metadata_path is null
-      #      Saved objects include:
-      #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-      #         'ModelID_VariableImportance.csv' is the variable importance.
-      #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-      #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-      #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-      #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
+      # Metadata arguments
       ModelID = "CatBoost",
       model_path = getwd(),
       metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
@@ -1218,14 +1213,7 @@ AutoCatBoostCARMA <- function(data,
       ReturnModelObjects = TRUE,
       SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
 
-      # Data arguments:
-      #   'TrainOnFull' is to train a model with 100 percent of your data.
-      #     That means no holdout data will be used for evaluation
-      #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-      #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-      #     CatBoost categorical treatment is enhanced when supplied
-      #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-      #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
+      # Data arguments
       data = train,
       TrainOnFull = TOF,
       ValidationData = valid,
@@ -1239,13 +1227,7 @@ AutoCatBoostCARMA <- function(data,
       TransformNumericColumns = NULL,
       Methods = NULL,
 
-      # Model evaluation:
-      #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-      #   'loss_function' the loss function used in training optimization
-      #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-      #     A value of 3 will return plots for the top 3 variables based on variable importance
-      #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-      #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
+      # Model evaluation
       eval_metric = EvalMetric,
       eval_metric_value = EvalMetricValue,
       loss_function = LossFunction,
@@ -1254,14 +1236,7 @@ AutoCatBoostCARMA <- function(data,
       NumOfParDepPlots = NumOfParDepPlots,
       EvalPlots = TRUE,
 
-      # Grid tuning arguments:
-      #   'PassInGrid' is for retraining using a previous grid winning args
-      #   'MaxModelsInGrid' is a cap on the number of models that will run
-      #   'MaxRunsWithoutNewWinner' number of runs without a new winner before exiting grid tuning
-      #   'MaxRunMinutes' is a cap on the number of minutes that will run
-      #   'Shuffles' is the number of times you want the random grid arguments shuffled
-      #   'BaselineComparison' default means to compare each model build with a default built of catboost using max(Trees)
-      #   'MetricPeriods' is the number of trees built before evaluting holdoutdata internally. Used in finding actual Trees used.
+      # Grid tuning arguments
       PassInGrid = PassInGrid,
       GridTune = GridTune,
       MaxModelsInGrid = ModelCount,
@@ -1270,11 +1245,7 @@ AutoCatBoostCARMA <- function(data,
       Shuffles = 4L,
       BaselineComparison = "default",
 
-      # Trees, Depth, and LearningRate used in the bandit grid tuning
-      # Must set Trees to a single value if you are not grid tuning
-      # The ones below can be set to NULL and the values in the example will be used
-      # GrowPolicy is turned off for CPU runs
-      # BootStrapType utilizes Poisson only for GPU and MVS only for CPU
+      # ML args
       langevin = Langevin,
       diffusion_temperature = DiffusionTemperature,
       Trees = NTrees,
@@ -1287,7 +1258,7 @@ AutoCatBoostCARMA <- function(data,
       BootStrapType = BootStrapType,
       GrowPolicy = GrowPolicy,
 
-      # New args
+      # New ML args
       model_size_reg = ModelSizeReg,
       feature_border_type = FeatureBorderType,
       sampling_unit = SamplingUnit,
