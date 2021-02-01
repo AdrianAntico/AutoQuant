@@ -977,53 +977,55 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) options(warn = 0)
   TestModel <- RemixAutoML::AutoXGBoostRegression(
 
-      # GPU or CPU
-      TreeMethod = TreeMethod,
-      NThreads = NThreads,
+    # GPU or CPU
+    TreeMethod = TreeMethod,
+    NThreads = NThreads,
 
-      # Metadata arguments
-      model_path = getwd(),
-      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
-      ModelID = "XGBoost",
-      ReturnFactorLevels = TRUE,
-      ReturnModelObjects = TRUE,
-      SaveModelObjects = FALSE,
-      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
+    # Metadata arguments
+    model_path = getwd(),
+    metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+    ModelID = "XGBoost",
+    ReturnFactorLevels = TRUE,
+    ReturnModelObjects = TRUE,
+    SaveModelObjects = FALSE,
+    SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
 
-      # Data arguments
-      data = train,
-      TrainOnFull = TrainOnFull,
-      ValidationData = valid,
-      TestData = test,
-      TargetColumnName = TargetVariable,
-      FeatureColNames = ModelFeatures,
-      IDcols = IDcols,
-      TransformNumericColumns = NULL,
-      Methods = NULL,
+    # Data arguments
+    data = train,
+    TrainOnFull = TrainOnFull,
+    ValidationData = valid,
+    TestData = test,
+    TargetColumnName = TargetVariable,
+    FeatureColNames = ModelFeatures,
+    IDcols = IDcols,
+    TransformNumericColumns = NULL,
+    Methods = NULL,
 
-      # Model evaluation
-      LossFunction = LossFunction,
-      eval_metric = EvalMetric,
-      NumOfParDepPlots = 10,
+    # Model evaluation
+    LossFunction = LossFunction,
+    eval_metric = EvalMetric,
+    NumOfParDepPlots = 10,
 
-      # Grid tuning arguments - PassInGrid is the best of GridMetrics
-      PassInGrid = NULL,
-      GridTune = GridTune,
-      grid_eval_metric = GridEvalMetric,
-      BaselineComparison = "default",
-      MaxModelsInGrid = ModelCount,
-      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-      MaxRunMinutes = MaxRunMinutes,
-      Shuffles = 1L,
-      Verbose = 1L,
+    # Grid tuning arguments - PassInGrid is the best of GridMetrics
+    PassInGrid = NULL,
+    GridTune = GridTune,
+    grid_eval_metric = GridEvalMetric,
+    BaselineComparison = "default",
+    MaxModelsInGrid = ModelCount,
+    MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+    MaxRunMinutes = MaxRunMinutes,
+    Shuffles = 1L,
+    Verbose = 1L,
 
-      # ML Args
-      Trees = NTrees,
-      eta = LearningRate,
-      max_depth = MaxDepth,
-      min_child_weight = MinChildWeight,
-      subsample = SubSample,
-      colsample_bytree = ColSampleByTree)
+    # ML Args
+    Trees = NTrees,
+    eta = LearningRate,
+    max_depth = MaxDepth,
+    min_child_weight = MinChildWeight,
+    subsample = SubSample,
+    colsample_bytree = ColSampleByTree)
+
+
 
   # Return if TrainOnFull is FALSE----
   if(!TrainOnFull) return(TestModel)
@@ -1330,11 +1332,7 @@ AutoXGBoostCARMA <- function(data,
       # Add fouier terms----
       if(DebugMode) print("Add fouier terms----")
       if(is.null(GroupVariables) & FourierTerms > 0) {
-        if(i == 1L) {
-          CalendarFeatures <- cbind(CalendarFeatures, XREG[nrow(Step1SCore)+1])
-        } else {
-          CalendarFeatures <- cbind(CalendarFeatures, XREGFC[i-1])
-        }
+        CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = DateColumnName, all = FALSE)
       } else if(FourierTerms > 0) {
         if(exists("FourierFC")) {
           if(length(FourierFC) != 0) {

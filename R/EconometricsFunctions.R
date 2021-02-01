@@ -5700,6 +5700,9 @@ AutoHierarchicalFourier <- function(datax = data,
   # Turn on full speed ahead----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
+  # Convert to Date
+  if(!all(class(datax[[eval(DateColumN)]]) == "Date")) datax[, eval(DateColumN) := as.Date(get(DateColumN))]
+
   # xRegs non group names
   NonGroupDateNames <- xRegs[!xRegs %chin% "GroupVar"]
 
@@ -5725,8 +5728,33 @@ AutoHierarchicalFourier <- function(datax = data,
         FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
       }
     } else {
-      datax <- merge(datax, FourierFC$HistoricalFourier, by = c("GroupVar", DateColumN), all = FALSE)
+      datax <- cbind(datax, FourierFC$HistoricalFourier)
+      xx <- max(datax[[eval(DateColumN)]])
       FourierFC <- data.table::rbindlist(list(FourierFC$HistoricalFourier, FourierFC$FutureFourier))
+      if(tolower(TimeUnit) %chin% c("hour","hours")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::hours(1 * (FC_PeriodS-1L)), by = "hours")]
+      } else if(tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::minutes(1 * (FC_PeriodS-1L)), by = "mins")]
+      } else if(tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::minutes(5 * (FC_PeriodS-1L)), by = "mins")]
+      } else if(tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::minutes(10 * (FC_PeriodS-1L)), by = "mins")]
+      } else if(tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::minutes(15 * (FC_PeriodS-1L)), by = "mins")]
+      } else if(tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::minutes(30 * (FC_PeriodS-1L)), by = "mins")]
+      } else if(tolower(TimeUnit) %chin% c("day","days")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::days(1 * (FC_PeriodS-1L)), by = "days")]
+      } else if(tolower(TimeUnit) %chin% c("week","weeks")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::weeks(1 * (FC_PeriodS-1L)), by = "weeks")]
+      } else if(tolower(TimeUnit) %chin% c("month","months")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx %m+% months(1 * (FC_PeriodS-1L)), by = "months")]
+      } else if(tolower(TimeUnit) %chin% c("quarter","quarters")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx %m+% months(3 * (FC_PeriodS-1L)), by = "months")]
+      } else if(tolower(TimeUnit) %chin% c("years","year")) {
+        FourierFC[, eval(DateColumN) := seq(from = min(datax[[eval(DateColumN)]]), to = xx + lubridate::years(1 * (FC_PeriodS-1L)), by = "years")]
+      }
+      data.table::setcolorder(FourierFC, c(ncol(FourierFC), seq_len(ncol(FourierFC)-1L)))
     }
   } else {
     return(NULL)

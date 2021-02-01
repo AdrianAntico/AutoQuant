@@ -1563,11 +1563,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Add fouier terms----
       if(DebugMode) print("Add fouier terms----")
       if(is.null(GroupVariables) & FourierTerms > 0) {
-        if(i == 1L) {
-          CalendarFeatures <- cbind(CalendarFeatures, XREG[nrow(Step1SCore)+1])
-        } else {
-          CalendarFeatures <- cbind(CalendarFeatures, XREGFC[i-1])
-        }
+        CalendarFeatures <- merge(CalendarFeatures, FourierFC, by = DateColumnName, all = FALSE)
       } else if(FourierTerms > 0) {
         if(exists("FourierFC")) {
           if(length(FourierFC) != 0) {
