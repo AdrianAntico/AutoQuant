@@ -21,7 +21,7 @@ SQL_DropTable(
 \item{Errors}{Set to TRUE to halt, FALSE to return -1 in cases of errors}
 }
 \description{
-SQL_DropTable get data from a database
+SQL_DropTable drop a database table
 }
 \seealso{
 Other Database: 

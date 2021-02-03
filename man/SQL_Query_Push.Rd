@@ -2,7 +2,7 @@
 % Please edit documentation in R/DataWranglingFunctions.R
 \name{SQL_Query_Push}
 \alias{SQL_Query_Push}
-\title{SQL_Query}
+\title{SQL_Query_Push}
 \usage{
 SQL_Query_Push(DBConnection, Query, CloseChannel = TRUE)
 }
@@ -14,7 +14,7 @@ SQL_Query_Push(DBConnection, Query, CloseChannel = TRUE)
 \item{CloseChannel}{TRUE to close when done, FALSE to leave the channel open}
 }
 \description{
-SQL_Query get data from a database
+SQL_Query_Push push data to a database table
 }
 \seealso{
 Other Database: 

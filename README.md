@@ -498,6 +498,10 @@ data <- RemixAutoML::DummifyDT(
 </p>
 </details>
 
+<code>DifferenceData()</code> Create differences in your data (y1 - y0) for grouped or non-grouped data. 
+
+<code>DifferenceData()</code> Reverses the differences in your data for grouped or non-grouped data. 
+
 <code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables in your training, validation, and test sets. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels. This is useful in model training, validating, and scoring processes.
 
 ##### **AutoDataPartition()**
@@ -3261,6 +3265,44 @@ Choose from:
 </p>
 </details>
 
+## Database Management <img src="Images/DataBase.png" align="right" width="80" />
+<details><summary>Expand to view content</summary>
+<p>
+
+##### **AutoDataDictionary()**
+<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R. There are several data dictionary types that can be returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
+
+##### **SQL_Server_DBConnection()**
+<code>SQL_Server_DBConnection()</code> Create a connect with sql server
+
+##### **SQL_Query_Push()**
+<code>SQL_Query_Push()</code> Push data to a sql server warehouse
+
+##### **SQL_Query()**
+<code>SQL_Query()</code> Query a sql server table
+
+##### **SQL_ClearTable()**
+<code>SQL_ClearTable()</code> Deletes all rows of a sql server table
+
+##### **SQL_DropTable()**
+<code>SQL_DropTable()</code> Removes a sql server table
+
+##### **SQL_SaveTable()**
+<code>SQL_SaveTable()</code> Write a sql server table
+
+##### **SQL_UpdateTable()**
+<code>SQL_UpdateTable()</code> Update a sql server table
+
+##### **SQL_Server_BulkPull()**
+<code>SQL_Server_BulkPull()</code> Query a sql server table using bulk copy process
+
+##### **SQL_Server_BulkPush()**
+<code>SQL_Server_BulkPush()</code> Write to a sql server table using bulk copy process
+
+</p>
+</details>
+
+
 ## Utilities, EDA, and Misc. <img src="Images/MiscImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
@@ -3270,14 +3312,8 @@ Choose from:
 
 <img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
 
-##### **AutoH2OTextPrepScoring()** 
-<code>AutoH2OTextPrepScoring()</code> prepares your data for scoring based on models built with AutoWord2VecModel and runs internally inside the AutoH2OScoring() function. It cleans and tokenizes your text data.
-
 ##### **ProblematicFeatures()**
 <code>ProblematicFeatures()</code> identifies columns that have either little to no variance, categorical variables with extremely high cardinality, too many NA's, too many zeros, or too high of a skew.
-
-##### **AutoDataDictionary()**
-<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R. There are several data dictionary types returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
 
 ##### **RemixTheme()** 
 <code>RemixTheme()</code> is a specific font, set of colors, and style for plots.
@@ -3288,5 +3324,8 @@ Choose from:
 ##### **multiplot()** 
 <code>multiplot()</code> is useful for displaying multiple plots in a single pane. I've never had luck using grid so I just use this instead.
 
-##### **tokenizeH2O()** 
-<code>tokenizeH2O()</code> tokenizes an H2O string column.
+#### **FakeDataGenerator()**
+<code>FakeDataGenerator()</code> I use this to create fake data for the examples in the function help files
+
+</p>
+</details>

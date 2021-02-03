@@ -36,7 +36,7 @@ SQL_SaveTable(
 \item{Safer}{TRUE}
 }
 \description{
-SQL_SaveTable get data from a database
+SQL_SaveTable create a database table
 }
 \seealso{
 Other Database: 

@@ -36,7 +36,7 @@ SQL_UpdateTable(
 \item{Fast}{Set to TRUE to update table in one shot versus row by row}
 }
 \description{
-SQL_UpdateTable get data from a database
+SQL_UpdateTable update a database table
 }
 \seealso{
 Other Database: 

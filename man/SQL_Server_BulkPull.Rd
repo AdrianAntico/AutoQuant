@@ -27,7 +27,7 @@ SQL_Server_BulkPull(
 \item{DeleteTextFile}{Remove text file when done loading into R}
 }
 \description{
-Pull data from a sql server warehouse using bulk operations
+Pull data from a sql server warehouse using bulk copy process
 }
 \seealso{
 Other Database: 

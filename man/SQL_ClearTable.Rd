@@ -21,7 +21,7 @@ SQL_ClearTable(
 \item{Errors}{Set to TRUE to halt, FALSE to return -1 in cases of errors}
 }
 \description{
-SQL_ClearTable get data from a database
+SQL_ClearTable remove all rows from a database table
 }
 \seealso{
 Other Database: 

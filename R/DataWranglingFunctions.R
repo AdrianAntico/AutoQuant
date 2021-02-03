@@ -698,7 +698,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
 
 #' @title SQL_Server_DBConnection
 #'
-#' @description SQL_Server_DBConnection is a function to return data dictionary data in table form
+#' @description SQL_Server_DBConnection makes a connection to a sql server database
 #'
 #' @author Adrian Antico
 #'
@@ -715,9 +715,9 @@ SQL_Server_DBConnection <- function(DataBaseName = "",
                                   trusted_connection=yes;")))
 }
 
-#' @title SQL_Query
+#' @title SQL_Query_Push
 #'
-#' @description SQL_Query get data from a database
+#' @description SQL_Query_Push push data to a database table
 #'
 #' @author Adrian Antico
 #'
@@ -732,7 +732,7 @@ SQL_Query_Push <- function(DBConnection,
                            Query,
                            CloseChannel = TRUE) {
   library(RODBC)
-  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  if(!class(DBConnection) == "RODBC") stop("Invalid DBConnection")
   if(!is.null(Query)) {
     RODBC::sqlQuery(channel = DBConnection, query = Query)
     if(CloseChannel) close(DBConnection)
@@ -741,7 +741,7 @@ SQL_Query_Push <- function(DBConnection,
 
 #' @title SQL_Query
 #'
-#' @description SQL_Query get data from a database
+#' @description SQL_Query get data from a database table
 #'
 #' @author Adrian Antico
 #'
@@ -760,7 +760,7 @@ SQL_Query <- function(DBConnection,
                       CloseChannel = TRUE,
                       RowsPerBatch = 1024) {
   library(RODBC)
-  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  if(!class(DBConnection) == "RODBC") stop("Invalid DBConnection")
   if(!is.null(Query)) {
     x <- data.table::as.data.table(RODBC::sqlQuery(channel = DBConnection, query = Query, as.is = ASIS, rows_at_time = RowsPerBatch))
     if(CloseChannel) close(DBConnection)
@@ -770,7 +770,7 @@ SQL_Query <- function(DBConnection,
 
 #' @title SQL_ClearTable
 #'
-#' @description SQL_ClearTable get data from a database
+#' @description SQL_ClearTable remove all rows from a database table
 #'
 #' @author Adrian Antico
 #'
@@ -787,7 +787,7 @@ SQL_ClearTable <- function(DBConnection,
                            CloseChannel = TRUE,
                            Errors = TRUE) {
   library(RODBC)
-  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  if(!class(DBConnection) == "RODBC") stop("Invalid DBConnection")
   RODBC::sqlClear(
     channel = DBConnection,
     sqtable = SQLTableName,
@@ -797,7 +797,7 @@ SQL_ClearTable <- function(DBConnection,
 
 #' @title SQL_DropTable
 #'
-#' @description SQL_DropTable get data from a database
+#' @description SQL_DropTable drop a database table
 #'
 #' @author Adrian Antico
 #'
@@ -814,7 +814,7 @@ SQL_DropTable <- function(DBConnection,
                           CloseChannel = TRUE,
                           Errors = TRUE) {
   library(RODBC)
-  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  if(!class(DBConnection) == "RODBC") stop("Invalid DBConnection")
   RODBC::sqlClear(
     channel = DBConnection,
     sqtable = SQLTableName,
@@ -824,7 +824,7 @@ SQL_DropTable <- function(DBConnection,
 
 #' @title SQL_SaveTable
 #'
-#' @description SQL_SaveTable get data from a database
+#' @description SQL_SaveTable create a database table
 #'
 #' @author Adrian Antico
 #'
@@ -851,14 +851,14 @@ SQL_SaveTable <- function(DataToPush,
                           AddPK = TRUE,
                           Safer = TRUE) {
   library(RODBC)
-  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  if(!class(DBConnection) == "RODBC") stop("Invalid DBConnection")
   RODBC::sqlSave(rownames=RowNames,colnames=ColNames,channel=DBConnection,dat=DataToPush,tablename=SQLTableName,addPK=AddPK,append=AppendData,safer=Safer)
   if(CloseChannel) close(DBConnection)
 }
 
 #' @title SQL_UpdateTable
 #'
-#' @description SQL_UpdateTable get data from a database
+#' @description SQL_UpdateTable update a database table
 #'
 #' @author Adrian Antico
 #'
@@ -885,7 +885,7 @@ SQL_UpdateTable <- function(DataToPush,
                             NAString = "NA",
                             Fast = TRUE) {
   library(RODBC)
-  if(!class(DBConnection) == "RODBC") return("Invalid DBConnection")
+  if(!class(DBConnection) == "RODBC") stop("Invalid DBConnection")
   RODBC::sqlUpdate(
     channel   = DBConnection,
     dat       = DataToPush,
@@ -900,7 +900,7 @@ SQL_UpdateTable <- function(DataToPush,
 
 #' @title SQL_Server_BulkPull
 #'
-#' @description Pull data from a sql server warehouse using bulk operations
+#' @description Pull data from a sql server warehouse using bulk copy process
 #'
 #' @family Database
 #'
@@ -957,7 +957,7 @@ SQL_Server_BulkPull <- function(Server = NULL,
 
 #' @title SQL_Server_BulkPush
 #'
-#' @description Push data to a sql server warehouse via bulk operation
+#' @description Push data to a sql server warehouse via bulk copy process
 #'
 #' @family Database
 #'

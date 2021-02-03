@@ -24,7 +24,7 @@ SQL_Query(
 \item{RowsPerBatch}{Rows default is 1024}
 }
 \description{
-SQL_Query get data from a database
+SQL_Query get data from a database table
 }
 \seealso{
 Other Database: 

@@ -12,7 +12,7 @@ SQL_Server_DBConnection(DataBaseName = "", Server = "")
 \item{Server}{Name of the server to use}
 }
 \description{
-SQL_Server_DBConnection is a function to return data dictionary data in table form
+SQL_Server_DBConnection makes a connection to a sql server database
 }
 \seealso{
 Other Database: 
