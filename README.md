@@ -3265,7 +3265,7 @@ Choose from:
 </p>
 </details>
 
-## Database Management <img src="Images/DataBase.png" align="right" width="80" />
+## Database Management <img src="Images/DataBase.PNG" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
