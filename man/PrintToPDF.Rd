@@ -48,7 +48,6 @@ PrintToPDF
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
 \code{\link{ChartTheme}()},
-\code{\link{VaporWaveTheme}()},
 \code{\link{tokenizeH2O}()}
 }
 \author{

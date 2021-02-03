@@ -55,7 +55,9 @@ ProblematicFeatures(
 }
 \seealso{
 Other EDA: 
-\code{\link{AutoWordFreq}()}
+\code{\link{AutoCorrAnalysis}()},
+\code{\link{AutoWordFreq}()},
+\code{\link{BNLearnArcStrength}()}
 }
 \author{
 Adrian Antico

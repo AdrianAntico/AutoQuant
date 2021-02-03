@@ -30,21 +30,18 @@ AutoDataDictionaries(
 AutoDataDictionaries is a function to return data dictionary data in table form
 }
 \seealso{
-Other Data Wrangling: 
-\code{\link{ColumnSubsetDataTable}()},
-\code{\link{DataDisplayMeta}()},
-\code{\link{FakeDataGenerator}()},
-\code{\link{FullFactorialCatFeatures}()},
+Other Database: 
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},
 \code{\link{SQL_Query_Push}()},
 \code{\link{SQL_Query}()},
 \code{\link{SQL_SaveTable}()},
+\code{\link{SQL_Server_BulkPull}()},
+\code{\link{SQL_Server_BulkPush}()},
 \code{\link{SQL_Server_DBConnection}()},
-\code{\link{SQL_UpdateTable}()},
-\code{\link{TimeSeriesMelt}()}
+\code{\link{SQL_UpdateTable}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Data Wrangling}
+\concept{Database}

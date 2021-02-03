@@ -39,7 +39,6 @@ data <- AutoH2OTextPrepScoring(data = x,
 Other Misc: 
 \code{\link{ChartTheme}()},
 \code{\link{PrintToPDF}()},
-\code{\link{VaporWaveTheme}()},
 \code{\link{tokenizeH2O}()}
 }
 \author{

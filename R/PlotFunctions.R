@@ -166,49 +166,6 @@ ChartTheme <- function(Size = 12,
   chart_theme
 }
 
-
-
-#' VaporWaveTheme
-#'
-#' @author Adrian Antico
-#' @family Misc
-#'
-#' @param Size1 Grid line size
-#' @param Size2 Axis line sizes
-#' @param Size3 Legend line sizes
-#' @param LegendPosition "bottom" is default
-#' @export
-VaporWaveTheme <- function(Size1 = 1,
-                           Size2 = 0.5,
-                           Size3 = 12,
-                           LegendPosition = "bottom") {
-  theme(
-    # Plot / Panel
-    plot.background = element_rect(fill = clr_bg, colour = clr_bg),
-    # plot.margin = margin(1.5, 2, 1.5, 1.5, "cm"),
-    panel.background = element_rect(fill = clr_bg, color = clr_bg),
-    # Grid
-    panel.grid = element_line(colour = clr_grid, size = Size1),
-    panel.grid.major = element_line(colour = clr_grid, size = Size1),
-    panel.grid.minor = element_line(colour = clr_grid, size = Size1),
-    axis.ticks.x = element_line(colour = clr_grid, size = Size1),
-    axis.line.y = element_line(colour = clr_grid, size = Size2),
-    axis.line.x = element_line(colour = clr_grid, size = Size2),
-    # Text
-    plot.title = element_text(colour = clr_text),
-    plot.subtitle = element_text(colour = clr_text),
-    axis.text = element_text(colour = clr_text),
-    axis.title = element_text(colour = clr_text),
-    # Legend
-    legend.background = element_blank(),
-    legend.key = element_blank(),
-    legend.title = element_text(colour = clr_text),
-    legend.text = element_text(colour = "gray80", size = Size3, face = "bold"),
-    legend.position = LegendPosition,
-    # Strip
-    strip.background = element_rect(fill = clr_bg2, color = clr_bg2))
-}
-
 #' TimeSeriesPlotter
 #'
 #' TimeSeriesPlotter is a function to plot single or multiple lines on a single plot

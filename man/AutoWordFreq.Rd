@@ -64,6 +64,8 @@ data <- AutoWordFreq(
 }
 \seealso{
 Other EDA: 
+\code{\link{AutoCorrAnalysis}()},
+\code{\link{BNLearnArcStrength}()},
 \code{\link{ProblematicFeatures}()}
 }
 \author{

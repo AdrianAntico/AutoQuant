@@ -1,13 +1,16 @@
-#' ColumnSubsetDataTable
+#' @title ColumnSubsetDataTable
 #'
-#' ColumnSubsetDataTable will subset data tables by column
+#' @description ColumnSubsetDataTable will subset data tables by column
 #'
 #' @family Data Wrangling
+#'
 #' @author Adrian Antico
+#'
 #' @param data data.table
 #' @param TargetColumnName Target variable
 #' @param DateColumnName Date variable
 #' @param GroupVars Group variables
+#'
 #' @export
 ColumnSubsetDataTable <- function(data,
                                   TargetColumnName = NULL,
@@ -33,18 +36,21 @@ ColumnSubsetDataTable <- function(data,
   return(data)
 }
 
-#' DataDisplayMeta
+#' @title DataDisplayMeta
 #'
-#' DataDisplayMeta
+#' @description DataDisplayMeta
 #'
 #' @author Adrian Antico
+#'
 #' @family Data Wrangling
+#'
 #' @param data Source data
+#'
 #' @export
 DataDisplayMeta <- function(data) {
 
-  # Check to see if data is actual data----
-  if(!(any(class(data) %in% c("data.table","data.frame","tibble")))) return(NULL)
+  # Check to see if data is actual data ----
+  if(!(any(class(data) %in% c("data.table","data.frame","tibble")))) stop("data is not a data.table")
 
   # Begin process----
   Counter <- 0L
@@ -60,16 +66,19 @@ DataDisplayMeta <- function(data) {
   return(x[Variable != "donotuse"])
 }
 
-#' TimeSeriesMelt
+#' @title TimeSeriesMelt
 #'
-#' TimeSeriesMelt
+#' @description TimeSeriesMelt
 #'
 #' @family Data Wrangling
+#'
 #' @author Adrian Antico
+#'
 #' @param data source data
 #' @param TargetVariable vector of target variable names
 #' @param DateVariable Name of date variable
 #' @param GroupVariables Vector of group variable names
+#'
 #' @export
 TimeSeriesMelt <- function(data,
                            TargetVariable = NULL,
@@ -101,16 +110,20 @@ TimeSeriesMelt <- function(data,
   return(data)
 }
 
-#' DifferenceData
+#' @title DifferenceData
 #'
-#' DifferenceData differences your data set
+#' @description DifferenceData differences your data set
+#'
 #' @family Time Series
+#'
 #' @author Adrian Antico
+#'
 #' @param data Source data
 #' @param ColumnsToDiff The column numbers you want differenced
 #' @param CARMA Set to TRUE for CARMA functions
 #' @param TargetVariable The target variable name
 #' @param GroupingVariable Difference data by group
+#'
 #' @export
 DifferenceData <- function(data,
                            ColumnsToDiff = c(names(data)[2:ncol(data)]),
@@ -160,11 +173,14 @@ DifferenceData <- function(data,
   }
 }
 
-#' DifferenceDataReverse
+#' @title DifferenceDataReverse
 #'
-#' DifferenceDataReverse reverses the difference
+#' @description DifferenceDataReverse reverses the difference
+#'
 #' @family Time Series
+#'
 #' @author Adrian Antico
+#'
 #' @param data Pre differenced scoring data
 #' @param ScoreData Predicted values from ML model
 #' @param LastRow The last row from training data target variables
@@ -172,6 +188,7 @@ DifferenceData <- function(data,
 #' @param CARMA Set to TRUE for CARMA utilization
 #' @param FirstRow The first row of the target variable
 #' @param GroupingVariables Group columns
+#'
 #' @export
 DifferenceDataReverse <- function(data,
                                   ScoreData = Forecasts$Predictions,
@@ -205,34 +222,43 @@ DifferenceDataReverse <- function(data,
   }
 }
 
-#' FullFactorialCatFeatures
+#' @title FullFactorialCatFeatures
 #'
-#' FullFactorialCatFeatures reverses the difference
+#' @description FullFactorialCatFeatures reverses the difference
+#'
 #' @family Data Wrangling
+#'
 #' @author Adrian Antico
+#'
 #' @param GroupVars Character vector of categorical columns to fully interact
+#' @param MaxCombin The max K in N choose K. If NULL, K will loop through 1 to length(GroupVars)
 #' @param BottomsUp TRUE or FALSE. TRUE starts with the most comlex interaction to the main effects
+#'
 #' @export
 FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
+                                     MaxCombin = NULL,
                                      BottomsUp = TRUE) {
 
-  N <- length(GroupVars)
+  if(is.null(MaxCombin)) {
+    N <- length(GroupVars)
+  } else {
+    N <- MaxCombin
+  }
   Categoricals <- c()
 
-  # Binomial Expansion
-  for(i in 1:N) {
+  # N choose 1 case ----
+  for(j in seq_along(GroupVars)) Categoricals <- c(Categoricals,GroupVars[j])
 
-    # Case 1: N choose 1 - Store each individual column name separately (main effects)
-    if(i == 1) {
-      for(j in 1:N) Categoricals <- c(Categoricals,GroupVars[j])
+  # N choose i for 2 <= i < N
+  for(i in seq_len(N)[-1L]) {
 
     # Case 2: N choose 2 up to N choose N-1: Middle-Hierarchy Interactions
-    } else if(i < N) {
+    if(i <= N) {
       temp <- combinat::combn(GroupVars, m = i)
       temp2 <- c()
-      for(k in 1:ncol(temp)) {
-        for(l in 1:nrow(temp)) {
-          if(l == 1) {
+      for(k in seq_len(ncol(temp))) {
+        for(l in seq_len(i)) {
+          if(l == 1L) {
             temp2 <- temp[l,k]
           } else {
             temp2 <- paste(temp2,temp[l,k], sep = "_")
@@ -241,10 +267,10 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
         Categoricals <- c(Categoricals, temp2)
       }
 
-    # Case 3: N choose N - Full Interaction
-    } else {
+      # Case 3: N choose N - Full Interaction
+    } else if(i == length(GroupVars)) {
       temp <- combinat::combn(GroupVars, m = i)
-      for(m in 1:N) {
+      for(m in seq_len(N)) {
         if(m == 1) {
           temp2 <- temp[m]
         } else {
@@ -255,26 +281,25 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
     }
   }
 
-  # Order of output----
-  if(BottomsUp) {
-    return(rev(Categoricals))
-  } else {
-    return(Categoricals)
-  }
+  # Order of output ----
+  if(BottomsUp) return(rev(Categoricals)) else return(Categoricals)
 }
 
-#' AutoDataDictionaries
+#' @title AutoDataDictionaries
 #'
-#' AutoDataDictionaries is a function to return data dictionary data in table form
+#' @description AutoDataDictionaries is a function to return data dictionary data in table form
 #'
 #' @author Adrian Antico
-#' @family Data Wrangling
+#'
+#' @family Database
+#'
 #' @param Type = "sqlserver" is currently the only system supported
 #' @param DBConnection This is a RODBC connection object for sql server
 #' @param DDType Select from 1 - 6 based on this article
 #' @param Query Supply a query
 #' @param ASIS Set to TRUE to pull in values without coercing types
 #' @param CloseChannel Set to TRUE to disconnect
+#'
 #' @export
 AutoDataDictionaries <- function(Type = "sqlserver",
                                  DBConnection,
@@ -487,9 +512,7 @@ AutoDataDictionaries <- function(Type = "sqlserver",
         left join sys.computed_columns as cc
             on tab.object_id = cc.object_id
            and col.column_id = cc.column_id
-  order by schema_name,
-        table_name,
-        column_name"
+  order by schema_name, table_name"
 
     # Return data----
     x <- data.table::as.data.table(sqlQuery(DBConnection, qry))
@@ -643,14 +666,17 @@ AutoDataDictionaries <- function(Type = "sqlserver",
   }
 }
 
-#' SQL_Server_DBConnection
+#' @title SQL_Server_DBConnection
 #'
-#' SQL_Server_DBConnection is a function to return data dictionary data in table form
+#' @description SQL_Server_DBConnection is a function to return data dictionary data in table form
 #'
 #' @author Adrian Antico
-#' @family Data Wrangling
+#'
+#' @family Database
+#'
 #' @param DataBaseName Name of the database
 #' @param Server Name of the server to use
+#'
 #' @export
 SQL_Server_DBConnection <- function(DataBaseName = "",
                                     Server = "") {
@@ -659,15 +685,18 @@ SQL_Server_DBConnection <- function(DataBaseName = "",
                                   trusted_connection=yes;")))
 }
 
-#' SQL_Query
+#' @title SQL_Query
 #'
-#' SQL_Query get data from a database
+#' @description SQL_Query get data from a database
 #'
 #' @author Adrian Antico
-#' @family Data Wrangling
+#'
+#' @family Database
+#'
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param Query The SQL statement you want to run
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#'
 #' @export
 SQL_Query_Push <- function(DBConnection,
                            Query,
@@ -680,17 +709,20 @@ SQL_Query_Push <- function(DBConnection,
   }
 }
 
-#' SQL_Query
+#' @title SQL_Query
 #'
-#' SQL_Query get data from a database
+#' @description SQL_Query get data from a database
 #'
 #' @author Adrian Antico
-#' @family Data Wrangling
+#'
+#' @family Database
+#'
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param Query The SQL statement you want to run
 #' @param ASIS Auto column typing
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #' @param RowsPerBatch Rows default is 1024
+#'
 #' @export
 SQL_Query <- function(DBConnection,
                       Query,
@@ -706,16 +738,19 @@ SQL_Query <- function(DBConnection,
   }
 }
 
-#' SQL_ClearTable
+#' @title SQL_ClearTable
 #'
-#' SQL_ClearTable get data from a database
+#' @description SQL_ClearTable get data from a database
 #'
 #' @author Adrian Antico
-#' @family Data Wrangling
+#'
+#' @family Database
+#'
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #' @param Errors Set to TRUE to halt, FALSE to return -1 in cases of errors
+#'
 #' @export
 SQL_ClearTable <- function(DBConnection,
                            SQLTableName = "",
@@ -730,16 +765,19 @@ SQL_ClearTable <- function(DBConnection,
   if(CloseChannel) close(DBConnection)
 }
 
-#' SQL_DropTable
+#' @title SQL_DropTable
 #'
-#' SQL_DropTable get data from a database
+#' @description SQL_DropTable get data from a database
 #'
 #' @author Adrian Antico
-#' @family Data Wrangling
+#'
+#' @family Database
+#'
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #' @param Errors Set to TRUE to halt, FALSE to return -1 in cases of errors
+#'
 #' @export
 SQL_DropTable <- function(DBConnection,
                           SQLTableName = "",
@@ -754,12 +792,14 @@ SQL_DropTable <- function(DBConnection,
   if(CloseChannel) close(DBConnection)
 }
 
-#' SQL_SaveTable
+#' @title SQL_SaveTable
 #'
-#' SQL_SaveTable get data from a database
+#' @description SQL_SaveTable get data from a database
 #'
 #' @author Adrian Antico
-#' @family Data Wrangling
+#'
+#' @family Database
+#'
 #' @param DataToPush data to be sent to warehouse
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
@@ -769,6 +809,7 @@ SQL_DropTable <- function(DBConnection,
 #' @param AddPK Add a PK column to table
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #' @param Safer TRUE
+#'
 #' @export
 SQL_SaveTable <- function(DataToPush,
                           DBConnection,
@@ -785,12 +826,14 @@ SQL_SaveTable <- function(DataToPush,
   if(CloseChannel) close(DBConnection)
 }
 
-#' SQL_UpdateTable
+#' @title SQL_UpdateTable
 #'
-#' SQL_UpdateTable get data from a database
+#' @description SQL_UpdateTable get data from a database
 #'
 #' @author Adrian Antico
-#' @family Data Wrangling
+#'
+#' @family Database
+#'
 #' @param DataToPush Update data table in warehouse with new values
 #' @param DBConnection RemixAutoML::SQL_Server_DBConnection()
 #' @param SQLTableName The SQL statement you want to run
@@ -800,6 +843,7 @@ SQL_SaveTable <- function(DataToPush,
 #' @param NAString Supply character string to supply missing values
 #' @param Fast Set to TRUE to update table in one shot versus row by row
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
+#'
 #' @export
 SQL_UpdateTable <- function(DataToPush,
                             DBConnection,
@@ -822,4 +866,113 @@ SQL_UpdateTable <- function(DataToPush,
     nastring  = NAString,
     fast      = Fast)
   if(CloseChannel) close(DBConnection)
+}
+
+#' @title SQL_Server_BulkPull
+#'
+#' @description Pull data from a sql server warehouse using bulk operations
+#'
+#' @family Database
+#'
+#' @author Adrian Antico
+#'
+#' @param Server Server name
+#' @param DBName Name of the database
+#' @param TableName Name of the table to pull
+#' @param SavePath Path file to where you want the text file saved
+#' @param SaveFileName Name of the text file to create
+#' @param DeleteTextFile Remove text file when done loading into R
+#'
+#' @export
+SQL_Server_BulkPull <- function(Server = NULL,
+                              DBName = NULL,
+                              TableName = NULL,
+                              SavePath = NULL,
+                              SaveFileName = NULL,
+                              DeleteTextFile = TRUE) {
+
+  # Create shell script ----
+  CommandString <- paste0("bcp ", DBName,
+                          ".", TableName,
+                          " out ", file.path(SavePath, SaveFileName),
+                          " -c -T -S ", Server)
+
+  # bcp pull ----
+  ShellStartTime <- Sys.time()
+  shell(CommandString)
+  ShellEndTime <- Sys.time()
+  print("Warehouse to text file run time of: ", ShellEndTime - ShellStartTime)
+
+  # Load data into R ----
+  data <- data.table::fread(file = file.path(SavePath, SaveFileName))
+
+  # Delete text file ----
+  if(DeleteTextFile) {
+
+    # Prepare path ----
+    Path <- file.path(SavePath, SaveFileName)
+    Path <- gsub("/", "\\", Path, fixed = TRUE)
+    Path <- paste0("del ", Path)
+
+    # Run shell command ----
+    DeleteTextFileStart <- Sys.time()
+    shell(Path)
+    DeleteTextFileEnd <- Sys.time()
+    print(paste0("Delete text file run time of: ", DeleteTextFileEnd - DeleteTextFileStart))
+  }
+
+  # Return data ----
+  return(data)
+}
+
+#' @title SQL_Server_BulkPush
+#'
+#' @description Push data to a sql server warehouse via bulk operation
+#'
+#' @family Database
+#'
+#' @author Adrian Antico
+#'
+#' @param Server Server name
+#' @param DBName Name of the database
+#' @param TableName Name of the table to pull
+#' @param SavePath Path file to where you want the text file saved
+#' @param SaveFileName Name of the text file to create
+#' @param DeleteTextFile Remove text file when done loading into R
+#'
+#' @export
+SQL_Server_BulkPush <- function(Server = NULL,
+                              DBName = NULL,
+                              TableName = NULL,
+                              SavePath = NULL,
+                              SaveFileName = NULL,
+                              DeleteTextFile = TRUE) {
+
+  # Command Script ----
+  CommandScript <- paste0(
+    "bcp ", DBName,
+    ".", TableName,
+    " in ", file.path(SavePath, SaveFileName),
+    " -c -T -S ", Server)
+
+  # Push data ----
+  PushStartTime <- Sys.time()
+  shell(CommandScript)
+  PushEndTime <- Sys.time()
+  print(paste0("Bulk insert run time of: ", PushEndTime - PushStartTime))
+
+  # Delete text file ----
+  if(DeleteTextFile) {
+
+    # Command Script ----
+    Path <- file.path(SavePath, SaveFileName)
+    Path <- gsub("/", "\\", Path)
+    Path <- paste0("del ", Path)
+
+    # Run command ----
+    DeleteStartTime <- Sys.time()
+    shell(Path)
+    DeleteEndTime <- Sys.time()
+    print(paste0("Delete text file run time of: ", DeleteEndTime - DeleteStartTime))
+  }
 }

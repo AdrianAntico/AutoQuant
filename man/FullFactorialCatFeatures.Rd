@@ -4,10 +4,16 @@
 \alias{FullFactorialCatFeatures}
 \title{FullFactorialCatFeatures}
 \usage{
-FullFactorialCatFeatures(GroupVars = GroupVariables, BottomsUp = TRUE)
+FullFactorialCatFeatures(
+  GroupVars = GroupVariables,
+  MaxCombin = NULL,
+  BottomsUp = TRUE
+)
 }
 \arguments{
 \item{GroupVars}{Character vector of categorical columns to fully interact}
+
+\item{MaxCombin}{The max K in N choose K. If NULL, K will loop through 1 to length(GroupVars)}
 
 \item{BottomsUp}{TRUE or FALSE. TRUE starts with the most comlex interaction to the main effects}
 }
@@ -16,17 +22,9 @@ FullFactorialCatFeatures reverses the difference
 }
 \seealso{
 Other Data Wrangling: 
-\code{\link{AutoDataDictionaries}()},
 \code{\link{ColumnSubsetDataTable}()},
 \code{\link{DataDisplayMeta}()},
 \code{\link{FakeDataGenerator}()},
-\code{\link{SQL_ClearTable}()},
-\code{\link{SQL_DropTable}()},
-\code{\link{SQL_Query_Push}()},
-\code{\link{SQL_Query}()},
-\code{\link{SQL_SaveTable}()},
-\code{\link{SQL_Server_DBConnection}()},
-\code{\link{SQL_UpdateTable}()},
 \code{\link{TimeSeriesMelt}()}
 }
 \author{
