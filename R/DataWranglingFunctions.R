@@ -240,7 +240,7 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
                                      BottomsUp = TRUE) {
 
   if(is.null(MaxCombin)) {
-    N <- length(GroupVars)
+    MaxCombin <- N <- length(GroupVars)
   } else {
     N <- MaxCombin
   }
@@ -253,32 +253,62 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
   for(i in seq_len(N)[-1L]) {
 
     # Case 2: N choose 2 up to N choose N-1: Middle-Hierarchy Interactions
-    if(i <= N) {
-      temp <- combinat::combn(GroupVars, m = i)
-      temp2 <- c()
-      for(k in seq_len(ncol(temp))) {
-        for(l in seq_len(i)) {
-          if(l == 1L) {
-            temp2 <- temp[l,k]
+    if(MaxCombin == length(GroupVars)) {
+      if(i < N) {
+        temp <- combinat::combn(GroupVars, m = i)
+        temp2 <- c()
+        for(k in seq_len(ncol(temp))) {
+          for(l in seq_len(i)) {
+            if(l == 1L) {
+              temp2 <- temp[l,k]
+            } else {
+              temp2 <- paste(temp2,temp[l,k], sep = "_")
+            }
+          }
+          Categoricals <- c(Categoricals, temp2)
+        }
+
+        # Case 3: N choose N - Full Interaction
+      } else if(i == length(GroupVars)) {
+        temp <- combinat::combn(GroupVars, m = i)
+        for(m in seq_len(N)) {
+          if(m == 1) {
+            temp2 <- temp[m]
           } else {
-            temp2 <- paste(temp2,temp[l,k], sep = "_")
+            temp2 <- paste(temp2,temp[m], sep = "_")
           }
         }
         Categoricals <- c(Categoricals, temp2)
       }
-
-      # Case 3: N choose N - Full Interaction
-    } else if(i == length(GroupVars)) {
-      temp <- combinat::combn(GroupVars, m = i)
-      for(m in seq_len(N)) {
-        if(m == 1) {
-          temp2 <- temp[m]
-        } else {
-          temp2 <- paste(temp2,temp[m], sep = "_")
+    } else {
+      if(i <= N) {
+        temp <- combinat::combn(GroupVars, m = i)
+        temp2 <- c()
+        for(k in seq_len(ncol(temp))) {
+          for(l in seq_len(i)) {
+            if(l == 1L) {
+              temp2 <- temp[l,k]
+            } else {
+              temp2 <- paste(temp2,temp[l,k], sep = "_")
+            }
+          }
+          Categoricals <- c(Categoricals, temp2)
         }
+
+        # Case 3: N choose N - Full Interaction
+      } else if(i == length(GroupVars)) {
+        temp <- combinat::combn(GroupVars, m = i)
+        for(m in seq_len(N)) {
+          if(m == 1) {
+            temp2 <- temp[m]
+          } else {
+            temp2 <- paste(temp2,temp[m], sep = "_")
+          }
+        }
+        Categoricals <- c(Categoricals, temp2)
       }
-      Categoricals <- c(Categoricals, temp2)
     }
+
   }
 
   # Order of output ----
