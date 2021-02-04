@@ -498,7 +498,7 @@ SQL_DropTable <- function(DBConnection,
                           Errors = TRUE) {
   library(RODBC)
   if(!class(DBConnection) == "RODBC") stop("Invalid DBConnection")
-  RODBC::sqlClear(
+  RODBC::sqlDrop(
     channel = DBConnection,
     sqtable = SQLTableName,
     errors  = Errors)
@@ -665,8 +665,8 @@ SQL_Server_BulkPull <- function(Server = NULL,
   CommandString <- paste0("bcp ", Query,
                           " queryout ",
                           file.path(SavePath, SaveFileName),
-                          " -N -S ",
-                          Server, " -T")
+                          " -S ",
+                          Server, " -T -d ", DBName, " -C RAW -c")
 
   # bcp pull ----
   ShellStartTime <- Sys.time()
