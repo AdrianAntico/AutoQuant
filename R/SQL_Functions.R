@@ -654,8 +654,10 @@ SQL_Server_BulkPull <- function(Server = NULL,
     # Build Query ----
     if(is.null(Query)) {
       Query <- paste0("SELECT ", star, " FROM ", TableName)
+      Query <- gsub("[\r\n]", "", Query)
     } else {
       Query <- gsub(pattern = "\\*", replacement = star, x = Query)
+      Query <- gsub("[\r\n]", "", Query)
     }
   }
 
