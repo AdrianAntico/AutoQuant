@@ -498,11 +498,13 @@ data <- RemixAutoML::DummifyDT(
 </p>
 </details>
 
+<code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables in your training, validation, and test sets. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels. This is useful in model training, validating, and scoring processes.
+
+##### **DifferenceData()**
 <code>DifferenceData()</code> Create differences in your data (y1 - y0) for grouped or non-grouped data. 
 
-<code>DifferenceData()</code> Reverses the differences in your data for grouped or non-grouped data. 
-
-<code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables in your training, validation, and test sets. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels. This is useful in model training, validating, and scoring processes.
+##### **DifferenceDataReverse()**
+<code>DifferenceDataReverse()</code> Reverses the differences in your data for grouped or non-grouped data. 
 
 ##### **AutoDataPartition()**
 
