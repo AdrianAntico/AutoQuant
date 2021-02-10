@@ -6,6 +6,7 @@
 \usage{
 FinalBuildTSLM(
   ModelOutputGrid = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
   MetricSelection = "MAE",
@@ -16,6 +17,8 @@ FinalBuildTSLM(
 }
 \arguments{
 \item{ModelOutputGrid}{Pass along the grid output from ParallelOptimzeArima()}
+
+\item{SavePath}{NULL returns nothing. Set path to save model}
 
 \item{TimeSeriesPrepareOutput}{Output from TimeSeriesPrepare()}
 
@@ -39,6 +42,7 @@ FinalBuildTSLM to generate forecasts and ensemble data
 \dontrun{
 FinalBuildTSLM(
   Output = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   MaxFourierTerms = 0,
   TrainValidateShare = c(0.50,0.50),

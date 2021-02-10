@@ -1,4 +1,4 @@
-![Version: 0.3.3](https://img.shields.io/static/v1?label=Version&message=0.3.3&color=blue&?style=plastic)
+![Version: 0.3.4](https://img.shields.io/static/v1?label=Version&message=0.3.4&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -3108,6 +3108,7 @@ data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, Ti
 # Run system
 Output <- RemixAutoML::AutoBanditSarima(
   data = data,
+  SaveFile = NULL,
   ByDataType = FALSE,
   TargetVariableName = "Weekly_Sales",
   DateColumnName = "Date",
@@ -3156,7 +3157,8 @@ AutoArfima uses forecast::arfima behind the scenes. It just runs through all the
 
 <details><summary>Model Highlights</summary>
 <p>
- 
+
+* Save model and xregs to file if a path is supplied
 * Returns a list containing 
   * A data.table object with a date column and the forecasted values
   * The model evaluation results

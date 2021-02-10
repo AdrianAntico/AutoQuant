@@ -6,6 +6,7 @@
 \usage{
 AutoETS(
   data,
+  FilePath = NULL,
   TargetVariableName,
   DateColumnName,
   TimeAggLevel = "week",
@@ -21,6 +22,8 @@ AutoETS(
 }
 \arguments{
 \item{data}{Source data.table}
+
+\item{FilePath}{NULL to return nothing. Provide a file path to save the model and xregs if available}
 
 \item{TargetVariableName}{Name of your time series target variable}
 
@@ -55,6 +58,7 @@ data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "d
 # Build model
 Output <- RemixAutoML::AutoETS(
   data,
+  FilePath = NULL,
   TargetVariableName = "Weekly_Sales",
   DateColumnName = "Date",
   TimeAggLevel = "weeks",

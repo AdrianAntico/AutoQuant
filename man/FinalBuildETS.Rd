@@ -6,6 +6,7 @@
 \usage{
 FinalBuildETS(
   ModelOutputGrid = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
   MetricSelection = "MAE",
@@ -16,6 +17,8 @@ FinalBuildETS(
 }
 \arguments{
 \item{ModelOutputGrid}{Pass along the grid output from ParallelOptimzeArima()}
+
+\item{SavePath}{NULL returns nothing. Supply a path to return model}
 
 \item{TimeSeriesPrepareOutput}{Output from TimeSeriesPrepare()}
 

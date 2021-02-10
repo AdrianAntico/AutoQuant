@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Source data.table
+#' @param FilePath NULL to return nothing. Provide a file path to save the model and xregs if available
 #' @param ByDataType TRUE returns the best model from the four base sets of possible models. FALSE returns the best model.
 #' @param TargetVariableName Name of your time series target variable
 #' @param DateColumnName Name of your date column
@@ -32,6 +33,7 @@
 #' # Build models
 #' Output <- RemixAutoML::AutoBanditSarima(
 #'   data = data,
+#'   FilePath = NULL,
 #'   ByDataType = FALSE,
 #'   TargetVariableName = "Weekly_Sales",
 #'   DateColumnName = "Date",
@@ -59,6 +61,7 @@
 #' }
 #' @export
 AutoBanditSarima <- function(data,
+                             FilePath = NULL,
                              ByDataType = TRUE,
                              TargetVariableName,
                              DateColumnName,
@@ -84,7 +87,7 @@ AutoBanditSarima <- function(data,
   # Check for data issues ----
   x <- length(data[[eval(DateColumnName)]])
   xx <- length(unique(data[[eval(DateColumnName)]]))
-  if(x != xx) return(print("Non unique values detected in data"))
+  if(x != xx) stop(print("Non unique values detected in data"))
 
   # Lags----
   if(!is.integer(MaxLags) || length(MaxLags) > 1L) {
@@ -188,7 +191,7 @@ AutoBanditSarima <- function(data,
   }
 
   # Reutrn if no suitable models were fit----
-  if(Arima_ExperimentGrid[1]$Train_MSE == -7) stop(paste0("Unable to fit an arima to this data"))
+  if(Arima_ExperimentGrid[1L]$Train_MSE == -7 || is.null(Arima_ExperimentGrid)) stop(paste0("Unable to fit an arima to this data"))
 
   # 3. Create Final Build Data----
   if(!is.null(Arima_ExperimentGrid)) {
@@ -211,6 +214,7 @@ AutoBanditSarima <- function(data,
     counter <<- 1L
     repeat {
       ForecastOutput <<- tryCatch({FinalBuildArima(
+        SavePath = FilePath,
         ModelOutputGrid = Arima_ExperimentGrid,
         TimeSeriesPrepareOutput = Arima_Artifacts_Score,
         FCPeriods = NumFCPeriods,
@@ -302,6 +306,7 @@ AutoBanditSarima <- function(data,
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Source data.table
+#' @param FilePath NULL to return nothing. Provide a file path to save the model and xregs if available
 #' @param TargetVariableName Name of your time series target variable
 #' @param DateColumnName Name of your date column
 #' @param TimeAggLevel Choose from "year", "quarter", "month", "week", "day", "hour"
@@ -325,6 +330,7 @@ AutoBanditSarima <- function(data,
 #' # Build models
 #' Output <- RemixAutoML::AutoBanditNNet(
 #'   data = data,
+#'   FilePath = NULL,
 #'   TargetVariableName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   TimeAggLevel = "day",
@@ -348,6 +354,7 @@ AutoBanditSarima <- function(data,
 #' }
 #' @export
 AutoBanditNNet <- function(data,
+                           FilePath = NULL,
                            TargetVariableName,
                            DateColumnName,
                            TimeAggLevel = "week",
@@ -477,6 +484,7 @@ AutoBanditNNet <- function(data,
       if(Debug) for(zzz in 1:100) print(counter)
       ForecastOutput <- tryCatch({FinalBuildNNET(
         ModelOutputGrid = NNET_ExperimentGrid,
+        SavePath = FilePath,
         TimeSeriesPrepareOutput = NNET_Artifacts_Score,
         FCPeriods = NumFCPeriods,
         NumberModelsScore = 1,
@@ -566,6 +574,7 @@ AutoBanditNNet <- function(data,
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Source data.table
+#' @param FilePath NULL to return nothing. Provide a file path to save the model and xregs if available
 #' @param TargetVariableName Name of your time series target variable
 #' @param DateColumnName Name of your date column
 #' @param TimeAggLevel Choose from "year", "quarter", "month", "week", "day", "hour"
@@ -588,6 +597,7 @@ AutoBanditNNet <- function(data,
 #' # Build model
 #' Output <- RemixAutoML::AutoTBATS(
 #'   data,
+#'   FilePath = NULL,
 #'   TargetVariableName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   TimeAggLevel = "weeks",
@@ -610,6 +620,7 @@ AutoBanditNNet <- function(data,
 #' }
 #' @export
 AutoTBATS <- function(data,
+                      FilePath = NULL,
                       TargetVariableName,
                       DateColumnName,
                       TimeAggLevel = "week",
@@ -704,6 +715,7 @@ AutoTBATS <- function(data,
     repeat{
       ForecastOutput <- tryCatch({FinalBuildTBATS(
         ModelOutputGrid = TBATS_ExperimentGrid,
+        SavePath = FilePath,
         TimeSeriesPrepareOutput = TBATS_Artifacts_Score,
         FCPeriods = NumFCPeriods,
         NumberModelsScore = 1,
@@ -792,6 +804,7 @@ AutoTBATS <- function(data,
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Source data.table
+#' @param FilePath NULL to return nothing. Provide a file path to save the model and xregs if available
 #' @param TargetVariableName Name of your time series target variable
 #' @param DateColumnName Name of your date column
 #' @param TimeAggLevel Choose from "year", "quarter", "month", "week", "day", "hour"
@@ -811,6 +824,7 @@ AutoTBATS <- function(data,
 #' # Build model
 #' Output <- RemixAutoML::AutoETS(
 #'   data,
+#'   FilePath = NULL,
 #'   TargetVariableName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   TimeAggLevel = "weeks",
@@ -830,6 +844,7 @@ AutoTBATS <- function(data,
 #' }
 #' @export
 AutoETS <- function(data,
+                    FilePath = NULL,
                     TargetVariableName,
                     DateColumnName,
                     TimeAggLevel = "week",
@@ -906,6 +921,7 @@ AutoETS <- function(data,
     repeat{
       ForecastOutput <- tryCatch({FinalBuildETS(
         ModelOutputGrid = ETS_ExperimentGrid,
+        SavePath = FilePath,
         TimeSeriesPrepareOutput = ETS_Artifacts_Score,
         FCPeriods = NumFCPeriods,
         NumberModelsScore = 1,
@@ -994,6 +1010,7 @@ AutoETS <- function(data,
 #' @author Adrian Antico
 #' @family Automated Time Series
 #' @param data Source data.table
+#' @param FilePath NULL to return nothing. Provide a file path to save the model and xregs if available
 #' @param TargetVariableName Name of your time series target variable
 #' @param DateColumnName Name of your date column
 #' @param TimeAggLevel Choose from "year", "quarter", "month", "week", "day", "hour"
@@ -1015,6 +1032,7 @@ AutoETS <- function(data,
 #' # Build model
 #' Output <- RemixAutoML::AutoArfima(
 #'   data,
+#'   FilePath = NULL,
 #'   TargetVariableName = "Weekly_Sales",
 #'   DateColumnName = "Date",
 #'   TimeAggLevel = "weeks",
@@ -1036,6 +1054,7 @@ AutoETS <- function(data,
 #' }
 #' @export
 AutoArfima <- function(data,
+                       FilePath = NULL,
                        TargetVariableName,
                        DateColumnName,
                        TimeAggLevel = "week",
@@ -1129,6 +1148,7 @@ AutoArfima <- function(data,
     repeat{
       ForecastOutput <- tryCatch({FinalBuildArfima(
         ModelOutputGrid = Arfima_ExperimentGrid,
+        SavePath = FilePath,
         TimeSeriesPrepareOutput = Arfima_Artifacts_Score,
         FCPeriods = NumFCPeriods,
         NumberModelsScore = 1,

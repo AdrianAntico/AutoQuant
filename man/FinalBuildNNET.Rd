@@ -6,6 +6,7 @@
 \usage{
 FinalBuildNNET(
   ModelOutputGrid = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
   MetricSelection = "MAE",
@@ -16,6 +17,8 @@ FinalBuildNNET(
 }
 \arguments{
 \item{ModelOutputGrid}{Pass along the grid output from ParallelOptimzeArima()}
+
+\item{SavePath}{NULL returns nothing. Supply path to save model object and xregs if they exist}
 
 \item{TimeSeriesPrepareOutput}{Output from TimeSeriesPrepare()}
 
@@ -39,6 +42,7 @@ FinalBuildNNET to generate forecasts and ensemble data
 \dontrun{
 FinalBuildNNET(
   Output = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   MaxFourierTerms = 0,
   TrainValidateShare = c(0.50,0.50),

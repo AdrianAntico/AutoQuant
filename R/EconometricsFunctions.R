@@ -1237,6 +1237,7 @@ TimeSeriesDataPrepare <- function(data,
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
+#' @param Path Path to where you want the model and xregs saved. Leave NULL to not save.
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
 #' @param train Training data returned from TimeSeriesDataPrepare()
@@ -1264,6 +1265,7 @@ TimeSeriesDataPrepare <- function(data,
 #' \dontrun{
 #' Results <- OptimizeArima(
 #'   Output,
+#'   Path = NULL,
 #'   MetricSelection = "MAE",
 #'   DataSetName = NULL,
 #'   train = NULL,
@@ -1288,6 +1290,7 @@ TimeSeriesDataPrepare <- function(data,
 #' }
 #' @export
 OptimizeArima <- function(Output,
+                          Path = NULL,
                           MetricSelection = "MAE",
                           DataSetName = NULL,
                           train = NULL,
@@ -1677,9 +1680,14 @@ OptimizeArima <- function(Output,
       }
     }
 
-    # Return forecast values for all models----
+    # Return forecast values for all models ----
     if(DebugMode) if(ReturnData[is.na(Forecast)][,.N] == length(train)) for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was successful")) else for(kk in 1:10) print(paste0("ReturnData at return() of OptimizeArima() was NOT successful"))
     if(DebugMode) for(kk in 1:10) print(paste0("Number of rows in ReturnData: ", ReturnData[, .N]))
+    if(!is.null(Path) && !is.null(Results)) {
+      save(Results, file = file.path(Path, "Sarima_Output.Rdata"))
+      if(!is.null(XREG)) save(XREG, file = file.path(Path, "Sarima_XREG.Rdata"))
+      if(!is.null(XREGFC)) save(XREGFC, file = file.path(Path, "Sarima_XREGFC.Rdata"))
+    }
     return(ReturnData)
   }
 }
@@ -1691,6 +1699,7 @@ OptimizeArima <- function(Output,
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
+#' @param Path Path to where you want the model and xregs saved. Leave NULL to not save.
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
 #' @param train Training data returned from TimeSeriesDataPrepare()
@@ -1707,6 +1716,7 @@ OptimizeArima <- function(Output,
 #' \dontrun{
 #' Results <- OptimizeETS(
 #'   Output,
+#'   Path = NULL,
 #'   MetricSelection = "MAE",
 #'   DataSetName = NULL,
 #'   train = NULL,
@@ -1721,6 +1731,7 @@ OptimizeArima <- function(Output,
 #' }
 #' @export
 OptimizeETS <- function(Output,
+                        Path = NULL,
                         MetricSelection = "MAE",
                         DataSetName = NULL,
                         train = NULL,
@@ -1900,7 +1911,10 @@ OptimizeETS <- function(Output,
       }
     }
 
-    # Return forecast values for all models----
+    # Return forecast values for all models ----
+    if(!is.null(Path) && !is.null(Results)) {
+      save(Results, file = file.path(Path, "ETS_Output.Rdata"))
+    }
     return(ReturnData)
   }
 }
@@ -1912,6 +1926,7 @@ OptimizeETS <- function(Output,
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
+#' @param Path Path to where you want the model and xregs saved. Leave NULL to not save.
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
 #' @param train Training data returned from TimeSeriesDataPrepare()
@@ -1930,6 +1945,7 @@ OptimizeETS <- function(Output,
 #' \dontrun{
 #' Results <- OptimizeTBATS(
 #'   Output,
+#'   Path = NULL,
 #'   MetricSelection = "MAE",
 #'   DataSetName = NULL,
 #'   train = NULL,
@@ -1946,6 +1962,7 @@ OptimizeETS <- function(Output,
 #' }
 #' @export
 OptimizeTBATS <- function(Output,
+                          Path = NULL,
                           MetricSelection = "MAE",
                           DataSetName = NULL,
                           train = NULL,
@@ -2128,7 +2145,10 @@ OptimizeTBATS <- function(Output,
       }
     }
 
-    # Return forecast values for all models----
+    # Return forecast values for all models ----
+    if(!is.null(Path) && !is.null(Results)) {
+      save(Results, file = file.path(Path, "TBATS_Output.Rdata"))
+    }
     return(ReturnData)
   }
 }
@@ -2140,6 +2160,7 @@ OptimizeTBATS <- function(Output,
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
+#' @param Path Path to where you want the model and xregs saved. Leave NULL to not save.
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
 #' @param train Training data returned from TimeSeriesDataPrepare()
@@ -2162,6 +2183,7 @@ OptimizeTBATS <- function(Output,
 #' \dontrun{
 #' Results <- OptimizeNNET(
 #'   Output,
+#'   Path = NULL,
 #'   MetricSelection = "MAE",
 #'   DataSetName = NULL,
 #'   train = NULL,
@@ -2182,6 +2204,7 @@ OptimizeTBATS <- function(Output,
 #' }
 #' @export
 OptimizeNNET <- function(Output,
+                         Path = NULL,
                          MetricSelection = "MAE",
                          DataSetName = NULL,
                          train = NULL,
@@ -2514,7 +2537,12 @@ OptimizeNNET <- function(Output,
       }
     }
 
-    # Return forecast values for all models----
+    # Return forecast values for all models ----
+    if(!is.null(Path) && !is.null(Results)) {
+      save(Results, file = file.path(Path, "NNet_Output.Rdata"))
+      if(!is.null(XREG)) save(XREG, file = file.path(Path, "NNet_XREG.Rdata"))
+      if(!is.null(XREGFC)) save(XREGFC, file = file.path(Path, "NNet_XREGFC.Rdata"))
+    }
     return(ReturnData)
   }
 }
@@ -2526,6 +2554,7 @@ OptimizeNNET <- function(Output,
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
+#' @param Path Path to where you want the model and xregs saved. Leave NULL to not save.
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
 #' @param train Training data returned from TimeSeriesDataPrepare()
@@ -2544,6 +2573,7 @@ OptimizeNNET <- function(Output,
 #' \dontrun{
 #' Results <- OptimizeArfima(
 #'   Output,
+#'   Path = NULL,
 #'   MetricSelection = "MAE",
 #'   DataSetName = NULL,
 #'   train = NULL,
@@ -2560,6 +2590,7 @@ OptimizeNNET <- function(Output,
 #' }
 #' @export
 OptimizeArfima <- function(Output,
+                           Path = NULL,
                            MetricSelection = "MAE",
                            DataSetName = NULL,
                            train = NULL,
@@ -2729,7 +2760,10 @@ OptimizeArfima <- function(Output,
       }
     }
 
-    # Return forecast values for all models----
+    # Return forecast values for all models ----
+    if(!is.null(Path) && !is.null(Results)) {
+      save(Results, file = file.path(Path, "Arfima_Output.Rdata"))
+    }
     return(ReturnData)
   }
 }
@@ -2741,6 +2775,7 @@ OptimizeArfima <- function(Output,
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param Output This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()
+#' @param Path Path to where you want the model and xregs saved. Leave NULL to not save.
 #' @param MetricSelection Select from "MSE", "MAE", or "MAPE"
 #' @param DataSetName This is the name of the data set passed through in parallel loop
 #' @param train Training data returned from TimeSeriesDataPrepare()
@@ -2757,6 +2792,7 @@ OptimizeArfima <- function(Output,
 #' \dontrun{
 #' Results <- OptimizeTSLM(
 #'   Output,
+#'   Path = NULL,
 #'   MetricSelection = "MAE",
 #'   DataSetName = NULL,
 #'   train = NULL,
@@ -2771,6 +2807,7 @@ OptimizeArfima <- function(Output,
 #' }
 #' @export
 OptimizeTSLM <- function(Output,
+                         Path = NULL,
                          MetricSelection = "MAE",
                          DataSetName = NULL,
                          train = NULL,
@@ -2901,7 +2938,10 @@ OptimizeTSLM <- function(Output,
       }
     }
 
-    # Return forecast values for all models----
+    # Return forecast values for all models ----
+    if(!is.null(Path) && !is.null(Results)) {
+      save(Results, file = file.path(Path, "TSLM_Output.Rdata"))
+    }
     return(ReturnData)
   }
 }
@@ -3492,6 +3532,7 @@ ParallelAutoTSLM <- function(
 #'
 #' @author Adrian Antico
 #' @family Time Series Helper
+#' @param SavePath Supply a path to save the model object and xregs if those were utilized
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
@@ -3503,6 +3544,7 @@ ParallelAutoTSLM <- function(
 #' @examples
 #' \dontrun{
 #' FinalBuildArima(
+#'   SavePath = NULL,
 #'   Output = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
@@ -3514,6 +3556,7 @@ ParallelAutoTSLM <- function(
 #' }
 #' @export
 FinalBuildArima <- function(
+  SavePath = NULL,
   ModelOutputGrid = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
@@ -3599,6 +3642,7 @@ FinalBuildArima <- function(
       # Forecast
       Forecasts <<- OptimizeArima(
         Output = eval(TimeSeriesPrepareOutput),
+        Path = SavePath,
         MetricSelection = eval(MetricSelection),
         DataSetName = eval(TrainArtifacts[[ModelNum]][["Name"]]),
         train = eval(TrainArtifacts[[ModelNum]][["Data"]]),
@@ -3623,6 +3667,7 @@ FinalBuildArima <- function(
     } else {
       Forecasts <<- OptimizeArima(
         Output = eval(TimeSeriesPrepareOutput),
+        Path = SavePath,
         DataSetName = eval(TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]]),
         train = eval(TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]]),
         test = eval(TimeSeriesPrepareOutput$TestData),
@@ -3683,6 +3728,7 @@ FinalBuildArima <- function(
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
+#' @param SavePath NULL returns nothing. Supply a path to return model
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
@@ -3705,6 +3751,7 @@ FinalBuildArima <- function(
 #' @export
 FinalBuildETS <- function(
   ModelOutputGrid = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
   MetricSelection = "MAE",
@@ -3794,6 +3841,7 @@ FinalBuildETS <- function(
         train = TrainArtifacts[[ModelNum]][["Data"]],
         test = ModelOutputGrid$TestData,
         FullData = ModelOutputGrid$FullData,
+        Path = NULL,
         HoldOutPeriods = ModelOutputGrid$HoldOutPeriods,
         MinVal = ModelOutputGrid$MinVal,
         TargetName = ModelOutputGrid$TargetName,
@@ -3804,6 +3852,7 @@ FinalBuildETS <- function(
       Return <- OptimizeETS(
         Output = TimeSeriesPrepareOutput,
         MetricSelection = MetricSelection,
+        Path = SavePath,
         DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
         train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
         test = ModelOutputGrid$TestData,
@@ -3854,6 +3903,7 @@ FinalBuildETS <- function(
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
+#' @param SavePath NULL returns nothing. Provide a path to save model object
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
@@ -3865,6 +3915,7 @@ FinalBuildETS <- function(
 #' \dontrun{
 #' FinalBuildTBATS(
 #'   Output = NULL,
+#'   SavePath = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -3876,6 +3927,7 @@ FinalBuildETS <- function(
 #' @export
 FinalBuildTBATS <- function(
   ModelOutputGrid = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
   MetricSelection = "MAE",
@@ -3965,6 +4017,7 @@ FinalBuildTBATS <- function(
         train = TrainArtifacts[[ModelNum]][["Data"]],
         test = TimeSeriesPrepareOutput$TestData,
         FullData = TimeSeriesPrepareOutput$FullData,
+        Path = NULL,
         HoldOutPeriods = TimeSeriesPrepareOutput$HoldOutPeriods,
         MinVal = TimeSeriesPrepareOutput$MinVal,
         TargetName = TimeSeriesPrepareOutput$TargetName,
@@ -3974,6 +4027,7 @@ FinalBuildTBATS <- function(
     } else {
       Return <- OptimizeTBATS(
         Output = TimeSeriesPrepareOutput,
+        Path = SavePath,
         MetricSelection = MetricSelection,
         DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
         train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
@@ -4025,6 +4079,7 @@ FinalBuildTBATS <- function(
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
+#' @param SavePath NULL returns nothing. Supply path to save model object and xregs if they exist
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
@@ -4036,6 +4091,7 @@ FinalBuildTBATS <- function(
 #' \dontrun{
 #' FinalBuildNNET(
 #'   Output = NULL,
+#'   SavePath = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -4047,6 +4103,7 @@ FinalBuildTBATS <- function(
 #' @export
 FinalBuildNNET <- function(
   ModelOutputGrid = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
   MetricSelection = "MAE",
@@ -4131,6 +4188,7 @@ FinalBuildNNET <- function(
       # Forecast
       Return <- OptimizeNNET(
         Output = TimeSeriesPrepareOutput,
+        Path = NULL,
         MetricSelection = MetricSelection,
         DataSetName = TrainArtifacts[[ModelNum]][["Name"]],
         train = TrainArtifacts[[ModelNum]][["Data"]],
@@ -4150,6 +4208,7 @@ FinalBuildNNET <- function(
     } else {
       Return <- OptimizeNNET(
         Output = TimeSeriesPrepareOutput,
+        Path = SavePath,
         DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
         train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
         test = TimeSeriesPrepareOutput$TestData,
@@ -4205,6 +4264,7 @@ FinalBuildNNET <- function(
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
+#' @param SavePath NULL returns nothing. Set path to return model
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
@@ -4216,6 +4276,7 @@ FinalBuildNNET <- function(
 #' \dontrun{
 #' FinalBuildArfima(
 #'   Output = NULL,
+#'   SavePath = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -4227,6 +4288,7 @@ FinalBuildNNET <- function(
 #' @export
 FinalBuildArfima <- function(
   ModelOutputGrid = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
   MetricSelection = "MAE",
@@ -4312,6 +4374,7 @@ FinalBuildArfima <- function(
       Return <- OptimizeArfima(
         Output = TimeSeriesPrepareOutput,
         MetricSelection = MetricSelection,
+        Path = SavePath,
         DataSetName = TrainArtifacts[[ModelNum]][["Name"]],
         train = TrainArtifacts[[ModelNum]][["Data"]],
         test = TimeSeriesPrepareOutput$TestData,
@@ -4326,6 +4389,7 @@ FinalBuildArfima <- function(
       Return <- OptimizeArfima(
         Output = TimeSeriesPrepareOutput,
         MetricSelection = MetricSelection,
+        Path = SavePath,
         DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
         train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],
         test = TimeSeriesPrepareOutput$TestData,
@@ -4376,6 +4440,7 @@ FinalBuildArfima <- function(
 #' @author Adrian Antico
 #' @family Time Series Helper
 #' @param ModelOutputGrid Pass along the grid output from ParallelOptimzeArima()
+#' @param SavePath NULL returns nothing. Set path to save model
 #' @param TimeSeriesPrepareOutput Output from TimeSeriesPrepare()
 #' @param FCPeriods The number of periods ahead to forecast
 #' @param MetricSelection The value returned from TimeSeriesPrepare()
@@ -4387,6 +4452,7 @@ FinalBuildArfima <- function(
 #' \dontrun{
 #' FinalBuildTSLM(
 #'   Output = NULL,
+#'   SavePath = NULL,
 #'   TimeSeriesPrepareOutput = NULL,
 #'   MaxFourierTerms = 0,
 #'   TrainValidateShare = c(0.50,0.50),
@@ -4397,6 +4463,7 @@ FinalBuildArfima <- function(
 #' @export
 FinalBuildTSLM <- function(
   ModelOutputGrid = NULL,
+  SavePath = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
   MetricSelection = "MAE",
@@ -4481,6 +4548,7 @@ FinalBuildTSLM <- function(
       # Forecast
       Return <- OptimizeTSLM(
         Output = TimeSeriesPrepareOutput,
+        Path = NULL,
         MetricSelection = MetricSelection,
         DataSetName = TrainArtifacts[[ModelNum]][["Name"]],
         train = TrainArtifacts[[ModelNum]][["Data"]],
@@ -4495,6 +4563,7 @@ FinalBuildTSLM <- function(
     } else {
       Return <- OptimizeTSLM(
         Output = TimeSeriesPrepareOutput,
+        Path = SavePath,
         MetricSelection = MetricSelection,
         DataSetName = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Name"]],
         train = TrainArtifacts[[ScoreGrid[ModelNum,1][[1]]]][["Data"]],

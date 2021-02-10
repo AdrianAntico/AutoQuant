@@ -6,6 +6,7 @@
 \usage{
 OptimizeArfima(
   Output,
+  Path = NULL,
   MetricSelection = "MAE",
   DataSetName = NULL,
   train = NULL,
@@ -23,6 +24,8 @@ OptimizeArfima(
 }
 \arguments{
 \item{Output}{This is passed through as output from TimeSeriesDataPrepare() and passed through ParallelArima()}
+
+\item{Path}{Path to where you want the model and xregs saved. Leave NULL to not save.}
 
 \item{MetricSelection}{Select from "MSE", "MAE", or "MAPE"}
 
@@ -60,6 +63,7 @@ OptimizeArfima is a function that takes raw data and returns the necessary time 
 \dontrun{
 Results <- OptimizeArfima(
   Output,
+  Path = NULL,
   MetricSelection = "MAE",
   DataSetName = NULL,
   train = NULL,

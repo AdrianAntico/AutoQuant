@@ -5,6 +5,7 @@
 \title{FinalBuildArima}
 \usage{
 FinalBuildArima(
+  SavePath = NULL,
   ModelOutputGrid = NULL,
   TimeSeriesPrepareOutput = NULL,
   FCPeriods = 1,
@@ -15,6 +16,8 @@ FinalBuildArima(
 )
 }
 \arguments{
+\item{SavePath}{Supply a path to save the model object and xregs if those were utilized}
+
 \item{ModelOutputGrid}{Pass along the grid output from ParallelOptimzeArima()}
 
 \item{TimeSeriesPrepareOutput}{Output from TimeSeriesPrepare()}
@@ -38,6 +41,7 @@ FinalBuildArima to generate forecasts and ensemble data
 \examples{
 \dontrun{
 FinalBuildArima(
+  SavePath = NULL,
   Output = NULL,
   TimeSeriesPrepareOutput = NULL,
   MaxFourierTerms = 0,

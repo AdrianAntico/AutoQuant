@@ -6,6 +6,7 @@
 \usage{
 AutoBanditSarima(
   data,
+  FilePath = NULL,
   ByDataType = TRUE,
   TargetVariableName,
   DateColumnName,
@@ -28,6 +29,8 @@ AutoBanditSarima(
 }
 \arguments{
 \item{data}{Source data.table}
+
+\item{FilePath}{NULL to return nothing. Provide a file path to save the model and xregs if available}
 
 \item{ByDataType}{TRUE returns the best model from the four base sets of possible models. FALSE returns the best model.}
 
@@ -79,6 +82,7 @@ data <- RemixAutoML::FakeDataGenerator(TimeSeries = TRUE, TimeSeriesTimeAgg = "d
 # Build models
 Output <- RemixAutoML::AutoBanditSarima(
   data = data,
+  FilePath = NULL,
   ByDataType = FALSE,
   TargetVariableName = "Weekly_Sales",
   DateColumnName = "Date",
