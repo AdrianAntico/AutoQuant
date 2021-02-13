@@ -31,6 +31,7 @@ p <- p + RemixTheme()
 }
 \seealso{
 Other Graphics: 
+\code{\link{ChartTheme}()},
 \code{\link{TimeSeriesPlotter}()},
 \code{\link{multiplot}()}
 }

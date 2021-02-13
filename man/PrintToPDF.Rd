@@ -47,7 +47,7 @@ PrintToPDF
 \seealso{
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
-\code{\link{ChartTheme}()},
+\code{\link{DeleteFile}()},
 \code{\link{tokenizeH2O}()}
 }
 \author{

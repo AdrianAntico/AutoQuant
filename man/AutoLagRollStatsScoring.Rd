@@ -156,6 +156,7 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 Other Feature Engineering: 
 \code{\link{AutoDataPartition}()},
 \code{\link{AutoHierarchicalFourier}()},
+\code{\link{AutoInteraction}()},
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationCreate}()},
 \code{\link{AutoTransformationScore}()},

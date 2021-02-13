@@ -54,6 +54,7 @@ RemixAutoML::multiplot(plotlist = list(p1,p2), cols = 2)
 }
 \seealso{
 Other Graphics: 
+\code{\link{ChartTheme}()},
 \code{\link{RemixTheme}()},
 \code{\link{TimeSeriesPlotter}()}
 }

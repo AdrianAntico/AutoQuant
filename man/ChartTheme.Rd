@@ -58,12 +58,12 @@ p <- p + ChartTheme(Size = 12)
 }
 }
 \seealso{
-Other Misc: 
-\code{\link{AutoH2OTextPrepScoring}()},
-\code{\link{PrintToPDF}()},
-\code{\link{tokenizeH2O}()}
+Other Graphics: 
+\code{\link{RemixTheme}()},
+\code{\link{TimeSeriesPlotter}()},
+\code{\link{multiplot}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Misc}
+\concept{Graphics}

@@ -581,6 +581,47 @@ SQL_UpdateTable <- function(DataToPush,
   if(CloseChannel) close(DBConnection)
 }
 
+#' @title ExecuteSSIS
+#'
+#' @description Run an SSIS package from R. Function will check to make sure you can run an SSIS package and it will remove the output file if it exists so as to not append data on top of it.
+#'
+#' @family DataBase
+#'
+#' @author Adrian Antico
+#'
+#' @param PkgPath Path to SSIS package includin the package name and the package extension .dtsx
+#' @param CSVPath Path to the csv output data location including the name of the file and the .csv extension
+#'
+#' @export
+ExecuteSSIS <- function(PkgPath = NULL,
+                        CSVPath = NULL) {
+
+  # Modify paths
+  PkgPath <- gsub("/", "\\\\", PkgPath)
+  OutputPath <- gsub("/", "\\\\", OutputPath)
+
+  # Ensure env var exists
+  EnvVars <- data.table::as.data.table(unlist(data.table::tstrsplit(x = Sys.getenv("PATH"), split = ";", fixed = TRUE)))
+  EnvVars[, V1 := gsub("\\\\", ".", V1)]
+
+  # Stop if vars don't exist
+  if(EnvVars[, sum(data.table::fifelse(V1 %like% "C:.Program Files.Microsoft SQL Server.150.DTS.Binn.", 1, 0)) == 0]) {
+    Err <- paste("Need to add C:\\Program Files\\Microsoft SQL Server\\150\\DTS.Binn\\ to the PATH environment variable list")
+    stop(eval(Err))
+  }
+
+  # Delete csv if it exists
+  if(file.exists(CSVPath)) {
+    shell(paste0("del ", CSVPath))
+  }
+
+  # Create command prompt script
+  Cmd <- paste0("DTExec.exe -f ", shQuote(type = "cmd", string = PkgPath))
+
+  # Run SSIS package
+  system(Cmd)
+}
+
 #' @title SQL_Server_BulkPull
 #'
 #' @description Pull data from a sql server warehouse using bulk copy process

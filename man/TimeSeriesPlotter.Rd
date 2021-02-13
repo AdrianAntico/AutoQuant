@@ -106,6 +106,7 @@ TimeSeriesPlotter is a function to plot single or multiple lines on a single plo
 }
 \seealso{
 Other Graphics: 
+\code{\link{ChartTheme}()},
 \code{\link{RemixTheme}()},
 \code{\link{multiplot}()}
 }

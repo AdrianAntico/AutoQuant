@@ -70,6 +70,7 @@ TestData <- dataSets$TestData
 \seealso{
 Other Feature Engineering: 
 \code{\link{AutoHierarchicalFourier}()},
+\code{\link{AutoInteraction}()},
 \code{\link{AutoLagRollStatsScoring}()},
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationCreate}()},

@@ -84,3 +84,21 @@ PrintToPDF <- function(Path,
     warning("Need to install the package grDevices in order to run this function")
   }
 }
+
+#' @title DeleteFile
+#'
+#' @description DeleteFile will prompt you for a file to delete and then permanently delete a file. You won't have to go the the recycle bin to delete it a second time
+#'
+#' @family Misc
+#'
+#' @author Adrian Antico
+#'
+#' @param File If NULL a prompt will allow you to click on the file to have it removed. Otherwise, supply a path to the file including its name and extension
+#' @export
+DeleteFile <- function(File = NULL) {
+  if(is.null(File)) {
+    shell(paste0("del ", file.choose()))
+  } else {
+    shell(paste0("del ", File))
+  }
+}

@@ -111,7 +111,7 @@ RemixTheme <- function() {
 #' This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
 #'
 #' @author Adrian Antico
-#' @family Misc
+#' @family Graphics
 #' @param Size The size of the axis labels and title
 #' @param AngleX The angle of the x axis labels
 #' @param AngleY The angle of the Y axis labels

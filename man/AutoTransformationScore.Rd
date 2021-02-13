@@ -48,6 +48,7 @@ data <- RemixAutoML::AutoTransformationScore(
 Other Feature Engineering: 
 \code{\link{AutoDataPartition}()},
 \code{\link{AutoHierarchicalFourier}()},
+\code{\link{AutoInteraction}()},
 \code{\link{AutoLagRollStatsScoring}()},
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationCreate}()},

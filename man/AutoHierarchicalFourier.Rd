@@ -41,6 +41,7 @@ AutoHierarchicalFourier reverses the difference
 \seealso{
 Other Feature Engineering: 
 \code{\link{AutoDataPartition}()},
+\code{\link{AutoInteraction}()},
 \code{\link{AutoLagRollStatsScoring}()},
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationCreate}()},

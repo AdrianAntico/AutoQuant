@@ -37,7 +37,7 @@ data <- AutoH2OTextPrepScoring(data = x,
 }
 \seealso{
 Other Misc: 
-\code{\link{ChartTheme}()},
+\code{\link{DeleteFile}()},
 \code{\link{PrintToPDF}()},
 \code{\link{tokenizeH2O}()}
 }

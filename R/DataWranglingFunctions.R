@@ -314,3 +314,169 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
   # Order of output ----
   if(BottomsUp) return(rev(Categoricals)) else return(Categoricals)
 }
+
+#' @title AutoNumericInteraction
+#'
+#' @description AutoNumericInteraction creates interaction variables from your numerical features in your data. Supply a set of column names to utilize and set the interaction level. Supply a character vector of columns to exclude and the function will ignore those features.
+#'
+#' @family Feature Engineering
+#'
+#' @author Adrian Antico
+#'
+#' @param data Source data.table
+#' @param NumVars Names of numeric columns (if NULL, all numeric and integer columns will be used)
+#' @param InteractionDepth The max K in N choose K. If NULL, K will loop through 1 to length(NumVars)
+#' @param SkipCols Use this to exclude features from being created. An example could be, you build a model with all variables and then use the varaible importance list to determine which features aren't necessary and pass that set of features into this argument as a character vector.
+#'
+#' @examples
+#' \dontrun{
+#'
+#' # Create fake data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 1000,
+#'   ID = 2L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   ZIP = 0L,
+#'   TimeSeries = FALSE,
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Store names of numeric and integer cols
+#' Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
+#'                      which(unlist(lapply(data, is.integer))))]
+#'
+#' # Create features
+#' data <- AutoInteraction(
+#'   data = data,
+#'   NumericVars = Cols,
+#'   InteractionDepth = 4)
+#' }
+#'
+#' @export
+AutoInteraction <- function(data = NULL,
+                            NumericVars = NULL,
+                            InteractionDepth = NULL,
+                            SkipCols = NULL) {
+
+  # Columns Validity check ----
+  if(is.null(NumericVars)) {
+    NumericVars <- names(data)[c(which(unlist(lapply(data, is.numeric))), which(unlist(lapply(data, is.integer))))]
+    if(identical(NumericVars, character(0))) stop("No numeric or integer valued columns in data")
+    for(nam in NumericVars) {
+      tmp <- class(data[1L, get(nam)])
+      if(!any(tmp %chin% c("numeric","integer"))) NumericVars <- NumericVars[!NumericVars %chin% nam]
+    }
+    if(identical(NumericVars, character(0))) stop("No numeric or integer valued columns in data")
+    if(length(NumericVars) == 1L) stop("Only one column exists so no interactions can be generated")
+    if(length(NumericVars) < InteractionDepth) stop("You can't have an InteractionDepth that is greater than the number of NumericVars")
+  } else {
+    if(!all(NumericVars %chin% names(data))) stop("at least some NumericVars are not in data")
+    for(nam in NumericVars) {
+      tmp <- class(data[1L, get(nam)])
+      if(!any(tmp %chin% c("numeric","integer"))) NumericVars <- NumericVars[!NumericVars %chin% nam]
+    }
+    if(identical(NumericVars, character(0))) stop("No numeric or integer valued columns in data")
+    if(length(NumericVars) == 1L) stop("Only one column exists so no interactions can be generated")
+    if(length(NumericVars) < InteractionDepth) stop("You can't have an InteractionDepth that is greater than the number of NumericVars")
+  }
+
+  # Define Number of computations and increase alloc if too many ----
+  N1 <- length(NumericVars)
+  N <- InteractionDepth
+  Total <- c()
+  for(com in seq_len(InteractionDepth)[-1L]) Total <- c(Total, ncol(combinat::combn(NumericVars, m = com)))
+  print(data.table::truelength(data))
+  if(sum(Total) + ncol(data) > 1028L) data.table::setalloccol(DT = data, n = sum(Total) + ncol(data), verbose = TRUE)
+
+  # N choose i for 2 <= i < N
+  for(i in seq_len(N)[-1L]) {
+
+    # Initialize lists and vector
+    NumVarsNames <- c()
+    NumVarOperations <- list()
+
+    # Case 2: N choose 2 up to N choose N-1: Middle-Hierarchy Interactions
+    if(i == N1) {
+      if(i < N) {
+        temp <- combinat::combn(NumericVars, m = i)
+        temp2 <- c()
+        for(k in seq_len(ncol(temp))) {
+          for(zz in seq_len(l)) templist[[zz]] <- temp[zz, k]
+          NumVarsNames <- c(NumVarsNames, temp2)
+        }
+
+        # Case 3: N choose N - Full Interaction
+      } else if(i == N1) {
+        temp <- combinat::combn(NumericVars, m = i)
+        for(m in seq_len(N)) {
+          if(m == 1) {
+            temp2 <- temp[m]
+          } else {
+            temp2 <- paste(temp2,temp[l,k], sep = "_")
+            templist <- list()
+            for(zz in seq_len(l)) templist[[zz]] <- temp[zz, k]
+            NumVarOperations[[temp2]] <- templist
+          }
+        }
+        NumVarsNames <- c(NumVarsNames, temp2)
+      }
+    } else {
+      if(i <= N1) {
+        temp <- combinat::combn(NumericVars, m = i)
+        temp2 <- c()
+        for(k in seq_len(ncol(temp))) {
+          for(l in seq_len(i)) {
+            if(l == 1L) {
+              temp2 <- temp[l,k]
+            } else {
+              temp2 <- paste(temp2,temp[l, k], sep = "_")
+              templist <- list()
+              for(zz in seq_len(l)) templist[[zz]] <- temp[zz, k]
+              NumVarOperations[[temp2]] <- templist
+            }
+          }
+          NumVarsNames <- c(NumVarsNames, temp2)
+        }
+
+        # Case 3: N choose N - Full Interaction
+      } else if(i == N1) {
+        temp <- combinat::combn(NumericVars, m = i)
+        for(m in seq_len(N)) {
+          if(m == 1) {
+            temp2 <- temp[m]
+          } else {
+            temp2 <- paste(temp2,temp[m], sep = "_")
+            templist <- list()
+            for(zz in seq_len(l)) templist[[zz]] <- temp[zz, k]
+            NumVarOperations[[temp2]] <- templist
+          }
+        }
+        NumVarsNames <- c(NumVarsNames, temp2)
+      }
+    }
+
+    # SkipCols ----
+    if(!is.null(SkipCols)) {
+      NumVarsNames <- NumVarsNames[!NumVarsNames %chin% SkipCols]
+    }
+
+    # Build features ----
+    data[, (NumVarsNames) := lapply(NumVarsNames, FUN = function(x) {
+      if(i > 2L) {
+        temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
+        for(ggg in 3L:i) {
+          temp <- temp * data[[NumVarOperations[[x]][[ggg]]]]
+        }
+      } else {
+        temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
+      }
+      temp
+    })]
+  }
+
+  # Return data ----
+  return(data)
+}
