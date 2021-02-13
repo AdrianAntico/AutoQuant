@@ -329,7 +329,8 @@ Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
 data <- RemixAutoML::AutoInteraction(
   data = data,
   NumericVars = Cols,
-  InteractionDepth = 4)
+  InteractionDepth = 4,
+  SkipCols = NULL)
 ```
 
 </p>
