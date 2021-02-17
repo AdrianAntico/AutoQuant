@@ -298,9 +298,15 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 </p>
 </details>
 
+<details><summary>Descriptions</summary>
+<p>
+ 
 <code>AutoLagRollStats()</code> builds lags and rolling statistics by grouping variables and their interactions along with multiple different time aggregations if selected. Rolling stats include mean, sd, skewness, kurtosis, and the 5th - 95th percentiles. This function was inspired by the distributed lag modeling framework but I wanted to use it for time series analysis as well and really generalize it as much as possible. The beauty of this function is inspired by analyzing whether a baseball player will get a basehit or more in his next at bat. One easy way to get a better idea of the likelihood is to look at his batting average and his career batting average. However, players go into hot streaks and slumps. How do we account for that? Well, in comes the functions here. You look at the batting average over the last N to N+x at bats, for various N and x. I keep going though - I want the same windows for calculating the players standard deviation, skewness, kurtosis, and various quantiles over those time windows. I also want to look at all those measure but by using weekly data - as in, over the last N weeks, pull in those stats too. 
 
 <code>AutoLagRollStatsScoring()</code> builds the above features for a partial set of records in a data set. The function is extremely useful as it can compute these feature vectors at a significantly faster rate than the non scoring version which comes in handy for scoring ML models. If you can find a way to make it faster, let me know.
+
+</p>
+</details>
 
 ##### **AutoInteraction()**
 
@@ -336,11 +342,23 @@ data <- RemixAutoML::AutoInteraction(
 </p>
 </details>
 
+<details><summary>Descriptions</summary>
+<p>
+
 <code>AutoInteraction()</code> will build out any number of interactions you want for numeric variables. You supply a character vector of numeric or integer column names, along with the names of any numeric columns you want to skip (including the interaction column names) and the interactions will be automatically created for you. For example, if you want a 4th degree interaction from 10 numeric columns, you will have 10 C 2, 10 C 3, and 10 C 4 columns created. Now, let's say you build all those features and decide you don't want all 10 features to be included. Remove the feature name from the NumericVars character vector. Now, let's say you modeled all of the interaction features and want to remove the ones will the lowest scores on the variable importance list. Grab the names and run the interaction function again except this time supply those poor performing interaction column names to the SkipCols argument and they will be ignored. Now, if you want to interact any categorical variable with a numeric variable, you'll have to dummify the categorical variable first and then include the level specific dummy variable column names to the NumericVars character vector argument.
 
+</p>
+</details>
 
 ##### **AutoWord2VecModeler()**
+
+<details><summary>Descriptions</summary>
+<p>
+ 
 <code>AutoWord2VecModeler()</code> generates a specified number of vectors (word2vec) for each column of text data in your data set that you specify and it will save the models if you specify for re-creating them later in a model scoring process. You can choose to build individual models for each column or one model for all your columns. If you need to run several models for groups of text variables you can run the function several times. 
+
+</p>
+</details>
 
 ##### **CreateCalendarVariables()**
 
@@ -386,8 +404,13 @@ print(runtime)
 </p>
 </details>
 
+<details><summary>Descriptions</summary>
+<p>
+ 
 <code>CreateCalendarVariables()</code> This functions creates numerical columns based on the date columns you supply such as second, minute, hour, week day, day of month, day of year, week, isoweek, wom, month, quarter, and year.
 
+</p>
+</details>
 
 ##### **CreateHolidayVariable()**
 
@@ -433,16 +456,36 @@ print(runtime)
 </p>
 </details>
 
+<details><summary>Descriptions</summary>
+<p>
+ 
 <code>CreateHolidayVariable()</code> 
 This function counts up the number of specified holidays between the current record time stamp and the previous record time stamp, by group as well if specified.
 
+</p>
+</details>
+
 ##### **AutoHierarchicalFourier()**
+
+<details><summary>Descriptions</summary>
+<p>
+ 
 <code>AutoHierarchicalFourier()</code> turns time series data into fourier series. This function can generate any number of fourier pairs the user wants (if they can actually build) and you can run it with grouped time series data. In the grouping case, fourier pairs can be created for each categorical variable along with the full interactions between specified categoricals. The process is parallelized as well to run as fast as possible.
 
+</p>
+</details>
+
 ##### **AutoTransformationCreate()** and **AutoTransformationScore()**
-<code>AutoTransformationCreate()</code> is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Log, LogPlus1, along with Asin and Logit for proportion data) and find the one that produces the best fit to a normal distribution. It then generates the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects or saving them to file.
+
+<details><summary>Descriptions</summary>
+<p>
+ 
+<code>AutoTransformationCreate()</code> is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Log, LogPlus1, Sqrt, along with Asin and Logit for proportion data) and find the one that produces the best fit to a normal distribution. It then generates the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects or saving them to file.
 
 <code>AutoTransformationScore()</code> is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling, which is done automatically for you if you specify.
+
+</p>
+</details>
 
 ##### **ModelDataPrep()**
 
@@ -484,6 +527,9 @@ str(data)
 </p>
 </details>
 
+<details><summary>Descriptions</summary>
+<p>
+
 <code>ModelDataPrep()</code> This function will loop through every column in your data and apply a variety of functions based on argument settings. For all columns not ignored, these tasks include:
 * Character type to Factor type converstion
 * Factor type to Character type conversion
@@ -492,6 +538,9 @@ str(data)
 * Date type to Character type conversion
 * Remove date columns
 * Ignore specified columns
+
+</p>
+</details>
 
 ##### **DummifyDT()** 
 
@@ -535,13 +584,26 @@ data <- RemixAutoML::DummifyDT(
 </p>
 </details>
 
+<details><summary>Descriptions</summary>
+<p>
+
 <code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables in your training, validation, and test sets. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels. This is useful in model training, validating, and scoring processes.
 
+</p>
+</details>
+
 ##### **DifferenceData()**
+
+<details><summary>Descriptions</summary>
+<p>
+ 
 <code>DifferenceData()</code> Create differences in your data (y1 - y0) for grouped or non-grouped data. 
 
 ##### **DifferenceDataReverse()**
 <code>DifferenceDataReverse()</code> Reverses the differences in your data for grouped or non-grouped data. 
+
+</p>
+</details>
 
 ##### **AutoDataPartition()**
 
@@ -579,7 +641,13 @@ TestData <- dataSets$TestData
 </p>
 </details>
 
+<details><summary>Descriptions</summary>
+<p>
+
 <code>AutoDataPartition()</code> is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify a stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
+
+</p>
+</details>
 
 </p>
 </details>
