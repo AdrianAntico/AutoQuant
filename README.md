@@ -176,7 +176,7 @@ Supply a data.table to run the functions below:
 
 ##### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 
-<details><summary>Code Example: AutoLagRollStats()</summary>
+<details><summary>Code Example</summary>
 <p>
 
 ```
@@ -234,7 +234,7 @@ data <- RemixAutoML::AutoLagRollStats(
 </p>
 </details>
 
-<details><summary>Code Example: AutoLagRollStatsScoring()</summary>
+<details><summary>Code Example</summary>
 <p>
 
 ```
@@ -310,7 +310,7 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 
 ##### **AutoInteraction()**
 
-<details><summary>Code Example: AutoInteraction()</summary>
+<details><summary>Code Example</summary>
 <p>
 
 ```
@@ -362,7 +362,7 @@ data <- RemixAutoML::AutoInteraction(
 
 ##### **CreateCalendarVariables()**
 
-<details><summary>Code Example: CreateCalendarVariables()</summary>
+<details><summary>Code Example</summary>
 <p>
 
 ```
@@ -414,7 +414,7 @@ print(runtime)
 
 ##### **CreateHolidayVariable()**
 
-<details><summary>Code Example: CreateHolidayVariable()</summary>
+<details><summary>Code Example</summary>
 <p>
  
 ```
@@ -489,7 +489,7 @@ This function counts up the number of specified holidays between the current rec
 
 ##### **ModelDataPrep()**
 
-<details><summary>Code Example: ModelDataPrep()</summary>
+<details><summary>Code Example</summary>
 <p>
  
 ```
@@ -544,7 +544,7 @@ str(data)
 
 ##### **DummifyDT()** 
 
-<details><summary>Code Example: DummifyDT()</summary>
+<details><summary>Code Example</summary>
 <p>
 
 ```
@@ -614,7 +614,7 @@ data <- RemixAutoML::DummifyDT(
 
 ##### **AutoDataPartition()**
 
-<details><summary>Code Example: AutoDataPartition()</summary>
+<details><summary>Code Example</summary>
 <p>
 
 ```
