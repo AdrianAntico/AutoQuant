@@ -599,7 +599,14 @@ data <- RemixAutoML::DummifyDT(
  
 <code>DifferenceData()</code> Create differences in your data (y1 - y0) for grouped or non-grouped data. 
 
+</p>
+</details>
+
 ##### **DifferenceDataReverse()**
+
+<details><summary>Descriptions</summary>
+<p>
+ 
 <code>DifferenceDataReverse()</code> Reverses the differences in your data for grouped or non-grouped data. 
 
 </p>
