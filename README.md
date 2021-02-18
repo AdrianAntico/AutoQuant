@@ -68,7 +68,7 @@ if(!("RColorBrewer" %in% rownames(installed.packages()))) install.packages("RCol
 if(!("recommenderlab" %in% rownames(installed.packages()))) install.packages("recommenderlab"); print("recommenderlab")
 if(!("ROCR" %in% rownames(installed.packages()))) install.packages("ROCR"); print("ROCR")
 if(!("pROC" %in% rownames(installed.packages()))) install.packages("pROC"); print("pROC")
-if(!("Rcpp" %in% rownames(installed.packages()))) install.packages("Rcpp"); print("Rcpp")
+if(!("Rfast" %in% rownames(installed.packages()))) install.packages("Rfast"); print("Rfast")
 if(!("scatterplot3d" %in% rownames(installed.packages()))) install.packages("scatterplot3d"); print("scatterplot3d")
 if(!("stringr" %in% rownames(installed.packages()))) install.packages("stringr"); print("stringr")
 if(!("sde" %in% rownames(installed.packages()))) install.packages("sde"); print("sde")
