@@ -8,6 +8,8 @@ AutoInteraction(
   data = NULL,
   NumericVars = NULL,
   InteractionDepth = NULL,
+  Center = TRUE,
+  Scale = TRUE,
   SkipCols = NULL
 )
 }
@@ -15,6 +17,10 @@ AutoInteraction(
 \item{data}{Source data.table}
 
 \item{InteractionDepth}{The max K in N choose K. If NULL, K will loop through 1 to length(NumVars)}
+
+\item{Center}{TRUE to center the data}
+
+\item{Scale}{TRUE to scale the data}
 
 \item{SkipCols}{Use this to exclude features from being created. An example could be, you build a model with all variables and then use the varaible importance list to determine which features aren't necessary and pass that set of features into this argument as a character vector.}
 
@@ -44,10 +50,13 @@ Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
                      which(unlist(lapply(data, is.integer))))]
 
 # Create features
-data <- AutoInteraction(
+data <- RemixAutoML::AutoInteraction(
   data = data,
   NumericVars = Cols,
-  InteractionDepth = 4)
+  InteractionDepth = 4,
+  Center = TRUE,
+  Scale = TRUE,
+  SkipCols = NULL)
 }
 
 }

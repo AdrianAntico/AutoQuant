@@ -326,6 +326,8 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
 #' @param data Source data.table
 #' @param NumVars Names of numeric columns (if NULL, all numeric and integer columns will be used)
 #' @param InteractionDepth The max K in N choose K. If NULL, K will loop through 1 to length(NumVars)
+#' @param Center TRUE to center the data
+#' @param Scale TRUE to scale the data
 #' @param SkipCols Use this to exclude features from being created. An example could be, you build a model with all variables and then use the varaible importance list to determine which features aren't necessary and pass that set of features into this argument as a character vector.
 #'
 #' @examples
@@ -349,16 +351,21 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
 #'                      which(unlist(lapply(data, is.integer))))]
 #'
 #' # Create features
-#' data <- AutoInteraction(
+#' data <- RemixAutoML::AutoInteraction(
 #'   data = data,
 #'   NumericVars = Cols,
-#'   InteractionDepth = 4)
+#'   InteractionDepth = 4,
+#'   Center = TRUE,
+#'   Scale = TRUE,
+#'   SkipCols = NULL)
 #' }
 #'
 #' @export
 AutoInteraction <- function(data = NULL,
                             NumericVars = NULL,
                             InteractionDepth = NULL,
+                            Center = TRUE,
+                            Scale = TRUE,
                             SkipCols = NULL) {
 
   # Columns Validity check ----
@@ -459,19 +466,28 @@ AutoInteraction <- function(data = NULL,
     }
 
     # SkipCols ----
-    if(!is.null(SkipCols)) {
-      NumVarsNames <- NumVarsNames[!NumVarsNames %chin% SkipCols]
-    }
+    if(!is.null(SkipCols)) NumVarsNames <- NumVarsNames[!NumVarsNames %chin% SkipCols]
 
     # Build features ----
     data[, (NumVarsNames) := lapply(NumVarsNames, FUN = function(x) {
       if(i > 2L) {
-        temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
-        for(ggg in 3L:i) {
-          temp <- temp * data[[NumVarOperations[[x]][[ggg]]]]
+        if(any(c(Center,Scale))) {
+          temp <- Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[1L]]]]), center = Center, scale = Scale) * Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[2L]]]]), center = Center, scale = Scale)
+          for(ggg in 3L:i) {
+            temp <- temp * Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[ggg]]]]), center = Center, scale = Scale)
+          }
+        } else {
+          temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
+          for(ggg in 3L:i) {
+            temp <- temp * data[[NumVarOperations[[x]][[ggg]]]]
+          }
         }
       } else {
-        temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
+        if(any(c(Center,Scale))) {
+          temp <- Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[1L]]]]), center = Center, scale = Scale) * Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[2L]]]]), center = Center, scale = Scale)
+        } else {
+          temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
+        }
       }
       temp
     })]

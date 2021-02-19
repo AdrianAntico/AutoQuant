@@ -315,7 +315,7 @@ TimeSeriesPlotter <- function(data = data,
 
   # Melt if multiple targets----
   if("ModelID" %chin% names(data)) data <- data[ModelID == eval(TS_ModelID)]
-  if(length(TargetVariable) > 1 & !EvaluationMode) {
+  if(length(TargetVariable) > 1 && !EvaluationMode) {
     if(!is.null(GroupVariables)) {
       data <- TimeSeriesMelt(data = data, TargetVariable = TargetVariable, DateVariable = DateVariable, GroupVariables = c(GroupVariables))
       TargetVariable <- "TargetSeries"
@@ -335,7 +335,11 @@ TimeSeriesPlotter <- function(data = data,
 
   # Subset columns for plotting----
   if(!is.null(GroupVariables)) {
-    PlotData <- PlotData[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
+    if("Forecast" %chin% names(PlotData)) {
+      PlotData <- PlotData[, .SD, .SDcols = c("Forecast", eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
+    } else {
+      PlotData <- PlotData[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
+    }
   } else {
     PlotData <- PlotData[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
   }
@@ -393,10 +397,10 @@ TimeSeriesPlotter <- function(data = data,
   if(!is.null(GroupVariables)) {
 
     # If more than 1 grouping variable----
-    if(length(GroupVariables) > 1) {
+    if(length(GroupVariables) > 1L) {
 
       # Combine Group Variables----
-      for (i in seq_len(length(GroupVariables))) PlotData[, eval(GroupVariables[i]) := paste0(eval(GroupVariables[i]),"_", get(GroupVariables[i]))]
+      for(i in seq_len(length(GroupVariables))) PlotData[, eval(GroupVariables[i]) := paste0(eval(GroupVariables[i]),"_", get(GroupVariables[i]))]
       PlotData[, GroupVars := do.call(paste, c(.SD, sep = "_")), .SDcols = c(eval(GroupVariables))]
       PlotData[, paste0(eval(GroupVariables)) := NULL]
 
@@ -417,9 +421,9 @@ TimeSeriesPlotter <- function(data = data,
         data.table::setnames(tempData, "V1", eval(TargetVariable))
       }
 
-      # Care to see all other groups as a single group level----
+      # Care to see all other groups as a single group level ----
       if(DisplayOtherGroup) {
-        tempData2 <- PlotData[!(GroupVars %chin% LevelsToDisplay)]
+        tempData2 <- tempData[!(GroupVars %chin% LevelsToDisplay)]
         tempData2[, GroupVars := eval(OtherGroupLabel)]
         if(tolower(Aggregate) == "sum") {
           tempData2 <- tempData2[, sum(get(TargetVariable), na.rm = TRUE), by = c("GroupVars", eval(DateVariable))]
