@@ -102,3 +102,34 @@ DeleteFile <- function(File = NULL) {
     shell(paste0("del ", File))
   }
 }
+
+#' @title Logger
+#'
+#' @description Logging errors and warnings from repeated calls to a function
+#'
+#' @author Adrian Antico
+#'
+#' @family Misc
+#'
+#' @param x Function to call repeatedly
+#'
+#' @examples
+#' \dontrun{
+#' Output <- lapply(1:10, FUN = Logger(PrintToPDF))
+#' }
+#'
+#' @export
+Logger <- function(x) {
+  function(...) {
+    warn <- err <- NULL
+    res <- withCallingHandlers(
+      tryCatch(x(...), error = function(e) {
+        err <<- conditionMessage(e)
+        NULL
+      }), warning = function(w) {
+        warn <<- append(warn, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      })
+    list(res, warn = warn, err = err)
+  }
+}

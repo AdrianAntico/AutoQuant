@@ -15,6 +15,7 @@ DeleteFile will prompt you for a file to delete and then permanently delete a fi
 \seealso{
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
+\code{\link{Logger}()},
 \code{\link{PrintToPDF}()},
 \code{\link{tokenizeH2O}()}
 }

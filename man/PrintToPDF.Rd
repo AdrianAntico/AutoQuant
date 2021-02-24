@@ -48,6 +48,7 @@ PrintToPDF
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
 \code{\link{DeleteFile}()},
+\code{\link{Logger}()},
 \code{\link{tokenizeH2O}()}
 }
 \author{
