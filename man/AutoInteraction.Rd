@@ -2,21 +2,23 @@
 % Please edit documentation in R/DataWranglingFunctions.R
 \name{AutoInteraction}
 \alias{AutoInteraction}
-\title{AutoNumericInteraction}
+\title{AutoInteraction}
 \usage{
 AutoInteraction(
   data = NULL,
   NumericVars = NULL,
-  InteractionDepth = NULL,
+  InteractionDepth = 2,
   Center = TRUE,
   Scale = TRUE,
-  SkipCols = NULL
+  SkipCols = NULL,
+  Scoring = FALSE,
+  File = NULL
 )
 }
 \arguments{
 \item{data}{Source data.table}
 
-\item{InteractionDepth}{The max K in N choose K. If NULL, K will loop through 1 to length(NumVars)}
+\item{InteractionDepth}{The max K in N choose K. If NULL, K will loop through 1 to length(NumVars). Default is 2 for pairwise interactions}
 
 \item{Center}{TRUE to center the data}
 
@@ -24,13 +26,62 @@ AutoInteraction(
 
 \item{SkipCols}{Use this to exclude features from being created. An example could be, you build a model with all variables and then use the varaible importance list to determine which features aren't necessary and pass that set of features into this argument as a character vector.}
 
+\item{Scoring}{Defaults to FALSE. Set to TRUE for generating these columns in a model scoring setting}
+
+\item{File}{When Scoring is set to TRUE you have to supply either the .Rdata list with lookup values for recreating features or a pathfile to the .Rdata file with the lookup values. If you didn't center or scale the data then this argument can be ignored.}
+
 \item{NumVars}{Names of numeric columns (if NULL, all numeric and integer columns will be used)}
 }
 \description{
-AutoNumericInteraction creates interaction variables from your numerical features in your data. Supply a set of column names to utilize and set the interaction level. Supply a character vector of columns to exclude and the function will ignore those features.
+AutoInteraction creates interaction variables from your numerical features in your data. Supply a set of column names to utilize and set the interaction level. Supply a character vector of columns to exclude and the function will ignore those features.
 }
 \examples{
 \dontrun{
+
+#########################################
+# Feature Engineering for Model Training
+#########################################
+
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 50000,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  ZIP = 0L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Print number of columns
+print(ncol(data))
+
+# Store names of numeric and integer cols
+Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
+                     which(unlist(lapply(data, is.integer))))]
+
+# Model Training Feature Engineering
+system.time(data <- RemixAutoML::AutoInteraction(
+  data = data,
+  NumericVars = Cols,
+  InteractionDepth = 4,
+  Center = TRUE,
+  Scale = TRUE,
+  SkipCols = NULL,
+  Scoring = FALSE,
+  File = getwd()))
+
+# user  system elapsed
+# 3.29    0.81    4.13
+
+# Print number of columns
+print(ncol(data))
+
+########################################
+# Feature Engineering for Model Scoring
+########################################
 
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
@@ -45,20 +96,31 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = FALSE,
   MultiClass = FALSE)
 
-# Store names of numeric and integer cols
-Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
-                     which(unlist(lapply(data, is.integer))))]
+# Print number of columns
+print(ncol(data))
 
-# Create features
-data <- RemixAutoML::AutoInteraction(
+# Reduce to single row to mock a scoring scenario
+data <- data[1L]
+
+# Model Scoring Feature Engineering
+system.time(data <- RemixAutoML::AutoInteraction(
   data = data,
-  NumericVars = Cols,
+  NumericVars = names(data)[
+    c(which(unlist(lapply(data, is.numeric))),
+      which(unlist(lapply(data, is.integer))))],
   InteractionDepth = 4,
   Center = TRUE,
   Scale = TRUE,
-  SkipCols = NULL)
-}
+  SkipCols = NULL,
+  Scoring = TRUE,
+  File = file.path(getwd(), "Standardize.Rdata")))
 
+# user  system elapsed
+# 0.19    0.00    0.19
+
+# Print number of columns
+print(ncol(data))
+}
 }
 \seealso{
 Other Feature Engineering: 

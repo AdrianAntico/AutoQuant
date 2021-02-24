@@ -315,9 +315,9 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
   if(BottomsUp) return(rev(Categoricals)) else return(Categoricals)
 }
 
-#' @title AutoNumericInteraction
+#' @title AutoInteraction
 #'
-#' @description AutoNumericInteraction creates interaction variables from your numerical features in your data. Supply a set of column names to utilize and set the interaction level. Supply a character vector of columns to exclude and the function will ignore those features.
+#' @description AutoInteraction creates interaction variables from your numerical features in your data. Supply a set of column names to utilize and set the interaction level. Supply a character vector of columns to exclude and the function will ignore those features.
 #'
 #' @family Feature Engineering
 #'
@@ -325,13 +325,60 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
 #'
 #' @param data Source data.table
 #' @param NumVars Names of numeric columns (if NULL, all numeric and integer columns will be used)
-#' @param InteractionDepth The max K in N choose K. If NULL, K will loop through 1 to length(NumVars)
+#' @param InteractionDepth The max K in N choose K. If NULL, K will loop through 1 to length(NumVars). Default is 2 for pairwise interactions
 #' @param Center TRUE to center the data
 #' @param Scale TRUE to scale the data
 #' @param SkipCols Use this to exclude features from being created. An example could be, you build a model with all variables and then use the varaible importance list to determine which features aren't necessary and pass that set of features into this argument as a character vector.
+#' @param Scoring Defaults to FALSE. Set to TRUE for generating these columns in a model scoring setting
+#' @param File When Scoring is set to TRUE you have to supply either the .Rdata list with lookup values for recreating features or a pathfile to the .Rdata file with the lookup values. If you didn't center or scale the data then this argument can be ignored.
 #'
 #' @examples
 #' \dontrun{
+#'
+#' #########################################
+#' # Feature Engineering for Model Training
+#' #########################################
+#'
+#' # Create fake data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 50000,
+#'   ID = 2L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   ZIP = 0L,
+#'   TimeSeries = FALSE,
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Print number of columns
+#' print(ncol(data))
+#'
+#' # Store names of numeric and integer cols
+#' Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
+#'                      which(unlist(lapply(data, is.integer))))]
+#'
+#' # Model Training Feature Engineering
+#' system.time(data <- RemixAutoML::AutoInteraction(
+#'   data = data,
+#'   NumericVars = Cols,
+#'   InteractionDepth = 4,
+#'   Center = TRUE,
+#'   Scale = TRUE,
+#'   SkipCols = NULL,
+#'   Scoring = FALSE,
+#'   File = getwd()))
+#'
+#' # user  system elapsed
+#' # 3.29    0.81    4.13
+#'
+#' # Print number of columns
+#' print(ncol(data))
+#'
+#' ########################################
+#' # Feature Engineering for Model Scoring
+#' ########################################
 #'
 #' # Create fake data
 #' data <- RemixAutoML::FakeDataGenerator(
@@ -346,27 +393,56 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
 #'   Classification = FALSE,
 #'   MultiClass = FALSE)
 #'
-#' # Store names of numeric and integer cols
-#' Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
-#'                      which(unlist(lapply(data, is.integer))))]
+#' # Print number of columns
+#' print(ncol(data))
 #'
-#' # Create features
-#' data <- RemixAutoML::AutoInteraction(
+#' # Reduce to single row to mock a scoring scenario
+#' data <- data[1L]
+#'
+#' # Model Scoring Feature Engineering
+#' system.time(data <- RemixAutoML::AutoInteraction(
 #'   data = data,
-#'   NumericVars = Cols,
+#'   NumericVars = names(data)[
+#'     c(which(unlist(lapply(data, is.numeric))),
+#'       which(unlist(lapply(data, is.integer))))],
 #'   InteractionDepth = 4,
 #'   Center = TRUE,
 #'   Scale = TRUE,
-#'   SkipCols = NULL)
-#' }
+#'   SkipCols = NULL,
+#'   Scoring = TRUE,
+#'   File = file.path(getwd(), "Standardize.Rdata")))
 #'
+#' # user  system elapsed
+#' # 0.19    0.00    0.19
+#'
+#' # Print number of columns
+#' print(ncol(data))
+#' }
 #' @export
 AutoInteraction <- function(data = NULL,
                             NumericVars = NULL,
-                            InteractionDepth = NULL,
+                            InteractionDepth = 2,
                             Center = TRUE,
                             Scale = TRUE,
-                            SkipCols = NULL) {
+                            SkipCols = NULL,
+                            Scoring = FALSE,
+                            File = NULL) {
+
+  # Check data ----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
+  # Check args ----
+  if(!is.logical(Center)) stop("Center must be either TRUE or FALSE")
+  if(!is.logical(Scale)) stop("Scale must be either TRUE or FALSE")
+  if(!is.logical(Scoring)) stop("Scoring must be either TRUE or FALSE")
+  if(!is.null(NumericVars) && !is.character(NumericVars)) stop("NumericVars must be a character vector or NULL")
+  if(!is.null(SkipCols) && !is.character(SkipCols)) stop("SkipCols must be a character vector")
+  if(!is.null(InteractionDepth) && (!is.numeric(InteractionDepth) || !is.integer(InteractionDepth))) stop("InteractionDepth must be numeric or NULL")
+
+  # Check File ----
+  if(Scoring && (Center || Scale) && is.null(File)) stop("You need to supply the path for the File argument")
+  if(Scoring && !is.null(File)) if(!dir.exists(File) && !file.exists(File) && !is.list(File)) stop("File is not valid")
+  if(!Scoring && !is.null(File)) if(!dir.exists(File)) stop("File is not valid path")
 
   # Columns Validity check ----
   if(is.null(NumericVars)) {
@@ -395,8 +471,11 @@ AutoInteraction <- function(data = NULL,
   N <- InteractionDepth
   Total <- c()
   for(com in seq_len(InteractionDepth)[-1L]) Total <- c(Total, ncol(combinat::combn(NumericVars, m = com)))
-  print(data.table::truelength(data))
   if(sum(Total) + ncol(data) > 1028L) data.table::setalloccol(DT = data, n = sum(Total) + ncol(data), verbose = TRUE)
+
+  # Standardize collection list ----
+  if(Scoring && (Center || Scale) && !is.list(File)) load(file = file.path(File), envir = .GlobalEnv)
+  if(!exists("Standardize") && Center && Scale) Standardize <<- list()
 
   # N choose i for 2 <= i < N
   for(i in seq_len(N)[-1L]) {
@@ -419,7 +498,7 @@ AutoInteraction <- function(data = NULL,
       } else if(i == N1) {
         temp <- combinat::combn(NumericVars, m = i)
         for(m in seq_len(N)) {
-          if(m == 1) {
+          if(m == 1L) {
             temp2 <- temp[m]
           } else {
             temp2 <- paste(temp2,temp[l,k], sep = "_")
@@ -452,7 +531,7 @@ AutoInteraction <- function(data = NULL,
       } else if(i == N1) {
         temp <- combinat::combn(NumericVars, m = i)
         for(m in seq_len(N)) {
-          if(m == 1) {
+          if(m == 1L) {
             temp2 <- temp[m]
           } else {
             temp2 <- paste(temp2,temp[m], sep = "_")
@@ -471,27 +550,95 @@ AutoInteraction <- function(data = NULL,
     # Build features ----
     data[, (NumVarsNames) := lapply(NumVarsNames, FUN = function(x) {
       if(i > 2L) {
-        if(any(c(Center,Scale))) {
-          temp <- Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[1L]]]]), center = Center, scale = Scale) * Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[2L]]]]), center = Center, scale = Scale)
+        if(Center && Scale) {
+
+          # Create matrices
+          a1 <- as.matrix(data[[NumVarOperations[[x]][[1L]]]])
+          a2 <- as.matrix(data[[NumVarOperations[[x]][[2L]]]])
+
+          # Update matricies
+          c1 <- t(a1) - Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]]
+          c2 <- t(a2) - Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]]
+
+          # Compute interaction
+          temp <- t(c1/Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]]) * t(c2/Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])
           for(ggg in 3L:i) {
-            temp <- temp * Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[ggg]]]]), center = Center, scale = Scale)
+            a1 <- as.matrix(data[[NumVarOperations[[x]][[ggg]]]])
+            c1 <- t(a1) - Standardize[[NumVarOperations[[x]][[ggg]]]][["Mean"]]
+            temp <- temp * t(c1/Standardize[[NumVarOperations[[x]][[ggg]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[ggg]]]][["Factor"]])
           }
+
+        } else if(Center && !Scale) {
+
+          # Compute interaction
+          temp <- t(t(as.matrix(data[[NumVarOperations[[x]][[1L]]]])) - Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]]) * t(t(as.matrix(data[[NumVarOperations[[x]][[2L]]]])) - Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]])
+          for(ggg in 3L:i) {
+            temp <- temp * t(t(as.matrix(data[[NumVarOperations[[x]][[ggg]]]])) - Standardize[[NumVarOperations[[x]][[ggg]]]][["Mean"]])
+          }
+
+        } else if(!Center && Scale) {
+
+          # Compute interaction
+          temp <- t(as.matrix(data[[NumVarOperations[[x]][[1L]]]])/Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]]) * t(as.matrix(data[[NumVarOperations[[x]][[2L]]]])/Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])
+          for(ggg in 3L:i) {
+            temp <- temp * t(as.matrix(data[[NumVarOperations[[x]][[ggg]]]])/Standardize[[NumVarOperations[[x]][[ggg]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[ggg]]]][["Factor"]])
+          }
+
         } else {
+
+          # Compute interaction
           temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
           for(ggg in 3L:i) {
             temp <- temp * data[[NumVarOperations[[x]][[ggg]]]]
           }
         }
       } else {
-        if(any(c(Center,Scale))) {
-          temp <- Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[1L]]]]), center = Center, scale = Scale) * Rfast::standardise(as.matrix(data[[NumVarOperations[[x]][[2L]]]]), center = Center, scale = Scale)
+        if(Center && Scale) {
+
+          # Create matrices
+          a1 <- as.matrix(data[[NumVarOperations[[x]][[1L]]]])
+          a2 <- as.matrix(data[[NumVarOperations[[x]][[2L]]]])
+
+          # Means
+          if(Scoring) b1 <- Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]] else b1 <- Rfast::colmeans(a1)
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]])) Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]] <<- b1
+          if(Scoring) b2 <- Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]] else b2 <- Rfast::colmeans(a2)
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]] <<- b2
+
+          # Update matricies
+          c1 <- t(a1) - b1
+          c2 <- t(a2) - b2
+
+          # Denom
+          if(Scoring) d1 <- Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] else d1 <- sqrt(Rfast::rowsums(c1^2))
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]])) Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] <<- d1
+          if(Scoring) d2 <- Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] else d2 <- sqrt(Rfast::rowsums(c2^2))
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] <<- d2
+
+          # Factor
+          if(Scoring) e1 <- Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]] else e1 <- sqrt((dim(a1)[1L] - 1))
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]])) Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]] <<- e1
+          if(Scoring) e2 <- Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]] else e2 <- sqrt((dim(a2)[1L] - 1))
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]] <<- e2
+
+          # Compute interaction
+          temp <- t(c1/d1 * e1) * t(c2/d2 * e2)
+
         } else {
           temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
         }
       }
+
+      # Add columns ----
       temp
     })]
+
+    # Save Standardize if Center or Scale ----
+    if(!Scoring && i == 2L && (Center || Scale)) save(Standardize, file = file.path(File, "Standardize.Rdata"))
   }
+
+  # Save csv ----
+  if(exists("Standardize", envir = .GlobalEnv)) rm(Standardize, envir = .GlobalEnv)
 
   # Return data ----
   return(data)

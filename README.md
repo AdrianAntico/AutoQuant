@@ -1,4 +1,4 @@
-![Version: 0.3.6](https://img.shields.io/static/v1?label=Version&message=0.3.6&color=blue&?style=plastic)
+![Version: 0.3.7](https://img.shields.io/static/v1?label=Version&message=0.3.7&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -314,10 +314,14 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 <p>
 
 ```
+#########################################
+# Feature Engineering for Model Training
+#########################################
+
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.70,
-  N = 1000,
+  N = 50000,
   ID = 2L,
   FactorCount = 2L,
   AddDate = TRUE,
@@ -327,18 +331,74 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = FALSE,
   MultiClass = FALSE)
 
+# Print number of columns
+print(ncol(data))
+
 # Store names of numeric and integer cols
 Cols <-names(data)[c(which(unlist(lapply(data, is.numeric))),
                      which(unlist(lapply(data, is.integer))))]
 
-# Create features
-data <- RemixAutoML::AutoInteraction(
+# Model Training Feature Engineering
+system.time(data <- RemixAutoML::AutoInteraction(
   data = data,
   NumericVars = Cols,
   InteractionDepth = 4,
   Center = TRUE,
   Scale = TRUE,
-  SkipCols = NULL)
+  SkipCols = NULL,
+  Scoring = FALSE,
+  File = getwd()))
+
+# user  system elapsed
+# 3.29    0.81    4.13
+
+# Print number of columns
+print(ncol(data))
+# 16
+
+########################################
+# Feature Engineering for Model Scoring
+########################################
+
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 50000,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  ZIP = 0L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Print number of columns
+print(ncol(data))
+# 16
+
+# Reduce to single row to mock a scoring scenario
+data <- data[1L]
+
+# Model Scoring Feature Engineering
+system.time(data <- RemixAutoML::AutoInteraction(
+  data = data,
+  NumericVars = names(data)[
+    c(which(unlist(lapply(data, is.numeric))),
+      which(unlist(lapply(data, is.integer))))],
+  InteractionDepth = 4,
+  Center = TRUE,
+  Scale = TRUE,
+  SkipCols = NULL,
+  Scoring = TRUE,
+  File = file.path(getwd(), "Standardize.Rdata")))
+
+# user  system elapsed
+# 0.19    0.00    0.19
+
+# Print number of columns
+print(ncol(data))
+# 1095
 ```
 
 </p>
