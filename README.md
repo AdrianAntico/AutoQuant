@@ -422,7 +422,7 @@ print(ncol(data))
 </p>
 </details>
 
-##### **CreateCalendarVariables()**
+#### **CreateCalendarVariables()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -474,7 +474,7 @@ print(runtime)
 </p>
 </details>
 
-##### **CreateHolidayVariable()**
+#### **CreateHolidayVariable()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -527,7 +527,7 @@ This function counts up the number of specified holidays between the current rec
 </p>
 </details>
 
-##### **AutoHierarchicalFourier()**
+#### **AutoHierarchicalFourier()**
 
 <details><summary>Function Description</summary>
 <p>
@@ -537,7 +537,7 @@ This function counts up the number of specified holidays between the current rec
 </p>
 </details>
 
-##### **AutoTransformationCreate()** and **AutoTransformationScore()**
+#### **AutoTransformationCreate()** and **AutoTransformationScore()**
 
 <details><summary>Descriptions</summary>
 <p>
@@ -549,7 +549,7 @@ This function counts up the number of specified holidays between the current rec
 </p>
 </details>
 
-##### **ModelDataPrep()**
+#### **ModelDataPrep()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -604,7 +604,7 @@ str(data)
 </p>
 </details>
 
-##### **DummifyDT()** 
+#### **DummifyDT()** 
 
 <details><summary>Code Example</summary>
 <p>
@@ -654,7 +654,7 @@ data <- RemixAutoML::DummifyDT(
 </p>
 </details>
 
-##### **DifferenceData()**
+#### **DifferenceData()**
 
 <details><summary>Function Description</summary>
 <p>
@@ -664,7 +664,7 @@ data <- RemixAutoML::DummifyDT(
 </p>
 </details>
 
-##### **DifferenceDataReverse()**
+#### **DifferenceDataReverse()**
 
 <details><summary>Function Description</summary>
 <p>
@@ -674,7 +674,7 @@ data <- RemixAutoML::DummifyDT(
 </p>
 </details>
 
-##### **AutoDataPartition()**
+#### **AutoDataPartition()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -730,7 +730,7 @@ ________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
   
-##### **AutoCatBoostRegression()** GPU Capable
+#### **AutoCatBoostRegression()** GPU Capable
 <code>AutoCatBoostRegression()</code> utilizes the CatBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -835,7 +835,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 </p>
 </details> 
 
-##### **AutoXGBoostRegression()** GPU Capable
+#### **AutoXGBoostRegression()** GPU Capable
 <code>AutoXGBoostRegression()</code> utilizes the XGBoost algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -908,7 +908,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 </p>
 </details> 
 
-##### **AutoH2oGBMRegression()**
+#### **AutoH2oGBMRegression()**
 <code>AutoH2oGBMRegression()</code> utilizes the H2O Gradient Boosting algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -987,7 +987,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
 </p>
 </details> 
 
-##### **AutoH2oDRFRegression()**
+#### **AutoH2oDRFRegression()**
 <code>AutoH2oDRFRegression()</code> utilizes the H2o Distributed Random Forest algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1062,7 +1062,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
 </p>
 </details> 
 
-##### **AutoH2oGLMRegression()**
+#### **AutoH2oGLMRegression()**
 <code>AutoH2oGLMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1140,7 +1140,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
 </p>
 </details> 
 
-##### **AutoH2oMLRegression()**
+#### **AutoH2oMLRegression()**
 <code>AutoH2oMLRegression()</code> utilizes the H2o AutoML algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1213,7 +1213,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
 </p>
 </details> 
  
-##### **AutoH2oGAMRegression()**
+#### **AutoH2oGAMRegression()**
 <code>AutoH2oGLMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1327,7 +1327,7 @@ ________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
   
-##### **AutoCatBoostClassifier()** GPU Capable
+#### **AutoCatBoostClassifier()** GPU Capable
 <code>AutoCatBoostClassifier()</code> utilizes the CatBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -1422,7 +1422,7 @@ TestModel$ColNames
 </p>
 </details>
 
-##### **AutoXGBoostClassifier()** GPU Capable
+#### **AutoXGBoostClassifier()** GPU Capable
 <code>AutoXGBoostClassifier()</code> utilizes the XGBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -1491,7 +1491,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 </p>
 </details> 
 
-##### **AutoH2oGBMClassifier()**
+#### **AutoH2oGBMClassifier()**
 <code>AutoH2oGBMClassifier()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -1567,7 +1567,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 </p>
 </details> 
 
-##### **AutoH2oDRFClassifier()**
+#### **AutoH2oDRFClassifier()**
 <code>AutoH2oDRFClassifier()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -1639,7 +1639,7 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 </p>
 </details> 
 
-##### **AutoH2oGLMClassifier()**
+#### **AutoH2oGLMClassifier()**
 <code>AutoH2oGLMClassifier()</code> utilizes the H2O generalized linear model algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -1716,7 +1716,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
 </p>
 </details> 
 
-##### **AutoH2oMLClassifier()**
+#### **AutoH2oMLClassifier()**
 <code>AutoH2oMLClassifier()</code> utilizes the H2o AutoML algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1753,7 +1753,7 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
 </p>
 </details> 
 
-##### **AutoH2oGAMClassifier()**
+#### **AutoH2oGAMClassifier()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -1859,7 +1859,7 @@ ________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
   
-##### **AutoCatBoostMultiClass()** GPU Capable
+#### **AutoCatBoostMultiClass()** GPU Capable
 <code>AutoCatBoostMultiClass()</code> utilizes the CatBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -1951,7 +1951,7 @@ TestModel$TargetLevels
 </p>
 </details>
 
-##### **AutoXGBoostMultiClass()** GPU Capable
+#### **AutoXGBoostMultiClass()** GPU Capable
 <code>AutoXGBoostMultiClass()</code> utilizes the XGBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2020,7 +2020,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 </p>
 </details>
 
-##### **AutoH2oGBMMultiClass()**
+#### **AutoH2oGBMMultiClass()**
 <code>AutoH2oGBMMultiClass()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2085,7 +2085,7 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
 </p>
 </details>
 
-##### **AutoH2oDRFMultiClass()**
+#### **AutoH2oDRFMultiClass()**
 <code>AutoH2oDRFMultiClass()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2148,7 +2148,7 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
 </p>
 </details>
 
-##### **AutoH2oGLMMultiClass()**
+#### **AutoH2oGLMMultiClass()**
 <code>AutoH2oGLMMultiClass()</code> utilizes the H2O generalized linear model algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2224,7 +2224,7 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 </p>
 </details>
 
-##### **AutoH2oMLMultiClass()**
+#### **AutoH2oMLMultiClass()**
 <code>AutoH2oMLMultiClass()</code> utilizes the H2o AutoML algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2261,7 +2261,7 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
 </p>
 </details>
 
-##### **AutoH2oGAMMultiClass()**
+#### **AutoH2oGAMMultiClass()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -2365,16 +2365,16 @@ First step is to build either a binary classification model (in the case of a si
 * E(y|x<sub>i</sub>) = Pr(X = 0) * 0 + Pr(X < x<sub>2</sub>) * E(X | X < x<sub>2</sub>) + ... + Pr(X < x<sub>n</sub>) * E(X | X < x<sub>n</sub>) + Pr(X >= x<sub>n</sub>) * E(X | X >= x<sub>n</sub>)
 * E(y|x<sub>i</sub>) = Pr(X < x<sub>1</sub>) * E(X | X < x<sub>1</sub>) + Pr(x<sub>1</sub> <= X < x<sub>2</sub>) * E(X | x<sub>1</sub> <= X < x<sub>2</sub>) + ... + Pr(x<sub>n-1</sub> <= X < x<sub>n</sub>) * E(X | x<sub>n-1</sub> <= X < x<sub>n</sub>) + Pr(X >= x<sub>n</sub>) * E(X | X >= x<sub>n</sub>)
   
-##### **AutoCatBoostHurdleModel()**
+#### **AutoCatBoostHurdleModel()**
 <code>AutoCatBoostHurdleModel()</code> utilizes the CatBoost algorithm on the backend. 
 
-##### **AutoXGBoostHurdleModel()**
+#### **AutoXGBoostHurdleModel()**
 <code>AutoXGBoostHurdleModel()</code> utilizes the XGBoost algorithm on the backend. 
 
-##### **AutoH2oDRFHurdleModel()**
+#### **AutoH2oDRFHurdleModel()**
 <code>AutoH2oDRFHurdleModel()</code> utilizes the H2O distributed random forest algorithm on the backend. 
 
-##### **AutoH2oGBMHurdleModel()**
+#### **AutoH2oGBMHurdleModel()**
 <code>AutoH2oGBMHurdleModel()</code> utilizes the H2O gradient boosting machine algorithm on the backend. 
 
 </p>
@@ -2385,7 +2385,7 @@ ________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
   
-##### **AutoH2OModeler()**
+#### **AutoH2OModeler()**
 <code>AutoH2OModeler()</code> automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for monotonic transformations nor one-hot-encoding.
 * Models include:
   * RandomForest (DRF)
@@ -2402,7 +2402,7 @@ ________________________________________________________________________________
 <details><summary>click to expand</summary>
 <p>
   
-##### **AutoNLS()**
+#### **AutoNLS()**
 
 <img src="Images/AutoNLS_Image.png" align="center" width="400" />
 
@@ -2553,19 +2553,19 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 </details>
 
 
-##### **AutoCatBoostScoring()**
+#### **AutoCatBoostScoring()**
 <code>AutoCatBoostScoring()</code> is an automated scoring function that compliments the AutoCatBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
 
-##### **AutoXGBoostScoring()**
+#### **AutoXGBoostScoring()**
 <code>AutoXGBoostScoring()</code> is an automated scoring function that compliments the AutoXGBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() functions to prepare your features for xgboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
 
-##### **AutoH2OMLScoring()**
+#### **AutoH2OMLScoring()**
 <code>AutoH2OMLScoring()</code> is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring. It will also handle transformations and back-transformations if you utilized that feature in the regression training case and didn't do it yourself before hand.
 
-##### **AutoHurdleScoring()**
+#### **AutoHurdleScoring()**
 <code>AutoHurdleScoring()</code> will score the AutoCatBoostHurdleModel() function currently. Functionality for XGBoost hurdle models will be next, followed by the H2O version.
 
-##### **AutoH2OScoring()**
+#### **AutoH2OScoring()**
 <code>AutoH2OScoring()</code> is for scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord2VecModeler functions. Scores mojo models or binary files by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well for classification and multinomial models. 
   
 </p>
@@ -2575,25 +2575,25 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <details><summary>Expand to view content</summary>
 <p>
   
-##### **RemixClassificationMetrics()**
+#### **RemixClassificationMetrics()**
 <code>RemixClassificationMetrics()</code> will return all confusion matrix metrics across all possible thresholds (seq(0.01,0.99,0.01) for any Remix Auto_Classification() model. Cost sensitive thresholds are also returned.
 
-##### **ParDepCalPlots()**
+#### **ParDepCalPlots()**
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
 <img src="Images/AutoCatBoostRegressionParDepMultiPlot.png" align="center" width="400" />
 
 ![ParDepCalPlots Blog](https://www.remixinstitute.com/blog/companies-are-demanding-model-interpretability-heres-how-to-do-it-right/#.XUIN1HtlCDM)
 
-##### **EvalPlot()**
+#### **EvalPlot()**
 <code>EvalPlot()</code> Has two plot versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
 
 <img src="Images/AutoCatBoostRegressionEvaluationMultiPlot.png" align="center" width="400" />
 
-##### **threshOptim()**
+#### **threshOptim()**
 <code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
-##### **RedYellowGreen()**
+#### **RedYellowGreen()**
 <code>RedYellowGreen()</code> computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
 
 <img src="Images/RedYellowGreenPic.png" align="center" width="400" />
@@ -3364,7 +3364,7 @@ For each of the models tested internally, several aspects should be noted:
 
 ### Intermittent Demand Forecasting Functions
 
-##### **TimeSeriesFill()**
+#### **TimeSeriesFill()**
 <code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are four ways to use this function:
 Choose from:
   * maxmax - Fill from the absolute min date to the absolute max date (single series and panel data)
@@ -3372,19 +3372,19 @@ Choose from:
   * maxmin - Fill from the absolute min date to the min of the max dates (panel data)
   * minmin - Fill from the max date of the min dates to the min date of the max dates (panel data)
 
-##### **ContinuousTimeDataGenerator()**
+#### **ContinuousTimeDataGenerator()**
 <code>ContinuousTimeDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
 
-##### **AutoCatBoostSizeFreqDist()**
+#### **AutoCatBoostSizeFreqDist()**
 <code>AutoCatBoostSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
 
-##### **AutoH2oGBMSizeFreqDist()**
+#### **AutoH2oGBMSizeFreqDist()**
 <code>AutoH2oGBMSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
 
-##### **AutoCatBoostFreqSizeScoring()**
+#### **AutoCatBoostFreqSizeScoring()**
 <code>AutoCatBoostFreqSizeScoring()</code> is for scoring the models build with <code>AutoCatBoostSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
 
-##### **AutoH2oGBMFreqSizeScoring()**
+#### **AutoH2oGBMFreqSizeScoring()**
 <code>AutoH2oGBMFreqSizeScoring()</code> is for scoring the models build with <code>AutoH2oGBMSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
 
 </p>
@@ -3394,10 +3394,10 @@ Choose from:
 <details><summary>Expand to view content</summary>
 <p>
   
-##### **AutoRecomDataCreate()**
+#### **AutoRecomDataCreate()**
 <code>AutoRecomDataCreate()</code> automatically creates your binary ratings matix from transaction data
 
-##### **AutoRecommender()**
+#### **AutoRecommender()**
 <code>AutoRecommender()</code> automated collaborative filtering modeling where each model below competes against one another for top performance
   * RandomItems
   * PopularItems
@@ -3405,10 +3405,10 @@ Choose from:
   * ItemBasedCF
   * AssociationRules
   
-##### **AutoRecommenderScoring()**
+#### **AutoRecommenderScoring()**
 <code>AutoRecommenderScoring()</code> automatically score a recommender model from AutoRecommender()
 
-##### **AutoMarketBasketModel()**
+#### **AutoMarketBasketModel()**
 <code>AutoMarketBasketModel()</code> is a function that runs a market basket analysis automatically. It will convert your data, run the algorithm, and generate the recommended items. On top of that, it includes additional significance values not provided by the source pacakge. 
   
 </p>
@@ -3418,19 +3418,19 @@ Choose from:
 <details><summary>Expand to view content</summary>
 <p>
  
-##### **H2oAutoencoder()**
+#### **H2oAutoencoder()**
 <code>H2oAutoencoder()</code> Use for dimension reduction and anomaly detection
 
-##### **H2oIsolationForest()**
+#### **H2oIsolationForest()**
 <code>H2oIsolationForest()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
-##### **AutoKMeans()** 
+#### **AutoKMeans()** 
 <code>AutoKMeans()</code> This function builds a generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
 
-##### **ResidualOutliers()**
+#### **ResidualOutliers()**
 <code>ResidualOutliers()</code> Generate residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 
-##### **GenTSAnomVars()**
+#### **GenTSAnomVars()**
 <code>GenTSAnomVars()</code> generates time series anomaly variables. (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
 
 <img src="Images/ResidualOutliers_MultiplotImage.png" align="center" width="400" />
@@ -3442,34 +3442,34 @@ Choose from:
 <details><summary>Expand to view content</summary>
 <p>
 
-##### **AutoDataDictionary()**
+#### **AutoDataDictionary()**
 <code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R. There are several data dictionary types that can be returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
 
-##### **SQL_Server_DBConnection()**
+#### **SQL_Server_DBConnection()**
 <code>SQL_Server_DBConnection()</code> Create a connect with sql server
 
-##### **SQL_Query_Push()**
+#### **SQL_Query_Push()**
 <code>SQL_Query_Push()</code> Push data to a sql server warehouse
 
-##### **SQL_Query()**
+#### **SQL_Query()**
 <code>SQL_Query()</code> Query a sql server table
 
-##### **SQL_ClearTable()**
+#### **SQL_ClearTable()**
 <code>SQL_ClearTable()</code> Deletes all rows of a sql server table
 
-##### **SQL_DropTable()**
+#### **SQL_DropTable()**
 <code>SQL_DropTable()</code> Removes a sql server table
 
-##### **SQL_SaveTable()**
+#### **SQL_SaveTable()**
 <code>SQL_SaveTable()</code> Write a sql server table
 
-##### **SQL_UpdateTable()**
+#### **SQL_UpdateTable()**
 <code>SQL_UpdateTable()</code> Update a sql server table
 
-##### **SQL_Server_BulkPull()**
+#### **SQL_Server_BulkPull()**
 <code>SQL_Server_BulkPull()</code> Query a sql server table using bulk copy process
 
-##### **SQL_Server_BulkPush()**
+#### **SQL_Server_BulkPush()**
 <code>SQL_Server_BulkPush()</code> Write to a sql server table using bulk copy process
 
 </p>
@@ -3480,21 +3480,21 @@ Choose from:
 <details><summary>Expand to view content</summary>
 <p>
  
-##### **AutoWordFreq()** 
+#### **AutoWordFreq()** 
 <code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
 <img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
 
-##### **ProblematicFeatures()**
+#### **ProblematicFeatures()**
 <code>ProblematicFeatures()</code> identifies columns that have either little to no variance, categorical variables with extremely high cardinality, too many NA's, too many zeros, or too high of a skew.
 
-##### **RemixTheme()** 
+#### **RemixTheme()** 
 <code>RemixTheme()</code> is a specific font, set of colors, and style for plots.
 
-##### **ChartTheme()** 
+#### **ChartTheme()** 
 <code>ChartTheme()</code> is a specific font, set of colors, and style for plots.
 
-##### **multiplot()** 
+#### **multiplot()** 
 <code>multiplot()</code> is useful for displaying multiple plots in a single pane. I've never had luck using grid so I just use this instead.
 
 #### **FakeDataGenerator()**
