@@ -681,7 +681,7 @@ AutoInteraction <- function(data = NULL,
   }
 
   # Save Standardize if Center or Scale ----
-  if(!Scoring && i == 2L && (Center || Scale)) save(Standardize, file = file.path(File, "Standardize.Rdata"))
+  if(!Scoring && (Center || Scale)) save(Standardize, file = file.path(File, "Standardize.Rdata"))
 
   # Save csv ----
   if(exists("Standardize", envir = .GlobalEnv)) rm(Standardize, envir = .GlobalEnv)
