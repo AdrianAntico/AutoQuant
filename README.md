@@ -174,7 +174,7 @@ Supply a data.table to run the functions below:
 <details><summary>Expand to view content</summary>
 <p>
 
-##### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
+#### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -308,7 +308,7 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 </p>
 </details>
 
-##### **AutoInteraction()**
+#### **AutoInteraction()**
 
 <details><summary>Code Example</summary>
 <p>
