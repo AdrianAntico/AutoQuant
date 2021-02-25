@@ -368,8 +368,7 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
 #'   Scale = TRUE,
 #'   SkipCols = NULL,
 #'   Scoring = FALSE,
-#'   File = getwd(),
-#'   FileName = NULL))
+#'   File = getwd()))
 #'
 #' # user  system elapsed
 #' # 3.29    0.81    4.13
@@ -427,8 +426,7 @@ AutoInteraction <- function(data = NULL,
                             Scale = TRUE,
                             SkipCols = NULL,
                             Scoring = FALSE,
-                            File = NULL,
-                            FileName = NULL) {
+                            File = NULL) {
 
   # Check data ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
