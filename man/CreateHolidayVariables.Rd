@@ -85,6 +85,8 @@ Other Feature Engineering:
 \code{\link{ContinuousTimeDataGenerator}()},
 \code{\link{CreateCalendarVariables}()},
 \code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DifferenceDataReverse}()},
+\code{\link{DifferenceData}()},
 \code{\link{DummifyDT}()},
 \code{\link{H2oAutoencoder}()},
 \code{\link{ModelDataPrep}()},

@@ -20,11 +20,6 @@ CarmaHoldoutMetrics(
 \description{
 CarmaHoldoutMetrics
 }
-\seealso{
-Other Time Series: 
-\code{\link{DifferenceDataReverse}()},
-\code{\link{DifferenceData}()}
-}
 \author{
 Adrian Antico
 }

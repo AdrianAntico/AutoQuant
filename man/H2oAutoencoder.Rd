@@ -156,6 +156,8 @@ Other Feature Engineering:
 \code{\link{CreateCalendarVariables}()},
 \code{\link{CreateHolidayVariables}()},
 \code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DifferenceDataReverse}()},
+\code{\link{DifferenceData}()},
 \code{\link{DummifyDT}()},
 \code{\link{ModelDataPrep}()},
 \code{\link{Partial_DT_GDL_Feature_Engineering}()},

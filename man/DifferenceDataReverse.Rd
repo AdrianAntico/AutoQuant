@@ -33,11 +33,27 @@ DifferenceDataReverse(
 DifferenceDataReverse reverses the difference
 }
 \seealso{
-Other Time Series: 
-\code{\link{CarmaHoldoutMetrics}()},
-\code{\link{DifferenceData}()}
+Other Feature Engineering: 
+\code{\link{AutoDataPartition}()},
+\code{\link{AutoHierarchicalFourier}()},
+\code{\link{AutoInteraction}()},
+\code{\link{AutoLagRollStatsScoring}()},
+\code{\link{AutoLagRollStats}()},
+\code{\link{AutoTransformationCreate}()},
+\code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecModeler}()},
+\code{\link{ContinuousTimeDataGenerator}()},
+\code{\link{CreateCalendarVariables}()},
+\code{\link{CreateHolidayVariables}()},
+\code{\link{DT_GDL_Feature_Engineering}()},
+\code{\link{DifferenceData}()},
+\code{\link{DummifyDT}()},
+\code{\link{H2oAutoencoder}()},
+\code{\link{ModelDataPrep}()},
+\code{\link{Partial_DT_GDL_Feature_Engineering}()},
+\code{\link{TimeSeriesFill}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Time Series}
+\concept{Feature Engineering}

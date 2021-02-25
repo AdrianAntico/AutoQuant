@@ -114,7 +114,7 @@ TimeSeriesMelt <- function(data,
 #'
 #' @description DifferenceData differences your data set
 #'
-#' @family Time Series
+#' @family Feature Engineering
 #'
 #' @author Adrian Antico
 #'
@@ -177,7 +177,7 @@ DifferenceData <- function(data,
 #'
 #' @description DifferenceDataReverse reverses the difference
 #'
-#' @family Time Series
+#' @family Feature Engineering
 #'
 #' @author Adrian Antico
 #'
