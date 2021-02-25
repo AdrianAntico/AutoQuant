@@ -368,7 +368,8 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
 #'   Scale = TRUE,
 #'   SkipCols = NULL,
 #'   Scoring = FALSE,
-#'   File = getwd()))
+#'   File = getwd(),
+#'   FileName = NULL))
 #'
 #' # user  system elapsed
 #' # 3.29    0.81    4.13
@@ -426,7 +427,8 @@ AutoInteraction <- function(data = NULL,
                             Scale = TRUE,
                             SkipCols = NULL,
                             Scoring = FALSE,
-                            File = NULL) {
+                            File = NULL,
+                            FileName = NULL) {
 
   # Check data ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -437,7 +439,7 @@ AutoInteraction <- function(data = NULL,
   if(!is.logical(Scoring)) stop("Scoring must be either TRUE or FALSE")
   if(!is.null(NumericVars) && !is.character(NumericVars)) stop("NumericVars must be a character vector or NULL")
   if(!is.null(SkipCols) && !is.character(SkipCols)) stop("SkipCols must be a character vector")
-  if(!is.null(InteractionDepth) && (!is.numeric(InteractionDepth) || !is.integer(InteractionDepth))) stop("InteractionDepth must be numeric or NULL")
+  if(!is.null(InteractionDepth) && !(is.numeric(InteractionDepth) || is.integer(InteractionDepth))) stop("InteractionDepth must be numeric or NULL")
 
   # Check File ----
   if(Scoring && (Center || Scale) && is.null(File)) stop("You need to supply the path for the File argument")
@@ -676,10 +678,10 @@ AutoInteraction <- function(data = NULL,
       # Add columns ----
       temp
     })]
-
-    # Save Standardize if Center or Scale ----
-    if(!Scoring && i == 2L && (Center || Scale)) save(Standardize, file = file.path(File, "Standardize.Rdata"))
   }
+
+  # Save Standardize if Center or Scale ----
+  if(!Scoring && i == 2L && (Center || Scale)) save(Standardize, file = file.path(File, "Standardize.Rdata"))
 
   # Save csv ----
   if(exists("Standardize", envir = .GlobalEnv)) rm(Standardize, envir = .GlobalEnv)
