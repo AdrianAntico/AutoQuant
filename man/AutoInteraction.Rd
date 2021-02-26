@@ -74,7 +74,7 @@ system.time(data <- RemixAutoML::AutoInteraction(
   File = getwd()))
 
 # user  system elapsed
-# 3.29    0.81    4.13
+# 0.30    0.11    0.41
 
 # Print number of columns
 print(ncol(data))

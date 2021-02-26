@@ -371,7 +371,7 @@ FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
 #'   File = getwd()))
 #'
 #' # user  system elapsed
-#' # 3.29    0.81    4.13
+#' # 0.30    0.11    0.41
 #'
 #' # Print number of columns
 #' print(ncol(data))
@@ -475,7 +475,7 @@ AutoInteraction <- function(data = NULL,
 
   # Standardize collection list ----
   if(Scoring && (Center || Scale) && !is.list(File)) load(file = file.path(File), envir = .GlobalEnv)
-  if(!exists("Standardize") && Center && Scale) Standardize <<- list()
+  if(!exists("Standardize") && (Center || Scale)) Standardize <<- list()
 
   # N choose i for 2 <= i < N
   for(i in seq_len(N)[-1L]) {
@@ -551,42 +551,38 @@ AutoInteraction <- function(data = NULL,
     data[, (NumVarsNames) := lapply(NumVarsNames, FUN = function(x) {
       if(i > 2L) {
         if(Center && Scale) {
-
-          # Create matrices
-          a1 <- as.matrix(data[[NumVarOperations[[x]][[1L]]]])
-          a2 <- as.matrix(data[[NumVarOperations[[x]][[2L]]]])
-
-          # Update matricies
-          c1 <- t(a1) - Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]]
-          c2 <- t(a2) - Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]]
-
-          # Compute interaction
-          temp <- t(c1/Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]]) * t(c2/Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])
-          for(ggg in 3L:i) {
-            a1 <- as.matrix(data[[NumVarOperations[[x]][[ggg]]]])
-            c1 <- t(a1) - Standardize[[NumVarOperations[[x]][[ggg]]]][["Mean"]]
-            temp <- temp * t(c1/Standardize[[NumVarOperations[[x]][[ggg]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[ggg]]]][["Factor"]])
+          if(!is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]])) {
+            temp <- Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]]
+            for(ggg in 3L:i) temp <- temp * Standardize[[NumVarOperations[[x]][[ggg]]]][["Result"]]
+          } else {
+            a1 <- as.matrix(data[[NumVarOperations[[x]][[1L]]]])
+            a2 <- as.matrix(data[[NumVarOperations[[x]][[2L]]]])
+            c1 <- t(a1) - Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]]
+            c2 <- t(a2) - Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]]
+            temp <- t(c1/Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]]) * t(c2/Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])
+            for(ggg in 3L:i) {
+              a1 <- as.matrix(data[[NumVarOperations[[x]][[ggg]]]])
+              c1 <- t(a1) - Standardize[[NumVarOperations[[x]][[ggg]]]][["Mean"]]
+              temp <- temp * t(c1/Standardize[[NumVarOperations[[x]][[ggg]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[ggg]]]][["Factor"]])
+            }
           }
-
         } else if(Center && !Scale) {
-
-          # Compute interaction
-          temp <- t(t(as.matrix(data[[NumVarOperations[[x]][[1L]]]])) - Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]]) * t(t(as.matrix(data[[NumVarOperations[[x]][[2L]]]])) - Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]])
-          for(ggg in 3L:i) {
-            temp <- temp * t(t(as.matrix(data[[NumVarOperations[[x]][[ggg]]]])) - Standardize[[NumVarOperations[[x]][[ggg]]]][["Mean"]])
+          if(!is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]])) {
+            temp <- Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]]
+            for(ggg in 3L:i) temp <- temp * Standardize[[NumVarOperations[[x]][[ggg]]]][["Result"]]
+          } else {
+            temp <- t(t(as.matrix(data[[NumVarOperations[[x]][[1L]]]])) - Standardize[[NumVarOperations[[x]][[1L]]]][["Mean"]]) * t(t(as.matrix(data[[NumVarOperations[[x]][[2L]]]])) - Standardize[[NumVarOperations[[x]][[2L]]]][["Mean"]])
+            for(ggg in 3L:i) temp <- temp * t(t(as.matrix(data[[NumVarOperations[[x]][[ggg]]]])) - Standardize[[NumVarOperations[[x]][[ggg]]]][["Mean"]])
           }
-
         } else if(!Center && Scale) {
-
-          # Compute interaction
-          temp <- t(as.matrix(data[[NumVarOperations[[x]][[1L]]]])/Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]]) * t(as.matrix(data[[NumVarOperations[[x]][[2L]]]])/Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])
-          for(ggg in 3L:i) {
-            temp <- temp * t(as.matrix(data[[NumVarOperations[[x]][[ggg]]]])/Standardize[[NumVarOperations[[x]][[ggg]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[ggg]]]][["Factor"]])
+          if(!is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]])) {
+            temp <- Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]]
+            for(ggg in 3L:i) temp <- temp * Standardize[[NumVarOperations[[x]][[ggg]]]][["Result"]]
+          } else {
+            temp <- t(as.matrix(data[[NumVarOperations[[x]][[1L]]]])/Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[1L]]]][["Factor"]]) * t(as.matrix(data[[NumVarOperations[[x]][[2L]]]])/Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])
+            for(ggg in 3L:i) temp <- temp * t(as.matrix(data[[NumVarOperations[[x]][[ggg]]]]) / Standardize[[NumVarOperations[[x]][[ggg]]]][["Denom"]] * Standardize[[NumVarOperations[[x]][[ggg]]]][["Factor"]])
           }
-
         } else {
-
-          # Compute interaction
           temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
           for(ggg in 3L:i) {
             temp <- temp * data[[NumVarOperations[[x]][[ggg]]]]
@@ -622,7 +618,13 @@ AutoInteraction <- function(data = NULL,
           if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]] <<- e2
 
           # Compute interaction
-          temp <- t(c1/d1 * e1) * t(c2/d2 * e2)
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]])) Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] <<- t(c1/d1 * e1)
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]] <<- t(c2/d2 * e2)
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]])) {
+            temp <- Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]]
+          } else {
+            temp <- t(c1/d1 * e1) * t(c2/d2 * e2)
+          }
 
         } else if(Center && !Scale) {
 
@@ -638,10 +640,16 @@ AutoInteraction <- function(data = NULL,
 
           # Update matricies
           c1 <- t(a1) - b1
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]])) Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] <<- t(c1)
           c2 <- t(a2) - b2
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]] <<- t(c2)
 
           # Compute interaction
-          temp <- t(c1) * t(c2)
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]])) {
+            temp <- Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] * Standardize[[NumVarOperations[[x]][[2L]]]]
+          } else {
+            temp <- t(c1) * t(c2)
+          }
 
         } else if(!Center && Scale) {
 
@@ -649,14 +657,10 @@ AutoInteraction <- function(data = NULL,
           a1 <- as.matrix(data[[NumVarOperations[[x]][[1L]]]])
           a2 <- as.matrix(data[[NumVarOperations[[x]][[2L]]]])
 
-          # Update matricies
-          c1 <- t(a1)
-          c2 <- t(a2)
-
           # Denom
-          if(Scoring) d1 <- Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] else d1 <- sqrt(Rfast::rowsums(c1^2))
+          if(Scoring) d1 <- Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] else d1 <- sqrt(Rfast::rowsums(t(a1)^2))
           if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]])) Standardize[[NumVarOperations[[x]][[1L]]]][["Denom"]] <<- d1
-          if(Scoring) d2 <- Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] else d2 <- sqrt(Rfast::rowsums(c2^2))
+          if(Scoring) d2 <- Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] else d2 <- sqrt(Rfast::rowsums(t(a2)^2))
           if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Denom"]] <<- d2
 
           # Factor
@@ -665,8 +669,16 @@ AutoInteraction <- function(data = NULL,
           if(Scoring) e2 <- Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]] else e2 <- sqrt((dim(a2)[1L] - 1))
           if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Factor"]] <<- e2
 
+          # Result
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]])) Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] <<- t(t(a1)/d1 * e1)
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]])) Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]] <<- t(t(a2)/d2 * e2)
+
           # Compute interaction
-          temp <- t(c1/d1 * e1) * t(c2/d2 * e2)
+          if(!Scoring && is.null(Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]])) {
+            temp <- Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]]
+          } else {
+            temp <- t(t(a1)/d1 * e1) * t(t(a2)/d2 * e2)
+          }
 
         } else {
           temp <- data[[NumVarOperations[[x]][[1L]]]] * data[[NumVarOperations[[x]][[2L]]]]
@@ -679,7 +691,10 @@ AutoInteraction <- function(data = NULL,
   }
 
   # Save Standardize if Center or Scale ----
-  if(!Scoring && (Center || Scale)) save(Standardize, file = file.path(File, "Standardize.Rdata"))
+  if(!Scoring && (Center || Scale)) {
+    for(nam in names(Standardize)) Standardize[[nam]][["Result"]] <- NULL
+    save(Standardize, file = file.path(File, "Standardize.Rdata"))
+  }
 
   # Save csv ----
   if(exists("Standardize", envir = .GlobalEnv)) rm(Standardize, envir = .GlobalEnv)
