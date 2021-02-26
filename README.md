@@ -3193,7 +3193,11 @@ Results <- RemixAutoML::AutoH2OCARMA(
 </p>
 </details>
 
+<<<<<<< HEAD
 <img src="Images/TimeSeriesMethods2.png" align="center" width="725" />
+=======
+<img src="Images/TimeSeriesMethods2.PNG" align="center" width="750" />
+>>>>>>> 73e52bf76dc7992ada963f720f67939a68f613c2
 
 <code>AutoCatBoostVectorCARMA</code> For Panel Data with multiple series to forecast. An example would be, predicting revenue and transactions across a large number of stores over time.
 
