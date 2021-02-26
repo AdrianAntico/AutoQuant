@@ -412,7 +412,7 @@ print(ncol(data))
 </p>
 </details>
 
-##### **AutoWord2VecModeler()**
+#### **AutoWord2VecModeler()**
 
 <details><summary>Function Description</summary>
 <p>
