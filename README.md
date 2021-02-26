@@ -2593,11 +2593,10 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 </p>
 </details>
 
-## Time Series and Panel Data Forecasting <img src="Images/AutoCARMA2.png" align="right" width="80" />
+## Panel Data Forecasting <img src="Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
  
-### The **CARMA** Suite: Panel Data Forecasting
 
 <details><summary>Code Example</summary>
 <p>
@@ -3252,8 +3251,41 @@ Results <- RemixAutoML::AutoH2OCARMA(
 * <code>AutoXGBoostScoring()</code>
 * <code>AutoH2oMLScoring()</code>
 
+### Intermittent Demand Forecasting Functions
+
+#### **TimeSeriesFill()**
+<code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are four ways to use this function:
+Choose from:
+  * maxmax - Fill from the absolute min date to the absolute max date (single series and panel data)
+  * minmax - Fill from the max date of the min set to the absolute max date (panel data)
+  * maxmin - Fill from the absolute min date to the min of the max dates (panel data)
+  * minmin - Fill from the max date of the min dates to the min date of the max dates (panel data)
+
+#### **ContinuousTimeDataGenerator()**
+<code>ContinuousTimeDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
+
+#### **AutoCatBoostSizeFreqDist()**
+<code>AutoCatBoostSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
+
+#### **AutoH2oGBMSizeFreqDist()**
+<code>AutoH2oGBMSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
+
+#### **AutoCatBoostFreqSizeScoring()**
+<code>AutoCatBoostFreqSizeScoring()</code> is for scoring the models build with <code>AutoCatBoostSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
+
+#### **AutoH2oGBMFreqSizeScoring()**
+<code>AutoH2oGBMFreqSizeScoring()</code> is for scoring the models build with <code>AutoH2oGBMSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
+
 </p>
 </details>
+
+</p>
+</details>
+
+
+## Time Series Forecasting <img src="Images/AutoTS.png" align="right" width="80" />
+<details><summary>Expand to view content</summary>
+<p>
   
 ### **AutoBanditSarima()**
 
@@ -3351,31 +3383,6 @@ For each of the models tested internally, several aspects should be noted:
 
 </p>
 </details>
-
-### Intermittent Demand Forecasting Functions
-
-#### **TimeSeriesFill()**
-<code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are four ways to use this function:
-Choose from:
-  * maxmax - Fill from the absolute min date to the absolute max date (single series and panel data)
-  * minmax - Fill from the max date of the min set to the absolute max date (panel data)
-  * maxmin - Fill from the absolute min date to the min of the max dates (panel data)
-  * minmin - Fill from the max date of the min dates to the min date of the max dates (panel data)
-
-#### **ContinuousTimeDataGenerator()**
-<code>ContinuousTimeDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
-
-#### **AutoCatBoostSizeFreqDist()**
-<code>AutoCatBoostSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
-
-#### **AutoH2oGBMSizeFreqDist()**
-<code>AutoH2oGBMSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
-
-#### **AutoCatBoostFreqSizeScoring()**
-<code>AutoCatBoostFreqSizeScoring()</code> is for scoring the models build with <code>AutoCatBoostSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
-
-#### **AutoH2oGBMFreqSizeScoring()**
-<code>AutoH2oGBMFreqSizeScoring()</code> is for scoring the models build with <code>AutoH2oGBMSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
 
 </p>
 </details>

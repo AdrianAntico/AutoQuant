@@ -477,7 +477,7 @@ AutoInteraction <- function(data = NULL,
   if(Scoring && (Center || Scale) && !is.list(File)) load(file = file.path(File), envir = .GlobalEnv)
   if(!exists("Standardize") && (Center || Scale)) Standardize <<- list()
 
-  # N choose i for 2 <= i < N
+  # N choose i for 2 <= i <= N ----
   for(i in seq_len(N)[-1L]) {
 
     # Initialize lists and vector
