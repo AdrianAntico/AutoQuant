@@ -3343,7 +3343,7 @@ AutoETS uses forecast::ets behind the scenes. It just runs through all the param
 ### **AutoArfima()**
 AutoArfima uses forecast::arfima behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
 
-### **AutoTS()** <img src="Images/AutoTS.png" align="right" width="300" />
+### **AutoTS()**
 <code>AutoTS()</code> 
 
 <details><summary>Model Highlights</summary>
