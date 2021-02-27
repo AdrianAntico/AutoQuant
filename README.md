@@ -168,7 +168,7 @@ Supply a data.table to run the functions below:
 </p>
 </details>
 
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Documentation.PNG" align="center" width="350" />
+<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Documentation.PNG" align="center" width="550" />
 
 ## Feature Engineering <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
