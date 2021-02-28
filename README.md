@@ -716,7 +716,7 @@ TestData <- dataSets$TestData
 <p>
   
 #### Regression
-____________________________________________________________________________________________________________________________________________
+
 <details><summary>click to expand</summary>
 <p>
   
@@ -1313,7 +1313,7 @@ TestModel <- RemixAutoML::AutoH2oGAMRegression(
 </details>
 
 #### Binary Classification
-____________________________________________________________________________________________________________________________________________
+
 <details><summary>click to expand</summary>
 <p>
   
@@ -1845,7 +1845,7 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
 </details>
 
 #### Multinomial Classification
-____________________________________________________________________________________________________________________________________________
+
 <details><summary>click to expand</summary>
 <p>
   
@@ -2341,7 +2341,7 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 </details>
 
 #### Generalized Hurdle Models
-____________________________________________________________________________________________________________________________________________
+
 <details><summary>click to expand</summary>
 <p>
   
@@ -2371,7 +2371,7 @@ First step is to build either a binary classification model (in the case of a si
 </details>
 
 #### General Purpose H2O Automated Modeling
-____________________________________________________________________________________________________________________________________________
+
 <details><summary>click to expand</summary>
 <p>
   
@@ -2388,7 +2388,7 @@ ________________________________________________________________________________
 </details>
 
 #### Nonlinear Regression Modeling
-____________________________________________________________________________________________________________________________________________
+
 <details><summary>click to expand</summary>
 <p>
   
