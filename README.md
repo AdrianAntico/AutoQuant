@@ -549,61 +549,6 @@ This function counts up the number of specified holidays between the current rec
 </p>
 </details>
 
-#### **ModelDataPrep()**
-
-<details><summary>Code Example</summary>
-<p>
- 
-```
-# Create fake data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.75,
-  N = 250000L,
-  ID = 2L,
-  ZIP = 0L,
-  FactorCount = 6L,
-  AddDate = TRUE,
-  Classification = FALSE,
-  MultiClass = FALSE)
-
-# Check column types
-str(data)
-
-# Convert some factors to character
-data <- RemixAutoML::ModelDataPrep(
-  data,
-  Impute       = TRUE,
-  CharToFactor = FALSE,
-  FactorToChar = TRUE,
-  IntToNumeric = TRUE,
-  DateToChar   = FALSE,
-  RemoveDates  = TRUE,
-  MissFactor   = "0",
-  MissNum      = -1,
-  IgnoreCols   = c("Factor_1"))
-
-# Check column types
-str(data)
-```
-
-</p>
-</details>
-
-<details><summary>Function Description</summary>
-<p>
-
-<code>ModelDataPrep()</code> This function will loop through every column in your data and apply a variety of functions based on argument settings. For all columns not ignored, these tasks include:
-* Character type to Factor type converstion
-* Factor type to Character type conversion
-* Constant value imputation for numeric and categorical columns
-* Integer type to Numeric type conversion
-* Date type to Character type conversion
-* Remove date columns
-* Ignore specified columns
-
-</p>
-</details>
-
 #### **DummifyDT()** 
 
 <details><summary>Code Example</summary>
@@ -660,6 +605,61 @@ data <- RemixAutoML::DummifyDT(
 <p>
  
 <code>DifferenceData()</code> Create differences in your data (y1 - y0) for grouped or non-grouped data. <code>DifferenceDataReverse()</code> Reverses the differences in your data for grouped or non-grouped data.
+
+</p>
+</details>
+
+#### **ModelDataPrep()**
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.75,
+  N = 250000L,
+  ID = 2L,
+  ZIP = 0L,
+  FactorCount = 6L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Check column types
+str(data)
+
+# Convert some factors to character
+data <- RemixAutoML::ModelDataPrep(
+  data,
+  Impute       = TRUE,
+  CharToFactor = FALSE,
+  FactorToChar = TRUE,
+  IntToNumeric = TRUE,
+  DateToChar   = FALSE,
+  RemoveDates  = TRUE,
+  MissFactor   = "0",
+  MissNum      = -1,
+  IgnoreCols   = c("Factor_1"))
+
+# Check column types
+str(data)
+```
+
+</p>
+</details>
+
+<details><summary>Function Description</summary>
+<p>
+
+<code>ModelDataPrep()</code> This function will loop through every column in your data and apply a variety of functions based on argument settings. For all columns not ignored, these tasks include:
+* Character type to Factor type converstion
+* Factor type to Character type conversion
+* Constant value imputation for numeric and categorical columns
+* Integer type to Numeric type conversion
+* Date type to Character type conversion
+* Remove date columns
+* Ignore specified columns
 
 </p>
 </details>
