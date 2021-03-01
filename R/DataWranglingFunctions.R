@@ -330,10 +330,10 @@ Interact <- function(x,
                      NumVarOperations,
                      Standardize) {
   if(i > 2L) {
-    temp <- Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] * Standardize[[NumVarOperations[[x]][[2L]]]][["Result"]]
-    for(ggg in 3L:i) temp <- temp * Standardize[[NumVarOperations[[x]][[ggg]]]][["Result"]]
+    temp <- Standardize[[NumVarOperations[[x]][[1L]]]]$Result * Standardize[[NumVarOperations[[x]][[2L]]]]$Result
+    for(ggg in 3L:i) temp <- temp * Standardize[[NumVarOperations[[x]][[ggg]]]]$Result
   } else {
-    temp <- Standardize[[NumVarOperations[[x]][[1L]]]][["Result"]] * data[[NumVarOperations[[x]][[2L]]]]
+    temp <- Standardize[[NumVarOperations[[x]][[1L]]]]$Result * Standardize[[NumVarOperations[[x]][[2L]]]]$Result
   }
   temp
 }
@@ -509,17 +509,17 @@ AutoInteraction <- function(data = NULL,
         a1 <- as.matrix(data[[nam]])
 
         # Means
-        Standardize[[nam]][["Mean"]] <- Rfast::colmeans(a1)
+        Standardize[[nam]]$Mean <- Rfast::colmeans(a1)
 
         # Denom
-        c1 <- t(a1) - Standardize[[nam]][["Mean"]]
-        Standardize[[nam]][["Denom"]] <- sqrt(Rfast::rowsums(c1^2))
+        c1 <- t(a1) - Standardize[[nam]]$Mean
+        Standardize[[nam]]$Denom <- sqrt(Rfast::rowsums(c1^2))
 
         # Factor
-        Standardize[[nam]][["Factor"]] <- sqrt((dim(a1)[1L] - 1))
+        Standardize[[nam]]$Factor <- sqrt((dim(a1)[1L] - 1))
 
         # Result
-        Standardize[[nam]][["Result"]] <- t(c1/Standardize[[nam]][["Denom"]] * Standardize[[nam]][["Factor"]])
+        Standardize[[nam]]$Result <- t(c1/Standardize[[nam]]$Denom * Standardize[[nam]]$Factor)
 
       } else if(Center && !Scale) {
 
@@ -527,25 +527,25 @@ AutoInteraction <- function(data = NULL,
         a1 <- as.matrix(data[[nam]])
 
         # Means
-        Standardize[[nam]][["Mean"]] <- Rfast::colmeans(a1)
+        Standardize[[nam]]$Mean <- Rfast::colmeans(a1)
 
         # Result
-        Standardize[[nam]][["Result"]] <- t(a1) - Standardize[[nam]][["Mean"]]
+        Standardize[[nam]]$Result <- t(a1) - Standardize[[nam]]$Mean
 
       } else if(!Center && Scale) {
 
         # Create matrices
         a1 <- as.matrix(data[[nam]])
-        Standardize[[nam]][["Denom"]] <- sqrt(Rfast::rowsums(a1^2))
+        Standardize[[nam]]$Denom <- sqrt(Rfast::rowsums(a1^2))
 
         # Factor
-        Standardize[[nam]][["Factor"]] <- sqrt((dim(a1)[1L] - 1))
+        Standardize[[nam]]$Factor <- sqrt((dim(a1)[1L] - 1))
 
         # Result
-        Standardize[[nam]][["Result"]] <- t(a1/Standardize[[nam]][["Denom"]] * Standardize[[nam]][["Factor"]])
+        Standardize[[nam]]$Result <- t(a1/Standardize[[nam]]$Denom * Standardize[[nam]]$Factor)
 
       } else {
-        Standardize[[nam]][["Result"]] <- data[[NumVarOperations[[x]][[2L]]]]
+        Standardize[[nam]]$Result <- data[[NumVarOperations[[x]][[2L]]]]
       }
     }
   }
