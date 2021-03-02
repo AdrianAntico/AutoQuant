@@ -7,6 +7,7 @@
 DummifyDT(
   data,
   cols,
+  TopN = NULL,
   KeepFactorCols = FALSE,
   OneHot = FALSE,
   SaveFactorLevels = FALSE,
@@ -22,6 +23,8 @@ DummifyDT(
 \item{data}{The data set to run the micro auc on}
 
 \item{cols}{A vector with the names of the columns you wish to dichotomize}
+
+\item{TopN}{Default is NULL. Scalar to apply to all categorical columns or a vector to apply to each categorical variable. Only create dummy variables for the TopN number of levels. Will be either TopN or max(levels)}
 
 \item{KeepFactorCols}{Set to TRUE to keep the original columns used in the dichotomization process}
 
@@ -49,7 +52,6 @@ DummifyDT creates dummy variables for the selected columns. Either one-hot encod
 }
 \examples{
 \dontrun{
-# Create fake data with 10 categorical columns
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
   N = 25000,
@@ -72,11 +74,45 @@ data <- RemixAutoML::DummifyDT(
            "Factor_8",
            "Factor_9",
            "Factor_10"),
-  KeepFactorCols = FALSE,
+  TopN = c(rep(3,9)),
+  KeepFactorCols = TRUE,
   OneHot = FALSE,
-  SaveFactorLevels = FALSE,
-  SavePath = normalizePath("./"),
+  SaveFactorLevels = TRUE,
+  SavePath = getwd(),
   ImportFactorLevels = FALSE,
+  FactorLevelsList = NULL,
+  ClustScore = FALSE,
+  ReturnFactorLevels = FALSE)
+
+# Create Fake Data for Scoring Replication
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000,
+  ID = 2L,
+  ZIP = 0,
+  FactorCount = 10L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Scoring Version
+data <- RemixAutoML::DummifyDT(
+  data = data,
+  cols = c("Factor_1",
+           "Factor_2",
+           "Factor_3",
+           "Factor_4",
+           "Factor_5",
+           "Factor_6",
+           "Factor_8",
+           "Factor_9",
+           "Factor_10"),
+  TopN = c(rep(3,9)),
+  KeepFactorCols = TRUE,
+  OneHot = FALSE,
+  SaveFactorLevels = TRUE,
+  SavePath = getwd(),
+  ImportFactorLevels = TRUE,
   FactorLevelsList = NULL,
   ClustScore = FALSE,
   ReturnFactorLevels = FALSE)

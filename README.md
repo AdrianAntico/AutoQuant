@@ -557,16 +557,49 @@ This function counts up the number of specified holidays between the current rec
 ```
 # Create fake data with 10 categorical columns
 data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.85, 
-  N = 25000, 
-  ID = 2L, 
-  ZIP = 0, 
+  Correlation = 0.85,
+  N = 25000,
+  ID = 2L,
+  ZIP = 0,
   FactorCount = 10L,
-  AddDate = FALSE, 
-  Classification = FALSE, 
+  AddDate = FALSE,
+  Classification = FALSE,
   MultiClass = FALSE)
 
 # Create dummy variables
+data <- DummifyDT(
+  data = data,
+  cols = c("Factor_1",
+           "Factor_2",
+           "Factor_3",
+           "Factor_4",
+           "Factor_5",
+           "Factor_6",
+           "Factor_8",
+           "Factor_9",
+           "Factor_10"),
+  TopN = c(rep(3,9)),
+  KeepFactorCols = TRUE,
+  OneHot = FALSE,
+  SaveFactorLevels = TRUE,
+  SavePath = getwd(),
+  ImportFactorLevels = FALSE,
+  FactorLevelsList = NULL,
+  ClustScore = FALSE,
+  ReturnFactorLevels = FALSE)
+
+# Create Fake Data for Scoring Replication
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000,
+  ID = 2L,
+  ZIP = 0,
+  FactorCount = 10L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Scoring Version (imports csv's to generate matching levels and ordering)
 data <- RemixAutoML::DummifyDT(
   data = data,
   cols = c("Factor_1",
@@ -578,11 +611,12 @@ data <- RemixAutoML::DummifyDT(
            "Factor_8",
            "Factor_9",
            "Factor_10"),
-  KeepFactorCols = FALSE,
+  TopN = c(rep(3,9)),
+  KeepFactorCols = TRUE,
   OneHot = FALSE,
-  SaveFactorLevels = FALSE,
-  SavePath = normalizePath("./"),
-  ImportFactorLevels = FALSE,
+  SaveFactorLevels = TRUE,
+  SavePath = getwd(),
+  ImportFactorLevels = TRUE,
   FactorLevelsList = NULL,
   ClustScore = FALSE,
   ReturnFactorLevels = FALSE)

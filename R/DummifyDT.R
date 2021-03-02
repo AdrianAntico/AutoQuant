@@ -6,6 +6,7 @@
 #' @family Feature Engineering
 #' @param data The data set to run the micro auc on
 #' @param cols A vector with the names of the columns you wish to dichotomize
+#' @param TopN Default is NULL. Scalar to apply to all categorical columns or a vector to apply to each categorical variable. Only create dummy variables for the TopN number of levels. Will be either TopN or max(levels)
 #' @param OneHot Set to TRUE to run one hot encoding, FALSE to generate N columns for N levels
 #' @param KeepFactorCols Set to TRUE to keep the original columns used in the dichotomization process
 #' @param SaveFactorLevels Set to TRUE to save unique levels of each factor column to file as a csv
@@ -17,7 +18,7 @@
 #' @param GroupVar Ignore this
 #' @examples
 #' \dontrun{
-#' # Create fake data with 10 categorical columns
+#  # Create fake data with 10 categorical columns
 #' data <- RemixAutoML::FakeDataGenerator(
 #'   Correlation = 0.85,
 #'   N = 25000,
@@ -40,11 +41,45 @@
 #'            "Factor_8",
 #'            "Factor_9",
 #'            "Factor_10"),
-#'   KeepFactorCols = FALSE,
+#'   TopN = c(rep(3,9)),
+#'   KeepFactorCols = TRUE,
 #'   OneHot = FALSE,
-#'   SaveFactorLevels = FALSE,
-#'   SavePath = normalizePath("./"),
+#'   SaveFactorLevels = TRUE,
+#'   SavePath = getwd(),
 #'   ImportFactorLevels = FALSE,
+#'   FactorLevelsList = NULL,
+#'   ClustScore = FALSE,
+#'   ReturnFactorLevels = FALSE)
+#'
+#' # Create Fake Data for Scoring Replication
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 25000,
+#'   ID = 2L,
+#'   ZIP = 0,
+#'   FactorCount = 10L,
+#'   AddDate = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Scoring Version
+#' data <- RemixAutoML::DummifyDT(
+#'   data = data,
+#'   cols = c("Factor_1",
+#'            "Factor_2",
+#'            "Factor_3",
+#'            "Factor_4",
+#'            "Factor_5",
+#'            "Factor_6",
+#'            "Factor_8",
+#'            "Factor_9",
+#'            "Factor_10"),
+#'   TopN = c(rep(3,9)),
+#'   KeepFactorCols = TRUE,
+#'   OneHot = FALSE,
+#'   SaveFactorLevels = TRUE,
+#'   SavePath = getwd(),
+#'   ImportFactorLevels = TRUE,
 #'   FactorLevelsList = NULL,
 #'   ClustScore = FALSE,
 #'   ReturnFactorLevels = FALSE)
@@ -53,6 +88,7 @@
 #' @export
 DummifyDT <- function(data,
                       cols,
+                      TopN               = NULL,
                       KeepFactorCols     = FALSE,
                       OneHot             = FALSE,
                       SaveFactorLevels   = FALSE,
@@ -63,31 +99,34 @@ DummifyDT <- function(data,
                       ReturnFactorLevels = FALSE,
                       GroupVar           = FALSE) {
 
-  # Turn on full speed ahead----
+  # Turn on full speed ahead ----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
 
-  # Check data.table----
+  # Check data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Check arguments----
-  if(!is.character(cols)) return("cols needs to be a character vector of names")
-  if(!is.logical(KeepFactorCols)) return("KeepFactorCols needs to be either TRUE or FALSE")
-  if(!is.logical(KeepFactorCols)) return("KeepFactorCols needs to be either TRUE or FALSE")
-  if(!is.logical(OneHot)) return("OneHot needs to be either TRUE or FALSE")
-  if(!is.logical(SaveFactorLevels)) return("SaveFactorLevels needs to be either TRUE or FALSE")
-  if(!is.logical(ImportFactorLevels)) return("ImportFactorLevels needs to be either TRUE or FALSE")
-  if(!is.logical(ClustScore)) return("ClustScore needs to be either TRUE or FALSE")
-  if(!is.null(SavePath)) if(!is.character(SavePath)) return("SavePath needs to be a character value of a folder location")
+  # Check arguments ----
+  if(!is.null(TopN)) if(length(TopN) > 1L && length(TopN) != length(cols)) stop("TopN must match the length of cols")
+  if(!is.null(TopN)) if(length(TopN) > 1L) TopN <- rev(TopN)
+  if(!is.character(cols)) stop("cols needs to be a character vector of names")
+  if(!is.logical(KeepFactorCols)) stop("KeepFactorCols needs to be either TRUE or FALSE")
+  if(!is.logical(KeepFactorCols)) stop("KeepFactorCols needs to be either TRUE or FALSE")
+  if(!is.logical(OneHot)) stop("OneHot needs to be either TRUE or FALSE")
+  if(!is.logical(SaveFactorLevels)) stop("SaveFactorLevels needs to be either TRUE or FALSE")
+  if(!is.logical(ImportFactorLevels)) stop("ImportFactorLevels needs to be either TRUE or FALSE")
+  if(!is.logical(ClustScore)) stop("ClustScore needs to be either TRUE or FALSE")
+  if(!is.null(SavePath)) if(!is.character(SavePath)) stop("SavePath needs to be a character value of a folder location")
 
   # Ensure correct argument settings----
-  if(OneHot & ClustScore) {
+  if(OneHot && ClustScore) {
     OneHot <- FALSE
     KeepFactorCols <- FALSE
   }
 
-  # Build dummies start----
+  # Build dummies start ----
   FactorsLevelsList <- list()
   if(!GroupVar) if(length(cols) > 1L & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
+  if(length(TopN) > 1L) Counter <- 1L
   for(col in rev(cols)) {
     size <- ncol(data)
     Names <- setdiff(names(data), col)
@@ -97,6 +136,15 @@ DummifyDT <- function(data,
     } else if(!is.null(FactorLevelsList)) {
       temp <- FactorLevelsList[[eval(col)]]
       inds <- sort(unique(temp[[eval(col)]]))
+    } else if(!is.null(TopN)) {
+      if(length(TopN) > 1L) {
+        inds <- data[, .N, by = eval(col)][order(-N)]
+        inds <- sort(inds[seq_len(min(TopN[Counter], .N)), get(col)])
+        if(length(TopN) > 1L) Counter <- Counter + 1L
+      } else {
+        inds <- data[, .N, by = eval(col)][order(-N)]
+        inds <- sort(inds[seq_len(min(TopN, .N)), get(col)])
+      }
     } else {
       inds <- sort(unique(data[[eval(col)]]))
     }
@@ -105,7 +153,21 @@ DummifyDT <- function(data,
     data.table::alloc.col(data, n = ncol(data) + length(inds))
 
     # Save factor levels for scoring later----
-    if(SaveFactorLevels) data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL], file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
+    if(SaveFactorLevels) {
+      if(!is.null(TopN)) {
+        if(length(TopN) > 1L) {
+          temp <- data[, get(col), by = eval(col)]
+          temp <- temp[seq_len(min(TopN[Counter-1L], .N))][, V1 := NULL]
+          data.table::fwrite(x = temp, file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
+        } else {
+          temp <- data[, get(col), by = eval(col)]
+          temp <- temp[seq_len(min(TopN, .N))][, V1 := NULL]
+          data.table::fwrite(x = temp, file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
+        }
+      } else {
+        data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL], file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
+      }
+    }
 
     # Collect Factor Levels----
     if(ReturnFactorLevels) FactorsLevelsList[[eval(col)]] <- data[, get(col), by = eval(col)][, V1 := NULL]

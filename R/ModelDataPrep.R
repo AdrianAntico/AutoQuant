@@ -62,10 +62,10 @@ ModelDataPrep <- function(data,
                           MissNum         = -1,
                           IgnoreCols      = NULL) {
 
-  # Full speed ahead----
+  # Full speed ahead ----
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
-  # Check data.table----
+  # Check data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # Prepare columns for action----
@@ -102,7 +102,7 @@ ModelDataPrep <- function(data,
   }
 
   # Remove Dates----
-  if(RemoveDates | DateToChar) {
+  if(RemoveDates || DateToChar) {
     for(col in rev(x)) {
       if(!is.character(data[[col]]) & !is.factor(data[[col]]) & !is.numeric(data[[col]]) & !is.integer(data[[col]]) & !is.logical(data[[col]]) & !is.complex(data[[col]])) {
         if(DateToChar) {
