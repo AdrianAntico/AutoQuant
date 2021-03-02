@@ -451,6 +451,9 @@ AutoInteraction <- function(data = NULL,
                             Scoring = FALSE,
                             File = NULL) {
 
+  # Arg Check ----
+  if(InteractionDepth > length(NumericVars)) stop("InteractionDepth cannot be greater than the length of NumericVars")
+
   # Check data ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
@@ -557,57 +560,25 @@ AutoInteraction <- function(data = NULL,
     NumVarsNames <- c()
     NumVarOperations <- list()
 
-    # Case 2: N choose 2 up to N choose N-1: Middle-Hierarchy Interactions
+    # Interaction Depth equals number of variables
     if(i == N1) {
-      if(i < N) {
-        temp <- combinat::combn(NumericVars, m = i)
-        temp2 <- c()
-        for(k in seq_len(ncol(temp))) {
-          for(zz in seq_len(l)) templist[[zz]] <- temp[zz, k]
-          NumVarsNames <- c(NumVarsNames, temp2)
-        }
-
-        # Case 3: N choose N - Full Interaction
-      } else if(i == N1) {
-        temp <- combinat::combn(NumericVars, m = i)
-        for(m in seq_len(N)) {
-          if(m == 1L) {
-            temp2 <- temp[m]
-          } else {
-            temp2 <- paste(temp2,temp[l,k], sep = "_")
-            templist <- list()
-            for(zz in seq_len(l)) templist[[zz]] <- temp[zz, k]
-            NumVarOperations[[temp2]] <- templist
-          }
-        }
-        NumVarsNames <- c(NumVarsNames, temp2)
+      temp <- combinat::combn(NumericVars, m = i)
+      for(m in N1) {
+        temp2 <- paste(temp, collapse = "_")
+        templist <- list()
+        for(zz in seq_len(m)) templist[[zz]] <- temp[zz]
+        NumVarOperations[[temp2]] <- templist
       }
-    } else {
-      if(i <= N1) {
-        temp <- combinat::combn(NumericVars, m = i)
-        temp2 <- c()
-        for(k in seq_len(ncol(temp))) {
-          for(l in seq_len(i)) {
-            if(l == 1L) {
-              temp2 <- temp[l,k]
-            } else {
-              temp2 <- paste(temp2,temp[l, k], sep = "_")
-              templist <- list()
-              for(zz in seq_len(l)) templist[[zz]] <- temp[zz, k]
-              NumVarOperations[[temp2]] <- templist
-            }
-          }
-          NumVarsNames <- c(NumVarsNames, temp2)
-        }
-
-        # Case 3: N choose N - Full Interaction
-      } else if(i == N1) {
-        temp <- combinat::combn(NumericVars, m = i)
-        for(m in seq_len(N)) {
-          if(m == 1L) {
-            temp2 <- temp[m]
+      NumVarsNames <- c(NumVarsNames, temp2)
+    } else if(i <= N1) {
+      temp <- combinat::combn(NumericVars, m = i)
+      temp2 <- c()
+      for(k in seq_len(ncol(temp))) {
+        for(l in seq_len(i)) {
+          if(l == 1L) {
+            temp2 <- temp[l,k]
           } else {
-            temp2 <- paste(temp2,temp[m], sep = "_")
+            temp2 <- paste(temp2,temp[l, k], sep = "_")
             templist <- list()
             for(zz in seq_len(l)) templist[[zz]] <- temp[zz, k]
             NumVarOperations[[temp2]] <- templist
