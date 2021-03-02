@@ -181,7 +181,7 @@ AutoCatBoostClassifier <- function(data,
                                    GrowPolicy = NULL,
                                    model_size_reg = 0.5,
                                    feature_border_type = "GreedyLogSum",
-                                   sampling_unit = "Group",
+                                   sampling_unit = "Object",
                                    subsample = NULL,
                                    score_function = "Cosine",
                                    min_data_in_leaf = 1) {
