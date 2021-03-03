@@ -6,6 +6,7 @@
 #' @family Feature Engineering
 #' @param data This is your data
 #' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
+#' @param LookbackDays Default NULL which investigates Date - Lag1Date to compute Holiday's per period. Otherwise it will lookback LokkbackDays.
 #' @param HolidayGroups Pick groups
 #' @param Holidays Pick holidays
 #' @param GroupingVars Grouping variable names
@@ -41,6 +42,7 @@
 #'   data <- CreateHolidayVariables(
 #'     data,
 #'     DateCols = "DateTime",
+#'     LookbackDays = NULL,
 #'     HolidayGroups = c("USPublicHolidays","EasterGroup",
 #'       "ChristmasGroup","OtherEcclesticalFeasts"),
 #'     Holidays = NULL,
@@ -53,6 +55,7 @@
 #' @export
 CreateHolidayVariables <- function(data,
                                    DateCols = NULL,
+                                   LookbackDays = NULL,
                                    HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
                                    Holidays = NULL,
                                    GroupingVars = NULL,
@@ -66,7 +69,7 @@ CreateHolidayVariables <- function(data,
 
   # If GroupVars are numeric, convert them to character
   for(zz in seq_along(GroupingVars)) {
-    if(is.numeric(data[[eval(GroupingVars[zz])]]) | is.integer(data[[eval(GroupingVars[zz])]])) {
+    if(is.numeric(data[[eval(GroupingVars[zz])]]) || is.integer(data[[eval(GroupingVars[zz])]])) {
       data.table::set(data, j = GroupingVars[zz], value = as.character(data[[eval(GroupingVars[zz])]]))
     }
   }
@@ -132,17 +135,27 @@ CreateHolidayVariables <- function(data,
 
   # Compute----
   for(i in seq_len(length(DateCols))) {
-    x <- data[, quantile(x = (data[[eval(DateCols[i])]] - data[[(paste0("Lag1_",eval(DateCols[i])))]]), probs = 0.99)]
-    data[, eval(paste0("Lag1_", DateCols[i])) := get(DateCols[i]) - x]
+    if(!is.null(LookbackDays)) {
+      x <- LookbackDays
+    } else {
+      x <- data[, quantile(x = (data[[eval(DateCols[i])]] - data[[(paste0("Lag1_",eval(DateCols[i])))]]), probs = 0.99)]
+    }
+    data[, eval(paste0("Lag1_", DateCols[i])) := get(DateCols[i]) - lubridate::days(x)]
     HolidayVals <- unique(as.Date(timeDate::holiday(year = unique(lubridate::year(data[[eval(DateCols)]])), Holiday = Holidays)))
     data.table::setkeyv(x = data, cols = c(eval(GroupingVars), DateCols[i], paste0("Lag1_", eval(DateCols[i]))))
     data.table::set(data, i = which(data[[eval(DateCols[i])]] == MinDate), j = eval(paste0("Lag1_",DateCols[i])), value = MinDate - x)
     temp <- unique(data[, .SD, .SDcols = c(DateCols[i], paste0("Lag1_", eval(DateCols[i])))])
     temp[, HolidayCounts := 0L]
-    NumRows <- as.integer(seq_len(temp[,.N]))
-    for(Rows in NumRows) {
-      if(Print) print(Rows)
-      data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
+    NumRows <- seq_len(temp[,.N])
+    if(Print) {
+      for(Rows in NumRows) {
+        print(Rows)
+        data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
+      }
+    } else {
+      for(Rows in NumRows) {
+        data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[1L])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
+      }
     }
     data[temp, on = c(eval(DateCols[i]), paste0("Lag1_", DateCols[i])), HolidayCounts := i.HolidayCounts]
     if(length(DateCols) > 1L) data.table::setnames(data, "HolidayCounts", paste0(DateCols[i], "_HolidayCounts"))

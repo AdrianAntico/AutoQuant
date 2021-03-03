@@ -507,53 +507,28 @@ AutoInteraction <- function(data = NULL,
   if(!Scoring) {
     for(nam in NumericVars) {
       if(Center && Scale) {
-
-        # Create matrices
         a1 <- as.matrix(data[[nam]])
-
-        # Means
         Standardize[[nam]]$Mean <- Rfast::colmeans(a1)
-
-        # Denom
         c1 <- t(a1) - Standardize[[nam]]$Mean
         Standardize[[nam]]$Denom <- sqrt(Rfast::rowsums(c1^2))
-
-        # Factor
         Standardize[[nam]]$Factor <- sqrt((dim(a1)[1L] - 1))
-
-        # Result
         Standardize[[nam]]$Result <- t(c1/Standardize[[nam]]$Denom * Standardize[[nam]]$Factor)
-
       } else if(Center && !Scale) {
-
-        # Create matrices
         a1 <- as.matrix(data[[nam]])
-
-        # Means
         Standardize[[nam]]$Mean <- Rfast::colmeans(a1)
-
-        # Result
         Standardize[[nam]]$Result <- t(a1) - Standardize[[nam]]$Mean
-
       } else if(!Center && Scale) {
-
-        # Create matrices
         a1 <- as.matrix(data[[nam]])
         Standardize[[nam]]$Denom <- sqrt(Rfast::rowsums(a1^2))
-
-        # Factor
         Standardize[[nam]]$Factor <- sqrt((dim(a1)[1L] - 1))
-
-        # Result
         Standardize[[nam]]$Result <- t(a1/Standardize[[nam]]$Denom * Standardize[[nam]]$Factor)
-
       } else {
         Standardize[[nam]]$Result <- data[[NumVarOperations[[x]][[2L]]]]
       }
     }
   }
 
-  # N choose i for 2 <= i <= N ----
+  # Define colnames and contributing features ----
   for(i in seq_len(N)[-1L]) {
 
     # Initialize lists and vector
@@ -598,11 +573,8 @@ AutoInteraction <- function(data = NULL,
   # Save Standardize if Center or Scale ----
   if(!Scoring && (Center || Scale)) {
     for(nam in names(Standardize)) Standardize[[nam]][["Result"]] <- NULL
-    save(Standardize, file = file.path(File, "Standardize.Rdata"))
+    if(!is.null(File)) save(Standardize, file = file.path(File, "Standardize.Rdata"))
   }
-
-  # Save csv ----
-  if(exists("Standardize")) rm(Standardize)
 
   # Return data ----
   return(data)

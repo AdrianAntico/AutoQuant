@@ -7,6 +7,7 @@
 CreateHolidayVariables(
   data,
   DateCols = NULL,
+  LookbackDays = NULL,
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
   Holidays = NULL,
@@ -18,6 +19,8 @@ CreateHolidayVariables(
 \item{data}{This is your data}
 
 \item{DateCols}{Supply either column names or column numbers of your date columns you want to use for creating calendar variables}
+
+\item{LookbackDays}{Default NULL which investigates Date - Lag1Date to compute Holiday's per period. Otherwise it will lookback LokkbackDays.}
 
 \item{HolidayGroups}{Pick groups}
 
@@ -63,6 +66,7 @@ runtime <- system.time(
   data <- CreateHolidayVariables(
     data,
     DateCols = "DateTime",
+    LookbackDays = NULL,
     HolidayGroups = c("USPublicHolidays","EasterGroup",
       "ChristmasGroup","OtherEcclesticalFeasts"),
     Holidays = NULL,

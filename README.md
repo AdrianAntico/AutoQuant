@@ -507,6 +507,7 @@ runtime <- system.time(
   data <- CreateHolidayVariables(
     data,
     DateCols = "DateTime",
+    LookbackDays = 7,
     HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
     Holidays = NULL,
     GroupingVars = c("Factor_1","Factor_2","Factor_3","Factor_4"),
