@@ -228,9 +228,9 @@ ContinuousTimeDataGenerator <- function(data,
     data <- CreateHolidayVariables(
       data,
       DateCols = DateVariableName,
+      LookbackDays = LB("days"),
       HolidayGroups = HolidayGroups,
-      Holidays = NULL,
-      GroupingVars = "GroupVar")
+      Holidays = NULL)
   }
   CreateHolidayVariablesEnd <- Sys.time()
   ProfilerList[["CreateHolidayVariables()"]] <- CreateHolidayVariablesEnd - CreateHolidayVariablesStart

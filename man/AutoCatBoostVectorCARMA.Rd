@@ -35,6 +35,7 @@ AutoCatBoostVectorCARMA(
     "isoweek", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   HolidayLags = 1L,
   HolidayMovingAverages = 1L:2L,
   TimeTrendVariable = FALSE,
@@ -121,6 +122,8 @@ AutoCatBoostVectorCARMA(
 \item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
 \item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
+
+\item{HolidayLookback}{Number of days in range to compute number of holidays from a given date in the data. If NULL, the number of days are computed for you.}
 
 \item{HolidayLags}{Number of lags to build off of the holiday count variable.}
 
@@ -247,6 +250,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
   HolidayVariable = c("USPublicHolidays",
                       "EasterGroup",
                       "ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
 

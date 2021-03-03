@@ -36,6 +36,7 @@ CLTrainer(
     "year"),
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   ImputeRollStats = -0.001,
   CohortHolidayLags = c(1L, 2L, 7L),
   CohortHolidayMovingAverages = c(3L, 7L),
@@ -132,6 +133,8 @@ CLTrainer(
 \item{CalendarVariables}{"wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
 \item{HolidayGroups}{c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts")}
+
+\item{HolidayLookback}{Number of days in range to compute number of holidays from a given date in the data. If NULL, the number of days are computed for you.}
 
 \item{ImputeRollStats}{Constant value to fill NA after running AutoLagRollStats()}
 
@@ -252,6 +255,7 @@ RemixAutoML::CLTrainer(
                          "month","quarter","year"),
    HolidayGroups = c("USPublicHolidays","EasterGroup",
                      "ChristmasGroup","OtherEcclesticalFeasts"),
+   HolidayLookback = NULL,
    CohortHolidayLags = c(1L,2L,7L),
    CohortHolidayMovingAverages = c(3L,7L),
    CalendarHolidayLags = c(1L,2L,7L),

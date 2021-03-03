@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2OCARMA.R
 \name{AutoH2OCARMA}
 \alias{AutoH2OCARMA}
-\title{Feature Rich ML Panel Forecasting}
+\title{AutoH2OCARMA}
 \usage{
 AutoH2OCARMA(
   AlgoType = "drf",
@@ -46,6 +46,7 @@ AutoH2OCARMA(
     "wom", "isoweek", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
   TimeTrendVariable = FALSE,
@@ -163,6 +164,8 @@ AutoH2OCARMA(
 \item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
 \item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
+
+\item{HolidayLookback}{Number of days in range to compute number of holidays from a given date in the data. If NULL, the number of days are computed for you.}
 
 \item{HolidayLags}{Number of lags to build off of the holiday count variable.}
 
@@ -325,9 +328,10 @@ Results <- RemixAutoML::AutoH2OCARMA(
   CalendarVariables = c("week", "wom", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays","EasterGroup",
     "ChristmasGroup","OtherEcclesticalFeasts"),
-  TimeTrendVariable = TRUE,
+  HolidayLookback = NULL,
   HolidayLags = 1:7,
   HolidayMovingAverages = 2:7,
+  TimeTrendVariable = TRUE,
 
   # Time series features
   Lags = list("weeks" = c(1:4), "months" = c(1:3)),

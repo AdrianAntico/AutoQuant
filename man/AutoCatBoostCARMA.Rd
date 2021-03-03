@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoCatBoostCARMA.R
 \name{AutoCatBoostCARMA}
 \alias{AutoCatBoostCARMA}
-\title{Feature Rich ML Panel Forecasting}
+\title{AutoCatBoostCARMA}
 \usage{
 AutoCatBoostCARMA(
   data,
@@ -38,6 +38,7 @@ AutoCatBoostCARMA(
     "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   HolidayLags = 1L,
   HolidayMovingAverages = 1L:2L,
   TimeTrendVariable = FALSE,
@@ -137,6 +138,8 @@ AutoCatBoostCARMA(
 \item{CalendarVariables}{NULL, or select from "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"}
 
 \item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
+
+\item{HolidayLookback}{Number of days in range to compute number of holidays from a given date in the data. If NULL, the number of days are computed for you.}
 
 \item{HolidayLags}{Number of lags to build off of the holiday count variable.}
 
@@ -344,6 +347,7 @@ for(Run in seq_len(TotalRuns)) {
     # Calendar-related features
     CalendarVariables = c("week","wom","month","quarter"),
     HolidayVariable = c("USPublicHolidays"),
+    HolidayLookback = NULL,
     HolidayLags = c(1,2,3),
     HolidayMovingAverages = c(2,3),
 

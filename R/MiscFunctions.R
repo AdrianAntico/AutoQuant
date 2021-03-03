@@ -133,3 +133,39 @@ Logger <- function(x) {
     list(res, warn = warn, err = err)
   }
 }
+
+#' @title LB
+#'
+#' @description Create default for CreateHolidayVariables
+#'
+#' @author Adrian Antico
+#'
+#' @family Misc
+#'
+#' @param TimeAgg Valid options are "hour", "hours", "1min", "1mins", "1minute", "1minutes", "5min", "5mins", "5minute", "5minutes","10min", "10mins", "10minute", "10minutes", "15min", "15mins", "15minute", "15minutes", "30min", "30mins", "30minute", "30minutes", "day", "days", "week", "weeks", "month", "months", "quarter", "quarters", "years", "year"
+#'
+#' @examples
+#' \dontrun{
+#' Lookback <- LB("days")
+#' }
+#'
+#' @export
+LB <- function(TimeAgg) {
+  if(tolower(TimeAgg) %chin% c("hour","hours",
+                               "1min","1mins","1minute","1minutes",
+                               "5min","5mins","5minute","5minutes",
+                               "10min","10mins","10minute","10minutes",
+                               "15min","15mins","15minute","15minutes",
+                               "30min","30mins","30minute","30minutes",
+                               "day","days")) {
+    return(1)
+  } else if(tolower(TimeAgg) %chin% c("week","weeks")) {
+    return(7)
+  } else if(tolower(TimeAgg) %chin% c("month","months")) {
+    return(30)
+  } else if(tolower(TimeAgg) %chin% c("quarter","quarters")) {
+    return(120)
+  } else if(tolower(TimeAgg) %chin% c("years","year")) {
+    return(365)
+  }
+}

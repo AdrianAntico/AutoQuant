@@ -136,9 +136,9 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
     datax <- CreateHolidayVariables(
       datax,
       DateCols = DateVariableName,
+      LookbackDays = LB("days"),
       HolidayGroups = HolidayGroups,
-      Holidays = NULL,
-      GroupingVars = "GroupVar")
+      Holidays = NULL)
   }
 
   # Add in the time varying features----

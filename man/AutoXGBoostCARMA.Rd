@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoXGBoostCARMA.R
 \name{AutoXGBoostCARMA}
 \alias{AutoXGBoostCARMA}
-\title{Feature Rich ML Panel Forecasting}
+\title{AutoXGBoostCARMA}
 \usage{
 AutoXGBoostCARMA(
   data,
@@ -36,6 +36,7 @@ AutoXGBoostCARMA(
     "wom", "isoweek", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   HolidayLags = 1L,
   HolidayMovingAverages = 3L,
   TimeTrendVariable = FALSE,
@@ -118,6 +119,8 @@ AutoXGBoostCARMA(
 \item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "wom", "isoweek", "month", "quarter", "year"}
 
 \item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
+
+\item{HolidayLookback}{Number of days in range to compute number of holidays from a given date in the data. If NULL, the number of days are computed for you.}
 
 \item{HolidayLags}{Number of lags for the holiday counts}
 
@@ -247,14 +250,15 @@ XGBoostResults <- AutoXGBoostCARMA(
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
   Quantiles_Selected = c("q5","q95"),
   XREGS = xregs,
   FourierTerms = 4,
   CalendarVariables = c("week", "wom", "month", "quarter"),
   HolidayVariable = c("USPublicHolidays","EasterGroup",
     "ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
   TimeTrendVariable = TRUE,
 
   # ML eval args

@@ -509,8 +509,7 @@ runtime <- system.time(
     DateCols = "DateTime",
     LookbackDays = 7,
     HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-    Holidays = NULL,
-    GroupingVars = c("Factor_1","Factor_2","Factor_3","Factor_4"),
+    Holidays = NULL
     Print = FALSE))
 head(data)
 print(runtime)
@@ -2633,7 +2632,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <p>
  
 
-<details><summary>Code Example</summary>
+<details><summary>Code Example: AutoCatBoostCARMA()</summary>
 <p>
  
 ```
@@ -2765,6 +2764,7 @@ for(Run in seq_len(TotalRuns)) {
     # Calendar-related features
     CalendarVariables = c("week","wom","month","quarter"),
     HolidayVariable = c("USPublicHolidays"),
+    HolidayLookback = NULL,
     HolidayLags = c(1,2,3),
     HolidayMovingAverages = c(2,3),
 
@@ -2873,7 +2873,16 @@ for(Run in seq_len(TotalRuns)) {
   # Garbage collection because of GPU
   gc()
 }
+```
 
+</p>
+</details>
+
+<details><summary>Code Example: AutoCatBoostVectorCARMA()</summary>
+<p>
+
+ 
+```
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # ML-Based Vector AutoRegression CARMA ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2936,6 +2945,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
   HolidayVariable = c("USPublicHolidays",
                       "EasterGroup",
                       "ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
 
@@ -2979,8 +2989,16 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
   BorderCount = 254,
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   Depth = 6)
+```
 
+</p>
+</details>
 
+<details><summary>Code Example: AutoCatBoostHurdleCARMA()</summary>
+<p>
+
+ 
+```
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Intermittent Demand CARMA ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -3038,6 +3056,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
   # Date features
   CalendarVariables = c("week","month","quarter"),
   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
 
@@ -3074,26 +3093,46 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
   BorderCount = 254,
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   Depth = 6)
-  
+```
+
+</p>
+</details>
+
+<details><summary>Code Example: AutoXGBoostCARMA()</summary>
+<p>
+
+ 
+```
   
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # XGBoost Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-# Load Walmart Data from Dropbox----
+# Load data
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
-# Prepare data
-data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
-keep <- c("Store","Dept","Date","Weekly_Sales")
-data <- data[, ..keep]
-data <- data[Store %in% c(1,2)]
-xregs <- data.table::copy(data)
-xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-xregs[, c("Store","Dept") := NULL]
-data.table::setnames(xregs, "Weekly_Sales", "Other")
-xregs[, Other := jitter(Other, factor = 25)]
-data <- data[as.Date(Date) < as.Date('2012-09-28')]
+# Ensure series have no missing dates (also remove series with more than 25% missing values)
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = "Date",
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  FillType = "maxmax",
+  MaxMissingPercent = 0.25,
+  SimpleImpute = TRUE)
+
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Remove IsHoliday column
+data[, IsHoliday := NULL]
+
+# Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
+xregs <- data[, .SD, .SDcols = c("Date", "Store", "Dept")]
+
+# Change data types
+data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 
  # Build forecast
 XGBoostResults <- AutoXGBoostCARMA(
@@ -3117,19 +3156,17 @@ XGBoostResults <- AutoXGBoostCARMA(
   AnomalyDetection = NULL,
 
   # Productionize
-  FC_Periods = 4,
+  FC_Periods = 0,
   TrainOnFull = FALSE,
-  TreeMethod = "hist",
-  EvalMetric = "RMSE",
-  GridTune = FALSE,
-  ModelCount = 5,
   NThreads = 8,
   Timer = TRUE,
   DebugMode = FALSE,
+  SaveDataPath = NULL,
+  PDFOutputPath = NULL,
 
   # Target Transformations
   TargetTransformation = TRUE,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
   Difference = FALSE,
 
   # Features
@@ -3139,33 +3176,73 @@ XGBoostResults <- AutoXGBoostCARMA(
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
   Quantiles_Selected = c("q5","q95"),
   XREGS = xregs,
   FourierTerms = 4,
-  CalendarVariables = c("week","month","quarter"),
+  CalendarVariables = c("week", "wom", "month", "quarter"),
   HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
   TimeTrendVariable = TRUE,
-  NTrees = 300)
 
+  # ML eval args
+  TreeMethod = "hist",
+  EvalMetric = "RMSE",
+  LossFunction = 'reg:squarederror',
 
+  # ML grid tuning
+  GridTune = FALSE,
+  ModelCount = 5,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+
+  # ML args
+  NTrees = 300,
+  LearningRate = 0.3,
+  MaxDepth = 9L,
+  MinChildWeight = 1.0,
+  SubSample = 1.0,
+  ColSampleByTree = 1.0)
+```
+
+</p>
+</details>
+
+<details><summary>Code Example: AutoH2OCARMA()</summary>
+<p>
+
+ 
+```
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # H2O Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-# Load Walmart Data from Dropbox----
+# Load data
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
-# Prepare data
-data <- data[, Counts := .N, by = c("Store","Dept")][Counts == 143][, Counts := NULL]
-keep <- c("Store","Dept","Date","Weekly_Sales")
-data <- data[, ..keep]
-data <- data[Store == 1][, Store := NULL]
-xregs <- data.table::copy(data)
-data.table::setnames(xregs, "Dept", "GroupVar")
-data.table::setnames(xregs, "Weekly_Sales", "Other")
-data <- data[as.Date(Date) < as.Date('2012-09-28')]
+# Ensure series have no missing dates (also remove series with more than 25% missing values)
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = "Date",
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  FillType = "maxmax",
+  MaxMissingPercent = 0.25,
+  SimpleImpute = TRUE)
+
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Remove IsHoliday column
+data[, IsHoliday := NULL]
+
+# Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
+xregs <- data[, .SD, .SDcols = c("Date", "Store", "Dept")]
+
+# Change data types
+data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
 
 # Build forecast
 Results <- RemixAutoML::AutoH2OCARMA(
@@ -3182,32 +3259,37 @@ Results <- RemixAutoML::AutoH2OCARMA(
   TimeGroups = c("weeks","months"),
 
   # Data Wrangling Features
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 138, 10 / 138),
   PartitionType = "random",
 
-  # Productionize
+  # Production args
   FC_Periods = 4L,
   TrainOnFull = FALSE,
-  EvalMetric = "RMSE",
-  GridTune = FALSE,
-  ModelCount = 5,
-  MaxMem = "28G",
+  MaxMem = {gc();paste0(as.character(floor(max(32, as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) -32) / 1000000)),"G")},
   NThreads = parallel::detectCores(),
+  PDFOutputPath = NULL,
+  SaveDataPath = NULL,
   Timer = TRUE,
+  DebugMode = TRUE,
 
   # Target Transformations
   TargetTransformation = FALSE,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+    "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
 
-  # Features
-  AnomalyDetection = NULL,
+  # Calendar features
+  CalendarVariables = c("week", "wom", "month", "quarter", "year"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup",
+    "ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
   HolidayLags = 1:7,
   HolidayMovingAverages = 2:7,
+  TimeTrendVariable = TRUE,
+
+  # Time series features
   Lags = list("weeks" = c(1:4), "months" = c(1:3)),
   MA_Periods = list("weeks" = c(2:8), "months" = c(6:12)),
   SD_Periods = NULL,
@@ -3215,13 +3297,56 @@ Results <- RemixAutoML::AutoH2OCARMA(
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
   Quantiles_Selected = NULL,
+
+  # Bonus Features
   XREGS = NULL,
   FourierTerms = 2L,
-  CalendarVariables = c("week","month","quarter"),
-  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-  TimeTrendVariable = TRUE,
+  AnomalyDetection = NULL,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+
+  # ML evaluation args
+  EvalMetric = "RMSE",
+  NumOfParDepPlots = 0L,
+
+  # ML grid tuning args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  ModelCount = 5,
+  MaxRuntimeSecs = 60*60*24,
+  StoppingRounds = 10,
+
+  # ML Args
   NTrees = 1000L,
-  DebugMode = TRUE)
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel  = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO",
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
+
+  # ML args
+  Distribution = "gaussian",
+  Link = "identity",
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 
 ```
 

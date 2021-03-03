@@ -2,7 +2,7 @@
 % Please edit documentation in R/CreateHolidayVariables.R
 \name{CreateHolidayVariables}
 \alias{CreateHolidayVariables}
-\title{CreateHolidayVariables Create Holiday Count Columns}
+\title{CreateHolidayVariables}
 \usage{
 CreateHolidayVariables(
   data,
@@ -11,7 +11,6 @@ CreateHolidayVariables(
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
   Holidays = NULL,
-  GroupingVars = NULL,
   Print = FALSE
 )
 }
@@ -25,8 +24,6 @@ CreateHolidayVariables(
 \item{HolidayGroups}{Pick groups}
 
 \item{Holidays}{Pick holidays}
-
-\item{GroupingVars}{Grouping variable names}
 
 \item{Print}{Set to TRUE to print iteration number to console}
 }
@@ -70,7 +67,6 @@ runtime <- system.time(
     HolidayGroups = c("USPublicHolidays","EasterGroup",
       "ChristmasGroup","OtherEcclesticalFeasts"),
     Holidays = NULL,
-    GroupingVars = c("Factor_1","Factor_2","Factor_3","Factor_4"),
     Print = FALSE))
 head(data)
 print(runtime)

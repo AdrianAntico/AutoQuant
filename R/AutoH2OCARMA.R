@@ -1,9 +1,10 @@
-#' Feature Rich ML Panel Forecasting
+#' @title AutoH2OCARMA
 #'
-#' AutoH2OCARMA Mutlivariate Forecasting with calendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
+#' @description AutoH2OCARMA Mutlivariate Forecasting with calendar variables, Holiday counts, holiday lags, holiday moving averages, differencing, transformations, interaction-based categorical encoding using target variable and features to generate various time-based aggregated lags, moving averages, moving standard deviations, moving skewness, moving kurtosis, moving quantiles, parallelized interaction-based fourier pairs by grouping variables, and Trend Variables.
 #'
 #' @author Adrian Antico
 #' @family Automated Panel Data Forecasting
+#'
 #' @param AlgoType Select from "dfr" for RandomForecast, "gbm" for gradient boosting, "glm" for generalized linear model, "automl" for H2O's AutoML algo, and "gam" for H2O's Generalized Additive Model.
 #' @param ExcludeAlgos For use when AlgoType = "AutoML". Selections include "DRF","GLM","XGBoost","GBM","DeepLearning" and "Stacke-dEnsemble"
 #' @param data Supply your full series data set here
@@ -40,6 +41,7 @@
 #' @param FourierTerms Set to the max number of pairs. E.g. 2 means to generate two pairs for by each group level and interations if hierarchy is enabled.
 #' @param CalendarVariables NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
 #' @param HolidayVariable NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"
+#' @param HolidayLookback Number of days in range to compute number of holidays from a given date in the data. If NULL, the number of days are computed for you.
 #' @param HolidayLags Number of lags to build off of the holiday count variable.
 #' @param HolidayMovingAverages Number of moving averages to build off of the holiday count variable.
 #' @param TimeTrendVariable Set to TRUE to have a time trend variable added to the model. Time trend is numeric variable indicating the numeric value of each record in the time series (by group). Time trend starts at 1 for the earliest point in time and increments by one for each success time point.
@@ -152,9 +154,10 @@
 #'   CalendarVariables = c("week", "wom", "month", "quarter", "year"),
 #'   HolidayVariable = c("USPublicHolidays","EasterGroup",
 #'     "ChristmasGroup","OtherEcclesticalFeasts"),
-#'   TimeTrendVariable = TRUE,
+#'   HolidayLookback = NULL,
 #'   HolidayLags = 1:7,
 #'   HolidayMovingAverages = 2:7,
+#'   TimeTrendVariable = TRUE,
 #'
 #'   # Time series features
 #'   Lags = list("weeks" = c(1:4), "months" = c(1:3)),
@@ -267,6 +270,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          FourierTerms = 6,
                          CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week", "wom", "isoweek", "month", "quarter", "year"),
                          HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+                         HolidayLookback = NULL,
                          HolidayLags = 1,
                          HolidayMovingAverages = 1:2,
                          TimeTrendVariable = FALSE,
@@ -335,6 +339,9 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   Skew_Periods          <- Args$Skew_Periods
   Kurt_Periods          <- Args$Kurt_Periods
   Quantile_Periods      <- Args$Quantile_Periods
+
+  # Arg check ----
+  if(!is.null(HolidayLookback) && !is.numeric(HolidayLookback)) stop("HolidayLookback has to be numeric")
 
   # Variables for Program: Redefine HoldOutPerids----
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
@@ -611,32 +618,19 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
   # Feature Engineering: Add Create Holiday Variables----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables----")
-  if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
+  if(!is.null(HolidayVariable)) {
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateColumnName),
+      LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit),
       HolidayGroups = HolidayVariable,
-      Holidays = NULL,
-      GroupingVars = if("GroupVar" %chin% names(data)) "GroupVar" else GroupVariables)
+      Holidays = NULL)
 
     # Convert to lubridate as_date() or POSIXct----
     if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
       data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    }
-  } else if(!is.null(HolidayVariable)) {
-    data <- CreateHolidayVariables(
-      data,
-      DateCols = eval(DateColumnName),
-      HolidayGroups = HolidayVariable,
-      Holidays = NULL)
-
-    # Convert to lubridate as_date() or POSIXct----
-    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-      data.table::set(data, j = eval(DateColumnName), value = lubridate::as_date(data[[eval(DateColumnName)]]))
-    } else {
-      data.table::set(data, j = eval(DateColumnName), value = as.POSIXct(data[[eval(DateColumnName)]]))
     }
   }
 
@@ -1600,17 +1594,11 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
       # Update holiday feature----
       if(DebugMode) print("Update holiday feature----")
-      if(!is.null(HolidayVariable) & !is.null(GroupVariables)) {
+      if(!is.null(HolidayVariable)) {
         UpdateData <- CreateHolidayVariables(
           UpdateData,
           DateCols = eval(DateColumnName),
-          HolidayGroups = HolidayVariable,
-          Holidays = NULL,
-          GroupingVars = if("GroupVar" %chin% names(UpdateData)) "GroupVar" else GroupVariables)
-      } else if(!is.null(HolidayVariable)) {
-        UpdateData <- CreateHolidayVariables(
-          UpdateData,
-          DateCols = eval(DateColumnName),
+          LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit),
           HolidayGroups = HolidayVariable,
           Holidays = NULL)
       }

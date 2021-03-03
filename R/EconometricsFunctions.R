@@ -4718,9 +4718,9 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
     data <- CreateHolidayVariables(
       data,
       DateCols = eval(DateName),
+      LookbackDays = 1,
       HolidayGroups = c("USPublicHolidays"),
-      Holidays = NULL,
-      GroupingVars = "ModelID")
+      Holidays = NULL)
   }
 
   # Subset and Split out data sets----

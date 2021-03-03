@@ -4,6 +4,7 @@
 #'
 #' @author Adrian Antico
 #' @family Population Dynamics Forecasting
+#'
 #' @param data data object
 #' @param PartitionRatios Requires three values for train, validation, and test data sets
 #' @param BaseFunnelMeasure E.g. "Leads". This value should be a forward looking variable. Say you want to forecast ConversionMeasure 2 months into the future. You should have two months into the future of values of BaseFunnelMeasure
@@ -53,6 +54,7 @@
 #' @param CohortQuantilesSelected Supply a vector of "q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60", "q65", "q70", "q75", "q80", "q85", "q90", "q95"
 #' @param CalendarVariables "wday", "mday", "yday", "week", "isoweek", "month", "quarter", "year"
 #' @param HolidayGroups c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts")
+#' @param HolidayLookback Number of days in range to compute number of holidays from a given date in the data. If NULL, the number of days are computed for you.
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
@@ -115,6 +117,7 @@
 #'                          "month","quarter","year"),
 #'    HolidayGroups = c("USPublicHolidays","EasterGroup",
 #'                      "ChristmasGroup","OtherEcclesticalFeasts"),
+#'    HolidayLookback = NULL,
 #'    CohortHolidayLags = c(1L,2L,7L),
 #'    CohortHolidayMovingAverages = c(3L,7L),
 #'    CalendarHolidayLags = c(1L,2L,7L),
@@ -186,6 +189,7 @@ CLTrainer <- function(data,
                       MetricPeriods = 50L,
                       CalendarVariables = c("wday","mday","yday","week","isoweek","month","quarter","year"),
                       HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+                      HolidayLookback = NULL,
                       ImputeRollStats = -0.001,
                       CohortHolidayLags = c(1L, 2L, 7L),
                       CohortHolidayMovingAverages = c(3L, 7L),
@@ -265,6 +269,7 @@ CLTrainer <- function(data,
   ArgsList[["LossFunction"]] <- LossFunction
   ArgsList[["CalendarVariables"]] <- CalendarVariables
   ArgsList[["HolidayGroups"]] <- HolidayGroups
+  ArgsList[["HolidayLookback"]] <- HolidayLookback
   ArgsList[["ImputeRollStats"]] <- ImputeRollStats
   ArgsList[["CohortHolidayLags"]] <- CohortHolidayLags
   ArgsList[["CohortHolidayMovingAverages"]] <- CohortHolidayMovingAverages
@@ -381,7 +386,7 @@ CLTrainer <- function(data,
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
 
     # FE: CreateHolidayVariables() CalendarDate----
-    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CalendarDate), HolidayGroups = HolidayGroups, Holidays = NULL, GroupingVars = NULL, Print = FALSE))
+    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CalendarDate), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayGroups, Holidays = NULL, Print = FALSE))
     data.table::setnames(data, old = "HolidayCounts", new = paste0(CalendarDate,"HolidayCounts"))
     if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 3L, j = "Time", value = x[[3L]])
@@ -395,7 +400,7 @@ CLTrainer <- function(data,
     SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
 
     # FE: CreateHolidayVariables() CohortDate----
-    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CohortDate), HolidayGroups = eval(HolidayGroups), Holidays = NULL, GroupingVars = NULL, Print = FALSE))
+    x <- system.time(gcFirst = FALSE, data <- RemixAutoML::CreateHolidayVariables(data, DateCols = eval(CohortDate), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = eval(HolidayGroups), Holidays = NULL, Print = FALSE))
     data.table::setnames(data, old = "HolidayCounts", new = paste0(CohortDate, "HolidayCounts"))
     if(proc %chin% c("evaluate","eval","evaluation")) {
       data.table::set(TimerDataEval, i = 4L, j = "Time", value = x[[3L]])
@@ -1036,9 +1041,9 @@ CLForecast <- function(data,
     print("# Feature Engineering----")
     data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(ArgsList$CalendarDate)), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
     data <- RemixAutoML::CreateCalendarVariables(data, DateCols = c(eval(ArgsList$CohortDate)), AsFactor = FALSE, TimeUnits = ArgsList$CalendarVariables)
-    data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CalendarDate), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, GroupingVars = eval(SegmentName), Print = FALSE)
+    data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CalendarDate), LookbackDays = if(!is.null(ArgsList$HolidayLookback)) ArgsList$HolidayLookback else LB(TimeUnit), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, Print = FALSE)
     data.table::setnames(data, old = "HolidayCounts", new = paste0(ArgsList$CalendarDate,"HolidayCounts"))
-    data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CohortDate), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, GroupingVars = eval(SegmentName), Print = FALSE)
+    data <- RemixAutoML::CreateHolidayVariables(data, DateCols = c(ArgsList$CohortDate), LookbackDays = if(!is.null(ArgsList$HolidayLookback)) ArgsList$HolidayLookback else LB(TimeUnit), HolidayGroups = ArgsList$HolidayGroups, Holidays = NULL, Print = FALSE)
     data.table::setnames(data, old = "HolidayCounts", new = paste0(ArgsList$CohortDate,"HolidayCounts"))
     data.table::setorderv(data, cols = c(ArgsList$CalendarDate,eval(ArgsList$CohortPeriodsVariable)), c(1L, 1L))
 
