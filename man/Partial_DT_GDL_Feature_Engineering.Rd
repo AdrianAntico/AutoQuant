@@ -127,7 +127,8 @@ Other Feature Engineering:
 \code{\link{DifferenceDataReverse}()},
 \code{\link{DifferenceData}()},
 \code{\link{DummifyDT}()},
-\code{\link{H2oAutoencoder}()},
+\code{\link{H2OAutoencoderScoring}()},
+\code{\link{H2OAutoencoder}()},
 \code{\link{ModelDataPrep}()},
 \code{\link{TimeSeriesFill}()}
 }

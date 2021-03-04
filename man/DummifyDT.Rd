@@ -135,7 +135,8 @@ Other Feature Engineering:
 \code{\link{DT_GDL_Feature_Engineering}()},
 \code{\link{DifferenceDataReverse}()},
 \code{\link{DifferenceData}()},
-\code{\link{H2oAutoencoder}()},
+\code{\link{H2OAutoencoderScoring}()},
+\code{\link{H2OAutoencoder}()},
 \code{\link{ModelDataPrep}()},
 \code{\link{Partial_DT_GDL_Feature_Engineering}()},
 \code{\link{TimeSeriesFill}()}
