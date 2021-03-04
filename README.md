@@ -2596,23 +2596,6 @@ First step is to build either a binary classification model (in the case of a si
 </p>
 </details>
 
-#### General Purpose H2O Automated Modeling
-
-<details><summary>click to expand</summary>
-<p>
-  
-#### **AutoH2OModeler()**
-<code>AutoH2OModeler()</code> automatically build any number of models along with generating partial dependence calibration plots, model evaluation calibration plots, grid tuning, and file storage for easy production implementation. Handles regression, quantile regression, time until event, and classification models (binary and multinomial) using numeric and factor variables without the need for monotonic transformations nor one-hot-encoding.
-* Models include:
-  * RandomForest (DRF)
-  * GBM
-  * Deeplearning
-  * XGBoost (for Linux)
-  * LightGBM (for Linux)
-  * AutoML - medium debth grid tuning for Deeplearning, XGBoost (if available), DRF, GBM, GLM, and StackedEnsembles
-</p>
-</details>
-
 #### Nonlinear Regression Modeling
 
 <details><summary>click to expand</summary>
