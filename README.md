@@ -494,7 +494,7 @@ data <- RemixAutoML::AutoWord2VecScoring(
 </p>
 </details>
 
-#### **H2oAutoencoder()** and **H2oAutoencoderScoring()**
+#### **H2OAutoencoder()** and **H2OAutoencoderScoring()**
 
 <details><summary>Code Example</summary>
 <p>
