@@ -10,6 +10,7 @@
 #' @param FactorToChar Converts to character
 #' @param IntToNumeric Defaults to TRUE which tells the function to convert integers to numeric
 #' @param DateToChar Converts date columns into character columns
+#' @param IDateConversion Convert IDateTime to POSIXct and IDate to Date types
 #' @param LogicalToBinary Converts logical values to binary numeric values
 #' @param RemoveDates Defaults to FALSE. Set to TRUE to remove date columns from your data.table
 #' @param MissFactor Supply the value to impute missing factor levels
@@ -40,6 +41,7 @@
 #'   IntToNumeric = TRUE,
 #'   LogicalToBinary = FALSE,
 #'   DateToChar   = FALSE,
+#'   IDateConversion = FALSE,
 #'   RemoveDates  = TRUE,
 #'   MissFactor   = "0",
 #'   MissNum      = -1,
@@ -57,6 +59,7 @@ ModelDataPrep <- function(data,
                           IntToNumeric    = TRUE,
                           LogicalToBinary = FALSE,
                           DateToChar      = FALSE,
+                          IDateConversion = FALSE,
                           RemoveDates     = FALSE,
                           MissFactor      = "0",
                           MissNum         = -1,
@@ -77,6 +80,12 @@ ModelDataPrep <- function(data,
 
   # Turn character columns into factors----
   if(CharToFactor) for(col in x) if(is.character(data[[col]])) data.table::set(data, j = col, value = as.factor(data[[col]]))
+
+  # Turn character columns into factors----
+  if(IDateConversion) {
+    for(col in x) if(any(class(data[[col]]) %chin% "IDateTime")) data.table::set(data, j = col, value = as.POSIXct(data[[col]]))
+    for(col in x) if(any(class(data[[col]]) %chin% "IDate")) data.table::set(data, j = col, value = as.Date(data[[col]]))
+  }
 
   # Turn factor columns into character----
   if(FactorToChar) for(col in x) if(is.factor(data[[col]])) data.table::set(data, j = col, value = as.character(data[[col]]))

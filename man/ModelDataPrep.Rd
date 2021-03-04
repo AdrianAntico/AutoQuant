@@ -12,6 +12,7 @@ ModelDataPrep(
   IntToNumeric = TRUE,
   LogicalToBinary = FALSE,
   DateToChar = FALSE,
+  IDateConversion = FALSE,
   RemoveDates = FALSE,
   MissFactor = "0",
   MissNum = -1,
@@ -32,6 +33,8 @@ ModelDataPrep(
 \item{LogicalToBinary}{Converts logical values to binary numeric values}
 
 \item{DateToChar}{Converts date columns into character columns}
+
+\item{IDateConversion}{Convert IDateTime to POSIXct and IDate to Date types}
 
 \item{RemoveDates}{Defaults to FALSE. Set to TRUE to remove date columns from your data.table}
 
@@ -72,6 +75,7 @@ data <- RemixAutoML::ModelDataPrep(
   IntToNumeric = TRUE,
   LogicalToBinary = FALSE,
   DateToChar   = FALSE,
+  IDateConversion = FALSE,
   RemoveDates  = TRUE,
   MissFactor   = "0",
   MissNum      = -1,
