@@ -718,16 +718,6 @@ This function counts up the number of specified holidays between the current rec
 </p>
 </details>
 
-#### **AutoHierarchicalFourier()**
-
-<details><summary>Function Description</summary>
-<p>
- 
-<code>AutoHierarchicalFourier()</code> turns time series data into fourier series. This function can generate any number of fourier pairs the user wants (if they can actually build) and you can run it with grouped time series data. In the grouping case, fourier pairs can be created for each categorical variable along with the full interactions between specified categoricals. The process is parallelized as well to run as fast as possible.
-
-</p>
-</details>
-
 #### **AutoTransformationCreate()** and **AutoTransformationScore()**
 
 <details><summary>Descriptions</summary>
@@ -932,6 +922,17 @@ TestData <- dataSets$TestData
 
 </p>
 </details>
+
+#### **AutoHierarchicalFourier()**
+
+<details><summary>Function Description</summary>
+<p>
+ 
+<code>AutoHierarchicalFourier()</code> turns time series data into fourier series. This function can generate any number of fourier pairs the user wants (if they can actually build) and you can run it with grouped time series data. In the grouping case, fourier pairs can be created for each categorical variable along with the full interactions between specified categoricals. The process is parallelized as well to run as fast as possible.
+
+</p>
+</details>
+
 
 </p>
 </details>
