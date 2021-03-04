@@ -11,15 +11,13 @@ AutoWord2VecModeler(
   KeepStringCol = FALSE,
   model_path = NULL,
   vects = 100,
-  SaveStopWords = FALSE,
   MinWords = 1,
   WindowSize = 12,
   Epochs = 25,
-  StopWords = NULL,
   SaveModel = "standard",
-  Threads = max(1, parallel::detectCores() - 2),
+  Threads = max(1L, parallel::detectCores() - 2L),
   MaxMemory = "28G",
-  SaveOutput = FALSE
+  ModelID = "Model_1"
 )
 }
 \arguments{
@@ -35,15 +33,11 @@ AutoWord2VecModeler(
 
 \item{vects}{The number of vectors to retain from the word2vec model}
 
-\item{SaveStopWords}{Set to TRUE to save the stop words used}
-
 \item{MinWords}{For H2O word2vec model}
 
 \item{WindowSize}{For H2O word2vec model}
 
 \item{Epochs}{For H2O word2vec model}
-
-\item{StopWords}{For H2O word2vec model}
 
 \item{SaveModel}{Set to "standard" to save normally; set to "mojo" to save as mojo. NOTE: while you can save a mojo, I haven't figured out how to score it in the AutoH20Scoring function.}
 
@@ -51,29 +45,73 @@ AutoWord2VecModeler(
 
 \item{MaxMemory}{Amount of memory you want to dedicate to model building}
 
-\item{SaveOutput}{Set to TRUE to save your models to file}
+\item{ModelID}{Name for saving to file}
 }
 \description{
 This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
 }
 \examples{
 \dontrun{
-data <- AutoWord2VecModeler(
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 1000L,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  AddComment = TRUE,
+  ZIP = 2L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Create Model and Vectors
+data <- RemixAutoML::AutoWord2VecModeler(
   data,
   BuildType = "individual",
-  stringCol = c("Text_Col1","Text_Col2"),
+  stringCol = c("Comment"),
   KeepStringCol = FALSE,
-  model_path = normalizePath("./"),
-  vects = 100,
-  SaveStopWords = FALSE,
+  ModelID = "Model_1",
+  model_path = getwd(),
+  vects = 10,
   MinWords = 1,
   WindowSize = 1,
   Epochs = 25,
-  StopWords = NULL,
   SaveModel = "standard",
   Threads = max(1,parallel::detectCores()-2),
-  MaxMemory = "28G",
-  SaveOutput = TRUE)
+  MaxMemory = "28G")
+
+# Remove data
+rm(data)
+
+# Create fake data for mock scoring
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 1000L,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  AddComment = TRUE,
+  ZIP = 2L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Create vectors for scoring
+data <- RemixAutoML::AutoWord2VecScoring(
+  data,
+  BuildType = "individual",
+  ModelObject = NULL,
+  ModelID = "Model_1",
+  model_path = getwd(),
+  stringCol = "Comment",
+  KeepStringCol = FALSE,
+  H2OStartUp = TRUE,
+  H2OShutdown = TRUE,
+  Threads = max(1L, parallel::detectCores() - 2L),
+  MaxMemory = "28G")
 }
 }
 \seealso{
@@ -85,6 +123,7 @@ Other Feature Engineering:
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationCreate}()},
 \code{\link{AutoTransformationScore}()},
+\code{\link{AutoWord2VecScoring}()},
 \code{\link{ContinuousTimeDataGenerator}()},
 \code{\link{CreateCalendarVariables}()},
 \code{\link{CreateHolidayVariables}()},

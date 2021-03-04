@@ -36,6 +36,7 @@ Other Feature Engineering:
 \code{\link{AutoTransformationCreate}()},
 \code{\link{AutoTransformationScore}()},
 \code{\link{AutoWord2VecModeler}()},
+\code{\link{AutoWord2VecScoring}()},
 \code{\link{ContinuousTimeDataGenerator}()},
 \code{\link{CreateCalendarVariables}()},
 \code{\link{CreateHolidayVariables}()},

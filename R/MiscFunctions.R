@@ -169,3 +169,21 @@ LB <- function(TimeAgg) {
     return(365)
   }
 }
+
+#' @title UpdatePackageDocs
+#' @param BuildManual FALSE
+#' @param Path Package path
+#' @noRd
+UpdatePackageDocs <- function(BuildManual = FALSE, Path = "C:/Users/Bizon/Documents/GitHub/RemixAutoML") {
+  setwd(Path)
+  devtools::document()
+  if(BuildManual) devtools::build_manual()
+}
+
+#' @title InstallLocal
+#' @param Path Package path cd ..
+#' @noRd
+InstallLocal <- function(BuildManual = FALSE, Path = "C:/Users/Bizon/Documents/GitHub") {
+  setwd(Path)
+  devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
+}

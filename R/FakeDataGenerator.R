@@ -8,6 +8,7 @@
 #' @param ZIP Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large
 #' @param FactorCount Number of factor type columns to create
 #' @param AddDate Set to TRUE to include a date column
+#' @param AddComment Set to TRUE to add a comment column
 #' @param TimeSeries For testing AutoBanditSarima
 #' @param TimeSeriesTimeAgg Choose from "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year",
 #' @param ChainLadderData Set to TRUE to return Chain Ladder Data for using AutoMLChainLadderTrainer
@@ -21,6 +22,7 @@
 #'    ID = 2L,
 #'    FactorCount = 2L,
 #'    AddDate = TRUE,
+#'    AddComment = FALSE,
 #'    ZIP = 2L,
 #'    TimeSeries = FALSE,
 #'    ChainLadderData = FALSE,
@@ -33,6 +35,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
                               ID = 5L,
                               FactorCount = 2L,
                               AddDate = TRUE,
+                              AddComment = FALSE,
                               ZIP = 5L,
                               TimeSeries = FALSE,
                               TimeSeriesTimeAgg = "day",
@@ -272,6 +275,28 @@ FakeDataGenerator <- function(Correlation = 0.70,
   if(MultiClass) {
     data[, Adrian := NULL]
     data.table::setnames(data, "Factor_1", "Adrian")
+  }
+
+  # Comment data ----
+  if(AddComment) {
+    a <- c('Hello', 'Hi', 'Howdy')
+    b <- c('really like', 'absolutely adore', 'sucks ass')
+    c <- c('noload', 'download', 'upload')
+    N1 <- 1/length(a)
+    N2 <- 1/length(b)
+    N3 <- 1/length(c)
+    N11 <- 1/N1
+    N22 <- 1/N2
+    N33 <- 1/N3
+    RandomText <- function(N1,N11,N2,N22,N3,N33,a,b,c) {
+      paste(sample(x = a, size = 1, replace = TRUE, prob = rep(N1, N11)),
+            sample(x = b, size = 1, replace = TRUE, prob = rep(N2, N22)),
+            sample(x = c, size = 1, replace = TRUE, prob = rep(N3, N33)))
+    }
+    data[, Comments := "a"]
+    for(i in seq_len(data[, .N])) {
+      data.table::set(data, i = i, j = "Comment", value = RandomText(N1,N11,N2,N22,N3,N33,a,b,c))
+    }
   }
 
   # Return data----

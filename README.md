@@ -412,12 +412,84 @@ print(ncol(data))
 </p>
 </details>
 
-#### **AutoWord2VecModeler()**
+#### **AutoWord2VecModeler()** and **AutoWord2VecScoring()**
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 1000L,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  AddComment = TRUE,
+  ZIP = 2L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Create Model and Vectors
+data <- RemixAutoML::AutoWord2VecModeler(
+  data,
+  BuildType = "individual",
+  stringCol = c("Comment"),
+  KeepStringCol = FALSE,
+  ModelID = "Model_1",
+  model_path = getwd(),
+  vects = 10,
+  MinWords = 1,
+  WindowSize = 1,
+  Epochs = 25,
+  SaveModel = "standard",
+  Threads = max(1,parallel::detectCores()-2),
+  MaxMemory = "28G")
+
+# Remove data
+rm(data)
+
+# Create fake data for mock scoring
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 1000L,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  AddComment = TRUE,
+  ZIP = 2L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Create vectors for scoring
+data <- RemixAutoML::AutoWord2VecScoring(
+  data,
+  BuildType = "individual",
+  ModelObject = NULL,
+  ModelID = "Model_1",
+  model_path = getwd(),
+  stringCol = "Comment",
+  KeepStringCol = FALSE,
+  H2OStartUp = TRUE,
+  H2OShutdown = TRUE,
+  Threads = max(1L, parallel::detectCores() - 2L),
+  MaxMemory = "28G")
+
+```
+
+</p>
+</details>
 
 <details><summary>Function Description</summary>
 <p>
  
 <code>AutoWord2VecModeler()</code> generates a specified number of vectors (word2vec) for each column of text data in your data set that you specify and it will save the models if you specify for re-creating them later in a model scoring process. You can choose to build individual models for each column or one model for all your columns. If you need to run several models for groups of text variables you can run the function several times. 
+
+<code>AutoWord2VecScoring()</code> this is for generating word2vec vectors for model scoring situations. The function will load the model, create the transformations, and merge them onto the source data.table just like the training version does.
 
 </p>
 </details>

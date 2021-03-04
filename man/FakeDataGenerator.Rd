@@ -10,6 +10,7 @@ FakeDataGenerator(
   ID = 5L,
   FactorCount = 2L,
   AddDate = TRUE,
+  AddComment = FALSE,
   ZIP = 5L,
   TimeSeries = FALSE,
   TimeSeriesTimeAgg = "day",
@@ -28,6 +29,8 @@ FakeDataGenerator(
 \item{FactorCount}{Number of factor type columns to create}
 
 \item{AddDate}{Set to TRUE to include a date column}
+
+\item{AddComment}{Set to TRUE to add a comment column}
 
 \item{ZIP}{Zero Inflation Model target variable creation. Select from 0 to 5 to create that number of distinctly distributed data, stratifed from small to large}
 
@@ -52,6 +55,7 @@ data <- RemixAutoML::FakeDataGenerator(
    ID = 2L,
    FactorCount = 2L,
    AddDate = TRUE,
+   AddComment = FALSE,
    ZIP = 2L,
    TimeSeries = FALSE,
    ChainLadderData = FALSE,
