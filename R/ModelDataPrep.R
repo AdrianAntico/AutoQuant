@@ -81,7 +81,7 @@ ModelDataPrep <- function(data,
   # Turn character columns into factors----
   if(CharToFactor) for(col in x) if(is.character(data[[col]])) data.table::set(data, j = col, value = as.factor(data[[col]]))
 
-  # Turn character columns into factors----
+  # Convert IDate to Date and IDateTime to POSIXct ----
   if(IDateConversion) {
     for(col in x) if(any(class(data[[col]]) %chin% "IDateTime")) data.table::set(data, j = col, value = as.POSIXct(data[[col]]))
     for(col in x) if(any(class(data[[col]]) %chin% "IDate")) data.table::set(data, j = col, value = as.Date(data[[col]]))
