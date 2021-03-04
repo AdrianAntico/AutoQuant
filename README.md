@@ -2764,9 +2764,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 #### **AutoHurdleScoring()**
 <code>AutoHurdleScoring()</code> will score the AutoCatBoostHurdleModel() function currently. Functionality for XGBoost hurdle models will be next, followed by the H2O version.
 
-#### **AutoH2OScoring()**
-<code>AutoH2OScoring()</code> is for scoring models that were built with the AutoH2OModeler, AutoKMeans, and AutoWord2VecModeler functions. Scores mojo models or binary files by loading models into the H2O environment and scoring them. You can choose which output you wish to keep as well for classification and multinomial models. 
-  
+
 </p>
 </details>
 
