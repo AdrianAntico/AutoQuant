@@ -31,17 +31,42 @@ AutoTransformationScore() is a the compliment function to AutoTransformationCrea
 }
 \examples{
 \dontrun{
-Correl <- 0.85
-N <- 1000
-data <- data.table::data.table(Adrian = runif(N))
-data[, x1 := qnorm(Adrian)]
-data[, x2 := runif(N)]
-data[, Adrian1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+# Create Fake Data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000,
+  ID = 2L,
+  ZIP = 0,
+  FactorCount = 2L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Columns to transform
+Cols <- names(data)[1L:11L]
+print(Cols)
+
+data <- data[1]
+
+# Run function
+Output <- RemixAutoML::AutoTransformationCreate(
+  data,
+  ColumnNames = Cols,
+  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit", "Identity"),
+  Path = getwd(),
+  TransID = "Model_1",
+  SaveOutput = TRUE)
+
+# Output
+data <- Output$Data
+TransInfo <- Output$FinalResults
+
+# Back Transform
 data <- RemixAutoML::AutoTransformationScore(
-   data,
-   FinalResults,
-   Path = NULL,
-   TransID = "Trans")
+  data,
+  FinalResults = TransInfo,
+  Path = NULL,
+  TransID = "Model_1")
 }
 }
 \seealso{

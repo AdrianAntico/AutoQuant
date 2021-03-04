@@ -838,24 +838,28 @@ data <- RemixAutoML::FakeDataGenerator(
   ZIP = 0L,
   FactorCount = 6L,
   AddDate = TRUE,
+  AddComment = FALSE,
+  TimeSeries = FALSE,
+  AddDate = TRUE,
   Classification = FALSE,
   MultiClass = FALSE)
 
 # Check column types
 str(data)
 
-# Convert some factors to character
+# RUn function
 data <- RemixAutoML::ModelDataPrep(
   data,
-  Impute       = TRUE,
+  Impute = TRUE,
   CharToFactor = FALSE,
   FactorToChar = TRUE,
   IntToNumeric = TRUE,
-  DateToChar   = FALSE,
-  RemoveDates  = TRUE,
-  MissFactor   = "0",
-  MissNum      = -1,
-  IgnoreCols   = c("Factor_1"))
+  LogicalToBinary = FALSE,
+  DateToChar = FALSE,
+  RemoveDates = TRUE,
+  MissFactor = "0",
+  MissNum = -1,
+  IgnoreCols = c("Factor_1"))
 
 # Check column types
 str(data)

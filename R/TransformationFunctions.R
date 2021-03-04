@@ -85,8 +85,8 @@ Apply_YeoJohnson <- function(x,
   }
 
   # Transform nonnegative values
-  if (any(neg_idx)) {
-    if (abs(lambda - 2) < eps) {
+  if(any(neg_idx)) {
+    if(abs(lambda - 2) < eps) {
       x[neg_idx] <- -log(-x[neg_idx] + 1)
     } else {
       x[neg_idx] <- -((-x[neg_idx] + 1) ^ (2 - lambda) - 1) / (2 - lambda)
@@ -503,26 +503,29 @@ InvApply_Sqrt <- function(x) {
 #' @return data with transformed columns and the transformation object for back-transforming later
 #' @examples
 #' \dontrun{
-#' Correl <- 0.85
-#' N <- 1000
-#' data <- data.table::data.table(Adrian = runif(N))
-#' data[, x1 := qnorm(Adrian)]
-#' data[, x2 := runif(N)]
-#' data[, Adrian1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' # Create Fake Data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 25000,
+#'   ID = 2L,
+#'   ZIP = 0,
+#'   FactorCount = 2L,
+#'   AddDate = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Columns to transform
+#' Cols <- names(data)[1L:11L]
+#' print(Cols)
+#'
+#' # Run function
 #' data <- RemixAutoML::AutoTransformationCreate(
-#'    data,
-#'    ColumnNames = "Sample",
-#'    Methods = c("BoxCox",
-#'                "YeoJohnson",
-#'                "Asinh",
-#'                "Log",
-#'                "LogPlus1",
-#'                "Asin",
-#'                "Logit",
-#'                "Identity"),
-#'    Path = NULL,
-#'    TransID = "Trans",
-#'    SaveOutput = FALSE)
+#'   data,
+#'   ColumnNames = Cols,
+#'   Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit", "Identity"),
+#'   Path = getwd(),
+#'   TransID = "Trans",
+#'   SaveOutput = TRUE)
 #' }
 #' @export
 AutoTransformationCreate <- function(data,
@@ -532,14 +535,15 @@ AutoTransformationCreate <- function(data,
                                      TransID = "ModelID",
                                      SaveOutput = FALSE) {
 
-  # Check arguments----
+  # Check arguments ----
+  Methods <- unique(tolower(Methods))
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!any(tolower(Methods) %chin% c("boxcox", "yeojohnson", "asinh", "sqrt", "log", "logplus1", "asin", "logit"))) stop("Methods not supported")
-  if(!"Identity" %chin% Methods) Methods <- c(Methods, "Identity")
-  if(is.numeric(ColumnNames) | is.integer(ColumnNames)) ColumnNames <- names(data)[ColumnNames]
-  for(i in ColumnNames) if(!(class(data[[eval(i)]]) %chin% c("numeric", "integer"))) stop("ColumnNames must be for numeric or integer columns")
+  if(!"identity" %chin% Methods) Methods <- c(Methods, "identity")
+  if(is.numeric(ColumnNames) || is.integer(ColumnNames)) ColumnNames <- names(data)[ColumnNames]
+  for(i in ColumnNames) if(!(any(class(data[[eval(i)]]) %chin% c("numeric", "integer")))) stop("ColumnNames must be for numeric or integer columns")
 
-  # Loop through ColumnNames----
+  # Loop through ColumnNames ----
   for(colNames in seq_along(ColumnNames)) {
 
     # Collection Object----
@@ -568,7 +572,7 @@ AutoTransformationCreate <- function(data,
 
     # Update Methods----
     if(MinVal <= 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("boxcox","log","logit"))]
-    if(MinVal < 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("logplus1","sqrt"))]
+    if(MinVal < 0) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("logplus1","sqrt","asin"))]
     if(MaxVal > 1) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("asin"))]
     if(MaxVal >= 1) FinalMethods <- FinalMethods[!(tolower(FinalMethods) %chin% c("logit"))]
 
@@ -707,17 +711,42 @@ AutoTransformationCreate <- function(data,
 #' @return data with transformed columns
 #' @examples
 #' \dontrun{
-#' Correl <- 0.85
-#' N <- 1000
-#' data <- data.table::data.table(Adrian = runif(N))
-#' data[, x1 := qnorm(Adrian)]
-#' data[, x2 := runif(N)]
-#' data[, Adrian1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+#' # Create Fake Data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 25000,
+#'   ID = 2L,
+#'   ZIP = 0,
+#'   FactorCount = 2L,
+#'   AddDate = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Columns to transform
+#' Cols <- names(data)[1L:11L]
+#' print(Cols)
+#'
+#' data <- data[1]
+#'
+#' # Run function
+#' Output <- RemixAutoML::AutoTransformationCreate(
+#'   data,
+#'   ColumnNames = Cols,
+#'   Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit", "Identity"),
+#'   Path = getwd(),
+#'   TransID = "Model_1",
+#'   SaveOutput = TRUE)
+#'
+#' # Output
+#' data <- Output$Data
+#' TransInfo <- Output$FinalResults
+#'
+#' # Back Transform
 #' data <- RemixAutoML::AutoTransformationScore(
-#'    data,
-#'    FinalResults,
-#'    Path = NULL,
-#'    TransID = "Trans")
+#'   data,
+#'   FinalResults = TransInfo,
+#'   Path = NULL,
+#'   TransID = "Model_1")
 #' }
 #' @export
 AutoTransformationScore <- function(ScoringData,

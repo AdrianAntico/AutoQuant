@@ -293,7 +293,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
             sample(x = b, size = 1, replace = TRUE, prob = rep(N2, N22)),
             sample(x = c, size = 1, replace = TRUE, prob = rep(N3, N33)))
     }
-    data[, Comments := "a"]
+    data[, Comment := "a"]
     for(i in seq_len(data[, .N])) {
       data.table::set(data, i = i, j = "Comment", value = RandomText(N1,N11,N2,N22,N3,N33,a,b,c))
     }
