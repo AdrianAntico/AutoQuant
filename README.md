@@ -603,9 +603,15 @@ data <- RemixAutoML::H2oAutoencoderScoring(
 </p>
 </details>
 
+<details><summary>Function Description</summary>
+<p>
+
 <code>H2OAutoencoder()</code> Use for dimension reduction and anomaly detection
 
 <code>H2OAutoencoderScoring()</code> Use for dimension reduction and anomaly detection scoring
+
+</p>
+</details>
 
 #### **CreateCalendarVariables()**
 
