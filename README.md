@@ -720,7 +720,7 @@ This function counts up the number of specified holidays between the current rec
 
 #### **AutoTransformationCreate()** and **AutoTransformationScore()**
 
-<details><summary>Descriptions</summary>
+<details><summary>Function Description</summary>
 <p>
  
 <code>AutoTransformationCreate()</code> is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Log, LogPlus1, Sqrt, along with Asin and Logit for proportion data) and find the one that produces the best fit to a normal distribution. It then generates the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects or saving them to file.
