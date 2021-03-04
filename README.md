@@ -494,6 +494,119 @@ data <- RemixAutoML::AutoWord2VecScoring(
 </p>
 </details>
 
+#### **H2oAutoencoder()** and **H2oAutoencoderScoring()**
+
+<details><summary>Code Example</summary>
+<p>
+
+
+```
+############################
+# Training
+############################
+
+# Create simulated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 1000L,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  AddComment = FALSE,
+  ZIP = 2L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run algo
+Output <- RemixAutoML::H2oAutoencoder(
+  
+  # Select the service
+  AnomalyDetection = TRUE,
+  DimensionReduction = TRUE,
+
+  # Data related args
+  data = data,
+  ValidationData = NULL,
+  Features = names(data)[2L:(ncol(data)-1L)],
+  per_feature = FALSE,
+  RemoveFeatures = TRUE,
+  ModelID = "TestModel",
+  model_path = getwd(),
+
+  # H2O Environment
+  NThreads = max(1L, parallel::detectCores()-2L),
+  MaxMem = "28G",
+  H2OStart = TRUE,
+  H2OShutdown = TRUE,
+  
+  # H2O ML Args
+  LayerStructure = NULL,
+  ReturnLayer = 4L,
+  Activation = "Tanh",
+  Epochs = 5L,
+  L2 = 0.10,
+  ElasticAveraging = TRUE,
+  ElasticAveragingMovingRate = 0.90,
+  ElasticAveragingRegularization = 0.001)
+
+# Inspect output
+data <- Output$Data
+Model <- Output$Model
+
+# If ValidationData is not null
+ValidationData <- Output$ValidationData
+
+############################
+# Scoring
+############################
+
+# Create simulated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 1000L,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  AddComment = FALSE,
+  ZIP = 2L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run algo
+data <- RemixAutoML::H2oAutoencoderScoring(
+
+  # Select the service
+  AnomalyDetection = TRUE,
+  DimensionReduction = TRUE,
+   
+  # Data related args
+  data = data,
+  Features = names(data)[2L:ncol(data)],
+  RemoveFeatures = TRUE,
+  ModelObject = NULL,
+  ModelID = "TestModel",
+  model_path = getwd(),
+
+  # H2O args
+  NThreads = max(1L, parallel::detectCores()-2L),
+  MaxMem = "28G",
+  H2OStart = TRUE,
+  H2OShutdown = TRUE,
+  ReturnLayer = 4L,
+  per_feature = FALSE)
+```
+
+</p>
+</details>
+
+<code>H2OAutoencoder()</code> Use for dimension reduction and anomaly detection
+
+<code>H2OAutoencoderScoring()</code> Use for dimension reduction and anomaly detection scoring
+
 #### **CreateCalendarVariables()**
 
 <details><summary>Code Example</summary>
@@ -3647,119 +3760,6 @@ For each of the models tested internally, several aspects should be noted:
 <details><summary>Expand to view content</summary>
 <p>
  
-#### **H2oAutoencoder()** and **H2oAutoencoderScoring()**
-
-<details><summary>Code Example</summary>
-<p>
-
-
-```
-############################
-# Training
-############################
-
-# Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.70,
-  N = 1000L,
-  ID = 2L,
-  FactorCount = 2L,
-  AddDate = TRUE,
-  AddComment = FALSE,
-  ZIP = 2L,
-  TimeSeries = FALSE,
-  ChainLadderData = FALSE,
-  Classification = FALSE,
-  MultiClass = FALSE)
-
-# Run algo
-Output <- RemixAutoML::H2oAutoencoder(
-  
-  # Select the service
-  AnomalyDetection = TRUE,
-  DimensionReduction = TRUE,
-
-  # Data related args
-  data = data,
-  ValidationData = NULL,
-  Features = names(data)[2L:(ncol(data)-1L)],
-  per_feature = FALSE,
-  RemoveFeatures = TRUE,
-  ModelID = "TestModel",
-  model_path = getwd(),
-
-  # H2O Environment
-  NThreads = max(1L, parallel::detectCores()-2L),
-  MaxMem = "28G",
-  H2OStart = TRUE,
-  H2OShutdown = TRUE,
-  
-  # H2O ML Args
-  LayerStructure = NULL,
-  ReturnLayer = 4L,
-  Activation = "Tanh",
-  Epochs = 5L,
-  L2 = 0.10,
-  ElasticAveraging = TRUE,
-  ElasticAveragingMovingRate = 0.90,
-  ElasticAveragingRegularization = 0.001)
-
-# Inspect output
-data <- Output$Data
-Model <- Output$Model
-
-# If ValidationData is not null
-ValidationData <- Output$ValidationData
-
-############################
-# Scoring
-############################
-
-# Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.70,
-  N = 1000L,
-  ID = 2L,
-  FactorCount = 2L,
-  AddDate = TRUE,
-  AddComment = FALSE,
-  ZIP = 2L,
-  TimeSeries = FALSE,
-  ChainLadderData = FALSE,
-  Classification = FALSE,
-  MultiClass = FALSE)
-
-# Run algo
-data <- RemixAutoML::H2oAutoencoderScoring(
-
-  # Select the service
-  AnomalyDetection = TRUE,
-  DimensionReduction = TRUE,
-   
-  # Data related args
-  data = data,
-  Features = names(data)[2L:ncol(data)],
-  RemoveFeatures = TRUE,
-  ModelObject = NULL,
-  ModelID = "TestModel",
-  model_path = getwd(),
-
-  # H2O args
-  NThreads = max(1L, parallel::detectCores()-2L),
-  MaxMem = "28G",
-  H2OStart = TRUE,
-  H2OShutdown = TRUE,
-  ReturnLayer = 4L,
-  per_feature = FALSE)
-```
-
-</p>
-</details>
-
-<code>H2OAutoencoder()</code> Use for dimension reduction and anomaly detection
-
-<code>H2OAutoencoderScoring()</code> Use for dimension reduction and anomaly detection scoring
-
 #### **H2oIsolationForest()**
 <code>H2oIsolationForest()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
