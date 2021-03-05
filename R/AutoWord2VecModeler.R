@@ -94,6 +94,9 @@ AutoWord2VecModeler <- function(data,
                                 MaxMemory     = "28G",
                                 ModelID       = "Model_1") {
 
+  # Arg check ----
+  if(is.null(stringCol)) stop("stringCol cannot be NULL")
+
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
 
