@@ -3752,7 +3752,7 @@ For each of the models tested internally, several aspects should be noted:
 <details><summary>Expand to view content</summary>
 <p>
  
-#### **H2oIsolationForest()**
+#### **H2OIsolationForest()**
 <code>H2oIsolationForest()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
 #### **AutoKMeans()** 
