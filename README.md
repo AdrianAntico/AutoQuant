@@ -520,7 +520,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-Output <- RemixAutoML::H2oAutoencoder(
+Output <- RemixAutoML::H2OAutoencoder(
   
   # Select the service
   AnomalyDetection = TRUE,
@@ -577,7 +577,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-data <- RemixAutoML::H2oAutoencoderScoring(
+data <- RemixAutoML::H2OAutoencoderScoring(
 
   # Select the service
   AnomalyDetection = TRUE,
