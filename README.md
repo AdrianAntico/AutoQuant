@@ -618,7 +618,6 @@ data <- RemixAutoML::H2OAutoencoderScoring(
 <details><summary>Code Example</summary>
 <p>
 
-
 ```
 # Create simulated data
 data <- RemixAutoML::FakeDataGenerator(
@@ -683,9 +682,6 @@ Outliers <- RemixAutoML::H2OIsolationForestScoring(
 
 </p>
 </details>
-
-
-<code>H2oIsolationForest()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
 #### **CreateCalendarVariables()**
 
