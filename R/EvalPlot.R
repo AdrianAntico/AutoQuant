@@ -1,8 +1,10 @@
-#' EvalPlot automatically builds calibration plots for model evaluation
+#' @title EvalPlot
 #'
-#' This function automatically builds calibration plots and calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
+#' @description This function automatically builds calibration plots and calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
+#'
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
+#'
 #' @param data Data containing predicted values and actual values for comparison
 #' @param PredictionColName String representation of column name with predicted values from model
 #' @param TargetColName String representation of column name with target values from model
@@ -51,7 +53,7 @@ EvalPlot <- function(data,
   }
 
   # Add a column that ranks predicted values----
-  data[, rank := round(data.table::frank(preds) * (1/PercentileBucket) /.N) * PercentileBucket]
+  data[, rank := round(data.table::frank(preds) * (1 / PercentileBucket) / .N) * PercentileBucket]
 
   # Plot----
   if(GraphType == "boxplot") {

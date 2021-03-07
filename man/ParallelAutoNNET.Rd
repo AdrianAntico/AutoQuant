@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{ParallelAutoNNET}
 \alias{ParallelAutoNNET}
-\title{ParallelAutoNNET to run the 4 data sets at once}
+\title{ParallelAutoNNET}
 \usage{
 ParallelAutoNNET(
   Output,
@@ -36,7 +36,7 @@ ParallelAutoNNET(
 Time series data sets to pass onto auto modeling functions
 }
 \description{
-ParallelAutoNNET to run the 4 data sets at once
+ParallelAutoNNET for running multiple models at once
 }
 \examples{
 \dontrun{

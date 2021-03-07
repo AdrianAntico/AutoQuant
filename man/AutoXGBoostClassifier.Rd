@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoXGBoostClassifier.R
 \name{AutoXGBoostClassifier}
 \alias{AutoXGBoostClassifier}
-\title{AutoXGBoostClassifier is an automated XGBoost modeling framework with grid-tuning and model evaluation}
+\title{AutoXGBoostClassifier}
 \usage{
 AutoXGBoostClassifier(
   data,

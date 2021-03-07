@@ -1,8 +1,10 @@
-#' TimeSeriesFill For Completing Time Series Data
+#' @title TimeSeriesFill
 #'
-#' TimeSeriesFill For Completing Time Series Data For Single Series or Time Series by Group
+#' @description TimeSeriesFill For Completing Time Series Data For Single Series or Time Series by Group
 #'
 #' @family Feature Engineering
+#' @author Adrian Antico
+#'
 #' @param data Supply your full series data set here
 #' @param DateColumnName Supply the name of your date column
 #' @param GroupVariables Supply the column names of your group variables. E.g. "Group" or c("Group1","Group2")

@@ -1,8 +1,10 @@
-#' The AutoRecomScoring function scores recommender models from AutoRecommender()
+#' @title AutoRecomScoring
 #'
-#' This function will take your ratings matrix and model and score your data in parallel.
+#' @description This function will take your ratings matrix and model and score your data in parallel.
+#'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Recommenders
+#'
 #' @param data The binary ratings matrix from RecomDataCreate()
 #' @param WinningModel The winning model returned from AutoRecommender()
 #' @param EntityColName Typically your customer ID

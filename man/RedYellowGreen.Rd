@@ -2,7 +2,7 @@
 % Please edit documentation in R/RedYellowGreen.R
 \name{RedYellowGreen}
 \alias{RedYellowGreen}
-\title{RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option}
+\title{RedYellowGreen}
 \usage{
 RedYellowGreen(
   data,

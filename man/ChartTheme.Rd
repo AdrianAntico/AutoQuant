@@ -2,7 +2,7 @@
 % Please edit documentation in R/PlotFunctions.R
 \name{ChartTheme}
 \alias{ChartTheme}
-\title{ChartTheme function is a ggplot theme generator for ggplots}
+\title{ChartTheme}
 \usage{
 ChartTheme(
   Size = 12,

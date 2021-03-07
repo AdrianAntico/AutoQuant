@@ -2,7 +2,7 @@
 % Please edit documentation in R/ContinuousTimeDataGenerator.R
 \name{ID_MetadataGenerator}
 \alias{ID_MetadataGenerator}
-\title{ID_MetadataGenerator for summary metadata for transactional data}
+\title{ID_MetadataGenerator}
 \usage{
 ID_MetadataGenerator(
   data,
@@ -56,5 +56,8 @@ Other Feature Engineering Helper:
 \code{\link{ID_BuildTrainDataSets}()},
 \code{\link{ID_TrainingDataGenerator2}()},
 \code{\link{ID_TrainingDataGenerator}()}
+}
+\author{
+Adrian Antico
 }
 \concept{Feature Engineering Helper}

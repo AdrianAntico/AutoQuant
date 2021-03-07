@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{OptimizeNNET}
 \alias{OptimizeNNET}
-\title{OptimizeNNET is a function that takes raw data and returns time series data}
+\title{OptimizeNNET}
 \usage{
 OptimizeNNET(
   Output,

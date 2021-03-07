@@ -2,7 +2,7 @@
 % Please edit documentation in R/ContinuousTimeDataGenerator.R
 \name{ID_TrainingDataGenerator}
 \alias{ID_TrainingDataGenerator}
-\title{ID_TrainingDataGenerator for subsetting data}
+\title{ID_TrainingDataGenerator}
 \usage{
 ID_TrainingDataGenerator(
   data,
@@ -47,5 +47,8 @@ Other Feature Engineering Helper:
 \code{\link{ID_BuildTrainDataSets}()},
 \code{\link{ID_MetadataGenerator}()},
 \code{\link{ID_TrainingDataGenerator2}()}
+}
+\author{
+Adrian Antico
 }
 \concept{Feature Engineering Helper}

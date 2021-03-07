@@ -1,12 +1,14 @@
-#' AutoMarketBasketModel function runs a market basket analysis automatically
+#' @title AutoMarketBasketModel
 #'
-#' AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within.
+#' @description AutoMarketBasketModel function runs a market basket analysis automatically. It will convert your data, run the algorithm, and add on additional significance values not orginally contained within.
 #'
 #' @seealso Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf
 #'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Recommender Systems
+#'
 #' @importClassesFrom arules transactions
+#'
 #' @param data This is your transactions data set
 #' @param OrderIDColumnName Supply your column name for the Order ID Values
 #' @param ItemIDColumnName Supply your column name for the Item ID Values

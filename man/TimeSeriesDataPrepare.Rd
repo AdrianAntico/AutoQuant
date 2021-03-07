@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{TimeSeriesDataPrepare}
 \alias{TimeSeriesDataPrepare}
-\title{TimeSeriesDataPrepare is a function that takes raw data and returns time series data}
+\title{TimeSeriesDataPrepare}
 \usage{
 TimeSeriesDataPrepare(
   data,

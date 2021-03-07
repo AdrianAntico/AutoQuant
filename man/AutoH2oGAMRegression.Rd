@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oGAMRegression.R
 \name{AutoH2oGAMRegression}
 \alias{AutoH2oGAMRegression}
-\title{AutoH2oGAMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
+\title{AutoH2oGAMRegression}
 \usage{
 AutoH2oGAMRegression(
   data,

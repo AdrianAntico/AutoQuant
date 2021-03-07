@@ -1,9 +1,10 @@
-#' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.
+#' @title AutoXGBoostScoring
 #'
-#' AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
+#' @description AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
 #'
 #' @author Adrian Antico
 #' @family Automated Model Scoring
+#'
 #' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function

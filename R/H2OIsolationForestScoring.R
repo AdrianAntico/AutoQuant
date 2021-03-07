@@ -1,6 +1,6 @@
-#' @title H2OIsolationForest
+#' @title H2OIsolationForestScoring
 #'
-#' @description H2OIsolationForestScoring for dimensionality reduction and / or anomaly detection
+#' @description H2OIsolationForestScoring for dimensionality reduction and / or anomaly detection scoring on new data
 #'
 #' @author Adrian Antico
 #' @family Unsupervised Learning
@@ -8,19 +8,13 @@
 #' @param data The data.table with the columns you wish to have analyzed
 #' @param Features A character vector with the column names to utilize in the isolation forest
 #' @param IDcols A character vector with the column names to not utilize in the isolation forest but have returned with the data output. Otherwise those columns will be removed
+#' @param H2OStart TRUE to have H2O started inside function
+#' @param H2OShutdown TRUE to shutdown H2O inside function
 #' @param ModelID Name for model that gets saved to file if SavePath is supplied and valid
 #' @param SavePath Path directory to store saved model
 #' @param Threshold Quantile value to find the cutoff value for classifying outliers
 #' @param MaxMem Specify the amount of memory to allocate to H2O. E.g. "28G"
 #' @param NThreads Specify the number of threads (E.g. cores * 2)
-#' @param NTrees Specify the number of decision trees to build
-#' @param SampleRate Specify the row-sample rate per tree
-#' @param MaxDepth Max tree depth
-#' @param MinRows Minimum number of rows allowed per leaf
-#' @param ColSampleRate Sample rate for each split
-#' @param ColSampleRatePerLevel Sample rate for each level
-#' @param ColSampleRatePerTree Sample rate per tree
-#' @param CategoricalEncoding Choose from "AUTO", "Enum", "OneHotInternal", "OneHotExplicit", "Binary", "Eigen", "LabelEncoder", "SortByResponse", "EnumLimited"
 #' @param Debug Debugging
 #' @examples
 #' \dontrun{
@@ -76,23 +70,17 @@
 #' }
 #' @return Source data.table with predictions. Note that any columns not listed in Features nor IDcols will not be returned with data. If you want columns returned but not modeled, supply them as IDcols
 #' @export
-H2OIsolationForest <- function(data,
-                               Features = NULL,
-                               IDcols = NULL,
-                               ModelID = "TestModel",
-                               SavePath = NULL,
-                               Threshold = 0.975,
-                               MaxMem = "28G",
-                               NThreads = -1,
-                               NTrees = 100,
-                               SampleRate = (sqrt(5)-1)/2,
-                               MaxDepth = 8,
-                               MinRows = 1,
-                               ColSampleRate = 1,
-                               ColSampleRatePerLevel = 1,
-                               ColSampleRatePerTree = 1,
-                               CategoricalEncoding = c("AUTO"),
-                               Debug = FALSE) {
+H2OIsolationForestScoring <- function(data,
+                                      Features = NULL,
+                                      IDcols = NULL,
+                                      H2OStart = TRUE,
+                                      H2OShutdown = TRUE,
+                                      ModelID = "TestModel",
+                                      SavePath = NULL,
+                                      Threshold = 0.975,
+                                      MaxMem = "28G",
+                                      NThreads = -1,
+                                      Debug = FALSE) {
 
   # Arg checks ----
   if(!is.null(SavePath) && !dir.exists(SavePath)) stop("SavePath is not a valid directory")
@@ -149,36 +137,17 @@ H2OIsolationForest <- function(data,
   if(Debug) print(str(IDcolData))
   if(Debug) print(Features)
 
-  # Initialize H2O ----
-  localH2O <- h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
-
-  # Convert data to H2O Frame ----
-  Data <- h2o::as.h2o(data)
-
-  # Build Isolation Forest ----
-  IsolationForest <- h2o::h2o.isolationForest(
-    training_frame = Data,
-    x = Features,
-    model_id = ModelID,
-    ntrees = NTrees,
-    sample_rate = SampleRate,
-    max_depth = MaxDepth,
-    min_rows = MinRows,
-    mtries = ColSampleRate,
-    stopping_rounds = 0,
-    stopping_metric = "AUTO",
-    col_sample_rate_change_per_level = ColSampleRatePerLevel,
-    col_sample_rate_per_tree = ColSampleRatePerTree,
-    categorical_encoding = CategoricalEncoding)
+  # Prepare H2O ----
+  if(H2OStart) localH2O <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  H2O_Data <- h2o::as.h2o(data)
+  ModelObject <- h2o::h2o.loadModel(path = file.path(SavePath, ModelID))
 
   # Generate Outliers data.table ----
-  OutliersRaw <- data.table::as.data.table(h2o::h2o.predict(object = IsolationForest, newdata = Data))
+  OutliersRaw <- data.table::as.data.table(h2o::h2o.predict(object = ModelObject, newdata = H2O_Data))
+  rm(H2O_Data, ModelObject)
 
-  # Save model ----
-  if(!is.null(SavePath)) SaveModel <- h2o::h2o.saveModel(object = IsolationForest, path = SavePath, force = TRUE)
-
-  # Shutdown H2O ----
-  h2o::h2o.shutdown(prompt = FALSE)
+  # Shutdown h2o----
+  if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
   # Add column for outlier indicator ----
   data.table::setnames(OutliersRaw, c("predict", "mean_length"), c("PredictIsoForest", "MeanLength"))

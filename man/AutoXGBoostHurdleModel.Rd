@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoXGBoostHurdleModel.R
 \name{AutoXGBoostHurdleModel}
 \alias{AutoXGBoostHurdleModel}
-\title{AutoXGBoostHurdleModel is generalized hurdle modeling framework}
+\title{AutoXGBoostHurdleModel}
 \usage{
 AutoXGBoostHurdleModel(
   TreeMethod = "hist",

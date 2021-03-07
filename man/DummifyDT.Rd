@@ -2,7 +2,7 @@
 % Please edit documentation in R/DummifyDT.R
 \name{DummifyDT}
 \alias{DummifyDT}
-\title{DummifyDT creates dummy variables for the selected columns.}
+\title{DummifyDT}
 \usage{
 DummifyDT(
   data,

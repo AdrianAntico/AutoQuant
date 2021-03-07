@@ -1,9 +1,10 @@
-#' ProblematicFeatures identifies problematic features for machine learning
+#' @title ProblematicFeatures
 #'
-#' ProblematicFeatures identifies problematic features for machine learning and outputs a data.table of the feature names in the first column and the metrics they failed to pass in the columns.
+#' @description ProblematicFeatures identifies problematic features for machine learning and outputs a data.table of the feature names in the first column and the metrics they failed to pass in the columns.
 #'
 #' @author Adrian Antico
 #' @family EDA
+#'
 #' @param data The data.table with the columns you wish to have analyzed
 #' @param ColumnNumbers A vector with the column numbers you wish to analyze
 #' @param NearZeroVarThresh Set to NULL to not run NearZeroVar(). Checks to see if the percentage of values in your numeric columns that are not constant are greater than the value you set here. If not, the feature is collects and returned with the percentage unique value.

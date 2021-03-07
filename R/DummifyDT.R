@@ -1,9 +1,10 @@
-#' DummifyDT creates dummy variables for the selected columns.
+#' @title DummifyDT
 #'
-#' DummifyDT creates dummy variables for the selected columns. Either one-hot encoding, N+1 columns for N levels, or N columns for N levels.
+#' @description DummifyDT creates dummy variables for the selected columns. Either one-hot encoding, N+1 columns for N levels, or N columns for N levels.
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data The data set to run the micro auc on
 #' @param cols A vector with the names of the columns you wish to dichotomize
 #' @param TopN Default is NULL. Scalar to apply to all categorical columns or a vector to apply to each categorical variable. Only create dummy variables for the TopN number of levels. Will be either TopN or max(levels)

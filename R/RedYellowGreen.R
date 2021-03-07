@@ -1,9 +1,10 @@
-#' RedYellowGreen is for determining the optimal thresholds for binary classification when do-nothing is an option
+#' @title RedYellowGreen
 #'
-#' This function will find the optimial thresholds for applying the main label and for finding the optimial range for doing nothing when you can quantity the cost of doing nothing
+#' @description This function will find the optimial thresholds for applying the main label and for finding the optimial range for doing nothing when you can quantity the cost of doing nothing
 #'
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
+#'
 #' @param data data is the data table with your predicted and actual values from a classification model
 #' @param PredictColNumber The column number where the prediction variable is located (in binary form)
 #' @param ActualColNumber The column number where the target variable is located

@@ -1,8 +1,10 @@
-#' A version of the DT_GDL function for creating the GDL features for a new set of records
+#' @title Partial_DT_GDL_Feature_Engineering
 #'
-#' For scoring models in production that have > 1 grouping variables and for when you need > 1 record (or records per grouping variables) returned. This function is for generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set, typical new records that become available for model scoring. Column names and ordering will be identical to the output from the corresponding DT_GDL_Feature_Engineering() function, which most likely was used to create features for model training.
+#' @description For scoring models in production that have > 1 grouping variables and for when you need > 1 record (or records per grouping variables) returned. This function is for generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set, typical new records that become available for model scoring. Column names and ordering will be identical to the output from the corresponding DT_GDL_Feature_Engineering() function, which most likely was used to create features for model training.
+#'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data A data.table you want to run the function on
 #' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
 #' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.

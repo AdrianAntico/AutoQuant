@@ -1,9 +1,10 @@
-#' ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling
+#' @title ContinuousTimeDataGenerator
 #'
-#' ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling of transactional panel data.
+#' @description ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling of transactional panel data.
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data This is your transactional level data
 #' @param Case Currently set as 1 for forecasting and 2 for other
 #' @param RestrictDateRange Set to TRUE to only pull samples by entity within the entity life (not beyond)
@@ -467,11 +468,13 @@ ContinuousTimeDataGenerator <- function(data,
   }
 }
 
-#' ID_MetadataGenerator for summary metadata for transactional data
+#' @title ID_MetadataGenerator
 #'
-#' ID_MetadataGenerator for summary metadata for transactional data. The data returned from this function feeds into the IntermittentDemandBootStrapper() function.
+#' @description ID_MetadataGenerator for summary metadata for transactional data. The data returned from this function feeds into the IntermittentDemandBootStrapper() function.
 #'
 #' @family Feature Engineering Helper
+#' @author Adrian Antico
+#'
 #' @param data This is your transactional level data
 #' @param RestrictDateRange = TRUE
 #' @param DateVariableName Bla
@@ -548,11 +551,13 @@ ID_MetadataGenerator <- function(data,
   return(MetaData)
 }
 
-#' ID_TrainingDataGenerator for subsetting data
+#' @title ID_TrainingDataGenerator
 #'
-#' ID_TrainingDataGenerator for subsetting data for the IntermittentDemandBootStrapper() function.
+#' @description ID_TrainingDataGenerator for subsetting data for the IntermittentDemandBootStrapper() function.
 #'
 #' @family Feature Engineering Helper
+#' @author Adrian Antico
+#'
 #' @param data Source data
 #' @param Type "timetoevent1", "eventinwindow1"
 #' @param TargetVariableName Name of the variables to run feature engineering on. List the actual target variable name first.
@@ -629,11 +634,13 @@ ID_TrainingDataGenerator <- function(data,
   return(list(CountData = CountFinal, SizeData = SizeFinal))
 }
 
-#' ID_TrainingDataGenerator2 for subsetting data
+#' @title ID_TrainingDataGenerator2
 #'
-#' ID_TrainingDataGenerator2 for subsetting data for the IntermittentDemandBootStrapper() function.
+#' @description ID_TrainingDataGenerator2 for subsetting data for the IntermittentDemandBootStrapper() function.
 #'
 #' @family Feature Engineering Helper
+#' @author Adrian Antico
+#'
 #' @param data Source data
 #' @param TargetVariableName vector of variable names
 #' @param Level The individual level of your group variable
@@ -717,11 +724,13 @@ ID_TrainingDataGenerator2 <- function(data,
   return(data = Final)
 }
 
-#' ID_BuildTrainDataSets for assembling data
+#' @title ID_BuildTrainDataSets
 #'
-#' ID_BuildTrainDataSets for assembling data for the IntermittentDemandBootStrapper() function.
+#' @description ID_BuildTrainDataSets for assembling data for the IntermittentDemandBootStrapper() function.
 #'
 #' @family Feature Engineering Helper
+#' @author Adrian Antico
+#'
 #' @param MetaData This is the metadata returned from the ID_MetadataGenerator() function
 #' @param data This is your transactional data
 #' @param Case Indicate which data constructor method to use

@@ -1,8 +1,10 @@
-#' AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation
+#' @title AutoH2oDRFClassifier
 #'
-#' AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
+#' @description AutoH2oDRFClassifier is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, a stratified sampling (by the target variable) is done to create train and validation sets. Then, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation metrics, variable importance, partial dependence calibration plots, and column names used in model fitting.
+#'
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
+#'
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -319,6 +321,16 @@ AutoH2oDRFClassifier <- function(data,
 
   # Build model ----
   base_model <- do.call(h2o::h2o.randomForest, H2OArgs)
+
+  # h2o::h2o.shap_explain_row_plot(
+  #   base_model,
+  #   datatrain,
+  #   row_index = 1:10,
+  #   columns = FeatureColNames[1],
+  #   plot_type = c("barplot", "breakdown"),
+  #   contribution_type = c("both", "positive", "negative"))
+
+
 
   # Binary Get Metrics----
   if(GridTune & !TrainOnFull) {

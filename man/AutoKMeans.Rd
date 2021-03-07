@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoKMeans.R
 \name{AutoKMeans}
 \alias{AutoKMeans}
-\title{AutoKMeans Automated row clustering for mixed column types}
+\title{AutoKMeans}
 \usage{
 AutoKMeans(
   data,
@@ -99,7 +99,8 @@ data[, mean(Acc)][[1]]
 \seealso{
 Other Unsupervised Learning: 
 \code{\link{GenTSAnomVars}()},
-\code{\link{H2oIsolationForest}()},
+\code{\link{H2OIsolationForestScoring}()},
+\code{\link{H2OIsolationForest}()},
 \code{\link{ResidualOutliers}()}
 }
 \author{

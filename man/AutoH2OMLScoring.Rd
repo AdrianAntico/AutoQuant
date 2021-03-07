@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oMLScoring.R
 \name{AutoH2OMLScoring}
 \alias{AutoH2OMLScoring}
-\title{AutoH2OMLScoring is an automated scoring function that compliments the AutoH2o model training functions.}
+\title{AutoH2OMLScoring}
 \usage{
 AutoH2OMLScoring(
   ScoringData = NULL,

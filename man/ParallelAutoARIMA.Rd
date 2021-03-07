@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{ParallelAutoARIMA}
 \alias{ParallelAutoARIMA}
-\title{ParallelAutoARIMA to run the 4 data sets at once}
+\title{ParallelAutoARIMA}
 \usage{
 ParallelAutoARIMA(
   Output,
@@ -36,7 +36,7 @@ ParallelAutoARIMA(
 Time series data sets to pass onto auto modeling functions
 }
 \description{
-ParallelAutoARIMA to run the 4 data sets at once
+ParallelAutoARIMA for training multiple models at once
 }
 \examples{
 \dontrun{

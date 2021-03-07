@@ -1,8 +1,10 @@
-#' AutoLagRollStats
+#' @title AutoLagRollStats
 #'
-#' AutoLagRollStats Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
+#' @description AutoLagRollStats Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
+#'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data A data.table you want to run the function on
 #' @param Targets A character vector of the column names for the reference column in which you will build your lags and rolling stats
 #' @param DateColumn The column name of your date column used to sort events over time
@@ -467,11 +469,13 @@ AutoLagRollStats <- function(data,
   return(data)
 }
 
-#' AutoLagRollStatsScoring
+#' @title AutoLagRollStatsScoring
 #'
-#' AutoLagRollStatsScoring Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
+#' @description AutoLagRollStatsScoring Builds lags and a large variety of rolling statistics with options to generate them for hierarchical categorical interactions.
+#'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data A data.table you want to run the function on
 #' @param RowNumsID The name of your column used to id the records so you can specify which rows to keep
 #' @param RowNumsKeep The RowNumsID numbers that you want to keep

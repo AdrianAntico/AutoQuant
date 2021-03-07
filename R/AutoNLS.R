@@ -1,9 +1,10 @@
-#' AutoNLS is a function for automatically building nls models
+#' @title AutoNLS
 #'
-#' This function will build models for 9 different nls models, along with a non-parametric monotonic regression and a polynomial regression. The models are evaluated, a winner is picked, and the predicted values are stored in your data table.
+#' @description This function will build models for 9 different nls models, along with a non-parametric monotonic regression and a polynomial regression. The models are evaluated, a winner is picked, and the predicted values are stored in your data table.
 #'
 #' @author Adrian Antico
 #' @family Automated Regression
+#'
 #' @param data Data is the data table you are building the modeling on
 #' @param y Y is the target variable name in quotes
 #' @param x X is the independent variable name in quotes

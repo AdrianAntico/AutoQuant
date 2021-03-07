@@ -2,7 +2,7 @@
 % Please edit documentation in R/ResidualOutliers.R
 \name{ResidualOutliers}
 \alias{ResidualOutliers}
-\title{ResidualOutliers is an automated time series outlier detection function}
+\title{ResidualOutliers}
 \usage{
 ResidualOutliers(
   data,
@@ -79,7 +79,8 @@ outliers <- data[type != "<NA>"]
 Other Unsupervised Learning: 
 \code{\link{AutoKMeans}()},
 \code{\link{GenTSAnomVars}()},
-\code{\link{H2oIsolationForest}()}
+\code{\link{H2OIsolationForestScoring}()},
+\code{\link{H2OIsolationForest}()}
 }
 \author{
 Adrian Antico

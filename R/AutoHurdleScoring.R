@@ -1,9 +1,10 @@
-#' AutoHurdleScoring()
+#' @title AutoHurdleScoring
 #'
-#' AutoHurdleScoring() can score AutoCatBoostHurdleModel() and AutoXGBoostHurdleModel()
+#' @description AutoHurdleScoring can score AutoCatBoostHurdleModel() and AutoXGBoostHurdleModel()
 #'
 #' @author Adrian Antico
 #' @family Automated Model Scoring
+#'
 #' @param TestData scoring data.table
 #' @param Path Supply if ArgList is NULL or ModelList is null.
 #' @param ModelID Supply if ArgList is NULL or ModelList is null. Same as used in model training.

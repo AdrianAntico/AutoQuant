@@ -2,7 +2,7 @@
 % Please edit documentation in R/ProblematicFeatures.R
 \name{ProblematicFeatures}
 \alias{ProblematicFeatures}
-\title{ProblematicFeatures identifies problematic features for machine learning}
+\title{ProblematicFeatures}
 \usage{
 ProblematicFeatures(
   data,

@@ -1,9 +1,10 @@
-#' Multiplot is a function for combining multiple plots
+#' @title multiplot
 #'
-#' Sick of copying this one into your code? Well, not anymore.
+#' @description Sick of copying this one into your code? Well, not anymore.
 #'
 #' @author Adrian Antico
 #' @family Graphics
+#'
 #' @param plotlist This is the list of your charts
 #' @param cols This is the number of columns in your multiplot
 #' @param layout Leave NULL
@@ -61,12 +62,13 @@ multiplot <- function(...,
   }
 }
 
-#' RemixTheme function is a ggplot theme generator for ggplots
+#' @title RemixTheme
 #'
-#' This function adds the Remix Theme to ggplots
+#' @description This function adds the Remix Theme to ggplots
 #'
 #' @author Douglas Pestana
 #' @family Graphics
+#'
 #' @examples
 #' \dontrun{
 #' data <- data.table::data.table(
@@ -106,12 +108,13 @@ RemixTheme <- function() {
     plot.caption = ggplot2::element_text(size = 9, hjust = 0, face = "italic"))
 }
 
-#' ChartTheme function is a ggplot theme generator for ggplots
+#' @title ChartTheme
 #'
-#' This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
+#' @description This function helps your ggplots look professional with the choice of the two main colors that will dominate the theme
 #'
 #' @author Adrian Antico
 #' @family Graphics
+#'
 #' @param Size The size of the axis labels and title
 #' @param AngleX The angle of the x axis labels
 #' @param AngleY The angle of the Y axis labels
@@ -166,12 +169,13 @@ ChartTheme <- function(Size = 12,
   chart_theme
 }
 
-#' TimeSeriesPlotter
+#' @title TimeSeriesPlotter
 #'
-#' TimeSeriesPlotter is a function to plot single or multiple lines on a single plot
+#' @description TimeSeriesPlotter is a function to plot single or multiple lines on a single plot
 #'
 #' @family Graphics
 #' @author Adrian Antico
+#'
 #' @param data Source data
 #' @param TargetVariable Target variable
 #' @param DateVariable Date variable

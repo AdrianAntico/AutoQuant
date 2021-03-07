@@ -2,7 +2,7 @@
 % Please edit documentation in R/PlotFunctions.R
 \name{RemixTheme}
 \alias{RemixTheme}
-\title{RemixTheme function is a ggplot theme generator for ggplots}
+\title{RemixTheme}
 \usage{
 RemixTheme()
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{OptimizeArima}
 \alias{OptimizeArima}
-\title{OptimizeArima is a function that takes raw data and returns time series data}
+\title{OptimizeArima}
 \usage{
 OptimizeArima(
   Output,

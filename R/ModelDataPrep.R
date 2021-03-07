@@ -1,9 +1,10 @@
-#' Final Data Preparation Function
+#' @title ModelDataPrep
 #'
-#' This function replaces inf values with NA, converts characters to factors, and imputes with constants
+#' @description This function replaces inf values with NA, converts characters to factors, and imputes with constants
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data This is your source data you'd like to modify
 #' @param Impute Defaults to TRUE which tells the function to impute the data
 #' @param CharToFactor Defaults to TRUE which tells the function to convert characters to factors

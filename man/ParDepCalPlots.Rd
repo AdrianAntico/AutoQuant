@@ -2,7 +2,7 @@
 % Please edit documentation in R/ParDepCalPlots.R
 \name{ParDepCalPlots}
 \alias{ParDepCalPlots}
-\title{ParDepCalPlots automatically builds partial dependence calibration plots for model evaluation}
+\title{ParDepCalPlots}
 \usage{
 ParDepCalPlots(
   data,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{PredictArima}
 \alias{PredictArima}
-\title{PredictArima to forecast an Arima() model from the stats package}
+\title{PredictArima}
 \usage{
 PredictArima(
   object = Results,

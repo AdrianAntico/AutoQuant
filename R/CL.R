@@ -930,12 +930,13 @@ CLTrainer <- function(data,
   return(ArgsList)
 }
 
-#' CLForecast
+#' @title CLForecast
 #'
-#' CLForecast for generating forecasts
+#' @description CLForecast for generating forecasts
 #'
 #' @author Adrian Antico
 #' @family Population Dynamics Forecasting
+#'
 #' @param data N
 #' @param FC_BaseFunnelMeasure d
 #' @param OutputFilePath P

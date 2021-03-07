@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoNLS.R
 \name{AutoNLS}
 \alias{AutoNLS}
-\title{AutoNLS is a function for automatically building nls models}
+\title{AutoNLS}
 \usage{
 AutoNLS(data, y, x, monotonic = TRUE)
 }

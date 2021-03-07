@@ -1,9 +1,10 @@
-#' Utility maximizing thresholds for binary classification
+#' @title threshOptim
 #'
-#' This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
+#' @description threshOptim will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
 #'
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
+#'
 #' @param data data is the data table you are building the modeling on
 #' @param actTar The column name where the actual target variable is located (in binary form)
 #' @param predTar The column name where the predicted values are located

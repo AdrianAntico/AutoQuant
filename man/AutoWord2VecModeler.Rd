@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoWord2VecModeler.R
 \name{AutoWord2VecModeler}
 \alias{AutoWord2VecModeler}
-\title{Automated word2vec data generation via H2O}
+\title{AutoWord2VecModeler}
 \usage{
 AutoWord2VecModeler(
   data,

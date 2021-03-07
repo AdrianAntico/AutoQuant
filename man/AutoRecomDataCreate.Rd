@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoRecommender.R
 \name{AutoRecomDataCreate}
 \alias{AutoRecomDataCreate}
-\title{Convert transactional data.table to a binary ratings matrix}
+\title{AutoRecomDataCreate}
 \usage{
 AutoRecomDataCreate(
   data,
@@ -27,7 +27,7 @@ AutoRecomDataCreate(
 A BinaryRatingsMatrix
 }
 \description{
-Convert transactional data.table to a binary ratings matrix
+AutoRecomDataCreate to create data that is prepared for modeling
 }
 \examples{
 \dontrun{

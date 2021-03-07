@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oGAMClassifier.R
 \name{AutoH2oGAMClassifier}
 \alias{AutoH2oGAMClassifier}
-\title{AutoH2oGAMClassifier is an automated H2O modeling framework with grid-tuning and model evaluation}
+\title{AutoH2oGAMClassifier}
 \usage{
 AutoH2oGAMClassifier(
   data,

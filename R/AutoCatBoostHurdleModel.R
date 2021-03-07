@@ -1,9 +1,10 @@
-#' AutoCatBoostHurdleModel for generalized hurdle modeling
+#' @title AutoCatBoostHurdleModel
 #'
-#' AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd on github for more background.
+#' @description AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd on github for more background.
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning - Compound
+#'
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TimeWeights Supply a value that will be multiplied by he time trend value
 #' @param TrainOnFull Set to TRUE to use all data

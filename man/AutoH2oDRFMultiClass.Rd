@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oDRFMultiClass.R
 \name{AutoH2oDRFMultiClass}
 \alias{AutoH2oDRFMultiClass}
-\title{AutoH2oDRFMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation}
+\title{AutoH2oDRFMultiClass}
 \usage{
 AutoH2oDRFMultiClass(
   data,

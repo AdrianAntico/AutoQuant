@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{RL_Performance}
 \alias{RL_Performance}
-\title{ARIMA_Performance creates and stores model results in Experiment Grid}
+\title{RL_Performance}
 \usage{
 RL_Performance(
   Results = Results,
@@ -42,7 +42,7 @@ RL_Performance(
 \item{FinalScore}{FALSE}
 }
 \description{
-ARIMA_Performance creates and stores model results in Experiment Grid
+RL_Performance creates and stores model results in Experiment Grid
 }
 \seealso{
 Other Time Series Helper: 

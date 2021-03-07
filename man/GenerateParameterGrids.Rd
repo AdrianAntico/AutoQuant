@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{GenerateParameterGrids}
 \alias{GenerateParameterGrids}
-\title{GenerateParameterGrids creates and stores model results in Experiment Grid}
+\title{GenerateParameterGrids}
 \usage{
 GenerateParameterGrids(
   Model = NULL,

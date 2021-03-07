@@ -1,8 +1,10 @@
-#' Automated word2vec data generation via H2O
+#' @title AutoWord2VecModeler
 #'
-#' This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
+#' @description This function allows you to automatically build a word2vec model and merge the data onto your supplied dataset
+#'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data Source data table to merge vects onto
 #' @param BuildType Choose from "individual" or "combined". Individual will build a model for every text column. Combined will build a single model for all columns.
 #' @param stringCol A string name for the column to convert via word2vec

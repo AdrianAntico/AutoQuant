@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoXGBoostMultiClass.R
 \name{AutoXGBoostMultiClass}
 \alias{AutoXGBoostMultiClass}
-\title{AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tuning and model evaluation}
+\title{AutoXGBoostMultiClass}
 \usage{
 AutoXGBoostMultiClass(
   data,

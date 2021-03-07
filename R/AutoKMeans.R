@@ -1,9 +1,10 @@
-#' AutoKMeans Automated row clustering for mixed column types
+#' @title AutoKMeans
 #'
-#' AutoKMeans adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
+#' @description AutoKMeans adds a column to your original data with a cluster number identifier. Uses glrm (grid tune-able) and then k-means to find optimal k.
 #'
 #' @author Adrian Antico
 #' @family Unsupervised Learning
+#'
 #' @param data is the source time series data.table
 #' @param GridTuneGLRM If you want to grid tune the glrm model, set to TRUE, FALSE otherwise
 #' @param GridTuneKMeans If you want to grid tuen the KMeans model, set to TRUE, FALSE otherwise

@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{Regular_Performance}
 \alias{Regular_Performance}
-\title{Regular_Performance creates and stores model results in Experiment Grid}
+\title{Regular_Performance}
 \usage{
 Regular_Performance(
   Model = NULL,

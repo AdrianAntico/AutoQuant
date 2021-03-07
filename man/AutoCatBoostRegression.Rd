@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoCatBoostRegression.R
 \name{AutoCatBoostRegression}
 \alias{AutoCatBoostRegression}
-\title{AutoCatBoostRegression is an automated catboost model grid-tuning classifier and evaluation system}
+\title{AutoCatBoostRegression}
 \usage{
 AutoCatBoostRegression(
   data,

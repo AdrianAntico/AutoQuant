@@ -1,8 +1,10 @@
-#' An Automated Feature Engineering Function Using data.table frollmean
+#' @title DT_GDL_Feature_Engineering
 #'
-#' Builds autoregressive and moving average from target columns and distributed lags and distributed moving average for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups.
+#' @description Builds autoregressive and moving average from target columns and distributed lags and distributed moving average for independent features distributed across time. On top of that, you can also create time between instances along with their associated lags and moving averages. This function works for data with groups and without groups.
+#'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data A data.table you want to run the function on
 #' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
 #' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.

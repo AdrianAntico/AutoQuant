@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oGBMHurdleModel.R
 \name{AutoH2oGBMHurdleModel}
 \alias{AutoH2oGBMHurdleModel}
-\title{AutoH2oGBMHurdleModel is generalized hurdle modeling framework}
+\title{AutoH2oGBMHurdleModel}
 \usage{
 AutoH2oGBMHurdleModel(
   data,
@@ -77,7 +77,7 @@ AutoH2oGBMHurdleModel(
 Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
 }
 \description{
-AutoH2oGBMHurdleModel is generalized hurdle modeling framework
+AutoH2oGBMHurdleModel for hurdle modeing
 }
 \examples{
 \donttest{
@@ -112,5 +112,8 @@ Other Supervised Learning - Compound:
 \code{\link{AutoH2oDRFHurdleModel}()},
 \code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoXGBoostHurdleModel}()}
+}
+\author{
+Adrian Antico
 }
 \concept{Supervised Learning - Compound}

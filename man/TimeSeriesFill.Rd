@@ -2,7 +2,7 @@
 % Please edit documentation in R/TimeSeriesFill.R
 \name{TimeSeriesFill}
 \alias{TimeSeriesFill}
-\title{TimeSeriesFill For Completing Time Series Data}
+\title{TimeSeriesFill}
 \usage{
 TimeSeriesFill(
   data = data,
@@ -73,5 +73,8 @@ Other Feature Engineering:
 \code{\link{H2OAutoencoder}()},
 \code{\link{ModelDataPrep}()},
 \code{\link{Partial_DT_GDL_Feature_Engineering}()}
+}
+\author{
+Adrian Antico
 }
 \concept{Feature Engineering}

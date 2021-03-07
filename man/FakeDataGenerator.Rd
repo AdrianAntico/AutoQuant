@@ -45,7 +45,7 @@ FakeDataGenerator(
 \item{MultiClass}{Set to TRUE to build MultiClass data}
 }
 \description{
-FakeDataGenerator
+Create fake data for examples
 }
 \examples{
 \dontrun{

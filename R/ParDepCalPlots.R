@@ -1,8 +1,9 @@
-#' ParDepCalPlots automatically builds partial dependence calibration plots for model evaluation
+#' @title ParDepCalPlots
 #'
-#' This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
+#' @description This function automatically builds partial dependence calibration plots and partial dependence calibration boxplots for model evaluation using regression, quantile regression, and binary and multinomial classification
 #' @author Adrian Antico
 #' @family Model Evaluation and Interpretation
+#'
 #' @param data Data containing predicted values and actual values for comparison
 #' @param PredictionColName Predicted values column names
 #' @param TargetColName Target value column names

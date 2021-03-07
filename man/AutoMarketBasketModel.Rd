@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoMarketBasketModel.R
 \name{AutoMarketBasketModel}
 \alias{AutoMarketBasketModel}
-\title{AutoMarketBasketModel function runs a market basket analysis automatically}
+\title{AutoMarketBasketModel}
 \usage{
 AutoMarketBasketModel(
   data,

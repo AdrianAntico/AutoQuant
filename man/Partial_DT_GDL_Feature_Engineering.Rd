@@ -2,7 +2,7 @@
 % Please edit documentation in R/Partial_DT_GDL_Feature_Engineering.R
 \name{Partial_DT_GDL_Feature_Engineering}
 \alias{Partial_DT_GDL_Feature_Engineering}
-\title{A version of the DT_GDL function for creating the GDL features for a new set of records}
+\title{Partial_DT_GDL_Feature_Engineering}
 \usage{
 Partial_DT_GDL_Feature_Engineering(
   data,

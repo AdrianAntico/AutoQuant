@@ -2,7 +2,7 @@
 % Please edit documentation in R/DT_GDL_Feature_Engineering.R
 \name{DT_GDL_Feature_Engineering}
 \alias{DT_GDL_Feature_Engineering}
-\title{An Automated Feature Engineering Function Using data.table frollmean}
+\title{DT_GDL_Feature_Engineering}
 \usage{
 DT_GDL_Feature_Engineering(
   data,

@@ -1,9 +1,10 @@
-#' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure
+#' @title GenTSAnomVars
 #'
-#' GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them. The anomalies are separated into those that are extreme on the positive end versus those that are on the negative end.
+#' @description GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure. Data is z-scaled and grouped by factors and time periods to determine which points are above and below the control limits in a cumulative time fashion. Then a cumulative rate is created as the final variable. Set KeepAllCols to FALSE to utilize the intermediate features to create rolling stats from them. The anomalies are separated into those that are extreme on the positive end versus those that are on the negative end.
 #'
 #' @author Adrian Antico
 #' @family Unsupervised Learning
+#'
 #' @param data the source residuals data.table
 #' @param ValueCol the numeric column to run anomaly detection over
 #' @param GroupVars this is a group by variable

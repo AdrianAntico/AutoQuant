@@ -2,7 +2,7 @@
 % Please edit documentation in R/ContinuousTimeDataGenerator.R
 \name{ContinuousTimeDataGenerator}
 \alias{ContinuousTimeDataGenerator}
-\title{ContinuousTimeDataGenerator for creating continuous time data sets for on demand modeling}
+\title{ContinuousTimeDataGenerator}
 \usage{
 ContinuousTimeDataGenerator(
   data,

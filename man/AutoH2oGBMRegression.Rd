@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oGBMRegression.R
 \name{AutoH2oGBMRegression}
 \alias{AutoH2oGBMRegression}
-\title{AutoH2oGBMRegression is an automated H2O modeling framework with grid-tuning and model evaluation}
+\title{AutoH2oGBMRegression}
 \usage{
 AutoH2oGBMRegression(
   data,

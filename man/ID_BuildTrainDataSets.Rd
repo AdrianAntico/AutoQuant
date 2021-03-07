@@ -2,7 +2,7 @@
 % Please edit documentation in R/ContinuousTimeDataGenerator.R
 \name{ID_BuildTrainDataSets}
 \alias{ID_BuildTrainDataSets}
-\title{ID_BuildTrainDataSets for assembling data}
+\title{ID_BuildTrainDataSets}
 \usage{
 ID_BuildTrainDataSets(
   MetaData,
@@ -53,5 +53,8 @@ Other Feature Engineering Helper:
 \code{\link{ID_MetadataGenerator}()},
 \code{\link{ID_TrainingDataGenerator2}()},
 \code{\link{ID_TrainingDataGenerator}()}
+}
+\author{
+Adrian Antico
 }
 \concept{Feature Engineering Helper}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoCatBoostMultiClass.R
 \name{AutoCatBoostMultiClass}
 \alias{AutoCatBoostMultiClass}
-\title{AutoCatBoostMultiClass is an automated catboost model grid-tuning multinomial classifier and evaluation system}
+\title{AutoCatBoostMultiClass}
 \usage{
 AutoCatBoostMultiClass(
   data,

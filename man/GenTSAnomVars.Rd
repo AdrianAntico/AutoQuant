@@ -2,7 +2,7 @@
 % Please edit documentation in R/GenTSAnomVars.R
 \name{GenTSAnomVars}
 \alias{GenTSAnomVars}
-\title{GenTSAnomVars is an automated z-score anomaly detection via GLM-like procedure}
+\title{GenTSAnomVars}
 \usage{
 GenTSAnomVars(
   data,
@@ -68,7 +68,8 @@ stuff <- GenTSAnomVars(
 \seealso{
 Other Unsupervised Learning: 
 \code{\link{AutoKMeans}()},
-\code{\link{H2oIsolationForest}()},
+\code{\link{H2OIsolationForestScoring}()},
+\code{\link{H2OIsolationForest}()},
 \code{\link{ResidualOutliers}()}
 }
 \author{

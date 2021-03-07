@@ -2,7 +2,7 @@
 % Please edit documentation in R/EconometricsFunctions.R
 \name{OptimizeETS}
 \alias{OptimizeETS}
-\title{OptimizeETS is a function that takes raw data and returns time series data}
+\title{OptimizeETS}
 \usage{
 OptimizeETS(
   Output,

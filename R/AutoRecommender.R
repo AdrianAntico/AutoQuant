@@ -1,7 +1,10 @@
-#' Convert transactional data.table to a binary ratings matrix
+#' @title AutoRecomDataCreate
+#'
+#' @description AutoRecomDataCreate to create data that is prepared for modeling
 #'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Recommenders
+#'
 #' @param data This is your transactional data.table. Must include an Entity (typically customer), ProductCode (such as SKU), and a sales metric (such as total sales).
 #' @param EntityColName This is the column name in quotes that represents the column name for the Entity, such as customer
 #' @param ProductColName This is the column name in quotes that represents the column name for the product, such as SKU

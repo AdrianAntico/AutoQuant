@@ -2,7 +2,7 @@
 % Please edit documentation in R/threshOptim.R
 \name{threshOptim}
 \alias{threshOptim}
-\title{Utility maximizing thresholds for binary classification}
+\title{threshOptim}
 \usage{
 threshOptim(
   data,
@@ -42,7 +42,7 @@ threshOptim(
 Optimal threshold and corresponding utilities for the range of thresholds tested
 }
 \description{
-This function will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
+threshOptim will return the utility maximizing threshold for future predictions along with the data generated to estimate the threshold
 }
 \examples{
 \dontrun{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oMLClassifier.R
 \name{AutoH2oMLClassifier}
 \alias{AutoH2oMLClassifier}
-\title{AutoH2oMLClassifier is an automated H2O modeling framework with grid-tuning and model evaluation}
+\title{AutoH2oMLClassifier}
 \usage{
 AutoH2oMLClassifier(
   data,

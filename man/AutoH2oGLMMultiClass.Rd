@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oGLMMultiClass.R
 \name{AutoH2oGLMMultiClass}
 \alias{AutoH2oGLMMultiClass}
-\title{AutoH2oGLMMultiClass is an automated H2O modeling framework with grid-tuning and model evaluation}
+\title{AutoH2oGLMMultiClass}
 \usage{
 AutoH2oGLMMultiClass(
   data,

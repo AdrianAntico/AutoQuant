@@ -2,7 +2,7 @@
 % Please edit documentation in R/CreateCalendarVariables.R
 \name{CreateCalendarVariables}
 \alias{CreateCalendarVariables}
-\title{CreateCalendarVariables Create Calendar Variables}
+\title{CreateCalendarVariables}
 \usage{
 CreateCalendarVariables(
   data,

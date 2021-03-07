@@ -1,4 +1,4 @@
-![Version: 0.4.3](https://img.shields.io/static/v1?label=Version&message=0.4.3&color=blue&?style=plastic)
+![Version: 0.4.4](https://img.shields.io/static/v1?label=Version&message=0.4.4&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -612,6 +612,80 @@ data <- RemixAutoML::H2OAutoencoderScoring(
 
 </p>
 </details>
+
+#### **H2OIsolationForest()** and **H2OIsolationForestScoring()**
+
+<details><summary>Code Example</summary>
+<p>
+
+
+```
+# Create simulated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 50000,
+  ID = 2L,
+  FactorCount = 2L,
+  AddDate = TRUE,
+  ZIP = 0L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run algo
+data <- RemixAutoML::H2OIsolationForest(
+  data,
+  Features = names(data)[2L:ncol(data)],
+  IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
+  ModelID = "Adrian",
+  SavePath = getwd(),
+  Threshold = 0.95,
+  MaxMem = "28G",
+  NThreads = -1,
+  NTrees = 100,
+  SampleRate = (sqrt(5)-1)/2,
+  MaxDepth = 8,
+  MinRows = 1,
+  ColSampleRate = 1,
+  ColSampleRatePerLevel = 1,
+  ColSampleRatePerTree = 1,
+  CategoricalEncoding = c("AUTO"),
+  Debug = TRUE)
+
+# Remove output from data and then score
+data[, eval(names(data)[17:ncol(data)]) := NULL]
+
+# Run algo
+Outliers <- RemixAutoML::H2OIsolationForestScoring(
+  data,
+  Features = names(data)[2:ncol(data)],
+  IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
+  H2OStart = TRUE,
+  H2OShutdown = TRUE,
+  ModelID = "TestModel",
+  SavePath = getwd(),
+  Threshold = 0.95,
+  MaxMem = "28G",
+  NThreads = -1,
+  Debug = FALSE)
+```
+
+</p>
+</details>
+
+<details><summary>Function Description</summary>
+<p>
+
+<code>H2OIsolationForecast()</code> Anomaly detection and feature engineering using H2O Isolation Forest. A model is built, your training data is scored, and the model is saved to file for later use in scoring environments with H2OIsolationForestScoring()
+
+<code>H2OIsolationForecastScoring()</code> Scoring function
+
+</p>
+</details>
+
+
+<code>H2oIsolationForest()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
 #### **CreateCalendarVariables()**
 
@@ -3752,8 +3826,6 @@ For each of the models tested internally, several aspects should be noted:
 <details><summary>Expand to view content</summary>
 <p>
  
-#### **H2OIsolationForest()**
-<code>H2oIsolationForest()</code> automatically identifies anomalous data records via Isolation Forests from H2O.
 
 #### **AutoKMeans()** 
 <code>AutoKMeans()</code> This function builds a generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm

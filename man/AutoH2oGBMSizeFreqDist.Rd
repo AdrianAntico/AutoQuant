@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oGBMSizeFreqDist.R
 \name{AutoH2oGBMSizeFreqDist}
 \alias{AutoH2oGBMSizeFreqDist}
-\title{AutoH2oGBMSizeFreqDist for building size and frequency distributions via quantile regressions}
+\title{AutoH2oGBMSizeFreqDist}
 \usage{
 AutoH2oGBMSizeFreqDist(
   CountData = NULL,

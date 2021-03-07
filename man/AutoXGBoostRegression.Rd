@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoXGBoostRegression.R
 \name{AutoXGBoostRegression}
 \alias{AutoXGBoostRegression}
-\title{AutoXGBoostRegression is an automated XGBoost modeling framework with grid-tuning and model evaluation}
+\title{AutoXGBoostRegression}
 \usage{
 AutoXGBoostRegression(
   data,

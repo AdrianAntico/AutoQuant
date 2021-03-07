@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoH2oDRFHurdleModel.R
 \name{AutoH2oDRFHurdleModel}
 \alias{AutoH2oDRFHurdleModel}
-\title{AutoH2oDRFHurdleModel is generalized hurdle modeling framework}
+\title{AutoH2oDRFHurdleModel}
 \usage{
 AutoH2oDRFHurdleModel(
   data,
@@ -77,7 +77,7 @@ AutoH2oDRFHurdleModel(
 Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
 }
 \description{
-AutoH2oDRFHurdleModel is generalized hurdle modeling framework
+AutoH2oDRFHurdleModel for hurdle modeling
 }
 \examples{
 \dontrun{
@@ -113,5 +113,8 @@ Other Supervised Learning - Compound:
 \code{\link{AutoH2oGBMHurdleModel}()},
 \code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoXGBoostHurdleModel}()}
+}
+\author{
+Adrian Antico
 }
 \concept{Supervised Learning - Compound}

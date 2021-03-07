@@ -2,7 +2,7 @@
 % Please edit documentation in R/EvalPlot.R
 \name{EvalPlot}
 \alias{EvalPlot}
-\title{EvalPlot automatically builds calibration plots for model evaluation}
+\title{EvalPlot}
 \usage{
 EvalPlot(
   data,

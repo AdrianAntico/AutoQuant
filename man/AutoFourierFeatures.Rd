@@ -33,7 +33,7 @@ AutoFourierFeatures(
 \item{xregs}{Extra data to merge in}
 }
 \description{
-#' AutoFourierFeatures
+AutoFourierFeatures for feature engineering
 }
 \seealso{
 Other Feature Engineering Helper: 

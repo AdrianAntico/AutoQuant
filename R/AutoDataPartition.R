@@ -1,8 +1,10 @@
-#' AutoDataPartition
+#' @title AutoDataPartition
 #'
-#' This function will take your ratings matrix and model and score your data in parallel.
+#' @description This function will take your ratings matrix and model and score your data in parallel.
+#'
 #' @author Adrian Antico and Douglas Pestana
 #' @family Feature Engineering
+#'
 #' @param data Source data to do your partitioning on
 #' @param NumDataSets The number of total data sets you want built
 #' @param Ratios A vector of values for how much data each data set should get in each split. E.g. c(0.70, 0.20, 0.10)

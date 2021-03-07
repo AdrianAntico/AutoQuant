@@ -2,7 +2,7 @@
 % Please edit documentation in R/ModelDataPrep.R
 \name{ModelDataPrep}
 \alias{ModelDataPrep}
-\title{Final Data Preparation Function}
+\title{ModelDataPrep}
 \usage{
 ModelDataPrep(
   data,

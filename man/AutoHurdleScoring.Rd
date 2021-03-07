@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoHurdleScoring.R
 \name{AutoHurdleScoring}
 \alias{AutoHurdleScoring}
-\title{AutoHurdleScoring()}
+\title{AutoHurdleScoring}
 \usage{
 AutoHurdleScoring(
   TestData = NULL,
@@ -33,7 +33,7 @@ AutoHurdleScoring(
 A data.table with the final predicted value, the intermediate model predictions, and your source data
 }
 \description{
-AutoHurdleScoring() can score AutoCatBoostHurdleModel() and AutoXGBoostHurdleModel()
+AutoHurdleScoring can score AutoCatBoostHurdleModel() and AutoXGBoostHurdleModel()
 }
 \examples{
 \dontrun{

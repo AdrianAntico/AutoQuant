@@ -1,9 +1,10 @@
-#' CreateCalendarVariables Create Calendar Variables
+#' @title CreateCalendarVariables
 #'
-#' CreateCalendarVariables Rapidly creates calendar variables based on the date column you provide
+#' @description CreateCalendarVariables Rapidly creates calendar variables based on the date column you provide
 #'
 #' @author Adrian Antico
 #' @family Feature Engineering
+#'
 #' @param data This is your data
 #' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
 #' @param AsFactor Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned

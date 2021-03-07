@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoCatBoostHurdleModel.R
 \name{AutoCatBoostHurdleModel}
 \alias{AutoCatBoostHurdleModel}
-\title{AutoCatBoostHurdleModel for generalized hurdle modeling}
+\title{AutoCatBoostHurdleModel}
 \usage{
 AutoCatBoostHurdleModel(
   data = NULL,

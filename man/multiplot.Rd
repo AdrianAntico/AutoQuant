@@ -2,7 +2,7 @@
 % Please edit documentation in R/PlotFunctions.R
 \name{multiplot}
 \alias{multiplot}
-\title{Multiplot is a function for combining multiple plots}
+\title{multiplot}
 \usage{
 multiplot(..., plotlist = NULL, cols = 2, layout = NULL)
 }

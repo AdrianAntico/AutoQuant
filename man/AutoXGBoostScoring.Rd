@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoXGBoostScoring.R
 \name{AutoXGBoostScoring}
 \alias{AutoXGBoostScoring}
-\title{AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions.}
+\title{AutoXGBoostScoring}
 \usage{
 AutoXGBoostScoring(
   TargetType = NULL,
