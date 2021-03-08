@@ -187,3 +187,14 @@ InstallLocal <- function(BuildManual = FALSE, Path = "C:/Users/Bizon/Documents/G
   setwd(Path)
   devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
 }
+
+#' @title ParseOptParse
+#' @param x object value from optparse. e.g. ArgsList$TargetVariables
+#' @noRd
+ParseOptParse <- function() {
+  if(!is.null(x)) {
+    return(as.character(if(is.list(strsplit(x, ","))) unlist(strsplit(x, ",")) else x))
+  } else {
+    return(x)
+  }
+}
