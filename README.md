@@ -884,12 +884,53 @@ data <- RemixAutoML::DummifyDT(
 </p>
 </details>
 
-#### **DifferenceData()** and **DifferenceDataReverse()**
+#### **AutoDiffLagN**
+
+<details><summary>Code Example</summary>
+<p>
+ 
+ ```
+ # Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 50000,
+  ID = 2L,
+  FactorCount = 3L,
+  AddDate = TRUE,
+  ZIP = 0L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Store Cols to diff
+Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
+
+# Clean data before running AutoDiffLagN
+data <- RemixAutoML::ModelDataPrep(
+  data = data,
+  Impute = FALSE,
+  CharToFactor = FALSE,
+  FactorToChar = TRUE)
+
+# Run function
+data <- RemixAutoML::AutoDiffLagN(
+  data,
+  DateVariable = "DateTime",
+  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
+  DiffVariables = Cols,
+  NLag = 1,
+  Sort = TRUE,
+  RemoveNA = TRUE)
+ ```
+
+</p>
+</details>
 
 <details><summary>Function Description</summary>
 <p>
  
-<code>DifferenceData()</code> Create differences in your data (y1 - y0) for grouped or non-grouped data. <code>DifferenceDataReverse()</code> Reverses the differences in your data for grouped or non-grouped data.
+<code>AutoDiffLagN()</code> Generate differences for numeric columns, by groups. You can specify NLag = 1 to generate the diffs based on a lag 1 lookback or NLag = n for some other lookback.
 
 </p>
 </details>
