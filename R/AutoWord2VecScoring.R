@@ -95,39 +95,38 @@ AutoWord2VecScoring <- function(data,
 
   # Check args ----
   if(is.null(stringCol)) stop("stringCol cannot be NULL")
-  if(is.null(ModelObject) && tolower(BuildType) == "combined" && !file.exists(file.path(model_path, ModelID))) stop(paste0("Model not found at ", model_path))
-  if(is.null(ModelObject) && tolower(BuildType) == "individual") {
-    for(z in stringCol) if(!file.exists(file.path(model_path, ModelID))) stop(paste0("Model not found at ", paste0(model_path, "_", z)))
-  }
+  if(is.null(ModelObject) && tolower(BuildType) == "combined" && !file.exists(file.path(model_path, ModelID))) stop(paste0("Model not found at ", file.path(model_path, ModelID)))
+  if(is.null(ModelObject) && tolower(BuildType) == "individual" && !file.exists(file.path(model_path, paste0(ModelID, "_", stringCol)))) stop(paste0("Model not found at ", file.path(model_path, paste0(ModelID, "_", stringCol))))
 
   # Instantiate H2O ----
-  if(H2OStartUp) h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
-
-  # Load model ----
-  if(is.null(ModelObject) && tolower(BuildType) == "combined") model <- h2o::h2o.loadModel(path = file.path(model_path, ModelID))
+  if(H2OStartUp) localH2O <- h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory, enable_assertions = FALSE)
 
   # Build vecs ----
-  if(tolower(BuildType) == "combined") {
-    data1 <- AutoH2OTextPrepScoring(
-      data = data,
-      string = stringCol,
-      NThreads = Threads,
-      MaxMem = MaxMemory,
-      StartH2O = FALSE)
-    Scores <- data.table::as.data.table(h2o::h2o.transform(
-      model,
-      words = data1,
-      aggregate_method = "AVERAGE"))
-    data.table::setnames(Scores, names(Scores), paste0(ModelID, "_", names(Scores)))
-    if(!KeepStringCol) {
-      data[, eval(stringCol) := NULL]
-      data <- cbind(data, Scores)
-    } else {
-      data <- cbind(data, Scores)
-    }
-  } else {
+  if(tolower(BuildType) == "individual") {
     for(textCol in stringCol) {
       model <- h2o::h2o.loadModel(path = file.path(model_path, paste0(ModelID, "_", textCol)))
+      data1 <- AutoH2OTextPrepScoring(
+        data = data,
+        string = textCol,
+        NThreads = Threads,
+        MaxMem = MaxMemory,
+        StartH2O = FALSE)
+      Scores <- data.table::as.data.table(h2o::h2o.transform(
+        model,
+        words = data1,
+        aggregate_method = "AVERAGE"))
+      data.table::setnames(Scores, names(Scores), paste0(textCol, "_", names(Scores)))
+      if(!KeepStringCol) {
+        data[, eval(textCol) := NULL]
+        data <- cbind(data, Scores)
+      } else {
+        data <- cbind(data, Scores)
+      }
+    }
+
+  } else {
+    model <- h2o::h2o.loadModel(path = file.path(model_path, ModelID))
+    for(textCol in stringCol) {
       data1 <- AutoH2OTextPrepScoring(
         data = data,
         string = textCol,
