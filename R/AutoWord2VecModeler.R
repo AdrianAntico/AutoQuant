@@ -135,8 +135,7 @@ AutoWord2VecModeler <- function(data,
     if(exists("temp")) rm(temp)
 
     # word2vec time ----
-    if(i > 1L) Sys.sleep(10L)
-    h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
+    localH2O <- h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory, enable_assertions = FALSE)
 
     # It is important to remove "\n"----
     Final[, Text := gsub("  ", " ", Text)]
@@ -149,15 +148,15 @@ AutoWord2VecModeler <- function(data,
     # Build model----
     w2v.model <- h2o::h2o.word2vec(
       tokenized_words,
-      model_id           = paste0(ModelID, "_", stringCol),
-      word_model         = "SkipGram",
-      norm_model         = "HSM",
-      vec_size           = vects,
-      min_word_freq      = MinWords,
-      window_size        = WindowSize,
+      model_id = ModelID,
+      word_model = "SkipGram",
+      norm_model = "HSM",
+      vec_size = vects,
+      min_word_freq = MinWords,
+      window_size = WindowSize,
       init_learning_rate = 0.025,
-      sent_sample_rate   = 0.05,
-      epochs             = Epochs)
+      sent_sample_rate = 0.05,
+      epochs = Epochs)
 
     # Save model----
     if(!is.null(model_path)) {
@@ -169,38 +168,38 @@ AutoWord2VecModeler <- function(data,
       }
     }
 
-    # Loop through all the string columns and score them----
+    # Loop through all the string columns and score them ----
     for(string in stringCol) {
       if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
 
-      # word2vec time
+      # word2vec time ----
       i <- i + 1L
       Sys.sleep(10L)
       h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
-      # It is important to remove "\n" --
+      # It is important to remove "\n" ----
       data[, eval(string) := gsub("  ", " ", get(string))]
       data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
       data2 <- data[, .(get(string))]
 
-      # Tokenize
+      # Tokenize ----
       tokenized_words <- tokenizeH2O(data2)
       rm(data2)
 
-      # Score model----
+      # Score model ----
       all_vecs <- h2o::h2o.transform(w2v.model, tokenized_words, aggregate_method = "AVERAGE")
 
-      # Convert to data.table----
+      # Convert to data.table ----
       all_vecs <- data.table::as.data.table(all_vecs)
       data <- data.table::data.table(cbind(data, all_vecs))
 
-      # Remove string cols----
+      # Remove string cols ----
       if(!KeepStringCol) data[, eval(string) := NULL]
 
-      # Replace Colnames----
+      # Replace Colnames ----
       cols <- names(data)[(ncol(data) - vects + 1):ncol(data)]
       for(c in cols) {
-        data[, paste0(string, "_", c) := get(c)]
+        data[, paste0(ModelID, "_", c) := get(c)]
         data[, eval(c) := NULL]
       }
     }

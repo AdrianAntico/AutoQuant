@@ -101,10 +101,10 @@ AutoWord2VecScoring <- function(data,
   if(H2OStartUp) h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
   # Load model ----
-  if(is.null(ModelObject) && tolower(BuildType) == "individual") model <- h2o::h2o.loadModel(path = file.path(model_path, paste0(ModelID, "_", stringCol)))
+  if(is.null(ModelObject) && tolower(BuildType) == "combined") model <- h2o::h2o.loadModel(path = file.path(model_path, ModelID))
 
   # Build vecs ----
-  if(tolower(BuildType) == "individual") {
+  if(tolower(BuildType) == "combined") {
     data1 <- AutoH2OTextPrepScoring(
       data = data,
       string = stringCol,
@@ -115,7 +115,7 @@ AutoWord2VecScoring <- function(data,
       model,
       words = data1,
       aggregate_method = "AVERAGE"))
-    data.table::setnames(Scores, names(Scores), paste0(stringCol, "_", names(Scores)))
+    data.table::setnames(Scores, names(Scores), paste0(ModelID, "_", names(Scores)))
     if(!KeepStringCol) {
       data[, eval(stringCol) := NULL]
       data <- cbind(data, Scores)
