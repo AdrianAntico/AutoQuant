@@ -683,6 +683,57 @@ Outliers <- RemixAutoML::H2OIsolationForestScoring(
 </p>
 </details>
 
+#### **AutoDiffLagN()**
+
+<details><summary>Code Example</summary>
+<p>
+ 
+ ```
+ # Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 50000,
+  ID = 2L,
+  FactorCount = 3L,
+  AddDate = TRUE,
+  ZIP = 0L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Store Cols to diff
+Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
+
+# Clean data before running AutoDiffLagN
+data <- RemixAutoML::ModelDataPrep(
+  data = data,
+  Impute = FALSE,
+  CharToFactor = FALSE,
+  FactorToChar = TRUE)
+
+# Run function
+data <- RemixAutoML::AutoDiffLagN(
+  data,
+  DateVariable = "DateTime",
+  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
+  DiffVariables = Cols,
+  NLag = 1,
+  Sort = TRUE,
+  RemoveNA = TRUE)
+ ```
+
+</p>
+</details>
+
+<details><summary>Function Description</summary>
+<p>
+ 
+<code>AutoDiffLagN()</code> Generate differences for numeric columns, by groups. You can specify NLag = 1 to generate the diffs based on a lag 1 lookback or NLag = n for some other lookback.
+
+</p>
+</details>
+
 #### **CreateCalendarVariables()**
 
 <details><summary>Code Example</summary>
@@ -788,18 +839,6 @@ This function counts up the number of specified holidays between the current rec
 </p>
 </details>
 
-#### **AutoTransformationCreate()** and **AutoTransformationScore()**
-
-<details><summary>Function Description</summary>
-<p>
- 
-<code>AutoTransformationCreate()</code> is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Log, LogPlus1, Sqrt, along with Asin and Logit for proportion data) and find the one that produces the best fit to a normal distribution. It then generates the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects or saving them to file.
-
-<code>AutoTransformationScore()</code> is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling, which is done automatically for you if you specify.
-
-</p>
-</details>
-
 #### **DummifyDT()** 
 
 <details><summary>Code Example</summary>
@@ -880,57 +919,6 @@ data <- RemixAutoML::DummifyDT(
 <p>
 
 <code>DummifyDT()</code> This function is used in the AutoXGBoost__() suite of modeling functions to manage categorical variables in your training, validation, and test sets. This function rapidly dichotomizes categorical columns in a data.table (N+1 columns for N levels using one hot encoding or N columns for N levels otherwise). Several other arguments exist for outputting and saving factor levels. This is useful in model training, validating, and scoring processes.
-
-</p>
-</details>
-
-#### **AutoDiffLagN**
-
-<details><summary>Code Example</summary>
-<p>
- 
- ```
- # Create fake data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.70,
-  N = 50000,
-  ID = 2L,
-  FactorCount = 3L,
-  AddDate = TRUE,
-  ZIP = 0L,
-  TimeSeries = FALSE,
-  ChainLadderData = FALSE,
-  Classification = FALSE,
-  MultiClass = FALSE)
-
-# Store Cols to diff
-Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
-
-# Clean data before running AutoDiffLagN
-data <- RemixAutoML::ModelDataPrep(
-  data = data,
-  Impute = FALSE,
-  CharToFactor = FALSE,
-  FactorToChar = TRUE)
-
-# Run function
-data <- RemixAutoML::AutoDiffLagN(
-  data,
-  DateVariable = "DateTime",
-  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
-  DiffVariables = Cols,
-  NLag = 1,
-  Sort = TRUE,
-  RemoveNA = TRUE)
- ```
-
-</p>
-</details>
-
-<details><summary>Function Description</summary>
-<p>
- 
-<code>AutoDiffLagN()</code> Generate differences for numeric columns, by groups. You can specify NLag = 1 to generate the diffs based on a lag 1 lookback or NLag = n for some other lookback.
 
 </p>
 </details>
@@ -1034,6 +1022,18 @@ TestData <- dataSets$TestData
 <p>
 
 <code>AutoDataPartition()</code> is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify a stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
+
+</p>
+</details>
+
+#### **AutoTransformationCreate()** and **AutoTransformationScore()**
+
+<details><summary>Function Description</summary>
+<p>
+ 
+<code>AutoTransformationCreate()</code> is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified. This function will loop through your selected transformation options (YeoJohnson, BoxCox, Asinh, Log, LogPlus1, Sqrt, along with Asin and Logit for proportion data) and find the one that produces the best fit to a normal distribution. It then generates the transformation and collects the metadata information for use in the AutoTransformationScore() function, either by returning the objects or saving them to file.
+
+<code>AutoTransformationScore()</code> is a the compliment function to AutoTransformationCreate(). Automatically apply or inverse the transformations you identified in AutoTransformationCreate() to other data sets. This is useful for applying transformations to your validation and test data sets for modeling, which is done automatically for you if you specify.
 
 </p>
 </details>
