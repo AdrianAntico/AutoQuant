@@ -121,6 +121,7 @@ data <- RemixAutoML::DummifyDT(
 \seealso{
 Other Feature Engineering: 
 \code{\link{AutoDataPartition}()},
+\code{\link{AutoDiffLagN}()},
 \code{\link{AutoHierarchicalFourier}()},
 \code{\link{AutoInteraction}()},
 \code{\link{AutoLagRollStatsScoring}()},

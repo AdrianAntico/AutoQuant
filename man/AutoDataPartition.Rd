@@ -69,6 +69,7 @@ TestData <- dataSets$TestData
 }
 \seealso{
 Other Feature Engineering: 
+\code{\link{AutoDiffLagN}()},
 \code{\link{AutoHierarchicalFourier}()},
 \code{\link{AutoInteraction}()},
 \code{\link{AutoLagRollStatsScoring}()},

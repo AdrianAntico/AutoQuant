@@ -125,6 +125,7 @@ print(ncol(data))
 \seealso{
 Other Feature Engineering: 
 \code{\link{AutoDataPartition}()},
+\code{\link{AutoDiffLagN}()},
 \code{\link{AutoHierarchicalFourier}()},
 \code{\link{AutoLagRollStatsScoring}()},
 \code{\link{AutoLagRollStats}()},
