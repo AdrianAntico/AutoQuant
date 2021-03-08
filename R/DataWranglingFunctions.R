@@ -671,7 +671,7 @@ AutoDiffLagN <- function(data,
 
   # Diff data ----
   ColNames <- names(data.table::copy(data))
-  ModDiffVariables <- paste0("Diff_", DiffVariables)
+  ModDiffVariables <- paste0("Diff_", LagN, "_", DiffVariables)
   if(!is.null(GroupVariables)) {
     data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag, fill = NA, type = "lag"), .SDcols = c(DiffVariables), by = eval(GroupVariables)]
     data <- data[, (ModDiffVariables) := lapply(DiffVariables, DiffDT)]
@@ -681,7 +681,7 @@ AutoDiffLagN <- function(data,
   }
 
   # Final prep ----
-  if(RemoveNA) data <- data[!is.na(get(paste0("Diff_", DiffVariables[[1L]])))]
+  if(RemoveNA) data <- data[!is.na(get(paste0("Diff_", LagN, "_", DiffVariables[[1L]])))]
 
   # Return data ----
   return(data)
