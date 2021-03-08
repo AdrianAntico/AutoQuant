@@ -95,7 +95,10 @@ AutoWord2VecScoring <- function(data,
 
   # Check args ----
   if(is.null(stringCol)) stop("stringCol cannot be NULL")
-  if(is.null(ModelObject) && !file.exists(file.path(model_path, paste0(ModelID, "_", stringCol)))) stop(paste0("Model not found at ", model_path))
+  if(is.null(ModelObject) && tolower(BuildType) == "combined" && !file.exists(file.path(model_path, ModelID))) stop(paste0("Model not found at ", model_path))
+  if(is.null(ModelObject) && tolower(BuildType) == "individual") {
+    for(z in stringCol) if(!file.exists(file.path(model_path, ModelID))) stop(paste0("Model not found at ", paste0(model_path, "_", z)))
+  }
 
   # Instantiate H2O ----
   if(H2OStartUp) h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
