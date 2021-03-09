@@ -199,7 +199,7 @@ AutoWord2VecModeler <- function(data,
       # Replace Colnames ----
       cols <- names(data)[(ncol(data) - vects + 1):ncol(data)]
       for(c in cols) {
-        data[, paste0(ModelID, "_", c) := get(c)]
+        data[, paste0(string, "_", c) := get(c)]
         data[, eval(c) := NULL]
       }
     }
