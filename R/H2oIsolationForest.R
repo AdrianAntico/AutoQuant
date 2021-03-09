@@ -14,7 +14,6 @@
 #' @param MaxMem Specify the amount of memory to allocate to H2O. E.g. "28G"
 #' @param NThreads Specify the number of threads (E.g. cores * 2)
 #' @param NTrees Specify the number of decision trees to build
-#' @param SampleRate Specify the row-sample rate per tree
 #' @param MaxDepth Max tree depth
 #' @param MinRows Minimum number of rows allowed per leaf
 #' @param ColSampleRate Sample rate for each split
@@ -48,7 +47,6 @@
 #'   MaxMem = "28G",
 #'   NThreads = -1,
 #'   NTrees = 100,
-#'   SampleRate = (sqrt(5)-1)/2,
 #'   MaxDepth = 8,
 #'   MinRows = 1,
 #'   ColSampleRate = 1,
@@ -85,7 +83,6 @@ H2OIsolationForest <- function(data,
                                MaxMem = "28G",
                                NThreads = -1,
                                NTrees = 100,
-                               SampleRate = (sqrt(5)-1)/2,
                                MaxDepth = 8,
                                MinRows = 1,
                                ColSampleRate = 1,
@@ -164,7 +161,6 @@ H2OIsolationForest <- function(data,
     sample_rate = SampleRate,
     max_depth = MaxDepth,
     min_rows = MinRows,
-    mtries = ColSampleRate,
     stopping_rounds = 0,
     stopping_metric = "AUTO",
     col_sample_rate_change_per_level = ColSampleRatePerLevel,

@@ -14,7 +14,6 @@ H2OIsolationForest(
   MaxMem = "28G",
   NThreads = -1,
   NTrees = 100,
-  SampleRate = (sqrt(5) - 1)/2,
   MaxDepth = 8,
   MinRows = 1,
   ColSampleRate = 1,
@@ -42,8 +41,6 @@ H2OIsolationForest(
 \item{NThreads}{Specify the number of threads (E.g. cores * 2)}
 
 \item{NTrees}{Specify the number of decision trees to build}
-
-\item{SampleRate}{Specify the row-sample rate per tree}
 
 \item{MaxDepth}{Max tree depth}
 
@@ -91,7 +88,6 @@ data <- RemixAutoML::H2OIsolationForest(
   MaxMem = "28G",
   NThreads = -1,
   NTrees = 100,
-  SampleRate = (sqrt(5)-1)/2,
   MaxDepth = 8,
   MinRows = 1,
   ColSampleRate = 1,
