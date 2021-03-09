@@ -108,7 +108,7 @@ If you're having still having trouble installing see if the issue below helps ou
 <p>
  
 1. Pull in data from your data warehouse (or from wherever) and clean it up
-2. Run all the applicable feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoInteraction()</code>, <code>AutoWord2VecModeler()</code>, <code>CreateCalendarVariables()</code>, <code>CreateHolidayVariables()</code>, etc.
+2. Run all the applicable feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoInteraction()</code>,  <code>AutoDiffLagN()</code>, <code>AutoWord2VecModeler()</code>, <code>CreateCalendarVariables()</code>, <code>CreateHolidayVariables()</code>, etc.
 3. Partition your data with <code>AutoDataPartition()</code> if you want to go with a data split other than 70/20/10, which is automatically applied in the supervised learning functions if you don't supply the ValidationData and TestData (and TrainOnFull is set to FALSE).
 4. Run <code>AutoCatBoostRegression()</code> or <code>AutoCatBoostClassifier()</code> or <code>AutoCatBoostMultiClass()</code> with GPU if you have access to one
 5. Run <code>AutoXGBoostRegression()</code> or <code>AutoXGBoostClassifier()</code> or <code>AutoXGBoostMultiClass()</code> with GPU if you have access to one
