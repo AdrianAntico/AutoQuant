@@ -147,8 +147,12 @@ AutoWord2VecScoring <- function(data,
     }
   }
 
+  # Remove H2O Objects ----
+  rm(localH2O, model)
+
   # H2O Shutdown ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
+  gc()
 
   # Return ----
   return(data)
