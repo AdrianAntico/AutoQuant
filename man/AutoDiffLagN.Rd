@@ -9,7 +9,8 @@ AutoDiffLagN(
   DateVariable = NULL,
   GroupVariables = NULL,
   DiffVariables = NULL,
-  NLag = 1L,
+  NLag1 = 0L,
+  NLag2 = 1L,
   Sort = FALSE,
   RemoveNA = TRUE
 )
@@ -23,7 +24,9 @@ AutoDiffLagN(
 
 \item{DiffVariables}{Column names of numeric columns to difference}
 
-\item{NLag}{Number of rows back for the lag operation}
+\item{NLag1}{If the diff calc, we have column 1 - column 2. NLag1 is in reference to column 1. If you want to take the current value minus the previous weeks value, supply a zero. If you want to create a lag2 - lag4 NLag1 gets a 2.}
+
+\item{NLag2}{If the diff calc, we have column 1 - column 2. NLag2 is in reference to column 2. If you want to take the current value minus the previous weeks value, supply a 1. If you want to create a lag2 - lag4 NLag1 gets a 4.}
 
 \item{Sort}{TRUE to sort your data inside the function}
 
@@ -60,7 +63,8 @@ data <- RemixAutoML::AutoDiffLagN(
   DateVariable = "DateTime",
   GroupVariables = c("Factor_1", "Factor_2"),
   DiffVariables = Cols,
-  NLag = 1,
+  NLag1 = 0L,
+  NLag2 = 1L,
   Sort = TRUE,
   RemoveNA = TRUE)
 }

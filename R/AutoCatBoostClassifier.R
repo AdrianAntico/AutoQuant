@@ -245,7 +245,7 @@ AutoCatBoostClassifier <- function(data,
   } else if(is.null(RSM)) {
     RSM <- 1
   }
-  if(langevin & task_type == "GPU") {
+  if(langevin && task_type == "GPU") {
     task_type <- "CPU"
     print("task_type switched to CPU to enable langevin boosting")
   }
@@ -282,7 +282,7 @@ AutoCatBoostClassifier <- function(data,
   if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
 
   # Binary Data Partition----
-  if(is.null(ValidationData) & is.null(TestData) & TrainOnFull != TRUE) {
+  if(is.null(ValidationData) && is.null(TestData) && TrainOnFull != TRUE) {
     dataSets <- AutoDataPartition(
       data,
       NumDataSets = 3L,
@@ -316,7 +316,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Binary data Subset Columns Needed----
-  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
+  if(is.numeric(FeatureColNames) || is.integer(FeatureColNames)) {
     keep1 <- names(data)[c(FeatureColNames)]
     keep <- c(keep1, Target)
     dataTrain <- data[, ..keep]
@@ -407,7 +407,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Binary Grid Tune or Not Check----
-  if(GridTune & !TrainOnFull) {
+  if(GridTune && !TrainOnFull) {
 
     # Pull in Grid sets----
     Grids <- CatBoostParameterGrids(
@@ -603,7 +603,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Define parameters for case where you want to run grid tuning----
-  if(GridTune & !TrainOnFull) {
+  if(GridTune && !TrainOnFull) {
 
     # Prepare winning grid----
     BestGrid <- ExperimentalGrid[order(-eval_metric)][1L]
@@ -674,7 +674,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Define parameters Not pass in GridMetric and not grid tuning----
-  if(is.null(PassInGrid) & !GridTune) {
+  if(is.null(PassInGrid) && !GridTune) {
 
     # Base Parameters
     base_params <- list()
@@ -735,7 +735,7 @@ AutoCatBoostClassifier <- function(data,
   if(SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(normalizePath(model_path), ModelID))
 
   # Binary Score Final Test Data----
-  if(TrainOnFull != TRUE) {
+  if(!TrainOnFull) {
     if(!is.null(TestData)) {
       predict <- catboost::catboost.predict(
         model = model,
@@ -758,7 +758,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Binary Validation Data----
-  if(TrainOnFull != TRUE) {
+  if(!TrainOnFull) {
     if(!is.null(TestData)) {
       ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
       data.table::setnames(ValidationData, "Target",eval(TargetColumnName))
@@ -803,7 +803,7 @@ AutoCatBoostClassifier <- function(data,
 
   # Binary Plot ROC Curve----
   if(!TrainOnFull) {
-    if(GridTune == TRUE & MaxModelsInGrid <= 15L) {
+    if(GridTune && MaxModelsInGrid <= 15L) {
       temp <- data.table::rbindlist(AUC_List)
       AUC_Data <- data.table::rbindlist(list(temp, AUC_Data))
       AUC_Data[, ModelNumber := as.factor(ModelNumber)]
@@ -1001,7 +1001,7 @@ AutoCatBoostClassifier <- function(data,
   # Binary Partial Dependence----
   ParDepPlots <- list()
   j <- 0L
-  if(!is.null(VariableImportance) & NumOfParDepPlots > 0L & !TrainOnFull) {
+  if(!is.null(VariableImportance) && NumOfParDepPlots > 0L && !TrainOnFull) {
     for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
@@ -1031,7 +1031,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Binary Save ExperimentalGrid----
-  if(SaveModelObjects & GridTune == TRUE) {
+  if(SaveModelObjects && GridTune) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ExperimentalGrid.csv")))
     } else {
@@ -1040,7 +1040,7 @@ AutoCatBoostClassifier <- function(data,
   }
 
   # Save EvaluationMetrics to File
-  if(SaveModelObjects & !TrainOnFull) {
+  if(SaveModelObjects && !TrainOnFull) {
     if(!is.null(metadata_path)) {
       data.table::fwrite(RemixClassificationMetrics(MLModels="catboost",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=c(ClassWeights[2],0,0,ClassWeights[1]),ClassLabels=c(1,0),CatBoostTestData=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {

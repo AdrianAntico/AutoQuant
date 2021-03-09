@@ -52,48 +52,48 @@ AutoDataPartition <- function(data,
                               StratTargetPrecision = 3L,
                               TimeColumnName = NULL) {
 
-  # data.table optimize----
+  # data.table optimize ----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
 
   # Arguments----
-  if(NumDataSets < 0) return("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
+  if(NumDataSets < 0) stop("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
   if(!is.null(StratifyNumericTarget)) {
-    if(!is.character(StratifyNumericTarget)) return("StratifyNumericTarget is your target column name in quotes")
-    if(!is.numeric(StratTargetPrecision)) return("StratTargetPrecision needs to be values of 1,2,...,N")
+    if(!is.character(StratifyNumericTarget)) stop("StratifyNumericTarget is your target column name in quotes")
+    if(!is.numeric(StratTargetPrecision)) stop("StratTargetPrecision needs to be values of 1,2,...,N")
   }
-  if(abs(round(NumDataSets) - NumDataSets) > 0.01) return("NumDataSets needs to be an integer valued positive number")
-  if(length(Ratios) != NumDataSets) return("You need to supply the percentage of data used for each data set.")
-  if(sum(Ratios) != 1.0) return("The sum of Ratios needs to equal 1.0")
-  if(!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) return("PartitionType needs to be either 'random', 'timeseries' or 'time'.")
+  if(abs(round(NumDataSets) - NumDataSets) > 0.01) stop("NumDataSets needs to be an integer valued positive number")
+  if(length(Ratios) != NumDataSets) stop("You need to supply the percentage of data used for each data set.")
+  if(sum(Ratios) != 1.0) stop("The sum of Ratios needs to equal 1.0")
+  if(!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) stop("PartitionType needs to be either 'random', 'timeseries' or 'time'.")
   if(!is.null(StratifyColumnNames)) {
-    if(!is.character(StratifyColumnNames)) return("StratifyColumnNames needs to be a character vector of column names")
-    if(!all(StratifyColumnNames %chin% names(data))) return("StratifyColumnNames not in vector of data names")
+    if(!is.character(StratifyColumnNames)) stop("StratifyColumnNames needs to be a character vector of column names")
+    if(!all(StratifyColumnNames %chin% names(data))) stop("StratifyColumnNames not in vector of data names")
   }
   if(!is.null(TimeColumnName)) {
-    if(!(TimeColumnName %chin% names(data))) return("TimeColumnName not in vector of data names")
-    if(is.character(data[[eval(TimeColumnName)]]) | is.factor(data[[eval(TimeColumnName)]])) return("TimeColumnName is not a data, Posix_, numeric, or integer valued column")
+    if(!(TimeColumnName %chin% names(data))) stop("TimeColumnName not in vector of data names")
+    if(is.character(data[[eval(TimeColumnName)]]) | is.factor(data[[eval(TimeColumnName)]])) stop("TimeColumnName is not a data, Posix_, numeric, or integer valued column")
   }
 
-  # Ensure data.table----
+  # Ensure data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Stratify Numeric Target----
+  # Stratify Numeric Target ----
   if(PartitionType == "random") {
     if(!is.null(StratifyNumericTarget)) {
-      data[, StratCol := as.factor(round(percRank(data[[eval(StratifyNumericTarget)]]), StratTargetPrecision))]
+      data[, StratCol := as.factor(round(data.table::frank(data[[eval(StratifyNumericTarget)]]), StratTargetPrecision))]
       StratifyColumnNames <- "StratCol"
     }
   }
 
-  # Partition Steps----
+  # Partition Steps ----
   if(tolower(PartitionType) == "time") {
 
     # Data prep----
     copy_data <- data.table::copy(data)
     DataCollect <- list()
-    if(!is.null(StratifyColumnNames)) keep <- c(eval(StratifyColumnNames))
+    if(!is.null(StratifyColumnNames)) keep <- StratifyColumnNames
 
-    # Modify ratios to account for data decrements----
+    # Modify ratios to account for data decrements ----
     RatioList <- c()
     RatioList[NumDataSets] <- Ratios[NumDataSets]
     for(i in rev(seq_len(NumDataSets - 1L))) {
@@ -102,7 +102,7 @@ AutoDataPartition <- function(data,
       RatioList[i] <- Ratios[i] * (1 / (1 - tempRatio))
     }
 
-    # Gather Row Numbers----
+    # Gather Row Numbers ----
     RowList <- list()
     for(i in NumDataSets:1L) {
       if(!is.null(StratifyColumnNames)) {
@@ -124,7 +124,7 @@ AutoDataPartition <- function(data,
       }
     }
 
-    # Partition Data----
+    # Partition Data ----
     for(i in seq_len(NumDataSets)) {
       if(i == 1L) {
         DataCollect[["TrainData"]] <- temp
@@ -137,21 +137,6 @@ AutoDataPartition <- function(data,
       }
     }
 
-    # Remove StratCol from StratifyNumericTarget----
-    if(PartitionType == "random") {
-      if(!is.null(StratifyNumericTarget)) {
-        x1 <- DataCollect$TrainData
-        x1[, StratCol := NULL]
-        x2 <- DataCollect$ValidationData
-        x2[, StratCol := NULL]
-        x3 <- DataCollect$TestData
-        x3[, StratCol := NULL]
-        DataCollect$TrainData <- x1
-        DataCollect$Validation <- x2
-        DataCollect$TestData <- x3
-      }
-    }
-
   } else if(tolower(PartitionType) == "timeseries" & !is.null(StratifyColumnNames)) {
 
     # Initalize collection----
@@ -159,8 +144,7 @@ AutoDataPartition <- function(data,
     data[, ID := 1:.N, by = c(eval(StratifyColumnNames))]
     if(var(data[, sum(ID), by = c(eval(StratifyColumnNames))][["V1"]]) != 0) {
       data[, ID := NULL]
-      print("There are an unequal number of records by strata. PartitionType 'timeseries' requires equal number of observations for each strata")
-      return(data)
+      stop("There are an unequal number of records by strata. PartitionType 'timeseries' requires equal number of observations for each strata")
     }
     Rows <- data[, .N, by = c(eval(StratifyColumnNames))][1, N]
 

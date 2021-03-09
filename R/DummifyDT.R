@@ -14,7 +14,7 @@
 #' @param SavePath Provide a file path to save your factor levels. Use this for models that you have to create dummy variables for.
 #' @param ImportFactorLevels Instead of using the data you provide, import the factor levels csv to ensure you build out all of the columns you trained with in modeling.
 #' @param FactorLevelsList Supply a list of factor variable levels
-#' @param ClustScore This is for scoring AutoKMeans. Set to FALSE for all other applications.
+#' @param ClustScore This is for scoring AutoKMeans. It converts the added dummy column names to conform with H2O dummy variable naming convention
 #' @param ReturnFactorLevels If you want a named list of all the factor levels returned, set this to TRUE. Doing so will cause the function to return a list with the source data.table and the list of factor variables' levels
 #' @param GroupVar Ignore this
 #' @examples
