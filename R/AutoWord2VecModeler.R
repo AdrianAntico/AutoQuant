@@ -191,14 +191,11 @@ AutoWord2VecModeler <- function(data,
 
       # Convert to data.table ----
       all_vecs <- data.table::as.data.table(all_vecs)
-      data <- data.table::data.table(cbind(data, all_vecs))
+      data.table::setnames(all_vecs, names(all_vecs), paste0(string, "_", names(all_vecs)))
+      data <- cbind(data, all_vecs)
 
       # Remove string cols ----
       if(!KeepStringCol) data[, eval(string) := NULL]
-
-      # Replace Colnames ----
-      cols <- names(data)[(ncol(data) - vects + 1):ncol(data)]
-      data.table::setnames(data, old = cols, new = paste0(string, "_", cols))
     }
 
     # Final Prep
@@ -254,14 +251,11 @@ AutoWord2VecModeler <- function(data,
 
       # Convert to data.table ----
       all_vecs <- data.table::as.data.table(all_vecs)
-      data <- data.table::data.table(cbind(data, all_vecs))
+      data.table::setnames(all_vecs, names(all_vecs), paste0(string, "_", names(all_vecs)))
+      data <- cbind(data, all_vecs)
 
       # Remove string cols ----
       if(!KeepStringCol) data[, eval(string) := NULL]
-
-      # Replace Colnames ----
-      cols <- names(data)[(ncol(data) - vects + 1):ncol(data)]
-      data.table::setnames(data, old = cols, new = paste0(string, "_", cols))
 
       # Final Prep ----
       h2o::h2o.rm(w2v.model)
