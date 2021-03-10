@@ -2,7 +2,9 @@
 % Please edit documentation in R/ReinforcementLearningFunctions.R
 \name{RL_Update}
 \alias{RL_Update}
-\title{RL_Update}
+\title{RL_Update
+
+RL_Update updates the bandit probabilities for selecting different grids}
 \usage{
 RL_Update(
   ExperimentGrid = ExperimentGrid,
@@ -51,6 +53,8 @@ RL_Update(
 \item{BanditProbabilities}{Inital probabilities from RL_Initialize()}
 }
 \description{
+RL_Update
+
 RL_Update updates the bandit probabilities for selecting different grids
 }
 \examples{

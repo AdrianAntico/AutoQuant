@@ -25,6 +25,7 @@ Other Data Wrangling:
 \code{\link{ColumnSubsetDataTable}()},
 \code{\link{DataDisplayMeta}()},
 \code{\link{FakeDataGenerator}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()},
 \code{\link{TimeSeriesMelt}()}
 }
 \author{

@@ -21,7 +21,6 @@ Lookback <- LB("days")
 \seealso{
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
-\code{\link{DeleteFile}()},
 \code{\link{Logger}()},
 \code{\link{PrintToPDF}()},
 \code{\link{tokenizeH2O}()}

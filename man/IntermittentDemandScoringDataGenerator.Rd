@@ -83,14 +83,14 @@ IntermittentDemandScoringDataGenerator creates the scoring data for forecasting.
 }
 }
 \seealso{
-Other Automated Model Scoring: 
-\code{\link{AutoCatBoostScoring}()},
-\code{\link{AutoH2OMLScoring}()},
-\code{\link{AutoH2OModeler}()},
-\code{\link{AutoHurdleScoring}()},
-\code{\link{AutoXGBoostScoring}()}
+Other Data Wrangling: 
+\code{\link{ColumnSubsetDataTable}()},
+\code{\link{DataDisplayMeta}()},
+\code{\link{FakeDataGenerator}()},
+\code{\link{FullFactorialCatFeatures}()},
+\code{\link{TimeSeriesMelt}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Automated Model Scoring}
+\concept{Data Wrangling}

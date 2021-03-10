@@ -89,7 +89,7 @@ PrintToPDF <- function(Path,
 #'
 #' @description DeleteFile will prompt you for a file to delete and then permanently delete a file. You won't have to go the the recycle bin to delete it a second time
 #'
-#' @family Misc
+#' @family System Functions
 #'
 #' @author Adrian Antico
 #'

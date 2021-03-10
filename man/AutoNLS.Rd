@@ -77,7 +77,17 @@ summary(data11$ModelObject)
 data11$EvaluationMetrics
 }
 }
+\seealso{
+Other Automated Supervised Learning - Regression: 
+\code{\link{AutoCatBoostRegression}()},
+\code{\link{AutoH2oDRFRegression}()},
+\code{\link{AutoH2oGAMRegression}()},
+\code{\link{AutoH2oGBMRegression}()},
+\code{\link{AutoH2oGLMRegression}()},
+\code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoXGBoostRegression}()}
+}
 \author{
 Adrian Antico
 }
-\concept{Automated Regression}
+\concept{Automated Supervised Learning - Regression}

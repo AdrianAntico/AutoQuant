@@ -28,6 +28,7 @@ Other Data Wrangling:
 \code{\link{DataDisplayMeta}()},
 \code{\link{FakeDataGenerator}()},
 \code{\link{FullFactorialCatFeatures}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()},
 \code{\link{TimeSeriesMelt}()}
 }
 \author{

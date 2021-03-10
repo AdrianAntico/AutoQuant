@@ -56,6 +56,7 @@ Other Carma Helper:
 \code{\link{CARMA_Get_IndepentVariablesPass}()},
 \code{\link{CARMA_GroupHierarchyCheck}()},
 \code{\link{CarmaCatBoostKeepVarsGDL}()},
+\code{\link{CarmaHoldoutMetrics}()},
 \code{\link{CarmaXGBoostKeepVarsGDL}()}
 }
 \author{

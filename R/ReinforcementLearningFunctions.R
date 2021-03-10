@@ -33,12 +33,13 @@ RPM_Binomial_Bandit <- function(Success,
   return(ans)
 }
 
-#' RL_Initialize
+#' @title RL_Initialize
 #'
 #' RL_Initialize sets up the components necessary for RL
 #'
 #' @author Adrian Antico
 #' @family Reinforcement Learning
+#'
 #' @param ParameterGridSet This is a list of tuning grids
 #' @param Alpha Prior successes
 #' @param Beta Prior trials
@@ -84,12 +85,13 @@ RL_Initialize <- function(ParameterGridSet = NULL,
       BanditArmsN = BanditArmsN))
 }
 
-#' RL_Update
+#' @title RL_Update
 #'
 #' RL_Update updates the bandit probabilities for selecting different grids
 #'
 #' @author Adrian Antico
 #' @family Reinforcement Learning
+#'
 #' @param ExperimentGrid This is a data.table of grid params and model results
 #' @param MetricSelection The chosen metric to evalute models
 #' @param ModelRun Model iteration number
@@ -210,12 +212,13 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
     BreakLoop = Break))
 }
 
-#' RL_ML_Update
+#' @title RL_ML_Update
 #'
 #' RL_ML_Update updates the bandit probabilities for selecting different grids
 #'
 #' @author Adrian Antico
 #' @family Reinforcement Learning
+#'
 #' @param ExperimentGrid This is a data.table of grid params and model results
 #' @param ModelRun Model iteration number
 #' @param ModelType "classification", "regression", and "multiclass"
@@ -319,12 +322,13 @@ RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
     BreakLoop = Break))
 }
 
-#' CatBoostParameterGrids
+#' @title CatBoostParameterGrids
 #'
-#' CatBoostParameterGrids https://catboost.ai/docs/concepts/r-training-parameters.html
+#' @description CatBoostParameterGrids https://catboost.ai/docs/concepts/r-training-parameters.html
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param TaskType "GPU" or "CPU"
 #' @param Shuffles The number of shuffles you want to apply to each grid
 #' @param NTrees seq(1000L, 10000L, 1000L)
@@ -417,10 +421,11 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   return(list(Grid = Grid, Grids = Grids, ExperimentalGrid = eGrid))
 }
 
-#' CatBoostRegressionParams
+#' @title CatBoostRegressionParams
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param counter Passthrough
 #' @param BanditArmsN Passthrough
 #' @param HasTime Passthrough
@@ -563,10 +568,11 @@ CatBoostRegressionParams <- function(counter = NULL,
   return(base_params)
 }
 
-#' CatBoostClassifierParams
+#' @title CatBoostClassifierParams
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param counter Passthrough
 #' @param BanditArmsN Passthrough
 #' @param HasTime Passthrough
@@ -711,10 +717,11 @@ CatBoostClassifierParams <- function(counter = NULL,
   return(base_params)
 }
 
-#' CatBoostMultiClassParams
+#' @title CatBoostMultiClassParams
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param counter Passthrough
 #' @param BanditArmsN Passthrough
 #' @param HasTime Passthrough
@@ -851,10 +858,11 @@ CatBoostMultiClassParams <- function(counter = NULL,
   return(base_params)
 }
 
-#' XGBoostParameterGrids
+#' @title XGBoostParameterGrids
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param TaskType "GPU" or "CPU"
 #' @param Shuffles The number of shuffles you want to apply to each grid
 #' @param NTrees seq(500L, 5000L, 500L)
@@ -926,10 +934,11 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
   return(list(Grid = Grid, Grids = Grids, ExperimentalGrid = eGrid))
 }
 
-#' XGBoostClassifierParams
+#' @title XGBoostClassifierParams
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param counter Passthrough
 #' @param Objective Passthrough
 #' @param NThreads = -1L,
@@ -1002,10 +1011,11 @@ XGBoostClassifierParams <- function(counter = NULL,
   return(base_params)
 }
 
-#' XGBoostRegressionParams
+#' @title XGBoostRegressionParams
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param counter Passthrough
 #' @param NThreads = -1L,
 #' @param BanditArmsN Passthrough
@@ -1078,10 +1088,11 @@ XGBoostRegressionParams <- function(counter = NULL,
   return(base_params)
 }
 
-#' XGBoostRegressionMetrics
+#' @title XGBoostRegressionMetrics
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param grid_eval_metric Passthrough
 #' @param MinVal = -1L,
 #' @param calibEval Passthrough
@@ -1122,10 +1133,11 @@ XGBoostRegressionMetrics <- function(grid_eval_metric,
   return(Metric)
 }
 
-#' XGBoostMultiClassParams
+#' @title XGBoostMultiClassParams
 #'
 #' @author Adrian Antico
 #' @family Supervised Learning
+#'
 #' @param counter Passthrough
 #' @param num_class NULL
 #' @param Objective Passthrough

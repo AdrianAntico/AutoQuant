@@ -32,6 +32,7 @@ Push data to a sql server warehouse via bulk copy process
 \seealso{
 Other Database: 
 \code{\link{AutoDataDictionaries}()},
+\code{\link{ExecuteSSIS}()},
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},
 \code{\link{SQL_Query_Push}()},

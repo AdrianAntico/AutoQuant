@@ -29,6 +29,7 @@ SQL_Query get data from a database table
 \seealso{
 Other Database: 
 \code{\link{AutoDataDictionaries}()},
+\code{\link{ExecuteSSIS}()},
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},
 \code{\link{SQL_Query_Push}()},

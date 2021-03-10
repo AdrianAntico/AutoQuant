@@ -28,7 +28,8 @@ Other Data Wrangling:
 \code{\link{ColumnSubsetDataTable}()},
 \code{\link{DataDisplayMeta}()},
 \code{\link{FakeDataGenerator}()},
-\code{\link{FullFactorialCatFeatures}()}
+\code{\link{FullFactorialCatFeatures}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()}
 }
 \author{
 Adrian Antico

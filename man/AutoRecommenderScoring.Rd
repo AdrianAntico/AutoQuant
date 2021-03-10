@@ -91,10 +91,12 @@ Results <- AutoRecommenderScoring(
 }
 \seealso{
 Other Recommenders: 
+\code{\link{AutoMarketBasketModel}()},
 \code{\link{AutoRecomDataCreate}()},
 \code{\link{AutoRecommender}()}
 
 Other Recommenders: 
+\code{\link{AutoMarketBasketModel}()},
 \code{\link{AutoRecomDataCreate}()},
 \code{\link{AutoRecommender}()}
 }

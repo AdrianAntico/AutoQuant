@@ -1,7 +1,8 @@
-#' CARMA_GroupHierarchyCheck
+#' @title CARMA_GroupHierarchyCheck
 #'
 #' @author Adrian Antico
 #' @family Carma Helper
+#'
 #' @param data data fed into function
 #' @param Group_Variables Takes GroupVariables from caram function
 #' @param HierarchyGroups Vector of group variables
@@ -25,12 +26,13 @@ CARMA_GroupHierarchyCheck <- function(data = data,
   return(list(data = data, HierarchSupplyValue = HierarchyGroups, IndependentSupplyValue = IndependentSupplyValue))
 }
 
-#' CARMA_Define_Args
+#' @title CARMA_Define_Args
 #'
-#' CARMA_Define_Args is to help manage carma code
+#' @description CARMA_Define_Args is to help manage carma code
 #'
 #' @author Adrian Antico
 #' @family Carma Helper
+#'
 #' @param TimeUnit = TimeUnit
 #' @param TimeGroups = TimeGroups
 #' @param HierarchGroups = HierarchGroups
@@ -123,7 +125,7 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
               FC_Periods            = FC_Periods))
 }
 
-#' CARMA_Get_IndepentVariablesPass
+#' @title CARMA_Get_IndepentVariablesPass
 #'
 #' CARMA_Get_IndepentVariablesPass is to help manage carma code
 #'
@@ -150,12 +152,13 @@ CARMA_Get_IndepentVariablesPass <- function(HierarchGroups) {
   return(IndepentVariablesPass)
 }
 
-#' CarmaH2OKeepVarsGDL
+#' @title CarmaH2OKeepVarsGDL
 #'
-#' CarmaH2OKeepVarsGDL is to help manage carma code
+#' @description CarmaH2OKeepVarsGDL is to help manage carma code
 #'
 #' @author Adrian Antico
 #' @family Carma Helper
+#'
 #' @param data Supply data
 #' @param IndepVarPassTRUE Name of the column used as a single grouping variable.
 #' @param UpdateData Supply UpdateData
@@ -316,12 +319,13 @@ CarmaH2OKeepVarsGDL <- function(data,
   }
 }
 
-#' CarmaXGBoostKeepVarsGDL
+#' @title CarmaXGBoostKeepVarsGDL
 #'
-#' CarmaXGBoostKeepVarsGDL is to help manage carma code
+#' @description CarmaXGBoostKeepVarsGDL is to help manage carma code
 #'
 #' @author Adrian Antico
 #' @family Carma Helper
+#'
 #' @param data Supply data
 #' @param IndepVarPassTRUE Name of the column used as a single grouping variable.
 #' @param UpdateData Supply UpdateData
@@ -563,12 +567,13 @@ CarmaXGBoostKeepVarsGDL <- function(data,
   }
 }
 
-#' CarmaCatBoostKeepVarsGDL
+#' @title CarmaCatBoostKeepVarsGDL
 #'
-#' CarmaCatBoostKeepVarsGDL is to help manage carma code
+#' @description CarmaCatBoostKeepVarsGDL is to help manage carma code
 #'
 #' @author Adrian Antico
 #' @family Carma Helper
+#'
 #' @param data Supply data
 #' @param IndepVarPassTRUE Name of the column used as a single grouping variable.
 #' @param UpdateData Supply UpdateData

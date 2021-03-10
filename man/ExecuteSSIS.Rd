@@ -14,7 +14,20 @@ ExecuteSSIS(PkgPath = NULL, CSVPath = NULL)
 \description{
 Run an SSIS package from R. Function will check to make sure you can run an SSIS package and it will remove the output file if it exists so as to not append data on top of it.
 }
+\seealso{
+Other Database: 
+\code{\link{AutoDataDictionaries}()},
+\code{\link{SQL_ClearTable}()},
+\code{\link{SQL_DropTable}()},
+\code{\link{SQL_Query_Push}()},
+\code{\link{SQL_Query}()},
+\code{\link{SQL_SaveTable}()},
+\code{\link{SQL_Server_BulkPull}()},
+\code{\link{SQL_Server_BulkPush}()},
+\code{\link{SQL_Server_DBConnection}()},
+\code{\link{SQL_UpdateTable}()}
+}
 \author{
 Adrian Antico
 }
-\concept{DataBase}
+\concept{Database}

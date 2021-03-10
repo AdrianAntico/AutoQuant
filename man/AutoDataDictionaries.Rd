@@ -31,6 +31,7 @@ AutoDataDictionaries is a function to return data dictionary data in table form
 }
 \seealso{
 Other Database: 
+\code{\link{ExecuteSSIS}()},
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},
 \code{\link{SQL_Query_Push}()},

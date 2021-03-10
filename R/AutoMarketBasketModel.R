@@ -5,7 +5,7 @@
 #' @seealso Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf
 #'
 #' @author Adrian Antico and Douglas Pestana
-#' @family Recommender Systems
+#' @family Recommenders
 #'
 #' @importClassesFrom arules transactions
 #'

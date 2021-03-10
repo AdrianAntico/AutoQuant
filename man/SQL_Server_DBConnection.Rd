@@ -17,6 +17,7 @@ SQL_Server_DBConnection makes a connection to a sql server database
 \seealso{
 Other Database: 
 \code{\link{AutoDataDictionaries}()},
+\code{\link{ExecuteSSIS}()},
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},
 \code{\link{SQL_Query_Push}()},

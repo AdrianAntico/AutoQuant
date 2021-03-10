@@ -20,7 +20,6 @@ data <- tokenizeH2O(data = data[["StringColumn"]])
 \seealso{
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
-\code{\link{DeleteFile}()},
 \code{\link{LB}()},
 \code{\link{Logger}()},
 \code{\link{PrintToPDF}()}

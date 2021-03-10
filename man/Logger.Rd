@@ -21,7 +21,6 @@ Output <- lapply(1:10, FUN = Logger(PrintToPDF))
 \seealso{
 Other Misc: 
 \code{\link{AutoH2OTextPrepScoring}()},
-\code{\link{DeleteFile}()},
 \code{\link{LB}()},
 \code{\link{PrintToPDF}()},
 \code{\link{tokenizeH2O}()}

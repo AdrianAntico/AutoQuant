@@ -57,6 +57,7 @@ WinningModel <- AutoRecommender(
 }
 \seealso{
 Other Recommenders: 
+\code{\link{AutoMarketBasketModel}()},
 \code{\link{AutoRecomDataCreate}()},
 \code{\link{AutoRecommenderScoring}()}
 }

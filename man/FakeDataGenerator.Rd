@@ -68,6 +68,7 @@ Other Data Wrangling:
 \code{\link{ColumnSubsetDataTable}()},
 \code{\link{DataDisplayMeta}()},
 \code{\link{FullFactorialCatFeatures}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()},
 \code{\link{TimeSeriesMelt}()}
 }
 \author{

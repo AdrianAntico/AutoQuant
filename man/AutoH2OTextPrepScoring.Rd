@@ -37,7 +37,6 @@ data <- AutoH2OTextPrepScoring(data = x,
 }
 \seealso{
 Other Misc: 
-\code{\link{DeleteFile}()},
 \code{\link{LB}()},
 \code{\link{Logger}()},
 \code{\link{PrintToPDF}()},

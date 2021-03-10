@@ -41,6 +41,7 @@ RatingsMatrix <- AutoRecomDataCreate(
 }
 \seealso{
 Other Recommenders: 
+\code{\link{AutoMarketBasketModel}()},
 \code{\link{AutoRecommenderScoring}()},
 \code{\link{AutoRecommender}()}
 }

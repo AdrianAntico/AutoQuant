@@ -17,6 +17,7 @@ Other Data Wrangling:
 \code{\link{ColumnSubsetDataTable}()},
 \code{\link{FakeDataGenerator}()},
 \code{\link{FullFactorialCatFeatures}()},
+\code{\link{IntermittentDemandScoringDataGenerator}()},
 \code{\link{TimeSeriesMelt}()}
 }
 \author{

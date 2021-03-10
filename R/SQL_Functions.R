@@ -585,7 +585,7 @@ SQL_UpdateTable <- function(DataToPush,
 #'
 #' @description Run an SSIS package from R. Function will check to make sure you can run an SSIS package and it will remove the output file if it exists so as to not append data on top of it.
 #'
-#' @family DataBase
+#' @family Database
 #'
 #' @author Adrian Antico
 #'

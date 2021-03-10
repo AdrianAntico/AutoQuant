@@ -26,6 +26,10 @@ Returns a proper path file string
 \description{
 CreateProjectFolders Converts path files to proper path files
 }
+\seealso{
+Other System Functions: 
+\code{\link{DeleteFile}()}
+}
 \author{
 Adrian Antico
 }

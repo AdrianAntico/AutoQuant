@@ -13,14 +13,10 @@ DeleteFile(File = NULL)
 DeleteFile will prompt you for a file to delete and then permanently delete a file. You won't have to go the the recycle bin to delete it a second time
 }
 \seealso{
-Other Misc: 
-\code{\link{AutoH2OTextPrepScoring}()},
-\code{\link{LB}()},
-\code{\link{Logger}()},
-\code{\link{PrintToPDF}()},
-\code{\link{tokenizeH2O}()}
+Other System Functions: 
+\code{\link{CreateProjectFolders}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Misc}
+\concept{System Functions}

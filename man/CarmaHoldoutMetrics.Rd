@@ -20,7 +20,16 @@ CarmaHoldoutMetrics(
 \description{
 CarmaHoldoutMetrics
 }
+\seealso{
+Other Carma Helper: 
+\code{\link{CARMA_Define_Args}()},
+\code{\link{CARMA_Get_IndepentVariablesPass}()},
+\code{\link{CARMA_GroupHierarchyCheck}()},
+\code{\link{CarmaCatBoostKeepVarsGDL}()},
+\code{\link{CarmaH2OKeepVarsGDL}()},
+\code{\link{CarmaXGBoostKeepVarsGDL}()}
+}
 \author{
 Adrian Antico
 }
-\concept{Time Series}
+\concept{Carma Helper}

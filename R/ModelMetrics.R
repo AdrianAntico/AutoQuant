@@ -1,9 +1,10 @@
-#' CarmaHoldoutMetrics
+#' @title CarmaHoldoutMetrics
 #'
-#' CarmaHoldoutMetrics
+#' @description  CarmaHoldoutMetrics
 #'
 #' @author Adrian Antico
-#' @family Time Series
+#' @family Carma Helper
+#'
 #' @param DATA TestDataEval
 #' @param TARGETCOLUMNNAME TargetColumnName
 #' @param GROUPVARIABLES GroupVariables
@@ -67,12 +68,13 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
   return(MetricCollection)
 }
 
-#' DT_BinaryConfusionMatrix
+#' @title DT_BinaryConfusionMatrix
 #'
-#' DT_BinaryConfusionMatrix is for computing all metrics related to binary modeling outcomes
+#' @description DT_BinaryConfusionMatrix is for computing all metrics related to binary modeling outcomes
 #'
 #' @family Model Evaluation
 #' @author Adrian Antico
+#'
 #' @param data Supply your model validation data with predictions
 #' @param GroupVariables Supply grouping variables to generate statistics by groups
 #' @param Target The name of your target variable column
@@ -138,12 +140,13 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
   return(AggData)
 }
 
-#' ClassificationMetrics
+#' @title ClassificationMetrics
 #'
-#' ClassificationMetrics
+#' @description ClassificationMetrics
 #'
 #' @author Adrian Antico
 #' @family Model Evaluation
+#'
 #' @param TestData Test data from your modeling
 #' @param Thresholds Value
 #' @param Target Name of your target variable
@@ -247,12 +250,13 @@ ClassificationMetrics <- function(TestData,
   return(ThresholdOutput)
 }
 
-#' RemixClassificationMetrics
+#' @title RemixClassificationMetrics
 #'
-#' RemixClassificationMetrics
+#' @description RemixClassificationMetrics
 #'
 #' @author Adrian Antico
 #' @family Model Evaluation
+#'
 #' @param MLModels A vector of model names from remixautoml. e.g. c("catboost","h2oautoml","h2ogbm","h2odrf","h2oglm","h2ogam","xgboost")
 #' @param TargetVariable Name of your target variable
 #' @param Thresholds seq(0.01,0.99,0.01),

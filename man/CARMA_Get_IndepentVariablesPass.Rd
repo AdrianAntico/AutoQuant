@@ -2,7 +2,9 @@
 % Please edit documentation in R/CARMA-HelperFunctions.R
 \name{CARMA_Get_IndepentVariablesPass}
 \alias{CARMA_Get_IndepentVariablesPass}
-\title{CARMA_Get_IndepentVariablesPass}
+\title{CARMA_Get_IndepentVariablesPass
+
+CARMA_Get_IndepentVariablesPass is to help manage carma code}
 \usage{
 CARMA_Get_IndepentVariablesPass(HierarchGroups)
 }
@@ -10,6 +12,8 @@ CARMA_Get_IndepentVariablesPass(HierarchGroups)
 \item{HierarchGroups}{Supply HierarchGroups}
 }
 \description{
+CARMA_Get_IndepentVariablesPass
+
 CARMA_Get_IndepentVariablesPass is to help manage carma code
 }
 \seealso{
@@ -18,6 +22,7 @@ Other Carma Helper:
 \code{\link{CARMA_GroupHierarchyCheck}()},
 \code{\link{CarmaCatBoostKeepVarsGDL}()},
 \code{\link{CarmaH2OKeepVarsGDL}()},
+\code{\link{CarmaHoldoutMetrics}()},
 \code{\link{CarmaXGBoostKeepVarsGDL}()}
 }
 \author{

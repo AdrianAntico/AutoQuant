@@ -2,7 +2,9 @@
 % Please edit documentation in R/ReinforcementLearningFunctions.R
 \name{RL_Initialize}
 \alias{RL_Initialize}
-\title{RL_Initialize}
+\title{RL_Initialize
+
+RL_Initialize sets up the components necessary for RL}
 \usage{
 RL_Initialize(
   ParameterGridSet = NULL,
@@ -21,6 +23,8 @@ RL_Initialize(
 \item{SubDivisions}{Tolerance for integration}
 }
 \description{
+RL_Initialize
+
 RL_Initialize sets up the components necessary for RL
 }
 \examples{
