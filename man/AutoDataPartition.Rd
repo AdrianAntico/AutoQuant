@@ -11,7 +11,7 @@ AutoDataPartition(
   PartitionType = "random",
   StratifyColumnNames = NULL,
   StratifyNumericTarget = NULL,
-  StratTargetPrecision = 3L,
+  StratTargetPrecision = 20,
   TimeColumnName = NULL
 )
 }
@@ -28,7 +28,7 @@ AutoDataPartition(
 
 \item{StratifyNumericTarget}{Supply a column name that is numeric. Use for "random" PartitionType, you can stratify your numeric variable by splitting up based on percRank to ensure a proper allocation of extreme values in your created data sets.}
 
-\item{StratTargetPrecision}{For "random" PartitionType and when StratifyNumericTarget is not null, precision will be the number of decimals used in the percentile calculation. If you supply a value of 1, deciles will be used. For a value of 2, percentiles will be used. Larger values are supported.}
+\item{StratTargetPrecision}{Stratification only is ran when PartitionType is 'random' and StratTargetPrecision is the number of percentile buckets to utilize}
 
 \item{TimeColumnName}{Supply a date column name or a name of a column with an ID for sorting by time such that the smallest number is the earliest in time.}
 }
@@ -58,7 +58,7 @@ dataSets <- RemixAutoML::AutoDataPartition(
   PartitionType = "random",
   StratifyColumnNames = NULL,
   StratifyNumericTarget = NULL,
-  StratTargetPrecision = 1L,
+  StratTargetPrecision = 20L,
   TimeColumnName = NULL)
 
 # Collect data
