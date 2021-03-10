@@ -88,6 +88,9 @@ AutoDataPartition <- function(data,
   # Partition Steps ----
   if(tolower(PartitionType) == "time") {
 
+    # Sort data
+    data.table::setorderv(x = data, cols = TimeColumnName, order = 1)
+
     # Data prep----
     copy_data <- data.table::copy(data)
     DataCollect <- list()
@@ -105,6 +108,7 @@ AutoDataPartition <- function(data,
     # Gather Row Numbers ----
     RowList <- list()
     for(i in NumDataSets:1L) {
+      N <- copy_data[, .N]
       if(!is.null(StratifyColumnNames)) {
         if(i == 1L) {
           temp <- copy_data
@@ -117,7 +121,7 @@ AutoDataPartition <- function(data,
         if(i == 1L) {
           temp <- copy_data
         } else {
-          x <- copy_data[, .I[sample(.N, .N * RatioList[i])]]
+          x <- seq(floor(N * (1 - RatioList[i])), N)
           RowList[[i]] <- x
           copy_data <- copy_data[-x]
         }

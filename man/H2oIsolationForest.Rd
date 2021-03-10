@@ -16,6 +16,7 @@ H2OIsolationForest(
   NTrees = 100,
   MaxDepth = 8,
   MinRows = 1,
+  RowSampleRate = (sqrt(5) - 1)/2,
   ColSampleRate = 1,
   ColSampleRatePerLevel = 1,
   ColSampleRatePerTree = 1,
@@ -45,6 +46,8 @@ H2OIsolationForest(
 \item{MaxDepth}{Max tree depth}
 
 \item{MinRows}{Minimum number of rows allowed per leaf}
+
+\item{RowSampleRate}{Number of rows to sample per tree}
 
 \item{ColSampleRate}{Sample rate for each split}
 
@@ -90,6 +93,7 @@ data <- RemixAutoML::H2OIsolationForest(
   NTrees = 100,
   MaxDepth = 8,
   MinRows = 1,
+  RowSampleRate = (sqrt(5)-1)/2,
   ColSampleRate = 1,
   ColSampleRatePerLevel = 1,
   ColSampleRatePerTree = 1,

@@ -16,6 +16,7 @@
 #' @param NTrees Specify the number of decision trees to build
 #' @param MaxDepth Max tree depth
 #' @param MinRows Minimum number of rows allowed per leaf
+#' @param RowSampleRate Number of rows to sample per tree
 #' @param ColSampleRate Sample rate for each split
 #' @param ColSampleRatePerLevel Sample rate for each level
 #' @param ColSampleRatePerTree Sample rate per tree
@@ -49,6 +50,7 @@
 #'   NTrees = 100,
 #'   MaxDepth = 8,
 #'   MinRows = 1,
+#'   RowSampleRate = (sqrt(5)-1)/2,
 #'   ColSampleRate = 1,
 #'   ColSampleRatePerLevel = 1,
 #'   ColSampleRatePerTree = 1,
@@ -85,6 +87,7 @@ H2OIsolationForest <- function(data,
                                NTrees = 100,
                                MaxDepth = 8,
                                MinRows = 1,
+                               RowSampleRate = (sqrt(5)-1)/2,
                                ColSampleRate = 1,
                                ColSampleRatePerLevel = 1,
                                ColSampleRatePerTree = 1,
@@ -158,7 +161,7 @@ H2OIsolationForest <- function(data,
     x = Features,
     model_id = ModelID,
     ntrees = NTrees,
-    sample_rate = SampleRate,
+    sample_rate = RowSampleRate,
     max_depth = MaxDepth,
     min_rows = MinRows,
     stopping_rounds = 0,
