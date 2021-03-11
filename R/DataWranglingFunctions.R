@@ -729,12 +729,12 @@ AutoDiffLagN <- function(data,
       if(!is.null(GroupVariables)) {
         data <- data[, (ModDiffVariables1) := data.table::shift(x = .SD, n = NLag1, fill = NA, type = "lag"), .SDcols = c(DiffVariables), by = eval(GroupVariables)]
         data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables), by = eval(GroupVariables)]
-        data <- data[, (ModDiffVariables2) := lapply(DiffVariables, DiffDT, NLag1, NLag2)]
+        data <- data[, (ModDiffVariables2) := lapply(DiffVariables, DiffDT, NLag1, NLag2, Type = "numeric")]
         data[, (ModDiffVariables1) := NULL]
       } else {
         data <- data[, (ModDiffVariables1) := data.table::shift(x = .SD, n = NLag1, fill = NA, type = "lag"), .SDcols = c(DiffVariables)]
         data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables)]
-        data <- data[, (ModDiffVariables2) := lapply(DiffVariables, DiffDT, NLag1, NLag2)]
+        data <- data[, (ModDiffVariables2) := lapply(DiffVariables, DiffDT, NLag1, NLag2, Type = "numeric")]
         data[, (ModDiffVariables1) := NULL]
       }
     }
@@ -747,10 +747,10 @@ AutoDiffLagN <- function(data,
       ModDiffVariables <- paste0("Diff_", NLag2, "_", DiffDateVariables)
       if(!is.null(GroupVariables)) {
         data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffDateVariables), by = eval(GroupVariables)]
-        data <- data[, (ModDiffVariables) := lapply(DiffDateVariables, DiffDT, NLag1, NLag2, Type = "numeric")]
+        data <- data[, (ModDiffVariables) := lapply(DiffDateVariables, DiffDT, NLag1, NLag2, Type = "date")]
       } else {
         data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffDateVariables)]
-        data <- data[, (ModDiffVariables) := lapply(DiffDateVariables, DiffDT, NLag1, NLag2, Type = "numeric")]
+        data <- data[, (ModDiffVariables) := lapply(DiffDateVariables, DiffDT, NLag1, NLag2, Type = "date")]
       }
     } else {
       ColNames <- names(data.table::copy(data))
