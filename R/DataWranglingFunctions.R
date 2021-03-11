@@ -694,8 +694,8 @@ AutoDiffLagN <- function(data,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # Check args ----
-  if(!is.character(DateVariable)) stop("DateVariable needs to be a charcter valued vector or scalar")
-  if(!is.character(GroupVariables)) stop("GroupVariables needs to be a charcter valued vector or scalar")
+  if(!is.null(DateVariable) && !is.character(DateVariable)) stop("DateVariable needs to be a charcter valued vector or scalar")
+  if(!is.null(GroupVariable) && !is.character(GroupVariables)) stop("GroupVariables needs to be a charcter valued vector or scalar")
   if(!is.character(DiffVariables)) stop("DiffVariables needs to be a charcter valued vector or scalar")
   if(!is.numeric(NLag1)) stop("NLag1 needs to be a numeric valued scalar")
   if(!is.numeric(NLag2)) stop("NLag2 needs to be a numeric valued scalar")
