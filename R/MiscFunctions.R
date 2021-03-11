@@ -191,10 +191,18 @@ InstallLocal <- function(BuildManual = FALSE, Path = "C:/Users/Bizon/Documents/G
 #' @title ParseOptParse
 #' @param x object value from optparse. e.g. ArgsList$TargetVariables
 #' @noRd
-ParseOptParse <- function() {
+ParseOptParse <- function(x) {
   if(!is.null(x)) {
     return(as.character(if(is.list(strsplit(x, ","))) unlist(strsplit(x, ",")) else x))
   } else {
     return(x)
   }
+}
+
+#' @title ColTypes
+#' @param data Source data.table
+#' @noRd
+ColTypes <- function(data) {
+  CT <- c()
+  for(Col in names(data)) CT <- c(CT, class(data[[Col]][[1L]]))
 }

@@ -526,6 +526,22 @@ AutoInteraction <- function(data = NULL,
         Standardize[[nam]]$Result <- data[[NumVarOperations[[x]][[2L]]]]
       }
     }
+  } else {
+    for(nam in NumericVars) {
+      if(Center && Scale) {
+        a1 <- as.matrix(data[[nam]])
+        c1 <- t(a1) - Standardize[[nam]]$Mean
+        Standardize[[nam]]$Result <- t(c1/Standardize[[nam]]$Denom * Standardize[[nam]]$Factor)
+      } else if(Center && !Scale) {
+        a1 <- as.matrix(data[[nam]])
+        Standardize[[nam]]$Result <- t(a1) - Standardize[[nam]]$Mean
+      } else if(!Center && Scale) {
+        a1 <- as.matrix(data[[nam]])
+        Standardize[[nam]]$Result <- t(a1/Standardize[[nam]]$Denom * Standardize[[nam]]$Factor)
+      } else {
+        Standardize[[nam]]$Result <- data[[NumVarOperations[[x]][[2L]]]]
+      }
+    }
   }
 
   # Define colnames and contributing features ----
