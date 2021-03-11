@@ -603,12 +603,13 @@ AutoInteraction <- function(data = NULL,
 #' @author Adrian Antico
 #' @family Misc
 #'
+#' @param data Source data
 #' @param x Column name
 #' @param NLag1 Numeric
 #' @param NLag2 Numeric
 #' @param Type Choose from 'numeric' or 'date'
 #' @noRd
-DiffDT <- function(x, NLag1, NLag2, Type = "numeric") {
+DiffDT <- function(data, x, NLag1, NLag2, Type = "numeric") {
   if(Type == "numeric") {
     if(NLag1 == 0) {
       temp <- data[[eval(x)]] - data[[paste0("Diff_", NLag2, "_", x)]]
@@ -717,11 +718,10 @@ AutoDiffLagN <- function(data,
       ModDiffVariables <- paste0("Diff_", NLag2, "_", DiffVariables)
       if(!is.null(GroupVariables)) {
         data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables), by = eval(GroupVariables)]
-        data <- data[, (ModDiffVariables) := lapply(DiffVariables, DiffDT, NLag1, NLag2)]
       } else {
         data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables)]
-        data <- data[, (ModDiffVariables) := lapply(DiffVariables, DiffDT, NLag1, NLag2)]
       }
+      data <- data[, (ModDiffVariables) := {g <- list(); for(x in DiffVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "numeric"); g}]
     } else {
       ColNames <- names(data.table::copy(data))
       ModDiffVariables1 <- paste0("Diff_", NLag1, "_", DiffVariables)
@@ -729,14 +729,12 @@ AutoDiffLagN <- function(data,
       if(!is.null(GroupVariables)) {
         data <- data[, (ModDiffVariables1) := data.table::shift(x = .SD, n = NLag1, fill = NA, type = "lag"), .SDcols = c(DiffVariables), by = eval(GroupVariables)]
         data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables), by = eval(GroupVariables)]
-        data <- data[, (ModDiffVariables2) := lapply(DiffVariables, DiffDT, NLag1, NLag2, Type = "numeric")]
-        data[, (ModDiffVariables1) := NULL]
       } else {
         data <- data[, (ModDiffVariables1) := data.table::shift(x = .SD, n = NLag1, fill = NA, type = "lag"), .SDcols = c(DiffVariables)]
         data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables)]
-        data <- data[, (ModDiffVariables2) := lapply(DiffVariables, DiffDT, NLag1, NLag2, Type = "numeric")]
-        data[, (ModDiffVariables1) := NULL]
       }
+      data <- data[, (ModDiffVariables2) := {g <- list(); for(x in DiffVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "numeric"); g}]
+      data.table::set(data, j = ModDiffVariables1, value = NULL)
     }
   }
 
@@ -751,11 +749,8 @@ AutoDiffLagN <- function(data,
       } else {
         data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffDateVariables)]
       }
-
-      # Final Features
-      data <- data[, (ModDiffVariables1) := lapply(DiffDateVariables, DiffDT, NLag1, NLag2, Type = "date")]
+      data <- data[, (ModDiffVariables1) := {g <- list(); for(x in DiffDateVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "date"); g}]
       data.table::set(data, j = ModDiffVariables2, value = NULL)
-
     } else {
       ColNames <- names(data.table::copy(data))
       ModDiffVariables1 <- paste0("Diff_", NLag1, "_", DiffDateVariables,"_temp")
@@ -768,9 +763,7 @@ AutoDiffLagN <- function(data,
         data <- data[, (ModDiffVariables1) := data.table::shift(x = .SD, n = NLag1, fill = NA, type = "lag"), .SDcols = c(DiffDateVariables)]
         data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffDateVariables)]
       }
-
-      # Final features
-      data <- data[, (ModDiffVariables22) := lapply(DiffDateVariables, DiffDT, NLag1, NLag2, Type = "date")]
+      data <- data[, (ModDiffVariables22) := {g <- list(); for(x in DiffDateVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "date"); g}]
       data.table::set(data, j = c(ModDiffVariables1, ModDiffVariables2), value = NULL)
     }
   }
