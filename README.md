@@ -1,4 +1,4 @@
-![Version: 0.4.6](https://img.shields.io/static/v1?label=Version&message=0.4.6&color=blue&?style=plastic)
+![Version: 0.4.7](https://img.shields.io/static/v1?label=Version&message=0.4.7&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -686,8 +686,12 @@ Outliers <- RemixAutoML::H2OIsolationForestScoring(
 <details><summary>Code Example</summary>
 <p>
  
- ```
- # Create fake data
+```
+##############################
+# Current minus lag1
+##############################
+ 
+# Create fake data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.70,
   N = 50000,
@@ -716,10 +720,51 @@ data <- RemixAutoML::AutoDiffLagN(
   DateVariable = "DateTime",
   GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
   DiffVariables = Cols,
-  NLag = 1,
+  DiffDateVariables = "DateTime",
+  NLag1 = 0,
+  NLag2 = 1,
   Sort = TRUE,
   RemoveNA = TRUE)
- ```
+
+##############################
+# lag1 minus lag3
+##############################
+
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 50000,
+  ID = 2L,
+  FactorCount = 3L,
+  AddDate = TRUE,
+  ZIP = 0L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Store Cols to diff
+Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
+
+# Clean data before running AutoDiffLagN
+data <- RemixAutoML::ModelDataPrep(
+  data = data,
+  Impute = FALSE,
+  CharToFactor = FALSE,
+  FactorToChar = TRUE)
+
+# Run function
+data <- RemixAutoML::AutoDiffLagN(
+  data,
+  DateVariable = "DateTime",
+  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
+  DiffVariables = Cols,
+  DiffDateVariables = "DateTime",
+  NLag1 = 1,
+  NLag2 = 3,
+  Sort = TRUE,
+  RemoveNA = TRUE)
+```
 
 </p>
 </details>
@@ -727,7 +772,7 @@ data <- RemixAutoML::AutoDiffLagN(
 <details><summary>Function Description</summary>
 <p>
  
-<code>AutoDiffLagN()</code> Generate differences for numeric columns, by groups. You can specify NLag = 1 to generate the diffs based on a lag 1 lookback or NLag = n for some other lookback.
+<code>AutoDiffLagN()</code> Generate differences for numeric columns and date columns, by groups. You can specify NLag1 = 0 and NLag2 to generate the diffs based on a lag 1 to lag 2 differences for a column, and multiple columns.
 
 </p>
 </details>
