@@ -152,7 +152,6 @@ AutoWord2VecScoring <- function(data,
 
   # H2O Shutdown ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
-  gc()
 
   # Return ----
   return(data)

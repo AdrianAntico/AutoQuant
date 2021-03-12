@@ -167,9 +167,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 TransformationObject = NULL,
                                 TransID = NULL,
                                 TransPath = NULL,
-                                MDP_Impute = TRUE,
-                                MDP_CharToFactor = TRUE,
-                                MDP_RemoveDates = TRUE,
+                                MDP_Impute = FALSE,
+                                MDP_CharToFactor = FALSE,
+                                MDP_RemoveDates = FALSE,
                                 MDP_MissFactor = "0",
                                 MDP_MissNum = -1,
                                 RemoveModel = FALSE) {
@@ -179,9 +179,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # tolower(TargetType)
   TargetType <- tolower(TargetType)
+  check1 <- ReturnShapValues && !TargetType %chin% c("multiregression", "multiclass")
 
   # Check arguments ----
-  if(is.null(ScoringData)) stop("ScoringData cannot be NULL")
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
 
   # Pull in ColNames ----
@@ -189,12 +189,12 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Pull In Transformation Object ----
   if(is.null(TransformationObject) && (TransformNumeric || BackTransNumeric)) {
-    if(is.null(TargetColumnName)) stop("TargetColumnName needs to be supplied")
-    TransformationObject <- data.table::fread(file.path(normalizePath(TransPath), paste0(TransID, "_transformation.csv")))
+    TransformationObject <- data.table::fread(file.path(TransPath, paste0(TransID, "_transformation.csv")))
   }
 
   # Identify column numbers for factor variables ----
   CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
+  if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
 
   # DummifyDT categorical columns----
   if(!is.null(CatFeatures) && TargetType == "multiregression") {
@@ -224,27 +224,29 @@ AutoCatBoostScoring <- function(TargetType = NULL,
         ClustScore = FALSE,
         GroupVar = TRUE)
     }
+
+    # Return value to CatFeatures as if there are no categorical variables
+    CatFeatures <- NULL
   }
 
-  # Return value to CatFeatures as if there are no categorical variables
-  CatFeatures <- numeric(0)
+  # Convert CatFeatures to 1-indexed ----
+  if(!is.null(CatFeatures)) CatFeatures <- CatFeatures - 1L
 
-  # Convert CatFeatures to 1-indexed----
-  if(length(CatFeatures) > 0) for(i in seq_along(CatFeatures)) CatFeatures[i] <- CatFeatures[i] - 1L
+  # ModelDataPrep Check ----
+  if(any(c(MDP_Impute,MDP_CharToFactor,MDP_RemoveDates))) {
+    ScoringData <- ModelDataPrep(
+      data = ScoringData,
+      Impute = MDP_Impute,
+      CharToFactor = MDP_CharToFactor,
+      RemoveDates = MDP_RemoveDates,
+      MissFactor = MDP_MissFactor,
+      MissNum = MDP_MissNum)
+  }
 
-  # ModelDataPrep Check----
-  ScoringData <- ModelDataPrep(
-    data = ScoringData,
-    Impute = MDP_Impute,
-    CharToFactor = MDP_CharToFactor,
-    RemoveDates = MDP_RemoveDates,
-    MissFactor = MDP_MissFactor,
-    MissNum = MDP_MissNum)
-
-  # IDcols conversion----
+  # IDcols conversion ----
   if(is.numeric(IDcols)) IDcols <- names(data)[IDcols]
 
-  # Apply Transform Numeric Variables----
+  # Apply Transform Numeric Variables ----
   if(TransformNumeric) {
     tempTrans <- data.table::copy(TransformationObject)
     tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
@@ -256,31 +258,23 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       Path = TransPath)
   }
 
-  # Convert FeatureColumnNames to Character Names----
+  # Convert FeatureColumnNames to Character Names ----
   if(data.table::is.data.table(FeatureColumnNames)) {
     FeatureColumnNames <- FeatureColumnNames[[1L]]
   } else if(is.numeric(FeatureColumnNames)) {
     FeatureColumnNames <- names(ScoringData)[FeatureColumnNames]
   }
 
-  # Remove Target from FeatureColumnNames----
-  if(TransformNumeric || BackTransNumeric) if(!is.null(TargetColumnName)) if(TargetColumnName %chin% FeatureColumnNames) FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
+  # Remove Target from FeatureColumnNames ----
+  if((TransformNumeric || BackTransNumeric) && !is.null(TargetColumnName) && TargetColumnName %chin% FeatureColumnNames) {
+    FeatureColumnNames <- FeatureColumnNames[!(TargetColumnName == FeatureColumnNames)]
+  }
 
   # Subset Columns Needed ----
-
-
-
-  # Subset Columns Needed----
-  FeatureColumnNames <- names(ScoringData)[!names(ScoringData) %chin% c(IDcols)]
-  keep1 <- c(FeatureColumnNames)
-  if(!is.null(IDcols)) keep <- c(IDcols, FeatureColumnNames) else keep <- c(FeatureColumnNames)
-  ScoringData <- ScoringData[, ..keep]
-  if(!is.null(IDcols)) {
-    ScoringMerge <- data.table::copy(ScoringData)
-    keep <- c(keep1)
-    ScoringData <- ScoringData[, ..keep]
-  } else {
-    ScoringMerge <- data.table::copy(ScoringData)
+  if(ReturnFeatures && TargetType != "multiclass") ScoringMerge <- data.table::copy(ScoringData)
+  if(!is.null(IDcols)) FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% c(IDcols)]
+  if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0))) {
+    data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
   }
 
   # Initialize Catboost Data Conversion ----
@@ -291,62 +285,53 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Load model ----
-  if(!is.null(ModelObject)) {
-    model <- ModelObject
-  } else {
-    model <- tryCatch({catboost::catboost.load_model(file.path(ModelPath, ModelID))}, error = function(x) NULL)
-    if(is.null(model)) stop("Model not found in ModelPath")
-  }
+  if(is.null(ModelObject)) ModelObject <- catboost::catboost.load_model(file.path(ModelPath, ModelID))
 
-  # Score model----
+  # Score model ----
   if(TargetType == "regression" || TargetType == "multiregression") {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
-        model = model,
+        model = ModelObject,
         pool = ScoringPool,
         prediction_type = "RawFormulaVal",
         thread_count = -1L))
   } else if(TargetType == "classification") {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
-        model = model,
+        model = ModelObject,
         pool = ScoringPool,
         prediction_type = "Probability"))
   } else if(TargetType == "multiclass") {
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
-        model = model,
+        model = ModelObject,
         pool = ScoringPool,
         prediction_type = "Class"),
       catboost::catboost.predict(
-        model = model,
+        model = ModelObject,
         pool = ScoringPool,
         prediction_type = "Probability")))
   }
 
   # Create ShapValues ----
-  if(ReturnShapValues && !(TargetType %chin% c("multiregression","multiclass"))) {
-    ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model, pool = ScoringPool, type = "ShapValues"))
+  if(check1) {
+    ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(ModelObject, pool = ScoringPool, type = "ShapValues"))
     data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_",FeatureColumnNames), "Predictions"))
     ShapValues[, Predictions := NULL]
   }
 
   # Remove Model ----
-  if(RemoveModel) rm(model)
+  if(RemoveModel) rm(ModelObject)
 
   # Score model -----
   if(TargetType == "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
-    if(!is.null(MultiClassTargetLevels)) {
-      TargetLevels <- MultiClassTargetLevels
-    } else {
-      TargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, "_TargetLevels.csv")))
-    }
-    g <- as.character(TargetLevels[[1L]])
+    if(is.null(MultiClassTargetLevels)) MultiClassTargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, "_TargetLevels.csv")))
+    g <- as.character(MultiClassTargetLevels[[1L]])
     data.table::setnames(predict, paste0("V", seq_along(g)), g)
     predict <- merge(
       predict,
-      TargetLevels,
+      MultiClassTargetLevels,
       by.x = "Predictions",
       by.y = "NewLevels",
       all = FALSE)
@@ -355,14 +340,14 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Rename predicted value ----
   if(TargetType == "regression") data.table::setnames(predict, "V1", "Predictions")
-  if(TargetType == "multiregression") data.table::setnames(predict, paste0("V",seq_along(predict)), paste0("Predictions.V",seq_along(predict)))
+  if(TargetType == "multiregression") data.table::setnames(predict, paste0("V",seq_along(predict)), paste0("Predictions.V", seq_along(predict)))
   if(TargetType == "classification") data.table::setnames(predict, "V1", "p1")
 
   # Merge features back on ----
   if(ReturnFeatures && TargetType != "multiclass") predict <- cbind(predict, ScoringMerge)
 
-  # Back Transform Numeric Variables----
-  if(BackTransNumeric && !TargetType == "multiregression") {
+  # Back Transform Numeric Variables ----
+  if(BackTransNumeric && TargetType != "multiregression") {
     grid_trans_results <- data.table::copy(TransformationObject)
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
@@ -377,7 +362,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Return data ----
-  if(ReturnShapValues && !TargetType %chin% c("multiregression", "multiclass")) {
+  if(check1) {
     return(cbind(predict, ShapValues))
   } else {
     return(predict)
