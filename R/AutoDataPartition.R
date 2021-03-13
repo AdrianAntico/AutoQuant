@@ -110,7 +110,17 @@ AutoDataPartition <- function(data,
 
     # Gather Row Numbers ----
     RowList <- list()
-    if(!is.null(StratifyColumnNames)) if(is.numeric(copy_data[[StratifyColumnNames]])) copy_data[, rank := round(data.table::frank(get(keep)) * 20 / .N) * 1/20] else data.table::setnames(copy_data, StratifyColumnNames, "rank")
+    if(!is.null(StratifyColumnNames)) {
+      if(length(StratifyColumnNames) > 1) {
+        copy_data[, rank := do.call(paste, c(.SD, sep = " ")), .SDcols = c(StratifyColumnNames)]
+      } else {
+        if(is.numeric(copy_data[[StratifyColumnNames]])) {
+          copy_data[, rank := round(data.table::frank(get(keep)) * 20 / .N) * 1/20]
+        } else {
+          data.table::setnames(copy_data, StratifyColumnNames, "rank")
+        }
+      }
+    }
     for(i in NumDataSets:1L) {
       N <- copy_data[, .N]
       if(!is.null(StratifyColumnNames)) {
