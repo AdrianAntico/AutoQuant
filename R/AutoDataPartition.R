@@ -110,7 +110,7 @@ AutoDataPartition <- function(data,
 
     # Gather Row Numbers ----
     RowList <- list()
-    if(!is.null(StratifyColumnNames)) copy_data[, rank := round(data.table::frank(get(keep)) * 20 / .N) * 1/20]
+    if(!is.null(StratifyColumnNames)) if(is.numeric(copy_data[[StratifyColumnNames]])) copy_data[, rank := round(data.table::frank(get(keep)) * 20 / .N) * 1/20] else data.table::setnames(copy_data, StratifyColumnNames, "rank")
     for(i in NumDataSets:1L) {
       N <- copy_data[, .N]
       if(!is.null(StratifyColumnNames)) {
@@ -180,34 +180,6 @@ AutoDataPartition <- function(data,
         data <- data[!(ID %in% (RowEnd - NumRows + 1L):RowEnd)]
       }
     }
-  } else {
-
-    # Initialize DataCollect
-    # DataCollect <- list()
-    # data <- data[order(runif(.N))]
-    # Rows <- data[, .N]
-    #
-    # # Figure out which rows go to which data set
-    # for(i in rev(seq_len(NumDataSets))) {
-    #   if(i == 1L) {
-    #     DataCollect[["TrainData"]] <- data
-    #   } else if(i == 2L) {
-    #     RowEnd <- data[, .N]
-    #     NumRows <- floor(Ratios[i] * Rows)
-    #     DataCollect[["ValidationData"]] <- data[(RowEnd - NumRows + 1L):RowEnd]
-    #     data <- data[-((RowEnd - NumRows + 1L):RowEnd)]
-    #   } else if(i == 3L) {
-    #     RowEnd <- data[, .N]
-    #     NumRows <- floor(Ratios[i] * Rows)
-    #     DataCollect[["TestData"]] <- data[(RowEnd - NumRows + 1L):RowEnd]
-    #     data <- data[-((RowEnd - NumRows + 1L):RowEnd)]
-    #   } else {
-    #     RowEnd <- data[, .N]
-    #     NumRows <- floor(Ratios[i] * Rows)
-    #     DataCollect[[paste0("TestData", NumDataSets - 2L)]] <- data[(RowEnd - NumRows + 1L):RowEnd]
-    #     data <- data[-((RowEnd - NumRows + 1L):RowEnd)]
-    #   }
-    # }
   }
 
   # Return data----
