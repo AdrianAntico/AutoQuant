@@ -59,8 +59,15 @@ AutoDataPartition <- function(data,
 
     # Sort data
     if(tolower(PartitionType) == "time") {
-      data.table::setorderv(x = data, cols = TimeColumnName, order = 1)
+      if(!is.null(StratifyColumnNames)) {
+        OrderLength <- length(c(TimeColumnName, StratifyColumnNames))
+        data.table::setorderv(x = data, cols = c(TimeColumnName, StratifyColumnNames), order = rep(1,OrderLength))
+      } else {
+        data.table::setorderv(x = data, cols = TimeColumnName, order = 1)
+      }
       StratifyColumnNames <- NULL
+    } else {
+      data <- data[order(runif(.N))]
     }
 
     # Data prep----
@@ -80,8 +87,7 @@ AutoDataPartition <- function(data,
       RatioList[i] <- Ratios[i] * (1 / (1 - tempRatio))
     }
 
-    # Gather Row Numbers ----
-    RowList <- list()
+    # Stratification management ----
     if(!is.null(StratifyColumnNames)) {
       if(length(StratifyColumnNames) > 1) {
         copy_data[, rank := do.call(paste, c(.SD, sep = " ")), .SDcols = c(StratifyColumnNames)]
@@ -93,6 +99,8 @@ AutoDataPartition <- function(data,
         }
       }
     }
+
+    # Gather row numbers ----
     for(i in NumDataSets:1L) {
       N <- copy_data[, .N]
       if(!is.null(StratifyColumnNames)) {
