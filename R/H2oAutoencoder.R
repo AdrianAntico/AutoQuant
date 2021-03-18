@@ -8,7 +8,6 @@
 #' @param AnomalyDetection Set to TRUE to run anomaly detection
 #' @param DimensionReduction Set to TRUE to run dimension reduction
 #' @param data The data.table with the columns you wish to have analyzed
-#' @param ValidationData The data.table with the columns you wish to have scored
 #' @param Features NULL Column numbers or column names
 #' @param RemoveFeatures Set to TRUE if you want the features you specify in the Features argument to be removed from the data returned
 #' @param NThreads max(1L, parallel::detectCores()-2L)
@@ -51,15 +50,14 @@
 #' Output <- RemixAutoML::H2OAutoencoder(
 #'
 #'   # Select the service
-#'   AnomalyDetection = FALSE,
+#'   AnomalyDetection = TRUE,
 #'   DimensionReduction = TRUE,
 #'
 #'   # Data related args
 #'   data = data,
-#'   ValidationData = NULL,
 #'   Features = names(data)[2L:(ncol(data)-1L)],
 #'   per_feature = FALSE,
-#'   RemoveFeatures = TRUE,
+#'   RemoveFeatures = FALSE,
 #'   ModelID = "TestModel",
 #'   model_path = getwd(),
 #'
@@ -133,7 +131,6 @@
 H2OAutoencoder <- function(AnomalyDetection = FALSE,
                            DimensionReduction = TRUE,
                            data,
-                           ValidationData = NULL,
                            Features = NULL,
                            RemoveFeatures = FALSE,
                            NThreads = max(1L, parallel::detectCores()-2L),
@@ -155,7 +152,6 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
 
   # Ensure data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
 
   # Return because of mispecified arguments----
   if(!AnomalyDetection && !DimensionReduction) stop("Why are you running this function if you do not want anomaly detection nor dimension reduction?")
@@ -164,109 +160,65 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
   F_Length <- length(Features)
   if(is.numeric(Features) || is.integer(Features)) Features <- names(data)[Features]
 
-  # Ensure categoricals are set as factors----
-  data <- ModelDataPrep(data=data, Impute=FALSE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=FALSE, DateToChar=FALSE, RemoveDates=TRUE, MissFactor="0", MissNum=-1, IgnoreCols=NULL)
+  # Ensure categoricals are set as factors ----
+  temp <- data[, .SD, .SDcols = c(Features)]
+  data[, (Features) := NULL]
+  temp <- ModelDataPrep(data=temp, Impute=FALSE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=FALSE, DateToChar=FALSE, RemoveDates=TRUE, MissFactor="0", MissNum=-1, IgnoreCols=NULL)
 
   # Initialize H2O----
   if(H2OStart) LocalHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
-  H2O_Data <- h2o::as.h2o(data)
-  if(RemoveFeatures) data.table::set(data, j = Features, value = NULL)
-  if(!is.null(ValidationData)) H2O_Validation <- h2o::as.h2o(ValidationData)
+  H2O_Data <- h2o::as.h2o(temp)
 
   # Layer selection - Eventually put in an arg for Type for some alternative pre-set LayerStructure----
   if(is.null(LayerStructure)) LayerStructure <- c(F_Length, ceiling(F_Length * NodeShrinkRate), ceiling(F_Length * NodeShrinkRate ^ 2), ceiling(F_Length * NodeShrinkRate ^ 3), ceiling(F_Length * NodeShrinkRate ^ 2), ceiling(F_Length * NodeShrinkRate), F_Length)
 
-  # Build model----
-  if(!is.null(ValidationData)) {
+  # Build Model ----
+  Model <- h2o::h2o.deeplearning(
+    autoencoder = TRUE,
+    model_id = ModelID,
+    training_frame = H2O_Data,
+    x = Features,
+    l2 = L2,
+    epochs = Epochs,
+    hidden = LayerStructure,
+    activation = Activation,
+    elastic_averaging = ElasticAveraging,
+    elastic_averaging_moving_rate = ElasticAveragingMovingRate,
+    elastic_averaging_regularization = ElasticAveragingRegularization)
 
-    # Build Model
-    Model <- h2o::h2o.deeplearning(
-      autoencoder = TRUE,
-      model_id = ModelID,
-      training_frame = H2O_Data,
-      validation_frame = H2O_Validation,
-      x = Features,
-      l2 = L2,
-      epochs = Epochs,
-      hidden = LayerStructure,
-      activation = Activation,
-      elastic_averaging = ElasticAveraging,
-      elastic_averaging_moving_rate = ElasticAveragingMovingRate,
-      elastic_averaging_regularization = ElasticAveragingRegularization)
-
-    # Save Model
-    if(!is.null(model_path)) SaveModel <- h2o::h2o.saveModel(object = Model, path = model_path, force = TRUE)
-
-  } else {
-
-    # Build Model
-    Model <- h2o::h2o.deeplearning(
-      autoencoder = TRUE,
-      model_id = ModelID,
-      training_frame = H2O_Data,
-      x = Features,
-      l2 = L2,
-      epochs = Epochs,
-      hidden = LayerStructure,
-      activation = Activation,
-      elastic_averaging = ElasticAveraging,
-      elastic_averaging_moving_rate = ElasticAveragingMovingRate,
-      elastic_averaging_regularization = ElasticAveragingRegularization)
-
-    # Save Model
-    if(!is.null(model_path)) SaveModel <- h2o::h2o.saveModel(object = Model, path = model_path, force = TRUE)
-  }
+  # Save Model
+  if(!is.null(model_path)) SaveModel <- h2o::h2o.saveModel(object = Model, path = model_path, force = TRUE)
 
   # Create and Merge features----
   if(AnomalyDetection && DimensionReduction) {
-    if(!is.null(ValidationData)) {
-      Data <- cbind(
-        data,
-        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)),
-        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
-      ValData <- cbind(
-        ValidationData,
-        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Validation, layer = ReturnLayer)),
-        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Validation, per_feature = per_feature)))
-    } else {
-      Data <- cbind(
-        data,
-        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)),
-        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
-    }
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)),
+      data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
   } else if(!AnomalyDetection && DimensionReduction) {
-    if(!is.null(ValidationData)) {
-      Data <- cbind(
-        data,
-        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)))
-      ValData <- cbind(
-        ValidationData,
-        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Validation, layer = ReturnLayer)))
-    } else {
-      Data <- cbind(
-        data,
-        data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)))
-    }
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)))
   } else if(AnomalyDetection && !DimensionReduction) {
-    if(!is.null(ValidationData)) {
-      Data <- cbind(
-        data,
-        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
-      ValData <- cbind(
-        ValidationData,
-        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Validation, per_feature = per_feature)))
-    } else {
-      Data <- cbind(
-        data,
-        data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
-    }
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
   }
 
-  # Shutdown h2o----
+  # Remove H2O Objects ----
+  h2o::h2o.rm(Model, H2O_Data)
+
+  # Shutdown h2o ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # Return output----
-  return(list(Data = Data, Model = Model, ValidationData = if(!is.null(ValidationData)) ValData else NULL))
+  # Remove features ----
+  if(RemoveFeatures) data.table::set(Data, j = Features, value = NULL)
+
+  # Return output ----
+  return(Data)
 }
 
 #' @title H2OAutoencoderScoring
@@ -311,7 +263,7 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
 #'   MultiClass = FALSE)
 #'
 #' # Run algo
-#' Output <- RemixAutoML::H2OAutoencoder(
+#' data <- RemixAutoML::H2OAutoencoder(
 #'
 #'   # Select the service
 #'   AnomalyDetection = TRUE,
@@ -341,13 +293,6 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
 #'   ElasticAveraging = TRUE,
 #'   ElasticAveragingMovingRate = 0.90,
 #'   ElasticAveragingRegularization = 0.001)
-#'
-#' # Inspect output
-#' data <- Output$Data
-#' Model <- Output$Model
-#'
-#' # If ValidationData is not null
-#' ValidationData <- Output$ValidationData
 #'
 #' ############################
 #' # Scoring
@@ -407,48 +352,53 @@ H2OAutoencoderScoring <- function(data,
                                   ModelID = "TestModel",
                                   model_path = NULL) {
 
-  # Full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
-  # Ensure data.table----
+  # Ensure data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Return because of mispecified arguments----
-  if(!AnomalyDetection & !DimensionReduction) stop("Why are you running this function if you do not want anomaly detection nor dimension reduction?")
+  # Return because of mispecified arguments ----
+  if(!AnomalyDetection && !DimensionReduction) stop("At least one of AnomalyDetection or DimensionReduction must be set to TRUE")
 
-  # Constants----
-  GR <- (sqrt(5) - 1) / 2
-  F_Length <- length(Features)
+  # Constants ----
   if(is.numeric(Features) || is.integer(Features)) Features <- names(data)[Features]
 
-  # Ensure categoricals are set as factors----
-  data <- ModelDataPrep(data=data, Impute=FALSE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=FALSE, DateToChar=TRUE, RemoveDates=TRUE, MissFactor="0", MissNum=-1, IgnoreCols=NULL)
+  # Ensure categoricals are set as factors ----
+  temp <- data[, .SD, .SDcols = c(Features)]
+  data[, (Features) := NULL]
+  temp <- ModelDataPrep(data=temp, Impute=FALSE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=FALSE, DateToChar=FALSE, RemoveDates=TRUE, MissFactor="0", MissNum=-1, IgnoreCols=NULL)
 
-  # Initialize H2O----
+  # Initialize H2O ----
   if(H2OStart) h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
-  H2O_Data <- h2o::as.h2o(data)
+  H2O_Data <- h2o::as.h2o(temp)
   if(is.null(ModelObject)) ModelObject <- h2o::h2o.loadModel(path = file.path(model_path, ModelID))
-  if(RemoveFeatures) data.table::set(data, j = Features, value = NULL)
 
   # Create and Merge features ----
   if(AnomalyDetection && DimensionReduction) {
     Data <- cbind(
       data,
+      temp,
       data.table::as.data.table(h2o::h2o.deepfeatures(object = ModelObject, data = H2O_Data, layer = ReturnLayer)),
       data.table::as.data.table(h2o::h2o.anomaly(object = ModelObject, data = H2O_Data, per_feature = per_feature)))
   } else if(!AnomalyDetection && DimensionReduction) {
     Data <- cbind(
       data,
+      temp,
       data.table::as.data.table(h2o::h2o.deepfeatures(object = ModelObject, data = H2O_Data, layer = ReturnLayer)))
   } else if(AnomalyDetection && !DimensionReduction) {
     Data <- cbind(
       data,
+      temp,
       data.table::as.data.table(h2o::h2o.anomaly(object = ModelObject, data = H2O_Data, per_feature = per_feature)))
   }
 
-  # Shutdown h2o----
+  # Remove H2O Objects ----
+  h2o::h2o.rm(ModelObject, H2O_Data)
+
+  # Shutdown h2o ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # Return output----
+  # Remove features ----
+  if(RemoveFeatures) data.table::set(Data, j = Features, value = NULL)
+
+  # Return output ----
   return(Data)
 }

@@ -77,7 +77,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 # Run algo
-Output <- RemixAutoML::H2OAutoencoder(
+data <- RemixAutoML::H2OAutoencoder(
 
   # Select the service
   AnomalyDetection = TRUE,
@@ -107,13 +107,6 @@ Output <- RemixAutoML::H2OAutoencoder(
   ElasticAveraging = TRUE,
   ElasticAveragingMovingRate = 0.90,
   ElasticAveragingRegularization = 0.001)
-
-# Inspect output
-data <- Output$Data
-Model <- Output$Model
-
-# If ValidationData is not null
-ValidationData <- Output$ValidationData
 
 ############################
 # Scoring

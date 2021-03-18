@@ -8,7 +8,6 @@ H2OAutoencoder(
   AnomalyDetection = FALSE,
   DimensionReduction = TRUE,
   data,
-  ValidationData = NULL,
   Features = NULL,
   RemoveFeatures = FALSE,
   NThreads = max(1L, parallel::detectCores() - 2L),
@@ -35,8 +34,6 @@ H2OAutoencoder(
 \item{DimensionReduction}{Set to TRUE to run dimension reduction}
 
 \item{data}{The data.table with the columns you wish to have analyzed}
-
-\item{ValidationData}{The data.table with the columns you wish to have scored}
 
 \item{Features}{NULL Column numbers or column names}
 
@@ -104,15 +101,14 @@ data <- RemixAutoML::FakeDataGenerator(
 Output <- RemixAutoML::H2OAutoencoder(
 
   # Select the service
-  AnomalyDetection = FALSE,
+  AnomalyDetection = TRUE,
   DimensionReduction = TRUE,
 
   # Data related args
   data = data,
-  ValidationData = NULL,
   Features = names(data)[2L:(ncol(data)-1L)],
   per_feature = FALSE,
-  RemoveFeatures = TRUE,
+  RemoveFeatures = FALSE,
   ModelID = "TestModel",
   model_path = getwd(),
 
