@@ -1070,7 +1070,7 @@ AutoCatBoostCARMA <- function(data,
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
       DataSets <- AutoDataPartition(
-        data,
+        data = data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
         PartitionType = PartitionType,
@@ -1080,7 +1080,7 @@ AutoCatBoostCARMA <- function(data,
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
       DataSets <- AutoDataPartition(
-        data,
+        data = data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
         PartitionType = PartitionType,
@@ -1088,7 +1088,7 @@ AutoCatBoostCARMA <- function(data,
         TimeColumnName = eval(DateColumnName))
     } else if(!is.null(GroupVariables)) {
       DataSets <- AutoDataPartition(
-        data,
+        data = data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
         PartitionType = PartitionType,
@@ -1096,7 +1096,7 @@ AutoCatBoostCARMA <- function(data,
         TimeColumnName = eval(DateColumnName))
     } else {
       DataSets <- AutoDataPartition(
-        data,
+        data = data,
         NumDataSets = NumSets,
         Ratios = SplitRatios,
         PartitionType = PartitionType,
@@ -1128,6 +1128,7 @@ AutoCatBoostCARMA <- function(data,
   }
 
   # Create TimeWeights ----
+  if(DebugMode) print("Create TimeWeights ----")
   if(!is.null(TimeWeights)) {
     if(!is.null(GroupVariables)) {
       data.table::setorderv(x = train, cols = c("GroupVar", DateColumnName), order = c(1,-1))
@@ -1195,70 +1196,71 @@ AutoCatBoostCARMA <- function(data,
   # Run AutoCatBoostRegression and return list of ml objects ----
   TestModel <- AutoCatBoostRegression(
 
-      # GPU or CPU and the number of available GPUs
-      task_type = TaskType,
-      NumGPUs = NumGPU,
+    # GPU or CPU and the number of available GPUs
+    task_type = TaskType,
+    NumGPUs = NumGPU,
 
-      # Metadata arguments
-      ModelID = "CatBoost",
-      model_path = getwd(),
-      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
-      SaveModelObjects = FALSE,
-      ReturnModelObjects = TRUE,
-      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
+    # Metadata arguments
+    ModelID = "CatBoost",
+    model_path = getwd(),
+    metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+    SaveModelObjects = FALSE,
+    ReturnModelObjects = TRUE,
+    SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
 
-      # Data arguments
-      data = train,
-      TrainOnFull = TOF,
-      ValidationData = valid,
-      TestData = test,
-      Weights = Weightss,
-      TargetColumnName = TargetVariable,
-      FeatureColNames = ModelFeatures,
-      PrimaryDateColumn = eval(DateColumnName),
-      IDcols = IDcols,
-      DummifyCols = FALSE,
-      TransformNumericColumns = NULL,
-      Methods = NULL,
+    # Data arguments
+    data = train,
+    TrainOnFull = TOF,
+    ValidationData = valid,
+    TestData = test,
+    Weights = Weightss,
+    TargetColumnName = TargetVariable,
+    FeatureColNames = ModelFeatures,
+    PrimaryDateColumn = eval(DateColumnName),
+    IDcols = IDcols,
+    DummifyCols = FALSE,
+    TransformNumericColumns = NULL,
+    Methods = NULL,
 
-      # Model evaluation
-      eval_metric = EvalMetric,
-      eval_metric_value = EvalMetricValue,
-      loss_function = LossFunction,
-      loss_function_value = LossFunctionValue,
-      MetricPeriods = 10L,
-      NumOfParDepPlots = NumOfParDepPlots,
-      EvalPlots = TRUE,
+    # Model evaluation
+    eval_metric = EvalMetric,
+    eval_metric_value = EvalMetricValue,
+    loss_function = LossFunction,
+    loss_function_value = LossFunctionValue,
+    MetricPeriods = 10L,
+    NumOfParDepPlots = NumOfParDepPlots,
+    EvalPlots = TRUE,
 
-      # Grid tuning arguments
-      PassInGrid = PassInGrid,
-      GridTune = GridTune,
-      MaxModelsInGrid = ModelCount,
-      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-      MaxRunMinutes = 60*60,
-      Shuffles = 4L,
-      BaselineComparison = "default",
+    # Grid tuning arguments
+    PassInGrid = PassInGrid,
+    GridTune = GridTune,
+    MaxModelsInGrid = ModelCount,
+    MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+    MaxRunMinutes = 60*60,
+    Shuffles = 4L,
+    BaselineComparison = "default",
 
-      # ML args
-      langevin = Langevin,
-      diffusion_temperature = DiffusionTemperature,
-      Trees = NTrees,
-      Depth = Depth,
-      LearningRate = LearningRate,
-      L2_Leaf_Reg = L2_Leaf_Reg,
-      RandomStrength = RandomStrength,
-      BorderCount = BorderCount,
-      RSM = if(TaskType == "GPU") NULL else RSM,
-      BootStrapType = BootStrapType,
-      GrowPolicy = GrowPolicy,
+    # ML args
+    langevin = Langevin,
+    diffusion_temperature = DiffusionTemperature,
+    Trees = NTrees,
+    Depth = Depth,
+    LearningRate = LearningRate,
+    L2_Leaf_Reg = L2_Leaf_Reg,
+    RandomStrength = RandomStrength,
+    BorderCount = BorderCount,
+    RSM = if(TaskType == "GPU") NULL else RSM,
+    BootStrapType = BootStrapType,
+    GrowPolicy = GrowPolicy,
 
-      # New ML args
-      model_size_reg = ModelSizeReg,
-      feature_border_type = FeatureBorderType,
-      sampling_unit = SamplingUnit,
-      subsample = SubSample,
-      score_function = ScoreFunction,
-      min_data_in_leaf = MinDataInLeaf)
+    # New ML args
+    model_size_reg = ModelSizeReg,
+    feature_border_type = FeatureBorderType,
+    sampling_unit = SamplingUnit,
+    subsample = SubSample,
+    score_function = ScoreFunction,
+    min_data_in_leaf = MinDataInLeaf,
+    DebugMode = DebugMode)
 
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) return(TestModel)

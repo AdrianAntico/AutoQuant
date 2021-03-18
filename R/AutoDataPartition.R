@@ -2,7 +2,7 @@
 #'
 #' @description This function will take your ratings matrix and model and score your data in parallel.
 #'
-#' @author Adrian Antico and Douglas Pestana
+#' @author Adrian Antico
 #' @family Feature Engineering
 #'
 #' @param data Source data to do your partitioning on
@@ -10,8 +10,6 @@
 #' @param Ratios A vector of values for how much data each data set should get in each split. E.g. c(0.70, 0.20, 0.10)
 #' @param PartitionType Set to either "random", "timeseries", or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "timeseries", you can partition by time with a stratify option (so long as you have an equal number of records for each strata). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.
 #' @param StratifyColumnNames Supply column names of categorical features to use in a stratified sampling procedure for partitioning the data. Partition type must be "random" to use this option
-#' @param StratifyNumericTarget Supply a column name that is numeric. Use for "random" PartitionType, you can stratify your numeric variable by splitting up based on percRank to ensure a proper allocation of extreme values in your created data sets.
-#' @param StratTargetPrecision Stratification only is ran when PartitionType is 'random' and StratTargetPrecision is the number of percentile buckets to utilize
 #' @param TimeColumnName Supply a date column name or a name of a column with an ID for sorting by time such that the smallest number is the earliest in time.
 #' @return Returns a list of data.tables
 #' @examples
@@ -33,8 +31,6 @@
 #'   Ratios = c(0.70,0.20,0.10),
 #'   PartitionType = "random",
 #'   StratifyColumnNames = NULL,
-#'   StratifyNumericTarget = NULL,
-#'   StratTargetPrecision = 20L,
 #'   TimeColumnName = NULL)
 #'
 #' # Collect data
@@ -48,42 +44,15 @@ AutoDataPartition <- function(data,
                               Ratios = c(0.70, 0.20, 0.10),
                               PartitionType = "random",
                               StratifyColumnNames = NULL,
-                              StratifyNumericTarget = NULL,
-                              StratTargetPrecision = 20,
                               TimeColumnName = NULL) {
 
-  # data.table optimize ----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
   # Arguments ----
-  if(NumDataSets < 0) stop("NumDataSets needs to be a positive integer. Typically 3 modeling sets are used.")
-  if(!is.null(StratifyNumericTarget)) {
-    if(!is.character(StratifyNumericTarget)) stop("StratifyNumericTarget is your target column name in quotes")
-    if(!is.numeric(StratTargetPrecision)) stop("StratTargetPrecision needs to be values of 1,2,...,N")
-  }
-  if(abs(round(NumDataSets) - NumDataSets) > 0.01) stop("NumDataSets needs to be an integer valued positive number")
   if(length(Ratios) != NumDataSets) stop("You need to supply the percentage of data used for each data set.")
   if(sum(Ratios) != 1.0) stop("The sum of Ratios needs to equal 1.0")
   if(!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) stop("PartitionType needs to be either 'random', 'timeseries' or 'time'.")
-  if(!is.null(StratifyColumnNames)) {
-    if(!is.character(StratifyColumnNames)) stop("StratifyColumnNames needs to be a character vector of column names")
-    if(!all(StratifyColumnNames %chin% names(data))) stop("StratifyColumnNames not in vector of data names")
-  }
-  if(!is.null(TimeColumnName)) {
-    if(!(TimeColumnName %chin% names(data))) stop("TimeColumnName not in vector of data names")
-    if(is.character(data[[eval(TimeColumnName)]]) || is.factor(data[[eval(TimeColumnName)]])) stop("TimeColumnName is not a data, Posix_, numeric, or integer valued column")
-  }
 
   # Ensure data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-
-  # Stratify Numeric Target ----
-  if(PartitionType == "random") {
-    if(!is.null(StratifyNumericTarget)) {
-      data[, StratCol := as.factor(round(data.table::frank(data[[eval(StratifyNumericTarget)]]), StratTargetPrecision))]
-      StratifyColumnNames <- "StratCol"
-    }
-  }
 
   # Partition Steps ----
   if(tolower(PartitionType) %in% c("time","random")) {
@@ -97,7 +66,10 @@ AutoDataPartition <- function(data,
     # Data prep----
     copy_data <- data.table::copy(data)
     DataCollect <- list()
-    if(!is.null(StratifyColumnNames)) keep <- StratifyColumnNames
+    if(!is.null(StratifyColumnNames)) {
+      keep <- StratifyColumnNames
+      Check1 <- is.numeric(copy_data[[StratifyColumnNames]]) && length(unique(copy_data[[StratifyColumnNames]])) > 20
+    }
 
     # Modify ratios to account for data decrements ----
     RatioList <- c()
@@ -114,7 +86,7 @@ AutoDataPartition <- function(data,
       if(length(StratifyColumnNames) > 1) {
         copy_data[, rank := do.call(paste, c(.SD, sep = " ")), .SDcols = c(StratifyColumnNames)]
       } else {
-        if(is.numeric(copy_data[[StratifyColumnNames]])) {
+        if(Check1) {
           copy_data[, rank := round(data.table::frank(get(keep)) * 20 / .N) * 1/20]
         } else {
           data.table::setnames(copy_data, StratifyColumnNames, "rank")
@@ -143,15 +115,18 @@ AutoDataPartition <- function(data,
     }
 
     # Partition Data ----
-    for(i in seq_len(NumDataSets)) {
+    for(i in rev(seq_len(NumDataSets))) {
       if(i == 1L) {
-        DataCollect[["TrainData"]] <- temp
+        DataCollect[["TrainData"]] <- data
       } else if(i == 2L) {
-        DataCollect[["ValidationData"]] <- data[eval(RowList[[i]])]
+        DataCollect[["ValidationData"]] <- data[RowList[[i]]]
+        data <- data[-RowList[[i]]]
       } else if(i == 3L) {
         DataCollect[["TestData"]] <- data[RowList[[i]]]
+        data <- data[-RowList[[i]]]
       } else {
         DataCollect[[paste0("TestData", NumDataSets - 2L)]] <- data[RowList[[i]]]
+        data <- data[-RowList[[i]]]
       }
     }
 
@@ -192,6 +167,13 @@ AutoDataPartition <- function(data,
     }
   }
 
-  # Return data----
+  # Return data ----
+  if(!is.null(StratifyColumnNames)) {
+    if(length(StratifyColumnNames) > 1) {
+      for(g in seq_along(DataCollect)) if("rank" %chin% names(DataCollect[[g]])) data.table::setnames(DataCollect[[g]], "rank", StratifyColumnNames)
+    } else if(Check1) {
+      for(g in seq_along(DataCollect)) if("rank" %chin% names(DataCollect[[g]])) DataCollect[[g]][, rank := NULL]
+    }
+  }
   return(DataCollect)
 }

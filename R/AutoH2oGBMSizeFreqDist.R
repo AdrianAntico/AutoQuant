@@ -106,8 +106,6 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     Ratios = DataPartitionRatios,
     PartitionType = "random",
     StratifyColumnNames = StratifyColumnName,
-    StratifyNumericTarget = StratTargetColumns,
-    StratTargetPrecision = StratTargetPrecision,
     TimeColumnName = NULL)
 
   # Store data sets----
@@ -179,8 +177,6 @@ AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
     Ratios = DataPartitionRatios,
     PartitionType = "random",
     StratifyColumnNames = NULL,
-    StratifyNumericTarget = StratTargetColumns,
-    StratTargetPrecision = StratTargetPrecision,
     TimeColumnName = NULL)
 
   # Store data sets----

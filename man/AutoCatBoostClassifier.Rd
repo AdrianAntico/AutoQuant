@@ -17,8 +17,6 @@ AutoCatBoostClassifier(
   IDcols = NULL,
   task_type = "GPU",
   NumGPUs = 1,
-  eval_metric = "MCC",
-  loss_function = NULL,
   model_path = NULL,
   metadata_path = NULL,
   SaveInfoToPDF = FALSE,
@@ -31,9 +29,10 @@ AutoCatBoostClassifier(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
-  Shuffles = 1L,
   BaselineComparison = "default",
   MetricPeriods = 10L,
+  EvalMetric = "MCC",
+  LossFunction = NULL,
   langevin = FALSE,
   diffusion_temperature = 10000,
   Trees = 50L,
@@ -44,13 +43,14 @@ AutoCatBoostClassifier(
   BorderCount = 128,
   RSM = NULL,
   BootStrapType = NULL,
-  GrowPolicy = NULL,
+  GrowPolicy = "SymmetricTree",
   model_size_reg = 0.5,
   feature_border_type = "GreedyLogSum",
   sampling_unit = "Object",
   subsample = NULL,
   score_function = "Cosine",
-  min_data_in_leaf = 1
+  min_data_in_leaf = 1,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -78,10 +78,6 @@ AutoCatBoostClassifier(
 
 \item{NumGPUs}{Numeric. If you have 4 GPUs supply 4 as a value.}
 
-\item{eval_metric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
-
-\item{loss_function}{Default is NULL. Select the loss function of choice. c("MultiRMSE", 'Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')}
-
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
@@ -106,11 +102,13 @@ AutoCatBoostClassifier(
 
 \item{MaxRunMinutes}{In minutes}
 
-\item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
-
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
+
+\item{EvalMetric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
+
+\item{LossFunction}{Default is NULL. Select the loss function of choice. c("MultiRMSE", 'Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')}
 
 \item{langevin}{TRUE or FALSE. TRUE enables}
 
@@ -138,13 +136,15 @@ AutoCatBoostClassifier(
 
 \item{feature_border_type}{Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
 
-\item{sampling_unit}{Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the loss_function is YetiRankPairWise}
+\item{sampling_unit}{Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the LossFunction is YetiRankPairWise}
 
 \item{subsample}{Default is NULL. Catboost will turn this into 0.66 for BootStrapTypes Poisson and Bernoulli. 0.80 for MVS. Doesn't apply to others.}
 
 \item{score_function}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
 
 \item{min_data_in_leaf}{Default is 1. Cannot be used with SymmetricTree is GrowPolicy}
+
+\item{DebugMode}{Set to TRUE to get a printout of which step the function is on. FALSE, otherwise}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -167,64 +167,64 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostClassifier(
 
-    # GPU or CPU and the number of available GPUs
-    task_type = "GPU",
-    NumGPUs = 1,
+  # GPU or CPU and the number of available GPUs
+  task_type = "GPU",
+  NumGPUs = 1,
 
-    # Metadata args
-    ModelID = "Test_Model_1",
-    model_path = normalizePath("./"),
-    metadata_path = normalizePath("./"),
-    SaveModelObjects = FALSE,
-    ReturnModelObjects = TRUE,
-    SaveInfoToPDF = FALSE,
+  # Metadata args
+  ModelID = "Test_Model_1",
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  SaveInfoToPDF = FALSE,
 
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\%
-        c("IDcol_1","IDcol_2","Adrian")],
-    PrimaryDateColumn = NULL,
-    ClassWeights = c(1L,1L),
-    IDcols = c("IDcol_1","IDcol_2"),
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\%
+     c("IDcol_1","IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  ClassWeights = c(1L,1L),
+  IDcols = c("IDcol_1","IDcol_2"),
 
-    # Evaluation args
-    CostMatrixWeights = c(1,0,0,1),
-    eval_metric = "AUC",
-    loss_function = "Logloss",
-    MetricPeriods = 10L,
-    NumOfParDepPlots = ncol(data)-1L-2L,
+  # Evaluation args
+  CostMatrixWeights = c(1,0,0,1),
+  EvalMetric = "AUC",
+  LossFunction = "Logloss",
+  MetricPeriods = 10L,
+  NumOfParDepPlots = ncol(data)-1L-2L,
 
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = TRUE,
-    MaxModelsInGrid = 30L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Shuffles = 4L,
-    BaselineComparison = "default",
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  BaselineComparison = "default",
 
-    # ML args
-    Trees = seq(100L, 500L, 50L),
-    Depth = seq(4L, 8L, 1L),
-    LearningRate = seq(0.01,0.10,0.01),
-    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
-    RandomStrength = 1,
-    BorderCount = 128,
-    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
-    langevin = FALSE,
-    diffusion_temperature = 10000,
-    model_size_reg = 0.5,
-    feature_border_type = "GreedyLogSum",
-    sampling_unit = "Group",
-    subsample = NULL,
-    score_function = "Cosine",
-    min_data_in_leaf = 1)
+  # ML args
+  Trees = 1000,
+  Depth = 9,
+  LearningRate = NULL,
+  L2_Leaf_Reg = NULL,
+  RandomStrength = 1,
+  BorderCount = 128,
+  RSM = 1,
+  BootStrapType = "Bayesian",
+  GrowPolicy = "SymmetricTree",
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  model_size_reg = 0.5,
+  feature_border_type = "GreedyLogSum",
+  sampling_unit = "Object",
+  subsample = NULL,
+  score_function = "Cosine",
+  min_data_in_leaf = 1,
+  DebugMode = FALSE)
 
 # Output
 TestModel$Model

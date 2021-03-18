@@ -34,7 +34,10 @@ ClassificationMetrics
 }
 \seealso{
 Other Model Evaluation: 
+\code{\link{BinaryMetrics}()},
 \code{\link{DT_BinaryConfusionMatrix}()},
+\code{\link{MultiClassMetrics}()},
+\code{\link{RegressionMetrics}()},
 \code{\link{RemixClassificationMetrics}()}
 }
 \author{

@@ -86,7 +86,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
   data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 
   # Argument Checks----
-  if(!is.null(timeAgg)) if(!is.character(timeAgg)) return("timeAgg needs to be a character scalar or vector")
+  if(!is.null(timeAgg)) if(!is.character(timeAgg)) stop("timeAgg needs to be a character scalar or vector")
   if(is.null(timeAgg)) {
     timeAgg <- "TimeUnitNULL"
   } else if(tolower(timeAgg) == "raw") {
@@ -94,18 +94,18 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
   } else {
     timeAggss <- timeAgg
   }
-  if(is.null(lags) & WindowingLag == 1) lags <- 1
-  if(!(1 %in% lags) & WindowingLag == 1) lags <- c(1, lags)
-  if(any(lags < 0)) return("lags need to be positive integers")
-  if(!is.null(groupingVars)) if(!is.character(groupingVars)) return("groupingVars needs to be a character scalar or vector")
-  if(!is.character(targets)) return("targets needs to be a character scalar or vector")
-  if(!is.character(sortDateName)) return("sortDateName needs to be a character scalar or vector")
-  if(!is.null(timeDiffTarget)) if(!is.character(timeDiffTarget)) return("timeDiffTarget needs to be a character scalar or vector")
-  if(!(WindowingLag %in% c(0, 1))) return("WindowingLag needs to be either 0 or 1")
-  if(!(tolower(Type) %chin% c("lag", "lead"))) return("Type needs to be either Lag or Lead")
-  if(!is.logical(Timer)) return("Timer needs to be TRUE or FALSE")
-  if(!is.logical(SimpleImpute)) return("SimpleImpute needs to be TRUE or FALSE")
-  if(!is.character(AscRowByGroup)) return("AscRowByGroup needs to be a character scalar for the name of your RowID column")
+  if(is.null(lags) && WindowingLag == 1) lags <- 1
+  if(!(1 %in% lags) && WindowingLag == 1) lags <- c(1, lags)
+  if(any(lags < 0)) stop("lags need to be positive integers")
+  if(!is.null(groupingVars)) if(!is.character(groupingVars)) stop("groupingVars needs to be a character scalar or vector")
+  if(!is.character(targets)) stop("targets needs to be a character scalar or vector")
+  if(!is.character(sortDateName)) stop("sortDateName needs to be a character scalar or vector")
+  if(!is.null(timeDiffTarget)) if(!is.character(timeDiffTarget)) stop("timeDiffTarget needs to be a character scalar or vector")
+  if(!(WindowingLag %in% c(0, 1))) stop("WindowingLag needs to be either 0 or 1")
+  if(!(tolower(Type) %chin% c("lag", "lead"))) stop("Type needs to be either Lag or Lead")
+  if(!is.logical(Timer)) stop("Timer needs to be TRUE or FALSE")
+  if(!is.logical(SimpleImpute)) stop("SimpleImpute needs to be TRUE or FALSE")
+  if(!is.character(AscRowByGroup)) stop("AscRowByGroup needs to be a character scalar for the name of your RowID column")
 
   # Base columns from data----
   ColKeep <- names(data)
@@ -352,7 +352,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       }
 
       # Standard Deviations----
-      if(any(tolower(statsFUNs) %chin% "sd") & !all(SDperiods %in% c(0L,1L))) {
+      if(any(tolower(statsFUNs) %chin% "sd") && !all(SDperiods %in% c(0L,1L))) {
         tempperiods <- SDperiods[SDperiods > 1L]
         TargetN <- 0L
         for(t in TargetS) {
@@ -375,7 +375,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       }
 
       # Skewnewss----
-      if(any(tolower(statsFUNs) %chin% "skew") & !all(Skewperiods %in% c(0,1,2))) {
+      if(any(tolower(statsFUNs) %chin% "skew") && !all(Skewperiods %in% c(0,1,2))) {
         tempperiods <- Skewperiods[Skewperiods > 2L]
         TargetN <- 0L
         for (t in TargetS) {
@@ -398,7 +398,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       }
 
       # Kurt stats----
-      if(any(tolower(statsFUNs) %chin% "kurt") & !all(Kurtperiods %in% c(0,1,2,3))) {
+      if(any(tolower(statsFUNs) %chin% "kurt") && !all(Kurtperiods %in% c(0,1,2,3))) {
         tempperiods <- Kurtperiods[Kurtperiods > 3L]
         TargetN <- 0L
         for(t in TargetS) {
@@ -752,7 +752,11 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     }
 
     # Remove temporary lagged dates----
-    if(!is.null(timeDiffTarget)) for(l in seq_along(MaxCols+1)) data[, paste0(timeAggss, "_", "TEMP", l) := NULL]
+    if(!is.null(timeDiffTarget)) {
+      nullcols <- c()
+      for(l in seq_along(MaxCols+1)) nullcols <- c(nullcols, paste0(timeAggss, "_", "TEMP", l))
+      data.table::set(data, j = nullcols, value = NULL)
+    }
 
     # Only keep requested columns----
     if(is.null(timeDiffTarget)) {

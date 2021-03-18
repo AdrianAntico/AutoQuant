@@ -45,10 +45,11 @@ AutoCatBoostMultiClass(
   GrowPolicy = NULL,
   model_size_reg = 0.5,
   feature_border_type = "GreedyLogSum",
-  sampling_unit = "Group",
+  sampling_unit = "Object",
   subsample = NULL,
   score_function = "Cosine",
-  min_data_in_leaf = 1
+  min_data_in_leaf = 1,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -139,6 +140,8 @@ AutoCatBoostMultiClass(
 \item{score_function}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
 
 \item{min_data_in_leaf}{Default is 1. Cannot be used with SymmetricTree is GrowPolicy}
+
+\item{DebugMode}{TRUE to print out steps taken}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -213,10 +216,11 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
     model_size_reg = 0.5,
     feature_border_type = "GreedyLogSum",
-    sampling_unit = "Group",
+    sampling_unit = "Object",
     subsample = NULL,
     score_function = "Cosine",
-    min_data_in_leaf = 1)
+    min_data_in_leaf = 1,
+    DebugMode = FALSE)
 
 # Output
 TestModel$Model

@@ -452,3 +452,233 @@ RemixClassificationMetrics <- function(MLModels = NULL,
   # Return values----
   return(Metrics)
 }
+
+#' @title BinaryMetrics
+#'
+#' @description Compute binary metrics and save them to file
+#'
+#' @author Adrian Antico
+#' @family Model Evaluation
+#'
+#' @param MLModels = "catboost"
+#' @param ClassWeights. = ClassWeights
+#' @param SaveModelObjects. = SaveModelObjects
+#' @param ValidationData. = ValidationData
+#' @param TrainOnFull. = TrainOnFull
+#' @param TargetColumnName. = TargetColumnName
+#' @param ModelID. = ModelID
+#' @param model_path. = model_path
+#' @param metadata_path. = metadata_path
+#'
+#' @export
+BinaryMetrics <- function(MLModels = "catboost",
+                          ClassWeights. = ClassWeights,
+                          SaveModelObjects. = SaveModelObjects,
+                          ValidationData. = ValidationData,
+                          TrainOnFull. = TrainOnFull,
+                          TargetColumnName. = TargetColumnName,
+                          ModelID. = ModelID,
+                          model_path. = model_path,
+                          metadata_path. = metadata_path) {
+
+  CostMatrixWeights <- c(ClassWeights.[1L], 0, 0, ClassWeights.[2L])
+  if(SaveModelObjects. && !TrainOnFull.) {
+    EvalMetrics <- RemixClassificationMetrics(MLModels = "catboost", TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights, ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
+    if(!is.null(metadata_path.)) {
+      data.table::fwrite(EvalMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
+    } else {
+      data.table::fwrite(EvalMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
+    }
+  } else if(!TrainOnFull.) {
+    EvalMetrics <- RemixClassificationMetrics(MLModels = "catboost", TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights, ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
+  } else {
+    EvalMetrics <- NULL
+  }
+  return(EvalMetrics)
+}
+
+#' @title RegressionMetrics
+#'
+#' @description Compute regression metrics and save them to file
+#'
+#' @author Adrian Antico
+#' @family Model Evaluation
+#'
+#' @param SaveModelObjects. = SaveModelObjects
+#' @param data. = data
+#' @param ValidationData. = ValidationData
+#' @param TrainOnFull. = TrainOnFull
+#' @param LossFunction. = LossFunction
+#' @param EvalMetric. = EvalMetric
+#' @param TargetColumnName. = TargetColumnName
+#' @param ModelID. = ModelID
+#' @param model_path. = model_path
+#' @param metadata_path. = metadata_path
+#'
+#' @export
+RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
+                              data. = data,
+                              ValidationData. = ValidationData,
+                              TrainOnFull. = TrainOnFull,
+                              LossFunction. = LossFunction,
+                              EvalMetric. = EvalMetric,
+                              TargetColumnName. = TargetColumnName,
+                              ModelID. = ModelID,
+                              model_path. = model_path,
+                              metadata_path. = metadata_path) {
+
+  if(!TrainOnFull. && (!is.null(LossFunction.) && LossFunction. != "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. != "MultiRMSE")) {
+    EvaluationMetrics <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 4L))
+    i <- 0L
+    for(metric in c("mae", "mape", "rmse", "r2")) {
+      i <- i + 1L
+      tryCatch({
+        if(tolower(metric) == "mae") {
+          ValidationData.[, Metric := abs(ValidationData.[[eval(TargetColumnName.)]] - Predict)]
+          Metric <- ValidationData.[, mean(Metric, na.rm = TRUE)]
+        } else if(tolower(metric) == "mape") {
+          ValidationData.[, Metric := abs((ValidationData.[[eval(TargetColumnName.)]] - Predict) / (ValidationData.[[eval(TargetColumnName.)]] + 1))]
+          Metric <- ValidationData.[, mean(Metric, na.rm = TRUE)]
+        } else if(tolower(metric) == "rmse") {
+          ValidationData.[, Metric := (ValidationData.[[eval(TargetColumnName.)]] - Predict) ^ 2]
+          Metric <- sqrt(ValidationData.[, mean(Metric, na.rm = TRUE)])
+        } else if(tolower(metric) == "r2") {
+          ValidationData.[, ':=' (Metric1 = (ValidationData.[[eval(TargetColumnName.)]] - data.[, mean(get(TargetColumnName.))]) ^ 2, Metric2 = (ValidationData.[[eval(TargetColumnName.)]] - Predict) ^ 2)]
+          Metric <- 1 - ValidationData.[, sum(Metric2, na.rm = TRUE)] / ValidationData.[, sum(Metric1, na.rm = TRUE)]
+        }
+        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
+      }, error = function(x) "skip")
+    }
+
+    # Remove Cols
+    ValidationData.[, ':=' (Metric = NULL)]
+
+    # Save EvaluationMetrics to File
+    EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
+    if(SaveModelObjects.) {
+      if(!is.null(metadata_path.)) {
+        data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
+      } else {
+        data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
+      }
+    }
+  } else {
+    EvaluationMetrics <- list()
+
+    # Loop through Target Variables
+    for(TV in seq_along(TargetColumnName.)) {
+
+      # Eval Metrics
+      EvaluationMetrics[[TargetColumnName.[TV]]] <- data.table::data.table(Metric = c("MAE","MAPE","RMSE","R2"), MetricValue = rep(999999, 4L))
+      i <- 0L
+      for(metric in c("mae", "mape", "rmse", "r2")) {
+        i <- i + 1L
+        tryCatch({
+          if(tolower(metric) == "mae") {
+            ValidationData.[, Metric := abs(ValidationData.[[eval(TargetColumnName.[TV])]] - ValidationData.[[eval(paste0("Predict.V", TV))]])]
+            Metric <- ValidationData.[, mean(Metric, na.rm = TRUE)]
+          } else if(tolower(metric) == "mape") {
+            ValidationData.[, Metric := abs((ValidationData.[[eval(TargetColumnName.[TV])]] - ValidationData.[[eval(paste0("Predict.V", TV))]]) / (ValidationData.[[eval(TargetColumnName.[TV])]] + 1))]
+            Metric <- ValidationData.[, mean(Metric, na.rm = TRUE)]
+          } else if(tolower(metric) == "rmse") {
+            ValidationData.[, Metric := (ValidationData.[[eval(TargetColumnName.[TV])]] - ValidationData.[[eval(paste0("Predict.V", TV))]]) ^ 2]
+            Metric <- sqrt(ValidationData.[, mean(Metric, na.rm = TRUE)])
+          } else if(tolower(metric) == "r2") {
+            ValidationData.[, ':=' (Metric1 = (ValidationData.[[eval(TargetColumnName.[TV])]] - data.[, mean(get(TargetColumnName.[TV]))]) ^ 2, Metric2 = (ValidationData.[[eval(TargetColumnName.[TV])]] - ValidationData.[[eval(paste0("Predict.V",TV))]]) ^ 2)]
+            Metric <- 1 - ValidationData.[, sum(Metric2, na.rm = TRUE)] / ValidationData.[, sum(Metric1, na.rm = TRUE)]
+          }
+          data.table::set(EvaluationMetrics[[TargetColumnName.[TV]]], i = i, j = 2L, value = round(Metric, 4L))
+        }, error = function(x) "skip")
+      }
+
+      # Remove Cols
+      ValidationData.[, ':=' (Metric = NULL)]
+
+      # Save EvaluationMetrics to File
+      EvaluationMetrics[[TargetColumnName.[TV]]] <- EvaluationMetrics[[TargetColumnName.[TV]]][MetricValue != 999999]
+      if(SaveModelObjects.) {
+        if(!is.null(metadata_path.)) {
+          data.table::fwrite(EvaluationMetrics[[TargetColumnName.[TV]]], file = file.path(metadata_path., paste0(ModelID., "_", TargetColumnName.[TV], "_EvaluationMetrics.csv")))
+        } else {
+          data.table::fwrite(EvaluationMetrics[[TargetColumnName.[TV]]], file = file.path(model_path., paste0(ModelID., "_", TargetColumnName.[TV], "_EvaluationMetrics.csv")))
+        }
+      }
+    }
+  }
+  return(EvaluationMetrics)
+}
+
+
+#' @title MultiClassMetrics
+#'
+#' @description Compute regression metrics and save them to file
+#'
+#' @author Adrian Antico
+#' @family Model Evaluation
+#'
+#' @param SaveModelObjects. = SaveModelObjects
+#' @param ValidationData. = ValidationData
+#' @param PredictData. = predict
+#' @param TrainOnFull. = TrainOnFull
+#' @param TargetColumnName. = TargetColumnName
+#' @param TargetLevels. = TargetLevels
+#' @param ModelID. = ModelID
+#' @param model_path. = model_path
+#' @param metadata_path. = metadata_path
+#'
+#' @export
+MultiClassMetrics <- function(SaveModelObjects. = SaveModelObjects,
+                              ValidationData. = ValidationData,
+                              PredictData. = predict,
+                              TrainOnFull. = TrainOnFull,
+                              TargetColumnName. = TargetColumnName,
+                              TargetLevels. = TargetLevels,
+                              ModelID. = ModelID,
+                              model_path. = model_path,
+                              metadata_path. = metadata_path) {
+
+  # MultiClass Metrics Accuracy ----
+  MetricAcc <- ValidationData.[, mean(data.table::fifelse(as.character(get(TargetColumnName.)) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
+
+  # MultiClass Metrics MicroAUC ----
+  MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData.[[eval(TargetColumnName.)]], predictor = as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[3L:(ncol(PredictData.)+1L)])]))$auc, "\\d+\\.*\\d*"))), 4L)
+
+  # Logloss ----
+  if(!TrainOnFull.) temp <- ValidationData.[, 1L] else temp <- ValidationData.[, 2L]
+  temp[, Truth := get(TargetColumnName.)]
+  temp <- DummifyDT(
+    data = temp,
+    cols = eval(TargetColumnName.),
+    KeepFactorCols = FALSE,
+    OneHot = FALSE,
+    SaveFactorLevels = FALSE,
+    SavePath = NULL,
+    ImportFactorLevels = FALSE,
+    FactorLevelsList = NULL,
+    ClustScore = FALSE,
+    ReturnFactorLevels = FALSE)
+  N <- TargetLevels.[, .N]
+  logloss <- MLmetrics::LogLoss(y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[c(3L:(2L+N))])]), y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
+
+  # MultiClass Save Validation Data to File ----
+  if(SaveModelObjects.) {
+    if(!is.null(metadata_path.)) {
+      data.table::fwrite(ValidationData., file = file.path(metadata_path., paste0(ModelID., "_ValidationData.csv")))
+    } else {
+      data.table::fwrite(ValidationData., file = file.path(model_path., paste0(ModelID., "_ValidationData.csv")))
+    }
+  }
+
+  # MultiClass Evaluation Metrics ----
+  if(!TrainOnFull.) {
+    EvaluationMetrics <- data.table::data.table(Metric = c("AUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
+    if(SaveModelObjects.) {
+      if(!is.null(metadata_path.)) {
+        data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
+      } else {
+        data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
+      }
+    }
+  }
+  return(EvaluationMetrics)
+}

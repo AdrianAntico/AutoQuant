@@ -13,7 +13,8 @@
 #' @param RemoveFeatures Set to TRUE if you want the features you specify in the Features argument to be removed from the data returned
 #' @param NThreads max(1L, parallel::detectCores()-2L)
 #' @param MaxMem "28G"
-#' @param LayerStructure a
+#' @param LayerStructure If NULL, layers and sizes will be created for you, using NodeShrinkRate and 7 layers will be created.
+#' @param NodeShrinkRate = (sqrt(5) - 1) / 2,
 #' @param H2OStart TRUE to start H2O inside the function
 #' @param H2OShutdown Setting to TRUE will shutdown H2O when it done being used internally.
 #' @param ModelID "TestModel"
@@ -50,7 +51,7 @@
 #' Output <- RemixAutoML::H2OAutoencoder(
 #'
 #'   # Select the service
-#'   AnomalyDetection = TRUE,
+#'   AnomalyDetection = FALSE,
 #'   DimensionReduction = TRUE,
 #'
 #'   # Data related args
@@ -70,6 +71,7 @@
 #'
 #'   # H2O ML Args
 #'   LayerStructure = NULL,
+#'   NodeShrinkRate = (sqrt(5) - 1) / 2,
 #'   ReturnLayer = 4L,
 #'   Activation = "Tanh",
 #'   Epochs = 5L,
@@ -128,7 +130,7 @@
 #' }
 #' @return A data.table
 #' @export
-H2OAutoencoder <- function(AnomalyDetection = TRUE,
+H2OAutoencoder <- function(AnomalyDetection = FALSE,
                            DimensionReduction = TRUE,
                            data,
                            ValidationData = NULL,
@@ -141,6 +143,7 @@ H2OAutoencoder <- function(AnomalyDetection = TRUE,
                            ModelID = "TestModel",
                            model_path = NULL,
                            LayerStructure  = NULL,
+                           NodeShrinkRate = (sqrt(5) - 1) / 2,
                            ReturnLayer = 4L,
                            per_feature = TRUE,
                            Activation = "Tanh",
@@ -150,32 +153,28 @@ H2OAutoencoder <- function(AnomalyDetection = TRUE,
                            ElasticAveragingMovingRate = 0.90,
                            ElasticAveragingRegularization = 0.001) {
 
-  # Full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
-  # Ensure data.table----
+  # Ensure data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
 
   # Return because of mispecified arguments----
-  if(!AnomalyDetection & !DimensionReduction) return("Why are you running this function if you do not want anomaly detection nor dimension reduction?")
+  if(!AnomalyDetection && !DimensionReduction) stop("Why are you running this function if you do not want anomaly detection nor dimension reduction?")
 
-  # Constants----
-  GR <- (sqrt(5) - 1) / 2
+  # Constants ----
   F_Length <- length(Features)
   if(is.numeric(Features) || is.integer(Features)) Features <- names(data)[Features]
 
   # Ensure categoricals are set as factors----
-  data <- ModelDataPrep(data=data, Impute=FALSE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=FALSE, DateToChar=TRUE, RemoveDates=TRUE, MissFactor="0", MissNum=-1, IgnoreCols=NULL)
+  data <- ModelDataPrep(data=data, Impute=FALSE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=FALSE, DateToChar=FALSE, RemoveDates=TRUE, MissFactor="0", MissNum=-1, IgnoreCols=NULL)
 
   # Initialize H2O----
-  if(H2OStart) h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  if(H2OStart) LocalHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   H2O_Data <- h2o::as.h2o(data)
   if(RemoveFeatures) data.table::set(data, j = Features, value = NULL)
   if(!is.null(ValidationData)) H2O_Validation <- h2o::as.h2o(ValidationData)
 
   # Layer selection - Eventually put in an arg for Type for some alternative pre-set LayerStructure----
-  if(is.null(LayerStructure)) LayerStructure <- c(F_Length,ceiling(F_Length * GR), ceiling(F_Length * GR ^ 2), ceiling(F_Length * GR ^ 3), ceiling(F_Length * GR ^ 2), ceiling(F_Length * GR), F_Length)
+  if(is.null(LayerStructure)) LayerStructure <- c(F_Length, ceiling(F_Length * NodeShrinkRate), ceiling(F_Length * NodeShrinkRate ^ 2), ceiling(F_Length * NodeShrinkRate ^ 3), ceiling(F_Length * NodeShrinkRate ^ 2), ceiling(F_Length * NodeShrinkRate), F_Length)
 
   # Build model----
   if(!is.null(ValidationData)) {

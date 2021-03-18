@@ -1,4 +1,4 @@
-![Version: 0.4.7](https://img.shields.io/static/v1?label=Version&message=0.4.7&color=blue&?style=plastic)
+![Version: 0.4.8](https://img.shields.io/static/v1?label=Version&message=0.4.8&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -1048,8 +1048,6 @@ dataSets <- RemixAutoML::AutoDataPartition(
   Ratios = c(0.70,0.20,0.10),
   PartitionType = "random",
   StratifyColumnNames = NULL,
-  StratifyNumericTarget = NULL,
-  StratTargetPrecision = 1L,
   TimeColumnName = NULL)
 
 # Collect data
@@ -1124,70 +1122,73 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostRegression(
 
-    # GPU or CPU and the number of available GPUs
-    task_type = "GPU",
-    NumGPUs = 1,
+  # GPU or CPU and the number of available GPUs
+  task_type = "GPU",
+  NumGPUs = 1,
 
-    # Metadata args
-    ModelID = "Test_Model_1",
-    model_path = normalizePath("./"),
-    metadata_path = normalizePath("./"),
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-    ReturnModelObjects = TRUE,
+  # Metadata args
+  ModelID = "Test_Model_1",
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  ReturnModelObjects = TRUE,
 
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    Weights = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    PrimaryDateColumn = NULL,
-    DummifyCols = FALSE,
-    IDcols = c("IDcol_1","IDcol_2"),
-    TransformNumericColumns = "Adrian",
-    Methods = c("BoxCox", "Asinh", "Asin", "Log",
-      "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  Weights = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in%
+    c("IDcol_1", "IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  DummifyCols = FALSE,
+  IDcols = c("IDcol_1","IDcol_2"),
+  TransformNumericColumns = "Adrian",
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+    "LogPlus1", "Sqrt", "Logit"),
 
-    # Model evaluation
-    eval_metric = "RMSE",
-    eval_metric_value = 1.5,
-    loss_function = "RMSE",
-    loss_function_value = 1.5,
-    MetricPeriods = 10L,
-    NumOfParDepPlots = ncol(data)-1L-2L,
-    EvalPlots = TRUE,
+  # Model evaluation
+  eval_metric = "RMSE",
+  eval_metric_value = 1.5,
+  loss_function = "RMSE",
+  loss_function_value = 1.5,
+  MetricPeriods = 10L,
+  NumOfParDepPlots = ncol(data)-1L-2L,
+  EvalPlots = TRUE,
 
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    MaxModelsInGrid = 30L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 60*60,
-    Shuffles = 4L,
-    BaselineComparison = "default",
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 60*60,
+  Shuffles = 4L,
+  BaselineComparison = "default",
 
-    # ML args
-    langevin = FALSE,
-    diffusion_temperature = 10000,
-    Trees = 1000,
-    Depth = 6,
-    L2_Leaf_Reg = 3.0,
-    RandomStrength = 1,
-    BorderCount = 128,
-    LearningRate = NULL,
-    RSM = 1,
-    BootStrapType = NULL,
-    GrowPolicy = "SymmetricTree",
-    model_size_reg = 0.5,
-    feature_border_type = "GreedyLogSum",
-    sampling_unit = "Group",
-    subsample = NULL,
-    score_function = "Cosine",
-    min_data_in_leaf = 1)
+  # ML args
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  Trees = 1000,
+  Depth = 6,
+  L2_Leaf_Reg = 3.0,
+  RandomStrength = 1,
+  BorderCount = 128,
+  LearningRate = NULL,
+  RSM = 1,
+  BootStrapType = NULL,
+  GrowPolicy = "SymmetricTree",
+  model_size_reg = 0.5,
+  feature_border_type = "GreedyLogSum",
+  sampling_unit = "Object",
+  subsample = NULL,
+  score_function = "Cosine",
+  min_data_in_leaf = 1,
+  DebugMode = FALSE)
+
+    
 
  # Output
  TestModel$Model
@@ -1216,67 +1217,67 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 <p>
  
 ```
-#' # Create some dummy correlated data
-#' data <- RemixAutoML::FakeDataGenerator(
-#'   Correlation = 0.85,
-#'   N = 1000,
-#'   ID = 2,
-#'   ZIP = 0,
-#'   AddDate = FALSE,
-#'   Classification = FALSE,
-#'   MultiClass = FALSE)
-#'
-#' # Run function
-#' TestModel <- RemixAutoML::AutoXGBoostRegression(
-#'
-#'     # GPU or CPU
-#'     TreeMethod = "hist",
-#'     NThreads = parallel::detectCores(),
-#'     LossFunction = 'reg:squarederror',
-#'
-#'     # Metadata args
-#'     model_path = normalizePath("./"),
-#'     metadata_path = NULL,
-#'     ModelID = "Test_Model_1",
-#'     ReturnFactorLevels = TRUE,
-#'     ReturnModelObjects = TRUE,
-#'     SaveModelObjects = FALSE,
-#'
-#'     # Data args
-#'     data = data,
-#'     TrainOnFull = FALSE,
-#'     ValidationData = NULL,
-#'     TestData = NULL,
-#'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %in%
-#'       c("IDcol_1", "IDcol_2","Adrian")],
-#'     IDcols = c("IDcol_1","IDcol_2"),
-#'     TransformNumericColumns = NULL,
-#'     Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
-#'
-#'     # Model evaluation args
-#'     eval_metric = "rmse",
-#'     NumOfParDepPlots = 3L,
-#'
-#'     # Grid tuning args
-#'     PassInGrid = NULL,
-#'     GridTune = FALSE,
-#'     grid_eval_metric = "mse",
-#'     BaselineComparison = "default",
-#'     MaxModelsInGrid = 10L,
-#'     MaxRunsWithoutNewWinner = 20L,
-#'     MaxRunMinutes = 24L*60L,
-#'     Verbose = 1L,
-#'
-#'     # ML args
-#'     Shuffles = 1L,
-#'     Trees = 50L,
-#'     eta = 0.05,
-#'     max_depth = 4L,
-#'     min_child_weight = 1.0,
-#'     subsample = 0.55,
-#'     colsample_bytree = 0.55)
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run function
+TestModel <- RemixAutoML::AutoXGBoostRegression(
+
+  # GPU or CPU
+  TreeMethod = "hist",
+  NThreads = parallel::detectCores(),
+  LossFunction = 'reg:squarederror',
+  
+  # Metadata args
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in%
+                                  c("IDcol_1", "IDcol_2","Adrian")],
+  IDcols = c("IDcol_1","IDcol_2"),
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+              "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  
+  # Model evaluation args
+  eval_metric = "rmse",
+  NumOfParDepPlots = 3L,
+  
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  grid_eval_metric = "mse",
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
+  
+  # ML args
+  Shuffles = 1L,
+  Trees = 50L,
+  eta = 0.05,
+  max_depth = 4L,
+  min_child_weight = 1.0,
+  subsample = 0.55,
+  colsample_bytree = 0.55)
 ```
  
 </p>
@@ -1301,61 +1302,61 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGBMRegression(
-
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    H2OStartUp = TRUE,
-    IfSaveModel = "mojo",
-
-    # Model evaluation
-    NumOfParDepPlots = 3,
-
-    # Metadata arguments:
-    model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./")),
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-
-    # Data arguments
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    WeightsColumn = NULL,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
-
-    # ML grid tuning args
-    GridTune = FALSE,
-    GridStrategy = "Cartesian",
-    MaxRuntimeSecs = 60*60*24,
-    StoppingRounds = 10,
-    MaxModelsInGrid = 2,
-
-    # Model args
-    Trees = 50,
-    LearnRate = 0.10,
-    LearnRateAnnealing = 1,
-    eval_metric = "RMSE",
-    Alpha = NULL,
-    Distribution = "poisson",
-    MaxDepth = 20,
-    SampleRate = 0.632,
-    ColSampleRate = 1,
-    ColSampleRatePerTree = 1,
-    ColSampleRatePerTreeLevel  = 1,
-    MinRows = 1,
-    NBins = 20,
-    NBinsCats = 1024,
-    NBinsTopLevel = 1024,
-    HistogramType = "AUTO",
-    CategoricalEncoding = "AUTO")
+  
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
+  
+  # Model evaluation
+  NumOfParDepPlots = 3,
+  
+  # Metadata arguments:
+  model_path = normalizePath("./"),
+  metadata_path = file.path(normalizePath("./")),
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  
+  # Data arguments
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumn = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
+  
+  # ML grid tuning args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  MaxRuntimeSecs = 60*60*24,
+  StoppingRounds = 10,
+  MaxModelsInGrid = 2,
+  
+  # Model args
+  Trees = 50,
+  LearnRate = 0.10,
+  LearnRateAnnealing = 1,
+  eval_metric = "RMSE",
+  Alpha = NULL,
+  Distribution = "poisson",
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  ColSampleRate = 1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel  = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO")
 ```
  
 </p>
@@ -1380,57 +1381,57 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oDRFRegression(
-
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1L, parallel::detectCores() - 2L),
-    H2OShutdown = TRUE,
-    H2OStartUp = TRUE,
-    IfSaveModel = "mojo",
-
-    # Model evaluation:
-    eval_metric = "RMSE",
-    NumOfParDepPlots = 3,
-
-    # Metadata arguments:
-    model_path = normalizePath("./"),
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-
-    # Data Args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    WeightsColumn = NULL,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
-
-    # Grid Tuning Args
-    GridStrategy = "Cartesian",
-    GridTune = FALSE,
-    MaxModelsInGrid = 10,
-    MaxRuntimeSecs = 60*60*24,
-    StoppingRounds = 10,
-
-    # ML Args
-    Trees = 50,
-    MaxDepth = 20,
-    SampleRate = 0.632,
-    MTries = -1,
-    ColSampleRatePerTree = 1,
-    ColSampleRatePerTreeLevel = 1,
-    MinRows = 1,
-    NBins = 20,
-    NBinsCats = 1024,
-    NBinsTopLevel = 1024,
-    HistogramType = "AUTO",
-    CategoricalEncoding = "AUTO")
+  
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1L, parallel::detectCores() - 2L),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
+  
+  # Model evaluation:
+  eval_metric = "RMSE",
+  NumOfParDepPlots = 3,
+  
+  # Metadata arguments:
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  
+  # Data Args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumn = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  
+  # Grid Tuning Args
+  GridStrategy = "Cartesian",
+  GridTune = FALSE,
+  MaxModelsInGrid = 10,
+  MaxRuntimeSecs = 60*60*24,
+  StoppingRounds = 10,
+  
+  # ML Args
+  Trees = 50,
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO")
 ```
  
 </p>
@@ -1455,60 +1456,60 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMRegression(
-
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    H2OStartUp = TRUE,
-    IfSaveModel = "mojo",
-
-    # Model evaluation:
-    eval_metric = "RMSE",
-    NumOfParDepPlots = 3,
-
-    # Metadata arguments:
-    model_path = NULL,
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-
-    # Data arguments:
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    RandomColNumbers = NULL,
-    InteractionColNumbers = NULL,
-    WeightsColumn = NULL,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
-
-    # Model args
-    GridTune = FALSE,
-    GridStrategy = "Cartesian",
-    StoppingRounds = 10,
-    MaxRunTimeSecs = 3600 * 24 * 7,
-    MaxModelsInGrid = 10,
-    Distribution = "gaussian",
-    Link = "identity",
-    TweedieLinkPower = NULL,
-    TweedieVariancePower = NULL,
-    RandomDistribution = NULL,
-    RandomLink = NULL,
-    Solver = "AUTO",
-    Alpha = NULL,
-    Lambda = NULL,
-    LambdaSearch = FALSE,
-    NLambdas = -1,
-    Standardize = TRUE,
-    RemoveCollinearColumns = FALSE,
-    InterceptInclude = TRUE,
-    NonNegativeCoefficients = FALSE)
+  
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
+  
+  # Model evaluation:
+  eval_metric = "RMSE",
+  NumOfParDepPlots = 3,
+  
+  # Metadata arguments:
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  
+  # Data arguments:
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  
+  # Model args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 10,
+  Distribution = "gaussian",
+  Link = "identity",
+  TweedieLinkPower = NULL,
+  TweedieVariancePower = NULL,
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 ```
  
 </p>
@@ -1522,66 +1523,49 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
  
 ```
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = FALSE)
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oMLRegression(
 
-    # Compute management
-    MaxMem = "32G",
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    IfSaveModel = "mojo",
+  # Compute management
+  MaxMem = "32G",
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  IfSaveModel = "mojo",
 
-    # Model evaluation:
-    #   'eval_metric' is the measure catboost uses when evaluting on holdout data during its bandit style process
-    #   'NumOfParDepPlots' Number of partial dependence calibration plots generated.
-    #     A value of 3 will return plots for the top 3 variables based on variable importance
-    #     Won't be returned if GrowPolicy is either "Depthwise" or "Lossguide" is used
-    #     Can run the RemixAutoML::ParDepCalPlots() with the outputted ValidationData
-    eval_metric = "RMSE",
-    NumOfParDepPlots = 3,
+  # Model evaluation
+  eval_metric = "RMSE",
+  NumOfParDepPlots = 3,
 
-    # Metadata arguments:
-    #   'ModelID' is used to create part of the file names generated when saving to file'
-    #   'model_path' is where the minimal model objects for scoring will be stored
-    #      'ModelID' will be the name of the saved model object
-    #   'metadata_path' is where model evaluation and model interpretation files are saved
-    #      objects saved to model_path if metadata_path is null
-    #      Saved objects include:
-    #         'ModelID_ValidationData.csv' is the supplied or generated TestData with predicted values
-    #         'ModelID_VariableImportance.csv' is the variable importance.
-    #            This won't be saved to file if GrowPolicy is either "Depthwise" or "Lossguide" was used
-    #         'ModelID_ExperimentGrid.csv' if GridTune = TRUE.
-    #            Results of all model builds including parameter settings, bandit probs, and grid IDs
-    #         'ModelID_EvaluationMetrics.csv' which contains MSE, MAE, MAPE, R2
-    model_path = NULL,
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
+  # Metadata arguments
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
 
-    # Data arguments:
-    #   'TrainOnFull' is to train a model with 100 percent of your data.
-    #     That means no holdout data will be used for evaluation
-    #   If ValidationData and TestData are NULL and TrainOnFull is FALSE then data will be split 70 20 10
-    #   'PrimaryDateColumn' is a date column in data that is meaningful when sorted.
-    #     CatBoost categorical treatment is enhanced when supplied
-    #   'IDcols' are columns in your data that you don't use for modeling but get returned with ValidationData
-    #   'TransformNumericColumns' is for transforming your target variable. Just supply the name of it
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  # Data arguments
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
 
-    # Model args
-    GridTune = FALSE,
-    ExcludeAlgos = NULL,
-    Trees = 50,
-    MaxModelsInGrid = 10)
+  # Model args
+  GridTune = FALSE,
+  ExcludeAlgos = NULL,
+  Trees = 50,
+  MaxModelsInGrid = 10)
 ```
 
 </p>
@@ -1611,60 +1595,60 @@ GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGAMRegression(
-
- # Compute management
- MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
- NThreads = max(1, parallel::detectCores()-2),
- H2OShutdown = TRUE,
- H2OStartUp = TRUE,
- IfSaveModel = "mojo",
-
- # Model evaluation:
- eval_metric = "RMSE",
- NumOfParDepPlots = 3,
-
- # Metadata arguments:
- model_path = NULL,
- metadata_path = NULL,
- ModelID = "FirstModel",
- ReturnModelObjects = TRUE,
- SaveModelObjects = FALSE,
- SaveInfoToPDF = FALSE,
-
- # Data arguments:
- data = data,
- TrainOnFull = FALSE,
- ValidationData = NULL,
- TestData = NULL,
- TargetColumnName = "Adrian",
- FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
- InteractionColNumbers = NULL,
- WeightsColumn = NULL,
- GamColNames = GamCols,
- TransformNumericColumns = NULL,
- Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
-
- # Model args
- num_knots = NULL,
- keep_gam_cols = TRUE,
- GridTune = FALSE,
- GridStrategy = "Cartesian",
- StoppingRounds = 10,
- MaxRunTimeSecs = 3600 * 24 * 7,
- MaxModelsInGrid = 10,
- Distribution = "gaussian",
- Link = "Family_Default",
- TweedieLinkPower = NULL,
- TweedieVariancePower = NULL,
- Solver = "AUTO",
- Alpha = NULL,
- Lambda = NULL,
- LambdaSearch = FALSE,
- NLambdas = -1,
- Standardize = TRUE,
- RemoveCollinearColumns = FALSE,
- InterceptInclude = TRUE,
- NonNegativeCoefficients = FALSE)
+  
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
+  
+  # Model evaluation:
+  eval_metric = "RMSE",
+  NumOfParDepPlots = 3,
+  
+  # Metadata arguments:
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  
+  # Data arguments:
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
+  GamColNames = GamCols,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  
+  # Model args
+  num_knots = NULL,
+  keep_gam_cols = TRUE,
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 10,
+  Distribution = "gaussian",
+  Link = "Family_Default",
+  TweedieLinkPower = NULL,
+  TweedieVariancePower = NULL,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 ```
  
 </p>
@@ -1720,77 +1704,63 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostClassifier(
-
-    # GPU or CPU and the number of available GPUs
-    task_type = "GPU",
-    NumGPUs = 1,
-
-    # Metadata args
-    ModelID = "Test_Model_1",
-    model_path = normalizePath("./"),
-    metadata_path = normalizePath("./"),
-    SaveModelObjects = FALSE,
-    ReturnModelObjects = TRUE,
-    SaveInfoToPDF = FALSE,
-
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian")],
-    PrimaryDateColumn = NULL,
-    ClassWeights = c(1L,1L),
-    IDcols = c("IDcol_1","IDcol_2"),
-
-    # Evaluation args
-    eval_metric = "AUC",
-    loss_function = "Logloss",
-    MetricPeriods = 10L,
-    NumOfParDepPlots = ncol(data)-1L-2L,
-
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = TRUE,
-    MaxModelsInGrid = 30L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Shuffles = 4L,
-    BaselineComparison = "default",
-
-    # ML args
-    Trees = seq(100L, 500L, 50L),
-    Depth = seq(4L, 8L, 1L),
-    LearningRate = seq(0.01,0.10,0.01),
-    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
-    RandomStrength = 1,
-    BorderCount = 128,
-    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
-    langevin = FALSE,
-    diffusion_temperature = 10000,
-    model_size_reg = 0.5,
-    feature_border_type = "GreedyLogSum",
-    sampling_unit = "Group",
-    subsample = NULL,
-    score_function = "Cosine",
-    min_data_in_leaf = 1)
-
-# Output
-TestModel$Model
-TestModel$ValidationData
-TestModel$ROC_Plot
-TestModel$EvaluationPlot
-TestModel$EvaluationMetrics
-TestModel$VariableImportance
-TestModel$InteractionImportance
-TestModel$ShapValuesDT
-TestModel$VI_Plot
-TestModel$PartialDependencePlots
-TestModel$GridMetrics
-TestModel$ColNames
+  
+  # GPU or CPU and the number of available GPUs
+  task_type = "GPU",
+  NumGPUs = 1,
+  
+  # Metadata args
+  ModelID = "Test_Model_1",
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  SaveInfoToPDF = FALSE,
+  
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  ClassWeights = c(1L,1L),
+  IDcols = c("IDcol_1","IDcol_2"),
+  
+  # Evaluation args
+  eval_metric = "AUC",
+  loss_function = "Logloss",
+  MetricPeriods = 10L,
+  NumOfParDepPlots = ncol(data)-1L-2L,
+  
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = TRUE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Shuffles = 4L,
+  BaselineComparison = "default",
+  
+  # ML args
+  Trees = seq(100L, 500L, 50L),
+  Depth = seq(4L, 8L, 1L),
+  LearningRate = seq(0.01,0.10,0.01),
+  L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+  RandomStrength = 1,
+  BorderCount = 128,
+  RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+  GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  model_size_reg = 0.5,
+  feature_border_type = "GreedyLogSum",
+  sampling_unit = "Group",
+  subsample = NULL,
+  score_function = "Cosine",
+  min_data_in_leaf = 1)
 ```
 
 </p>
@@ -1815,51 +1785,51 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostClassifier(
-
-    # GPU or CPU
-    TreeMethod = "hist",
-    NThreads = parallel::detectCores(),
-
-    # Metadata args
-    model_path = normalizePath("./"),
-    metadata_path = NULL,
-    ModelID = "Test_Model_1",
-    ReturnFactorLevels = TRUE,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    IDcols = c("IDcol_1","IDcol_2"),
-
-    # Model evaluation
-    LossFunction = 'reg:logistic',
-    eval_metric = "auc",
-    NumOfParDepPlots = 3L,
-
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    BaselineComparison = "default",
-    MaxModelsInGrid = 10L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Verbose = 1L,
-
-    # ML args
-    Shuffles = 1L,
-    Trees = 50L,
-    eta = 0.05,
-    max_depth = 4L,
-    min_child_weight = 1.0,
-    subsample = 0.55,
-    colsample_bytree = 0.55)
+  
+  # GPU or CPU
+  TreeMethod = "hist",
+  NThreads = parallel::detectCores(),
+  
+  # Metadata args
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in%
+                                  c("IDcol_1", "IDcol_2","Adrian")],
+  IDcols = c("IDcol_1","IDcol_2"),
+  
+  # Model evaluation
+  LossFunction = 'reg:logistic',
+  eval_metric = "auc",
+  NumOfParDepPlots = 3L,
+  
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
+  
+  # ML args
+  Shuffles = 1L,
+  Trees = 50L,
+  eta = 0.05,
+  max_depth = 4L,
+  min_child_weight = 1.0,
+  subsample = 0.55,
+  colsample_bytree = 0.55)
 ```
  
 </p>
@@ -1884,58 +1854,58 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 TestModel <- RemixAutoML::AutoH2oGBMClassifier(
-
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    H2OStartUp = TRUE,
-    IfSaveModel = "mojo",
-
-    # Model evaluation
-    NumOfParDepPlots = 3,
-
-    # Metadata arguments:
-    model_path = normalizePath("./"),
-    metadata_path = file.path(normalizePath("./")),
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-
-    # Data arguments
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    WeightsColumn = NULL,
-
-    # ML grid tuning args
-    GridTune = FALSE,
-    GridStrategy = "Cartesian",
-    MaxRuntimeSecs = 60*60*24,
-    StoppingRounds = 10,
-    MaxModelsInGrid = 2,
-
-    # Model args
-    Trees = 50,
-    LearnRate = 0.10,
-    LearnRateAnnealing = 1,
-    eval_metric = "auc",
-    Distribution = "bernoulli",
-    MaxDepth = 20,
-    SampleRate = 0.632,
-    ColSampleRate = 1,
-    ColSampleRatePerTree = 1,
-    ColSampleRatePerTreeLevel  = 1,
-    MinRows = 1,
-    NBins = 20,
-    NBinsCats = 1024,
-    NBinsTopLevel = 1024,
-    HistogramType = "AUTO",
-    CategoricalEncoding = "AUTO")
+  
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
+  
+  # Model evaluation
+  NumOfParDepPlots = 3,
+  
+  # Metadata arguments:
+  model_path = normalizePath("./"),
+  metadata_path = file.path(normalizePath("./")),
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  
+  # Data arguments
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumn = NULL,
+  
+  # ML grid tuning args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  MaxRuntimeSecs = 60*60*24,
+  StoppingRounds = 10,
+  MaxModelsInGrid = 2,
+  
+  # Model args
+  Trees = 50,
+  LearnRate = 0.10,
+  LearnRateAnnealing = 1,
+  eval_metric = "auc",
+  Distribution = "bernoulli",
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  ColSampleRate = 1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel  = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO")
 ```
 
 </p>
@@ -1959,55 +1929,55 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 TestModel <- RemixAutoML::AutoH2oDRFClassifier(
-
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1L, parallel::detectCores() - 2L),
-    IfSaveModel = "mojo",
-    H2OShutdown = FALSE,
-    H2OStartUp = TRUE,
-
-    # Metadata arguments:
-    eval_metric = "auc",
-    NumOfParDepPlots = 3L,
-
-    # Data arguments:
-    model_path = normalizePath("./"),
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-
-    # Model evaluation:
-    data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2", "Adrian")],
-    WeightsColumn = NULL,
-
-    # Grid Tuning Args
-    GridStrategy = "Cartesian",
-    GridTune = FALSE,
-    MaxModelsInGrid = 10,
-    MaxRuntimeSecs = 60*60*24,
-    StoppingRounds = 10,
-
-    # Model args
-    Trees = 50L,
-    MaxDepth = 20,
-    SampleRate = 0.632,
-    MTries = -1,
-    ColSampleRatePerTree = 1,
-    ColSampleRatePerTreeLevel = 1,
-    MinRows = 1,
-    NBins = 20,
-    NBinsCats = 1024,
-    NBinsTopLevel = 1024,
-    HistogramType = "AUTO",
-    CategoricalEncoding = "AUTO")
+  
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1L, parallel::detectCores() - 2L),
+  IfSaveModel = "mojo",
+  H2OShutdown = FALSE,
+  H2OStartUp = TRUE,
+  
+  # Metadata arguments:
+  eval_metric = "auc",
+  NumOfParDepPlots = 3L,
+  
+  # Data arguments:
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  
+  # Model evaluation:
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2", "Adrian")],
+  WeightsColumn = NULL,
+  
+  # Grid Tuning Args
+  GridStrategy = "Cartesian",
+  GridTune = FALSE,
+  MaxModelsInGrid = 10,
+  MaxRuntimeSecs = 60*60*24,
+  StoppingRounds = 10,
+  
+  # Model args
+  Trees = 50L,
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO")
 ```
  
 </p>
@@ -2032,59 +2002,59 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMClassifier(
-
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    H2OStartUp = TRUE,
-    IfSaveModel = "mojo",
-
-    # Model evaluation args
-    eval_metric = "auc",
-    NumOfParDepPlots = 3,
-
-    # Metadata args
-    model_path = NULL,
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    RandomColNumbers = NULL,
-    InteractionColNumbers = NULL,
-    WeightsColumn = NULL,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
-
-    # ML args
-    GridTune = FALSE,
-    GridStrategy = "Cartesian",
-    StoppingRounds = 10,
-    MaxRunTimeSecs = 3600 * 24 * 7,
-    MaxModelsInGrid = 10,
-    Distribution = "binomial",
-    Link = "logit",
-    RandomDistribution = NULL,
-    RandomLink = NULL,
-    Solver = "AUTO",
-    Alpha = NULL,
-    Lambda = NULL,
-    LambdaSearch = FALSE,
-    NLambdas = -1,
-    Standardize = TRUE,
-    RemoveCollinearColumns = FALSE,
-    InterceptInclude = TRUE,
-    NonNegativeCoefficients = FALSE)
+  
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
+  
+  # Model evaluation args
+  eval_metric = "auc",
+  NumOfParDepPlots = 3,
+  
+  # Metadata args
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in%
+                                  c("IDcol_1", "IDcol_2","Adrian")],
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  
+  # ML args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 10,
+  Distribution = "binomial",
+  Link = "logit",
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 ```
  
 </p>
@@ -2098,7 +2068,14 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
  
 ```
 # Create some dummy correlated data with numeric and categorical features
-data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000L, ID = 2L, ZIP = 0L, AddDate = FALSE, Classification = TRUE, MultiClass = FALSE)
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85, 
+  N = 1000L, 
+  ID = 2L, 
+  ZIP = 0L, 
+  AddDate = FALSE, 
+  Classification = TRUE, 
+  MultiClass = FALSE)
 
 TestModel <- RemixAutoML::AutoH2oMLClassifier(
    data,
@@ -2252,74 +2229,62 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostMultiClass(
-
-    # GPU or CPU and the number of available GPUs
-    task_type = "GPU",
-    NumGPUs = 1,
-
-    # Metadata args
-    ModelID = "Test_Model_1",
-    model_path = normalizePath("./"),
-    metadata_path = normalizePath("./"),
-    SaveModelObjects = FALSE,
-    ReturnModelObjects = TRUE,
-
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    PrimaryDateColumn = NULL,
-    ClassWeights = c(1L,1L,1L,1L,1L),
-    IDcols = c("IDcol_1","IDcol_2"),
-
-    # Model evaluation
-    eval_metric = "MCC",
-    loss_function = "MultiClassOneVsAll",
-    grid_eval_metric = "Accuracy",
-    MetricPeriods = 10L,
-
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = TRUE,
-    MaxModelsInGrid = 30L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Shuffles = 4L,
-    BaselineComparison = "default",
-
-    # ML args
-    langevin = FALSE,
-    diffusion_temperature = 10000,
-    Trees = seq(100L, 500L, 50L),
-    Depth = seq(4L, 8L, 1L),
-    LearningRate = seq(0.01,0.10,0.01),
-    L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
-    RandomStrength = 1,
-    BorderCount = 254,
-    RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
-    model_size_reg = 0.5,
-    feature_border_type = "GreedyLogSum",
-    sampling_unit = "Group",
-    subsample = NULL,
-    score_function = "Cosine",
-    min_data_in_leaf = 1)
-
-# Output
-TestModel$Model
-TestModel$ValidationData
-TestModel$EvaluationMetrics
-TestModel$Evaluation
-TestModel$VI_Plot
-TestModel$VariableImportance
-TestModel$InteractionImportance
-TestModel$GridMetrics
-TestModel$ColNames = Names
-TestModel$TargetLevels
+  
+  # GPU or CPU and the number of available GPUs
+  task_type = "GPU",
+  NumGPUs = 1,
+  
+  # Metadata args
+  ModelID = "Test_Model_1",
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  ClassWeights = c(1L,1L,1L,1L,1L),
+  IDcols = c("IDcol_1","IDcol_2"),
+  
+  # Model evaluation
+  eval_metric = "MCC",
+  loss_function = "MultiClassOneVsAll",
+  grid_eval_metric = "Accuracy",
+  MetricPeriods = 10L,
+  
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = TRUE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Shuffles = 4L,
+  BaselineComparison = "default",
+  
+  # ML args
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  Trees = seq(100L, 500L, 50L),
+  Depth = seq(4L, 8L, 1L),
+  LearningRate = seq(0.01,0.10,0.01),
+  L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+  RandomStrength = 1,
+  BorderCount = 254,
+  RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
+  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+  GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+  model_size_reg = 0.5,
+  feature_border_type = "GreedyLogSum",
+  sampling_unit = "Group",
+  subsample = NULL,
+  score_function = "Cosine",
+  min_data_in_leaf = 1)
 ```
 
 </p>
@@ -2344,51 +2309,51 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostMultiClass(
-
-    # GPU or CPU
-    TreeMethod = "hist",
-    NThreads = parallel::detectCores(),
-
-    # Metadata args
-    model_path = normalizePath("./"),
-    metadata_path = normalizePath("./"),
-    ModelID = "Test_Model_1",
-    ReturnFactorLevels = TRUE,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    IDcols = c("IDcol_1","IDcol_2"),
-
-    # Model evaluation args
-    eval_metric = "merror",
-    LossFunction = 'multi:softmax',
-    grid_eval_metric = "accuracy",
-    NumOfParDepPlots = 3L,
-
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    BaselineComparison = "default",
-    MaxModelsInGrid = 10L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Verbose = 1L,
-
-    # ML args
-    Shuffles = 1L,
-    Trees = 50L,
-    eta = 0.05,
-    max_depth = 4L,
-    min_child_weight = 1.0,
-    subsample = 0.55,
-    colsample_bytree = 0.55)
+  
+  # GPU or CPU
+  TreeMethod = "hist",
+  NThreads = parallel::detectCores(),
+  
+  # Metadata args
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  ModelID = "Test_Model_1",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  IDcols = c("IDcol_1","IDcol_2"),
+  
+  # Model evaluation args
+  eval_metric = "merror",
+  LossFunction = 'multi:softmax',
+  grid_eval_metric = "accuracy",
+  NumOfParDepPlots = 3L,
+  
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
+  
+  # ML args
+  Shuffles = 1L,
+  Trees = 50L,
+  eta = 0.05,
+  max_depth = 4L,
+  min_child_weight = 1.0,
+  subsample = 0.55,
+  colsample_bytree = 0.55)
 ```
 
 </p>
@@ -2541,58 +2506,58 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
-
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    H2OStartUp = TRUE,
-    IfSaveModel = "mojo",
-
-    # Model evaluation:
-    eval_metric = "logloss",
-    NumOfParDepPlots = 3,
-
-    # Metadata arguments:
-    model_path = NULL,
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-
-    # Data arguments:
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-    RandomColNumbers = NULL,
-    InteractionColNumbers = NULL,
-    WeightsColumn = NULL,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
-
-    # Model args
-    GridTune = FALSE,
-    GridStrategy = "Cartesian",
-    StoppingRounds = 10,
-    MaxRunTimeSecs = 3600 * 24 * 7,
-    MaxModelsInGrid = 10,
-    Distribution = "multinomial",
-    Link = "family_default",
-    RandomDistribution = NULL,
-    RandomLink = NULL,
-    Solver = "AUTO",
-    Alpha = NULL,
-    Lambda = NULL,
-    LambdaSearch = FALSE,
-    NLambdas = -1,
-    Standardize = TRUE,
-    RemoveCollinearColumns = FALSE,
-    InterceptInclude = TRUE,
-    NonNegativeCoefficients = FALSE)
+  
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
+  
+  # Model evaluation:
+  eval_metric = "logloss",
+  NumOfParDepPlots = 3,
+  
+  # Metadata arguments:
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  
+  # Data arguments:
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  
+  # Model args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 10,
+  Distribution = "multinomial",
+  Link = "family_default",
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 ```
 
 </p>
@@ -2658,45 +2623,45 @@ GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
-   data,
-   TrainOnFull = FALSE,
-   ValidationData = NULL,
-   TestData = NULL,
-   TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-   WeightsColumn = NULL,
-   GamColNames = GamCols,
-   eval_metric = "logloss",
-   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-   NThreads = max(1, parallel::detectCores()-2),
-   model_path = normalizePath("./"),
-   metadata_path = NULL,
-   ModelID = "FirstModel",
-   ReturnModelObjects = TRUE,
-   SaveModelObjects = FALSE,
-   IfSaveModel = "mojo",
-   H2OShutdown = FALSE,
-   H2OStartUp = TRUE,
-
-   # ML args
-   num_knots = NULL,
-   keep_gam_cols = TRUE,
-   GridTune = FALSE,
-   GridStrategy = "Cartesian",
-   StoppingRounds = 10,
-   MaxRunTimeSecs = 3600 * 24 * 7,
-   MaxModelsInGrid = 10,
-   Distribution = "multinomial",
-   Link = "Family_Default",
-   Solver = "AUTO",
-   Alpha = NULL,
-   Lambda = NULL,
-   LambdaSearch = FALSE,
-   NLambdas = -1,
-   Standardize = TRUE,
-   RemoveCollinearColumns = FALSE,
-   InterceptInclude = TRUE,
-   NonNegativeCoefficients = FALSE)
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumn = NULL,
+  GamColNames = GamCols,
+  eval_metric = "logloss",
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
+  H2OShutdown = FALSE,
+  H2OStartUp = TRUE,
+  
+  # ML args
+  num_knots = NULL,
+  keep_gam_cols = TRUE,
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 10,
+  Distribution = "multinomial",
+  Link = "Family_Default",
+  Solver = "AUTO",
+  Alpha = NULL,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 ```
 
 </p>
@@ -3907,8 +3872,8 @@ For each of the models tested internally, several aspects should be noted:
 <p>
  
 
-#### **AutoKMeans()** 
-<code>AutoKMeans()</code> This function builds a generalized low rank model followed by KMeans. (Possible cross with Feature Engineering) Generate a column with a cluster identifier based on a grid tuned (optional) generalized low rank model and a grid tuned (optimal) K-Optimal searching K-Means algorithm
+#### **AutoClustering()** 
+<code>AutoKMeans()</code> This function builds an autoencoder for dimensionality reduction followed by KMeans. (Possible cross with Feature Engineering)
 
 #### **ResidualOutliers()**
 <code>ResidualOutliers()</code> Generate residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set

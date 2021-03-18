@@ -10,8 +10,6 @@ AutoDataPartition(
   Ratios = c(0.7, 0.2, 0.1),
   PartitionType = "random",
   StratifyColumnNames = NULL,
-  StratifyNumericTarget = NULL,
-  StratTargetPrecision = 20,
   TimeColumnName = NULL
 )
 }
@@ -25,10 +23,6 @@ AutoDataPartition(
 \item{PartitionType}{Set to either "random", "timeseries", or "time". With "random", your data will be paritioned randomly (with stratified sampling if column names are supplied). With "timeseries", you can partition by time with a stratify option (so long as you have an equal number of records for each strata). With "time" you will have data sets generated so that the training data contains the earliest records in time, validation data the second earliest, test data the third earliest, etc.}
 
 \item{StratifyColumnNames}{Supply column names of categorical features to use in a stratified sampling procedure for partitioning the data. Partition type must be "random" to use this option}
-
-\item{StratifyNumericTarget}{Supply a column name that is numeric. Use for "random" PartitionType, you can stratify your numeric variable by splitting up based on percRank to ensure a proper allocation of extreme values in your created data sets.}
-
-\item{StratTargetPrecision}{Stratification only is ran when PartitionType is 'random' and StratTargetPrecision is the number of percentile buckets to utilize}
 
 \item{TimeColumnName}{Supply a date column name or a name of a column with an ID for sorting by time such that the smallest number is the earliest in time.}
 }
@@ -57,8 +51,6 @@ dataSets <- RemixAutoML::AutoDataPartition(
   Ratios = c(0.70,0.20,0.10),
   PartitionType = "random",
   StratifyColumnNames = NULL,
-  StratifyNumericTarget = NULL,
-  StratTargetPrecision = 20L,
   TimeColumnName = NULL)
 
 # Collect data
@@ -92,6 +84,6 @@ Other Feature Engineering:
 \code{\link{TimeSeriesFill}()}
 }
 \author{
-Adrian Antico and Douglas Pestana
+Adrian Antico
 }
 \concept{Feature Engineering}

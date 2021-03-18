@@ -34,7 +34,10 @@ AggMetricsByGroup <- DT_BinaryConfusionMatrix(
 }
 \seealso{
 Other Model Evaluation: 
+\code{\link{BinaryMetrics}()},
 \code{\link{ClassificationMetrics}()},
+\code{\link{MultiClassMetrics}()},
+\code{\link{RegressionMetrics}()},
 \code{\link{RemixClassificationMetrics}()}
 }
 \author{

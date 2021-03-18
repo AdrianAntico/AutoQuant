@@ -75,6 +75,8 @@ Other Model Evaluation and Interpretation:
 \code{\link{EvalPlot}()},
 \code{\link{LimeModel}()},
 \code{\link{ParDepCalPlots}()},
+\code{\link{ROCPlot}()},
+\code{\link{VI_Plot}()},
 \code{\link{threshOptim}()}
 }
 \author{

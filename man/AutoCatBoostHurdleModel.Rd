@@ -32,7 +32,6 @@ AutoCatBoostHurdleModel(
   MaxModelsInGrid = 1L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 60L * 60L,
-  Shuffles = 2L,
   MetricPeriods = 25L,
   Langevin = FALSE,
   DiffusionTemperature = 10000,
@@ -106,8 +105,6 @@ AutoCatBoostHurdleModel(
 
 \item{MaxRunMinutes}{= 60L*60L,}
 
-\item{Shuffles}{= 2L,}
-
 \item{MetricPeriods}{= 25L,}
 
 \item{Langevin}{TRUE or FALSE}
@@ -131,6 +128,8 @@ AutoCatBoostHurdleModel(
 \item{BootStrapType}{= c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),}
 
 \item{GrowPolicy}{= c("SymmetricTree", "Depthwise", "Lossguide")}
+
+\item{Shuffles}{= 2L,}
 }
 \value{
 Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
@@ -178,7 +177,6 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   MaxModelsInGrid = 1L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 60L*60L,
-  Shuffles = 2L,
   MetricPeriods = 25L,
 
   # Bandit grid args

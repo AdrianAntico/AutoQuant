@@ -16,8 +16,7 @@ AutoCatBoostRegression(
   DummifyCols = FALSE,
   IDcols = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   task_type = "GPU",
   NumGPUs = 1,
   eval_metric = "RMSE",
@@ -53,10 +52,11 @@ AutoCatBoostRegression(
   GrowPolicy = "SymmetricTree",
   model_size_reg = 0.5,
   feature_border_type = "GreedyLogSum",
-  sampling_unit = "Group",
+  sampling_unit = "Object",
   subsample = NULL,
   score_function = "Cosine",
-  min_data_in_leaf = 1
+  min_data_in_leaf = 1,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -88,11 +88,11 @@ AutoCatBoostRegression(
 
 \item{NumGPUs}{Set to 1, 2, 3, etc.}
 
-\item{eval_metric}{Select from 'RMSE', 'MAE', 'MAPE', 'R2', 'Poisson', 'MedianAbsoluteError', 'SMAPE', 'MSLE', 'NumErrors', 'FairLoss', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile'}
+\item{eval_metric}{Select from 'RMSE', 'MAE', 'MAPE', 'R2', 'Poisson', 'MedianAbsoluteError', 'SMAPE', 'MSLE', 'NumErrors', 'FairLoss', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile', 'MultiRMSE'}
 
 \item{eval_metric_value}{Used with the specified eval_metric. See https://catboost.ai/docs/concepts/loss-functions-regression.html}
 
-\item{loss_function}{Used in model training for model fitting. 'MAPE', 'MAE', 'RMSE', 'Poisson', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile'}
+\item{loss_function}{Used in model training for model fitting. 'MAPE', 'MAE', 'RMSE', 'Poisson', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile', 'MultiRMSE'}
 
 \item{loss_function_value}{Used with the specified loss function if an associated value is required. 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile' 'Lq', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html}
 
@@ -161,6 +161,8 @@ AutoCatBoostRegression(
 \item{score_function}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
 
 \item{min_data_in_leaf}{Default is 1. Cannot be used with SymmetricTree is GrowPolicy}
+
+\item{DebugMode}{Set to TRUE to get a printout of which step the function is on. FALSE, otherwise}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
@@ -183,86 +185,87 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostRegression(
 
-    # GPU or CPU and the number of available GPUs
-    task_type = "GPU",
-    NumGPUs = 1,
+  # GPU or CPU and the number of available GPUs
+  task_type = "GPU",
+  NumGPUs = 1,
 
-    # Metadata args
-    ModelID = "Test_Model_1",
-    model_path = normalizePath("./"),
-    metadata_path = normalizePath("./"),
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-    ReturnModelObjects = TRUE,
+  # Metadata args
+  ModelID = "Test_Model_1",
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  ReturnModelObjects = TRUE,
 
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    Weights = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    PrimaryDateColumn = NULL,
-    DummifyCols = FALSE,
-    IDcols = c("IDcol_1","IDcol_2"),
-    TransformNumericColumns = "Adrian",
-    Methods = c("BoxCox", "Asinh", "Asin", "Log",
-      "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  Weights = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\%
+    c("IDcol_1", "IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  DummifyCols = FALSE,
+  IDcols = c("IDcol_1","IDcol_2"),
+  TransformNumericColumns = "Adrian",
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+    "LogPlus1", "Sqrt", "Logit"),
 
-    # Model evaluation
-    eval_metric = "RMSE",
-    eval_metric_value = 1.5,
-    loss_function = "RMSE",
-    loss_function_value = 1.5,
-    MetricPeriods = 10L,
-    NumOfParDepPlots = ncol(data)-1L-2L,
-    EvalPlots = TRUE,
+  # Model evaluation
+  eval_metric = "RMSE",
+  eval_metric_value = 1.5,
+  loss_function = "RMSE",
+  loss_function_value = 1.5,
+  MetricPeriods = 10L,
+  NumOfParDepPlots = ncol(data)-1L-2L,
+  EvalPlots = TRUE,
 
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    MaxModelsInGrid = 30L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 60*60,
-    Shuffles = 4L,
-    BaselineComparison = "default",
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 60*60,
+  Shuffles = 4L,
+  BaselineComparison = "default",
 
-    # ML args
-    langevin = FALSE,
-    diffusion_temperature = 10000,
-    Trees = 1000,
-    Depth = 6,
-    L2_Leaf_Reg = 3.0,
-    RandomStrength = 1,
-    BorderCount = 128,
-    LearningRate = NULL,
-    RSM = 1,
-    BootStrapType = NULL,
-    GrowPolicy = "SymmetricTree",
-    model_size_reg = 0.5,
-    feature_border_type = "GreedyLogSum",
-    sampling_unit = "Group",
-    subsample = NULL,
-    score_function = "Cosine",
-    min_data_in_leaf = 1)
+  # ML args
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  Trees = 1000,
+  Depth = 9,
+  L2_Leaf_Reg = NULL,
+  RandomStrength = 1,
+  BorderCount = 128,
+  LearningRate = NULL,
+  RSM = 1,
+  BootStrapType = NULL,
+  GrowPolicy = "SymmetricTree",
+  model_size_reg = 0.5,
+  feature_border_type = "GreedyLogSum",
+  sampling_unit = "Object",
+  subsample = NULL,
+  score_function = "Cosine",
+  min_data_in_leaf = 1,
+  DebugMode = FALSE)
 
- # Output
- TestModel$Model
- TestModel$ValidationData
- TestModel$EvaluationPlot
- TestModel$EvaluationBoxPlot
- TestModel$EvaluationMetrics
- TestModel$VariableImportance
- TestModel$InteractionImportance
- TestModel$ShapValuesDT
- TestModel$VI_Plot
- TestModel$PartialDependencePlots
- TestModel$PartialDependenceBoxPlots
- TestModel$GridList
- TestModel$ColNames
- TestModel$TransformationResults
+# Output
+TestModel$Model
+TestModel$ValidationData
+TestModel$EvaluationPlot
+TestModel$EvaluationBoxPlot
+TestModel$EvaluationMetrics
+TestModel$VariableImportance
+TestModel$InteractionImportance
+TestModel$ShapValuesDT
+TestModel$VI_Plot
+TestModel$PartialDependencePlots
+TestModel$PartialDependenceBoxPlots
+TestModel$GridList
+TestModel$ColNames
+TestModel$TransformationResults
 }
 }
 \seealso{

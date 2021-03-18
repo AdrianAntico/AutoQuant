@@ -103,8 +103,6 @@ AutoCatBoostSizeFreqDist <- function(CountData = NULL,
     Ratios = DataPartitionRatios,
     PartitionType = "random",
     StratifyColumnNames = NULL,
-    StratifyNumericTarget = NULL,
-    StratTargetPrecision = NULL,
     TimeColumnName = NULL)
 
   # Store data sets----
@@ -171,8 +169,6 @@ AutoCatBoostSizeFreqDist <- function(CountData = NULL,
     Ratios = DataPartitionRatios,
     PartitionType = "random",
     StratifyColumnNames = NULL,
-    StratifyNumericTarget = NULL,
-    StratTargetPrecision = NULL,
     TimeColumnName = NULL)
 
   # Store data sets----

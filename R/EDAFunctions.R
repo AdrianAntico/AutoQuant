@@ -216,3 +216,12 @@ BNLearnArcStrength <- function(data = NULL,
                 Structure = invisible(dbnR::plot_network(structure = FittedOutput))))
   }
 }
+
+#' @title PlotGUI
+#'
+#' @description Spin up the esquisse plotting gui
+#'
+#' @export
+PlotGUI <- function() {
+  if('esquisse' %in% installed.packages() && "rvg" %in% installed.packages()) esquisse::esquisser() else stop("You need to install 'esquisse' and / or 'rvg' to run the gui")
+}

@@ -5,7 +5,7 @@
 \title{H2OAutoencoder}
 \usage{
 H2OAutoencoder(
-  AnomalyDetection = TRUE,
+  AnomalyDetection = FALSE,
   DimensionReduction = TRUE,
   data,
   ValidationData = NULL,
@@ -18,6 +18,7 @@ H2OAutoencoder(
   ModelID = "TestModel",
   model_path = NULL,
   LayerStructure = NULL,
+  NodeShrinkRate = (sqrt(5) - 1)/2,
   ReturnLayer = 4L,
   per_feature = TRUE,
   Activation = "Tanh",
@@ -53,7 +54,9 @@ H2OAutoencoder(
 
 \item{model_path}{If NULL no model will be saved. If a valid path is supplied the model will be saved there}
 
-\item{LayerStructure}{a}
+\item{LayerStructure}{If NULL, layers and sizes will be created for you, using NodeShrinkRate and 7 layers will be created.}
+
+\item{NodeShrinkRate}{= (sqrt(5) - 1) / 2,}
 
 \item{ReturnLayer}{Which layer of the NNet to return. Choose from 1-7 with 4 being the layer with the least amount of nodes}
 
@@ -101,7 +104,7 @@ data <- RemixAutoML::FakeDataGenerator(
 Output <- RemixAutoML::H2OAutoencoder(
 
   # Select the service
-  AnomalyDetection = TRUE,
+  AnomalyDetection = FALSE,
   DimensionReduction = TRUE,
 
   # Data related args
@@ -121,6 +124,7 @@ Output <- RemixAutoML::H2OAutoencoder(
 
   # H2O ML Args
   LayerStructure = NULL,
+  NodeShrinkRate = (sqrt(5) - 1) / 2,
   ReturnLayer = 4L,
   Activation = "Tanh",
   Epochs = 5L,

@@ -87,7 +87,6 @@
 #'   MaxModelsInGrid = 1L,
 #'   MaxRunsWithoutNewWinner = 20L,
 #'   MaxRunMinutes = 60L*60L,
-#'   Shuffles = 2L,
 #'   MetricPeriods = 25L,
 #'
 #'   # Bandit grid args
@@ -140,28 +139,18 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     MaxModelsInGrid = 1L,
                                     MaxRunsWithoutNewWinner = 20L,
                                     MaxRunMinutes = 60L*60L,
-                                    Shuffles = 2L,
                                     MetricPeriods = 25L,
                                     Langevin = FALSE,
                                     DiffusionTemperature = 10000,
-                                    Trees = list("classifier" = seq(1000,2000,100),
-                                                 "regression" = seq(1000,2000,100)),
-                                    Depth = list("classifier" = seq(6,10,1),
-                                                 "regression" = seq(6,10,1)),
-                                    RandomStrength = list("classifier" = seq(1,10,1),
-                                                          "regression" = seq(1,10,1)),
-                                    BorderCount = list("classifier" = seq(32,256,16),
-                                                       "regression" = seq(32,256,16)),
-                                    LearningRate = list("classifier" = seq(0.01,0.25,0.01),
-                                                        "regression" = seq(0.01,0.25,0.01)),
-                                    L2_Leaf_Reg = list("classifier" = seq(3.0,10.0,1.0),
-                                                       "regression" = seq(1.0,10.0,1.0)),
-                                    RSM = list("classifier" = c(0.80, 0.85, 0.90, 0.95, 1.0),
-                                               "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
-                                    BootStrapType = list("classifier" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-                                                         "regression" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")),
-                                    GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"),
-                                                      "regression" = c("SymmetricTree", "Depthwise", "Lossguide"))) {
+                                    Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
+                                    Depth = list("classifier" = seq(6,10,1), "regression" = seq(6,10,1)),
+                                    RandomStrength = list("classifier" = seq(1,10,1), "regression" = seq(1,10,1)),
+                                    BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
+                                    LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
+                                    L2_Leaf_Reg = list("classifier" = seq(3.0,10.0,1.0), "regression" = seq(1.0,10.0,1.0)),
+                                    RSM = list("classifier" = c(0.80, 0.85, 0.90, 0.95, 1.0), "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
+                                    BootStrapType = list("classifier" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"), "regression" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")),
+                                    GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"), "regression" = c("SymmetricTree", "Depthwise", "Lossguide"))) {
 
   # Store args----
   ArgsList <- list()
@@ -394,7 +383,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(is.numeric(PrimaryDateColumn) || is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
 
   # FeatureColumnNames----
-  if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
+  if(is.numeric(FeatureColNames) || is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
 
   # Add target bucket column----
   if(length(Buckets) == 1L) {
@@ -446,7 +435,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
 
   # AutoDataPartition if Validation and TestData are NULL----
-  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
+  if(is.null(ValidationData) && is.null(TestData) & !TrainOnFull) {
     DataSets <- AutoDataPartition(
       data = data,
       NumDataSets = 3L,
@@ -489,7 +478,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       IDcols = IDcols,
 
       # Model evaluation
-      eval_metric = "AUC",
+      EvalMetric = "AUC",
       MetricPeriods = MetricPeriods,
       NumOfParDepPlots = NumOfParDepPlots,
 
@@ -499,7 +488,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MaxModelsInGrid = MaxModelsInGrid,
       MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
       MaxRunMinutes = MaxRunMinutes,
-      Shuffles = Shuffles,
       BaselineComparison = BaselineComparison,
 
       # Trees, Depth, and LearningRate used in the bandit grid tuning

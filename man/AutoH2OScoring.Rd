@@ -131,10 +131,6 @@ data <- AutoH2OScoring(Features     = aa,
 }
 \seealso{
 Other Supervised Learning: 
-\code{\link{CatBoostClassifierParams}()},
-\code{\link{CatBoostMultiClassParams}()},
-\code{\link{CatBoostParameterGrids}()},
-\code{\link{CatBoostRegressionParams}()},
 \code{\link{XGBoostClassifierParams}()},
 \code{\link{XGBoostMultiClassParams}()},
 \code{\link{XGBoostParameterGrids}()},

@@ -50,10 +50,6 @@ XGBoostMultiClassParams
 \seealso{
 Other Supervised Learning: 
 \code{\link{AutoH2OScoring}()},
-\code{\link{CatBoostClassifierParams}()},
-\code{\link{CatBoostMultiClassParams}()},
-\code{\link{CatBoostParameterGrids}()},
-\code{\link{CatBoostRegressionParams}()},
 \code{\link{XGBoostClassifierParams}()},
 \code{\link{XGBoostParameterGrids}()},
 \code{\link{XGBoostRegressionMetrics}()},

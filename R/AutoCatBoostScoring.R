@@ -359,6 +359,19 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       FinalResults = grid_trans_results,
       TransID = NULL,
       Path = NULL)
+  } else {
+
+    # Prepare transformation object
+    TransformationObject <- data.table::rbindlist(list(TransformationObject, TransformationObject))
+    for(z in seq_along(TransformationObject)) TransformationObject[length(TargetColumnName.) + z, ColumnName := paste0("Predict.V",z)]
+
+    # Back transform
+    predict <- AutoTransformationScore(
+      ScoringData = predict,
+      Type = "Inverse",
+      FinalResults = TransformationObject,
+      TransID = NULL,
+      Path = NULL)
   }
 
   # Return data ----

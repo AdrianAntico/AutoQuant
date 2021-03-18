@@ -64,8 +64,11 @@ RemixClassificationMetrics <- function(
 }
 \seealso{
 Other Model Evaluation: 
+\code{\link{BinaryMetrics}()},
 \code{\link{ClassificationMetrics}()},
-\code{\link{DT_BinaryConfusionMatrix}()}
+\code{\link{DT_BinaryConfusionMatrix}()},
+\code{\link{MultiClassMetrics}()},
+\code{\link{RegressionMetrics}()}
 }
 \author{
 Adrian Antico

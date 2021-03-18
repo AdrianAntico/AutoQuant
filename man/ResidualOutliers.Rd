@@ -77,7 +77,7 @@ outliers <- data[type != "<NA>"]
 }
 \seealso{
 Other Unsupervised Learning: 
-\code{\link{AutoKMeans}()},
+\code{\link{AutoClustering}()},
 \code{\link{GenTSAnomVars}()},
 \code{\link{H2OIsolationForestScoring}()},
 \code{\link{H2OIsolationForest}()}
