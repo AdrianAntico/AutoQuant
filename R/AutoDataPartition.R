@@ -68,7 +68,7 @@ AutoDataPartition <- function(data,
     DataCollect <- list()
     if(!is.null(StratifyColumnNames)) {
       keep <- StratifyColumnNames
-      Check1 <- is.numeric(copy_data[[StratifyColumnNames]]) && length(unique(copy_data[[StratifyColumnNames]])) > 20
+      Check1 <- is.numeric(copy_data[[StratifyColumnNames[1L]]]) && length(unique(copy_data[[StratifyColumnNames]])) > 20
     }
 
     # Modify ratios to account for data decrements ----
