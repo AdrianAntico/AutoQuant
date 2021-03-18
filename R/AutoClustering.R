@@ -60,7 +60,6 @@ AutoClustering <- function(data,
 
       # Data related args
       data = temp,
-      ValidationData = NULL,
       Features = FeatureColumns,
       per_feature = FALSE,
       RemoveFeatures = FALSE,
