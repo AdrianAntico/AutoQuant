@@ -7,6 +7,7 @@
 BinaryMetrics(
   MLModels = "catboost",
   ClassWeights. = ClassWeights,
+  CostMatrixWeights. = CostMatrixWeights,
   SaveModelObjects. = SaveModelObjects,
   ValidationData. = ValidationData,
   TrainOnFull. = TrainOnFull,
@@ -20,6 +21,8 @@ BinaryMetrics(
 \item{MLModels}{= "catboost"}
 
 \item{ClassWeights.}{= ClassWeights}
+
+\item{CostMatrixWeights.}{= CostMatrixWeights}
 
 \item{SaveModelObjects.}{= SaveModelObjects}
 

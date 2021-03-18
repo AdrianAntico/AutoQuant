@@ -26,7 +26,7 @@ RemixClassificationMetrics(
 
 \item{Thresholds}{seq(0.01,0.99,0.01),}
 
-\item{CostMatrix}{c(1,0,0,1),}
+\item{CostMatrix}{c(1,0,0,1) c(TP utility, FN utility, FP utility, TN utility)}
 
 \item{ClassLabels}{c(1,0),}
 

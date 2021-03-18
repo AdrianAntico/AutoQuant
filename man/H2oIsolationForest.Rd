@@ -120,6 +120,7 @@ Outliers <- RemixAutoML::H2OIsolationForestScoring(
 }
 \seealso{
 Other Unsupervised Learning: 
+\code{\link{AutoClusteringScoring}()},
 \code{\link{AutoClustering}()},
 \code{\link{GenTSAnomVars}()},
 \code{\link{H2OIsolationForestScoring}()},

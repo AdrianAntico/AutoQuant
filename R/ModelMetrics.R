@@ -161,7 +161,7 @@ ClassificationMetrics <- function(TestData,
                                   PredictColumnName,
                                   PositiveOutcome,
                                   NegativeOutcome,
-                                  CostMatrix = c(1,0,0,1)) {
+                                  CostMatrix = c(0,1,1,0)) {
   if("Target" %chin% names(TestData)) data.table::set(TestData, j = "Target", value = NULL)
   ThreshLength <- length(Thresholds)
   ThresholdOutput <- data.table::data.table(
@@ -206,7 +206,7 @@ ClassificationMetrics <- function(TestData,
       P  <- TestData[get(Target) == 1, .N]
     }
 
-    # Calculate metrics----
+    # Calculate metrics ----
     MCC         <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
     Accuracy    <- (TP+TN)/N
     TPR         <- TP/P
@@ -221,9 +221,9 @@ ClassificationMetrics <- function(TestData,
     NPV         <- TN / (TN + FN)
     PPV         <- TP / (TP + FP)
     ThreatScore <- TP / (TP + FN + FP)
-    Utility     <- P/N * (CostMatrix[1] * TPR + CostMatrix[2] * (1 - TPR)) + (1 - P/N) * (CostMatrix[3] * FPR + CostMatrix[4] * (1 - FPR))
+    Utility     <- P/N * (CostMatrix[1L] * TPR + CostMatrix[2L] * (1 - TPR)) + (1 - P/N) * (CostMatrix[3L] * FPR + CostMatrix[4L] * (1 - FPR))
 
-    # Fill in values----
+    # Fill in values ----
     data.table::set(ThresholdOutput, i = counter, j = "Threshold",   value = Thresh)
     data.table::set(ThresholdOutput, i = counter, j = "P",           value = P)
     data.table::set(ThresholdOutput, i = counter, j = "N",           value = N)
@@ -260,7 +260,7 @@ ClassificationMetrics <- function(TestData,
 #' @param MLModels A vector of model names from remixautoml. e.g. c("catboost","h2oautoml","h2ogbm","h2odrf","h2oglm","h2ogam","xgboost")
 #' @param TargetVariable Name of your target variable
 #' @param Thresholds seq(0.01,0.99,0.01),
-#' @param CostMatrix c(1,0,0,1),
+#' @param CostMatrix c(1,0,0,1) c(TP utility, FN utility, FP utility, TN utility)
 #' @param ClassLabels c(1,0),
 #' @param CatBoostTestData Test data returned from AutoCatBoostClassifier
 #' @param H2oAutoMLTestData Test data returned from AutoCatBoostClassifier
@@ -462,6 +462,7 @@ RemixClassificationMetrics <- function(MLModels = NULL,
 #'
 #' @param MLModels = "catboost"
 #' @param ClassWeights. = ClassWeights
+#' @param CostMatrixWeights. = CostMatrixWeights
 #' @param SaveModelObjects. = SaveModelObjects
 #' @param ValidationData. = ValidationData
 #' @param TrainOnFull. = TrainOnFull
@@ -473,6 +474,7 @@ RemixClassificationMetrics <- function(MLModels = NULL,
 #' @export
 BinaryMetrics <- function(MLModels = "catboost",
                           ClassWeights. = ClassWeights,
+                          CostMatrixWeights. = CostMatrixWeights,
                           SaveModelObjects. = SaveModelObjects,
                           ValidationData. = ValidationData,
                           TrainOnFull. = TrainOnFull,
@@ -480,17 +482,16 @@ BinaryMetrics <- function(MLModels = "catboost",
                           ModelID. = ModelID,
                           model_path. = model_path,
                           metadata_path. = metadata_path) {
-
-  CostMatrixWeights <- c(ClassWeights.[1L], 0, 0, ClassWeights.[2L])
+  if(is.null(CostMatrixWeights.)) CostMatrixWeights. <- c(ClassWeights.[1L], 0, 0, ClassWeights.[2L])
   if(SaveModelObjects. && !TrainOnFull.) {
-    EvalMetrics <- RemixClassificationMetrics(MLModels = "catboost", TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights, ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
+    EvalMetrics <- RemixClassificationMetrics(MLModels = "catboost", TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
     if(!is.null(metadata_path.)) {
       data.table::fwrite(EvalMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
     } else {
       data.table::fwrite(EvalMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
     }
   } else if(!TrainOnFull.) {
-    EvalMetrics <- RemixClassificationMetrics(MLModels = "catboost", TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights, ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
+    EvalMetrics <- RemixClassificationMetrics(MLModels = "catboost", TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
   } else {
     EvalMetrics <- NULL
   }

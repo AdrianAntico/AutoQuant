@@ -13,6 +13,8 @@ AutoClustering(
   MaxMemory = "28G",
   MaxClusters = 50,
   ClusterMetric = "totss",
+  RunDimReduction = TRUE,
+  ShrinkRate = (sqrt(5) - 1)/2,
   Epochs = 5L,
   L2_Reg = 0.1,
   ElasticAveraging = TRUE,
@@ -37,6 +39,10 @@ AutoClustering(
 
 \item{ClusterMetric}{pick the metric to identify top model in grid tune c("totss","betweenss","withinss")}
 
+\item{RunDimReduction}{If TRUE, an autoencoder will be built to reduce the feature space. Otherwise, all features in FeatureColumns will be used for clustering}
+
+\item{ShrinkRate}{Node shrink rate for H2OAutoencoder. See that function for details.}
+
 \item{Epochs}{For the autoencoder}
 
 \item{L2_Reg}{For the autoencoder}
@@ -51,14 +57,11 @@ AutoClustering(
 Original data.table with added column with cluster number identifier
 }
 \description{
-AutoClustering adds a column to your original data with a cluster number identifier
-}
-\examples{
-\dontrun{
-}
+AutoClustering adds a column to your original data with a cluster number identifier. You can run request an autoencoder to be built to reduce the dimensionality of your data before running the clusering algo.
 }
 \seealso{
 Other Unsupervised Learning: 
+\code{\link{AutoClusteringScoring}()},
 \code{\link{GenTSAnomVars}()},
 \code{\link{H2OIsolationForestScoring}()},
 \code{\link{H2OIsolationForest}()},
