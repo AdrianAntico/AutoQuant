@@ -123,9 +123,6 @@ AutoClustering <- function(data,
   Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID,"_KMeans"), sort_by = ClusterMetric, decreasing = FALSE)
   ClusterModel <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1L]])
 
-  # Get grid name ----
-  ModelName <- Grid_Out@model_ids[[1L]]
-
   # Save ClusterModel if requested ----
   if(!is.null(SavePath)) save_model <- h2o::h2o.saveModel(object = ClusterModel, path = SavePath, force = TRUE)
 
@@ -134,7 +131,8 @@ AutoClustering <- function(data,
   h2o::h2o.shutdown(prompt = FALSE)
   data <- data.table::as.data.table(cbind(data, preds))
   data.table::setnames(data, "predict", "ClusterID")
-  return(list(data = data, model_name = ModelName))
+  file.rename(from = save_model, to = paste0(SavePath, ModelID, "_KMeans"))
+  return(data)
 }
 
 #' @title AutoClusteringScoring
