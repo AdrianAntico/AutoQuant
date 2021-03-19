@@ -78,7 +78,7 @@ AutoDataPartition <- function(data,
       Check1 <- is.numeric(copy_data[[StratifyColumnNames[1L]]]) && length(unique(copy_data[[StratifyColumnNames]])) > 20
     }
 
-    # Modify ratios to account for data decrements ----
+    # Modify ratios to account for data decrementing ----
     RatioList <- c()
     RatioList[NumDataSets] <- Ratios[NumDataSets]
     for(i in rev(seq_len(NumDataSets - 1L))) {
@@ -101,6 +101,7 @@ AutoDataPartition <- function(data,
     }
 
     # Gather row numbers ----
+    RowList <- list()
     for(i in NumDataSets:1L) {
       N <- copy_data[, .N]
       if(!is.null(StratifyColumnNames)) {
