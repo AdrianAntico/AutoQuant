@@ -108,8 +108,8 @@ If you're having still having trouble installing see if the issue below helps ou
 <p>
  
 1. Pull in data from your data warehouse (or from wherever) and clean it up
-2. Run all the applicable feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoInteraction()</code>,  <code>AutoDiffLagN()</code>, <code>AutoWord2VecModeler()</code>, <code>CreateCalendarVariables()</code>, <code>CreateHolidayVariables()</code>, etc.
-3. Partition your data with <code>AutoDataPartition()</code> if you want to go with a data split other than 70/20/10, which is automatically applied in the supervised learning functions if you don't supply the ValidationData and TestData (and TrainOnFull is set to FALSE).
+2. Run all the applicable feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoInteraction()</code>,  <code>AutoDiffLagN()</code>, <code>AutoWord2VecModeler()</code>, <code>H2OAutoencoder()</code>, <code>CreateCalendarVariables()</code>, <code>CreateHolidayVariables()</code>, etc.
+3. Partition your data with <code>AutoDataPartition()</code> You can create any number of data sets, supply stratification variables, and you can choose between 'random' splits, 'time' splits, and 'timeseries' splits. The distinction between 'time' and 'timeseries' splits is that 'time' should be used when you aren't directly working with panel data whereas the 'timeseries' split is for panel data (meaning that the number of records for each combination of group variables are identical). 'time' will first sort you data by the date column and then sort by stratification variables, if you provide some, but there is a risk that some group levels won't make it into all of your data sets.
 4. Run <code>AutoCatBoostRegression()</code> or <code>AutoCatBoostClassifier()</code> or <code>AutoCatBoostMultiClass()</code> with GPU if you have access to one
 5. Run <code>AutoXGBoostRegression()</code> or <code>AutoXGBoostClassifier()</code> or <code>AutoXGBoostMultiClass()</code> with GPU if you have access to one
 6. Run <code>AutoH2oGBMRegression()</code> or <code>AutoH2oGBMClassifier()</code> or <code>AutoH2oGBMMultiClass()</code> if you have the patience to wait for a CPU build.
@@ -117,9 +117,8 @@ If you're having still having trouble installing see if the issue below helps ou
 8. Run <code>AutoH2oMLRegression()</code> or <code>AutoH2oMLClassifier()</code> or <code>AutoH2oMLMultiClass()</code> to run H2O's AutoML function inside the RemixAutoML framework.
 9. Run <code>AutoH2oDRFRegression()</code> or <code>AutoH2oDRFClassifier()</code> or <code>AutoH2oDRFMultiClass()</code> H2O's Distributed Random Forest can take a really long time to build. H2O's documentation has a great explanation for the reason why it takes much longer compared to their GBM algo.
 10. Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, model metrics, etc.
-12. If you ran one of the <code>Auto__Classifer()</code> function supply the validation to the function <code>RemixClassificationMetrics()</code> for an exhaustive threshold analysis
-12. Pick your model of choice and kick off an extended grid tuning and figure out something else to do that week (or run it over the weekend). 
-13. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get that time to explore so you can learn new things.
+11. Pick your model of choice and kick off an extended grid tuning and figure out something else to do that week (or run it over the weekend). 
+12. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get more time so you can explore and learn new things.
 
 </p>
 </details>
