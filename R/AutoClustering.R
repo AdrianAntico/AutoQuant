@@ -128,7 +128,6 @@ AutoClustering <- function(data,
 
   # Combine outputs ----
   preds <- data.table::as.data.table(h2o::h2o.predict(ClusterModel, H2OData))
-  h2o::h2o.rm(Grid_Out, ClusterModel, H2OData)
   h2o::h2o.shutdown(prompt = FALSE)
   data <- data.table::as.data.table(cbind(data, preds))
   data.table::setnames(data, "predict", "ClusterID")
@@ -211,7 +210,6 @@ AutoClusteringScoring <- function(data,
 
   # Combine outputs ----
   preds <- data.table::as.data.table(h2o::h2o.predict(ClusterModel, H2OData))
-  h2o::h2o.rm(ClusterModel, H2OData)
   h2o::h2o.shutdown(prompt = FALSE)
   data <- data.table::as.data.table(cbind(data, preds))
   data.table::setnames(data, "predict", "ClusterID")
