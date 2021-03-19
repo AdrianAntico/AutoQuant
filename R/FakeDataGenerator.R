@@ -206,7 +206,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
   }
 
   # Modify----
-  if(MultiClass & FactorCount == 0L) {
+  if(MultiClass && FactorCount == 0L) {
     FactorCount <- 1L
     temp <- 1L
   }
@@ -248,8 +248,9 @@ FakeDataGenerator <- function(Correlation = 0.70,
       data <- data[order(DateTime)]
     } else {
       data <- data[, DateTime := as.Date(Sys.time())]
-      data[, temp := 1L:.N, by = "Factor_1"][, DateTime := DateTime - temp][, temp := NULL]
-      data <- data[order(Factor_1, DateTime)]
+      CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
+      data[, temp := 1L:.N, by = c(names(data)[c(CatFeatures)])][, DateTime := DateTime - temp][, temp := NULL]
+      data.table::setorderv(x = data, cols = c("DateTime", c(names(data)[c(CatFeatures)])), order = rep(1, length(c(names(data)[c(CatFeatures)]))+1))
     }
   }
 

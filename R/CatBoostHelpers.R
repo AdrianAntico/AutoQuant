@@ -86,6 +86,7 @@ CatBoostArgsCheck <- function(ModelType = "regression",
                               score_function. = score_function,
                               min_data_in_leaf. = min_data_in_leaf) {
 
+  # Regression loss_function and eval_metric setup
   if(ModelType %chin% c("regression","vector")) {
     if(is.null(loss_function.)) LossFunction. <- "RMSE" else LossFunction. <- loss_function.
     if(is.null(eval_metric.)) EvalMetric. <- "RMSE" else EvalMetric. <- eval_metric.
@@ -116,18 +117,18 @@ CatBoostArgsCheck <- function(ModelType = "regression",
     EvalMetric. <- NULL
   }
 
-  # Ensure model_path and metadata_path exists
+  # Ensure model_path and metadata_path exists if supplied by user
   if(!is.null(model_path.)) if(!dir.exists(file.path(model_path.))) dir.create(model_path.)
   if(!is.null(metadata_path.)) if(!is.null(metadata_path.)) if(!dir.exists(file.path(metadata_path.))) dir.create(metadata_path.)
 
-  # Loss Function
+  # Classification Loss Function
   if(ModelType == "classification") {
     if(is.null(LossFunction.)) LossFunction. <- "Logloss"
   } else if(ModelType == "multiclass") {
     if(is.null(loss_function.)) LossFunction. <- "MultiClassOneVsAll" else LossFunction. <- loss_function.
   }
 
-  # Multi Arg Check
+  # Ensure only one value if not grid tuning
   if(!GridTune. && length(MetricPeriods.) > 1) stop("MetricPeriods cannot have more than one value supplied")
   if(!GridTune. && length(langevin.) > 1) stop("langevin cannot have more than one value supplied")
   if(!GridTune. && length(diffusion_temperature.) > 1) stop("diffusion_temperature cannot have more than one value supplied")
@@ -165,15 +166,17 @@ CatBoostArgsCheck <- function(ModelType = "regression",
     Depth. <- Depth.[!Depth. > 16]
     if(length(Depth.) == 0) Depth. <- 6
   }
-  if(task_type. == "GPU") {
-    RSM. <- NULL
-  } else if(is.null(RSM.)) {
-    RSM. <- 1
-  }
   if(is.null(GrowPolicy.)) GrowPolicy. <- "SymmetricTree"
   if(langevin. && task_type. == "GPU") {
     task_type. <- "CPU"
     print("task_type switched to CPU to enable langevin boosting")
+  }
+
+  # RSM management
+  if(task_type. == "GPU") {
+    RSM. <- NULL
+  } else if(is.null(RSM.)) {
+    RSM. <- 1
   }
   if(!is.null(sampling_unit.) && LossFunction. != "YetiRankPairWise") sampling_unit. <- "Object"
   if(!is.null(score_function.)) {
