@@ -123,6 +123,9 @@ AutoClustering <- function(data,
   Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID,"_KMeans"), sort_by = ClusterMetric, decreasing = FALSE)
   ClusterModel <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1L]])
 
+  # Get grid name ----
+  ModelName <- Grid_Out@model_ids[[1L]]
+
   # Save ClusterModel if requested ----
   if(!is.null(SavePath)) save_model <- h2o::h2o.saveModel(object = ClusterModel, path = SavePath, force = TRUE)
 
@@ -131,7 +134,7 @@ AutoClustering <- function(data,
   h2o::h2o.shutdown(prompt = FALSE)
   data <- data.table::as.data.table(cbind(data, preds))
   data.table::setnames(data, "predict", "ClusterID")
-  return(data)
+  return(list(data = data, model_name = ModelName))
 }
 
 #' @title AutoClusteringScoring
@@ -143,7 +146,7 @@ AutoClustering <- function(data,
 #'
 #' @param data is the source time series data.table
 #' @param FeatureColumns Independent variables
-#' @param ModelID For naming the files to save
+#' @param ModelID This is returned from the training run in the output list with element named 'model_name'. It's not identical to the ModelID used in training due to the grid tuning.
 #' @param SavePath Directory path for saving models
 #' @param NThreads set based on number of threads your machine has available
 #' @param MaxMemory set based on the amount of memory your machine has available

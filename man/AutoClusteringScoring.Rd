@@ -19,7 +19,7 @@ AutoClusteringScoring(
 
 \item{FeatureColumns}{Independent variables}
 
-\item{ModelID}{For naming the files to save}
+\item{ModelID}{This is returned from the training run in the output list with element named 'model_name'. It's not identical to the ModelID used in training due to the grid tuning.}
 
 \item{SavePath}{Directory path for saving models}
 
