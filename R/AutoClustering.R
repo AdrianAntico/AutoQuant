@@ -131,7 +131,7 @@ AutoClustering <- function(data,
   h2o::h2o.shutdown(prompt = FALSE)
   data <- data.table::as.data.table(cbind(data, preds))
   data.table::setnames(data, "predict", "ClusterID")
-  file.rename(from = save_model, to = paste0(SavePath, ModelID, "_KMeans"))
+  file.rename(from = save_model, to = file.path(SavePath, paste0(ModelID, "_KMeans")))
   return(data)
 }
 
@@ -207,7 +207,7 @@ AutoClusteringScoring <- function(data,
   H2OData <- h2o::as.h2o(temp)
 
   # Load model
-  Clustermodel <- h2o::h2o.loadModel(path = file.path(SavePath, ModelID))
+  Clustermodel <- h2o::h2o.loadModel(path = file.path(SavePath, paste0(ModelID, "_KMeans")))
 
   # Combine outputs ----
   preds <- data.table::as.data.table(h2o::h2o.predict(ClusterModel, H2OData))
