@@ -21,6 +21,67 @@
 #' @param ElasticAveragingMovingRate For the autoencoder
 #' @param ElasticAveragingRegularization For the autoencoder
 #'
+#' @examples
+#' \dontrun{
+#' #########################
+#' # Training Setup
+#' #########################
+#'
+#' # Create fake data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = TRUE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run function
+#' data <- RemixAutoML::AutoClustering(
+#'   data,
+#'   FeatureColumns = names(data)[2:(ncol(data)-1)],
+#'   ModelID = "TestModel",
+#'   SavePath = getwd(),
+#'   NThreads = 8,
+#'   MaxMemory = "28G",
+#'   MaxClusters = 50,
+#'   ClusterMetric = "totss",
+#'   RunDimReduction = TRUE,
+#'   ShrinkRate = (sqrt(5) - 1) / 2,
+#'   Epochs = 5L,
+#'   L2_Reg = 0.10,
+#'   ElasticAveraging = TRUE,
+#'   ElasticAveragingMovingRate = 0.90,
+#'   ElasticAveragingRegularization = 0.001)
+#'
+#' #########################
+#' # Scoring Setup
+#' #########################
+#'
+#' Sys.sleep(10)
+#'
+#' # Create fake data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = TRUE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run function
+#' data <- RemixAutoML::AutoClusteringScoring(
+#'   data,
+#'   FeatureColumns = names(data)[2:(ncol(data)-1)],
+#'   ModelID = "TestModel",
+#'   SavePath = getwd(),
+#'   NThreads = 8,
+#'   MaxMemory = "28G",
+#'   DimReduction = TRUE)
+#' }
+#'
 #' @return Original data.table with added column with cluster number identifier
 #' @export
 AutoClustering <- function(data,
@@ -42,9 +103,6 @@ AutoClustering <- function(data,
   # Check data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Subset data
-  temp <- data[, .SD, .SDcols = c(FeatureColumns)]
-
   # Dim Reduction
   if(RunDimReduction) {
 
@@ -52,14 +110,14 @@ AutoClustering <- function(data,
     tempnames <- names(data.table::copy(data))
 
     # H2OAutoencoder ----
-    Output <- RemixAutoML::H2OAutoencoder(
+    data <- RemixAutoML::H2OAutoencoder(
 
       # Select the service
       AnomalyDetection = FALSE,
       DimensionReduction = TRUE,
 
       # Data related args
-      data = temp,
+      data = data,
       Features = FeatureColumns,
       per_feature = FALSE,
       RemoveFeatures = FALSE,
@@ -83,13 +141,16 @@ AutoClustering <- function(data,
       ElasticAveragingMovingRate = ElasticAveragingMovingRate,
       ElasticAveragingRegularization = ElasticAveragingRegularization)
 
-    # Collect output
-    data <- Output$Data; rm(Output)
+    # Sleep
+    Sys.sleep(10L)
 
     # New cols
     FeatureColumns <- setdiff(names(data), tempnames)
 
     # New data
+    temp <- data[, .SD, .SDcols = c(FeatureColumns)]
+
+  } else {
     temp <- data[, .SD, .SDcols = c(FeatureColumns)]
   }
 
@@ -150,6 +211,67 @@ AutoClustering <- function(data,
 #' @param MaxMemory set based on the amount of memory your machine has available
 #' @param DimReduction Set to TRUE if you set RunDimReduction in the training version of this function
 #'
+#' @examples
+#' \dontrun{
+#' #########################
+#' # Training Setup
+#' #########################
+#'
+#' # Create fake data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = TRUE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run function
+#' data <- RemixAutoML::AutoClustering(
+#'   data,
+#'   FeatureColumns = names(data)[2:(ncol(data)-1)],
+#'   ModelID = "TestModel",
+#'   SavePath = getwd(),
+#'   NThreads = 8,
+#'   MaxMemory = "28G",
+#'   MaxClusters = 50,
+#'   ClusterMetric = "totss",
+#'   RunDimReduction = TRUE,
+#'   ShrinkRate = (sqrt(5) - 1) / 2,
+#'   Epochs = 5L,
+#'   L2_Reg = 0.10,
+#'   ElasticAveraging = TRUE,
+#'   ElasticAveragingMovingRate = 0.90,
+#'   ElasticAveragingRegularization = 0.001)
+#'
+#' #########################
+#' # Scoring Setup
+#' #########################
+#'
+#' Sys.sleep(10)
+#'
+#' # Create fake data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.85,
+#'   N = 1000,
+#'   ID = 2,
+#'   ZIP = 0,
+#'   AddDate = TRUE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run function
+#' data <- RemixAutoML::AutoClusteringScoring(
+#'   data,
+#'   FeatureColumns = names(data)[2:(ncol(data)-1)],
+#'   ModelID = "TestModel",
+#'   SavePath = getwd(),
+#'   NThreads = 8,
+#'   MaxMemory = "28G",
+#'   DimReduction = TRUE)
+#' }
+#'
 #' @return Original data.table with added column with cluster number identifier
 #' @export
 AutoClusteringScoring <- function(data,
@@ -163,9 +285,6 @@ AutoClusteringScoring <- function(data,
   # Check data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Subset data
-  temp <- data[, .SD, .SDcols = c(FeatureColumns)]
-
   # Dim Reduction
   if(DimReduction) {
 
@@ -176,7 +295,7 @@ AutoClusteringScoring <- function(data,
     data <- RemixAutoML::H2OAutoencoderScoring(
 
       # Select the service
-      AnomalyDetection = TRUE,
+      AnomalyDetection = FALSE,
       DimensionReduction = TRUE,
 
       # Data related args
@@ -195,10 +314,16 @@ AutoClusteringScoring <- function(data,
       H2OShutdown = TRUE,
       ReturnLayer = 4L)
 
+    # Sleep
+    Sys.sleep(10L)
+
     # New cols
     FeatureColumns <- setdiff(names(data), tempnames)
 
     # New data
+    temp <- data[, .SD, .SDcols = c(FeatureColumns)]
+
+  } else {
     temp <- data[, .SD, .SDcols = c(FeatureColumns)]
   }
 
@@ -207,7 +332,7 @@ AutoClusteringScoring <- function(data,
   H2OData <- h2o::as.h2o(temp)
 
   # Load model
-  Clustermodel <- h2o::h2o.loadModel(path = file.path(SavePath, paste0(ModelID, "_KMeans")))
+  ClusterModel <- h2o::h2o.loadModel(path = file.path(SavePath, paste0(ModelID, "_KMeans")))
 
   # Combine outputs ----
   preds <- data.table::as.data.table(h2o::h2o.predict(ClusterModel, H2OData))

@@ -59,6 +59,68 @@ Original data.table with added column with cluster number identifier
 \description{
 AutoClustering adds a column to your original data with a cluster number identifier. You can run request an autoencoder to be built to reduce the dimensionality of your data before running the clusering algo.
 }
+\examples{
+\dontrun{
+#########################
+# Training Setup
+#########################
+
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run function
+data <- RemixAutoML::AutoClustering(
+  data,
+  FeatureColumns = names(data)[2:(ncol(data)-1)],
+  ModelID = "TestModel",
+  SavePath = getwd(),
+  NThreads = 8,
+  MaxMemory = "28G",
+  MaxClusters = 50,
+  ClusterMetric = "totss",
+  RunDimReduction = TRUE,
+  ShrinkRate = (sqrt(5) - 1) / 2,
+  Epochs = 5L,
+  L2_Reg = 0.10,
+  ElasticAveraging = TRUE,
+  ElasticAveragingMovingRate = 0.90,
+  ElasticAveragingRegularization = 0.001)
+
+#########################
+# Scoring Setup
+#########################
+
+Sys.sleep(10)
+
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run function
+data <- RemixAutoML::AutoClusteringScoring(
+  data,
+  FeatureColumns = names(data)[2:(ncol(data)-1)],
+  ModelID = "TestModel",
+  SavePath = getwd(),
+  NThreads = 8,
+  MaxMemory = "28G",
+  DimReduction = TRUE)
+}
+
+}
 \seealso{
 Other Unsupervised Learning: 
 \code{\link{AutoClusteringScoring}()},

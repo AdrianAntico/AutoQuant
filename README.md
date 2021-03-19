@@ -306,6 +306,102 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 </p>
 </details>
 
+#### **AutoDiffLagN()**
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+##############################
+# Current minus lag1
+##############################
+ 
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 50000,
+  ID = 2L,
+  FactorCount = 3L,
+  AddDate = TRUE,
+  ZIP = 0L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Store Cols to diff
+Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
+
+# Clean data before running AutoDiffLagN
+data <- RemixAutoML::ModelDataPrep(
+  data = data,
+  Impute = FALSE,
+  CharToFactor = FALSE,
+  FactorToChar = TRUE)
+
+# Run function
+data <- RemixAutoML::AutoDiffLagN(
+  data,
+  DateVariable = "DateTime",
+  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
+  DiffVariables = Cols,
+  DiffDateVariables = "DateTime",
+  NLag1 = 0,
+  NLag2 = 1,
+  Sort = TRUE,
+  RemoveNA = TRUE)
+
+##############################
+# lag1 minus lag3
+##############################
+
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.70,
+  N = 50000,
+  ID = 2L,
+  FactorCount = 3L,
+  AddDate = TRUE,
+  ZIP = 0L,
+  TimeSeries = FALSE,
+  ChainLadderData = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Store Cols to diff
+Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
+
+# Clean data before running AutoDiffLagN
+data <- RemixAutoML::ModelDataPrep(
+  data = data,
+  Impute = FALSE,
+  CharToFactor = FALSE,
+  FactorToChar = TRUE)
+
+# Run function
+data <- RemixAutoML::AutoDiffLagN(
+  data,
+  DateVariable = "DateTime",
+  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
+  DiffVariables = Cols,
+  DiffDateVariables = "DateTime",
+  NLag1 = 1,
+  NLag2 = 3,
+  Sort = TRUE,
+  RemoveNA = TRUE)
+```
+
+</p>
+</details>
+
+<details><summary>Function Description</summary>
+<p>
+ 
+<code>AutoDiffLagN()</code> Generate differences for numeric columns and date columns, by groups. You can specify NLag1 = 0 and NLag2 to generate the diffs based on a lag 1 to lag 2 differences for a column, and multiple columns.
+
+</p>
+</details>
+
 #### **AutoInteraction()**
 
 <details><summary>Code Example</summary>
@@ -681,98 +777,78 @@ Outliers <- RemixAutoML::H2OIsolationForestScoring(
 </p>
 </details>
 
-#### **AutoDiffLagN()**
+#### **AutoClustering()** 
 
 <details><summary>Code Example</summary>
 <p>
- 
+
 ```
-##############################
-# Current minus lag1
-##############################
- 
-# Create fake data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.70,
-  N = 50000,
-  ID = 2L,
-  FactorCount = 3L,
-  AddDate = TRUE,
-  ZIP = 0L,
-  TimeSeries = FALSE,
-  ChainLadderData = FALSE,
-  Classification = FALSE,
-  MultiClass = FALSE)
-
-# Store Cols to diff
-Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
-
-# Clean data before running AutoDiffLagN
-data <- RemixAutoML::ModelDataPrep(
-  data = data,
-  Impute = FALSE,
-  CharToFactor = FALSE,
-  FactorToChar = TRUE)
-
-# Run function
-data <- RemixAutoML::AutoDiffLagN(
-  data,
-  DateVariable = "DateTime",
-  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
-  DiffVariables = Cols,
-  DiffDateVariables = "DateTime",
-  NLag1 = 0,
-  NLag2 = 1,
-  Sort = TRUE,
-  RemoveNA = TRUE)
-
-##############################
-# lag1 minus lag3
-##############################
+#########################
+# Training Setup
+#########################
 
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.70,
-  N = 50000,
-  ID = 2L,
-  FactorCount = 3L,
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
   AddDate = TRUE,
-  ZIP = 0L,
-  TimeSeries = FALSE,
-  ChainLadderData = FALSE,
   Classification = FALSE,
   MultiClass = FALSE)
 
-# Store Cols to diff
-Cols <- names(data)[which(unlist(data[, lapply(.SD, is.numeric)]))]
+# Run function
+data <- RemixAutoML::AutoClustering(
+  data,
+  FeatureColumns = names(data)[2:(ncol(data)-1)],
+  ModelID = "TestModel",
+  SavePath = getwd(),
+  NThreads = 8,
+  MaxMemory = "28G",
+  MaxClusters = 50,
+  ClusterMetric = "totss",
+  RunDimReduction = TRUE,
+  ShrinkRate = (sqrt(5) - 1) / 2,
+  Epochs = 5L,
+  L2_Reg = 0.10,
+  ElasticAveraging = TRUE,
+  ElasticAveragingMovingRate = 0.90,
+  ElasticAveragingRegularization = 0.001)
 
-# Clean data before running AutoDiffLagN
-data <- RemixAutoML::ModelDataPrep(
-  data = data,
-  Impute = FALSE,
-  CharToFactor = FALSE,
-  FactorToChar = TRUE)
+#########################
+# Scoring Setup
+#########################
+
+Sys.sleep(10)
+
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
 
 # Run function
-data <- RemixAutoML::AutoDiffLagN(
+data <- RemixAutoML::AutoClusteringScoring(
   data,
-  DateVariable = "DateTime",
-  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
-  DiffVariables = Cols,
-  DiffDateVariables = "DateTime",
-  NLag1 = 1,
-  NLag2 = 3,
-  Sort = TRUE,
-  RemoveNA = TRUE)
+  FeatureColumns = names(data)[2:(ncol(data)-1)],
+  ModelID = "TestModel",
+  SavePath = getwd(),
+  NThreads = 8,
+  MaxMemory = "28G",
+  DimReduction = TRUE)
 ```
-
-</p>
-</details>
 
 <details><summary>Function Description</summary>
 <p>
  
-<code>AutoDiffLagN()</code> Generate differences for numeric columns and date columns, by groups. You can specify NLag1 = 0 and NLag2 to generate the diffs based on a lag 1 to lag 2 differences for a column, and multiple columns.
+<code>AutoClustering()</code> Generates a single column and merges it onto your data. You can have an autoencoder ran to reduce the dimension size before running the KMeans grid tuning operation. If you provide a directory path, the models will be saved and can be used later in scoring enviroments. I find that I utilize clustering more often for feature engineering that unsupervised learning which is why I put the code example and description here. The function utilizes H2O under the hood with their KMeans algo for the clustering and their deep learning algo for the dimensionality reduction. 
+
+</p>
+</details>
 
 </p>
 </details>
@@ -966,6 +1042,48 @@ data <- RemixAutoML::DummifyDT(
 </p>
 </details>
 
+#### **AutoDataPartition()**
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85, 
+  N = 1000, 
+  ID = 2, 
+  ZIP = 0, 
+  AddDate = FALSE, 
+  Classification = FALSE, 
+  MultiClass = FALSE)
+
+# Run data partitioning function
+dataSets <- RemixAutoML::AutoDataPartition(
+  data,
+  NumDataSets = 3L,
+  Ratios = c(0.70,0.20,0.10),
+  PartitionType = "random",
+  StratifyColumnNames = NULL,
+  TimeColumnName = NULL)
+
+# Collect data
+TrainData <- dataSets$TrainData
+ValidationData <- dataSets$ValidationData
+TestData <- dataSets$TestData
+```
+
+</p>
+</details>
+
+<details><summary>Function Description</summary>
+<p>
+
+<code>AutoDataPartition()</code> is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify a stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
+
+</p>
+</details>
+
 #### **ModelDataPrep()**
 
 <details><summary>Code Example</summary>
@@ -1021,48 +1139,6 @@ str(data)
 * Date type to Character type conversion
 * Remove date columns
 * Ignore specified columns
-
-</p>
-</details>
-
-#### **AutoDataPartition()**
-
-<details><summary>Code Example</summary>
-<p>
-
-```
-# Create fake data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.85, 
-  N = 1000, 
-  ID = 2, 
-  ZIP = 0, 
-  AddDate = FALSE, 
-  Classification = FALSE, 
-  MultiClass = FALSE)
-
-# Run data partitioning function
-dataSets <- RemixAutoML::AutoDataPartition(
-  data,
-  NumDataSets = 3L,
-  Ratios = c(0.70,0.20,0.10),
-  PartitionType = "random",
-  StratifyColumnNames = NULL,
-  TimeColumnName = NULL)
-
-# Collect data
-TrainData <- dataSets$TrainData
-ValidationData <- dataSets$ValidationData
-TestData <- dataSets$TestData
-```
-
-</p>
-</details>
-
-<details><summary>Function Description</summary>
-<p>
-
-<code>AutoDataPartition()</code> is designed to achieve a few things that standard data partitioning processes or functions don't handle. First, you can choose to build any number of partitioned data sets beyond the standard train, validate, and test data sets. Second, you can choose between random sampling to split your data or you can choose a time-based partitioning. Third, for the random partitioning, you can specify a stratification columns in your data to stratify by in order to ensure a proper split amongst your categorical features (E.g. think MultiClass targets). Lastly, it's 100% data.table so it will run fast and with low memory overhead.
 
 </p>
 </details>
@@ -3871,10 +3947,6 @@ For each of the models tested internally, several aspects should be noted:
 <details><summary>Expand to view content</summary>
 <p>
  
-
-#### **AutoClustering()** 
-<code>AutoKMeans()</code> This function builds an autoencoder for dimensionality reduction followed by KMeans. (Possible cross with Feature Engineering)
-
 #### **ResidualOutliers()**
 <code>ResidualOutliers()</code> Generate residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 
