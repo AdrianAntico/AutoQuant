@@ -7,7 +7,7 @@
 VI_Plot(Type = "catboost", VI_Data, ColorHigh = "darkblue", ColorLow = "white")
 }
 \arguments{
-\item{Type}{'catboost', 'xboost', 'h2o'}
+\item{Type}{'catboost', 'xgboost', 'h2o'}
 
 \item{VI_Data}{Source data}
 }

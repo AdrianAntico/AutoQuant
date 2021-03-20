@@ -38,7 +38,8 @@ AutoXGBoostClassifier(
   max_depth = seq(4L, 16L, 2L),
   min_child_weight = seq(1, 10, 1),
   subsample = seq(0.55, 1, 0.05),
-  colsample_bytree = seq(0.55, 1, 0.05)
+  colsample_bytree = seq(0.55, 1, 0.05),
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -109,6 +110,8 @@ AutoXGBoostClassifier(
 \item{subsample}{Number, or vector for subsample to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
 
 \item{colsample_bytree}{Number, or vector for colsample_bytree to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
+
+\item{DebugMode}{TRUE to print to console the steps taken}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -176,7 +179,8 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     max_depth = 4L,
     min_child_weight = 1.0,
     subsample = 0.55,
-    colsample_bytree = 0.55)
+    colsample_bytree = 0.55,
+    DebugMode = FALSE)
 }
 }
 \seealso{

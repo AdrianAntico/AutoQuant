@@ -229,6 +229,8 @@ AutoCatBoostClassifier <- function(data,
 
   # Binary Grid Tune or Not Check ----
   if(GridTune && !TrainOnFull) {
+
+    # Kicking off grid tuning ----
     if(DebugMode) print("Running Grid Tuning")
 
     # Pull in Grid sets ----
@@ -359,7 +361,7 @@ AutoCatBoostClassifier <- function(data,
 
     # Remove unneeded rows ----
     ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
-    BestGrid <- ExperimentalGrid.[order(-eval_metric)][1L]
+    BestGrid <- ExperimentalGrid[order(-eval_metric)][1L]
 
     # Binary Save ExperimentalGrid ----
     if(SaveModelObjects) {
@@ -404,11 +406,11 @@ AutoCatBoostClassifier <- function(data,
   Output <- CatBoostImportances(ModelType="classification", TargetColumnName.=TargetColumnName, BestGrid.=BestGrid, TrainOnFull.=TrainOnFull, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TestDataCheck=!is.null(TestData), ValidationData.=ValidationData, FeatureColNames.=FeatureColNames, GridTune.=GridTune, task_type.=task_type, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)
   VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
   Interaction <- Output$Interaction; Output$Interaction <- NULL
-  ShapValues <- Output$ShapValues; Output$ShapValues <- NULL; rm(Output)
+  ShapValues <- Output$ShapValues; rm(Output)
 
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Running BinaryMetrics()")
-  EvalMetrics <- BinaryMetrics(MLModels="catboost", ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  EvalMetrics <- BinaryMetrics(MLModels.="catboost", ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
   # Classification evaluation plots ----
   if(DebugMode) print("Running CatBoostEvalPlots()")
@@ -423,7 +425,7 @@ AutoCatBoostClassifier <- function(data,
 
   # Send output to pdf ----
   if(DebugMode) print("Running CatBoostPDF()")
-  CatBoostPDF(ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
+  CatBoostPDF(ModelClass = "catboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
 
   # Final Garbage Collection ----
   if(tolower(task_type) == "gpu") gc()

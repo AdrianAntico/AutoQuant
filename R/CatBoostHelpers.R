@@ -1538,6 +1538,7 @@ CatBoostEvalPlots <- function(ModelType = "classification",
 #' @author Adrian
 #' @family CatBoost Helpers
 #'
+#' @param ModelClass 'catboost', 'xgboost', 'h2o'
 #' @param ModelType 'regression', 'classification', 'multiclass', or 'vector'
 #' @param TrainOnFull. Passthrough
 #' @param SaveInfoToPDF. Passthrough
@@ -1552,7 +1553,8 @@ CatBoostEvalPlots <- function(ModelType = "classification",
 #' @param metadata_path. Passthrough
 #'
 #' @export
-CatBoostPDF <- function(ModelType = "regression",
+CatBoostPDF <- function(ModelClass = "catboost",
+                        ModelType = "regression",
                         TrainOnFull. = TrainOnFull,
                         SaveInfoToPDF. = SaveInfoToPDF,
                         EvaluationPlot. = EvaluationPlot,
@@ -1565,17 +1567,21 @@ CatBoostPDF <- function(ModelType = "regression",
                         model_path. = model_path,
                         metadata_path. = metadata_path) {
 
+  # Classification
   if(ModelType == "classification") {
     if(!TrainOnFull. && SaveInfoToPDF.) {
-      EvalPlotList <- list(EvaluationPlot., if(!is.null(VariableImportance.)) VI_Plot(Type = "catboost", VI_Data = VariableImportance.) else NULL)
+      EvalPlotList <- list(EvaluationPlot., if(!is.null(VariableImportance.)) VI_Plot(Type = ModelClass, VI_Data = VariableImportance.) else NULL)
       ParDepList <- list(if(!is.null(ParDepPlots.)) ParDepPlots. else NULL)
       TableMetrics <- list(EvalMetrics., if(!is.null(VariableImportance.)) VariableImportance. else NULL, if(!is.null(VariableImportance.)) Interaction. else NULL)
     } else {
       return(NULL)
     }
-  } else if(ModelType == "regression") {
+  }
+
+  # Regression
+  if(ModelType == "regression") {
     if(!TrainOnFull. && SaveInfoToPDF.) {
-      EvalPlotList <- list(EvaluationPlot., EvaluationBoxPlot., if(!is.null(VariableImportance.)) VI_Plot(Type = "catboost", VI_Data = VariableImportance.) else NULL)
+      EvalPlotList <- list(EvaluationPlot., EvaluationBoxPlot., if(!is.null(VariableImportance.)) VI_Plot(Type = ModelClass, VI_Data = VariableImportance.) else NULL)
       ParDepList <- list(if(!is.null(ParDepPlots.)) ParDepPlots. else NULL, if(!is.null(ParDepBoxPlots.)) ParDepBoxPlots. else NULL)
       TableMetrics <- list(EvalMetrics., if(!is.null(VariableImportance.)) VariableImportance. else NULL, if(!is.null(VariableImportance.)) Interaction. else NULL)
     } else {

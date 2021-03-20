@@ -469,7 +469,7 @@ AutoCatBoostRegression <- function(data,
 
   # Send output to pdf ----
   if(DebugMode) print("Running CatBoostPDF()")
-  CatBoostPDF(ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=EvaluationBoxPlot, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=ParDepBoxPlots, EvalMetrics.=EvaluationMetrics, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
+  CatBoostPDF(ModelClass = "catboost", ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=EvaluationBoxPlot, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=ParDepBoxPlots, EvalMetrics.=EvaluationMetrics, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
 
   # Final Garbage Collection ----
   if(tolower(task_type) == "gpu") gc()
@@ -495,6 +495,6 @@ AutoCatBoostRegression <- function(data,
         FactorLevelsList = FactorLevelsList))
     }
   } else if(ReturnModelObjects) {
-    return(list(Model = model, data = ValidationData, ColNames = Names, TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,FactorLevelsList = FactorLevelsList))
+    return(list(Model = model, data = ValidationData, ColNames = Names, TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL, FactorLevelsList = FactorLevelsList))
   }
 }

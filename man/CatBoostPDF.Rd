@@ -5,6 +5,7 @@
 \title{CatBoostPDF}
 \usage{
 CatBoostPDF(
+  ModelClass = "catboost",
   ModelType = "regression",
   TrainOnFull. = TrainOnFull,
   SaveInfoToPDF. = SaveInfoToPDF,
@@ -20,6 +21,8 @@ CatBoostPDF(
 )
 }
 \arguments{
+\item{ModelClass}{'catboost', 'xgboost', 'h2o'}
+
 \item{ModelType}{'regression', 'classification', 'multiclass', or 'vector'}
 
 \item{TrainOnFull.}{Passthrough}

@@ -39,6 +39,7 @@
 #' @param MaxRunMinutes In minutes
 #' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
+#' @param DebugMode TRUE to print to console the steps taken
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
@@ -99,7 +100,8 @@
 #'     max_depth = 4L,
 #'     min_child_weight = 1.0,
 #'     subsample = 0.55,
-#'     colsample_bytree = 0.55)
+#'     colsample_bytree = 0.55,
+#'     DebugMode = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -136,7 +138,8 @@ AutoXGBoostClassifier <- function(data,
                                   max_depth = seq(4L, 16L, 2L),
                                   min_child_weight = seq(1.0, 10.0, 1.0),
                                   subsample = seq(0.55, 1.0, 0.05),
-                                  colsample_bytree = seq(0.55, 1.0, 0.05)) {
+                                  colsample_bytree = seq(0.55, 1.0, 0.05),
+                                  DebugMode = FALSE) {
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
@@ -146,16 +149,16 @@ AutoXGBoostClassifier <- function(data,
   if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
 
   # Binary Check Arguments----
-  if(any(Trees < 1L)) return("Trees must be greater than 1")
+  if(any(Trees < 1L)) stop("Trees must be greater than 1")
   if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1L & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1 and less than 1080")
-  if(!is.null(model_path)) if (!is.character(model_path)) return("model_path needs to be a character type")
-  if(!is.null(metadata_path)) if (!is.character(metadata_path)) return("metadata_path needs to be a character type")
-  if(!is.character(ModelID)) return("ModelID needs to be a character type")
-  if(NumOfParDepPlots < 0L) return("NumOfParDepPlots needs to be a positive number")
-  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
-  if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
+  if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
+  if(MaxModelsInGrid < 1L & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
+  if(!is.null(model_path)) if (!is.character(model_path)) stop("model_path needs to be a character type")
+  if(!is.null(metadata_path)) if (!is.character(metadata_path)) stop("metadata_path needs to be a character type")
+  if(!is.character(ModelID)) stop("ModelID needs to be a character type")
+  if(NumOfParDepPlots < 0L) stop("NumOfParDepPlots needs to be a positive number")
+  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
+  if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
 
   # Binary Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -617,6 +620,17 @@ AutoXGBoostClassifier <- function(data,
     # Remove unneeded rows----
     ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
     gc()
+
+    # Binary Save GridCollect and GridList----
+    if(SaveModelObjects & GridTune) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "ExperimentalGrid.csv")))
+      } else {
+        data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(model_path), paste0(ModelID, "ExperimentalGrid.csv")))
+      }
+    }
+  } else {
+    ExperimentalGrid <- NULL
   }
 
   # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
@@ -835,91 +849,33 @@ AutoXGBoostClassifier <- function(data,
     }
   }
 
-  # Binary Save GridCollect and GridList----
-  if(SaveModelObjects & GridTune) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "ExperimentalGrid.csv")))
-    } else {
-      data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(model_path), paste0(ModelID, "ExperimentalGrid.csv")))
-    }
-  }
+  # Generate EvaluationMetrics ----
+  if(DebugMode) print("Running BinaryMetrics()")
+  EvalMetrics <- BinaryMetrics(MLModels.="xgboost", ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
-  # VI_Plot_Function----
-  VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
-      ggplot2::geom_bar(stat = "identity") +
-      ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
-      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-      ggplot2::coord_flip() +
-      ggplot2::labs(title = "Global Variable Importance") +
-      ggplot2::xlab("Top Model Features") +
-      ggplot2::ylab("Value") +
-      ggplot2::theme(legend.position = "none")
-  }
+  # VI_Plot ----
+  VI_Plot_Object <- VI_Plot(Type = "xgboost", VI_Data = VariableImportance)
 
-  # VI_Plot----
-  VI_Plot_Object <- VI_Plot(VI_Data = VariableImportance)
-
-  # Save PDF of model information ----
-  if(!TrainOnFull & SaveInfoToPDF) {
-    EvalPlotList <- list(EvaluationPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
-    ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL)
-    TableMetrics <- list(RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),XGBoostTestData=ValidationData), if(!is.null(VariableImportance)) VariableImportance else NULL)
-    try(PrintToPDF(
-      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
-      OutputName = "EvaluationPlots",
-      ObjectList = EvalPlotList,
-      Title = "Model Evaluation Plots",
-      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
-    try(PrintToPDF(
-      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
-      OutputName = "PartialDependencePlots",
-      ObjectList = ParDepList,
-      Title = "Partial Dependence Calibration Plots",
-      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
-    try(PrintToPDF(
-      Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
-      OutputName = "Metrics_and_Importances",
-      ObjectList = TableMetrics,
-      MaxPages = 100,
-      Tables = TRUE,
-      Title = "Model Metrics and Variable Importances",
-      Width = 12,Height = 7,Paper = "USr",BackgroundColor = "transparent",ForegroundColor = "black"))
-    while(dev.cur() > 1) grDevices::dev.off()
-  }
+  # Send output to pdf ----
+  if(DebugMode) print("Running CatBoostPDF()")
+  CatBoostPDF(ModelClass = "catboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
 
   # Binary Return Model Objects----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
 
-  # Return objects----
-  if(GridTune) {
-    if (ReturnModelObjects) {
-      return(list(
-        Model = model,
-        ValidationData = ValidationData,
-        ROC_Plot = ROC_Plot,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),XGBoostTestData=ValidationData),
-        VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot_Object,
-        PartialDependencePlots = ParDepPlots,
-        GridMetrics = data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE),
-        ColNames = Names,
-        FactorLevels = FactorLevelsList))
-    }
-  } else {
-    if (ReturnModelObjects) {
-      return(list(
-        Model = model,
-        ValidationData = ValidationData,
-        ROC_Plot = ROC_Plot,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(MLModels="xgboost",TargetVariable=Target,Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),XGBoostTestData=ValidationData),
-        VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot_Object,
-        PartialDependencePlots = ParDepPlots,
-        ColNames = Names,
-        FactorLevels = FactorLevelsList))
-    }
+  # Return objects ----
+  if(ReturnModelObjects) {
+    return(list(
+      Model = model,
+      ValidationData = ValidationData,
+      ROC_Plot = ROC_Plot,
+      EvaluationPlot = EvaluationPlot,
+      EvaluationMetrics = EvalMetrics,
+      VariableImportance = VariableImportance,
+      VI_Plot = VI_Plot_Object,
+      PartialDependencePlots = ParDepPlots,
+      GridMetrics = if(GridTune) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
+      ColNames = Names,
+      FactorLevels = FactorLevelsList))
   }
 }

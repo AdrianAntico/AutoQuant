@@ -244,18 +244,18 @@ FakeDataGenerator <- function(Correlation = 0.70,
   if(AddDate) {
     if(FactorCount == 0) {
       data <- data[, DateTime := as.Date(Sys.time())]
-      data[, temp := 1L:.N][, DateTime := DateTime - temp][, temp := NULL]
+      data[, temp := seq_len(.N)][, DateTime := DateTime - temp][, temp := NULL]
       data <- data[order(DateTime)]
     } else {
       data <- data[, DateTime := as.Date(Sys.time())]
       CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
-      data[, temp := 1L:.N, by = c(names(data)[c(CatFeatures)])][, DateTime := DateTime - temp][, temp := NULL]
+      data[, temp := seq_len(.N), by = c(names(data)[c(CatFeatures)])][, DateTime := DateTime - temp][, temp := NULL]
       data.table::setorderv(x = data, cols = c("DateTime", c(names(data)[c(CatFeatures)])), order = rep(1, length(c(names(data)[c(CatFeatures)]))+1))
     }
   }
 
   # Zero Inflation Setup----
-  if(!Classification & !MultiClass) {
+  if(!Classification && !MultiClass) {
     if(ZIP == 1L) {
       data[, Adrian := data.table::fifelse(Adrian < 0.5, 0, Independent_Variable8)][, Independent_Variable8 := NULL]
     } else if(ZIP == 2L) {

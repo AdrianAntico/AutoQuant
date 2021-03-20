@@ -472,7 +472,7 @@ RemixClassificationMetrics <- function(MLModels = NULL,
 #' @param metadata_path. = metadata_path
 #'
 #' @export
-BinaryMetrics <- function(MLModels = "catboost",
+BinaryMetrics <- function(MLModels. = "catboost",
                           ClassWeights. = ClassWeights,
                           CostMatrixWeights. = CostMatrixWeights,
                           SaveModelObjects. = SaveModelObjects,
@@ -484,14 +484,14 @@ BinaryMetrics <- function(MLModels = "catboost",
                           metadata_path. = metadata_path) {
   if(is.null(CostMatrixWeights.)) CostMatrixWeights. <- c(ClassWeights.[1L], 0, 0, ClassWeights.[2L])
   if(SaveModelObjects. && !TrainOnFull.) {
-    EvalMetrics <- RemixClassificationMetrics(MLModels = "catboost", TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
+    EvalMetrics <- RemixClassificationMetrics(MLModels = MLModels., TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
     if(!is.null(metadata_path.)) {
       data.table::fwrite(EvalMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
     } else {
       data.table::fwrite(EvalMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
     }
   } else if(!TrainOnFull.) {
-    EvalMetrics <- RemixClassificationMetrics(MLModels = "catboost", TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
+    EvalMetrics <- RemixClassificationMetrics(MLModels = MLModels., TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), CatBoostTestData = ValidationData.)
   } else {
     EvalMetrics <- NULL
   }
