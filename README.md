@@ -776,7 +776,7 @@ Outliers <- RemixAutoML::H2OIsolationForestScoring(
 </p>
 </details>
 
-#### **AutoClustering()** 
+#### **AutoClustering() and AutoClusteringScoring()** 
 
 <details><summary>Code Example</summary>
 <p>
