@@ -68,15 +68,13 @@ Generate variable importance, interaction importance, and shap values
 \seealso{
 Other CatBoost Helpers: 
 \code{\link{CatBoostArgsCheck}()},
-\code{\link{CatBoostClassifierParams}()},
 \code{\link{CatBoostDataConversion}()},
 \code{\link{CatBoostDataPrep}()},
 \code{\link{CatBoostEvalPlots}()},
 \code{\link{CatBoostFinalParams}()},
-\code{\link{CatBoostMultiClassParams}()},
+\code{\link{CatBoostGridParams}()},
 \code{\link{CatBoostPDF}()},
 \code{\link{CatBoostParameterGrids}()},
-\code{\link{CatBoostRegressionParams}()},
 \code{\link{CatBoostRemoveFiles}()},
 \code{\link{CatBoostValidationData}()}
 }

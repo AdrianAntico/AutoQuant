@@ -31,6 +31,7 @@ RPM_Binomial_Bandit computes randomized probability matching probabilities for e
 }
 \seealso{
 Other Reinforcement Learning: 
+\code{\link{GridTuner}()},
 \code{\link{RL_Initialize}()},
 \code{\link{RL_ML_Update}()},
 \code{\link{RL_Update}()}

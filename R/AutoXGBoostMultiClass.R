@@ -616,23 +616,7 @@ AutoXGBoostMultiClass <- function(data,
       }
 
       # Update bandit probabilities and whatnot----
-      RL_Update_Output <- RL_ML_Update(
-        ExperimentGrid = ExperimentalGrid,
-        ModelRun = counter,
-        ModelType = "classification",
-        NEWGrid = NewGrid,
-        NewPerformance = NewPerformance,
-        BestPerformance = BestPerformance,
-        TrialVector = Trials,
-        SuccessVector = Successes,
-        GridIDS = GridIDs,
-        BanditArmsCount = BanditArmsN,
-        RunsWithoutNewWinner = RunsWithoutNewWinner,
-        MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-        MaxNumberModels = MaxModelsInGrid,
-        MaxRunMinutes = MaxRunMinutes,
-        TotalRunTime = TotalRunTime,
-        BanditProbabilities = BanditProbs)
+      RL_Update_Output <- RL_ML_Update(ModelType="multiclass", Iteration=counter, NewGrid.=NewGrid, NewPerformance.=NewPerformance, BestPerformance.=BestPerformance, Trials.=Trials, Successes.=Successes, GridIDs.=GridIDs, BanditArmsN.=BanditArmsN, RunsWithoutNewWinner.=RunsWithoutNewWinner, MaxRunsWithoutNewWinner.=MaxRunsWithoutNewWinner, MaxModelsInGrid.=MaxModelsInGrid, MaxRunMinutes.=MaxRunMinutes, TotalRunTime.=TotalRunTime, BanditProbs.=BanditProbs)
       BanditProbs <- RL_Update_Output[["BanditProbs"]]
       Trials <- RL_Update_Output[["Trials"]]
       Successes <- RL_Update_Output[["Successes"]]

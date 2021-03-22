@@ -219,106 +219,114 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @author Adrian Antico
 #' @family Reinforcement Learning
 #'
-#' @param ExperimentGrid This is a data.table of grid params and model results
-#' @param ModelRun Model iteration number
 #' @param ModelType "classification", "regression", and "multiclass"
-#' @param NEWGrid Previous grid passed in
-#' @param NewPerformance Internal
-#' @param BestPerformance Internal
-#' @param TrialVector Numeric vector with the total trials for each arm
-#' @param SuccessVector Numeric vector with the total successes for each arm
-#' @param GridIDS The numeric vector that identifies which grid is which
-#' @param BanditArmsCount The number of arms in the bandit
-#' @param RunsWithoutNewWinner Counter of the number of models previously built without being a new winner
-#' @param MaxRunsWithoutNewWinner Maximum number of models built without a new best model (constraint)
-#' @param MaxNumberModels Maximum number of models to build (constraint)
-#' @param MaxRunMinutes Run time constraint
-#' @param TotalRunTime Cumulative run time in minutes
-#' @param BanditProbabilities Inital probabilities from RL_Initialize()
+#' @param Iteration Model iteration number
+#' @param NewGrid. Previous grid passed in
+#' @param NewPerformance. Internal
+#' @param BestPerformance. Internal
+#' @param Trials. Numeric vector with the total trials for each arm
+#' @param Successes. Numeric vector with the total successes for each arm
+#' @param GridIDs. The numeric vector that identifies which grid is which
+#' @param BanditArmsN. The number of arms in the bandit
+#' @param RunsWithoutNewWinner. Counter of the number of models previously built without being a new winner
+#' @param MaxRunsWithoutNewWinner. Maximum number of models built without a new best model (constraint)
+#' @param MaxModelsInGrid. Maximum number of models to build (constraint)
+#' @param MaxRunMinutes. Run time constraint
+#' @param TotalRunTime. Cumulative run time in minutes
+#' @param BanditProbs. Inital probabilities from RL_Initialize()
 #' @examples
 #' \dontrun{
 #' RL_Update_Output <- RL_ML_Update(
-#'   ExperimentGrid = ExperimentGrid,
-#'   ModelRun = run,
 #'   ModelType = "classification",
-#'   NEWGrid = NewGrid,
-#'   NewPerformance = NewPerformance,
-#'   BestPerformance = BestPerformance,
-#'   TrialVector = Trials,
-#'   SuccessVector = Successes,
-#'   GridIDS = GridIDs,
-#'   BanditArmsCount = BanditArmsN,
-#'   RunsWithoutNewWinner = RunsWithoutNewWinner,
-#'   MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-#'   MaxNumberModels = MaxNumberModels,
-#'   MaxRunMinutes = MaxRunMinutes,
-#'   TotalRunTime = TotalRunTime,
-#'   BanditProbabilities = BanditProbs)
+#'   Iteration = run,
+#'   NewGrid. = NewGrid,
+#'   NewPerformance. = NewPerformance,
+#'   BestPerformance. = BestPerformance,
+#'   Trials. = Trials,
+#'   Successes. = Successes,
+#'   GridIDs. = GridIDs,
+#'   BanditArmsN. = BanditArmsN,
+#'   RunsWithoutNewWinner. = RunsWithoutNewWinner,
+#'   MaxRunsWithoutNewWinner. = MaxRunsWithoutNewWinner,
+#'   MaxNumberModels. = MaxNumberModels,
+#'   MaxRunMinutes. = MaxRunMinutes,
+#'   TotalRunTime. = TotalRunTime,
+#'   BanditProbs. = BanditProbs)
 #' BanditProbs <- RL_Update_Output[["BanditProbs"]]
 #' Trials <- RL_Update_Output[["Trials"]]
 #' Successes <- RL_Update_Output[["Successes"]]
 #' NewGrid <- RL_Update_Output[["NewGrid"]]
 #' }
 #' @export
-RL_ML_Update <- function(ExperimentGrid = ExperimentGrid,
-                         ModelType = "classification",
-                         ModelRun = counter,
-                         NEWGrid = NewGrid,
-                         NewPerformance = NewPerformance,
-                         BestPerformance = BestPerformance,
-                         TrialVector = Trials,
-                         SuccessVector = Successes,
-                         GridIDS = GridIDs,
-                         BanditArmsCount = BanditArmsN,
-                         RunsWithoutNewWinner = RunsWithoutNewWinner,
-                         MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-                         MaxNumberModels = MaxNumberModels,
-                         MaxRunMinutes = MaxRunMinutes,
-                         TotalRunTime = TotalRunTime,
-                         BanditProbabilities = BanditProbs) {
+RL_ML_Update <- function(ModelType = "classification",
+                         Iteration = counter,
+                         NewGrid. = NewGrid,
+                         NewPerformance. = NewPerformance,
+                         BestPerformance. = BestPerformance,
+                         Trials. = Trials,
+                         Successes. = Successes,
+                         GridIDs. = GridIDs,
+                         BanditArmsN. = BanditArmsN,
+                         RunsWithoutNewWinner. = RunsWithoutNewWinner,
+                         MaxRunsWithoutNewWinner. = MaxRunsWithoutNewWinner,
+                         MaxModelsInGrid. = MaxModelsInGrid,
+                         MaxRunMinutes. = MaxRunMinutes,
+                         TotalRunTime. = TotalRunTime,
+                         BanditProbs. = BanditProbs) {
 
-  # Comparison----
-  if(ModelRun <= BanditArmsCount + 1L) BestGrid <- ModelRun - 1L else BestGrid <- NEWGrid
+  # Comparison ----
+  if(Iteration <= BanditArmsN. + 1L) GridRun <- Iteration - 1L else GridRun <- NewGrid.
 
-  # Update trial counts----
-  if(ModelRun > 1L) TrialVector[BestGrid] <- TrialVector[BestGrid] + 1L
+  # Update trial counts ----
+  if(Iteration > 1L) Trials.[GridRun] <- Trials.[GridRun] + 1L
 
-  # Best Metric----
-  if(ModelRun != 1L) {
+  # Generate NewGrid ----
+  if(Iteration == 1L) {
 
-    # Consecutive failures and updating success vectors----
-    if(ModelRun > 1L) {
-      if(tolower(ModelType) == "classification") if(NewPerformance > BestPerformance) SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
-      if(tolower(ModelType) %chin% c("regression","multiclass")) if(NewPerformance < BestPerformance) SuccessVector[BestGrid] <- SuccessVector[BestGrid] + 1L
-    }
+    # Base case: very first run is with default model settings
+    # This case is grabbing info from the very first grid set
+    NewGrid. <- 1
 
-    # Update Bandit Probabilities----
-    if(any(TrialVector < SuccessVector)) TrialVector[which(TrialVector < SuccessVector)] <- TrialVector[which(TrialVector < SuccessVector)] + 1L
+  } else if(Iteration < BanditArmsN.) {
 
-    # Create Bandit Probabilities----
-    BanditProbabilities <- RPM_Binomial_Bandit(Success = SuccessVector, Trials = TrialVector, SubDivisions = 1000L)
+    # Increment over the entire set of grid sets a single time before using bandit probabilities to select next grid
+    NewGrid. <- NewGrid. + 1L
 
-    # Sample from bandit to select next grid row----
-    NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
   } else {
 
-    # Sample from bandit to select next grid row----
-    NewGrid <- GridIDS[sample.int(n = BanditArmsCount, size = 1L, replace = TRUE, prob = BanditProbabilities)]
+    # Print exit values
+    print(paste0("Iteration number------  : ", Iteration))
+    print(paste0("Runs without new winner : ", RunsWithoutNewWinner.))
+    print(paste0("Total run time--------- : ", TotalRunTime.))
+
+    # Select grid using performance data and bandit probabilities
+    # Consecutive failures and updating success vectors ----
+    if(tolower(ModelType) == "classification") {
+      if(NewPerformance. > BestPerformance.) Successes.[GridRun] <- Successes.[GridRun] + 1L
+    } else if(tolower(ModelType) %chin% c("regression","multiclass")) {
+      if(NewPerformance. < BestPerformance.) Successes.[GridRun] <- Successes.[GridRun] + 1L
+    }
+
+    # Create Bandit Probabilities ----
+    BanditProbs. <- RPM_Binomial_Bandit(Success = Successes., Trials = Trials., SubDivisions = 1000L)
+
+    # Sample from GridIDs. using Bandit Probabilities ----
+    NewGrid. <- GridIDs.[sample.int(n = BanditArmsN., size = 1L, replace = TRUE, prob = BanditProbs.)]
   }
 
-  # Loop Break Conditions (No new winners; Max models built; Max time reached)----
-  if(RunsWithoutNewWinner >= MaxRunsWithoutNewWinner | ModelRun > MaxNumberModels | TotalRunTime > MaxRunMinutes * 60L) {
+  # Check to see if we should stop testing
+  if(RunsWithoutNewWinner. >= MaxRunsWithoutNewWinner. || Iteration > MaxModelsInGrid. || TotalRunTime. > MaxRunMinutes. * 60L) {
     Break <- "exit"
   } else {
     Break <- "stay"
   }
 
-  # Return----
+  # Return
   return(list(
-    NewGrid = NewGrid,
-    Trials = TrialVector,
-    Successes = SuccessVector,
-    BanditProbs = BanditProbabilities,
+    NewGrid = NewGrid.,
+    Trials = Trials.,
+    Successes = Successes.,
+    BanditProbs = BanditProbs.,
     BreakLoop = Break))
 }
 

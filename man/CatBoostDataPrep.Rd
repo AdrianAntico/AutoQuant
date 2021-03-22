@@ -65,15 +65,13 @@ Prepare data for loading into catboost format
 \seealso{
 Other CatBoost Helpers: 
 \code{\link{CatBoostArgsCheck}()},
-\code{\link{CatBoostClassifierParams}()},
 \code{\link{CatBoostDataConversion}()},
 \code{\link{CatBoostEvalPlots}()},
 \code{\link{CatBoostFinalParams}()},
+\code{\link{CatBoostGridParams}()},
 \code{\link{CatBoostImportances}()},
-\code{\link{CatBoostMultiClassParams}()},
 \code{\link{CatBoostPDF}()},
 \code{\link{CatBoostParameterGrids}()},
-\code{\link{CatBoostRegressionParams}()},
 \code{\link{CatBoostRemoveFiles}()},
 \code{\link{CatBoostValidationData}()}
 }

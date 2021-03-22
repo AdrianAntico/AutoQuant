@@ -1230,6 +1230,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   eval_metric_value = 1.5,
   loss_function = "RMSE",
   loss_function_value = 1.5,
+  grid_eval_metric = "r2",
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
   EvalPlots = TRUE,
@@ -1240,7 +1241,6 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 60*60,
-  Shuffles = 4L,
   BaselineComparison = "default",
 
   # ML args
@@ -1806,6 +1806,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   # Evaluation args
   eval_metric = "AUC",
   loss_function = "Logloss",
+  grid_eval_metric = "MCC",
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
   
@@ -1815,7 +1816,6 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L*60L,
-  Shuffles = 4L,
   BaselineComparison = "default",
   
   # ML args
@@ -2339,13 +2339,9 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L*60L,
-  Shuffles = 4L,
   BaselineComparison = "default",
   
   # ML args
-  langevin = FALSE,
-  diffusion_temperature = 10000,
-  Trees = seq(100L, 500L, 50L),
   Depth = seq(4L, 8L, 1L),
   LearningRate = seq(0.01,0.10,0.01),
   L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
@@ -2354,6 +2350,9 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
   GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  Trees = seq(100L, 500L, 50L),
   model_size_reg = 0.5,
   feature_border_type = "GreedyLogSum",
   sampling_unit = "Group",

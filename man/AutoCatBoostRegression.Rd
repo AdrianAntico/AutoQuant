@@ -6,7 +6,6 @@
 \usage{
 AutoCatBoostRegression(
   data,
-  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   Weights = NULL,
@@ -17,20 +16,23 @@ AutoCatBoostRegression(
   IDcols = NULL,
   TransformNumericColumns = NULL,
   Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+  TrainOnFull = FALSE,
   task_type = "GPU",
   NumGPUs = 1,
+  DebugMode = FALSE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  ModelID = "FirstModel",
+  model_path = NULL,
+  metadata_path = NULL,
+  SaveInfoToPDF = FALSE,
   eval_metric = "RMSE",
   eval_metric_value = 1.5,
   loss_function = "RMSE",
   loss_function_value = 1.5,
-  model_path = NULL,
-  metadata_path = NULL,
-  SaveInfoToPDF = FALSE,
-  ModelID = "FirstModel",
+  grid_eval_metric = "r2",
   NumOfParDepPlots = 0L,
   EvalPlots = TRUE,
-  ReturnModelObjects = TRUE,
-  SaveModelObjects = FALSE,
   PassInGrid = NULL,
   GridTune = FALSE,
   MaxModelsInGrid = 30L,
@@ -39,8 +41,6 @@ AutoCatBoostRegression(
   Shuffles = 1L,
   BaselineComparison = "default",
   MetricPeriods = 10L,
-  langevin = FALSE,
-  diffusion_temperature = 10000,
   Trees = 500L,
   Depth = 9,
   L2_Leaf_Reg = 3,
@@ -50,19 +50,18 @@ AutoCatBoostRegression(
   RSM = 1,
   BootStrapType = NULL,
   GrowPolicy = "SymmetricTree",
+  langevin = FALSE,
+  diffusion_temperature = 10000,
   model_size_reg = 0.5,
   feature_border_type = "GreedyLogSum",
   sampling_unit = "Object",
   subsample = NULL,
   score_function = "Cosine",
-  min_data_in_leaf = 1,
-  DebugMode = FALSE
+  min_data_in_leaf = 1
 )
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
-
-\item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -84,9 +83,25 @@ AutoCatBoostRegression(
 
 \item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
+\item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
+
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
 \item{NumGPUs}{Set to 1, 2, 3, etc.}
+
+\item{DebugMode}{Set to TRUE to get a printout of which step the function is on. FALSE, otherwise}
+
+\item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
+
+\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{ModelID}{A character string to name your model and output}
+
+\item{model_path}{A character string of your path file to where you want your output saved}
+
+\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
+
+\item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
 
 \item{eval_metric}{Select from 'RMSE', 'MAE', 'MAPE', 'R2', 'Poisson', 'MedianAbsoluteError', 'SMAPE', 'MSLE', 'NumErrors', 'FairLoss', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile', 'MultiRMSE'}
 
@@ -96,21 +111,11 @@ AutoCatBoostRegression(
 
 \item{loss_function_value}{Used with the specified loss function if an associated value is required. 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile' 'Lq', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html}
 
-\item{model_path}{A character string of your path file to where you want your output saved}
-
-\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
-
-\item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
-
-\item{ModelID}{A character string to name your model and output}
+\item{grid_eval_metric}{Choose from "mae", "mape", "rmse", "r2". Case sensitive}
 
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
 
 \item{EvalPlots}{Defaults to TRUE. Set to FALSE to not generate and return these objects.}
-
-\item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
-
-\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 
@@ -127,10 +132,6 @@ AutoCatBoostRegression(
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of periods to use between Catboost evaluations}
-
-\item{langevin}{Set to TRUE to enable}
-
-\item{diffusion_temperature}{Defaults to 10000}
 
 \item{Trees}{Standard + Grid Tuning. Bandit grid partitioned. The maximum number of trees you want in your models}
 
@@ -150,6 +151,10 @@ AutoCatBoostRegression(
 
 \item{GrowPolicy}{Standard + Grid Tuning. Catboost default of SymmetricTree. Random testing. Default "SymmetricTree", character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
 
+\item{langevin}{Set to TRUE to enable}
+
+\item{diffusion_temperature}{Defaults to 10000}
+
 \item{model_size_reg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
 
 \item{feature_border_type}{Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
@@ -161,8 +166,6 @@ AutoCatBoostRegression(
 \item{score_function}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
 
 \item{min_data_in_leaf}{Default is 1. Cannot be used with SymmetricTree is GrowPolicy}
-
-\item{DebugMode}{Set to TRUE to get a printout of which step the function is on. FALSE, otherwise}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
@@ -186,8 +189,10 @@ data <- RemixAutoML::FakeDataGenerator(
 TestModel <- RemixAutoML::AutoCatBoostRegression(
 
   # GPU or CPU and the number of available GPUs
+  TrainOnFull = FALSE,
   task_type = "GPU",
   NumGPUs = 1,
+  DebugMode = FALSE
 
   # Metadata args
   ModelID = "Test_Model_1",
@@ -199,7 +204,6 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 
   # Data args
   data = data,
-  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   Weights = NULL,
@@ -248,8 +252,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   sampling_unit = "Object",
   subsample = NULL,
   score_function = "Cosine",
-  min_data_in_leaf = 1,
-  DebugMode = FALSE)
+  min_data_in_leaf = 1)
 
 # Output
 TestModel$Model

@@ -1237,7 +1237,6 @@ AutoCatBoostCARMA <- function(data,
     MaxModelsInGrid = ModelCount,
     MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
     MaxRunMinutes = 60*60,
-    Shuffles = 4L,
     BaselineComparison = "default",
 
     # ML args

@@ -144,7 +144,6 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   MaxModelsInGrid = 100L,
   MaxRunsWithoutNewWinner = 100L,
   MaxRunMinutes = 60*60,
-  Shuffles = 4L,
   BaselineComparison = "default",
 
   # ML Args

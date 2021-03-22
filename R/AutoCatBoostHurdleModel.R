@@ -537,7 +537,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MaxModelsInGrid = MaxModelsInGrid,
       MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
       MaxRunMinutes = MaxRunMinutes,
-      Shuffles = Shuffles,
       BaselineComparison = BaselineComparison,
 
       # Trees, Depth, and LearningRate used in the bandit grid tuning
@@ -723,7 +722,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             MaxModelsInGrid = MaxModelsInGrid,
             MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
             MaxRunMinutes = MaxRunMinutes,
-            Shuffles = Shuffles,
             BaselineComparison = BaselineComparison,
 
             # Trees, Depth, and LearningRate used in the bandit grid tuning

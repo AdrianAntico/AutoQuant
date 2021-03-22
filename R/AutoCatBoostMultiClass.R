@@ -29,7 +29,6 @@
 #' @param MaxModelsInGrid Number of models to test from grid options.
 #' @param MaxRunsWithoutNewWinner A number
 #' @param MaxRunMinutes In minutes
-#' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param MetricPeriods Number of trees to build before evaluating intermediate metrics. Default is 10L
 #' @param langevin TRUE or FALSE. Enable stochastic gradient langevin boosting
@@ -101,7 +100,6 @@
 #'     MaxModelsInGrid = 30L,
 #'     MaxRunsWithoutNewWinner = 20L,
 #'     MaxRunMinutes = 24L*60L,
-#'     Shuffles = 4L,
 #'     BaselineComparison = "default",
 #'
 #'     # ML args
@@ -139,34 +137,32 @@
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
 AutoCatBoostMultiClass <- function(data,
-                                   TrainOnFull = FALSE,
                                    ValidationData = NULL,
                                    TestData = NULL,
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    PrimaryDateColumn = NULL,
-                                   ClassWeights = NULL,
                                    IDcols = NULL,
+                                   TrainOnFull = FALSE,
                                    task_type = "GPU",
                                    NumGPUs = 1,
-                                   eval_metric = "MultiClassOneVsAll",
-                                   loss_function = "MultiClassOneVsAll",
-                                   model_path = NULL,
-                                   metadata_path = NULL,
-                                   ModelID = "FirstModel",
+                                   DebugMode = FALSE,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
+                                   ModelID = "FirstModel",
+                                   model_path = NULL,
+                                   metadata_path = NULL,
+                                   ClassWeights = NULL,
+                                   eval_metric = "MultiClassOneVsAll",
+                                   loss_function = "MultiClassOneVsAll",
+                                   grid_eval_metric = "Accuracy",
+                                   BaselineComparison = "default",
+                                   MetricPeriods = 10L,
                                    PassInGrid = NULL,
                                    GridTune = FALSE,
                                    MaxModelsInGrid = 30L,
                                    MaxRunsWithoutNewWinner = 20L,
                                    MaxRunMinutes = 24L*60L,
-                                   grid_eval_metric = "Accuracy",
-                                   Shuffles = 1L,
-                                   BaselineComparison = "default",
-                                   MetricPeriods = 10L,
-                                   langevin = FALSE,
-                                   diffusion_temperature = 10000,
                                    Trees = 50L,
                                    Depth = 6,
                                    LearningRate = NULL,
@@ -176,13 +172,14 @@ AutoCatBoostMultiClass <- function(data,
                                    RSM = NULL,
                                    BootStrapType = NULL,
                                    GrowPolicy = NULL,
+                                   langevin = FALSE,
+                                   diffusion_temperature = 10000,
                                    model_size_reg = 0.5,
                                    feature_border_type = "GreedyLogSum",
                                    sampling_unit = "Object",
                                    subsample = NULL,
                                    score_function = "Cosine",
-                                   min_data_in_leaf = 1,
-                                   DebugMode = FALSE) {
+                                   min_data_in_leaf = 1) {
   # Load catboost ----
   loadNamespace(package = "catboost")
 
@@ -224,272 +221,25 @@ AutoCatBoostMultiClass <- function(data,
   TestPool <- Output$TestPool; Output$TestPool <- NULL
   FinalTestPool <- Output$FinalTestPool; rm(Output)
 
-  # MultiClass Grid Tune or Not Check----
-  if(GridTune && !TrainOnFull) {
+  # Bring into existence ----
+  ExperimentalGrid <- NULL; BestGrid <- NULL
 
-    # Pull in Grid sets----
-    Grids <- CatBoostParameterGrids(
-      TaskType       = task_type,
-      Shuffles       = Shuffles,
-      NTrees         = Trees,
-      Depth          = Depth,
-      LearningRate   = LearningRate,
-      L2_Leaf_Reg    = L2_Leaf_Reg,
-      BorderCount    = BorderCount,
-      RandomStrength = RandomStrength,
-      RSM            = RSM,
-      BootStrapType  = BootStrapType,
-      GrowPolicy     = GrowPolicy)
-    Grid <- Grids$Grid
-    GridClusters <- Grids$Grids
-    ExperimentalGrid <- Grids$ExperimentalGrid
-
-    # Initialize RL----
-    RL_Start             <- RL_Initialize(ParameterGridSet = GridClusters, Alpha = 1L, Beta = 1L, SubDivisions = 1000L)
-    BanditArmsN          <- RL_Start[["BanditArmsN"]]
-    Successes            <- RL_Start[["Successes"]]
-    Trials               <- RL_Start[["Trials"]]
-    GridIDs              <- RL_Start[["GridIDs"]]
-    BanditProbs          <- RL_Start[["BanditProbs"]]
-    RunsWithoutNewWinner <- 0L
-    rm(RL_Start)
-
-    # Add bandit probs columns to ExperimentalGrid----
-    data.table::set(ExperimentalGrid, j = paste0("BanditProbs_",names(GridClusters)), value = -10)
-
-    # Binary Grid Tuning Main Loop----
-    counter <- 0L
-    NewGrid <- 1L
-    repeat {
-
-      # Increment counter----
-      counter <- counter + 1L
-
-      # Check if grid still has elements in it----
-      if(!is.null(GridClusters[[paste0("Grid_",max(1L, NewGrid-1L))]][["L2_Leaf_Reg"]][1L])) {
-
-        # Define parameters----
-        if(!exists("NewGrid")) {
-          base_params <- CatBoostMultiClassParams(loss_function=loss_function,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
-        } else {
-          base_params <- CatBoostMultiClassParams(loss_function=loss_function,NewGrid=NewGrid,counter=counter,BanditArmsN=BanditArmsN,HasTime=HasTime,MetricPeriods=MetricPeriods,ClassWeights=ClassWeights,eval_metric=eval_metric,task_type=task_type,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
-        }
-
-        # Build model----
-        print(base_params)
-        RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params))
-
-        # MultiClass Score Final Test Data----
-        if(!is.null(TestData)) {
-          predict <- cbind(
-            1 + catboost::catboost.predict(
-              model = model,
-              pool = FinalTestPool,
-              prediction_type = "Class"),
-            catboost::catboost.predict(
-              model = model,
-              pool = FinalTestPool,
-              prediction_type = "Probability"))
-        } else if(!TrainOnFull) {
-          predict <- cbind(
-            1 + catboost::catboost.predict(
-              model = model,
-              pool = TestPool,
-              prediction_type = "Class"),
-            catboost::catboost.predict(
-              model = model,
-              pool = TestPool,
-              prediction_type = "Probability"))
-        } else {
-          predict <- cbind(
-            1 + catboost::catboost.predict(
-              model = model,
-              pool = TrainPool,
-              prediction_type = "Class"),
-            catboost::catboost.predict(
-              model = model,
-              pool = TrainPool,
-              prediction_type = "Probability"))
-        }
-
-        # MultiClass Grid Validation Data----
-        if(!is.null(TestData)) {
-          ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, predict, TestMerge[, .SD, .SDcols = unique(names(TestMerge)[c(1L:(ncol(TestMerge)-1L))])]))
-        } else if(!TrainOnFull) {
-          ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, predict))
-        } else {
-          ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget, predict))
-        }
-        if(TrainOnFull) {
-          ValidationData <- merge(
-            ValidationData,
-            TargetLevels,
-            by.x = "Target",
-            by.y = "NewLevels",
-            all = FALSE)
-          ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
-          ValidationData <- merge(
-            ValidationData,
-            TargetLevels,
-            by.x = "V2",
-            by.y = "NewLevels",
-            all = FALSE)
-          ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
-        } else {
-          ValidationData <- merge(
-            ValidationData,
-            TargetLevels,
-            by.x = "V1",
-            by.y = "NewLevels",
-            all = FALSE)
-          ValidationData[, V1 := OriginalLevels][, OriginalLevels := NULL]
-          ValidationData <- merge(
-            ValidationData,
-            TargetLevels,
-            by.x = "Target",
-            by.y = "NewLevels",
-            all = FALSE)
-          ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
-        }
-
-        # MultiClass Update Names for Predicted Value Columns----
-        if(!TrainOnFull) k <- 1L else k <- 2L
-        for(name in as.character(TargetLevels[[1L]])) {
-          k <- k + 1L
-          data.table::setnames(ValidationData, paste0("V", k), name)
-        }
-        if(!TrainOnFull) data.table::setnames(ValidationData, "V1", "Predict") else data.table::setnames(ValidationData, "V2", "Predict")
-        data.table::set(ValidationData, j = "Target", value = as.character(ValidationData[["Target"]]))
-        data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
-
-        # MultiClass Metrics Accuracy----
-        if(tolower(grid_eval_metric) == "accuracy") {
-          NewPerformance <- ValidationData[, mean(data.table::fifelse(as.character(Target) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
-
-        } else if(tolower(grid_eval_metric) == "microauc") {
-          NewPerformance <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData[["Target"]], predictor = as.matrix(ValidationData[, .SD, .SDcols = names(ValidationData)[3L:(ncol(predict)+1L)]]))$auc, "\\d+\\.*\\d*"))), 4L)
-
-        } else if(tolower(grid_eval_metric) == "logloss") {
-          temp <- ValidationData[, 1L]
-          temp[, Truth := get(TargetColumnName)]
-          temp <- DummifyDT(
-            data = temp,
-            cols = eval(TargetColumnName),
-            KeepFactorCols = FALSE,
-            OneHot = FALSE,
-            SaveFactorLevels = FALSE,
-            SavePath = NULL,
-            ImportFactorLevels = FALSE,
-            FactorLevelsList = NULL,
-            ClustScore = FALSE,
-            ReturnFactorLevels = FALSE)
-          N <- TargetLevels[, .N]
-          NewPerformance <- MLmetrics::LogLoss(y_pred = as.matrix(ValidationData[, 3L:(2L+N)]), y_true = as.matrix(temp[, 2L:(1L+N)]))
-        }
-
-        # Update Experimental Grid with Param values----
-        if(!exists("NewGrid")) {
-          GridNumber <- counter - 1L
-          data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
-        } else {
-          data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
-        }
-        data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
-        data.table::set(ExperimentalGrid, i = counter, j = "eval_metric", value = NewPerformance)
-        data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
-        if(counter == 1L) {
-          BestPerformance <- 1L
-        } else {
-          if(tolower(BaselineComparison) == "default") {
-            BestPerformance <- max(ExperimentalGrid[RunNumber == 1L][["eval_metric"]], na.rm = TRUE)
-          } else {
-            BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["eval_metric"]], na.rm = TRUE)
-          }
-        }
-
-        # Performance measures----
-        TotalRunTime <- sum(ExperimentalGrid[RunTime != -1L][["RunTime"]], na.rm = TRUE)
-        if(tolower(grid_eval_metric) %chin% c("accuracy","microauc")) {
-          if(NewPerformance > BestPerformance) {
-            RunsWithoutNewWinner <- 0L
-          } else {
-            RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
-          }
-        } else if(tolower(grid_eval_metric) %chin% c("logloss")) {
-          if(NewPerformance < BestPerformance) {
-            RunsWithoutNewWinner <- 0L
-          } else {
-            RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
-          }
-        }
-
-        # Binary Remove Model and Collect Garbage----
-        rm(model)
-        gc()
-      }
-
-      # Update bandit probabilities and whatnot----
-      RL_Update_Output <- RL_ML_Update(
-        ExperimentGrid = ExperimentalGrid,
-        ModelRun = counter,
-        NEWGrid = NewGrid,
-        NewPerformance = NewPerformance,
-        BestPerformance = BestPerformance,
-        TrialVector = Trials,
-        SuccessVector = Successes,
-        GridIDS = GridIDs,
-        BanditArmsCount = BanditArmsN,
-        RunsWithoutNewWinner = RunsWithoutNewWinner,
-        MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-        MaxNumberModels = MaxModelsInGrid,
-        MaxRunMinutes = MaxRunMinutes,
-        TotalRunTime = TotalRunTime,
-        BanditProbabilities = BanditProbs)
-      BanditProbs <- RL_Update_Output[["BanditProbs"]]
-      Trials <- RL_Update_Output[["Trials"]]
-      Successes <- RL_Update_Output[["Successes"]]
-      NewGrid <- RL_Update_Output[["NewGrid"]]
-
-      # Continue or stop----
-      if(RL_Update_Output$BreakLoop != "stay") break else print("still going")
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "GridNumber", value = NewGrid)
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "NTrees", value = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "Depth", value = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "LearningRate", value = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "L2_Leaf_Reg", value = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "RandomStrength", value = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "BorderCount", value = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][Trials[NewGrid]+1L])
-      if(!tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "RSM", value = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "BootStrapType", value = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][Trials[NewGrid]+1L])
-      if(tolower(task_type) == "gpu") data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
-      for(bandit in seq_len(length(BanditProbs))) data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
-    }
-
-    # Remove unneeded rows----
-    ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
-
-    # MultiClass Save Grid output----
-    if(SaveModelObjects & GridTune) {
-      if(!is.null(metadata_path)) {
-        data.table::fwrite(ExperimentalGrid, file = file.path(metadata_path, paste0(ModelID, "_ExperimentalGrid.csv")))
-      } else {
-        data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "_ExperimentalGrid.csv")))
-      }
-    }
-  } else {
-    ExperimentalGrid <- NULL
-    BestGrid <- NULL
+  # Grid tuning ----
+  if(GridTune) {
+    Output <- GridTuner(AlgoType="catboost", ModelType="multiclass", TrainOnFull.=TrainOnFull, HasTime=HasTime, BaselineComparison.=BaselineComparison, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=NULL, CostMatrixWeights=NULL, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=TargetLevels, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
+    ExperimentalGrid <- Output$ExperimentalGrid
+    BestGrid <- Output$BestGrid
   }
 
   # Final Parameters (put parameters in list to pass into catboost) ----
   if(DebugMode) print("Running CatBoostFinalParams()")
-  base_params <- CatBoostFinalParams(ModelType="classification", UseBestModel.=UseBestModel, ClassWeights.=ClassWeights, PassInGrid.=PassInGrid, BestGrid.=BestGrid, ExperimentalGrid.=ExperimentalGrid, GridTune.=GridTune, TrainOnFull.=TrainOnFull, MetricPeriods.=MetricPeriods, LossFunction.=LossFunction, EvalMetric.=EvalMetric, score_function.=score_function, HasTime.=HasTime, task_type.=task_type, NumGPUs.=NumGPUs, NTrees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, langevin.=langevin, diffusion_temperature.=diffusion_temperature, sampling_unit.=sampling_unit, RandomStrength.=RandomStrength, BorderCount.=BorderCount, RSM.=RSM, GrowPolicy.=GrowPolicy, BootStrapType.=BootStrapType, model_size_reg.=model_size_reg, feature_border_type.=feature_border_type, subsample.=subsample, min_data_in_leaf.=min_data_in_leaf)
+  base_params <- CatBoostFinalParams(ModelType="multiclass", UseBestModel.=UseBestModel, ClassWeights.=ClassWeights, PassInGrid.=PassInGrid, BestGrid.=BestGrid, ExperimentalGrid.=ExperimentalGrid, GridTune.=GridTune, TrainOnFull.=TrainOnFull, MetricPeriods.=MetricPeriods, LossFunction.=LossFunction, EvalMetric.=EvalMetric, score_function.=score_function, HasTime.=HasTime, task_type.=task_type, NumGPUs.=NumGPUs, NTrees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, langevin.=langevin, diffusion_temperature.=diffusion_temperature, sampling_unit.=sampling_unit, RandomStrength.=RandomStrength, BorderCount.=BorderCount, RSM.=RSM, GrowPolicy.=GrowPolicy, BootStrapType.=BootStrapType, model_size_reg.=model_size_reg, feature_border_type.=feature_border_type, subsample.=subsample, min_data_in_leaf.=min_data_in_leaf)
 
   # MultiClass Train Final Model ----
-  if(TrainOnFull) {
-    model <- catboost::catboost.train(learn_pool = TrainPool, params = base_params)
-  } else {
+  if(!TrainOnFull) {
     model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
+  } else {
+    model <- catboost::catboost.train(learn_pool = TrainPool, params = base_params)
   }
 
   # MultiClass Save Model----

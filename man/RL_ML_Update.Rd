@@ -5,56 +5,53 @@
 \title{RL_ML_Update}
 \usage{
 RL_ML_Update(
-  ExperimentGrid = ExperimentGrid,
   ModelType = "classification",
-  ModelRun = counter,
-  NEWGrid = NewGrid,
-  NewPerformance = NewPerformance,
-  BestPerformance = BestPerformance,
-  TrialVector = Trials,
-  SuccessVector = Successes,
-  GridIDS = GridIDs,
-  BanditArmsCount = BanditArmsN,
-  RunsWithoutNewWinner = RunsWithoutNewWinner,
-  MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-  MaxNumberModels = MaxNumberModels,
-  MaxRunMinutes = MaxRunMinutes,
-  TotalRunTime = TotalRunTime,
-  BanditProbabilities = BanditProbs
+  Iteration = counter,
+  NewGrid. = NewGrid,
+  NewPerformance. = NewPerformance,
+  BestPerformance. = BestPerformance,
+  Trials. = Trials,
+  Successes. = Successes,
+  GridIDs. = GridIDs,
+  BanditArmsN. = BanditArmsN,
+  RunsWithoutNewWinner. = RunsWithoutNewWinner,
+  MaxRunsWithoutNewWinner. = MaxRunsWithoutNewWinner,
+  MaxModelsInGrid. = MaxModelsInGrid,
+  MaxRunMinutes. = MaxRunMinutes,
+  TotalRunTime. = TotalRunTime,
+  BanditProbs. = BanditProbs
 )
 }
 \arguments{
-\item{ExperimentGrid}{This is a data.table of grid params and model results}
-
 \item{ModelType}{"classification", "regression", and "multiclass"}
 
-\item{ModelRun}{Model iteration number}
+\item{Iteration}{Model iteration number}
 
-\item{NEWGrid}{Previous grid passed in}
+\item{NewGrid.}{Previous grid passed in}
 
-\item{NewPerformance}{Internal}
+\item{NewPerformance.}{Internal}
 
-\item{BestPerformance}{Internal}
+\item{BestPerformance.}{Internal}
 
-\item{TrialVector}{Numeric vector with the total trials for each arm}
+\item{Trials.}{Numeric vector with the total trials for each arm}
 
-\item{SuccessVector}{Numeric vector with the total successes for each arm}
+\item{Successes.}{Numeric vector with the total successes for each arm}
 
-\item{GridIDS}{The numeric vector that identifies which grid is which}
+\item{GridIDs.}{The numeric vector that identifies which grid is which}
 
-\item{BanditArmsCount}{The number of arms in the bandit}
+\item{BanditArmsN.}{The number of arms in the bandit}
 
-\item{RunsWithoutNewWinner}{Counter of the number of models previously built without being a new winner}
+\item{RunsWithoutNewWinner.}{Counter of the number of models previously built without being a new winner}
 
-\item{MaxRunsWithoutNewWinner}{Maximum number of models built without a new best model (constraint)}
+\item{MaxRunsWithoutNewWinner.}{Maximum number of models built without a new best model (constraint)}
 
-\item{MaxNumberModels}{Maximum number of models to build (constraint)}
+\item{MaxModelsInGrid.}{Maximum number of models to build (constraint)}
 
-\item{MaxRunMinutes}{Run time constraint}
+\item{MaxRunMinutes.}{Run time constraint}
 
-\item{TotalRunTime}{Cumulative run time in minutes}
+\item{TotalRunTime.}{Cumulative run time in minutes}
 
-\item{BanditProbabilities}{Inital probabilities from RL_Initialize()}
+\item{BanditProbs.}{Inital probabilities from RL_Initialize()}
 }
 \description{
 RL_ML_Update updates the bandit probabilities for selecting different grids
@@ -62,22 +59,21 @@ RL_ML_Update updates the bandit probabilities for selecting different grids
 \examples{
 \dontrun{
 RL_Update_Output <- RL_ML_Update(
-  ExperimentGrid = ExperimentGrid,
-  ModelRun = run,
   ModelType = "classification",
-  NEWGrid = NewGrid,
-  NewPerformance = NewPerformance,
-  BestPerformance = BestPerformance,
-  TrialVector = Trials,
-  SuccessVector = Successes,
-  GridIDS = GridIDs,
-  BanditArmsCount = BanditArmsN,
-  RunsWithoutNewWinner = RunsWithoutNewWinner,
-  MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-  MaxNumberModels = MaxNumberModels,
-  MaxRunMinutes = MaxRunMinutes,
-  TotalRunTime = TotalRunTime,
-  BanditProbabilities = BanditProbs)
+  Iteration = run,
+  NewGrid. = NewGrid,
+  NewPerformance. = NewPerformance,
+  BestPerformance. = BestPerformance,
+  Trials. = Trials,
+  Successes. = Successes,
+  GridIDs. = GridIDs,
+  BanditArmsN. = BanditArmsN,
+  RunsWithoutNewWinner. = RunsWithoutNewWinner,
+  MaxRunsWithoutNewWinner. = MaxRunsWithoutNewWinner,
+  MaxNumberModels. = MaxNumberModels,
+  MaxRunMinutes. = MaxRunMinutes,
+  TotalRunTime. = TotalRunTime,
+  BanditProbs. = BanditProbs)
 BanditProbs <- RL_Update_Output[["BanditProbs"]]
 Trials <- RL_Update_Output[["Trials"]]
 Successes <- RL_Update_Output[["Successes"]]
@@ -86,6 +82,7 @@ NewGrid <- RL_Update_Output[["NewGrid"]]
 }
 \seealso{
 Other Reinforcement Learning: 
+\code{\link{GridTuner}()},
 \code{\link{RL_Initialize}()},
 \code{\link{RL_Update}()},
 \code{\link{RPM_Binomial_Bandit}()}

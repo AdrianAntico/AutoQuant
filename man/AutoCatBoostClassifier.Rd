@@ -6,24 +6,27 @@
 \usage{
 AutoCatBoostClassifier(
   data,
-  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
-  ClassWeights = c(1, 1),
-  CostMatrixWeights = c(1, 0, 0, 1),
   IDcols = NULL,
+  TrainOnFull = FALSE,
   task_type = "GPU",
   NumGPUs = 1,
-  model_path = NULL,
-  metadata_path = NULL,
-  SaveInfoToPDF = FALSE,
-  ModelID = "FirstModel",
-  NumOfParDepPlots = 0L,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  ModelID = "FirstModel",
+  model_path = NULL,
+  metadata_path = NULL,
+  EvalMetric = "MCC",
+  LossFunction = NULL,
+  grid_eval_metric = "MCC",
+  ClassWeights = c(1, 1),
+  CostMatrixWeights = c(1, 0, 0, 1),
+  NumOfParDepPlots = 0L,
   PassInGrid = NULL,
   GridTune = FALSE,
   MaxModelsInGrid = 30L,
@@ -31,10 +34,6 @@ AutoCatBoostClassifier(
   MaxRunMinutes = 24L * 60L,
   BaselineComparison = "default",
   MetricPeriods = 10L,
-  EvalMetric = "MCC",
-  LossFunction = NULL,
-  langevin = FALSE,
-  diffusion_temperature = 10000,
   Trees = 50L,
   Depth = 6,
   LearningRate = NULL,
@@ -44,6 +43,8 @@ AutoCatBoostClassifier(
   RSM = NULL,
   BootStrapType = NULL,
   GrowPolicy = "SymmetricTree",
+  langevin = FALSE,
+  diffusion_temperature = 10000,
   model_size_reg = 0.5,
   feature_border_type = "GreedyLogSum",
   sampling_unit = "Object",
@@ -56,8 +57,6 @@ AutoCatBoostClassifier(
 \arguments{
 \item{data}{This is your data set for training and testing your model}
 
-\item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
-
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
@@ -68,29 +67,37 @@ AutoCatBoostClassifier(
 
 \item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
 
-\item{ClassWeights}{Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.}
-
-\item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1)}
-
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
+
+\item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
 \item{NumGPUs}{Numeric. If you have 4 GPUs supply 4 as a value.}
 
-\item{model_path}{A character string of your path file to where you want your output saved}
+\item{ReturnModelObjects}{Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics}
 
-\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
+\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
 
 \item{ModelID}{A character string to name your model and output}
 
+\item{model_path}{A character string of your path file to where you want your output saved}
+
+\item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
+
+\item{EvalMetric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
+
+\item{LossFunction}{Default is NULL. Select the loss function of choice. c("MultiRMSE", 'Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')}
+
+\item{grid_eval_metric}{Case sensitive. I typically choose 'Utility' or 'MCC'. Choose from 'Utility', 'MCC', 'Acc', 'F1_Score', 'F2_Score', 'F0.5_Score', 'TPR', 'TNR', 'FNR', 'FPR', 'FDR', 'FOR', 'NPV', 'PPV', 'ThreatScore'}
+
+\item{ClassWeights}{Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.}
+
+\item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1)}
+
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
-
-\item{ReturnModelObjects}{Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics}
-
-\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 
@@ -105,14 +112,6 @@ AutoCatBoostClassifier(
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
-
-\item{EvalMetric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
-
-\item{LossFunction}{Default is NULL. Select the loss function of choice. c("MultiRMSE", 'Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')}
-
-\item{langevin}{TRUE or FALSE. TRUE enables}
-
-\item{diffusion_temperature}{Default value is 10000}
 
 \item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
@@ -131,6 +130,10 @@ AutoCatBoostClassifier(
 \item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
 
 \item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
+
+\item{langevin}{TRUE or FALSE. TRUE enables}
+
+\item{diffusion_temperature}{Default value is 10000}
 
 \item{model_size_reg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
 
@@ -170,6 +173,8 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   # GPU or CPU and the number of available GPUs
   task_type = "GPU",
   NumGPUs = 1,
+  TrainOnFull = FALSE,
+  DebugMode = FALSE
 
   # Metadata args
   ModelID = "Test_Model_1",
@@ -181,19 +186,19 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 
   # Data args
   data = data,
-  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
   FeatureColNames = names(data)[!names(data) \%in\%
      c("IDcol_1","IDcol_2","Adrian")],
   PrimaryDateColumn = NULL,
-  ClassWeights = c(1L,1L),
   IDcols = c("IDcol_1","IDcol_2"),
 
   # Evaluation args
+  ClassWeights = c(1L,1L),
   CostMatrixWeights = c(1,0,0,1),
   EvalMetric = "AUC",
+  grid_eval_metric = "MCC",
   LossFunction = "Logloss",
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
@@ -211,20 +216,19 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   Depth = 9,
   LearningRate = NULL,
   L2_Leaf_Reg = NULL,
+  model_size_reg = 0.5,
+  langevin = FALSE,
+  diffusion_temperature = 10000,
   RandomStrength = 1,
   BorderCount = 128,
   RSM = 1,
   BootStrapType = "Bayesian",
   GrowPolicy = "SymmetricTree",
-  langevin = FALSE,
-  diffusion_temperature = 10000,
-  model_size_reg = 0.5,
   feature_border_type = "GreedyLogSum",
   sampling_unit = "Object",
   subsample = NULL,
   score_function = "Cosine",
-  min_data_in_leaf = 1,
-  DebugMode = FALSE)
+  min_data_in_leaf = 1)
 
 # Output
 TestModel$Model

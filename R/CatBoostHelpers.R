@@ -785,24 +785,24 @@ CatBoostFinalParams <- function(ModelType = "classification",
     base_params[["thread_count"]] <- parallel::detectCores()
 
     # Additional Parameters
-    base_params[["iterations"]] <- BestGrid.[["NTrees"]]
-    base_params[["depth"]] <- BestGrid.[["Depth"]]
+    base_params[["iterations"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(NTrees.) else BestGrid.[["NTrees"]]
+    base_params[["depth"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(Depth.) else BestGrid.[["Depth"]]
     base_params[["langevin"]] <- langevin.
     base_params[["diffusion_temperature"]] <- if(langevin.) diffusion_temperature. else NULL
-    base_params[["learning_rate"]] <- BestGrid.[["LearningRate"]]
+    base_params[["learning_rate"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(LearningRate.) else BestGrid.[["LearningRate"]]
 
-    base_params[["l2_leaf_reg"]] <- BestGrid.[["L2_Leaf_Reg"]]
-    base_params[["random_strength"]] <- BestGrid.[["RandomStrength"]]
-    base_params[["border_count"]] <- BestGrid.[["BorderCount"]]
-    base_params[["rsm"]] <- BestGrid.[["RSM"]]
+    base_params[["l2_leaf_reg"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(L2_Leaf_Reg.) else BestGrid.[["L2_Leaf_Reg"]]
+    base_params[["random_strength"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(RandomStrength.) else BestGrid.[["RandomStrength"]]
+    base_params[["border_count"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(BorderCount.) else BestGrid.[["BorderCount"]]
+    base_params[["rsm"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BestGrid.[["RSM"]] == -1) NULL else BestGrid.[["RSM"]]
     base_params[["sampling_unit"]] <- sampling_unit.
 
     # Speedup
     base_params[["metric_period"]] <- MetricPeriods.
 
     # Style of model
-    base_params[["grow_policy"]] <- BestGrid.[["GrowPolicy"]]
-    base_params[["bootstrap_type"]] <- BestGrid.[["BootStrapType"]]
+    base_params[["grow_policy"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") "SymmetricTree" else BestGrid.[["GrowPolicy"]]
+    base_params[["bootstrap_type"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") BootStrapType. else BestGrid.[["BootStrapType"]]
 
     # Loss functions
     base_params[["loss_function"]] <- LossFunction.
@@ -1047,7 +1047,7 @@ CatBoostValidationData <- function(ModelType = "classification",
   # MultiClass
   if(ModelType == "multiclass") {
 
-    # MultiClass Grid Validation Data----
+    # MultiClass Grid Validation Data ----
     if(TestDataCheck) {
       ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., predict., TestMerge.[, .SD, .SDcols = unique(names(TestMerge.)[c(1L:(ncol(TestMerge.)-1L))])]))
     } else if(!TrainOnFull.) {
@@ -1087,18 +1087,17 @@ CatBoostValidationData <- function(ModelType = "classification",
       ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
     }
 
-    # MultiClass Update Names for Predicted Value Columns----
+    # MultiClass Update Names for Predicted Value Columns ----
     if(!TrainOnFull.) k <- 1L else k <- 2L
     for(name in as.character(TargetLevels.[[1L]])) {
       k <- k + 1L
       data.table::setnames(ValidationData, paste0("V", k), name)
     }
-    if(!TrainOnFull.) data.table::setnames(ValidationData, "V1", "Predict") else data.table::setnames(ValidationData, "V2", "Predict")
     if(!TrainOnFull.) {
-      data.table::setnames(ValidationData, "Target", eval(TargetColumnName.))
+      data.table::setnames(ValidationData, c("V1","Target"), c("Predict", eval(TargetColumnName.)))
       data.table::set(ValidationData, j = eval(TargetColumnName.), value = as.character(ValidationData[[eval(TargetColumnName.)]]))
     } else {
-      data.table::setnames(ValidationData, "Target", eval(TargetColumnName.))
+      data.table::setnames(ValidationData, c("V2","Target"), c("Predict", eval(TargetColumnName.)))
       data.table::set(ValidationData, j = eval(TargetColumnName.), value = as.character(ValidationData[[eval(TargetColumnName.)]]))
     }
     data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
@@ -1719,7 +1718,6 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     GridNumber = rep(-1, 10000L),
     RunNumber = 1L:10000L,
     RunTime = rep(-1, 10000L),
-    EvalMetric = rep(-1,10000L),
     TreesBuilt = rep(-1,10000L),
     NTrees = rep(-1,10000L),
     Depth = rep(-1,10000L),
@@ -1731,6 +1729,9 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
     BootStrapType = rep("aa", 10000L),
     GrowPolicy = rep("aa", 10000L))
 
+  # Add columns for bandit probs
+  data.table::set(eGrid, j = paste0("BanditProbs_", names(Grids)), value = -10)
+
   # Shuffle grid sets----
   for(shuffle in seq_len(Shuffles)) for(i in seq_len(Runs)) Grids[[paste0("Grid_", i)]] <- Grids[[paste0("Grid_",i)]][order(runif(Grids[[paste0("Grid_",i)]][,.N]))]
 
@@ -1738,442 +1739,86 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   return(list(Grid = Grid, Grids = Grids, ExperimentalGrid = eGrid))
 }
 
-#' @title CatBoostRegressionParams
-#'
-#' @author Adrian Antico
-#' @family CatBoost Helpers
-#'
-#' @param counter Passthrough
-#' @param BanditArmsN Passthrough
-#' @param HasTime Passthrough
-#' @param MetricPeriods Passthrough
-#' @param eval_metric Passthrough
-#' @param LossFunction Passthrough
-#' @param task_type Passthrough
-#' @param NumGPUs Passthrough
-#' @param model_path Passthrough
-#' @param NewGrid Passthrough
-#' @param Grid Passthrough
-#' @param ExperimentalGrid Passthrough
-#' @param GridClusters Passthrough
-#'
-#' @export
-CatBoostRegressionParams <- function(counter = NULL,
-                                     BanditArmsN = NULL,
-                                     HasTime = NULL,
-                                     MetricPeriods = NULL,
-                                     eval_metric = NULL,
-                                     LossFunction = NULL,
-                                     task_type = NULL,
-                                     NumGPUs = NULL,
-                                     model_path = NULL,
-                                     NewGrid = NULL,
-                                     Grid = NULL,
-                                     ExperimentalGrid = NULL,
-                                     GridClusters = NULL) {
-
-  # Select Grid----
-  if(counter <= BanditArmsN + 1L) {
-
-    # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
-    # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
-    if(counter == 1L) {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = LossFunction,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        train_dir            = model_path,
-        iterations           = max(Grid$NTrees),
-        allow_writing_files  = FALSE)
-    } else {
-      if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
-      if(tolower(task_type) == "gpu") {
-        base_params <- list(
-          has_time             = HasTime,
-          metric_period        = MetricPeriods,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          task_type            = task_type,
-          devices              = NumGPUs,
-          thread_count         = parallel::detectCores(),
-          train_dir            = model_path,
-          iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-          depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-          learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-          l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-          random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-          border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
-          bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
-          grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L],
-          allow_writing_files  = FALSE)
-      } else {
-        base_params <- list(
-          has_time             = HasTime,
-          metric_period        = MetricPeriods,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          task_type            = task_type,
-          devices              = NumGPUs,
-          thread_count         = parallel::detectCores(),
-          train_dir            = model_path,
-          allow_writing_files  = FALSE,
-          iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-          depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-          learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-          l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-          random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-          border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
-          rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
-          bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
-      }
-    }
-  } else {
-    data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
-    if(tolower(task_type) == "gpu") {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = LossFunction,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        train_dir            = model_path,
-        allow_writing_files  = FALSE,
-        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
-        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
-        grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
-    } else {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = LossFunction,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        train_dir            = model_path,
-        allow_writing_files  = FALSE,
-        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
-        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
-        rsm                  = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L])
-    }
-  }
-  return(base_params)
-}
-
 #' @title CatBoostClassifierParams
 #'
 #' @author Adrian Antico
 #' @family CatBoost Helpers
 #'
-#' @param counter Passthrough
-#' @param BanditArmsN Passthrough
-#' @param HasTime Passthrough
-#' @param MetricPeriods Passthrough
-#' @param ClassWeights Passthrough
-#' @param eval_metric Passthrough
-#' @param LossFunction Passthrough
-#' @param task_type Passthrough
-#' @param NumGPUs Passthrough
-#' @param model_path Passthrough
-#' @param NewGrid Passthrough
-#' @param Grid Passthrough
-#' @param ExperimentalGrid Passthrough
-#' @param GridClusters Passthrough
+#' @param N. Iteration for specific grid in grid clusters
+#' @param counter. Passthrough
+#' @param BanditArmsN. Passthrough
+#' @param HasTime. Passthrough
+#' @param MetricPeriods. Passthrough
+#' @param ClassWeights. Passthrough
+#' @param EvalMetric. Passthrough
+#' @param LossFunction. Passthrough
+#' @param task_type. Passthrough
+#' @param NumGPUs. Passthrough
+#' @param model_path. Passthrough
+#' @param NewGrid. Passthrough
+#' @param Grid. Passthrough
+#' @param ExperimentalGrid. Passthrough
+#' @param GridClusters. Passthrough
 #'
 #' @export
-CatBoostClassifierParams <- function(counter = NULL,
-                                     BanditArmsN = NULL,
-                                     HasTime = NULL,
-                                     MetricPeriods = NULL,
-                                     ClassWeights = NULL,
-                                     eval_metric = NULL,
-                                     LossFunction = NULL,
-                                     task_type = NULL,
-                                     NumGPUs = NULL,
-                                     model_path = NULL,
-                                     NewGrid = NULL,
-                                     Grid = NULL,
-                                     ExperimentalGrid = NULL,
-                                     GridClusters = NULL) {
+CatBoostGridParams <- function(N.=N,
+                               counter. = NULL,
+                               BanditArmsN. = NULL,
+                               HasTime. = NULL,
+                               MetricPeriods. = NULL,
+                               ClassWeights. = NULL,
+                               EvalMetric. = NULL,
+                               LossFunction. = NULL,
+                               task_type. = NULL,
+                               NumGPUs. = NULL,
+                               model_path. = NULL,
+                               NewGrid. = NULL,
+                               Grid. = NULL,
+                               ExperimentalGrid. = NULL,
+                               GridClusters. = NULL) {
 
-  # Select Grid
-  if(counter <= BanditArmsN + 1L) {
+  # Create base_params (independent of runs)
+  base_params <- list()
+  base_params$has_time <- HasTime.
+  base_params$metric_period <- MetricPeriods.
+  base_params$loss_function <- LossFunction.
+  base_params$eval_metric <- EvalMetric.
+  base_params$use_best_model <- TRUE
+  base_params$best_model_min_trees <- 10L
+  base_params$task_type <- task_type.
+  base_params$devices <- NumGPUs.
+  base_params$thread_count <- parallel::detectCores()
+  base_params$train_dir <- model_path.
+  base_params$class_weights <- ClassWeights.
 
-    # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
-    # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
-    if(is.null(LossFunction)) LossFunction <- "Logloss"
-    if(counter == 1L) {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = LossFunction,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        class_weights        = ClassWeights,
-        train_dir            = model_path,
-        iterations           = max(Grid$NTrees))
+  # Run-dependent args and updates
+  if(counter. != 1L && counter. <= BanditArmsN. + 1L) base_params$iterations <- GridClusters.[[paste0("Grid_", counter.-1L)]][["NTrees"]][1L] else if(counter. != 1L) base_params$iterations <- GridClusters.[[paste0("Grid_",NewGrid.)]][["NTrees"]][N.] else base_params$iterations <- max(Grid.$NTrees)
+  if(counter. != 1L && counter. <= BanditArmsN. + 1L) base_params$depth <- GridClusters.[[paste0("Grid_", counter.-1L)]][["Depth"]][1L] else if(counter. != 1) base_params$depth <- GridClusters.[[paste0("Grid_",NewGrid.)]][["Depth"]][N.]
+  if(counter. != 1L && counter. <= BanditArmsN. + 1L) base_params$learning_rate <- GridClusters.[[paste0("Grid_", counter.-1L)]][["LearningRate"]][1L] else if(counter. != 1L) base_params$learning_rate <- GridClusters.[[paste0("Grid_",NewGrid.)]][["LearningRate"]][N.]
+  if(counter. != 1L && counter. <= BanditArmsN. + 1L) base_params$l2_leaf_reg <- GridClusters.[[paste0("Grid_",counter.-1L)]][["L2_Leaf_Reg"]][1L] else if(counter. != 1L) base_params$l2_leaf_reg <- GridClusters.[[paste0("Grid_",NewGrid.)]][["L2_Leaf_Reg"]][N.]
+  if(counter. != 1L && counter. <= BanditArmsN. + 1L) base_params$random_strength <- GridClusters.[[paste0("Grid_",counter.-1L)]][["RandomStrength"]][1L] else if(counter. != 1L) base_params$random_strength <- GridClusters.[[paste0("Grid_",NewGrid.)]][["RandomStrength"]][N.]
+  if(counter. != 1L && counter. <= BanditArmsN. + 1L) base_params$border_count <- GridClusters.[[paste0("Grid_",counter.-1L)]][["BorderCount"]][1L] else if(counter. != 1L) base_params$border_count <- GridClusters.[[paste0("Grid_",NewGrid.)]][["BorderCount"]][N.]
+  if(counter. != 1L && counter. <= BanditArmsN. + 1L) base_params$bootstrap_type <- GridClusters.[[paste0("Grid_",counter.-1L)]][["BootStrapType"]][1L] else if(counter. != 1L) base_params$bootstrap_type <- GridClusters.[[paste0("Grid_",NewGrid.)]][["BootStrapType"]][N.]
+
+  # TaskType-dependent args
+  if(counter. != 1L && counter. <= BanditArmsN. + 1L) {
+    if(tolower(task_type.) == "gpu") {
+      base_params$rsm <- NULL
+      base_params$grow_policy <- GridClusters.[[paste0("Grid_", counter.-1L)]][["GrowPolicy"]][N.]
     } else {
-      if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
-      if(tolower(task_type) == "gpu") {
-        base_params <- list(
-          has_time             = HasTime,
-          metric_period        = MetricPeriods,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          task_type            = task_type,
-          devices              = NumGPUs,
-          thread_count         = parallel::detectCores(),
-          class_weights        = ClassWeights,
-          train_dir            = model_path,
-          iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-          depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-          learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-          l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-          random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-          border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
-          bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
-          grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
-      } else {
-        base_params <- list(
-          has_time             = HasTime,
-          metric_period        = MetricPeriods,
-          loss_function        = LossFunction,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          task_type            = task_type,
-          devices              = NumGPUs,
-          thread_count         = parallel::detectCores(),
-          train_dir            = model_path,
-          iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-          depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-          learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-          l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-          random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-          border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
-          rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
-          bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
-      }
+      base_params$rsm <- GridClusters.[[paste0("Grid_", counter.-1L)]][["RSM"]][N.]
+      base_params$grow_policy <- NULL
     }
-  } else {
-    data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
-    if(tolower(task_type) == "gpu") {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = LossFunction,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        class_weights        = ClassWeights,
-        train_dir            = model_path,
-        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
-        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
-        grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
+  } else if(counter. != 1L) {
+    if(tolower(task_type.) == "gpu") {
+      base_params$rsm <- NULL
+      base_params$grow_policy <- GridClusters.[[paste0("Grid_",NewGrid.)]][["GrowPolicy"]][N.]
     } else {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = LossFunction,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        devices              = NumGPUs,
-        thread_count         = parallel::detectCores(),
-        train_dir            = model_path,
-        class_weights        = ClassWeights,
-        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
-        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
-        rsm                  = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L])
+      base_params$rsm <- GridClusters.[[paste0("Grid_", NewGrid.)]][["RSM"]][N.]
+      base_params$grow_policy <- NULL
     }
   }
-  return(base_params)
-}
 
-#' @title CatBoostMultiClassParams
-#'
-#' @author Adrian Antico
-#' @family CatBoost Helpers
-#'
-#' @param counter Passthrough
-#' @param BanditArmsN Passthrough
-#' @param HasTime Passthrough
-#' @param MetricPeriods Passthrough
-#' @param ClassWeights Passthrough
-#' @param eval_metric Passthrough
-#' @param loss_function Passthrough
-#' @param task_type Passthrough
-#' @param model_path Passthrough
-#' @param NewGrid Passthrough
-#' @param Grid Passthrough
-#' @param ExperimentalGrid Passthrough
-#' @param GridClusters Passthrough
-#'
-#' @export
-CatBoostMultiClassParams <- function(counter = NULL,
-                                     BanditArmsN = NULL,
-                                     HasTime = NULL,
-                                     MetricPeriods = NULL,
-                                     ClassWeights = NULL,
-                                     eval_metric = NULL,
-                                     loss_function = NULL,
-                                     task_type = NULL,
-                                     model_path = NULL,
-                                     NewGrid = NULL,
-                                     Grid = NULL,
-                                     ExperimentalGrid = NULL,
-                                     GridClusters = NULL) {
-
-  # Select Grid
-  if(counter <= BanditArmsN + 1L) {
-
-    # Run default catboost model, with max trees from grid, and use this as the measure to beat for success / failure in bandit framework
-    # Then run through a single model from each grid cluster to get the starting point for the bandit calcs
-    if(counter == 1L) {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = loss_function,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        thread_count         = parallel::detectCores(),
-        class_weights        = ClassWeights,
-        train_dir            = model_path,
-        iterations           = max(Grid$NTrees))
-    } else {
-      if(counter > 1L) data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = counter-1L)
-      if(tolower(task_type) == "gpu") {
-        base_params <- list(
-          has_time             = HasTime,
-          metric_period        = MetricPeriods,
-          loss_function        = loss_function,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          task_type            = task_type,
-          class_weights        = ClassWeights,
-          train_dir            = model_path,
-          thread_count         = parallel::detectCores(),
-          iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-          depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-          learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-          l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-          random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-          border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
-          bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L],
-          grow_policy          = GridClusters[[paste0("Grid_",counter-1L)]][["GrowPolicy"]][1L])
-      } else {
-        base_params <- list(
-          has_time             = HasTime,
-          metric_period        = MetricPeriods,
-          loss_function        = loss_function,
-          eval_metric          = eval_metric,
-          use_best_model       = TRUE,
-          best_model_min_trees = 10L,
-          task_type            = task_type,
-          train_dir            = model_path,
-          thread_count         = parallel::detectCores(),
-          iterations           = GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L],
-          depth                = GridClusters[[paste0("Grid_",counter-1L)]][["Depth"]][1L],
-          learning_rate        = GridClusters[[paste0("Grid_",counter-1L)]][["LearningRate"]][1L],
-          l2_leaf_reg          = GridClusters[[paste0("Grid_",counter-1L)]][["L2_Leaf_Reg"]][1L],
-          random_strength      = GridClusters[[paste0("Grid_",counter-1L)]][["RandomStrength"]][1L],
-          border_count         = GridClusters[[paste0("Grid_",counter-1L)]][["BorderCount"]][1L],
-          rsm                  = GridClusters[[paste0("Grid_",counter-1L)]][["RSM"]][1L],
-          bootstrap_type       = GridClusters[[paste0("Grid_",counter-1L)]][["BootStrapType"]][1L])
-      }
-    }
-  } else {
-    data.table::set(ExperimentalGrid, i = counter-1L, j = "GridNumber", value = NewGrid)
-    if(tolower(task_type) == "gpu") {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = loss_function,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        class_weights        = ClassWeights,
-        train_dir            = model_path,
-        thread_count         = parallel::detectCores(),
-        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
-        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L],
-        grow_policy          = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][1L])
-    } else {
-      base_params <- list(
-        has_time             = HasTime,
-        metric_period        = MetricPeriods,
-        loss_function        = loss_function,
-        eval_metric          = eval_metric,
-        use_best_model       = TRUE,
-        best_model_min_trees = 10L,
-        task_type            = task_type,
-        train_dir            = model_path,
-        thread_count         = parallel::detectCores(),
-        class_weights        = ClassWeights,
-        iterations           = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L],
-        depth                = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][1L],
-        learning_rate        = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][1L],
-        l2_leaf_reg          = GridClusters[[paste0("Grid_",NewGrid)]][["L2_Leaf_Reg"]][1L],
-        random_strength      = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][1L],
-        border_count         = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][1L],
-        rsm                  = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][1L],
-        bootstrap_type       = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][1L])
-    }
-  }
+  # Return
   return(base_params)
 }

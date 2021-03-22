@@ -6,34 +6,32 @@
 \usage{
 AutoCatBoostMultiClass(
   data,
-  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
-  ClassWeights = NULL,
   IDcols = NULL,
+  TrainOnFull = FALSE,
   task_type = "GPU",
   NumGPUs = 1,
-  eval_metric = "MultiClassOneVsAll",
-  loss_function = "MultiClassOneVsAll",
-  model_path = NULL,
-  metadata_path = NULL,
-  ModelID = "FirstModel",
+  DebugMode = FALSE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  ModelID = "FirstModel",
+  model_path = NULL,
+  metadata_path = NULL,
+  ClassWeights = NULL,
+  eval_metric = "MultiClassOneVsAll",
+  loss_function = "MultiClassOneVsAll",
+  grid_eval_metric = "Accuracy",
+  BaselineComparison = "default",
+  MetricPeriods = 10L,
   PassInGrid = NULL,
   GridTune = FALSE,
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
-  grid_eval_metric = "Accuracy",
-  Shuffles = 1L,
-  BaselineComparison = "default",
-  MetricPeriods = 10L,
-  langevin = FALSE,
-  diffusion_temperature = 10000,
   Trees = 50L,
   Depth = 6,
   LearningRate = NULL,
@@ -43,19 +41,18 @@ AutoCatBoostMultiClass(
   RSM = NULL,
   BootStrapType = NULL,
   GrowPolicy = NULL,
+  langevin = FALSE,
+  diffusion_temperature = 10000,
   model_size_reg = 0.5,
   feature_border_type = "GreedyLogSum",
   sampling_unit = "Object",
   subsample = NULL,
   score_function = "Cosine",
-  min_data_in_leaf = 1,
-  DebugMode = FALSE
+  min_data_in_leaf = 1
 )
 }
 \arguments{
 \item{data}{This is your data set for training and testing your model}
-
-\item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
@@ -67,27 +64,37 @@ AutoCatBoostMultiClass(
 
 \item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
 
-\item{ClassWeights}{Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.}
-
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
+
+\item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
 \item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
 
 \item{NumGPUs}{Set to 1, 2, 3, etc.}
 
-\item{eval_metric}{Internal bandit metric. Select from 'MultiClass', 'MultiClassOneVsAll', 'AUC', 'TotalF1', 'MCC', 'Accuracy', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa'}
+\item{DebugMode}{TRUE to print out steps taken}
 
-\item{loss_function}{Select from 'MultiClass' or 'MultiClassOneVsAll'}
+\item{ReturnModelObjects}{Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics}
+
+\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+
+\item{ModelID}{A character string to name your model and output}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
-\item{ModelID}{A character string to name your model and output}
+\item{ClassWeights}{Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.}
 
-\item{ReturnModelObjects}{Set to TRUE to output all modeling objects. E.g. plots and evaluation metrics}
+\item{eval_metric}{Internal bandit metric. Select from 'MultiClass', 'MultiClassOneVsAll', 'AUC', 'TotalF1', 'MCC', 'Accuracy', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa'}
 
-\item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
+\item{loss_function}{Select from 'MultiClass' or 'MultiClassOneVsAll'}
+
+\item{grid_eval_metric}{For evaluating models within grid tuning. Choices include, "accuracy", "microauc", "logloss"}
+
+\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
+
+\item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
 
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 
@@ -98,18 +105,6 @@ AutoCatBoostMultiClass(
 \item{MaxRunsWithoutNewWinner}{A number}
 
 \item{MaxRunMinutes}{In minutes}
-
-\item{grid_eval_metric}{For evaluating models within grid tuning. Choices include, "accuracy", "microauc", "logloss"}
-
-\item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
-
-\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
-
-\item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
-
-\item{langevin}{TRUE or FALSE. Enable stochastic gradient langevin boosting}
-
-\item{diffusion_temperature}{Default is 10000 and is only used when langevin is set to TRUE}
 
 \item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
@@ -129,6 +124,10 @@ AutoCatBoostMultiClass(
 
 \item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
 
+\item{langevin}{TRUE or FALSE. Enable stochastic gradient langevin boosting}
+
+\item{diffusion_temperature}{Default is 10000 and is only used when langevin is set to TRUE}
+
 \item{model_size_reg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
 
 \item{feature_border_type}{Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
@@ -140,8 +139,6 @@ AutoCatBoostMultiClass(
 \item{score_function}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
 
 \item{min_data_in_leaf}{Default is 1. Cannot be used with SymmetricTree is GrowPolicy}
-
-\item{DebugMode}{TRUE to print out steps taken}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -199,7 +196,6 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     MaxModelsInGrid = 30L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
-    Shuffles = 4L,
     BaselineComparison = "default",
 
     # ML args
