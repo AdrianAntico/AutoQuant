@@ -1049,7 +1049,6 @@ AutoCatBoostVectorCARMA <- function(data,
     MaxModelsInGrid = ModelCount,
     MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
     MaxRunMinutes = 60*60,
-    Shuffles = 4L,
     BaselineComparison = "default",
 
     # Trees, Depth, and LearningRate used in the bandit grid tuning

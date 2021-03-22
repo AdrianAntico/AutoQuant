@@ -1066,7 +1066,6 @@ AutoCatBoostHurdleCARMA <- function(data,
     MaxModelsInGrid = 500L,
     MaxRunsWithoutNewWinner = 100L,
     MaxRunMinutes = 60*60,
-    Shuffles = 2L,
     MetricPeriods = 10L,
 
     # Bandit grid args
