@@ -408,16 +408,13 @@ GridTuner <- function(AlgoType="catboost",
   ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
 
   # Sort by EvalMetric
-  if(ModelType == "classification") {
+  PositiveClassificationMeasures <- c('Utility','MCC','Acc','F1_Score','F2_Score','F0.5_Score','TPR','TNR','NPV','PPV','ThreatScore')
+  PositiveRegressionMeasures <- c('r2')
+  PositiveMultiClassMeasures <- c('AUC', 'Accuracy')
+  if(grid_eval_metric. %chin% c(PositiveClassificationMeasures, PositiveRegressionMeasures, PositiveMultiClassMeasures)) {
     BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
-  } else if(ModelType == "regression") {
-    BestGrid <- ExperimentalGrid[order(EvalMetric)][1L]
   } else {
-    if(grid_eval_metric. %in% c("accuracy", "microauc")) {
-      BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
-    } else {
-      BestGrid <- ExperimentalGrid[order(EvalMetric)][1L]
-    }
+    BestGrid <- ExperimentalGrid[order(EvalMetric)][1L]
   }
 
   # Return
