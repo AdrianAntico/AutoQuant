@@ -826,7 +826,7 @@ CatBoostFinalParams <- function(ModelType = "classification",
   }
 
   # Define parameters Not pass in GridMetric and not grid tuning
-  if(is.null(PassInGrid.) && (!GridTune. || BestGrid.[RunNumber == 1])) {
+  if(is.null(PassInGrid.) && (!GridTune. || BestGrid.[["RunNumber"]] == 1)) {
 
     # Base Parameters
     base_params <- list()
