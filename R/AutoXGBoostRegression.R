@@ -33,7 +33,6 @@
 #' @param PassInGrid Default is NULL. Provide a data.table of grid options from a previous run.
 #' @param MaxRunsWithoutNewWinner Runs without new winner to end procedure
 #' @param MaxRunMinutes In minutes
-#' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param Trees Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)
 #' @param eta Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
@@ -98,7 +97,6 @@
 #'     Verbose = 1L,
 #'
 #'     # ML args
-#'     Shuffles = 1L,
 #'     Trees = 50L,
 #'     eta = 0.05,
 #'     max_depth = 4L,
@@ -123,7 +121,7 @@ AutoXGBoostRegression <- function(data,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
                                   TransformNumericColumns = NULL,
-                                  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                                  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                                   Verbose = 0L,
                                   NumOfParDepPlots = 3L,
                                   NThreads = parallel::detectCores(),
@@ -137,7 +135,6 @@ AutoXGBoostRegression <- function(data,
                                   MaxRunsWithoutNewWinner = 20L,
                                   MaxRunMinutes = 24L*60L,
                                   PassInGrid = NULL,
-                                  Shuffles = 1L,
                                   Trees = 50L,
                                   eta = NULL,
                                   max_depth = NULL,
@@ -145,441 +142,24 @@ AutoXGBoostRegression <- function(data,
                                   subsample = NULL,
                                   colsample_bytree = NULL) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  # Check args ----
+  XGBoostArgsCheck(GridTune.=GridTune, model_path.=model_path, metadata_path.=metadata_path, Trees.=Trees, max_depth.=max_depth, eta.=eta, min_child_weight.=min_child_weight, subsample.=subsample, colsample_bytree.=colsample_bytree)
 
-  # Ensure model_path and metadata_path exists----
-  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
-
-  # Regression Check Arguments----
-  if(!(tolower(eval_metric) %chin% c("rmse", "mae", "mape", "r2"))) stop("eval_metric not in RMSE, MAE, MAPE, R2")
-  if(any(Trees < 1)) stop("Trees must be greater than 1")
-  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1 & GridTune == TRUE) stop("MaxModelsInGrid needs to be at least 1 and less than 1080")
-  if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
-  if(!is.null(metadata_path)) if(!is.character(metadata_path)) stop("metadata_path needs to be a character type")
-  if(!is.character(ModelID)) stop("ModelID needs to be a character type")
-  if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
-  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
-  if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
-  if(is.null(LossFunction)) LossFunction <- 'reg:squarederror'
-
-  # Regression Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-
-  # Regression Target Name Storage----
-  if(!is.character(TargetColumnName)) TargetColumnName <- names(data)[TargetColumnName]
-
-  # Regression IDcol Name Storage----
-  if(!is.null(IDcols)) if(!is.character(IDcols)) IDcols <- names(data)[IDcols]
-
-  # Regression Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
-  CatFeatures <- names(data)[CatFeatures]
-  CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols]
-  if(length(CatFeatures) == 0L) CatFeatures <- NULL
-
-  # Transform data, ValidationData, and TestData----
-  if(!is.null(ValidationData) & !is.null(TransformNumericColumns)) {
-    MeanTrainTarget <- data[, mean(get(TargetColumnName))]
-    Output <- AutoTransformationCreate(
-      data,
-      ColumnNames = TransformNumericColumns,
-      Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-      Path = model_path,
-      TransID = ModelID,
-      SaveOutput = SaveModelObjects)
-    data <- Output$Data
-    TransformationResults <- Output$FinalResults
-
-    # Transform ValidationData----
-    ValidationData <- AutoTransformationScore(
-      ScoringData = ValidationData,
-      Type = "Apply",
-      FinalResults = TransformationResults,
-      TransID = NULL,
-      Path = NULL)
-
-    # Transform TestData----
-    if(!is.null(TestData)) {
-      TestData <- AutoTransformationScore(
-        ScoringData = TestData,
-        Type = "Apply",
-        FinalResults = TransformationResults,
-        TransID = NULL,
-        Path = NULL)
-    }
-  }
-
-  # Regression Data Partition----
-  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
-    if(!is.null(TransformNumericColumns)) {
-
-      # Partition----
-      dataSets <- AutoDataPartition(
-        data,
-        NumDataSets = 3L,
-        Ratios = c(0.70, 0.20, 0.10),
-        PartitionType = "random",
-        StratifyColumnNames = NULL,
-        TimeColumnName = NULL)
-      data <- dataSets$TrainData
-      ValidationData <- dataSets$ValidationData
-      TestData <- dataSets$TestData
-
-      # Mean of data----
-      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
-
-      # Transform data sets----
-      Output <- AutoTransformationCreate(
-        data,
-        ColumnNames = TransformNumericColumns,
-        Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
-        Path = model_path,
-        TransID = ModelID,
-        SaveOutput = SaveModelObjects)
-      data <- Output$Data
-      TransformationResults <- Output$FinalResults
-
-      # Transform ValidationData----
-      ValidationData <- AutoTransformationScore(
-        ScoringData = ValidationData,
-        Type = "Apply",
-        FinalResults = TransformationResults,
-        TransID = NULL,
-        Path = NULL)
-
-      # Transform TestData----
-      if(!is.null(TestData)) {
-        TestData <- AutoTransformationScore(
-          ScoringData = TestData,
-          Type = "Apply",
-          FinalResults = TransformationResults,
-          TransID = NULL,
-          Path = NULL)
-      }
-    } else {
-      dataSets <- AutoDataPartition(
-        data,
-        NumDataSets = 3L,
-        Ratios = c(0.70, 0.20, 0.10),
-        PartitionType = "random",
-        StratifyColumnNames = NULL,
-        TimeColumnName = NULL)
-      data <- dataSets$TrainData
-      ValidationData <- dataSets$ValidationData
-      TestData <- dataSets$TestData
-      MeanTrainTarget <- data[, mean(get(TargetColumnName))]
-    }
-  }
-
-  # Regression data Subset Columns Needed----
-  if((is.numeric(FeatureColNames) | is.integer(FeatureColNames)) & !TrainOnFull) {
-    keep1 <- names(data)[c(FeatureColNames)]
-    keep <- c(keep1, TargetColumnName)
-    TrainMerge <- data.table::copy(data)
-    dataTrain <- data[, ..keep]
-    ValidMerge <- data.table::copy(ValidationData)
-    dataTest <- ValidationData[, ..keep]
-  } else if((is.numeric(FeatureColNames) | is.integer(FeatureColNames)) & TrainOnFull) {
-    keep1 <- names(data)[c(FeatureColNames)]
-    keep <- c(keep1, TargetColumnName)
-    dataTrain <- data[, ..keep]
-    TrainMerge <- data.table::copy(dataTrain)
-    dataTest <- NULL
-  } else if(!TrainOnFull) {
-    keep <- c(FeatureColNames, TargetColumnName)
-    dataTrain <- data[, ..keep]
-    TrainMerge <- data.table::copy(dataTrain)
-    ValidMerge <- data.table::copy(ValidationData)
-    dataTest <- ValidationData[, ..keep]
-  } else {
-    keep <- c(FeatureColNames, TargetColumnName)
-    dataTrain <- data[, ..keep]
-    TrainMerge <- data.table::copy(dataTrain)
-    dataTest <- NULL
-  }
-
-  # Regression TestData Subset Columns Needed----
-  if(!is.null(TestData)) {
-    if(is.numeric(FeatureColNames) | is.integer(FeatureColNames)) {
-      keep1 <- names(TestData)[c(FeatureColNames)]
-      if(!is.null(IDcols)) {
-        keep <- c(IDcols, keep1, TargetColumnName)
-      } else {
-        keep <- c(keep1, TargetColumnName)
-      }
-      TestData <- TestData[, ..keep]
-    } else {
-      keep1 <- c(FeatureColNames)
-      if(!is.null(IDcols)) {
-        keep <- c(IDcols, FeatureColNames, TargetColumnName)
-      } else {
-        keep <- c(FeatureColNames, TargetColumnName)
-      }
-      TestData <- TestData[, ..keep]
-    }
-    if(!is.null(IDcols)) {
-      TestMerge <- data.table::copy(TestData)
-      keep <- c(keep1, TargetColumnName)
-      TestData <- TestData[, ..keep]
-    } else {
-      TestMerge <- data.table::copy(TestData)
-    }
-  }
-
-  # Regression Dummify Categorical Features----
-  if(!is.null(CatFeatures)) {
-    if(SaveModelObjects) {
-      if(!is.null(dataTest) & !is.null(TestData) & TrainOnFull == FALSE) {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-        data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
-        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-        if(ReturnFactorLevels) {
-          if(!is.null(CatFeatures)) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = TRUE,
-              ReturnFactorLevels = ReturnFactorLevels,
-              SavePath = model_path,
-              ImportFactorLevels = FALSE,
-              ClustScore = FALSE,
-              GroupVar = TRUE)
-            IDcols <- c(IDcols,CatFeatures)
-            FactorLevelsList <- temp$FactorLevelsList
-            temp <- temp$data
-          } else {
-            FactorLevelsList <- NULL
-          }
-        } else {
-          if(!is.null(CatFeatures)) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = FALSE,
-              ReturnFactorLevels = ReturnFactorLevels,
-              SavePath = model_path,
-              ImportFactorLevels = FALSE,
-              ClustScore = FALSE,
-              GroupVar = TRUE)
-            IDcols <- c(IDcols,CatFeatures)
-          } else {
-            FactorLevelsList <- NULL
-          }
-        }
-        dataTrain <- temp[ID_Factorizer == "TRAIN"]
-        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-        dataTest <- temp[ID_Factorizer == "VALIDATE"]
-        data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-        TestData <- temp[ID_Factorizer == "TEST"]
-        data.table::set(TestData, j = "ID_Factorizer", value = NULL)
-      } else {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull) {
-          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
-          temp <- data.table::rbindlist(list(dataTrain, dataTest))
-        } else {
-          temp <- dataTrain
-        }
-        if(ReturnFactorLevels) {
-          if(!is.null(CatFeatures)) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = TRUE,
-              ReturnFactorLevels = ReturnFactorLevels,
-              SavePath = model_path,
-              ImportFactorLevels = FALSE,
-              ClustScore = FALSE,
-              GroupVar = TRUE)
-            IDcols <- c(IDcols,CatFeatures)
-            FactorLevelsList <- temp$FactorLevelsList
-            temp <- temp$data
-          } else {
-            FactorLevelsList <- NULL
-          }
-        } else {
-          if(!is.null(CatFeatures)) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = TRUE,
-              ReturnFactorLevels = ReturnFactorLevels,
-              SavePath = model_path,
-              ImportFactorLevels = FALSE,
-              ClustScore = FALSE,
-              GroupVar = TRUE)
-            IDcols <- c(IDcols,CatFeatures)
-          } else {
-            FactorLevelsList <- NULL
-          }
-        }
-        dataTrain <- temp[ID_Factorizer == "TRAIN"]
-        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-        if(!TrainOnFull) {
-          dataTest <- temp[ID_Factorizer == "VALIDATE"]
-          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-        }
-      }
-    } else {
-      if(!is.null(dataTest)) {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull) {
-          data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-          if(!is.null(TestData)) {
-            data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
-            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData))
-          } else {
-            temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          }
-        } else {
-          temp <- dataTrain
-        }
-        if(ReturnFactorLevels) {
-          if(!is.null(CatFeatures)) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = FALSE,
-              ReturnFactorLevels = ReturnFactorLevels,
-              FactorLevelsList = NULL,
-              SavePath = NULL,
-              ImportFactorLevels = FALSE,
-              ClustScore = FALSE,
-              GroupVar = TRUE)
-            IDcols <- c(IDcols,CatFeatures)
-            FactorLevelsList <- temp$FactorLevelsList
-            temp <- temp$data
-          } else {
-            FactorLevelsList <- NULL
-          }
-        } else {
-          if(!is.null(CatFeatures)) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = FALSE,
-              ReturnFactorLevels = ReturnFactorLevels,
-              SavePath = NULL,
-              ImportFactorLevels = FALSE,
-              ClustScore = FALSE,
-              GroupVar = TRUE)
-            IDcols <- c(IDcols,CatFeatures)
-          } else {
-            FactorLevelsList <- NULL
-          }
-        }
-        dataTrain <- temp[ID_Factorizer == "TRAIN"]
-        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-        if(!TrainOnFull) {
-          dataTest <- temp[ID_Factorizer == "VALIDATE"]
-          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          if(!is.null(TestData)) {
-            TestData <- temp[ID_Factorizer == "TEST"]
-            data.table::set(TestData, j = "ID_Factorizer", value = NULL)
-          }
-        }
-      } else {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull) {
-          data.table::set(dataTest, j = "ID_Factorizer", value = "TRAIN")
-          FactorLevelsList <- temp$FactorLevelsList
-          temp <- data.table::rbindlist(list(dataTrain, dataTest))
-        } else {
-          temp <- dataTrain
-          FactorLevelsList <- NULL
-        }
-
-        # Dummify
-        temp <- DummifyDT(
-          data = temp,
-          FactorLevelsList = FactorLevelsList,
-          cols = CatFeatures,
-          KeepFactorCols = FALSE,
-          OneHot = FALSE,
-          SaveFactorLevels = FALSE,
-          ReturnFactorLevels = ReturnFactorLevels,
-          SavePath = NULL,
-          ImportFactorLevels = FALSE,
-          ClustScore = FALSE,
-          GroupVar = TRUE)
-        IDcols <- c(IDcols,CatFeatures)
-        FactorLevelsList <- temp$FactorLevelsList
-        temp <- temp$data
-        dataTrain <- temp[ID_Factorizer == "TRAIN"]
-        data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-        if(!TrainOnFull) {
-          dataTest <- temp[ID_Factorizer == "VALIDATE"]
-          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-        }
-      }
-    }
-  }
-
-  # Regression Save Names of data----
-  if(is.numeric(FeatureColNames)) {
-    Names <- data.table::as.data.table(names(data)[FeatureColNames])
-    data.table::setnames(Names, "V1", "ColNames")
-  } else {
-    Names <- data.table::as.data.table(FeatureColNames)
-    if(!"V1" %chin% names(Names)) {
-      data.table::setnames(Names, "FeatureColNames", "ColNames")
-    } else {
-      data.table::setnames(Names, "V1", "ColNames")
-    }
-  }
-  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
-
-  # Regression Subset Target Variables----
-  TrainTarget <- tryCatch({dataTrain[, get(TargetColumnName)]}, error = function(x) dataTrain[, eval(TargetColumnName)])
-  if(!TrainOnFull) {
-    TestTarget <- tryCatch({dataTest[, get(TargetColumnName)]}, error = function(x) dataTest[, eval(TargetColumnName)])
-    if(!is.null(TestData)) {
-      FinalTestTarget <- tryCatch({
-        TestData[, get(TargetColumnName)]
-      }, error = function(x) TestData[, eval(TargetColumnName)])
-    }
-  }
-
-  # Regression Remove Target Variable from Feature Data
-  dataTrain[, eval(TargetColumnName) := NULL]
-  if(!TrainOnFull) dataTest[, eval(TargetColumnName) := NULL]
-  if(!is.null(TestData)) TestData[, eval(TargetColumnName) := NULL]
-
-  # Regression Initialize Catboost Data Conversion----
-  if("GroupVar" %chin% names(dataTrain)) data.table::set(dataTrain, j = "GroupVar", value = NULL)
-  datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
-  if(!TrainOnFull) {
-    if("GroupVar" %chin% names(dataTest)) data.table::set(dataTest, j = "GroupVar", value = NULL)
-    datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
-    if(!is.null(TestData)) {
-      if("GroupVar" %chin% names(TestData)) data.table::set(TestData, j = "GroupVar", value = NULL)
-      datatest <- xgboost::xgb.DMatrix(as.matrix(TestData), label = FinalTestTarget)
-      EvalSets <- list(train = datavalidate, test = datatest)
-    } else {
-      EvalSets <- list(train = datatrain, test = datavalidate)
-    }
-  } else {
-    EvalSets <- list(train = datatrain)
-  }
+  # Data prep ----
+  Output <- XGBoostDataPrep(ModelType="regression", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels)
+  FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
+  datavalidate <- Output$datavalidate; Output$datavalidate <- NULL
+  TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
+  TestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
+  datatrain <- Output$datatrain; Output$datatrain <- NULL
+  dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
+  TestMerge <- Output$TestMerge; Output$TestMerge <- NULL
+  TestData <- Output$TestData.; Output$TestData. <- NULL
+  datatest <- Output$datatest; Output$datatest <- NULL
+  EvalSets <- Output$EvalSets; Output$EvalSets <- NULL
+  dataTest <- Output$dataTest; Output$dataTest <- NULL
+  IDcols <- Output$IDcols; Output$IDcols <- NULL
+  Names <- Output$Names; rm(Output)
 
   # Regression Grid Tune or Not Check----
   if(GridTune & !TrainOnFull) {
@@ -717,102 +297,20 @@ AutoXGBoostRegression <- function(data,
     gc()
   }
 
-  # Define parameters for case where you pass in a winning GridMetrics from grid tuning----
-  if(!is.null(PassInGrid)) {
-    if(PassInGrid[,.N] > 1L) PassInGrid <- PassInGrid[order(EvalMetric)][1]
-    if(PassInGrid[, BanditProbs_Grid_1] == -10) {
-      PassInGrid <- NULL
-    }
-  }
-  if(!is.null(PassInGrid)) {
-    base_params <- list(
-      booster               = "gbtree",
-      objective             = LossFunction,
-      eval_metric           = tolower(eval_metric),
-      nthread               = NThreads,
-      max_bin               = 64L,
-      early_stopping_rounds = 10L,
-      tree_method           = task_type,
-      max_depth             = PassInGrid[["Depth"]],
-      eta                   = PassInGrid[["LearningRate"]],
-      subsample             = PassInGrid[["SubSample"]],
-      colsample_bytree      = PassInGrid[["ColSampleByTree"]])
+  # Final Params ----
+  Output <- XGBoostFinalParams(PassInGrid.=PassInGrid, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees)
+  base_params <- Output$base_params
+  NTrees <- Output$NTrees; rm(Output)
 
-    # Binary Train Final Model----
-    model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=PassInGrid[["NTrees"]])
-  }
-
-  # Define parameters for case where you want to run grid tuning----
-  if(GridTune & !TrainOnFull) {
-
-    # Prepare winning grid----
-    BestGrid <- ExperimentalGrid[order(EvalMetric)][1L]
-
-    # Set parameters from winning grid----
-    if(BestGrid$RunNumber == 1L) {
-      base_params <- list(
-        booster               = "gbtree",
-        objective             = LossFunction,
-        eval_metric           = tolower(eval_metric),
-        nthread               = NThreads,
-        max_bin               = 64L,
-        early_stopping_rounds = 10L,
-        eval_metric           = eval_metric,
-        tree_method           = TreeMethod)
-
-      # Binary Train Final Model----
-      model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = max(ExperimentalGrid$NTrees), Verbose = Verbose)
-
-    } else {
-      base_params <- list(
-        booster               = "gbtree",
-        objective             = LossFunction,
-        eval_metric           = tolower(eval_metric),
-        nthread               = NThreads,
-        max_bin               = 64L,
-        early_stopping_rounds = 10L,
-        tree_method           = TreeMethod,
-        max_depth             = BestGrid[["Depth"]],
-        eta                   = BestGrid[["LearningRate"]],
-        subsample             = BestGrid[["SubSample"]],
-        colsample_bytree      = BestGrid[["ColSampleByTree"]])
-
-      # Binary Train Final Model----
-      model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = BestGrid[["NTrees"]], verbose = Verbose)
-    }
-  }
-
-  # Define parameters Not pass in GridMetric and not grid tuning----
-  if(is.null(PassInGrid) & !GridTune) {
-
-    # Base Parameters
-    base_params <- list()
-    base_params[["booster"]] <- "gbtree"
-    base_params[["objective"]] <- LossFunction
-    base_params[["eval_metric"]] <- tolower(eval_metric)
-    base_params[["nthread"]] <- NThreads
-
-    # Additional Parameters
-    base_params[["max_bin"]] <- 64L
-    base_params[["tree_method"]] <- TreeMethod
-    base_params[["early_stopping_rounds"]] <- if(!TrainOnFull) 10L else NULL
-
-    base_params[["eta"]] <- eta
-    base_params[["max_depth"]] <- max_depth
-    base_params[["min_child_weight"]] <- min_child_weight
-    base_params[["subsample"]] <- subsample
-    base_params[["colsample_bytree"]] <- colsample_bytree
-
-    # Regression Train Final Model----
-    model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = Trees, verbose = Verbose)
-  }
+  # Build model ----
+  model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose)
 
   # Regression Save Model----
   if(SaveModelObjects) {
     if(getwd() == model_path) {
       xgboost::xgb.save(model = model, fname = ModelID)
     } else {
-      save(model, file = file.path(normalizePath(model_path), ModelID))
+      save(model, file = file.path(model_path, ModelID))
     }
   }
 

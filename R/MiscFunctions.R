@@ -64,7 +64,7 @@ PrintToPDF <- function(Path,
                        bg = BackgroundColor,
                        fg = ForegroundColor,
                        compress = TRUE)
-        if(nrow(ObjectList[[i]]) > 15) {
+        tryCatch({if(nrow(ObjectList[[i]]) > 15) {
           counter <- 1L
           repeat{
             temp <- ObjectList[[i]][counter:(counter + 14L)]
@@ -76,7 +76,7 @@ PrintToPDF <- function(Path,
           }
         } else {
           print(gridExtra::grid.table(ObjectList[[i]], rows = NULL))
-        }
+        }}, error = function(x) NULL)
         while(grDevices::dev.cur() > 1) grDevices::dev.off()
       }
     }

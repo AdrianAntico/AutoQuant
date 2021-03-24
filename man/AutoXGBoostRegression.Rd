@@ -20,8 +20,7 @@ AutoXGBoostRegression(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   Verbose = 0L,
   NumOfParDepPlots = 3L,
   NThreads = parallel::detectCores(),
@@ -35,7 +34,6 @@ AutoXGBoostRegression(
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
   PassInGrid = NULL,
-  Shuffles = 1L,
   Trees = 50L,
   eta = NULL,
   max_depth = NULL,
@@ -102,8 +100,6 @@ AutoXGBoostRegression(
 \item{MaxRunMinutes}{In minutes}
 
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
-
-\item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
 
 \item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
@@ -180,7 +176,6 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     Verbose = 1L,
 
     # ML args
-    Shuffles = 1L,
     Trees = 50L,
     eta = 0.05,
     max_depth = 4L,

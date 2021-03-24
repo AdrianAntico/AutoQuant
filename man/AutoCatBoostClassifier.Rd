@@ -174,7 +174,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   task_type = "GPU",
   NumGPUs = 1,
   TrainOnFull = FALSE,
-  DebugMode = FALSE
+  DebugMode = FALSE,
 
   # Metadata args
   ModelID = "Test_Model_1",

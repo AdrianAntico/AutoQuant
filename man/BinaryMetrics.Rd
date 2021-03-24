@@ -5,7 +5,6 @@
 \title{BinaryMetrics}
 \usage{
 BinaryMetrics(
-  MLModels. = "catboost",
   ClassWeights. = ClassWeights,
   CostMatrixWeights. = CostMatrixWeights,
   SaveModelObjects. = SaveModelObjects,
@@ -35,8 +34,6 @@ BinaryMetrics(
 \item{model_path.}{= model_path}
 
 \item{metadata_path.}{= metadata_path}
-
-\item{MLModels}{= "catboost"}
 }
 \description{
 Compute binary metrics and save them to file

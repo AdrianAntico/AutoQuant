@@ -315,7 +315,9 @@ ROCPlot <- function(data = ValidationData,
 #'
 #' @return ROC Plot for classification models
 #' @export
-VI_Plot <- function(Type = "catboost", VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
+VI_Plot <- function(Type = "catboost",
+                    VI_Data, ColorHigh = "darkblue",
+                    ColorLow = "white") {
 
   # Catboost
   if(Type == "catboost") {
@@ -341,5 +343,335 @@ VI_Plot <- function(Type = "catboost", VI_Data, ColorHigh = "darkblue", ColorLow
       ggplot2::xlab("Top Model Features") +
       ggplot2::ylab("Value") +
       ggplot2::theme(legend.position = "none")))
+  }
+}
+
+#' @title ML_EvalPlots
+#'
+#' @description Generate evaluation plots
+#'
+#' @author Adrian
+#' @family Model Evaluation and Interpretation
+#'
+#' @param ModelType 'classification', 'multiclass', 'regression', or 'vector'
+#' @param TrainOnFull. Passthrough
+#' @param LossFunction. Passthrough regression
+#' @param EvalMetric. Passthrough regression
+#' @param EvaluationMetrics. Passthrough regression
+#' @param ValidationData. Passthrough
+#' @param NumOfParDepPlots. Passthrough
+#' @param VariableImportance. Passthrough
+#' @param TargetColumnName. Passthrough
+#' @param FeatureColNames. Passthrough
+#' @param SaveModelObjects. Passthrough
+#' @param ModelID. Passthrough
+#' @param model_path. Passthrough
+#' @param metadata_path. Passthrough
+#'
+#' @export
+ML_EvalPlots <- function(ModelType = "classification",
+                         TrainOnFull. = TrainOnFull,
+                         LossFunction. = LossFunction,
+                         EvalMetric. = EvalMetric,
+                         EvaluationMetrics. = EvaluationMetrics,
+                         ValidationData. = ValidationData,
+                         NumOfParDepPlots. = NumOfParDepPlots,
+                         VariableImportance. = VariableImportance,
+                         TargetColumnName. = TargetColumnName,
+                         FeatureColNames. = FeatureColNames,
+                         SaveModelObjects. = SaveModelObjects,
+                         ModelID. = ModelID,
+                         metadata_path. = metadata_path,
+                         model_path. = model_path,
+                         predict. = predict) {
+
+  # Classification
+  if(ModelType == "classification") {
+
+    # Full data
+    if(!TrainOnFull.) {
+
+      # ROC
+      Output <- ROCPlot(data = ValidationData., TargetName = TargetColumnName., SavePlot = SaveModelObjects., Name = ModelID., metapath = metadata_path., modelpath = model_path.)
+      ROC_Plot <- Output$ROC_Plot
+      AUC_Metrics <- Output$AUC_Metrics
+      rm(Output)
+
+      # Decile
+      EvaluationPlot <- EvalPlot(data = ValidationData., PredictionColName = "p1", TargetColName = eval(TargetColumnName.), GraphType = "calibration", PercentileBucket = 0.05, aggrfun = function(x) mean(x, na.rm = TRUE))
+      EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: AUC = ", round(AUC_Metrics$auc, 3L)))
+      if(SaveModelObjects.) {
+        if(!is.null(metadata_path.)) {
+          ggplot2::ggsave(file.path(metadata_path., paste0(ModelID., "_EvaluationPlot.png")))
+        } else {
+          ggplot2::ggsave(file.path(model_path., paste0(ModelID., "_EvaluationPlot.png")))
+        }
+      }
+
+      # ParDep
+      ParDepPlots <- list()
+      j <- 0L
+      if(!is.null(VariableImportance.) && NumOfParDepPlots. > 0L && !TrainOnFull.) {
+        for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VariableImportance.[,.N]))) {
+          tryCatch({
+            Out <- ParDepCalPlots(
+              data = ValidationData.,
+              PredictionColName = "p1",
+              TargetColName = eval(TargetColumnName.),
+              IndepVar = if("Variable" %in% names(VariableImportance.)) VariableImportance.[i, Variable] else VariableImportance.[i, Feature],
+              GraphType = "calibration",
+              PercentileBucket = 0.05,
+              FactLevels = 10L,
+              Function = function(x) mean(x, na.rm = TRUE))
+            j <- j + 1L
+            if("Variable" %in% names(VariableImportance.)) ParDepPlots[[paste0(VariableImportance.[j, Variable])]] <- Out else ParDepPlots[[paste0(VariableImportance.[j, Feature])]] <- Out
+          }, error = function(x) "skip")
+        }
+      }
+      if(SaveModelObjects.) {
+        if(!is.null(metadata_path.)) {
+          if(!is.null(VariableImportance.)) save(ParDepPlots, file = file.path(metadata_path., paste0(ModelID., "_ParDepPlots.R")))
+        } else {
+          if(!is.null(VariableImportance.)) save(ParDepPlots, file = file.path(model_path., paste0(ModelID., "_ParDepPlots.R")))
+        }
+      }
+    } else {
+      ROC_Plot <- NULL
+      EvaluationPlot <- NULL
+      ParDepPlots <- NULL
+    }
+
+    # Return
+    return(list(ROC_Plot = ROC_Plot, EvaluationPlot = EvaluationPlot, ParDepPlots = ParDepPlots))
+  }
+
+  # Regression
+  if(ModelType %chin% c("regression", "vector")) {
+    if(!TrainOnFull. && ((!is.null(LossFunction.) && LossFunction. != "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. != "MultiRMSE"))) {
+
+      # Eval Plots
+      EvaluationPlot <- EvalPlot(
+        data = ValidationData.,
+        PredictionColName = "Predict",
+        TargetColName = eval(TargetColumnName.),
+        GraphType = "calibration",
+        PercentileBucket = 0.05,
+        aggrfun = function(x) mean(x, na.rm = TRUE))
+
+      # Add Number of Trees to Title
+      if(!TrainOnFull.) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[Metric == "R2", MetricValue], 3L)))
+
+      # Save plot to file
+      if(!TrainOnFull.) {
+        if(SaveModelObjects.) {
+          if(!is.null(metadata_path.)) {
+            ggplot2::ggsave(file.path(metadata_path., paste0(ModelID., "_EvaluationPlot.png")))
+          } else {
+            ggplot2::ggsave(file.path(model_path., paste0(ModelID., "_EvaluationPlot.png")))
+          }
+        }
+      }
+
+      # Regression Evaluation Calibration BoxPlot----
+      EvaluationBoxPlot <- EvalPlot(
+        data = ValidationData.,
+        PredictionColName = "Predict",
+        TargetColName = eval(TargetColumnName.),
+        GraphType = "boxplot",
+        PercentileBucket = 0.05,
+        aggrfun = function(x) mean(x, na.rm = TRUE))
+
+      # Add Number of Trees to Title
+      if(!TrainOnFull.) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[Metric == "R2", MetricValue], 3L)))
+
+      # Save plot to file
+      if(SaveModelObjects.) {
+        if(!is.null(metadata_path.)) {
+          ggplot2::ggsave(file.path(metadata_path., paste0(ModelID., "_EvaluationBoxPlot.png")))
+        } else {
+          ggplot2::ggsave(file.path(model_path., paste0(ModelID., "_EvaluationBoxPlot.png")))
+        }
+      }
+
+      # Regression Partial Dependence
+      if(!is.null(VariableImportance.)) {
+        ParDepBoxPlots <- list()
+        ParDepPlots <- list()
+        if(NumOfParDepPlots. > 0L) {
+          j <- 0L
+          k <- 0L
+          for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VariableImportance.[,.N]))) {
+            tryCatch({
+              Out <- ParDepCalPlots(
+                data = ValidationData.,
+                PredictionColName = "Predict",
+                TargetColName = eval(TargetColumnName.),
+                IndepVar = if("Variable" %in% names(VariableImportance.)) VariableImportance.[i, Variable] else VariableImportance.[i, Feature],
+                GraphType = "calibration",
+                PercentileBucket = 0.05,
+                FactLevels = 10L,
+                Function = function(x) mean(x, na.rm = TRUE))
+              j <- j + 1L
+              if("Variable" %in% names(VariableImportance.)) ParDepPlots[[paste0(VariableImportance.[j, Variable])]] <- Out else ParDepPlots[[paste0(VariableImportance.[j, Feature])]] <- Out
+            }, error = function(x) "skip")
+            tryCatch({
+              Out1 <- ParDepCalPlots(
+                data = ValidationData.,
+                PredictionColName = "Predict",
+                TargetColName = eval(TargetColumnName.),
+                IndepVar = if("Variable" %in% names(VariableImportance.)) VariableImportance.[i, Variable] else VariableImportance.[i, Feature],
+                GraphType = "boxplot",
+                PercentileBucket = 0.05,
+                FactLevels = 10L,
+                Function = function(x) mean(x, na.rm = TRUE))
+              k <- k + 1L
+              if("Variable" %in% names(VariableImportance.)) ParDepBoxPlots[[paste0(VariableImportance.[k, Variable])]] <- Out1 else ParDepBoxPlots[[paste0(VariableImportance.[k, Feature])]] <- Out1
+            }, error = function(x) "skip")
+          }
+
+          # Regression Save ParDepPlots to file
+          if(SaveModelObjects.) {
+            if(!is.null(metadata_path.)) {
+              save(ParDepPlots, file = file.path(metadata_path., paste0(ModelID., "_ParDepPlots.R")))
+            } else {
+              save(ParDepPlots, file = file.path(model_path., paste0(ModelID., "_ParDepPlots.R")))
+            }
+          }
+
+          # Regression Save ParDepBoxPlots to file
+          if(SaveModelObjects.) {
+            if(!is.null(metadata_path.)) {
+              save(ParDepBoxPlots, file = file.path(metadata_path., paste0(ModelID., "_ParDepBoxPlots.R")))
+            } else {
+              save(ParDepBoxPlots, file = file.path(model_path., paste0(ModelID., "_ParDepBoxPlots.R")))
+            }
+          }
+        }
+      } else {
+        ParDepBoxPlots <- NULL
+        ParDepPlots <- NULL
+      }
+    } else if(!TrainOnFull. && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+
+      # Initialize plots
+      EvaluationPlot <- list()
+      EvaluationBoxPlot <- list()
+      ParDepBoxPlots <- list()
+      ParDepPlots <- list()
+
+      # Build plots
+      for(TV in seq_along(TargetColumnName.)) {
+
+
+        # Eval Plots
+        EvaluationPlot[[TargetColumnName.[TV]]] <- EvalPlot(
+          data = ValidationData.,
+          PredictionColName = paste0("Predict.V",TV),
+          TargetColName = eval(TargetColumnName.[TV]),
+          GraphType = "calibration",
+          PercentileBucket = 0.05,
+          aggrfun = function(x) mean(x, na.rm = TRUE))
+
+        # Add Number of Trees to Title
+        if(!TrainOnFull.) EvaluationPlot[[TargetColumnName.[TV]]] <- EvaluationPlot[[TargetColumnName.[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[TargetColumnName.[TV]]][Metric == "R2", MetricValue], 3L)))
+
+        # Save plot to file
+        if(!TrainOnFull.) {
+          if(SaveModelObjects.) {
+            if(!is.null(metadata_path.)) {
+              ggplot2::ggsave(file.path(metadata_path., paste0(ModelID., "_EvaluationPlot.png")))
+            } else {
+              ggplot2::ggsave(file.path(model_path., paste0(ModelID., "_EvaluationPlot.png")))
+            }
+          }
+        }
+
+        # Regression Evaluation Calibration BoxPlot
+        EvaluationBoxPlot[[TargetColumnName.[TV]]] <- EvalPlot(
+          data = ValidationData.,
+          PredictionColName = paste0("Predict.V",TV),
+          TargetColName = eval(TargetColumnName.[TV]),
+          GraphType = "boxplot",
+          PercentileBucket = 0.05,
+          aggrfun = function(x) mean(x, na.rm = TRUE))
+
+        # Add Number of Trees to Title
+        if(!TrainOnFull.) EvaluationBoxPlot[[TargetColumnName.[TV]]] <- EvaluationBoxPlot[[TargetColumnName.[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[TargetColumnName.[TV]]][Metric == "R2", MetricValue], 3L)))
+
+        # Save plot to file
+        if(SaveModelObjects.) {
+          if(!is.null(metadata_path.)) {
+            ggplot2::ggsave(file.path(metadata_path., paste0(ModelID., "_EvaluationBoxPlot.png")))
+          } else {
+            ggplot2::ggsave(file.path(model_path., paste0(ModelID., "_EvaluationBoxPlot.png")))
+          }
+        }
+
+        # Regression Partial Dependence
+        if(!is.null(VariableImportance.)) {
+          ParDepBoxPlots <- list()
+          ParDepPlots <- list()
+          if(NumOfParDepPlots. > 0L) {
+            j <- 0L
+            k <- 0L
+            for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VariableImportance.[,.N]))) {
+              tryCatch({
+                Out <- ParDepCalPlots(
+                  data = ValidationData.,
+                  PredictionColName = paste0("Predict.V",TV),
+                  TargetColName = eval(TargetColumnName.[TV]),
+                  IndepVar = VariableImportance.[i, Variable],
+                  GraphType = "calibration",
+                  PercentileBucket = 0.05,
+                  FactLevels = 10L,
+                  Function = function(x) mean(x, na.rm = TRUE))
+                j <- j + 1L
+                ParDepPlots[[paste0(TargetColumnName.[TV],"_",VariableImportance.[j, Variable])]] <- Out
+              }, error = function(x) "skip")
+              tryCatch({
+                Out1 <- ParDepCalPlots(
+                  data = ValidationData.,
+                  PredictionColName = paste0("Predict.V",TV),
+                  TargetColName = eval(TargetColumnName.[TV]),
+                  IndepVar = VariableImportance.[i, Variable],
+                  GraphType = "boxplot",
+                  PercentileBucket = 0.05,
+                  FactLevels = 10L,
+                  Function = function(x) mean(x, na.rm = TRUE))
+                k <- k + 1L
+                ParDepBoxPlots[[paste0(TargetColumnName.[TV],"_",VariableImportance.[k, Variable])]] <- Out1
+              }, error = function(x) "skip")
+            }
+
+            # Regression Save ParDepPlots to file
+            if(SaveModelObjects.) {
+              if(!is.null(metadata_path.)) {
+                save(ParDepPlots, file = file.path(metadata_path., paste0(ModelID., "_", TargetColumnName.[TV], "_ParDepPlots.R")))
+              } else {
+                save(ParDepPlots, file = file.path(model_path., paste0(ModelID., "_", TargetColumnName.[TV], "_ParDepPlots.R")))
+              }
+            }
+
+            # Regression Save ParDepBoxPlots to file
+            if(SaveModelObjects.) {
+              if(!is.null(metadata_path.)) {
+                save(ParDepBoxPlots, file = file.path(metadata_path., paste0(ModelID., "_", TargetColumnName.[TV], "_ParDepBoxPlots.R")))
+              } else {
+                save(ParDepBoxPlots, file = file.path(model_path., paste0(ModelID., "_", TargetColumnName.[TV], "_ParDepBoxPlots.R")))
+              }
+            }
+          }
+        } else {
+          ParDepBoxPlots <- NULL
+          ParDepPlots <- NULL
+        }
+      }
+    } else {
+      EvaluationPlot <- NULL
+      EvaluationBoxPlot <- NULL
+      ParDepBoxPlots <- NULL
+      ParDepPlots <- NULL
+    }
+    return(list(EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, ParDepPlots = ParDepPlots, ParDepBoxPlots = ParDepBoxPlots))
   }
 }

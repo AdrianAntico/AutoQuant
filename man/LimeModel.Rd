@@ -42,6 +42,7 @@ LimeModel to build a lime model for prediction explanations in this package#'
 Other Model Evaluation and Interpretation: 
 \code{\link{AutoLimeAid}()},
 \code{\link{EvalPlot}()},
+\code{\link{ML_EvalPlots}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},
 \code{\link{RedYellowGreen}()},

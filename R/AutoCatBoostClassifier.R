@@ -71,7 +71,7 @@
 #'   task_type = "GPU",
 #'   NumGPUs = 1,
 #'   TrainOnFull = FALSE,
-#'   DebugMode = FALSE
+#'   DebugMode = FALSE,
 #'
 #'   # Metadata args
 #'   ModelID = "Test_Model_1",
@@ -273,11 +273,11 @@ AutoCatBoostClassifier <- function(data,
 
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Running BinaryMetrics()")
-  EvalMetrics <- BinaryMetrics(MLModels.="catboost", ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  EvalMetrics <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
   # Classification evaluation plots ----
-  if(DebugMode) print("Running CatBoostEvalPlots()")
-  Output <- CatBoostEvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+  if(DebugMode) print("Running ML_EvalPlots()")
+  Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
   EvaluationPlot <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
   ParDepPlots <- Output$ParDepPlots; Output$ParDepPlots <- NULL
   ROC_Plot <- Output$ROC_Plot; rm(Output)
@@ -300,7 +300,7 @@ AutoCatBoostClassifier <- function(data,
       Model = model,
       VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
       InteractionImportance = if(!is.null(Interaction)) Interaction else NULL,
-      ShapValuesDT = if(!is.null(VariableImportance)) ShapValues else NULL,
+      ShapValuesDT = if(!is.null(ShapValues)) ShapValues else NULL,
       VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
       ColNames = Names))
   } else if(ReturnModelObjects) {
@@ -312,7 +312,7 @@ AutoCatBoostClassifier <- function(data,
       EvaluationMetrics = EvalMetrics,
       VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
       InteractionImportance = if(!is.null(Interaction)) Interaction else NULL,
-      ShapValuesDT = if(!is.null(VariableImportance)) ShapValues else NULL,
+      ShapValuesDT = if(!is.null(ShapValues)) ShapValues else NULL,
       VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
       PartialDependencePlots = if(!is.null(ParDepPlots)) ParDepPlots else NULL,
       GridMetrics = if(!is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = -1L, na.last = TRUE) else NULL,

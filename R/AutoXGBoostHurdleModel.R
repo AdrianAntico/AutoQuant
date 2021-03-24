@@ -384,7 +384,6 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       MaxModelsInGrid = MaxModelsInGrid,
       MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
       MaxRunMinutes = MaxRunMinutes,
-      Shuffles = 2L,
 
       # bandit args----
       Trees = ClassifierTrees,
@@ -434,7 +433,6 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       MaxModelsInGrid = MaxModelsInGrid,
       MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
       MaxRunMinutes = MaxRunMinutes,
-      Shuffles = 2L,
 
       # bandit args----
       Trees = ClassifierTrees,
@@ -622,7 +620,6 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           BaselineComparison = "default",
           MaxRunsWithoutNewWinner = 20L,
           MaxRunMinutes = 60*60,
-          Shuffles = 2L,
 
           # Trees, Depth, and LearningRate used in the bandit grid tuning
           Trees = RegressionTrees,

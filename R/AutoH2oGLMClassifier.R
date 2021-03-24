@@ -555,9 +555,9 @@ AutoH2oGLMClassifier <- function(data,
   # Binary Save EvaluationMetrics to File ----
   if(SaveModelObjects) {
     if(!is.null(metadata_path)) {
-      data.table::fwrite(RemixClassificationMetrics(MLModels="h2oglm",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oGLMTestData=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
+      data.table::fwrite(RemixClassificationMetrics(TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),ValidationData.=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(RemixClassificationMetrics(MLModels="h2oglm",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oGLMTestData=ValidationData), file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
+      data.table::fwrite(RemixClassificationMetrics(TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),ValidationData.=ValidationData), file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
     }
   }
 
@@ -624,7 +624,7 @@ AutoH2oGLMClassifier <- function(data,
   if(!TrainOnFull & SaveInfoToPDF) {
     EvalPlotList <- list(EvaluationPlot, if(!is.null(VariableImportance)) VI_Plot(VariableImportance) else NULL)
     ParDepList <- list(if(!is.null(ParDepPlots)) ParDepPlots else NULL)
-    TableMetrics <- list(RemixClassificationMetrics(MLModels="h2oautoml",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oAutoMLTestData=ValidationData), if(!is.null(VariableImportance)) VariableImportance else NULL)
+    TableMetrics <- list(RemixClassificationMetrics(TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),ValidationData.=ValidationData), if(!is.null(VariableImportance)) VariableImportance else NULL)
     try(PrintToPDF(
       Path = if(!is.null(metadata_path)) metadata_path else if(!is.null(model_path)) model_path else getwd(),
       OutputName = "EvaluationPlots",
@@ -656,7 +656,7 @@ AutoH2oGLMClassifier <- function(data,
         ValidationData = ValidationData,
         ROC_Plot = ROC_Plot,
         EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(MLModels="h2oautoml",TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),H2oAutoMLTestData=ValidationData),
+        EvaluationMetrics = RemixClassificationMetrics(TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),ValidationData.=ValidationData),
         VariableImportance = VariableImportance,
         VI_Plot = VI_Plot(VI_Data = VariableImportance),
         PartialDependencePlots = ParDepPlots,

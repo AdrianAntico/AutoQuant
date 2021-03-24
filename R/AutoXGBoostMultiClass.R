@@ -36,7 +36,6 @@
 #' @param MaxModelsInGrid Number of models to test from grid options.
 #' @param MaxRunsWithoutNewWinner A number
 #' @param MaxRunMinutes In minutes
-#' @param Shuffles Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @examples
 #' \dontrun{
@@ -91,7 +90,6 @@
 #'     Verbose = 1L,
 #'
 #'     # ML args
-#'     Shuffles = 1L,
 #'     Trees = 50L,
 #'     eta = 0.05,
 #'     max_depth = 4L,
@@ -127,7 +125,6 @@ AutoXGBoostMultiClass <- function(data,
                                   MaxRunsWithoutNewWinner = 20L,
                                   MaxRunMinutes = 24L*60L,
                                   PassInGrid = NULL,
-                                  Shuffles = 1L,
                                   Trees = 50L,
                                   eta = NULL,
                                   max_depth = NULL,
@@ -135,23 +132,8 @@ AutoXGBoostMultiClass <- function(data,
                                   subsample = NULL,
                                   colsample_bytree = NULL) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
-  # Ensure model_path and metadata_path exists----
-  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
-
-  # MultiClass Check Arguments----
-  if(any(Trees < 1L)) return("Trees must be greater than 1")
-  if(!GridTune & length(Trees) > 1L) Trees <- Trees[length(Trees)]
-  if(!GridTune %in% c(TRUE, FALSE)) return("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1L & GridTune == TRUE) return("MaxModelsInGrid needs to be at least 1 and less than 1080")
-  if(!is.null(model_path)) if(!is.character(model_path)) return("model_path needs to be a character type")
-  if(!is.null(metadata_path)) if(!is.character(metadata_path)) return("metadata_path needs to be a character type")
-  if(!is.character(ModelID)) return("ModelID needs to be a character type")
-  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) return("ReturnModelObjects needs to be TRUE or FALSE")
-  if(!(SaveModelObjects %in% c(TRUE, FALSE))) return("SaveModelObjects needs to be TRUE or FALSE")
+  # Check args ----
+  XGBoostArgsCheck(GridTune.=GridTune, model_path.=model_path, metadata_path.=metadata_path, Trees.=Trees, max_depth.=max_depth, eta.=eta, min_child_weight.=min_child_weight, subsample.=subsample, colsample_bytree.=colsample_bytree)
 
   # MultiClass Ensure data is a data.table----
   if(!data.table::is.data.table(data)) data.table::setDT(data)

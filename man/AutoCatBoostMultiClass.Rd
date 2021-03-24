@@ -164,6 +164,8 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     # GPU or CPU and the number of available GPUs
     task_type = "GPU",
     NumGPUs = 1,
+    TrainOnFull = FALSE,
+    DebugMode = FALSE,
 
     # Metadata args
     ModelID = "Test_Model_1",
@@ -174,7 +176,6 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 
     # Data args
     data = data,
-    TrainOnFull = FALSE,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = "Adrian",
@@ -215,8 +216,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     sampling_unit = "Object",
     subsample = NULL,
     score_function = "Cosine",
-    min_data_in_leaf = 1,
-    DebugMode = FALSE)
+    min_data_in_leaf = 1)
 
 # Output
 TestModel$Model

@@ -39,7 +39,6 @@ Convert data to catboost format
 Other CatBoost Helpers: 
 \code{\link{CatBoostArgsCheck}()},
 \code{\link{CatBoostDataPrep}()},
-\code{\link{CatBoostEvalPlots}()},
 \code{\link{CatBoostFinalParams}()},
 \code{\link{CatBoostGridParams}()},
 \code{\link{CatBoostImportances}()},

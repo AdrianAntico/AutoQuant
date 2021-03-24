@@ -111,7 +111,6 @@ Other CatBoost Helpers:
 \code{\link{CatBoostArgsCheck}()},
 \code{\link{CatBoostDataConversion}()},
 \code{\link{CatBoostDataPrep}()},
-\code{\link{CatBoostEvalPlots}()},
 \code{\link{CatBoostGridParams}()},
 \code{\link{CatBoostImportances}()},
 \code{\link{CatBoostPDF}()},

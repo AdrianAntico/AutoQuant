@@ -132,7 +132,6 @@ Ensure arguments are defined correctly
 Other CatBoost Helpers: 
 \code{\link{CatBoostDataConversion}()},
 \code{\link{CatBoostDataPrep}()},
-\code{\link{CatBoostEvalPlots}()},
 \code{\link{CatBoostFinalParams}()},
 \code{\link{CatBoostGridParams}()},
 \code{\link{CatBoostImportances}()},

@@ -112,7 +112,6 @@ Preds <- AutoH2OMLScoring(
 \seealso{
 Other Automated Model Scoring: 
 \code{\link{AutoCatBoostScoring}()},
-\code{\link{AutoH2OModeler}()},
 \code{\link{AutoHurdleScoring}()},
 \code{\link{AutoXGBoostScoring}()}
 }

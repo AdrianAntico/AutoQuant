@@ -5,23 +5,14 @@
 \title{RemixClassificationMetrics}
 \usage{
 RemixClassificationMetrics(
-  MLModels = NULL,
   TargetVariable = NULL,
   Thresholds = seq(0.01, 0.99, 0.01),
   CostMatrix = c(1, 0, 0, 1),
   ClassLabels = c(1, 0),
-  CatBoostTestData = NULL,
-  H2oAutoMLTestData = NULL,
-  H2oGBMTestData = NULL,
-  H2oGAMTestData = NULL,
-  H2oDRFTestData = NULL,
-  H2oGLMTestData = NULL,
-  XGBoostTestData = NULL
+  ValidationData. = NULL
 )
 }
 \arguments{
-\item{MLModels}{A vector of model names from remixautoml. e.g. c("catboost","h2oautoml","h2ogbm","h2odrf","h2oglm","h2ogam","xgboost")}
-
 \item{TargetVariable}{Name of your target variable}
 
 \item{Thresholds}{seq(0.01,0.99,0.01),}
@@ -30,17 +21,7 @@ RemixClassificationMetrics(
 
 \item{ClassLabels}{c(1,0),}
 
-\item{CatBoostTestData}{Test data returned from AutoCatBoostClassifier}
-
-\item{H2oAutoMLTestData}{Test data returned from AutoCatBoostClassifier}
-
-\item{H2oGBMTestData}{Test data returned from AutoH2oGBMClassifier}
-
-\item{H2oGAMTestData}{Test data returned from AutoH2oDRFClassifier}
-
-\item{H2oGLMTestData}{Test data returned from AutoH2oGLMClassifier}
-
-\item{XGBoostTestData}{Test data returned from AutoXGBoostClassifier}
+\item{ValidationData.}{Test data}
 }
 \description{
 RemixClassificationMetrics
@@ -48,18 +29,11 @@ RemixClassificationMetrics
 \examples{
 \dontrun{
 RemixClassificationMetrics <- function(
-  MLModels = "catboost",
   TargetVariable = "Adrian",
   Thresholds = seq(0.01,0.99,0.01),
   CostMatrix = c(1,0,0,1),
   ClassLabels = c(1,0),
-  CatBoostTestData = NULL,
-  H2oAutoMLTestData = NULL,
-  H2oGBMTestData = NULL,
-  H2oGAMTestData = NULL,
-  H2oDRFTestData = NULL,
-  H2oGLMTestData = NULL,
-  XGBoostTestData = NULL)
+  ValidationData. = ValidationData)
 }
 }
 \seealso{

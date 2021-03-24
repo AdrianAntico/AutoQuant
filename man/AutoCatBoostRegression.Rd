@@ -192,7 +192,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   TrainOnFull = FALSE,
   task_type = "GPU",
   NumGPUs = 1,
-  DebugMode = FALSE
+  DebugMode = FALSE,
 
   # Metadata args
   ModelID = "Test_Model_1",

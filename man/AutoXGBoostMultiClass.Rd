@@ -31,7 +31,6 @@ AutoXGBoostMultiClass(
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
   PassInGrid = NULL,
-  Shuffles = 1L,
   Trees = 50L,
   eta = NULL,
   max_depth = NULL,
@@ -92,8 +91,6 @@ AutoXGBoostMultiClass(
 \item{MaxRunMinutes}{In minutes}
 
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
-
-\item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
 
 \item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
@@ -166,7 +163,6 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     Verbose = 1L,
 
     # ML args
-    Shuffles = 1L,
     Trees = 50L,
     eta = 0.05,
     max_depth = 4L,

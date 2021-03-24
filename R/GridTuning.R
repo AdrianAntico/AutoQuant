@@ -183,13 +183,13 @@ GridTuner <- function(AlgoType="catboost",
 
         # Generate EvaluationMetrics
         if(DebugMode.) print("Running BinaryMetrics()")
-        EvalMetrics <- BinaryMetrics(MLModels.="catboost", ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull., TargetColumnName.=TargetColumnName., ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+        EvalMetrics <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull., TargetColumnName.=TargetColumnName., ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
         # New performance
         if(grid_eval_metric. %in% c("Utility", "MCC", "Acc", "F1_Score", "F2_Score", "F0.5_Score", "NPV", "PPV", "TPR", "TNR", "ThreatScore")) {
-          NewPerformance <- EvalMetrics[order(-paste0("Cat_", grid_eval_metric.))][[paste0("Cat_", grid_eval_metric.)]]
+          NewPerformance <- EvalMetrics[order(-get(grid_eval_metric.))][[eval(grid_eval_metric.)]][[1L]]
         } else {
-          NewPerformance <- EvalMetrics[order(paste0("Cat_", grid_eval_metric.))][[paste0("Cat_", grid_eval_metric.)]]
+          NewPerformance <- EvalMetrics[order(get(grid_eval_metric.))][[eval(grid_eval_metric.)]][[1L]]
         }
 
         # Update Experimental Grid with Param values

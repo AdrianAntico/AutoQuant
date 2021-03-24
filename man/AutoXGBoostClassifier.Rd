@@ -21,7 +21,7 @@ AutoXGBoostClassifier(
   SaveModelObjects = FALSE,
   Verbose = 0L,
   NumOfParDepPlots = 3L,
-  NThreads = parallel::detectCores(),
+  NThreads = max(1L, parallel::detectCores() - 2L),
   LossFunction = "reg:logistic",
   CostMatrixWeights = c(1, 0, 0, 1),
   eval_metric = "auc",
@@ -32,13 +32,12 @@ AutoXGBoostClassifier(
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
   PassInGrid = NULL,
-  Shuffles = 1L,
   Trees = 1000L,
-  eta = seq(0.05, 0.4, 0.05),
-  max_depth = seq(4L, 16L, 2L),
-  min_child_weight = seq(1, 10, 1),
-  subsample = seq(0.55, 1, 0.05),
-  colsample_bytree = seq(0.55, 1, 0.05),
+  eta = 0.3,
+  max_depth = 9,
+  min_child_weight = 1,
+  subsample = 1,
+  colsample_bytree = 1,
   DebugMode = FALSE
 )
 }
@@ -96,8 +95,6 @@ AutoXGBoostClassifier(
 \item{MaxRunMinutes}{In minutes}
 
 \item{PassInGrid}{Default is NULL. Provide a data.table of grid options from a previous run.}
-
-\item{Shuffles}{Numeric. List a number to let the program know how many times you want to shuffle the grids for grid tuning}
 
 \item{Trees}{Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the trees numbers you want to test. For running grid tuning, a NULL value supplied will mean these values are tested seq(1000L, 10000L, 1000L)}
 
@@ -173,13 +170,12 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     Verbose = 1L,
 
     # ML args
-    Shuffles = 1L,
-    Trees = 50L,
-    eta = 0.05,
-    max_depth = 4L,
+    Trees = 500L,
+    eta = 0.30,
+    max_depth = 9L,
     min_child_weight = 1.0,
-    subsample = 0.55,
-    colsample_bytree = 0.55,
+    subsample = 1,
+    colsample_bytree = 1,
     DebugMode = FALSE)
 }
 }
