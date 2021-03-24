@@ -564,6 +564,17 @@ CatBoostDataPrep <- function(ModelType = "regression",
     FinalTestTarget <- NULL
   }
 
+  # Identify column numbers for factor variables ----
+  if(ModelType != "multiclass") {
+    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
+    if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
+  } else {
+    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
+    TargetNum <- which(names(data) == TargetColumnName.)
+    CatFeatures <- setdiff(CatFeatures, TargetNum)
+    if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
+  }
+
   # Convert CatFeatures to 1-indexed----
   if(length(CatFeatures) > 0L) CatFeatures <- CatFeatures - 1L
 
@@ -790,14 +801,14 @@ CatBoostFinalParams <- function(ModelType = "classification",
 
     # Additional Parameters
     base_params[["iterations"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(NTrees.) else BestGrid.[["NTrees"]]
-    base_params[["depth"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(Depth.) else BestGrid.[["Depth"]]
+    base_params[["depth"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) NULL else BestGrid.[["Depth"]]
     base_params[["langevin"]] <- langevin.
     base_params[["diffusion_temperature"]] <- if(langevin.) diffusion_temperature. else NULL
-    base_params[["learning_rate"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(LearningRate.) else BestGrid.[["LearningRate"]]
+    base_params[["learning_rate"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) NULL else BestGrid.[["LearningRate"]]
 
-    base_params[["l2_leaf_reg"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(L2_Leaf_Reg.) else BestGrid.[["L2_Leaf_Reg"]]
-    base_params[["random_strength"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(RandomStrength.) else BestGrid.[["RandomStrength"]]
-    base_params[["border_count"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(BorderCount.) else BestGrid.[["BorderCount"]]
+    base_params[["l2_leaf_reg"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) NULL else BestGrid.[["L2_Leaf_Reg"]]
+    base_params[["random_strength"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) NULL else BestGrid.[["RandomStrength"]]
+    base_params[["border_count"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) NULL else BestGrid.[["BorderCount"]]
     base_params[["rsm"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BestGrid.[["RSM"]] == -1 || BaseCase) NULL else BestGrid.[["RSM"]]
     base_params[["sampling_unit"]] <- sampling_unit.
 
@@ -806,7 +817,7 @@ CatBoostFinalParams <- function(ModelType = "classification",
 
     # Style of model
     base_params[["grow_policy"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) "SymmetricTree" else BestGrid.[["GrowPolicy"]]
-    base_params[["bootstrap_type"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) BootStrapType. else BestGrid.[["BootStrapType"]]
+    base_params[["bootstrap_type"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) NULL else BestGrid.[["BootStrapType"]]
 
     # Loss functions
     base_params[["loss_function"]] <- LossFunction.
@@ -1434,7 +1445,6 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
 #' @param model_path. Passthrough
 #' @param NewGrid. Passthrough
 #' @param Grid. Passthrough
-#' @param ExperimentalGrid. Passthrough
 #' @param GridClusters. Passthrough
 #'
 #' @export
@@ -1451,7 +1461,6 @@ CatBoostGridParams <- function(N.=N,
                                model_path. = NULL,
                                NewGrid. = NULL,
                                Grid. = NULL,
-                               ExperimentalGrid. = NULL,
                                GridClusters. = NULL) {
 
   # Create base_params (independent of runs)

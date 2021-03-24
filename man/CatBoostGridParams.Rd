@@ -18,7 +18,6 @@ CatBoostGridParams(
   model_path. = NULL,
   NewGrid. = NULL,
   Grid. = NULL,
-  ExperimentalGrid. = NULL,
   GridClusters. = NULL
 )
 }
@@ -48,8 +47,6 @@ CatBoostGridParams(
 \item{NewGrid.}{Passthrough}
 
 \item{Grid.}{Passthrough}
-
-\item{ExperimentalGrid.}{Passthrough}
 
 \item{GridClusters.}{Passthrough}
 }

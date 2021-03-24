@@ -157,7 +157,7 @@ GridTuner <- function(AlgoType="catboost",
 
       # Build, Score, Evaluate
       if(AlgoType == "catboost") {
-        base_params <- CatBoostGridParams(N.=N, NumGPUs.=NumGPUs, LossFunction.=LossFunction, counter.=counter, BanditArmsN.=BanditArmsN, HasTime.=HasTime, MetricPeriods.=MetricPeriods, ClassWeights.=ClassWeights, EvalMetric.=EvalMetric, task_type.=task_type., model_path.=model_path, Grid.=Grid, ExperimentalGrid.=ExperimentalGrid, GridClusters.=GridClusters, NewGrid.=if(!exists("NewGrid")) NULL else NewGrid)
+        base_params <- CatBoostGridParams(N.=N, NumGPUs.=NumGPUs, LossFunction.=LossFunction, counter.=counter, BanditArmsN.=BanditArmsN, HasTime.=HasTime, MetricPeriods.=MetricPeriods, ClassWeights.=ClassWeights, EvalMetric.=EvalMetric, task_type.=task_type., model_path.=model_path, Grid.=Grid, GridClusters.=GridClusters, NewGrid.=if(!exists("NewGrid")) NULL else NewGrid)
         RunTime <- system.time(model <- catboost::catboost.train(learn_pool = TrainPool., test_pool = TestPool., params = base_params))
       } else if(AlgoType == "xgboost") {
         print("hello")
