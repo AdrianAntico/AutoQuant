@@ -774,7 +774,11 @@ CatBoostFinalParams <- function(ModelType = "classification",
   }
 
   # Define parameters for case where you want to run grid tuning
-  if(GridTune. && !TrainOnFull. && !BestGrid.[["RunNumber"]] == 1) {
+  if(GridTune. && !TrainOnFull.) {
+
+    # BaseCase check: if grid tuned and default is best, set BaseCase to TRUE
+    # When that happens, need to select which default values to ustilize for params
+    if(BestGrid.[["RunNumber"]] == 1) BaseCase <- TRUE else BaseCase <- FALSE
 
     # Base Parameters
     base_params <- list()
@@ -785,24 +789,24 @@ CatBoostFinalParams <- function(ModelType = "classification",
     base_params[["thread_count"]] <- parallel::detectCores()
 
     # Additional Parameters
-    base_params[["iterations"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(NTrees.) else BestGrid.[["NTrees"]]
-    base_params[["depth"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(Depth.) else BestGrid.[["Depth"]]
+    base_params[["iterations"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(NTrees.) else BestGrid.[["NTrees"]]
+    base_params[["depth"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(Depth.) else BestGrid.[["Depth"]]
     base_params[["langevin"]] <- langevin.
     base_params[["diffusion_temperature"]] <- if(langevin.) diffusion_temperature. else NULL
-    base_params[["learning_rate"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(LearningRate.) else BestGrid.[["LearningRate"]]
+    base_params[["learning_rate"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(LearningRate.) else BestGrid.[["LearningRate"]]
 
-    base_params[["l2_leaf_reg"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(L2_Leaf_Reg.) else BestGrid.[["L2_Leaf_Reg"]]
-    base_params[["random_strength"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(RandomStrength.) else BestGrid.[["RandomStrength"]]
-    base_params[["border_count"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") max(BorderCount.) else BestGrid.[["BorderCount"]]
-    base_params[["rsm"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BestGrid.[["RSM"]] == -1) NULL else BestGrid.[["RSM"]]
+    base_params[["l2_leaf_reg"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(L2_Leaf_Reg.) else BestGrid.[["L2_Leaf_Reg"]]
+    base_params[["random_strength"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(RandomStrength.) else BestGrid.[["RandomStrength"]]
+    base_params[["border_count"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) max(BorderCount.) else BestGrid.[["BorderCount"]]
+    base_params[["rsm"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BestGrid.[["RSM"]] == -1 || BaseCase) NULL else BestGrid.[["RSM"]]
     base_params[["sampling_unit"]] <- sampling_unit.
 
     # Speedup
     base_params[["metric_period"]] <- MetricPeriods.
 
     # Style of model
-    base_params[["grow_policy"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") "SymmetricTree" else BestGrid.[["GrowPolicy"]]
-    base_params[["bootstrap_type"]] <- if(BestGrid.[["GrowPolicy"]] == "aa") BootStrapType. else BestGrid.[["BootStrapType"]]
+    base_params[["grow_policy"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) "SymmetricTree" else BestGrid.[["GrowPolicy"]]
+    base_params[["bootstrap_type"]] <- if(BestGrid.[["GrowPolicy"]] == "aa" || BaseCase) BootStrapType. else BestGrid.[["BootStrapType"]]
 
     # Loss functions
     base_params[["loss_function"]] <- LossFunction.
@@ -826,7 +830,8 @@ CatBoostFinalParams <- function(ModelType = "classification",
   }
 
   # Define parameters Not pass in GridMetric and not grid tuning
-  if(is.null(PassInGrid.) && (!GridTune. || BestGrid.[["RunNumber"]] == 1)) {
+  if(is.null(PassInGrid.) && !GridTune.) {
+
 
     # Base Parameters
     base_params <- list()
