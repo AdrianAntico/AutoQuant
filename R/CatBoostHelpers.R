@@ -774,7 +774,7 @@ CatBoostFinalParams <- function(ModelType = "classification",
   }
 
   # Define parameters for case where you want to run grid tuning
-  if(GridTune. && !TrainOnFull. && !BestGrid.[RunNumber == 1]) {
+  if(GridTune. && !TrainOnFull. && !BestGrid.[["RunNumber"]] == 1) {
 
     # Base Parameters
     base_params <- list()

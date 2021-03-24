@@ -160,6 +160,13 @@ AutoXGBoostClassifier <- function(data,
   # Bring into existence
   ExperimentalGrid <- NULL; BestGrid <- NULL
 
+  # Grid tuning ----
+  if(GridTune) {
+    Output <- GridTuner(AlgoType="xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, BaselineComparison.=BaselineComparison, HasTime=NULL, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=ClassWeights, CostMatrixWeights=CostMatrixWeights, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=NULL, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
+    ExperimentalGrid <- Output$ExperimentalGrid
+    BestGrid <- Output$BestGrid
+  }
+
   # Binary Grid Tune or Not Check----
   if(GridTune & !TrainOnFull) {
 
@@ -313,10 +320,10 @@ AutoXGBoostClassifier <- function(data,
     }
   }
 
-  # Binary Grid Score Model----
+  # Binary Grid Score Model ----
   predict <- stats::predict(model, if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain)
 
-  # Binary Validation Data----
+  # Binary Validation Data ----
   if(!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
   } else if(!TrainOnFull) {
@@ -326,7 +333,7 @@ AutoXGBoostClassifier <- function(data,
   }
   data.table::setnames(ValidationData, "Target", TargetColumnName)
 
-  # Binary Variable Importance----
+  # Binary Variable Importance ----
   VariableImportance <- tryCatch({data.table::as.data.table(xgboost::xgb.importance(model = model))}, error = function(x) NULL)
   if(!is.null(VariableImportance)) {
     VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
@@ -350,9 +357,6 @@ AutoXGBoostClassifier <- function(data,
   if(DebugMode) print("Running BinaryMetrics()")
   EvalMetrics <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
-  # VI_Plot ----
-  VI_Plot_Object <- VI_Plot(Type = "xgboost", VI_Data = VariableImportance)
-
   # Send output to pdf ----
   if(DebugMode) print("Running CatBoostPDF()")
   CatBoostPDF(ModelClass = "xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
@@ -369,7 +373,7 @@ AutoXGBoostClassifier <- function(data,
       EvaluationPlot = EvaluationPlot,
       EvaluationMetrics = EvalMetrics,
       VariableImportance = VariableImportance,
-      VI_Plot = VI_Plot_Object,
+      VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "xgboost", VI_Data = VariableImportance)) else VI_Plot(Type = "xgboost", VI_Data = VariableImportance)}, error = function(x) NULL) else NULL,
       PartialDependencePlots = ParDepPlots,
       GridMetrics = if(GridTune) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
       ColNames = Names,

@@ -113,19 +113,15 @@ GridTuner <- function(AlgoType="catboost",
   }
 
   # Initialize RL objects ----
-  if(AlgoType == "catboost") {
-    if(DebugMode.) print("Initialize RL objects")
-    RL_Start <- RL_Initialize(ParameterGridSet = GridClusters, Alpha = 1L, Beta = 1L, SubDivisions = 1000L)
-    RunsWithoutNewWinner <- 0L
-    BanditProbs <- RL_Start$BanditProbs
-    BanditArmsN <- RL_Start$BanditArmsN
-    Successes <- RL_Start$Successes
-    GridIDs <- RL_Start$GridIDs
-    Trials <- RL_Start$Trials
-    rm(RL_Start)
-  } else if(AlgoType == "xgboost") {
-    print("hello")
-  }
+  if(DebugMode.) print("Initialize RL objects")
+  RL_Start <- RL_Initialize(ParameterGridSet = GridClusters, Alpha = 1L, Beta = 1L, SubDivisions = 1000L)
+  RunsWithoutNewWinner <- 0L
+  BanditProbs <- RL_Start$BanditProbs
+  BanditArmsN <- RL_Start$BanditArmsN
+  Successes <- RL_Start$Successes
+  GridIDs <- RL_Start$GridIDs
+  Trials <- RL_Start$Trials
+  rm(RL_Start)
 
   # Initalize counters ----
   counter <- 0L; NewGrid <- 1L; BestPerformance <- 1L
