@@ -272,7 +272,7 @@ AutoCatBoostMultiClass <- function(data,
 
   # Remove extenal files if GridTune is TRUE ----
   if(DebugMode) print("Running CatBoostRemoveFiles()")
-  CatBoostRemoveFiles(GridTune. = GridTune)
+  CatBoostRemoveFiles(GridTune. = GridTune, model_path. = model_path)
 
   # Final Garbage Collection ----
   if(tolower(task_type) == "gpu") gc()

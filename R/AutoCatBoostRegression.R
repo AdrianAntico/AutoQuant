@@ -316,7 +316,7 @@ AutoCatBoostRegression <- function(data,
 
   # Remove extenal files if GridTune is TRUE ----
   if(DebugMode) print("Running CatBoostRemoveFiles()")
-  CatBoostRemoveFiles(GridTune. = GridTune)
+  CatBoostRemoveFiles(GridTune. = GridTune, model_path. = model_path)
 
   # Send output to pdf ----
   if(DebugMode) print("Running CatBoostPDF()")

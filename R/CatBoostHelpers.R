@@ -1199,7 +1199,7 @@ CatBoostImportances <- function(ModelType = "regression",
     VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
     VariableImportance <- VariableImportance[order(-Importance)]
     if(SaveModelObjects.) {
-      if(!is.null(metadata_path)) {
+      if(!is.null(metadata_path.)) {
         data.table::fwrite(VariableImportance, file = file.path(metadata_path., paste0(ModelID., "_VariableImportance.csv")))
       } else {
         data.table::fwrite(VariableImportance, file = file.path(model_path., paste0(ModelID., "_VariableImportance.csv")))
@@ -1310,18 +1310,18 @@ CatBoostPDF <- function(ModelClass = "catboost",
 #' @param GridTune. Passthrough
 #'
 #' @export
-CatBoostRemoveFiles <- function(GridTune. = GridTune) {
+CatBoostRemoveFiles <- function(GridTune. = GridTune, model_path.=model_path) {
   if(GridTune.) {
-    if(file.exists(file.path(getwd(),"catboost_training.json"))) file.remove(file.path(getwd(),"catboost_training.json"))
-    if(file.exists(file.path(getwd(),"learn_error.tsv"))) file.remove(file.path(getwd(),"learn_error.tsv"))
-    if(file.exists(file.path(getwd(),"test_error.tsv"))) file.remove(file.path(getwd(),"test_error.tsv"))
-    if(file.exists(file.path(getwd(),"time_left.tsv"))) file.remove(file.path(getwd(),"time_left.tsv"))
-    if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
-    if(dir.exists(file.path(getwd(),"learn"))) unlink(x = file.path(getwd(),"learn"), recursive = TRUE)
-    if(dir.exists(file.path(getwd(),"test"))) unlink(x = file.path(getwd(),"test"), recursive = TRUE)
-    if(dir.exists(file.path(getwd(),"tmp"))) unlink(x = file.path(getwd(),"tmp"), recursive = TRUE)
+    if(file.exists(file.path(model_path.,"catboost_training.json"))) file.remove(file.path(model_path.,"catboost_training.json"))
+    if(file.exists(file.path(model_path.,"learn_error.tsv"))) file.remove(file.path(model_path.,"learn_error.tsv"))
+    if(file.exists(file.path(model_path.,"test_error.tsv"))) file.remove(file.path(model_path.,"test_error.tsv"))
+    if(file.exists(file.path(model_path.,"time_left.tsv"))) file.remove(file.path(model_path.,"time_left.tsv"))
+    if(dir.exists(file.path(model_path.,"catboost_info"))) unlink(x = file.path(model_path.,"catboost_info"), recursive = TRUE)
+    if(dir.exists(file.path(model_path.,"learn"))) unlink(x = file.path(model_path.,"learn"), recursive = TRUE)
+    if(dir.exists(file.path(model_path.,"test"))) unlink(x = file.path(model_path.,"test"), recursive = TRUE)
+    if(dir.exists(file.path(model_path.,"tmp"))) unlink(x = file.path(model_path.,"tmp"), recursive = TRUE)
   } else {
-    if(dir.exists(file.path(getwd(),"catboost_info"))) unlink(x = file.path(getwd(),"catboost_info"), recursive = TRUE)
+    if(dir.exists(file.path(model_path.,"catboost_info"))) unlink(x = file.path(model_path.,"catboost_info"), recursive = TRUE)
   }
 }
 
