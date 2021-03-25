@@ -544,7 +544,7 @@ CatBoostDataPrep <- function(ModelType = "regression",
   # Save Names of data ----
   Names <- data.table::as.data.table(setdiff(names(data.), c(TargetColumnName., PrimaryDateColumn., IDcols.)))
   if(!"V1" %chin% names(Names)) data.table::setnames(Names, "FeatureColNames.", "ColNames", skip_absent = TRUE) else data.table::setnames(Names, "V1", "ColNames", skip_absent = TRUE)
-  if(SaveModelObjects.) data.table::fwrite(Names, file.path(model_path, paste0(ModelID, "_ColNames.csv")))
+  if(SaveModelObjects.) data.table::fwrite(Names, file.path(model_path., paste0(ModelID, "_ColNames.csv")))
 
   # Subset Target Variables----
   TrainTarget <- data.[, .SD, .SDcols = c(TargetColumnName.)]
