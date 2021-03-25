@@ -4,7 +4,7 @@
 \alias{CatBoostRemoveFiles}
 \title{CatBoostRemoveFiles}
 \usage{
-CatBoostRemoveFiles(GridTune. = GridTune)
+CatBoostRemoveFiles(GridTune. = GridTune, model_path. = model_path)
 }
 \arguments{
 \item{GridTune.}{Passthrough}
