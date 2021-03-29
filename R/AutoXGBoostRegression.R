@@ -185,7 +185,7 @@ AutoXGBoostRegression <- function(data,
   if(DebugMode) print("Final Params ----")
   Output <- XGBoostFinalParams(TrainOnFull.=TrainOnFull, PassInGrid.=PassInGrid, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees)
   base_params <- Output$base_params
-  NTrees <- Output$NTrees; rm(Output)
+  NTrees <- if(length(Output$NTrees) > 1L) max(Output$NTrees) else Output$NTrees; rm(Output)
 
   # Build model ----
   if(DebugMode) print("Build model ----")

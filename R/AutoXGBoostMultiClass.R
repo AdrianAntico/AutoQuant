@@ -176,8 +176,7 @@ AutoXGBoostMultiClass <- function(data,
   if(DebugMode) print("Final Params ----")
   Output <- XGBoostFinalParams(TrainOnFull.=TrainOnFull, PassInGrid.=PassInGrid, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees)
   base_params <- Output$base_params
-  NTrees <- Output$NTrees; rm(Output)
-  if(length(NTrees) > 1L) NTrees <- max(NTrees)
+  NTrees <- if(length(Output$NTrees) > 1L) max(Output$NTrees) else Output$NTrees; rm(Output)
   base_params[["num_class"]] <- NumLevels
 
   # Train Final Model ----
