@@ -144,11 +144,13 @@ AutoXGBoostMultiClass <- function(data,
   Output <- XGBoostDataPrep(ModelType="multiclass", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels)
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
+  TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
   datavalidate <- Output$datavalidate; Output$datavalidate <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
   TrainMerge <- Output$TrainMerge; Output$TrainMerge <- NULL
   ValidMerge <- Output$ValidMerge; Output$ValidMerge <- NULL
   TestTarget <- Output$TestTarget; Output$TestTarget <- NULL
+  NumLevels <- Output$NumLevels; Output$NumLevels <- NULL
   datatrain <- Output$datatrain; Output$datatrain <- NULL
   dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
   TestMerge <- Output$TestMerge; Output$TestMerge <- NULL
@@ -157,8 +159,6 @@ AutoXGBoostMultiClass <- function(data,
   EvalSets <- Output$EvalSets; Output$EvalSets <- NULL
   dataTest <- Output$dataTest; Output$dataTest <- NULL
   IDcols <- Output$IDcols; Output$IDcols <- NULL
-  TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
-  NumLevels <- Output$NumLevels; Output$NumLevels <- NULL
   Names <- Output$Names; rm(Output)
 
   # Bring into existence

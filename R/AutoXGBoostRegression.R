@@ -155,6 +155,7 @@ AutoXGBoostRegression <- function(data,
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
   datavalidate <- Output$datavalidate; Output$datavalidate <- NULL
+  TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
   TrainMerge <- Output$TrainMerge; Output$TrainMerge <- NULL
   ValidMerge <- Output$ValidMerge; Output$ValidMerge <- NULL
@@ -167,7 +168,6 @@ AutoXGBoostRegression <- function(data,
   EvalSets <- Output$EvalSets; Output$EvalSets <- NULL
   dataTest <- Output$dataTest; Output$dataTest <- NULL
   IDcols <- Output$IDcols; Output$IDcols <- NULL
-  TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
   Names <- Output$Names; rm(Output)
 
   # Bring into existence

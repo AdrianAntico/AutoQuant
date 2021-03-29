@@ -155,12 +155,12 @@ AutoXGBoostClassifier <- function(data,
   TestTarget <- Output$TestTarget; Output$TestTarget <- NULL
   datatrain <- Output$datatrain; Output$datatrain <- NULL
   TestMerge <- Output$TestMerge; Output$TestMerge <- NULL
+  dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
   TestData <- Output$TestData; Output$TestData. <- NULL
   datatest <- Output$datatest; Output$datatest <- NULL
   EvalSets <- Output$EvalSets; Output$EvalSets <- NULL
   dataTest <- Output$dataTest; Output$dataTest <- NULL
   IDcols <- Output$IDcols; Output$IDcols <- NULL
-  dataTrain = Output$dataTrain
   Names <- Output$Names; rm(Output)
 
   # Bring into existence
