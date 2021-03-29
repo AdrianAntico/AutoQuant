@@ -235,7 +235,7 @@ AutoCatBoostClassifier <- function(data,
 
   # Grid tuning ----
   if(GridTune) {
-    Output <- GridTuner(AlgoType="catboost", ModelType="classification", TrainOnFull.=TrainOnFull, BaselineComparison.=BaselineComparison, HasTime=HasTime, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=ClassWeights, CostMatrixWeights=CostMatrixWeights, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=NULL, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
+    Output <- CatBoostGridTuner(ModelType="classification", TrainOnFull.=TrainOnFull, BaselineComparison.=BaselineComparison, HasTime=HasTime, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=ClassWeights, CostMatrixWeights=CostMatrixWeights, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=NULL, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
     ExperimentalGrid <- Output$ExperimentalGrid
     BestGrid <- Output$BestGrid
   }
@@ -298,24 +298,24 @@ AutoCatBoostClassifier <- function(data,
   if(ReturnModelObjects && TrainOnFull) {
     return(list(
       Model = model,
-      VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
-      InteractionImportance = if(!is.null(Interaction)) Interaction else NULL,
-      ShapValuesDT = if(!is.null(ShapValues)) ShapValues else NULL,
-      VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
-      ColNames = Names))
+      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+      ShapValuesDT = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
+      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
   } else if(ReturnModelObjects) {
     return(list(
       Model = model,
-      ValidationData = ValidationData,
-      ROC_Plot = ROC_Plot,
-      EvaluationPlot = EvaluationPlot,
-      EvaluationMetrics = EvalMetrics,
-      VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
-      InteractionImportance = if(!is.null(Interaction)) Interaction else NULL,
-      ShapValuesDT = if(!is.null(ShapValues)) ShapValues else NULL,
-      VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
-      PartialDependencePlots = if(!is.null(ParDepPlots)) ParDepPlots else NULL,
-      GridMetrics = if(!is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = -1L, na.last = TRUE) else NULL,
-      ColNames = Names))
+      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      ROC_Plot = if(exists("ROC_Plot") && !is.null(ROC_Plot)) ROC_Plot else NULL,
+      EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot)) EvaluationPlot else NULL,
+      EvaluationMetrics = if(exists("EvalMetrics") && !is.null(EvalMetrics)) EvalMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+      ShapValuesDT = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
+      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
+      PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots)) ParDepPlots else NULL,
+      GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = -1L, na.last = TRUE) else NULL,
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
   }
 }

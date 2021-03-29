@@ -335,14 +335,14 @@ VI_Plot <- function(Type = "catboost",
   # XGBoost
   if(Type == "xgboost") {
     return(eval(ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
-      ggplot2::geom_bar(stat = "identity") +
-      ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
-      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-      ggplot2::coord_flip() +
-      ggplot2::labs(title = "Global Variable Importance") +
-      ggplot2::xlab("Top Model Features") +
-      ggplot2::ylab("Value") +
-      ggplot2::theme(legend.position = "none")))
+                  ggplot2::geom_bar(stat = "identity") +
+                  ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
+                  ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
+                  ggplot2::coord_flip() +
+                  ggplot2::labs(title = "Global Variable Importance") +
+                  ggplot2::xlab("Top Model Features") +
+                  ggplot2::ylab("Value") +
+                  ggplot2::theme(legend.position = "none")))
   }
 }
 

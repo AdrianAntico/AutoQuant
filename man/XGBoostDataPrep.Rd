@@ -64,11 +64,9 @@ Prepare data for XGBoost modeling
 \seealso{
 Other XGBoost Helpers: 
 \code{\link{XGBoostArgsCheck}()},
-\code{\link{XGBoostClassifierParams}()},
 \code{\link{XGBoostFinalParams}()},
-\code{\link{XGBoostMultiClassParams}()},
-\code{\link{XGBoostRegressionMetrics}()},
-\code{\link{XGBoostRegressionParams}()}
+\code{\link{XGBoostGridParams}()},
+\code{\link{XGBoostRegressionMetrics}()}
 }
 \author{
 Adrian Antico

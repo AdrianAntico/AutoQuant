@@ -98,6 +98,7 @@ AutoWord2VecModeler <- function(data,
 
   # Arg check ----
   if(is.null(stringCol)) stop("stringCol cannot be NULL")
+  if(length(stringCol) == 1L) BuildType <- "individual"
 
   # data.table optimize----
   if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))

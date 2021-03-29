@@ -257,7 +257,7 @@ AutoCatBoostRegression <- function(data,
 
   # Grid tuning ----
   if(GridTune) {
-    Output <- GridTuner(AlgoType="catboost", ModelType="regression", TrainOnFull.=TrainOnFull, HasTime=HasTime, BaselineComparison.=BaselineComparison, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=NULL, CostMatrixWeights=NULL, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=NULL, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
+    Output <- CatBoostGridTuner(ModelType="regression", TrainOnFull.=TrainOnFull, HasTime=HasTime, BaselineComparison.=BaselineComparison, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=NULL, CostMatrixWeights=NULL, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=NULL, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
     ExperimentalGrid <- Output$ExperimentalGrid
     BestGrid <- Output$BestGrid
   }
@@ -331,21 +331,26 @@ AutoCatBoostRegression <- function(data,
     if(ReturnModelObjects) {
       return(list(
         Model = model,
-        ValidationData = ValidationData,
-        EvaluationPlot = if(!is.null(EvaluationPlot) && !is.list(EvaluationPlot)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(EvaluationPlot) else EvaluationPlot} else NULL,
-        EvaluationBoxPlot = if(!is.null(EvaluationBoxPlot)) EvaluationBoxPlot else NULL,
-        EvaluationMetrics = EvaluationMetrics,
-        VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
-        InteractionImportance = if(!is.null(Interaction)) Interaction else NULL,
-        VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VI_Data = VariableImportance)) else VI_Plot(Type = "catboost", VI_Data = VariableImportance)}, error = NULL) else NULL,
-        PartialDependencePlots = if(!is.null(ParDepPlots) && !is.list(ParDepPlots)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(ParDepPlots) else ParDepPlots} else NULL,
-        PartialDependenceBoxPlots = if(!is.null(VariableImportance)) ParDepBoxPlots else NULL,
-        GridList = if(!is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
-        ColNames = Names,
-        TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
-        FactorLevelsList = FactorLevelsList))
+        ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+        EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot) && !is.list(EvaluationPlot)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(EvaluationPlot) else EvaluationPlot} else NULL,
+        EvaluationBoxPlot = if(exists("EvaluationBoxPlot") && !is.null(EvaluationBoxPlot)) EvaluationBoxPlot else NULL,
+        EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
+        VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+        InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+        VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VI_Data = VariableImportance)) else VI_Plot(Type = "catboost", VI_Data = VariableImportance)}, error = NULL) else NULL,
+        PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots) && !is.list(ParDepPlots)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(ParDepPlots) else ParDepPlots} else NULL,
+        PartialDependenceBoxPlots = if(exists("VariableImportance") && !is.null(VariableImportance)) ParDepBoxPlots else NULL,
+        GridList = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
+        ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+        TransformationResults = if(exists("TransformationResults") && !is.null(TransformationResults)) TransformationResults else NULL,
+        FactorLevelsList = if(exists("FactorLevelsList") && !is.null(FactorLevelsList)) FactorLevelsList))
     }
   } else if(ReturnModelObjects) {
-    return(list(Model = model, data = ValidationData, ColNames = Names, TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL, FactorLevelsList = FactorLevelsList))
+    return(list(
+      Model = model,
+      data = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+      TransformationResults = if(exists("TransformationResults") && !is.null(TransformationResults)) TransformationResults else NULL,
+      FactorLevelsList = if(exists("FactorLevelsList") && !is.null(FactorLevelsList)) FactorLevelsList))
   }
 }

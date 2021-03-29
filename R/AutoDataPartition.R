@@ -139,7 +139,7 @@ AutoDataPartition <- function(data,
       }
     }
 
-  } else if(tolower(PartitionType) == "timeseries" & !is.null(StratifyColumnNames)) {
+  } else if(tolower(PartitionType) == "timeseries" && !is.null(StratifyColumnNames)) {
 
     # Initalize collection----
     DataCollect <- list()
@@ -180,7 +180,7 @@ AutoDataPartition <- function(data,
   if(!is.null(StratifyColumnNames)) {
     if(length(StratifyColumnNames) > 1) {
       for(g in seq_along(DataCollect)) if("rank" %chin% names(DataCollect[[g]])) data.table::setnames(DataCollect[[g]], "rank", StratifyColumnNames)
-    } else if(Check1) {
+    } else if(PartitionType != "timeseries" && Check1) {
       for(g in seq_along(DataCollect)) if("rank" %chin% names(DataCollect[[g]])) DataCollect[[g]][, rank := NULL]
     }
   }

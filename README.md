@@ -1,4 +1,4 @@
-![Version: 0.4.8](https://img.shields.io/static/v1?label=Version&message=0.4.8&color=blue&?style=plastic)
+![Version: 0.5.0](https://img.shields.io/static/v1?label=Version&message=0.5.0&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -87,7 +87,7 @@ If you're still having trouble submit an issue and I'll work with you to get it 
 ```
 # Be sure to use the version you want versus what is listed below
 options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
-install.packages("https://github.com/catboost/catboost/releases/download/v0.17.3/catboost-R-Windows-0.17.3.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+install.packages("https://github.com/catboost/catboost/releases/download/v0.24.3/catboost-R-Windows-0.24.3.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
 ```
  
 If you're having still having trouble installing see if the issue below helps out:

@@ -7,6 +7,7 @@
 #'
 #' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
+#' @param ReturnShapValues Set to TRUE to return shap values for the predicted values
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
 #' @param FactorLevelsList Supply the factor variables' list from DummifyDT()
@@ -33,6 +34,7 @@
 #' Preds <- AutoXGBoostScoring(
 #'   TargetType = "regression",
 #'   ScoringData = data,
+#'   ReturnShapValues = FALSE,
 #'   FeatureColumnNames = 2:12,
 #'   IDcols = NULL,
 #'   FactorLevelsList = NULL,
@@ -59,6 +61,7 @@
 #' @export
 AutoXGBoostScoring <- function(TargetType = NULL,
                                ScoringData = NULL,
+                               ReturnShapValues = FALSE,
                                FeatureColumnNames = NULL,
                                IDcols = NULL,
                                FactorLevelsList = NULL,
@@ -153,6 +156,11 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   # Score model----
   predict <- data.table::as.data.table(stats::predict(model, ScoringMatrix))
 
+  # Shap values ----
+  if(ReturnShapValues) {
+    ShapValues <- xgboost:::xgb.shap.data(as.matrix(ScoringData), model = ModelObject, features = names(ScoringData))$shap_contrib
+  }
+
   # Change Output Predictions Column Name----
   if(tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
@@ -163,7 +171,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       PredictLength <- predict[, .N]
       for(counter in seq.int(NumLevels)) {
         if(counter == 1L) {
-          Final <- data.table::as.data.table(predict[1:(PredictLength/NumLevels)])
+          Final <- data.table::as.data.table(predict[seq_len(PredictLength/NumLevels)])
           data.table::setnames(x = Final, old = "V1", new = as.character(TargetLevels[counter,OriginalLevels]))
         } else {
           temp <- data.table::as.data.table(predict[(1 + (counter - 1) * (PredictLength/NumLevels)):(counter * (PredictLength/NumLevels))])
@@ -180,7 +188,13 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Merge features back on----
-  if(ReturnFeatures) predict <- cbind(predict, ScoringMerge)
+  if(ReturnFeatures && ReturnShapValues) {
+    predict <- cbind(predict, ScoringMerge, ShapValues)
+  } else if(ReturnFeatures) {
+    predict <- cbind(predict, ScoringMerge)
+  } else if(ReturnShapValues) {
+    predict <- cbind(predict, ShapValues)
+  }
 
   # Back Transform Numeric Variables----
   if(BackTransNumeric) {
@@ -194,6 +208,6 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     predict <- AutoTransformationScore(ScoringData = predict, Type = "Inverse", FinalResults = grid_trans_results, TransID = NULL, Path = NULL)
   }
 
-  # Return data----
+  # Return data ----
   return(predict)
 }

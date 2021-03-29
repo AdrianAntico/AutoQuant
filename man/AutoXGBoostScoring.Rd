@@ -7,6 +7,7 @@
 AutoXGBoostScoring(
   TargetType = NULL,
   ScoringData = NULL,
+  ReturnShapValues = FALSE,
   FeatureColumnNames = NULL,
   IDcols = NULL,
   FactorLevelsList = NULL,
@@ -34,6 +35,8 @@ AutoXGBoostScoring(
 \item{TargetType}{Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
 
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
+
+\item{ReturnShapValues}{Set to TRUE to return shap values for the predicted values}
 
 \item{FeatureColumnNames}{Supply either column names or column numbers used in the AutoXGBoost__() function}
 
@@ -88,6 +91,7 @@ AutoXGBoostScoring is an automated scoring function that compliments the AutoCat
 Preds <- AutoXGBoostScoring(
   TargetType = "regression",
   ScoringData = data,
+  ReturnShapValues = FALSE,
   FeatureColumnNames = 2:12,
   IDcols = NULL,
   FactorLevelsList = NULL,

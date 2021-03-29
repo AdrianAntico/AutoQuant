@@ -183,7 +183,7 @@ UpdatePackageDocs <- function(BuildManual = FALSE, Path = "C:/Users/Bizon/Docume
 #' @title InstallLocal
 #' @param Path Package path cd ..
 #' @noRd
-InstallLocal <- function(BuildManual = FALSE, Path = "C:/Users/Bizon/Documents/GitHub") {
+InstallLocal <- function(Path = "C:/Users/Bizon/Documents/GitHub") {
   setwd(Path)
   devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
 }

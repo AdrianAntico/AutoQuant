@@ -226,7 +226,7 @@ AutoCatBoostMultiClass <- function(data,
 
   # Grid tuning ----
   if(GridTune) {
-    Output <- GridTuner(AlgoType="catboost", ModelType="multiclass", TrainOnFull.=TrainOnFull, HasTime=HasTime, BaselineComparison.=BaselineComparison, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=NULL, CostMatrixWeights=NULL, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=TargetLevels, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
+    Output <- CatBoostGridTuner(ModelType="multiclass", TrainOnFull.=TrainOnFull, HasTime=HasTime, BaselineComparison.=BaselineComparison, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=NULL, CostMatrixWeights=NULL, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=TargetLevels, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
     ExperimentalGrid <- Output$ExperimentalGrid
     BestGrid <- Output$BestGrid
   }
@@ -283,23 +283,23 @@ AutoCatBoostMultiClass <- function(data,
     if(ReturnModelObjects) {
       return(list(
         Model = model,
-        ValidationData = ValidationData,
-        EvaluationMetrics = EvaluationMetrics,
-        VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
-        InteractionImportance = if(!is.null(Interaction)) Interaction else NULL,
-        VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
-        GridMetrics = if(!is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = 1L, na.last = TRUE) else NULL,
-        ColNames = Names,
-        TargetLevels = TargetLevels))
+        ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+        EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
+        VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+        InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+        VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
+        GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = 1L, na.last = TRUE) else NULL,
+        ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+        TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL))
     }
   } else {
     if(ReturnModelObjects) {
       return(list(
         Model = model,
-        ColNames = Names,
-        VariableImportance = if(!is.null(VariableImportance)) VariableImportance else NULL,
-        InteractionImportance = if(!is.null(Interaction)) Interaction else NULL,
-        TargetLevels = TargetLevels))
+        ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+        VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+        InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+        TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL))
     }
   }
 }

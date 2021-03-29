@@ -20,6 +20,7 @@ AutoXGBoostMultiClass(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   Verbose = 0L,
+  DebugMode = FALSE,
   NumOfParDepPlots = 3L,
   NThreads = parallel::detectCores(),
   eval_metric = "merror",
@@ -69,6 +70,8 @@ AutoXGBoostMultiClass(
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{Verbose}{Set to 0 if you want to suppress model evaluation updates in training}
+
+\item{DebugMode}{Set to TRUE to get a print out of the steps taken internally}
 
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create.}
 
@@ -161,6 +164,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
     Verbose = 1L,
+    DebugMode = FALSE,
 
     # ML args
     Trees = 50L,

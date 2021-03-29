@@ -14,6 +14,7 @@ AutoXGBoostRegression(
   IDcols = NULL,
   model_path = NULL,
   metadata_path = NULL,
+  DebugMode = FALSE,
   SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
   ReturnFactorLevels = TRUE,
@@ -26,9 +27,9 @@ AutoXGBoostRegression(
   NThreads = parallel::detectCores(),
   LossFunction = "reg:squarederror",
   eval_metric = "rmse",
+  grid_eval_metric = "r2",
   TreeMethod = "hist",
   GridTune = FALSE,
-  grid_eval_metric = "rmse",
   BaselineComparison = "default",
   MaxModelsInGrid = 10L,
   MaxRunsWithoutNewWinner = 20L,
@@ -61,6 +62,8 @@ AutoXGBoostRegression(
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
+\item{DebugMode}{Set to TRUE to get a print out of the steps taken throughout the function}
+
 \item{SaveInfoToPDF}{Set to TRUE to save model insights to pdf}
 
 \item{ModelID}{A character string to name your model and output}
@@ -85,11 +88,11 @@ AutoXGBoostRegression(
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"}
 
+\item{grid_eval_metric}{"mae", "mape", "rmse", "r2". Case sensitive}
+
 \item{TreeMethod}{Choose from "hist", "gpu_hist"}
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
-
-\item{grid_eval_metric}{Choose from "poisson","mae","mape","mse","msle","kl","cs","r2"}
 
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
@@ -147,6 +150,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
+    DebugMode = FALSE,
 
     # Data args
     data = data,
@@ -168,7 +172,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     # Grid tuning args
     PassInGrid = NULL,
     GridTune = FALSE,
-    grid_eval_metric = "mse",
+    grid_eval_metric = "r2",
     BaselineComparison = "default",
     MaxModelsInGrid = 10L,
     MaxRunsWithoutNewWinner = 20L,

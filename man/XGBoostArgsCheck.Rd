@@ -43,12 +43,10 @@ XGBoostArgsCheck
 }
 \seealso{
 Other XGBoost Helpers: 
-\code{\link{XGBoostClassifierParams}()},
 \code{\link{XGBoostDataPrep}()},
 \code{\link{XGBoostFinalParams}()},
-\code{\link{XGBoostMultiClassParams}()},
-\code{\link{XGBoostRegressionMetrics}()},
-\code{\link{XGBoostRegressionParams}()}
+\code{\link{XGBoostGridParams}()},
+\code{\link{XGBoostRegressionMetrics}()}
 }
 \author{
 Adrian Antico

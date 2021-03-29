@@ -372,22 +372,23 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
     i <- 0L
     for(metric in c("mae", "mape", "rmse", "r2")) {
       i <- i + 1L
-      tryCatch({
-        if(tolower(metric) == "mae") {
-          ValidationData.[, Metric := abs(ValidationData.[[eval(TargetColumnName.)]] - Predict)]
-          Metric <- ValidationData.[, mean(Metric, na.rm = TRUE)]
-        } else if(tolower(metric) == "mape") {
-          ValidationData.[, Metric := abs((ValidationData.[[eval(TargetColumnName.)]] - Predict) / (ValidationData.[[eval(TargetColumnName.)]] + 1))]
-          Metric <- ValidationData.[, mean(Metric, na.rm = TRUE)]
-        } else if(tolower(metric) == "rmse") {
-          ValidationData.[, Metric := (ValidationData.[[eval(TargetColumnName.)]] - Predict) ^ 2]
-          Metric <- sqrt(ValidationData.[, mean(Metric, na.rm = TRUE)])
-        } else if(tolower(metric) == "r2") {
-          ValidationData.[, ':=' (Metric1 = (ValidationData.[[eval(TargetColumnName.)]] - data.[, mean(get(TargetColumnName.))]) ^ 2, Metric2 = (ValidationData.[[eval(TargetColumnName.)]] - Predict) ^ 2)]
-          Metric <- 1 - ValidationData.[, sum(Metric2, na.rm = TRUE)] / ValidationData.[, sum(Metric1, na.rm = TRUE)]
-        }
-        data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(Metric, 4L))
-      }, error = function(x) "skip")
+      if(tolower(metric) == "mae") {
+        ValidationData.[, Metric := abs(get(TargetColumnName.) - Predict)]
+        MetricVal <- ValidationData.[, mean(Metric, na.rm = TRUE)]
+      } else if(tolower(metric) == "mape") {
+        ValidationData.[, Metric := abs((get(TargetColumnName.) - Predict) / (get(TargetColumnName.) + 1))]
+        MetricVal <- ValidationData.[, mean(Metric, na.rm = TRUE)]
+      } else if(tolower(metric) == "rmse") {
+        ValidationData.[, Metric := (get(TargetColumnName.) - Predict) ^ 2]
+        MetricVal <- sqrt(ValidationData.[, mean(Metric, na.rm = TRUE)])
+      } else if(tolower(metric) == "r2") {
+        ValidationData.[, ':=' (Metric1 = (get(TargetColumnName.) - data.[, mean(get(TargetColumnName.))]) ^ 2, Metric2 = (get(TargetColumnName.) - Predict) ^ 2)]
+        MetricVal <- 1 - ValidationData.[, sum(Metric2, na.rm = TRUE)] / ValidationData.[, sum(Metric1, na.rm = TRUE)]
+      }
+      data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(MetricVal, 4L))
+
+      for(z in 1:10) print(MetricVal)
+
     }
 
     # Remove Cols
@@ -416,18 +417,18 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
         tryCatch({
           if(tolower(metric) == "mae") {
             ValidationData.[, Metric := abs(ValidationData.[[eval(TargetColumnName.[TV])]] - ValidationData.[[eval(paste0("Predict.V", TV))]])]
-            Metric <- ValidationData.[, mean(Metric, na.rm = TRUE)]
+            MetricVal <- ValidationData.[, mean(Metric, na.rm = TRUE)]
           } else if(tolower(metric) == "mape") {
             ValidationData.[, Metric := abs((ValidationData.[[eval(TargetColumnName.[TV])]] - ValidationData.[[eval(paste0("Predict.V", TV))]]) / (ValidationData.[[eval(TargetColumnName.[TV])]] + 1))]
-            Metric <- ValidationData.[, mean(Metric, na.rm = TRUE)]
+            MetricVal <- ValidationData.[, mean(Metric, na.rm = TRUE)]
           } else if(tolower(metric) == "rmse") {
             ValidationData.[, Metric := (ValidationData.[[eval(TargetColumnName.[TV])]] - ValidationData.[[eval(paste0("Predict.V", TV))]]) ^ 2]
-            Metric <- sqrt(ValidationData.[, mean(Metric, na.rm = TRUE)])
+            MetricVal <- sqrt(ValidationData.[, mean(Metric, na.rm = TRUE)])
           } else if(tolower(metric) == "r2") {
             ValidationData.[, ':=' (Metric1 = (ValidationData.[[eval(TargetColumnName.[TV])]] - data.[, mean(get(TargetColumnName.[TV]))]) ^ 2, Metric2 = (ValidationData.[[eval(TargetColumnName.[TV])]] - ValidationData.[[eval(paste0("Predict.V",TV))]]) ^ 2)]
-            Metric <- 1 - ValidationData.[, sum(Metric2, na.rm = TRUE)] / ValidationData.[, sum(Metric1, na.rm = TRUE)]
+            MetricVal <- 1 - ValidationData.[, sum(Metric2, na.rm = TRUE)] / ValidationData.[, sum(Metric1, na.rm = TRUE)]
           }
-          data.table::set(EvaluationMetrics[[TargetColumnName.[TV]]], i = i, j = 2L, value = round(Metric, 4L))
+          data.table::set(EvaluationMetrics[[TargetColumnName.[TV]]], i = i, j = 2L, value = round(MetricVal, 4L))
         }, error = function(x) "skip")
       }
 

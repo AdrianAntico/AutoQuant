@@ -15,6 +15,7 @@
 #' @param LossFunction Select from 'reg:logistic', "binary:logistic"
 #' @param CostMatrixWeights A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
+#' @param grid_eval_metric Case sensitive. I typically choose 'Utility' or 'MCC'. Choose from 'Utility', 'MCC', 'Acc', 'F1_Score', 'F2_Score', 'F0.5_Score', 'TPR', 'TNR', 'FNR', 'FPR', 'FDR', 'FOR', 'NPV', 'PPV', 'ThreatScore'
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param model_path A character string of your path file to where you want your output saved
@@ -81,6 +82,7 @@
 #'     LossFunction = 'reg:logistic',
 #'     CostMatrixWeights = c(1,0,0,1),
 #'     eval_metric = "auc",
+#'     grid_eval_metric = "MCC",
 #'     NumOfParDepPlots = 3L,
 #'
 #'     # Grid tuning args
@@ -123,6 +125,7 @@ AutoXGBoostClassifier <- function(data,
                                   LossFunction = 'reg:logistic',
                                   CostMatrixWeights = c(1,0,0,1),
                                   eval_metric = "auc",
+                                  grid_eval_metric = "MCC",
                                   TreeMethod = "hist",
                                   GridTune = FALSE,
                                   BaselineComparison = "default",
@@ -139,9 +142,11 @@ AutoXGBoostClassifier <- function(data,
                                   DebugMode = FALSE) {
 
   # Check args ----
+  if(DebugMode) print("Check args ----")
   XGBoostArgsCheck(GridTune.=GridTune, model_path.=model_path, metadata_path.=metadata_path, Trees.=Trees, max_depth.=max_depth, eta.=eta, min_child_weight.=min_child_weight, subsample.=subsample, colsample_bytree.=colsample_bytree)
 
   # Data prep ----
+  if(DebugMode) print("Data prep ----")
   Output <- XGBoostDataPrep(ModelType="classification", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels)
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
@@ -150,168 +155,37 @@ AutoXGBoostClassifier <- function(data,
   TestTarget <- Output$TestTarget; Output$TestTarget <- NULL
   datatrain <- Output$datatrain; Output$datatrain <- NULL
   TestMerge <- Output$TestMerge; Output$TestMerge <- NULL
-  TestData <- Output$TestData.; Output$TestData. <- NULL
+  TestData <- Output$TestData; Output$TestData. <- NULL
   datatest <- Output$datatest; Output$datatest <- NULL
   EvalSets <- Output$EvalSets; Output$EvalSets <- NULL
   dataTest <- Output$dataTest; Output$dataTest <- NULL
   IDcols <- Output$IDcols; Output$IDcols <- NULL
+  dataTrain = Output$dataTrain
   Names <- Output$Names; rm(Output)
 
   # Bring into existence
   ExperimentalGrid <- NULL; BestGrid <- NULL
 
   # Grid tuning ----
+  if(DebugMode) print("Grid tuning ----")
   if(GridTune) {
-    Output <- GridTuner(AlgoType="xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, BaselineComparison.=BaselineComparison, HasTime=NULL, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=ClassWeights, CostMatrixWeights=CostMatrixWeights, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=NULL, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
+    Output <- RemixAutoML::XGBoostGridTuner(ModelType="classification", TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, TreeMethod.=TreeMethod, Trees.=Trees, Depth.=max_depth, LearningRate.=eta, min_child_weight.=min_child_weight, subsample.=subsample, colsample_bytree.=colsample_bytree, LossFunction=LossFunction, EvalMetric=eval_metric, grid_eval_metric.=grid_eval_metric, CostMatrixWeights=CostMatrixWeights, datatrain.=datatrain, datavalidate.=datavalidate, datatest.=datatest, EvalSets.=EvalSets, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TargetLevels.=TargetLevels, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, BaselineComparison.=BaselineComparison, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, Verbose.=Verbose, NumLevels.=NULL)
     ExperimentalGrid <- Output$ExperimentalGrid
     BestGrid <- Output$BestGrid
   }
 
-  # Binary Grid Tune or Not Check----
-  if(GridTune & !TrainOnFull) {
-
-    # Pull in Grid sets----
-    Grids <- XGBoostParameterGrids(TaskType=TreeMethod,Shuffles=Shuffles,NTrees=Trees,Depth=max_depth,LearningRate=eta,MinChildWeight=min_child_weight,SubSample=subsample,ColSampleByTree=colsample_bytree)
-    Grid <- Grids$Grid
-    GridClusters <- Grids$Grids
-    ExperimentalGrid <- Grids$ExperimentalGrid
-
-    # Initialize RL----
-    RL_Start <- RL_Initialize(ParameterGridSet = GridClusters, Alpha = 1L, Beta = 1L, SubDivisions = 1000L)
-    BanditArmsN <- RL_Start[["BanditArmsN"]]
-    Successes <- RL_Start[["Successes"]]
-    Trials <- RL_Start[["Trials"]]
-    GridIDs <- RL_Start[["GridIDs"]]
-    BanditProbs <- RL_Start[["BanditProbs"]]
-    RunsWithoutNewWinner <- 0L
-    rm(RL_Start)
-
-    # Add bandit probs columns to ExperimentalGrid----
-    data.table::set(ExperimentalGrid, j = paste0("BanditProbs_", names(GridClusters)), value = -10)
-
-    # Binary Grid Tuning Main Loop----
-    counter <- 0L
-    TotalRunTime <- 0
-    repeat {
-
-      # Increment counter----
-      counter <- counter + 1L
-
-      # Check if grid still has elements in it----
-      if(!exists("NewGrid")) zz <- counter else zz <- NewGrid
-      if(!is.null(GridClusters[[paste0("Grid_",max(1L,zz-1L))]][["Depth"]][1L])) {
-
-        # Define parameters----
-        if(!exists("NewGrid")) {
-          base_params <- XGBoostClassifierParams(counter=counter,Objective=LossFunction,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
-        } else {
-          base_params <- XGBoostClassifierParams(NewGrid=NewGrid,Objective=LossFunction,counter=counter,BanditArmsN=BanditArmsN,eval_metric=eval_metric,task_type=TreeMethod,model_path=model_path,Grid=Grid,ExperimentalGrid=ExperimentalGrid,GridClusters=GridClusters)
-        }
-
-        # Run model----
-        if(counter <= BanditArmsN + 1L) {
-          if(counter == 1L) {
-            nrounds <- max(Grid$NTrees)
-            print(base_params)
-            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
-          } else {
-            nrounds <- GridClusters[[paste0("Grid_",counter-1L)]][["NTrees"]][1L]
-            print(base_params)
-            RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
-          }
-        } else {
-          nrounds <- GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][1L]
-          print(base_params)
-          RunTime <- system.time(model <- model <- xgboost::xgb.train(params=base_params, data=datatrain, nrounds = nrounds, watchlist=EvalSets, verbose=Verbose))
-        }
-
-        # Binary Grid Score Model----
-        if(!is.null(TestData)) {
-          predict <- stats::predict(model, datatest)
-          calibEval <- data.table::as.data.table(cbind(Target = FinalTestTarget, p1 = predict))
-          AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
-        } else {
-          predict <- stats::predict(model, datavalidate)
-          calibEval <- data.table::as.data.table(cbind(Target = TestTarget, p1 = predict))
-          AUC_Metrics <- pROC::roc(response = calibEval[["Target"]], predictor = calibEval[["p1"]], na.rm = TRUE, algorithm = 3L, auc = TRUE, ci = TRUE)
-        }
-
-        # Update Experimental Grid with Param values----
-        if(!exists("NewGrid")) {
-          GridNumber <- counter - 1L
-          data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = GridNumber)
-        } else {
-          data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
-        }
-        NewPerformance <- as.numeric(AUC_Metrics$auc)
-        data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
-        data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
-        data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$niter)
-        if(counter == 1L) {
-          BestPerformance <- 1L
-        } else {
-          if(tolower(BaselineComparison) == "default") {
-            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["EvalMetric"]]
-          } else {
-            BestPerformance <- ExperimentalGrid[RunNumber < counter, max(EvalMetric, na.rm = TRUE)]
-          }
-        }
-
-        # Performance measures----
-        TotalRunTime <- ExperimentalGrid[RunTime != -1L, sum(RunTime, na.rm = TRUE)]
-        if(NewPerformance > BestPerformance) {
-          RunsWithoutNewWinner <- 0L
-        } else {
-          RunsWithoutNewWinner <- RunsWithoutNewWinner + 1L
-        }
-
-        # Binary Remove Model and Collect Garbage----
-        rm(model)
-        gc()
-      }
-
-      # Update bandit probabilities and whatnot----
-      RL_Update_Output <- RL_ML_Update(ModelType="classification", Iteration=counter, NewGrid.=NewGrid, NewPerformance.=NewPerformance, BestPerformance.=BestPerformance, Trials.=Trials, Successes.=Successes, GridIDs.=GridIDs, BanditArmsN.=BanditArmsN, RunsWithoutNewWinner.=RunsWithoutNewWinner, MaxRunsWithoutNewWinner.=MaxRunsWithoutNewWinner, MaxModelsInGrid.=MaxModelsInGrid, MaxRunMinutes.=MaxRunMinutes, TotalRunTime.=TotalRunTime, BanditProbs.=BanditProbs)
-      BanditProbs <- RL_Update_Output[["BanditProbs"]]
-      Trials <- RL_Update_Output[["Trials"]]
-      Successes <- RL_Update_Output[["Successes"]]
-      NewGrid <- RL_Update_Output[["NewGrid"]]
-
-      # Continue or stop----
-      if(RL_Update_Output$BreakLoop != "stay") break else print("still going")
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "GridNumber", value = NewGrid)
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "NTrees", value = GridClusters[[paste0("Grid_",NewGrid)]][["NTrees"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "Depth", value = GridClusters[[paste0("Grid_",NewGrid)]][["Depth"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "LearningRate", value = GridClusters[[paste0("Grid_",NewGrid)]][["LearningRate"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "MinChildWeight", value = GridClusters[[paste0("Grid_",NewGrid)]][["MinChildWeight"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "SubSample", value = GridClusters[[paste0("Grid_",NewGrid)]][["SubSample"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "ColSampleByTree", value = GridClusters[[paste0("Grid_",NewGrid)]][["ColSampleByTree"]][Trials[NewGrid]+1L])
-      for(bandit in seq_len(length(BanditProbs))) data.table::set(ExperimentalGrid, i = counter+1L, j = paste0("BanditProbs_Grid_",bandit), value = BanditProbs[bandit])
-    }
-
-    # Remove unneeded rows----
-    ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
-    gc()
-
-    # Binary Save GridCollect and GridList----
-    if(SaveModelObjects & GridTune) {
-      if(!is.null(metadata_path)) {
-        data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(metadata_path), paste0(ModelID, "ExperimentalGrid.csv")))
-      } else {
-        data.table::fwrite(ExperimentalGrid, file = file.path(normalizePath(model_path), paste0(ModelID, "ExperimentalGrid.csv")))
-      }
-    }
-  }
-
   # Final Params ----
-  Output <- XGBoostFinalParams(PassInGrid.=PassInGrid, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees)
+  if(DebugMode) print("Final Params ----")
+  Output <- XGBoostFinalParams(PassInGrid.=PassInGrid, TrainOnFull.=TrainOnFull, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees)
   base_params <- Output$base_params
-  NTrees <- Output$NTrees; rm(Output)
+  NTrees <- if(length(Output$NTrees) > 1L) max(Output$NTrees) else Output$NTrees; rm(Output)
 
   # Build model ----
+  if(DebugMode) print("Build model ----")
   model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose)
 
-  # Binary Save Model ----
+  # Save Model ----
+  if(DebugMode) print("Save Model ----")
   if(SaveModelObjects) {
     if(getwd() == model_path) {
       xgboost::xgb.save(model = model, fname = ModelID)
@@ -320,24 +194,32 @@ AutoXGBoostClassifier <- function(data,
     }
   }
 
-  # Binary Grid Score Model ----
+  # Grid Score Model ----
+  if(DebugMode) print("Grid Score Model ----")
   predict <- stats::predict(model, if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain)
 
-  # Binary Validation Data ----
+  # Validation Data ----
+  if(DebugMode) print("Validation Data ----")
   if(!is.null(TestData)) {
     ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
+    data.table::setnames(ValidationData, "Target", TargetColumnName)
+    ShapValues <- xgboost:::xgb.shap.data(as.matrix(TestData), model = model, features = names(TestData))$shap_contrib
   } else if(!TrainOnFull) {
     ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
+    data.table::setnames(ValidationData, "Target", TargetColumnName)
+    ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTest), model = model, features = names(dataTest))$shap_contrib
   } else {
     ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget, dataTrain, p1 = predict))
+    data.table::setnames(ValidationData, "Target", TargetColumnName)
+    ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTrain), model = model, features = names(dataTrain))$shap_contrib
   }
-  data.table::setnames(ValidationData, "Target", TargetColumnName)
 
-  # Binary Variable Importance ----
+  # Variable Importance ----
+  if(DebugMode) print("Variable Importance ----")
   VariableImportance <- tryCatch({data.table::as.data.table(xgboost::xgb.importance(model = model))}, error = function(x) NULL)
   if(!is.null(VariableImportance)) {
     VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
-    if (SaveModelObjects) {
+    if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
         data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
       } else {
@@ -346,37 +228,39 @@ AutoXGBoostClassifier <- function(data,
     }
   }
 
-  # Classification evaluation plots ----
-  if(DebugMode) print("Running ML_EvalPlots()")
+  # Evaluation plots ----
+  if(DebugMode) print("Evaluation plots ----")
   Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
   EvaluationPlot <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
   ParDepPlots <- Output$ParDepPlots; Output$ParDepPlots <- NULL
   ROC_Plot <- Output$ROC_Plot; rm(Output)
 
   # Generate EvaluationMetrics ----
-  if(DebugMode) print("Running BinaryMetrics()")
+  if(DebugMode) print("Generate EvaluationMetrics ----")
   EvalMetrics <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
   # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
+  if(DebugMode) print("Send output to pdf ----")
   CatBoostPDF(ModelClass = "xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
 
-  # Binary Return Model Objects----
+  # Binary Return Model Objects ----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
 
   # Return objects ----
+  if(DebugMode) print("Return objects ----")
   if(ReturnModelObjects) {
     return(list(
       Model = model,
-      ValidationData = ValidationData,
-      ROC_Plot = ROC_Plot,
-      EvaluationPlot = EvaluationPlot,
-      EvaluationMetrics = EvalMetrics,
-      VariableImportance = VariableImportance,
-      VI_Plot = if(!is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "xgboost", VI_Data = VariableImportance)) else VI_Plot(Type = "xgboost", VI_Data = VariableImportance)}, error = function(x) NULL) else NULL,
-      PartialDependencePlots = ParDepPlots,
-      GridMetrics = if(GridTune) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
-      ColNames = Names,
-      FactorLevels = FactorLevelsList))
+      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      ROC_Plot = if(exists("ROC_Plot") && !is.null(ROC_Plot)) ROC_Plot else NULL,
+      EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot)) EvaluationPlot else NULL,
+      EvaluationMetrics = if(exists("EvalMetrics") && !is.null(EvalMetrics)) EvalMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      ShapValues = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
+      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "xgboost", VI_Data = VariableImportance)) else VI_Plot(Type = "xgboost", VI_Data = VariableImportance)}, error = function(x) NULL) else NULL,
+      PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots)) ParDepPlots else NULL,
+      GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+      FactorLevels = if(exists("FactorLevelsList") && !is.null(FactorLevelsList)) FactorLevelsList else NULL))
   }
 }

@@ -82,10 +82,11 @@ NewGrid <- RL_Update_Output[["NewGrid"]]
 }
 \seealso{
 Other Reinforcement Learning: 
-\code{\link{GridTuner}()},
+\code{\link{CatBoostGridTuner}()},
 \code{\link{RL_Initialize}()},
 \code{\link{RL_ML_Update}()},
-\code{\link{RPM_Binomial_Bandit}()}
+\code{\link{RPM_Binomial_Bandit}()},
+\code{\link{XGBoostGridTuner}()}
 }
 \author{
 Adrian Antico

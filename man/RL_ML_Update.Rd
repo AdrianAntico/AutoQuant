@@ -6,6 +6,7 @@
 \usage{
 RL_ML_Update(
   ModelType = "classification",
+  grid_eval_metric = grid_eval_metric.,
   Iteration = counter,
   NewGrid. = NewGrid,
   NewPerformance. = NewPerformance,
@@ -24,6 +25,8 @@ RL_ML_Update(
 }
 \arguments{
 \item{ModelType}{"classification", "regression", and "multiclass"}
+
+\item{grid_eval_metric}{grid_eval_metric.}
 
 \item{Iteration}{Model iteration number}
 
@@ -60,6 +63,7 @@ RL_ML_Update updates the bandit probabilities for selecting different grids
 \dontrun{
 RL_Update_Output <- RL_ML_Update(
   ModelType = "classification",
+  grid_eval_metric = grid_eval_metric.,
   Iteration = run,
   NewGrid. = NewGrid,
   NewPerformance. = NewPerformance,
@@ -82,10 +86,11 @@ NewGrid <- RL_Update_Output[["NewGrid"]]
 }
 \seealso{
 Other Reinforcement Learning: 
-\code{\link{GridTuner}()},
+\code{\link{CatBoostGridTuner}()},
 \code{\link{RL_Initialize}()},
 \code{\link{RL_Update}()},
-\code{\link{RPM_Binomial_Bandit}()}
+\code{\link{RPM_Binomial_Bandit}()},
+\code{\link{XGBoostGridTuner}()}
 }
 \author{
 Adrian Antico

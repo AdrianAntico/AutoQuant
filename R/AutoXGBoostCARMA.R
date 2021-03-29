@@ -874,7 +874,7 @@ AutoXGBoostCARMA <- function(data,
   # Data Wrangling: Partition data with AutoDataPartition()----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
   if(!TrainOnFull) {
-    if(Difference & !is.null(GroupVariables)) {
+    if(Difference && !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
       DataSets <- AutoDataPartition(
@@ -1008,7 +1008,6 @@ AutoXGBoostCARMA <- function(data,
     MaxModelsInGrid = ModelCount,
     MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
     MaxRunMinutes = MaxRunMinutes,
-    Shuffles = 1L,
     Verbose = 1L,
 
     # ML Args

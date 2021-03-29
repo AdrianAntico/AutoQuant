@@ -19,11 +19,9 @@ XGBoostRegressionMetrics
 \seealso{
 Other XGBoost Helpers: 
 \code{\link{XGBoostArgsCheck}()},
-\code{\link{XGBoostClassifierParams}()},
 \code{\link{XGBoostDataPrep}()},
 \code{\link{XGBoostFinalParams}()},
-\code{\link{XGBoostMultiClassParams}()},
-\code{\link{XGBoostRegressionParams}()}
+\code{\link{XGBoostGridParams}()}
 }
 \author{
 Adrian Antico

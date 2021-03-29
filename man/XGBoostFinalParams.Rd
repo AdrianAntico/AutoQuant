@@ -13,7 +13,8 @@ XGBoostFinalParams(
   NThreads. = NThreads,
   TreeMethod. = TreeMethod,
   BestGrid. = BestGrid,
-  Trees. = Trees
+  Trees. = Trees,
+  NumLevels. = NumLevels
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ XGBoostFinalParams(
 
 \item{Trees.}{Passthrough}
 
+\item{NumLevels.}{Passthrough}
+
 \item{NThreads}{Passthrough}
 }
 \description{
@@ -37,11 +40,9 @@ Parameters for xgboost fitting
 \seealso{
 Other XGBoost Helpers: 
 \code{\link{XGBoostArgsCheck}()},
-\code{\link{XGBoostClassifierParams}()},
 \code{\link{XGBoostDataPrep}()},
-\code{\link{XGBoostMultiClassParams}()},
-\code{\link{XGBoostRegressionMetrics}()},
-\code{\link{XGBoostRegressionParams}()}
+\code{\link{XGBoostGridParams}()},
+\code{\link{XGBoostRegressionMetrics}()}
 }
 \author{
 Adrian Antico

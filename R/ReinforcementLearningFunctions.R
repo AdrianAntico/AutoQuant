@@ -220,6 +220,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' @family Reinforcement Learning
 #'
 #' @param ModelType "classification", "regression", and "multiclass"
+#' @param grid_eval_metric grid_eval_metric.
 #' @param Iteration Model iteration number
 #' @param NewGrid. Previous grid passed in
 #' @param NewPerformance. Internal
@@ -238,6 +239,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' \dontrun{
 #' RL_Update_Output <- RL_ML_Update(
 #'   ModelType = "classification",
+#'   grid_eval_metric = grid_eval_metric.,
 #'   Iteration = run,
 #'   NewGrid. = NewGrid,
 #'   NewPerformance. = NewPerformance,
@@ -259,6 +261,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' }
 #' @export
 RL_ML_Update <- function(ModelType = "classification",
+                         grid_eval_metric = grid_eval_metric.,
                          Iteration = counter,
                          NewGrid. = NewGrid,
                          NewPerformance. = NewPerformance,
@@ -301,7 +304,7 @@ RL_ML_Update <- function(ModelType = "classification",
 
     # Select grid using performance data and bandit probabilities
     # Consecutive failures and updating success vectors ----
-    if(tolower(ModelType) == "classification") {
+    if(grid_eval_metric %chin% c("Utility", "MCC", "Acc", "F1_Score", "F2_Score", "F0.5_Score", "NPV", "PPV", "TPR", "TNR", "ThreatScore", "r2","MicroAUC","Accuracy")) {
       if(NewPerformance. > BestPerformance.) Successes.[GridRun] <- Successes.[GridRun] + 1L
     } else if(tolower(ModelType) %chin% c("regression","multiclass")) {
       if(NewPerformance. < BestPerformance.) Successes.[GridRun] <- Successes.[GridRun] + 1L
