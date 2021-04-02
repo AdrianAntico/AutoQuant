@@ -26,8 +26,9 @@ AutoH2oGBMClassifier(
   IfSaveModel = "mojo",
   H2OShutdown = FALSE,
   H2OStartUp = TRUE,
+  DebugMode = FALSE,
   GridStrategy = "Cartesian",
-  MaxRuntimeSecs = 60 * 60 * 24,
+  MaxRunTimeSecs = 60 * 60 * 24,
   StoppingRounds = 10,
   MaxModelsInGrid = 2,
   eval_metric = "auc",
@@ -89,9 +90,11 @@ AutoH2oGBMClassifier(
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 
+\item{DebugMode}{Set to TRUE to get a printout of the steps taken internally}
+
 \item{GridStrategy}{Default "Cartesian"}
 
-\item{MaxRuntimeSecs}{Default 60*60*24}
+\item{MaxRunTimeSecs}{Default 60*60*24}
 
 \item{StoppingRounds}{Number of runs}
 
@@ -172,6 +175,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
+    DebugMode = FALSE,
 
     # Data arguments
     data = data,
@@ -185,7 +189,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
     # ML grid tuning args
     GridTune = FALSE,
     GridStrategy = "Cartesian",
-    MaxRuntimeSecs = 60*60*24,
+    MaxRunTimeSecs = 60*60*24,
     StoppingRounds = 10,
     MaxModelsInGrid = 2,
 

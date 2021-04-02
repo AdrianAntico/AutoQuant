@@ -13,7 +13,7 @@
 #' @param subsample. Passthrough
 #' @param colsample_bytree. Passthrough
 #' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
-#' @export
+#' @noRd
 XGBoostArgsCheck <- function(GridTune.=GridTune,
                              model_path.=model_path,
                              metadata_path.=metadata_path,
@@ -63,7 +63,7 @@ XGBoostArgsCheck <- function(GridTune.=GridTune,
 #' @param SaveModelObjects. Passthrough
 #' @param ReturnFactorLevels. Passthrough
 #'
-#' @export
+#' @noRd
 XGBoostDataPrep <- function(ModelType = "regression",
                             data. = data,
                             ValidationData. = ValidationData,
@@ -1177,7 +1177,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
 #' @param Trees. Passthrough
 #' @param NumLevels. Passthrough
 #'
-#' @export
+#' @noRd
 XGBoostFinalParams <- function(GridTune.=GridTune,
                                PassInGrid.=PassInGrid,
                                TrainOnFull.=TrainOnFull,
@@ -1240,7 +1240,7 @@ XGBoostFinalParams <- function(GridTune.=GridTune,
 #' @param SubSample seq(0.55, 1.0, 0.05)
 #' @param ColSampleByTree seq(0.55, 1.0, 0.05)
 #' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
-#' @export
+#' @noRd
 XGBoostParameterGrids <- function(TaskType = "CPU",
                                   Shuffles = 1L,
                                   NTrees = seq(500L, 5000L, 500L),
@@ -1318,7 +1318,7 @@ XGBoostParameterGrids <- function(TaskType = "CPU",
 #' @param NewGrid. Passthrough
 #' @param Grid. Passthrough
 #' @param GridClusters. Passthrough
-#' @export
+#' @noRd
 XGBoostGridParams <- function(N. = N,
                               counter. = NULL,
                               NThreads. = -1L,
@@ -1359,7 +1359,7 @@ XGBoostGridParams <- function(N. = N,
 #' @param grid_eval_metric Passthrough
 #' @param MinVal = -1L,
 #' @param calibEval Passthrough
-#' @export
+#' @noRd
 XGBoostRegressionMetrics <- function(grid_eval_metric,
                                      MinVal,
                                      calibEval) {

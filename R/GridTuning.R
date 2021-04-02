@@ -45,7 +45,7 @@
 #' @param BaselineComparison. BaselineComparison
 #' @param grid_eval_metric. MultiClass
 #'
-#' @export
+#' @noRd
 CatBoostGridTuner <- function(ModelType="classification",
                               TrainOnFull.=TrainOnFull,
                               TargetColumnName.=TargetColumnName,
@@ -456,7 +456,7 @@ CatBoostGridTuner <- function(ModelType="classification",
 #' @param Verbose. Verbose
 #' @param NumLevels. NumLevels
 #'
-#' @export
+#' @noRd
 XGBoostGridTuner <- function(ModelType="classification",
                              TrainOnFull.=TrainOnFull,
                              DebugMode.=DebugMode.,

@@ -25,9 +25,10 @@ AutoH2oGBMMultiClass(
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
   H2OStartUp = TRUE,
+  DebugMode = FALSE,
   GridTune = FALSE,
   GridStrategy = "Cartesian",
-  MaxRuntimeSecs = 60 * 60 * 24,
+  MaxRunTimeSecs = 60 * 60 * 24,
   StoppingRounds = 10,
   MaxModelsInGrid = 2,
   eval_metric = "auc",
@@ -86,11 +87,13 @@ AutoH2oGBMMultiClass(
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 
+\item{DebugMode}{Set to TRUE to print steps}
+
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
 \item{GridStrategy}{Default "Cartesian"}
 
-\item{MaxRuntimeSecs}{Default 60*60*24}
+\item{MaxRunTimeSecs}{Default 60*60*24}
 
 \item{StoppingRounds}{Number of runs}
 
@@ -127,10 +130,6 @@ AutoH2oGBMMultiClass(
 \item{HistogramType}{Default "AUTO"}
 
 \item{CategoricalEncoding}{Default "AUTO"}
-
-\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
-
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{SaveInfoToPDF}{Set to TRUE to save insights to PDF}
 }
@@ -172,11 +171,12 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
    IfSaveModel = "mojo",
    H2OShutdown = TRUE,
    H2OStartUp = TRUE,
+   DebugMode = FALSE,
 
    # Model args
    GridTune = FALSE,
    GridStrategy = "Cartesian",
-   MaxRuntimeSecs = 60*60*24,
+   MaxRunTimeSecs = 60*60*24,
    StoppingRounds = 10,
    MaxModelsInGrid = 2,
    Trees = 50,

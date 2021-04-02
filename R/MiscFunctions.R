@@ -94,7 +94,7 @@ PrintToPDF <- function(Path,
 #' @author Adrian Antico
 #'
 #' @param File If NULL a prompt will allow you to click on the file to have it removed. Otherwise, supply a path to the file including its name and extension
-#' @export
+#' @noRd
 DeleteFile <- function(File = NULL) {
   if(is.null(File)) {
     shell(paste0("del ", file.choose()))
@@ -118,7 +118,7 @@ DeleteFile <- function(File = NULL) {
 #' Output <- lapply(1:10, FUN = Logger(PrintToPDF))
 #' }
 #'
-#' @export
+#' @noRd
 Logger <- function(x) {
   function(...) {
     warn <- err <- NULL
@@ -149,7 +149,7 @@ Logger <- function(x) {
 #' Lookback <- LB("days")
 #' }
 #'
-#' @export
+#' @noRd
 LB <- function(TimeAgg) {
   if(tolower(TimeAgg) %chin% c("hour","hours",
                                "1min","1mins","1minute","1minutes",

@@ -97,9 +97,7 @@ Output$PerformanceGrid
 Other Automated Time Series: 
 \code{\link{AutoArfima}()},
 \code{\link{AutoBanditSarima}()},
-\code{\link{AutoCatBoostFreqSizeScoring}()},
 \code{\link{AutoETS}()},
-\code{\link{AutoH2oGBMFreqSizeScoring}()},
 \code{\link{AutoTBATS}()},
 \code{\link{AutoTS}()}
 }

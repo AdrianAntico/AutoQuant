@@ -86,7 +86,7 @@ multiplot <- function(...,
 #' p <- p + RemixTheme()
 #' }
 #' @return An object to pass along to ggplot objects following the "+" sign
-#' @export
+#' @noRd
 RemixTheme <- function() {
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 11),
@@ -207,7 +207,7 @@ ChartTheme <- function(Size = 12,
 #' @param SSForecast Default FALSE. Set to TRUE for single series models
 #' @param PredictionIntervalColorInner Fills 20th to 80th percentiles
 #' @param PredictionIntervalColorOuter Fills 5th to 20th and 80th to 95th percentiles
-#' @export
+#' @noRd
 TimeSeriesPlotter <- function(data = data,
                               TargetVariable = "TargetVariableName",
                               DateVariable = "DateVariableName",

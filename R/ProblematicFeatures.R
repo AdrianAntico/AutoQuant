@@ -30,7 +30,7 @@
 #'   HighSkewThresh = 10)
 #' }
 #' @return data table with new dummy variables columns and optionally removes base columns
-#' @export
+#' @noRd
 ProblematicFeatures <- function(data,
                                 ColumnNumbers = c(1:ncol(data)),
                                 NearZeroVarThresh = 0.05,
@@ -48,14 +48,14 @@ ProblematicFeatures <- function(data,
   # Subset columns of interest----
   data <- data[, .SD, .SDcols = names(data)[ColumnNumbers]]
 
-  # Define Functions for Calculations----
+  # Define Functions for Calculations ----
   LowVarianceFeatures <- function(data, NearZeroVarThresh = 0.05) {
-    if(is.null(NearZeroVarThresh)) return(NULL)
-    if(NearZeroVarThresh > 1) return("NearZeroVarThresh should be between zero and one")
+    if(is.null(NearZeroVarThresh)) stop("NearZeroVarThresh cannot be NULL")
+    if(NearZeroVarThresh > 1) stop("NearZeroVarThresh should be between zero and one")
     xx <- data[, .N]
     NumNearZeroVariance <- list()
     for(i in seq_len(ncol(data))) {
-      if(is.numeric(data[[i]]) & length(unique(data[[i]])) / xx < NearZeroVarThresh) {
+      if(is.numeric(data[[i]]) && length(unique(data[[i]])) / xx < NearZeroVarThresh) {
         NumNearZeroVariance[names(data)[i]] <- round(length(unique(data[[i]])) / xx, 4L)
       }
     }
@@ -173,7 +173,7 @@ ProblematicFeatures <- function(data,
   collect <- list()
   z <- 0L
 
-  # LowVarianceFeatures Run----
+  # LowVarianceFeatures Run ----
   a <- tryCatch({LowVarianceFeatures(data, NearZeroVarThresh = NearZeroVarThresh)}, error = function(x) NULL)
   if(!is.null(a)) {
     z <- z + 1L

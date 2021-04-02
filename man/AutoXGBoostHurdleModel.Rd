@@ -167,10 +167,8 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
 \seealso{
 Other Supervised Learning - Compound: 
 \code{\link{AutoCatBoostHurdleModel}()},
-\code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oDRFHurdleModel}()},
-\code{\link{AutoH2oGBMHurdleModel}()},
-\code{\link{AutoH2oGBMSizeFreqDist}()}
+\code{\link{AutoH2oGBMHurdleModel}()}
 }
 \author{
 Adrian Antico

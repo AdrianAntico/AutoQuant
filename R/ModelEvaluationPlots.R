@@ -312,11 +312,14 @@ ROCPlot <- function(data = ValidationData,
 #'
 #' @param Type 'catboost', 'xgboost', 'h2o'
 #' @param VI_Data Source data
+#' @param ColorHigh darkblue
+#' @param ColorLow white
 #'
 #' @return ROC Plot for classification models
-#' @export
+#' @noRd
 VI_Plot <- function(Type = "catboost",
-                    VI_Data, ColorHigh = "darkblue",
+                    VI_Data = NULL,
+                    ColorHigh = "darkblue",
                     ColorLow = "white") {
 
   # Catboost
@@ -334,9 +337,22 @@ VI_Plot <- function(Type = "catboost",
 
   # XGBoost
   if(Type == "xgboost") {
-    return(eval(ggplot2::ggplot(VI_Data[1L:min(10L,.N)], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
+    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(10L,.N))], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
                   ggplot2::geom_bar(stat = "identity") +
                   ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
+                  ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
+                  ggplot2::coord_flip() +
+                  ggplot2::labs(title = "Global Variable Importance") +
+                  ggplot2::xlab("Top Model Features") +
+                  ggplot2::ylab("Value") +
+                  ggplot2::theme(legend.position = "none")))
+  }
+
+  # H2O
+  if(Type == "h2o") {
+    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(10,.N))], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
+                  ggplot2::geom_bar(stat = "identity") +
+                  ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
                   ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
                   ggplot2::coord_flip() +
                   ggplot2::labs(title = "Global Variable Importance") +
@@ -368,7 +384,7 @@ VI_Plot <- function(Type = "catboost",
 #' @param model_path. Passthrough
 #' @param metadata_path. Passthrough
 #'
-#' @export
+#' @noRd
 ML_EvalPlots <- function(ModelType = "classification",
                          TrainOnFull. = TrainOnFull,
                          LossFunction. = LossFunction,
@@ -418,7 +434,7 @@ ML_EvalPlots <- function(ModelType = "classification",
               data = ValidationData.,
               PredictionColName = "p1",
               TargetColName = eval(TargetColumnName.),
-              IndepVar = if("Variable" %in% names(VariableImportance.)) VariableImportance.[i, Variable] else VariableImportance.[i, Feature],
+              IndepVar = if("Variable" %in% names(VariableImportance.)) gsub("\\..*","", VariableImportance.[i, Variable]) else gsub("\\..*","", VariableImportance.[i, Feature]),
               GraphType = "calibration",
               PercentileBucket = 0.05,
               FactLevels = 10L,
@@ -506,7 +522,7 @@ ML_EvalPlots <- function(ModelType = "classification",
                 data = ValidationData.,
                 PredictionColName = "Predict",
                 TargetColName = eval(TargetColumnName.),
-                IndepVar = if("Variable" %in% names(VariableImportance.)) VariableImportance.[i, Variable] else VariableImportance.[i, Feature],
+                IndepVar = if("Variable" %in% names(VariableImportance.)) gsub("\\..*","", VariableImportance.[i, Variable]) else gsub("\\..*","", VariableImportance.[i, Feature]),
                 GraphType = "calibration",
                 PercentileBucket = 0.05,
                 FactLevels = 10L,
@@ -620,7 +636,7 @@ ML_EvalPlots <- function(ModelType = "classification",
                   data = ValidationData.,
                   PredictionColName = paste0("Predict.V",TV),
                   TargetColName = eval(TargetColumnName.[TV]),
-                  IndepVar = VariableImportance.[i, Variable],
+                  IndepVar = gsub("\\..*","", VariableImportance.[i, Variable]),
                   GraphType = "calibration",
                   PercentileBucket = 0.05,
                   FactLevels = 10L,
@@ -633,7 +649,7 @@ ML_EvalPlots <- function(ModelType = "classification",
                   data = ValidationData.,
                   PredictionColName = paste0("Predict.V",TV),
                   TargetColName = eval(TargetColumnName.[TV]),
-                  IndepVar = VariableImportance.[i, Variable],
+                  IndepVar = gsub("\\..*","", VariableImportance.[i, Variable]),
                   GraphType = "boxplot",
                   PercentileBucket = 0.05,
                   FactLevels = 10L,

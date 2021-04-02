@@ -242,7 +242,7 @@ AutoCatBoostMultiClass <- function(data,
     model <- catboost::catboost.train(learn_pool = TrainPool, params = base_params)
   }
 
-  # MultiClass Save Model----
+  # MultiClass Save Model ----
   if(SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(model_path, ModelID))
 
   # MultiClass Score Final Test Data ----
@@ -268,7 +268,7 @@ AutoCatBoostMultiClass <- function(data,
 
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Running MultiClassMetrics()")
-  EvaluationMetrics <- MultiClassMetrics(SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  EvaluationMetrics <- MultiClassMetrics(ModelClass="catboost", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
   # Remove extenal files if GridTune is TRUE ----
   if(DebugMode) print("Running CatBoostRemoveFiles()")
@@ -277,29 +277,18 @@ AutoCatBoostMultiClass <- function(data,
   # Final Garbage Collection ----
   if(tolower(task_type) == "gpu") gc()
 
-  # MultiClass Return Model Objects----
+  # Return Model Objects ----
   if(DebugMode) print("Return Model Objects")
-  if(!TrainOnFull) {
     if(ReturnModelObjects) {
-      return(list(
-        Model = model,
-        ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-        EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
-        VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-        InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
-        VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
-        GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = 1L, na.last = TRUE) else NULL,
-        ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
-        TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL))
-    }
-  } else {
-    if(ReturnModelObjects) {
-      return(list(
-        Model = model,
-        ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
-        VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-        InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
-        TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL))
-    }
+    return(list(
+      Model = model,
+      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
+      GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = 1L, na.last = TRUE) else NULL,
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+      TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL))
   }
 }

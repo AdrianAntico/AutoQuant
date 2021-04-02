@@ -56,7 +56,7 @@
 #'   MetaDataPath = paste0(getwd(),"/ModelMetaData"),
 #'   NumOfParDepPlots = 1)
 #' }
-#' @export
+#' @noRd
 AutoCatBoostSizeFreqDist <- function(CountData = NULL,
                                      SizeData = NULL,
                                      CountQuantiles = seq(0.10,0.90,0.10),

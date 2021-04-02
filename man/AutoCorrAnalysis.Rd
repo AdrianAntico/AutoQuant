@@ -62,8 +62,7 @@ data <- RemixAutoML::AutoCorrAnalysis(
 \seealso{
 Other EDA: 
 \code{\link{AutoWordFreq}()},
-\code{\link{BNLearnArcStrength}()},
-\code{\link{ProblematicFeatures}()}
+\code{\link{BNLearnArcStrength}()}
 }
 \author{
 Adrian Antico

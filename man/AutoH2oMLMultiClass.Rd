@@ -23,9 +23,11 @@ AutoH2oMLMultiClass(
   ModelID = "FirstModel",
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = TRUE,
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
-  H2OStartUp = TRUE
+  H2OStartUp = TRUE,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -61,11 +63,15 @@ AutoH2oMLMultiClass(
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
+\item{SaveInfoToPDF}{Set to TRUE to print model insights to PDF}
+
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{Set to TRUE to have H2O shutdown after running this function}
 
 \item{H2OStartUp}{Set to FALSE}
+
+\item{DebugMode}{Set to TRUE to get a print out of steps taken internally}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
@@ -103,9 +109,11 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
    ModelID = "FirstModel",
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
+   SaveInfoToPDF = TRUE,
    IfSaveModel = "mojo",
    H2OShutdown = TRUE,
-   H2OStartUp = TRUE)
+   H2OStartUp = TRUE,
+   DebugMode = FALSE)
 }
 }
 \seealso{

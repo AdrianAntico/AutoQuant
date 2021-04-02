@@ -25,9 +25,11 @@ AutoH2oMLClassifier(
   NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = TRUE,
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
-  H2OStartUp = TRUE
+  H2OStartUp = TRUE,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -67,11 +69,15 @@ AutoH2oMLClassifier(
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
+\item{SaveInfoToPDF}{Set to TRUE to print model insights to PDF}
+
 \item{IfSaveModel}{Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object}
 
 \item{H2OShutdown}{Set to TRUE to shutdown H2O after running the function}
 
 \item{H2OStartUp}{Set to FALSE}
+
+\item{DebugMode}{Set to TRUE to print out steps taken}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
@@ -110,9 +116,11 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
    NumOfParDepPlots = 3,
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
+   SaveInfoToPDF = TRUE,
    IfSaveModel = "mojo",
    H2OShutdown = TRUE,
-   H2OStartUp = TRUE)
+   H2OStartUp = TRUE,
+   DebugMode = FALSE)
 }
 }
 \seealso{

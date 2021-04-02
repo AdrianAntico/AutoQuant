@@ -11,7 +11,7 @@
 #' @param Beta Prior parameter for trials
 #' @param SubDivisions Default is 100L in the stats package. Changed it to 1000 for this function.
 #' @return Probability of each arm being the best arm compared to all other arms.
-#' @export
+#' @noRd
 RPM_Binomial_Bandit <- function(Success,
                                 Trials,
                                 Alpha = 1L,
@@ -57,7 +57,7 @@ RPM_Binomial_Bandit <- function(Success,
 #' GridIDs <- RL_Start[["GridIDs"]]
 #' BanditProbs <- RL_Start[["BanditProbs"]]
 #' }
-#' @export
+#' @noRd
 RL_Initialize <- function(ParameterGridSet = NULL,
                           Alpha = 1L,
                           Beta = 1L,
@@ -128,7 +128,7 @@ RL_Initialize <- function(ParameterGridSet = NULL,
 #' Successes <- RL_Update_Output[["Successes"]]
 #' NewGrid <- RL_Update_Output[["NewGrid"]]
 #' }
-#' @export
+#' @noRd
 RL_Update <- function(ExperimentGrid = ExperimentGrid,
                       MetricSelection = MetricSelection,
                       ModelRun = run,
@@ -259,7 +259,7 @@ RL_Update <- function(ExperimentGrid = ExperimentGrid,
 #' Successes <- RL_Update_Output[["Successes"]]
 #' NewGrid <- RL_Update_Output[["NewGrid"]]
 #' }
-#' @export
+#' @noRd
 RL_ML_Update <- function(ModelType = "classification",
                          grid_eval_metric = grid_eval_metric.,
                          Iteration = counter,

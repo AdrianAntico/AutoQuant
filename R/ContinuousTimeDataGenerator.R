@@ -83,7 +83,7 @@
 #' rm(DataSets)
 #' }
 #' @return Returns two data.table data sets: The first is a modeling data set for the count distribution while the second data set if for the size model data set.
-#' @export
+#' @noRd
 ContinuousTimeDataGenerator <- function(data,
                                         RestrictDateRange = TRUE,
                                         Case = 2L,
@@ -497,7 +497,7 @@ ContinuousTimeDataGenerator <- function(data,
 #' )
 #' }
 #' @return Returns a data.table with summary information for the IntermittentDemandBootStrapper() function.
-#' @export
+#' @noRd
 ID_MetadataGenerator <- function(data,
                                  RestrictDateRange = TRUE,
                                  DateVariableName = NULL,
@@ -568,7 +568,7 @@ ID_MetadataGenerator <- function(data,
 #' @param TimeUnit This is the TimeUnit you selected for aggregation
 #' @param TargetWindow The length of the target window sampled
 #' @return Returns two data sets for the IntermittentDemandBootStrapper() function based on a single level from the grouping variables.
-#' @export
+#' @noRd
 ID_TrainingDataGenerator <- function(data,
                                      Type = "timetoevent1",
                                      TargetVariableName = NULL,
@@ -650,7 +650,7 @@ ID_TrainingDataGenerator <- function(data,
 #' @param TimeUnit This is the TimeUnit you selected for aggregation
 #' @param TargetWindow The length of the target window sampled
 #' @return Returns two data sets for the IntermittentDemandBootStrapper() function based on a single level from the grouping variables.
-#' @export
+#' @noRd
 ID_TrainingDataGenerator2 <- function(data,
                                       TargetVariableName = NULL,
                                       Level = NULL,
@@ -743,7 +743,7 @@ ID_TrainingDataGenerator2 <- function(data,
 #' @param SampleRate The value used to sample from each level of the grouping variables
 #' @param TargetWindowSamples The number of different targets to utilize for a single random start date
 #' @return Returns the count modeling data and the size modeling data
-#' @export
+#' @noRd
 ID_BuildTrainDataSets <- function(MetaData,
                                   data,
                                   Case = 2L,

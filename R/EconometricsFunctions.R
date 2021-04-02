@@ -9,7 +9,7 @@
 #' @param n.ahead Number of forecast periods to forecast
 #' @param newxreg NULL by default. Forward looking independent variables as matrix type
 #' @param se.fit Set to FALSE to not return prediction intervals with the forecast
-#' @export
+#' @noRd
 PredictArima <- function(object = Results,
                          n.ahead = FCPeriods,
                          newxreg = NULL,
@@ -133,7 +133,7 @@ PredictArima <- function(object = Results,
 #' @param ValidationData Data set
 #' @param HoldOutPeriods Passthrough
 #' @param GridList List
-#' @export
+#' @noRd
 Regular_Performance <- function(Model = NULL,
                                 Results = Results,
                                 GridList = GridList,
@@ -319,7 +319,7 @@ Regular_Performance <- function(Model = NULL,
 #' @param ValidationData Data set
 #' @param HoldOutPeriods Passthrough
 #' @param FinalScore FALSE
-#' @export
+#' @noRd
 RL_Performance <- function(Results = Results,
                            NextGrid = NextGrid,
                            TrainValidateShare = c(0.5,0.5),
@@ -536,7 +536,7 @@ RL_Performance <- function(Results = Results,
 #' @param Differences Passthrough
 #' @param MovingAverages Passthrough
 #' @param Lags Passthrough
-#' @export
+#' @noRd
 GenerateParameterGrids <- function(Model = NULL,
                                    test = NULL,
                                    MinVal = NULL,
@@ -1295,7 +1295,7 @@ TimeSeriesDataPrepare <- function(data,
 #'   MaxRunMinutes = NULL,
 #'   FinalGrid = NULL)
 #' }
-#' @export
+#' @noRd
 OptimizeArima <- function(Output,
                           Path = NULL,
                           MetricSelection = "MAE",
@@ -1737,7 +1737,7 @@ OptimizeArima <- function(Output,
 #'   TrainValidateShare = NULL,
 #'   FinalGrid = NULL)
 #' }
-#' @export
+#' @noRd
 OptimizeETS <- function(Output,
                         Path = NULL,
                         MetricSelection = "MAE",
@@ -1969,7 +1969,7 @@ OptimizeETS <- function(Output,
 #'   TrainValidateShare = NULL,
 #'   FinalGrid = NULL)
 #' }
-#' @export
+#' @noRd
 OptimizeTBATS <- function(Output,
                           Path = NULL,
                           MetricSelection = "MAE",
@@ -2212,7 +2212,7 @@ OptimizeTBATS <- function(Output,
 #'   MaxRunMinutes = NULL,
 #'   FinalGrid = NULL)
 #' }
-#' @export
+#' @noRd
 OptimizeNNET <- function(Output,
                          Path = NULL,
                          MetricSelection = "MAE",
@@ -2599,7 +2599,7 @@ OptimizeNNET <- function(Output,
 #'   TrainValidateShare = NULL,
 #'   FinalGrid = NULL)
 #' }
-#' @export
+#' @noRd
 OptimizeArfima <- function(Output,
                            Path = NULL,
                            MetricSelection = "MAE",
@@ -2817,7 +2817,7 @@ OptimizeArfima <- function(Output,
 #'   TrainValidateShare = NULL,
 #'   FinalGrid = NULL)
 #' }
-#' @export
+#' @noRd
 OptimizeTSLM <- function(Output,
                          Path = NULL,
                          MetricSelection = "MAE",
@@ -2986,7 +2986,7 @@ OptimizeTSLM <- function(Output,
 #'   MaxRunMinutes = 5,
 #'   NumCores = max(1L, min(4L, parallel::detectCores())))
 #' }
-#' @export
+#' @noRd
 ParallelAutoARIMA <- function(
   Output,
   MetricSelection = "MAE",
@@ -3094,7 +3094,7 @@ ParallelAutoARIMA <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
-#' @export
+#' @noRd
 ParallelAutoETS <- function(
   Output,
   MetricSelection = "MAE",
@@ -3187,7 +3187,7 @@ ParallelAutoETS <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
-#' @export
+#' @noRd
 ParallelAutoTBATS <- function(
   Output,
   MetricSelection = "MAE",
@@ -3286,7 +3286,7 @@ ParallelAutoTBATS <- function(
 #'   MaxRunMinutes = 5,
 #'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
-#' @export
+#' @noRd
 ParallelAutoNNET <- function(
   Output,
   MetricSelection = "MAE",
@@ -3388,7 +3388,7 @@ ParallelAutoNNET <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
-#' @export
+#' @noRd
 ParallelAutoArfima <- function(
   Output,
   MetricSelection = "MAE",
@@ -3479,7 +3479,7 @@ ParallelAutoArfima <- function(
 #'   TrainValidateShare = c(0.50,0.50),
 #'   NumCores = max(1L, min(4L, parallel::detectCores()-2L)))
 #' }
-#' @export
+#' @noRd
 ParallelAutoTSLM <- function(
   Output,
   MetricSelection = "MAE",
@@ -3577,7 +3577,7 @@ ParallelAutoTSLM <- function(
 #'   ByDataType = FALSE,
 #'   DebugMode = TRUE)
 #' }
-#' @export
+#' @noRd
 FinalBuildArima <- function(
   SavePath = NULL,
   ModelOutputGrid = NULL,
@@ -3772,7 +3772,7 @@ FinalBuildArima <- function(
 #'   ByDataType = FALSE,
 #'   DebugMode = FALSE)
 #' }
-#' @export
+#' @noRd
 FinalBuildETS <- function(
   ModelOutputGrid = NULL,
   SavePath = NULL,
@@ -3949,7 +3949,7 @@ FinalBuildETS <- function(
 #'   ByDataType = FALSE,
 #'   DebugMode = FALSE)
 #' }
-#' @export
+#' @noRd
 FinalBuildTBATS <- function(
   ModelOutputGrid = NULL,
   SavePath = NULL,
@@ -4126,7 +4126,7 @@ FinalBuildTBATS <- function(
 #'   ByDataType = FALSE,
 #'   DebugMode = FALSE)
 #' }
-#' @export
+#' @noRd
 FinalBuildNNET <- function(
   ModelOutputGrid = NULL,
   SavePath = NULL,
@@ -4312,7 +4312,7 @@ FinalBuildNNET <- function(
 #'   ByDataType = FALSE,
 #'   DebugMode = FALSE)
 #' }
-#' @export
+#' @noRd
 FinalBuildArfima <- function(
   ModelOutputGrid = NULL,
   SavePath = NULL,
@@ -4488,7 +4488,7 @@ FinalBuildArfima <- function(
 #'   MaxRunMinutes = 5,
 #'   DebugMode = FALSE)
 #' }
-#' @export
+#' @noRd
 FinalBuildTSLM <- function(
   ModelOutputGrid = NULL,
   SavePath = NULL,
@@ -4656,7 +4656,7 @@ FinalBuildTSLM <- function(
 #' @param GridTune Set to TRUE to grid tune the ML models
 #' @param FCPeriods Number of periods to forecast
 #' @param MaxNumberModels The number of models to try for each ML model
-#' @export
+#' @noRd
 StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet"),
                                               ML_Methods = c("CatBoost","XGBoost","H2oGBM","H2oDRF"),
                                               CalendarFeatures = TRUE,
@@ -5190,7 +5190,7 @@ StackedTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nne
 #' @param NTrees Select the number of trees to utilize in ML models
 #' @param GridTune Set to TRUE to grid tune the ML models
 #' @param MaxNumberModels The number of models to try for each ML model
-#' @export
+#' @noRd
 WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet"),
                                            ML_Methods = c("CatBoost","XGBoost","H2oGBM","H2oDRF"),
                                            Path = "C:/Users/aantico/Documents/Package",
@@ -5584,7 +5584,7 @@ WideTimeSeriesEnsembleForecast <- function(TS_Models = c("arima","tbats","nnet")
 #' @param DateColumn The name of your date column
 #' @param GroupVariable The name of your group variable
 #' @param xregs Extra data to merge in
-#' @export
+#' @noRd
 AutoFourierFeatures <- function(data,
                                 FourierPairs = NULL,
                                 FCPeriods = NULL,

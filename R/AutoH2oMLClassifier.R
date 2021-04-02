@@ -23,9 +23,11 @@
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param SaveInfoToPDF Set to TRUE to print model insights to PDF
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
 #' @param H2OShutdown Set to TRUE to shutdown H2O after running the function
 #' @param H2OStartUp Set to FALSE
+#' @param DebugMode Set to TRUE to print out steps taken
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
@@ -57,9 +59,11 @@
 #'    NumOfParDepPlots = 3,
 #'    ReturnModelObjects = TRUE,
 #'    SaveModelObjects = FALSE,
+#'    SaveInfoToPDF = TRUE,
 #'    IfSaveModel = "mojo",
 #'    H2OShutdown = TRUE,
-#'    H2OStartUp = TRUE)
+#'    H2OStartUp = TRUE,
+#'    DebugMode = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
@@ -81,18 +85,17 @@ AutoH2oMLClassifier <- function(data,
                                 NumOfParDepPlots = 3,
                                 ReturnModelObjects = TRUE,
                                 SaveModelObjects = FALSE,
+                                SaveInfoToPDF = TRUE,
                                 IfSaveModel = "mojo",
                                 H2OShutdown = TRUE,
-                                H2OStartUp = TRUE) {
+                                H2OStartUp = TRUE,
+                                DebugMode = FALSE) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  # Ensure model_path and metadata_path exists ----
+  if(!is.null(model_path)) if(!dir.exists(file.path(model_path))) dir.create(model_path)
+  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
 
-  # Ensure model_path and metadata_path exists----
-  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
-
-  # Binary Check Arguments----
+  # Check Arguments ----
   if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) stop("eval_metric not in AUC, logloss")
   if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
   if(!is.null(metadata_path)) if(!is.character(metadata_path)) stop("metadata_path needs to be a character type")
@@ -103,71 +106,23 @@ AutoH2oMLClassifier <- function(data,
   if(!(tolower(eval_metric) == "auc")) eval_metric <- tolower(eval_metric) else eval_metric <- toupper(eval_metric)
   if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
 
-  # Binary Target Name Storage----
-  if(!is.character(TargetColumnName)) TargetColumnName <- names(data)[TargetColumnName]
+  # Data Prepare ----
+  if(DebugMode) print("Data Prepare ----")
+  Output <- H2ODataPrep(TargetType.="classifier", TargetColumnName.=TargetColumnName, data.=data, ValidationData.=ValidationData, TestData.=TestData, TrainOnFull.=TrainOnFull, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, model_path.=model_path, ModelID.=ModelID)
+  TargetColumnName <- Output$TargetColumnName; Output$TargetColumnName <- NULL
+  dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
+  dataTest <- Output$dataTest; Output$dataTest <- NULL
+  TestData <- Output$TestData; Output$TestData <- NULL
+  Names <- Output$Names; rm(Output)
 
-  # Binary Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-
-  # Ensure Target is a factor ----
-  if(!is.factor(data[[eval(TargetColumnName)]])) {
-    data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-    if(!is.null(ValidationData)) ValidationData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-    if(!is.null(TestData)) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-  }
-
-  # Binary Data Partition----
-  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
-    dataSets <- AutoDataPartition(
-      data,
-      NumDataSets = 3L,
-      Ratios = c(0.70, 0.20, 0.10),
-      PartitionType = "random",
-      StratifyColumnNames = TargetColumnName,
-      TimeColumnName = NULL)
-    dataTrain <- dataSets$TrainData
-    dataTest <- dataSets$ValidationData
-    TestData <- dataSets$TestData
-  }
-
-  # Create dataTrain if not exists ----
-  if(!exists("dataTrain")) dataTrain <- data
-  if(!exists("dataTest") && !TrainOnFull) dataTest <- ValidationData
-
-  # Regression ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  if(!TrainOnFull) {
-    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  }
-  if(!is.null(TestData)) {
-    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  }
-
-  # Binary Save Names of data----
-  if(is.numeric(FeatureColNames)) {
-    Names <- data.table::as.data.table(names(data)[FeatureColNames])
-    data.table::setnames(Names, "V1", "ColNames")
-  } else {
-    Names <- data.table::as.data.table(FeatureColNames)
-    if(!"V1" %chin% names(Names)) {
-      data.table::setnames(Names, "FeatureColNames", "ColNames")
-    } else {
-      data.table::setnames(Names, "V1", "ColNames")
-    }
-  }
-  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
-
-  # Binary Start Up H2O----
+  # Start Up H2O ----
   if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
-  datatrain <- h2o::as.h2o(dataTrain, use_datatable = TRUE)
+  datatrain <- h2o::as.h2o(dataTrain)
   if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
+  if(!is.null(TestData)) datatest <- h2o::as.h2o(TestData, use_datatable = TRUE) else datatest <- NULL
 
-  # Binary Build Baseline Model----
+  # Build Model ----
+  if(DebugMode) print("Build Model ----")
   if(!h2o::h2o.xgboost.available()) exclude <- unique(c(ExcludeAlgos,"XGBoost"))
   if(!TrainOnFull) {
     base_model <- h2o::h2o.automl(
@@ -198,270 +153,62 @@ AutoH2oMLClassifier <- function(data,
     base_model <- base_model@leader
   }
 
-  # Binary Get Metrics----
+  # Save Final Model ----
+  if(DebugMode) print("Save Final Model ----")
+  H2OSaveModel(SaveModelObjects.=SaveModelObjects, IfSaveModel.=IfSaveModel, base_model.=base_model, model_path.=model_path, ModelID.=ModelID)
+
+  # Score Final Test Data ----
+  if(DebugMode) print("Score Final Test Data ----")
+  Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
+  data.table::set(Predict, j = "p0", value = NULL)
+
+  # Create Validation Data ----
+  if(DebugMode) print("Create Validation Data ----")
+  Output <- H2OValidationData(Predict.=Predict, TestData.=TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+  ValidationData <- Output$ValidationData; rm(Output)
+
+  # Variable Importance ----
+  if(DebugMode) print("Variable Importance ----")
+  VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
+
+  # H2O Explain ----
+  if(DebugMode) print("H2O Explain ----")
   if(!TrainOnFull) {
-    if(!is.null(TestData)) {
-      datatest <- h2o::as.h2o(TestData)
-      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
-    } else {
-      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
-    }
-  } else {
-    BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatrain)
+    Explain <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
-  # Binary Evaluate Metrics----
-  if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    if(tolower(eval_metric) == "auc") {
-      BaseMetric <- BaseMetrics@metrics$AUC
-      FinalModel <- base_model
-      EvalMetric <- BaseMetric
-    } else {
-      BaseMetric <- BaseMetrics@metrics$logloss
-      FinalModel <- base_model
-      EvalMetric <- BaseMetric
-    }
-  } else {
-    FinalModel <- base_model
-  }
-
-  # Binary Save Final Model----
-  if(SaveModelObjects) {
-    if(tolower(IfSaveModel) == "mojo") {
-      SaveModel <- h2o::h2o.saveMojo(object = FinalModel, path = model_path,force = TRUE)
-      h2o::h2o.download_mojo(
-        model = FinalModel,
-        path = model_path,
-        get_genmodel_jar = TRUE,
-        genmodel_path = model_path,
-        genmodel_name = ModelID)
-    } else {
-      SaveModel <- h2o::h2o.saveModel(object = FinalModel, path = model_path,force = TRUE)
-    }
-  }
-
-  # Binary Score Final Test Data----
-  if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    if(!is.null(TestData)) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datatest))
-      Predict[, p0 := NULL]
-    } else if(!TrainOnFull) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datavalidate))
-      Predict[, p0 := NULL]
-    } else {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datatrain))
-      Predict[, p0 := NULL]
-    }
-  } else {
-    if (!is.null(TestData)) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datatest))
-      data.table::setnames(Predict, "predict", "predict")
-    } else if(!TrainOnFull) {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datavalidate))
-      data.table::setnames(Predict, "predict", "predict")
-    } else {
-      Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel,newdata = datatrain))
-      data.table::setnames(Predict, "predict", "predict")
-    }
-  }
-
-  # Binary Variable Importance----
-  VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-
-  # Binary Format Variable Importance Table----
-  data.table::setnames(VariableImportance,c("variable","relative_importance","scaled_importance","percentage"), c("Variable","RelativeImportance","ScaledImportance","Percentage"))
-  VariableImportance[, ':=' (
-    RelativeImportance = round(RelativeImportance, 4L),
-    ScaledImportance = round(ScaledImportance, 4L),
-    Percentage = round(Percentage, 4L))]
-
-  # Binary Save Variable Importance----
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
-    } else {
-      data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
-    }
-  }
-
-  # Binary H2O Shutdown----
+  # H2O Shutdown ----
+  if(DebugMode) print("H2O Shutdown ----")
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # Binary Create Validation Data----
-  if(!is.null(TestData)) {
-    ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
-  } else if(!TrainOnFull) {
-    ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
-  } else {
-    ValidationData <- data.table::as.data.table(cbind(dataTrain, Predict))
-  }
+  # Classification evaluation plots ----
+  if(DebugMode) print("Running ML_EvalPlots()")
+  Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+  EvaluationPlot <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
+  ParDepPlots <- Output$ParDepPlots; Output$ParDepPlots <- NULL
+  ROC_Plot <- Output$ROC_Plot; rm(Output)
 
-  # Binary Change Prediction Name----
-  data.table::setnames(ValidationData, "predict", "Predict")
+  # Generate EvaluationMetrics ----
+  if(DebugMode) print("Running BinaryMetrics()")
+  EvalMetrics <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
-  # Binary Save Validation Data to File----
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
-    } else {
-      data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
-    }
-  }
+  # Send output to pdf ----
+  if(DebugMode) print("Running CatBoostPDF()")
+  CatBoostPDF(ModelClass="h2o", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
 
-  # Binary Evaluation Calibration Plot----
-  EvaluationPlot <- EvalPlot(
-    data = ValidationData,
-    PredictionColName = "p1",
-    TargetColName = TargetColumnName,
-    GraphType = "calibration",
-    PercentileBucket = 0.05,
-    aggrfun = if(!is.numeric(data[[eval(TargetColumnName)]])) {function(x) mean(x, na.rm = TRUE)} else function(x) mean(x, na.rm = TRUE))
-
-  # Binary Evaluation Plot Update Title----
-  if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: ", toupper(eval_metric)," = ", round(EvalMetric, 3L)))
-  }
-
-  # Binary Save plot to file----
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationPlot.png")))
-    } else {
-      ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationPlot.png")))
-    }
-  }
-
-  # Binary AUC Object Create----
-  temp <- ValidationData[order(runif(ValidationData[,.N]))][1L:min(100000L, ValidationData[,.N])]
-  if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    AUC_Metrics <- pROC::roc(response = temp[[eval(TargetColumnName)]],
-                             predictor = temp[["p1"]],
-                             na.rm = TRUE,
-                             algorithm = 3L,
-                             auc = TRUE,
-                             ci = TRUE)
-  } else {
-    AUC_Metrics <- pROC::roc(response = temp[[eval(TargetColumnName)]],
-                             predictor = temp[["Predict"]],
-                             na.rm = TRUE,
-                             algorithm = 3L,
-                             auc = TRUE,
-                             ci = TRUE)
-  }
-  rm(temp)
-
-  # Binary AUC Conversion to data.table----
-  AUC_Data <- data.table::data.table(ModelNumber = 0, Sensitivity = AUC_Metrics$sensitivities, Specificity = AUC_Metrics$specificities)
-
-  # Binary Plot ROC Curve----
-  ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
-    ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
-    ggplot2::geom_abline(slope = 1, color = "black") +
-    ggplot2::ggtitle(paste0("RandomForest AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
-    ChartTheme() + ggplot2::xlab("Specificity") +
-    ggplot2::ylab("Sensitivity")
-
-  # Save plot to file----
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      ggplot2::ggsave(file.path(normalizePath(metadata_path), paste0(ModelID, "_ROC_Plot.png")))
-    } else {
-      ggplot2::ggsave(file.path(normalizePath(model_path), paste0(ModelID, "_ROC_Plot.png")))
-    }
-  }
-
-  # Binary Save EvaluationMetrics to File ----
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(RemixClassificationMetrics(TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),ValidationData.=ValidationData), file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-    } else {
-      data.table::fwrite(RemixClassificationMetrics(TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),ValidationData.=ValidationData), file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-    }
-  }
-
-  # Binary Partial Dependence----
-  ParDepPlots <- list()
-  j <- 0L
-  if(!is.numeric(data[[eval(TargetColumnName)]])) {
-    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
-      tryCatch({
-        Out <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "p1",
-          TargetColName = TargetColumnName,
-          IndepVar = gsub("\\..*","",VariableImportance[i, Variable]),
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          FactLevels = 10L,
-          Function = function(x) mean(x, na.rm = TRUE))
-        j <- j + 1L
-        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
-      }, error = function(x) "skip")
-    }
-  } else {
-    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, VariableImportance[,.N]))) {
-      tryCatch({
-        Out <- ParDepCalPlots(
-          data = ValidationData,
-          PredictionColName = "Predict",
-          TargetColName = TargetColumnName,
-          IndepVar = gsub("\\..*","",VariableImportance[i, Variable]),
-          GraphType = "calibration",
-          PercentileBucket = 0.05,
-          FactLevels = 10L,
-          Function = function(x) mean(x, na.rm = TRUE))
-        j <- j + 1L
-        ParDepPlots[[paste0(VariableImportance[j, Variable])]] <- Out
-      }, error = function(x) "skip")
-    }
-  }
-
-  # Binary Save ParDepPlots to file----
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      save(ParDepPlots, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ParDepPlots.R")))
-    } else {
-      save(ParDepPlots, file = file.path(normalizePath(model_path), paste0(ModelID, "_ParDepPlots.R")))
-    }
-  }
-
-  # VI_Plot_Function
-  VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-    ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
-      ggplot2::geom_bar(stat = "identity") +
-      ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-      ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-      ggplot2::coord_flip() +
-      ggplot2::labs(title = "Global Variable Importance") +
-      ggplot2::xlab("Top Model Features") +
-      ggplot2::ylab("Value") +
-      ggplot2::theme(legend.position = "none")
-  }
-
-  # Binary Return Objects----
-  if (ReturnModelObjects) {
-    if(!is.numeric(data[[eval(TargetColumnName)]])) {
-      return(list(
-        Model = FinalModel,
-        ValidationData = ValidationData,
-        ROC_Plot = ROC_Plot,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = RemixClassificationMetrics(TargetVariable=eval(TargetColumnName),Thresholds=seq(0.01,0.99,0.01),CostMatrix=CostMatrixWeights,ClassLabels=c(1,0),ValidationData.=ValidationData),
-        VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VI_Data = VariableImportance),
-        PartialDependencePlots = ParDepPlots,
-        ColNames = Names))
-    } else {
-      return(list(
-        Model = FinalModel,
-        ValidationData = ValidationData,
-        ROC_Plot = ROC_Plot,
-        EvaluationPlot = EvaluationPlot,
-        EvaluationMetrics = NULL,
-        VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VI_Data = VariableImportance),
-        PartialDependencePlots = ParDepPlots,
-        ColNames = Names))
-    }
+  # Return Objects ----
+  if(DebugMode) print("Return Objects ----")
+  if(ReturnModelObjects) {
+    return(list(
+      Model = base_model,
+      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      H2OExplain = if(exists("Explain") && !is.null(Explain)) Explain else NULL,
+      ROC_Plot = if(exists("ROC_Plot") && !is.null(ROC_Plot)) ROC_Plot else NULL,
+      EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot)) EvaluationPlot else NULL,
+      EvaluationMetrics = if(exists("EvalMetrics") && !is.null(EvalMetrics)) EvalMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
+      PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots)) ParDepPlots else NULL,
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
   }
 }

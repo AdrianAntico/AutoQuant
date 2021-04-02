@@ -29,8 +29,7 @@ Utilize bnlearn to create a bayesian network and return the arc strengths for fe
 \seealso{
 Other EDA: 
 \code{\link{AutoCorrAnalysis}()},
-\code{\link{AutoWordFreq}()},
-\code{\link{ProblematicFeatures}()}
+\code{\link{AutoWordFreq}()}
 }
 \author{
 Adrian Antico

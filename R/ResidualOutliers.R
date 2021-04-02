@@ -75,18 +75,18 @@ ResidualOutliers <- function(data,
     warning("TimeUnit is not in hour, day, week, month, quarter, or year")
   }
 
-  # Ensure data is a data.table----
+  # Ensure data is a data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # convert DateColName to POSIXct----
+  # convert DateColName to POSIXct ----
   if(is.character(data[[eval(DateColName)]]) | is.factor(data[[eval(DateColName)]])) {
     data[, eval(DateColName) := as.POSIXct(get(DateColName))]
   }
 
-  # Ensure data is sorted----
+  # Ensure data is sorted ----
   data.table::setorderv(x = data, cols = eval(DateColName), order = 1L)
 
-  # Keep columns----
+  # Keep columns ----
   if(!is.null(PredictedColName)) {
     data[, Residuals := get(TargetColName) - get(PredictedColName)]
   } else {
@@ -96,10 +96,10 @@ ResidualOutliers <- function(data,
   temp <- data[, ..keep]
   MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
 
-  # Convert to time series object----
-  tsData <- stats::ts(temp, start = temp[, min(get(DateColName))][[1]], frequency = freq)
+  # Convert to time series object ----
+  tsData <- stats::ts(temp, start = temp[, min(get(DateColName))][[1L]], frequency = freq)
 
-  # Build the auto arima----
+  # Build the auto arima ----
   if(MinVal > 0) {
     fit <- tryCatch({
       forecast::auto.arima(
@@ -130,30 +130,30 @@ ResidualOutliers <- function(data,
         stepwise = TRUE)}, error = function(x) "empty")
   }
 
-  # Store the arima parameters----
-  if("empty" %chin% fit) print("No model could be fit"); return(NULL)
+  # Store the arima parameters ----
+  if("empty" %chin% fit) stop("No model could be fit")
   pars <- tsoutliers::coefs2poly(fit)
 
-  # Store the arima residuals----
+  # Store the arima residuals ----
   resid <- cbind(tsData, stats::residuals(fit))
 
-  # Find the outliers
+  # Find the outliers ----
   x <- data.table::as.data.table(tsoutliers::locate.outliers(
     resid = resid[, 3L],
     pars = pars,
     cval = tstat,
     types = c("AO", "TC", "LS", "IO", "SLS")))
 
-  # Merge back to source data----
+  # Merge back to source data ----
   residDT <- data.table::as.data.table(resid)
   z <- cbind(data, residDT)
   z[, ind := 1:.N]
   data.table::setnames(z, names(z)[c((ncol(z) - 3):(ncol(z) - 1))], c("ObsNum", "Preds", "ARIMA_Residuals"))
-  z[, ObsNum := NULL]
+  data.table::set(z, j = "ObsNum", value = NULL)
   data <- merge(z, x, by = "ind", all.x = TRUE)
   data[, ':=' (ind = NULL, coefhat = NULL)]
   data[type == "<NA>", type := NA]
 
-  # Reorder data, remove the coefhat column to send to database or stakeholder----
+  # Reorder data, remove the coefhat column to send to database or stakeholder ----
   return(list(FullData = data, ARIMA_MODEL = fit))
 }

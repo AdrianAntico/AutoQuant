@@ -59,8 +59,6 @@ p <- p + ChartTheme(Size = 12)
 }
 \seealso{
 Other Graphics: 
-\code{\link{RemixTheme}()},
-\code{\link{TimeSeriesPlotter}()},
 \code{\link{multiplot}()}
 }
 \author{

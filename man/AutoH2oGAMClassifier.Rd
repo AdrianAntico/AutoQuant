@@ -31,6 +31,7 @@ AutoH2oGAMClassifier(
   IfSaveModel = "mojo",
   H2OShutdown = FALSE,
   H2OStartUp = TRUE,
+  DebugMode = FALSE,
   GridTune = FALSE,
   GridStrategy = "Cartesian",
   StoppingRounds = 10,
@@ -98,6 +99,8 @@ AutoH2oGAMClassifier(
 
 \item{H2OStartUp}{Set to TRUE to start up H2O inside function}
 
+\item{DebugMode}{Set to TRUE to get a print out of steps taken internally}
+
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
 \item{GridStrategy}{"RandomDiscrete" or "Cartesian"}
@@ -114,9 +117,9 @@ AutoH2oGAMClassifier(
 
 \item{Solver}{Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"}
 
-\item{Alpha}{Default 0.5 Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.}
+\item{Alpha}{Gridable. Default 0.5 Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.}
 
-\item{Lambda}{Default NULL. Regularization strength.}
+\item{Lambda}{Gridable. Default NULL. Regularization strength.}
 
 \item{LambdaSearch}{Default FALSE.}
 
@@ -176,6 +179,7 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
 
   # Data args
   data = data,

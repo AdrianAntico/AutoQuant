@@ -8,16 +8,12 @@
 #' \dontrun{
 #' data <- tokenizeH2O(data = data[["StringColumn"]])
 #' }
-#' @export
+#' @noRd
 tokenizeH2O <- function(data) {
   data <- h2o::as.h2o(data, col.types = c("String"))
   tokenized <- h2o::h2o.tokenize(data, "\\\\W+")
   tokenized.lower <- h2o::h2o.tolower(tokenized)
-  tokenized.words <-
-    tokenized.lower[h2o::h2o.grep("[0-9]",
-                                  tokenized.lower,
-                                  invert = TRUE,
-                                  output.logical = TRUE),]
+  tokenized.words <- tokenized.lower[h2o::h2o.grep("[0-9]", tokenized.lower, invert = TRUE, output.logical = TRUE),]
   tokenized.words
 }
 
@@ -155,7 +151,7 @@ AutoWordFreq <- function(data,
 #'                                NThreads = 8,
 #'                                StartH2O = TRUE)
 #' }
-#' @export
+#' @noRd
 AutoH2OTextPrepScoring <- function(data,
                                    string = NULL,
                                    MaxMem = NULL,
@@ -168,7 +164,7 @@ AutoH2OTextPrepScoring <- function(data,
 
   # It is important to remove "\n" --
   data[, eval(string) := gsub("  ", " ", get(string))]
-  data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
+  data[, eval(string) := gsub(get(string), "[[:punct:]]", "")]
   data2 <- data[, ..string]
 
   # Tokenize

@@ -113,9 +113,7 @@ Output$ErrorLagMA2x2
 Other Automated Time Series: 
 \code{\link{AutoArfima}()},
 \code{\link{AutoBanditNNet}()},
-\code{\link{AutoCatBoostFreqSizeScoring}()},
 \code{\link{AutoETS}()},
-\code{\link{AutoH2oGBMFreqSizeScoring}()},
 \code{\link{AutoTBATS}()},
 \code{\link{AutoTS}()}
 }

@@ -44,7 +44,7 @@
 #'    HolidayGroups = "USPublicHolidays")
 #' }
 #' @return Returns the most recent records for every level of your grouping variables with all the feature used in model building
-#' @export
+#' @noRd
 IntermittentDemandScoringDataGenerator <- function(data = NULL,
                                                    FC_Periods = 52,
                                                    SaveData = FALSE,
@@ -223,7 +223,7 @@ IntermittentDemandScoringDataGenerator <- function(data = NULL,
 #'   KeepFeatures = TRUE)
 #' }
 #' @return Returns a list of CountData scores, SizeData scores, along with count and size prediction column names
-#' @export
+#' @noRd
 AutoCatBoostFreqSizeScoring <- function(ScoringData,
                                         TargetColumnNames = NULL,
                                         FeatureColumnNames = NULL,
@@ -362,7 +362,7 @@ AutoCatBoostFreqSizeScoring <- function(ScoringData,
 #'   KeepFeatures = TRUE)
 #' }
 #' @return Returns a list of CountData scores, SizeData scores, along with count and size prediction column names
-#' @export
+#' @noRd
 AutoH2oGBMFreqSizeScoring <- function(ScoringData,
                                       TargetColumnNames = NULL,
                                       CountQuantiles = seq(0.10,0.90,0.10),

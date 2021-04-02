@@ -19,8 +19,7 @@ AutoH2oGAMRegression(
   TweedieLinkPower = NULL,
   TweedieVariancePower = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   eval_metric = "RMSE",
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
@@ -51,7 +50,8 @@ AutoH2oGAMRegression(
   Standardize = TRUE,
   RemoveCollinearColumns = FALSE,
   InterceptInclude = TRUE,
-  NonNegativeCoefficients = FALSE
+  NonNegativeCoefficients = FALSE,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -83,7 +83,7 @@ AutoH2oGAMRegression(
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
+\item{Methods}{Choose from "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "MSE", "RMSE", "MAE", "RMSLE"}
 
@@ -127,9 +127,9 @@ AutoH2oGAMRegression(
 
 \item{Solver}{Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"}
 
-\item{Alpha}{Default 0.5 Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.}
+\item{Alpha}{Gridable. Default 0.5 Otherwise supply a value between 0 and 1. 1 is equivalent to Lasso regression. 0 is equivalent to Ridge regression. Inbetween for a blend of the two.}
 
-\item{Lambda}{Default NULL. Regularization strength.}
+\item{Lambda}{Gridable. Default NULL. Regularization strength.}
 
 \item{LambdaSearch}{Default FALSE.}
 
@@ -142,6 +142,8 @@ AutoH2oGAMRegression(
 \item{InterceptInclude}{Default TRUE}
 
 \item{NonNegativeCoefficients}{Default FALSE}
+
+\item{DebugMode}{Set to TRUE to get a printout of steps taken}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
@@ -202,7 +204,7 @@ TestModel <- RemixAutoML::AutoH2oGAMRegression(
  GamColNames = GamCols,
  TransformNumericColumns = NULL,
  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-             "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+             "LogPlus1", "Sqrt", "Logit"),
 
  # Model args
  num_knots = NULL,
@@ -224,7 +226,8 @@ TestModel <- RemixAutoML::AutoH2oGAMRegression(
  Standardize = TRUE,
  RemoveCollinearColumns = FALSE,
  InterceptInclude = TRUE,
- NonNegativeCoefficients = FALSE)
+ NonNegativeCoefficients = FALSE,
+ DebugMode = FALSE)
 }
 }
 \seealso{

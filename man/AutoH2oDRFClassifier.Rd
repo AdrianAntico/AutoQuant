@@ -27,10 +27,11 @@ AutoH2oDRFClassifier(
   H2OShutdown = FALSE,
   H2OStartUp = TRUE,
   GridTune = FALSE,
-  GridStrategy = "Cartesian",
-  MaxRuntimeSecs = 60 * 60 * 24,
+  GridStrategy = "RandomDiscrete",
+  MaxRunTimeSecs = 60 * 60 * 24,
   StoppingRounds = 10,
   MaxModelsInGrid = 2,
+  DebugMode = FALSE,
   eval_metric = "auc",
   CostMatrixWeights = c(1, 0, 0, 1),
   Trees = 50L,
@@ -90,11 +91,13 @@ AutoH2oDRFClassifier(
 
 \item{GridStrategy}{Default "Cartesian"}
 
-\item{MaxRuntimeSecs}{Default 86400}
+\item{MaxRunTimeSecs}{Default 86400}
 
 \item{StoppingRounds}{Default 10}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
+
+\item{DebugMode}{Set to TRUE to get a printout of each step taken internally}
 
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "AUC" or "logloss"}
 
@@ -161,6 +164,7 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
+    DebugMode = FALSE,
 
     # Data args
     data,
@@ -172,10 +176,10 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
     WeightsColumn = NULL,
 
     # Grid Tuning Args
-    GridStrategy = "Cartesian",
+    GridStrategy = "RandomDiscrete",
     GridTune = FALSE,
     MaxModelsInGrid = 10,
-    MaxRuntimeSecs = 60*60*24,
+    MaxRunTimeSecs = 60*60*24,
     StoppingRounds = 10,
 
     # Model args

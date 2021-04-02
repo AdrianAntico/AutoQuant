@@ -44,13 +44,6 @@ PrintToPDF(
 \description{
 PrintToPDF
 }
-\seealso{
-Other Misc: 
-\code{\link{AutoH2OTextPrepScoring}()},
-\code{\link{LB}()},
-\code{\link{Logger}()},
-\code{\link{tokenizeH2O}()}
-}
 \author{
 Adrian Antico
 }

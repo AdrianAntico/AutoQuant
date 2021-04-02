@@ -13,8 +13,7 @@ AutoH2oMLRegression(
   FeatureColNames = NULL,
   ExcludeAlgos = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   eval_metric = "RMSE",
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
@@ -26,10 +25,11 @@ AutoH2oMLRegression(
   NumOfParDepPlots = 3,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
-  SaveInfoToPDF = FALSE,
+  SaveInfoToPDF = TRUE,
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
-  H2OStartUp = TRUE
+  H2OStartUp = TRUE,
+  DebugMode = FALSE
 )
 }
 \arguments{
@@ -76,6 +76,8 @@ AutoH2oMLRegression(
 \item{H2OShutdown}{Set to TRUE to shutdown H2O inside the function}
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
+
+\item{DebugMode}{Set to TRUE to print to screen steps taken internally}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
@@ -145,7 +147,8 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     ModelID = "FirstModel",
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
+    SaveInfoToPDF = TRUE,
+    DebugMode = FALSE,
 
     # Data arguments:
     #   'TrainOnFull' is to train a model with 100
@@ -166,7 +169,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
     TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 
     # Model args
     ExcludeAlgos = NULL)

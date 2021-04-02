@@ -109,9 +109,7 @@ Output <- AutoH2oDRFHurdleModel(
 \seealso{
 Other Supervised Learning - Compound: 
 \code{\link{AutoCatBoostHurdleModel}()},
-\code{\link{AutoCatBoostSizeFreqDist}()},
 \code{\link{AutoH2oGBMHurdleModel}()},
-\code{\link{AutoH2oGBMSizeFreqDist}()},
 \code{\link{AutoXGBoostHurdleModel}()}
 }
 \author{

@@ -24,10 +24,11 @@ AutoH2oDRFMultiClass(
   ModelID = "FirstModel",
   H2OShutdown = FALSE,
   H2OStartUp = TRUE,
+  DebugMode = FALSE,
   eval_metric = "logloss",
   GridTune = FALSE,
-  GridStrategy = "Cartesian",
-  MaxRuntimeSecs = 60 * 60 * 24,
+  GridStrategy = "RandomDiscrete",
+  MaxRunTimeSecs = 60 * 60 * 24,
   StoppingRounds = 10,
   MaxModelsInGrid = 2,
   Trees = 50,
@@ -79,13 +80,15 @@ AutoH2oDRFMultiClass(
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 
+\item{DebugMode}{Set to TRUE to print steps to screen}
+
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss", "r2", "RMSE", "MSE"}
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
 \item{GridStrategy}{Default "Cartesian"}
 
-\item{MaxRuntimeSecs}{Default 86400}
+\item{MaxRunTimeSecs}{Default 86400}
 
 \item{StoppingRounds}{Default 10}
 
@@ -153,12 +156,13 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
    IfSaveModel = "mojo",
    H2OShutdown = FALSE,
    H2OStartUp = TRUE,
+   DebugMode = FALSE,
 
    # Grid Tuning Args
-   GridStrategy = "Cartesian",
+   GridStrategy = "RandomDiscrete",
    GridTune = FALSE,
    MaxModelsInGrid = 10,
-   MaxRuntimeSecs = 60*60*24,
+   MaxRunTimeSecs = 60*60*24,
    StoppingRounds = 10,
 
    # ML args

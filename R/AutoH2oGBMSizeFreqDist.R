@@ -54,7 +54,7 @@
 #'   MetaDataPath = NULL,
 #'   NumOfParDepPlots = 0)
 #' }
-#' @export
+#' @noRd
 AutoH2oGBMSizeFreqDist <- function(CountData = NULL,
                                    SizeData = NULL,
                                    CountQuantiles = seq(0.10,0.90,0.10),

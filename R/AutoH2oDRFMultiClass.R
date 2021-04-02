@@ -25,7 +25,7 @@
 #' @param H2OStartUp Defaults to TRUE which means H2O will be started inside the function
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param GridStrategy Default "Cartesian"
-#' @param MaxRuntimeSecs Default 86400
+#' @param MaxRunTimeSecs Default 86400
 #' @param MaxModelsInGrid Number of models to test from grid options (1080 total possible options)
 #' @param StoppingRounds Default 10
 #' @param Trees The maximum number of trees you want in your models
@@ -40,6 +40,7 @@
 #' @param NBinsTopLevel Default 1024
 #' @param HistogramType Default "AUTO"
 #' @param CategoricalEncoding Default "AUTO"
+#' @param DebugMode Set to TRUE to print steps to screen
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
@@ -72,12 +73,13 @@
 #'    IfSaveModel = "mojo",
 #'    H2OShutdown = FALSE,
 #'    H2OStartUp = TRUE,
+#'    DebugMode = FALSE,
 #'
 #'    # Grid Tuning Args
-#'    GridStrategy = "Cartesian",
+#'    GridStrategy = "RandomDiscrete",
 #'    GridTune = FALSE,
 #'    MaxModelsInGrid = 10,
-#'    MaxRuntimeSecs = 60*60*24,
+#'    MaxRunTimeSecs = 60*60*24,
 #'    StoppingRounds = 10,
 #'
 #'    # ML args
@@ -113,10 +115,11 @@ AutoH2oDRFMultiClass <- function(data,
                                  ModelID = "FirstModel",
                                  H2OShutdown = FALSE,
                                  H2OStartUp = TRUE,
+                                 DebugMode = FALSE,
                                  eval_metric = "logloss",
                                  GridTune = FALSE,
-                                 GridStrategy = "Cartesian",
-                                 MaxRuntimeSecs = 60*60*24,
+                                 GridStrategy = "RandomDiscrete",
+                                 MaxRunTimeSecs = 60*60*24,
                                  StoppingRounds = 10,
                                  MaxModelsInGrid = 2,
                                  Trees = 50,
@@ -132,107 +135,42 @@ AutoH2oDRFMultiClass <- function(data,
                                  HistogramType = "AUTO",
                                  CategoricalEncoding = "AUTO") {
 
-  # data.table optimize ----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  # Args check ----
+  Decreasing <- H2OArgsCheck(ModelType="drf", TargetType = "multiclass", model_path.=model_path, metadata_path.=metadata_path, eval_metric.=eval_metric, MaxModelsInGrid.=MaxModelsInGrid, ModelID.=ModelID, NumOfParDepPlots.=0, ReturnModelObjects.=ReturnModelObjects, SaveModelObjects.=SaveModelObjects, GridTune.=GridTune, GridStrategy.=GridStrategy, CostMatrixWeights.=NULL, IfSaveModel.=IfSaveModel, Trees.=Trees, MaxDepth.=MaxDepth, SampleRate.=SampleRate, MTries.=MTries, ColSampleRatePerTree.=ColSampleRatePerTree, ColSampleRatePerTreeLevel.=ColSampleRatePerTreeLevel, MinRows.=MinRows, NBins.=NBins, NBinsCats.=NBinsCats, NBinsTopLevel.=NBinsTopLevel, HistogramType.=HistogramType, CategoricalEncoding.=CategoricalEncoding)
 
-  # Ensure model_path and metadata_path exists----
-  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
+  # Data Prepare ----
+  if(DebugMode) print("Data Prepare ----")
+  Output <- H2ODataPrep(TargetType.="multiclass", TargetColumnName.=TargetColumnName, data.=data, ValidationData.=ValidationData, TestData.=TestData, TrainOnFull.=TrainOnFull, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, model_path.=model_path, ModelID.=ModelID)
+  TargetColumnName <- Output$TargetColumnName; Output$TargetColumnName <- NULL
+  TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
+  dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
+  dataTest <- Output$dataTest; Output$dataTest <- NULL
+  TestData <- Output$TestData; Output$TestData <- NULL
+  Names <- Output$Names; rm(Output)
 
-  # MultiClass Check Arguments ----
-  if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) stop("eval_metric not in AUC, logloss")
-  if(Trees < 1L) stop("Trees must be greater than 1")
-  if(!GridTune %in% c(TRUE, FALSE)) stop("GridTune needs to be TRUE or FALSE")
-  if(MaxModelsInGrid < 1L & GridTune) stop("MaxModelsInGrid needs to be at least 1")
-  if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
-  if(!is.null(metadata_path)) if(!is.character(metadata_path)) stop("metadata_path needs to be a character type")
-  if(!is.character(ModelID) & !is.null(ModelID)) stop("ModelID needs to be a character type")
-  if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
-  if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
-  if(!(tolower(eval_metric) == "auc")) eval_metric <- tolower(eval_metric) else eval_metric <- toupper(eval_metric)
-  if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
+  # Grid Tune Check ----
+  if(GridTune && !TrainOnFull) {
 
-  # MultiClass Target Name Storage ----
-  if(!is.character(TargetColumnName)) TargetColumnName <- names(data)[TargetColumnName]
+    # Grid Tune ----
+    if(DebugMode) print("Grid Tune ----")
 
-  # MultiClass Ensure data is a data.table ----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-
-  # Ensure Target is a factor ----
-  if(!is.factor(data[[eval(TargetColumnName)]])) {
-    data[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-    if(!is.null(ValidationData)) ValidationData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-    if(!is.null(TestData)) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-  }
-
-  # MultiClass Data Partition ----
-  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
-    dataSets <- AutoDataPartition(
-      data,
-      NumDataSets = 3L,
-      Ratios = c(0.70, 0.20, 0.10),
-      PartitionType = "random",
-      StratifyColumnNames = TargetColumnName,
-      TimeColumnName = NULL)
-    dataTrain <- dataSets$TrainData
-    dataTest <- dataSets$ValidationData
-    TestData <- dataSets$TestData
-  }
-
-  # Create dataTrain if not exists ----
-  if(!exists("dataTrain")) dataTrain <- data
-  if(!exists("dataTest") && !TrainOnFull) dataTest <- ValidationData
-
-  # Regression ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  if(!TrainOnFull) {
-    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  }
-  if(!is.null(TestData)) {
-    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  }
-
-  # MultiClass Ensure TargetColumnName Is a Factor Type ----
-  if(!is.factor(dataTrain[[eval(TargetColumnName)]])) dataTrain[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-  if(!TrainOnFull) if(!is.factor(dataTest[[eval(TargetColumnName)]])) dataTest[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-  if(!is.null(TestData)) if(!is.factor(TestData[[eval(TargetColumnName)]])) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-
-  # MultiClass Save Names of data ----
-  if(is.numeric(FeatureColNames)) {
-    Names <- data.table::as.data.table(names(dataTrain)[FeatureColNames])
-    data.table::setnames(Names, "V1", "ColNames")
-  } else {
-    Names <- data.table::as.data.table(FeatureColNames)
-    if(!"V1" %chin% names(Names)) {
-      data.table::setnames(Names, "FeatureColNames", "ColNames")
-    } else {
-      data.table::setnames(Names, "V1", "ColNames")
-    }
-  }
-  if(SaveModelObjects) data.table::fwrite(Names, paste0(model_path, "/", ModelID, "_ColNames.csv"))
-
-  # MultiClass Grid Tune Check ----
-  if(GridTune & !TrainOnFull) {
+    # Prepare data
     if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
-    datavalidate <- h2o::as.h2o(dataTest)
+    if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
+    if(!is.null(TestData)) datatest <- h2o::as.h2o(TestData, use_datatable = TRUE) else datatest <- NULL
 
-    # MultiClass Grid Tune Search Criteria ----
+    # Grid Tune Search Criteria ----
     search_criteria  <- list(
       strategy = GridStrategy,
-      max_runtime_secs = MaxRuntimeSecs,
+      max_runtime_secs = MaxRunTimeSecs,
       max_models = MaxModelsInGrid,
       seed = 1234,
       stopping_rounds = StoppingRounds,
       stopping_metric = toupper(eval_metric),
       stopping_tolerance = 1e-3)
 
-    # MultiClass Grid Parameters ----
+    # Grid Parameters ----
     hyper_params <- list()
     hyper_params[["ntrees"]] <- Trees
     hyper_params[["max_depth"]] <- MaxDepth
@@ -247,277 +185,110 @@ AutoH2oDRFMultiClass <- function(data,
     hyper_params[["categorical_encoding"]] <- CategoricalEncoding
     hyper_params[["mtries"]] <- MTries
 
-    # MultiClass Grid Train Model ----
+    # Grid Train Model ----
     grid <- h2o::h2o.grid(
-      hyper_params         = hyper_params,
-      search_criteria      = search_criteria,
-      is_supervised        = TRUE,
-      algorithm            = "randomForest",
-      grid_id              = paste0(ModelID, "_Grid"),
-      x                    = FeatureColNames,
-      y                    = TargetColumnName,
-      ntrees               = Trees,
-      training_frame       = datatrain,
-      validation_frame     = datavalidate,
-      max_runtime_secs     = 3600 * 24 * 7,
-      stopping_rounds      = 10L,
-      stopping_tolerance   = 1e-3,
-      stopping_metric      = eval_metric,
-      score_tree_interval  = 10L,
-      seed                 = 1234)
+      hyper_params = hyper_params,
+      search_criteria = if(GridStrategy != "Cartesian") search_criteria else NULL,
+      is_supervised = TRUE,
+      algorithm = "randomForest",
+      grid_id = paste0(ModelID, "_Grid"),
+      x = FeatureColNames,
+      y = TargetColumnName,
+      training_frame = datatrain,
+      validation_frame = datavalidate,
+      max_runtime_secs = 3600 * 24 * 7,
+      stopping_rounds = 10L,
+      stopping_tolerance = 1e-3,
+      stopping_metric = eval_metric,
+      score_tree_interval = 10L,
+      seed = 1234)
 
-    # MultiClass Get Best Model ----
+    # Get Best Model ----
     Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID, "_Grid"), sort_by = eval_metric, decreasing = Decreasing)
 
-    # MultiClass Collect Best Grid Model ----
-    grid_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1L]])
+    # Collect Best Grid Model ----
+    base_model <- h2o::h2o.getModel(Grid_Out@model_ids[[1L]])
   }
 
-  # MultiClass Start Up H2O ----
+  # Build Model ----
   if(!GridTune) {
+
+    # DebugMode
+    if(DebugMode) print("Build Model ----")
+
+    # Prepare data
     if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain, use_datatable = TRUE)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
+    if(!is.null(TestData)) datatest <- h2o::as.h2o(TestData, use_datatable = TRUE) else datatest <- NULL
+
+    # Define args ----
+    H2OArgs <- list()
+    H2OArgs[["x"]] <- FeatureColNames
+    H2OArgs[["y"]] <- TargetColumnName
+    H2OArgs[["weights_column"]] <- WeightsColumn
+    H2OArgs[["training_frame"]] <- datatrain
+    H2OArgs[["validation_frame"]] <- datavalidate
+    H2OArgs[["model_id"]] <- ModelID
+    H2OArgs[["ntrees"]] <- Trees
+    H2OArgs[["max_depth"]] <- MaxDepth
+    H2OArgs[["sample_rate"]] <- SampleRate
+    H2OArgs[["col_sample_rate_per_tree"]] <- ColSampleRatePerTree
+    H2OArgs[["col_sample_rate_change_per_level"]] <- ColSampleRatePerTreeLevel
+    H2OArgs[["min_rows"]] <- MinRows
+    H2OArgs[["nbins"]] <- NBins
+    H2OArgs[["nbins_cats"]] <- NBinsCats
+    H2OArgs[["histogram_type"]] <- HistogramType
+    H2OArgs[["nbins_top_level"]] <- NBinsTopLevel
+    H2OArgs[["categorical_encoding"]] <- CategoricalEncoding
+    H2OArgs[["mtries"]] <- MTries
+
+    # Build model ----
+    base_model <- do.call(h2o::h2o.randomForest, H2OArgs)
   }
 
-  # Define args ----
-  H2OArgs <- list()
-  H2OArgs[["x"]] <- FeatureColNames
-  H2OArgs[["y"]] <- TargetColumnName
-  H2OArgs[["weights_column"]] <- WeightsColumn[1L]
-  H2OArgs[["training_frame"]] <- datatrain
-  H2OArgs[["validation_frame"]] <- datavalidate
-  H2OArgs[["model_id"]] <- ModelID[1L]
-  H2OArgs[["ntrees"]] <- Trees[1L]
-  H2OArgs[["max_depth"]] <- MaxDepth[1L]
-  H2OArgs[["sample_rate"]] <- SampleRate[1L]
-  H2OArgs[["col_sample_rate_per_tree"]] <- ColSampleRatePerTree[1L]
-  H2OArgs[["col_sample_rate_change_per_level"]] <- ColSampleRatePerTreeLevel[1L]
-  H2OArgs[["min_rows"]] <- MinRows[1L]
-  H2OArgs[["nbins"]] <- NBins[1L]
-  H2OArgs[["nbins_cats"]] <- NBinsCats[1L]
-  H2OArgs[["histogram_type"]] <- HistogramType[1L]
-  H2OArgs[["nbins_top_level"]] <- NBinsTopLevel[1L]
-  H2OArgs[["categorical_encoding"]] <- CategoricalEncoding[1L]
-  H2OArgs[["mtries"]] <- MTries[1L]
+  # Save Final Model----
+  if(DebugMode) print("Save Final Model----")
+  H2OSaveModel(SaveModelObjects.=SaveModelObjects, IfSaveModel.=IfSaveModel, base_model.=base_model, model_path.=model_path, ModelID.=ModelID)
 
-  # Build model ----
-  base_model <- do.call(h2o::h2o.randomForest, H2OArgs)
+  # Score Final Test Data ----
+  if(DebugMode) print("Score Final Test Data ----")
+  Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
 
-  # MultiClass Get Metrics ----
-  if(GridTune) {
-    if(!is.null(TestData)) {
-      datatest <-  h2o::as.h2o(TestData)
-      GridMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
-      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
-    } else {
-      GridMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
-      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
-    }
-  } else if(!TrainOnFull) {
-    if (!is.null(TestData)) {
-      datatest <- h2o::as.h2o(TestData)
-      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
-    } else {
-      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
-    }
-  } else {
-    BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatrain)
+  # Create Validation Data ----
+  if(DebugMode) print("Create Validation Data ----")
+  Output <- H2OValidationData(Predict.=Predict, TestData.=TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+  ValidationData <- Output$ValidationData; rm(Output)
+
+  # Variable Importance ----
+  if(DebugMode) print("Variable Importance ----")
+  VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
+
+  # H2O Explain ----
+  if(DebugMode) print("H2O Explain ----")
+  if(!TrainOnFull) {
+    Explain <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
-  # MultiClass Evaluate Metrics ----
-  if(GridTune & !TrainOnFull) {
-    if(tolower(eval_metric) == "logloss") {
-      BaseMetric <- BaseMetrics@metrics$logloss
-      GridMetric <- GridMetrics@metrics$logloss
-      if(GridMetric < BaseMetric) {
-        FinalModel <- grid_model
-        EvalMetric <- GridMetric
-        ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
-      } else {
-        FinalModel <- base_model
-        EvalMetric <- BaseMetrics@metrics$logloss
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-      }
-    } else if(tolower(eval_metric) == "r2") {
-      BaseMetric <- BaseMetrics@metrics$r2
-      GridMetric <- GridMetrics@metrics$r2
-      if(GridMetric > BaseMetric) {
-        FinalModel <- grid_model
-        EvalMetric <- GridMetric
-        ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
-      } else {
-        FinalModel <- base_model
-        EvalMetric <- BaseMetric
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm)
-      }
-    } else if(tolower(eval_metric) == "rmse") {
-      BaseMetric <- BaseMetrics@metrics$logloss
-      GridMetric <- GridMetrics@metrics$logloss
-      if(GridMetric < BaseMetric) {
-        FinalModel <- grid_model
-        EvalMetric <- GridMetric
-        ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
-      } else {
-        FinalModel <- base_model
-        EvalMetric <- BaseMetric
-        ConfusionMatrix <-
-          data.table::as.data.table(BaseMetrics@metrics$cm)
-      }
-    } else if(tolower(eval_metric) == "mse") {
-      BaseMetric <- BaseMetrics@metrics$logloss
-      GridMetric <- GridMetrics@metrics$logloss
-      if(GridMetric < BaseMetric) {
-        FinalModel <- grid_model
-        EvalMetric <- GridMetric
-        ConfusionMatrix <- data.table::as.data.table(GridMetrics@metrics$cm$table)
-      } else {
-        FinalModel <- base_model
-        EvalMetric <- BaseMetric
-        ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-      }
-    }
-  } else {
-    if(tolower(eval_metric) == "logloss") {
-      FinalModel <- base_model
-      EvalMetric <- BaseMetrics@metrics$logloss
-      ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-    } else if(tolower(eval_metric) == "r2") {
-      FinalModel <- base_model
-      EvalMetric <- BaseMetrics@metrics$r2
-      ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-    } else if(tolower(eval_metric) == "rmse") {
-      FinalModel <- base_model
-      EvalMetric <- BaseMetrics@metrics$RMSE
-      ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-    } else if(tolower(eval_metric) == "mse") {
-      FinalModel <- base_model
-      EvalMetric <- BaseMetrics@metrics$MSE
-      ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-    }
-  }
-
-  # MultiClass Save Final Model----
-  if(SaveModelObjects) {
-    if(tolower(IfSaveModel) == "mojo") {
-      SaveModel <- h2o::h2o.saveMojo(object = FinalModel, path = model_path, force = TRUE)
-      h2o::h2o.download_mojo(
-        model = FinalModel,
-        path = model_path,
-        get_genmodel_jar = TRUE,
-        genmodel_path = model_path,
-        genmodel_name = ModelID)
-    } else {
-      SaveModel <- h2o::h2o.saveModel(object = FinalModel, path = model_path, force = TRUE)
-    }
-  }
-
-  # MultiClass Score Final Test Data----
-  if(!is.null(TestData)) {
-    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatest))
-  } else if(!TrainOnFull) {
-    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datavalidate))
-  } else {
-    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatrain))
-  }
-
-  # MultiClass Variable Importance----
-  VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-
-  # MultiClass Format Variable Importance Table----
-  data.table::setnames(VariableImportance, c("variable","relative_importance","scaled_importance","percentage"), c("Variable","RelativeImportance","ScaledImportance","Percentage"))
-  VariableImportance[, ':=' (
-    RelativeImportance = round(RelativeImportance, 4L),
-    ScaledImportance = round(ScaledImportance, 4L),
-    Percentage = round(Percentage, 4L))]
-
-  # MultiClass Save Variable Importance----
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
-    } else {
-      data.table::fwrite(VariableImportance,file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
-    }
-  }
-
-  # MultiClass H2O Shutdown----
+  # H2O Shutdown ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # MultiClass Create Validation Data----
-  if(!is.null(TestData)) {
-    ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
-    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
-  } else if(!TrainOnFull) {
-    ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
-    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
-  } else {
-    ValidationData <- data.table::as.data.table(cbind(dataTrain, Predict))
-    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
-  }
-
-  # MultiClass Metrics Accuracy----
+  # Evaluation metrics ----
+  if(DebugMode) print("Evaluation metrics ----")
   if(!TrainOnFull) {
-    ValidationData[, eval(TargetColumnName) := as.character(get(TargetColumnName))]
-    ValidationData[, Predict := as.character(Predict)]
-    MetricAcc <- ValidationData[, mean(data.table::fifelse(get(TargetColumnName) == Predict, 1.0, 0.0), na.rm = TRUE)]
+    EvaluationMetrics <- MultiClassMetrics(ModelClass="h2o", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
-  # MultiClass Evaluation Metrics Table----
-  if(!TrainOnFull) {
-    EvaluationMetrics <- data.table::data.table(
-      Metric = c("Accuracy", "MicroAUC", "temp"),
-      Value = c(round(MetricAcc, 4L), NA, round(EvalMetric, 4L)))
-    data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
-  }
-
-  # MultiClass Save Validation Data to File----
-  if(SaveModelObjects & !TrainOnFull) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
-    } else {
-      data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
-    }
-  }
-
-  # MultiClass Save ConfusionMatrix to File----
-  if(SaveModelObjects & !TrainOnFull) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(ConfusionMatrix, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-    } else {
-      data.table::fwrite(ConfusionMatrix, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-    }
-  }
-
-  # VI_Plot_Function
-  if(!TrainOnFull) {
-    VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-      ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
-        ggplot2::geom_bar(stat = "identity") +
-        ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-        ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-        ggplot2::coord_flip() +
-        ggplot2::labs(title = "Global Variable Importance") +
-        ggplot2::xlab("Top Model Features") +
-        ggplot2::ylab("Value") +
-        ggplot2::theme(legend.position = "none")
-    }
-  }
-
-  # MultiClass Return Objects----
+  # Return Objects ----
+  if(DebugMode) print("Return Objects ----")
   if(ReturnModelObjects) {
-    if(!TrainOnFull) {
-      return(list(
-        Model = FinalModel,
-        ValidationData = ValidationData,
-        ConfusionMatrix = ConfusionMatrix,
-        EvaluationMetrics = EvaluationMetrics,
-        VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VI_Data = VariableImportance),
-        ColNames = Names))
-    } else {
-      return(list(
-        Model = FinalModel,
-        ColNames = Names))
-    }
+    return(list(
+      Model = base_model,
+      H2OExplain = if(exists("Explain") && !is.null(Explain)) Explain else NULL,
+      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
   }
 }

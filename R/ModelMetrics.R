@@ -8,7 +8,7 @@
 #' @param DATA TestDataEval
 #' @param TARGETCOLUMNNAME TargetColumnName
 #' @param GROUPVARIABLES GroupVariables
-#' @export
+#' @noRd
 CarmaHoldoutMetrics <- function(DATA = TestDataEval,
                                 TARGETCOLUMNNAME = TargetColumnName,
                                 GROUPVARIABLES = GroupingVariables) {
@@ -87,7 +87,7 @@ CarmaHoldoutMetrics <- function(DATA = TestDataEval,
 #'   Target = "HitTarget",
 #'   Predicted = "p1")
 #' }
-#' @export
+#' @noRd
 DT_BinaryConfusionMatrix <- function(data = MetricsData,
                                      GroupVariables = "IntervalNum",
                                      Target = "ActiveAtInterval",
@@ -154,7 +154,7 @@ DT_BinaryConfusionMatrix <- function(data = MetricsData,
 #' @param PositiveOutcome The value of the positive outcome level
 #' @param NegativeOutcome The value of the negative outcome level
 #' @param CostMatrix c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost)
-#' @export
+#' @noRd
 ClassificationMetrics <- function(TestData,
                                   Thresholds,
                                   Target,
@@ -271,7 +271,7 @@ ClassificationMetrics <- function(TestData,
 #'   ClassLabels = c(1,0),
 #'   ValidationData. = ValidationData)
 #' }
-#' @export
+#' @noRd
 RemixClassificationMetrics <- function(TargetVariable = NULL,
                                        Thresholds = seq(0.01,0.99,0.01),
                                        CostMatrix = c(1,0,0,1),
@@ -311,7 +311,7 @@ RemixClassificationMetrics <- function(TargetVariable = NULL,
 #' @param model_path. = model_path
 #' @param metadata_path. = metadata_path
 #'
-#' @export
+#' @noRd
 BinaryMetrics <- function(ClassWeights. = ClassWeights,
                           CostMatrixWeights. = CostMatrixWeights,
                           SaveModelObjects. = SaveModelObjects,
@@ -355,7 +355,7 @@ BinaryMetrics <- function(ClassWeights. = ClassWeights,
 #' @param model_path. = model_path
 #' @param metadata_path. = metadata_path
 #'
-#' @export
+#' @noRd
 RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
                               data. = data,
                               ValidationData. = ValidationData,
@@ -386,9 +386,6 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
         MetricVal <- 1 - ValidationData.[, sum(Metric2, na.rm = TRUE)] / ValidationData.[, sum(Metric1, na.rm = TRUE)]
       }
       data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(MetricVal, 4L))
-
-      for(z in 1:10) print(MetricVal)
-
     }
 
     # Remove Cols
@@ -457,6 +454,7 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 #' @author Adrian Antico
 #' @family Model Evaluation
 #'
+#' @param ModelClass "catboost"
 #' @param SaveModelObjects. = SaveModelObjects
 #' @param ValidationData. = ValidationData
 #' @param PredictData. = predict
@@ -467,8 +465,9 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 #' @param model_path. = model_path
 #' @param metadata_path. = metadata_path
 #'
-#' @export
-MultiClassMetrics <- function(SaveModelObjects. = SaveModelObjects,
+#' @noRd
+MultiClassMetrics <- function(ModelClass = "catboost",
+                              SaveModelObjects. = SaveModelObjects,
                               ValidationData. = ValidationData,
                               PredictData. = predict,
                               TrainOnFull. = TrainOnFull,
@@ -482,10 +481,24 @@ MultiClassMetrics <- function(SaveModelObjects. = SaveModelObjects,
   MetricAcc <- ValidationData.[, mean(data.table::fifelse(as.character(get(TargetColumnName.)) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
 
   # MultiClass Metrics MicroAUC ----
-  MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData.[[eval(TargetColumnName.)]], predictor = as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[3L:(ncol(PredictData.)+1L)])]))$auc, "\\d+\\.*\\d*"))), 4L)
+  if(ModelClass != "h2o") {
+    MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData.[[eval(TargetColumnName.)]], predictor = as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[3L:(ncol(PredictData.)+1L)])]))$auc, "\\d+\\.*\\d*"))), 4L)
+  } else {
+    MetricAUC <- round(as.numeric(noquote(stringr::str_extract(
+      pROC::multiclass.roc(
+        response = ValidationData.[[eval(TargetColumnName.)]],
+        predictor = as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[(ncol(ValidationData.) + 1 - length(TargetLevels.)):(ncol(ValidationData.))])])
+      )$auc, "\\d+\\.*\\d*"))), 4L)
+  }
 
   # Logloss ----
-  if(!TrainOnFull.) temp <- ValidationData.[, 1L] else temp <- ValidationData.[, 2L]
+  if(!TrainOnFull. && ModelClass == "catboost") {
+    temp <- ValidationData.[, 1L]
+  } else if(ModelClass == "catboost") {
+    temp <- ValidationData.[, 2L]
+  } else if(ModelClass != "catboost") {
+    temp <- ValidationData.[, .SD, .SDcols = TargetColumnName.]
+  }
   temp[, Truth := get(TargetColumnName.)]
   temp <- DummifyDT(
     data = temp,
@@ -498,8 +511,15 @@ MultiClassMetrics <- function(SaveModelObjects. = SaveModelObjects,
     FactorLevelsList = NULL,
     ClustScore = FALSE,
     ReturnFactorLevels = FALSE)
-  N <- TargetLevels.[, .N]
-  logloss <- MLmetrics::LogLoss(y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[c(3L:(2L+N))])]), y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
+  if(ModelClass == "catboost") {
+    N <- TargetLevels.[, .N]
+    logloss <- MLmetrics::LogLoss(y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[c(3L:(2L+N))])]), y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
+  } else {
+    N <- length(TargetLevels.)
+    logloss <- MLmetrics::LogLoss(
+      y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(unique(names(ValidationData.)[(ncol(ValidationData.) + 1 - length(TargetLevels.)):(ncol(ValidationData.))]))]),
+      y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
+  }
 
   # MultiClass Save Validation Data to File ----
   if(SaveModelObjects.) {

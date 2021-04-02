@@ -327,28 +327,19 @@ AutoCatBoostRegression <- function(data,
 
   # Regression Return Model Objects ----
   if(DebugMode) print("Return Model Objects")
-  if(!TrainOnFull) {
-    if(ReturnModelObjects) {
-      return(list(
-        Model = model,
-        ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-        EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot) && !is.list(EvaluationPlot)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(EvaluationPlot) else EvaluationPlot} else NULL,
-        EvaluationBoxPlot = if(exists("EvaluationBoxPlot") && !is.null(EvaluationBoxPlot)) EvaluationBoxPlot else NULL,
-        EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
-        VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-        InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
-        VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VI_Data = VariableImportance)) else VI_Plot(Type = "catboost", VI_Data = VariableImportance)}, error = NULL) else NULL,
-        PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots) && !is.list(ParDepPlots)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(ParDepPlots) else ParDepPlots} else NULL,
-        PartialDependenceBoxPlots = if(exists("VariableImportance") && !is.null(VariableImportance)) ParDepBoxPlots else NULL,
-        GridList = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
-        ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
-        TransformationResults = if(exists("TransformationResults") && !is.null(TransformationResults)) TransformationResults else NULL,
-        FactorLevelsList = if(exists("FactorLevelsList") && !is.null(FactorLevelsList)) FactorLevelsList))
-    }
-  } else if(ReturnModelObjects) {
+  if(ReturnModelObjects) {
     return(list(
       Model = model,
-      data = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot) && !is.list(EvaluationPlot)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(EvaluationPlot) else EvaluationPlot} else NULL,
+      EvaluationBoxPlot = if(exists("EvaluationBoxPlot") && !is.null(EvaluationBoxPlot)) EvaluationBoxPlot else NULL,
+      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
+      PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots) && !is.list(ParDepPlots)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(ParDepPlots) else ParDepPlots} else NULL,
+      PartialDependenceBoxPlots = if(exists("VariableImportance") && !is.null(VariableImportance)) ParDepBoxPlots else NULL,
+      GridList = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
       ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
       TransformationResults = if(exists("TransformationResults") && !is.null(TransformationResults)) TransformationResults else NULL,
       FactorLevelsList = if(exists("FactorLevelsList") && !is.null(FactorLevelsList)) FactorLevelsList))

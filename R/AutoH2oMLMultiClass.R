@@ -21,9 +21,11 @@
 #' @param ModelID A character string to name your model and output
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
+#' @param SaveInfoToPDF Set to TRUE to print model insights to PDF
 #' @param IfSaveModel Set to "mojo" to save a mojo file, otherwise "standard" to save a regular H2O model object
 #' @param H2OShutdown Set to TRUE to have H2O shutdown after running this function
 #' @param H2OStartUp Set to FALSE
+#' @param DebugMode Set to TRUE to get a print out of steps taken internally
 #' @examples
 #' \donttest{
 #' # Create some dummy correlated data with numeric and categorical features
@@ -54,9 +56,11 @@
 #'    ModelID = "FirstModel",
 #'    ReturnModelObjects = TRUE,
 #'    SaveModelObjects = FALSE,
+#'    SaveInfoToPDF = TRUE,
 #'    IfSaveModel = "mojo",
 #'    H2OShutdown = TRUE,
-#'    H2OStartUp = TRUE)
+#'    H2OStartUp = TRUE,
+#'    DebugMode = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
@@ -76,18 +80,17 @@ AutoH2oMLMultiClass <- function(data,
                                 ModelID = "FirstModel",
                                 ReturnModelObjects = TRUE,
                                 SaveModelObjects = FALSE,
+                                SaveInfoToPDF = TRUE,
                                 IfSaveModel = "mojo",
                                 H2OShutdown = TRUE,
-                                H2OStartUp = TRUE) {
+                                H2OStartUp = TRUE,
+                                DebugMode = FALSE) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  # Ensure model_path and metadata_path exists ----
+  if(!is.null(model_path)) if(!dir.exists(file.path(model_path))) dir.create(model_path)
+  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
 
-  # Ensure model_path and metadata_path exists----
-  if(!is.null(model_path)) if(!dir.exists(file.path(normalizePath(model_path)))) dir.create(normalizePath(model_path))
-  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(normalizePath(metadata_path)))) dir.create(normalizePath(metadata_path))
-
-  # MultiClass Check Arguments----
+  # Check Arguments ----
   if(!(tolower(eval_metric) %chin% c("auc", "logloss"))) stop("eval_metric not in AUC, logloss")
   if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
   if(!is.null(metadata_path)) if(!is.character(metadata_path)) stop("metadata_path needs to be a character type")
@@ -97,75 +100,23 @@ AutoH2oMLMultiClass <- function(data,
   if(!(tolower(eval_metric) == "auc")) eval_metric <- tolower(eval_metric) else eval_metric <- toupper(eval_metric)
   if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
 
-  # MultiClass Target Name Storage----
-  if(!is.character(TargetColumnName)) TargetColumnName <- names(data)[TargetColumnName]
+  # Data Prepare ----
+  if(DebugMode) print("Data Prepare ----")
+  Output <- H2ODataPrep(TargetType.="multiclass", TargetColumnName.=TargetColumnName, data.=data, ValidationData.=ValidationData, TestData.=TestData, TrainOnFull.=TrainOnFull, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, model_path.=model_path, ModelID.=ModelID)
+  TargetColumnName <- Output$TargetColumnName; Output$TargetColumnName <- NULL
+  TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
+  dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
+  dataTest <- Output$dataTest; Output$dataTest <- NULL
+  TestData <- Output$TestData; Output$TestData <- NULL
+  Names <- Output$Names; rm(Output)
 
-  # MultiClass Ensure data is a data.table----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
-  if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
-
-  # MultiClass Data Partition----
-  if(is.null(ValidationData) & is.null(TestData) & !TrainOnFull) {
-    dataSets <- AutoDataPartition(
-      data,
-      NumDataSets = 3L,
-      Ratios = c(0.70, 0.20, 0.10),
-      PartitionType = "random",
-      StratifyColumnNames = TargetColumnName,
-      TimeColumnName = NULL)
-    dataTrain <- dataSets$TrainData
-    dataTest <- dataSets$ValidationData
-    TestData <- dataSets$TestData
-  }
-
-  # Create dataTrain if not exists ----
-  if(!exists("dataTrain")) dataTrain <- data
-  if(!exists("dataTest") && !TrainOnFull) dataTest <- ValidationData
-
-  # Regression ModelDataPrep----
-  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  dataTrain <- ModelDataPrep(data = dataTrain, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  if(!TrainOnFull) {
-    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-    dataTest <- ModelDataPrep(data = dataTest, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  }
-  if(!is.null(TestData)) {
-    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = TRUE, LogicalToBinary = TRUE, DateToChar = TRUE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-    TestData <- ModelDataPrep(data = TestData, Impute = FALSE, CharToFactor = TRUE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-  }
-
-  # Ensure Target is a factor ----
-  if(!is.factor(data[[eval(TargetColumnName)]])) {
-    dataTrain[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-    if(!is.null(ValidationData)) dataTest[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-    if(!is.null(TestData)) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-  }
-
-  # MultiClass Ensure TargetColumnName Is a Factor Type----
-  if(!TrainOnFull) if(!is.factor(dataTest[[eval(TargetColumnName)]])) dataTest[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-  if(!is.null(TestData)) if(!is.factor(TestData[[eval(TargetColumnName)]])) TestData[, eval(TargetColumnName) := as.factor(get(TargetColumnName))]
-
-  # MultiClass Save Names of data----
-  if(is.numeric(FeatureColNames)) {
-    Names <- data.table::as.data.table(names(data)[FeatureColNames])
-    data.table::setnames(Names, "V1", "ColNames")
-  } else {
-    Names <- data.table::as.data.table(FeatureColNames)
-    if(!"V1" %chin% names(Names)) {
-      data.table::setnames(Names, "FeatureColNames", "ColNames")
-    } else {
-      data.table::setnames(Names, "V1", "ColNames")
-    }
-  }
-  if(SaveModelObjects) data.table::fwrite(Names, file = file.path(normalizePath(model_path), paste0(ModelID, "_ColNames.csv")))
-
-  # MultiClass Start Up H2O----
+  # Start Up H2O ----
   if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   datatrain <- h2o::as.h2o(dataTrain, use_datatable = TRUE)
   if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
+  if(!is.null(TestData)) datatest <- h2o::as.h2o(TestData, use_datatable = TRUE) else datatest <- NULL
 
-  # MultiClass Build Baseline Model----
+  # Build Baseline Model ----
   if(!h2o::h2o.xgboost.available()) exclude <- unique(c(ExcludeAlgos,"XGBoost"))
   if(!TrainOnFull) {
     base_model <- h2o::h2o.automl(
@@ -196,156 +147,48 @@ AutoH2oMLMultiClass <- function(data,
     base_model <- base_model@leader
   }
 
-  # MultiClass Get Metrics----
+  # Save Final Model ----
+  if(DebugMode) print("Save Final Model ----")
+  H2OSaveModel(SaveModelObjects.=SaveModelObjects, IfSaveModel.=IfSaveModel, base_model.=base_model, model_path.=model_path, ModelID.=ModelID)
+
+  # Score Final Test Data ----
+  if(DebugMode) print("Score Final Test Data ----")
+  Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
+
+  # Create Validation Data ----
+  if(DebugMode) print("Create Validation Data ----")
+  Output <- H2OValidationData(Predict.=Predict, TestData.=TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+  ValidationData <- Output$ValidationData; rm(Output)
+
+  # Variable Importance ----
+  if(DebugMode) print("Variable Importance ----")
+  VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
+
+  # H2O Explain ----
+  if(DebugMode) print("H2O Explain ----")
   if(!TrainOnFull) {
-    if(!is.null(TestData)) {
-      datatest <- h2o::as.h2o(TestData)
-      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatest)
-    } else {
-      BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datavalidate)
-    }
-  } else {
-    BaseMetrics <- h2o::h2o.performance(model = base_model, newdata = datatrain)
+    Explain <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
-  # MultiClass Evaluate Metrics----
-  if(tolower(eval_metric) == "logloss") {
-    FinalModel <- base_model
-    EvalMetric <- BaseMetrics@metrics$logloss
-    ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-  } else if (tolower(eval_metric) == "r2") {
-    FinalModel <- base_model
-    EvalMetric <- BaseMetrics@metrics$r2
-    ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-  } else if (tolower(eval_metric) == "rmse") {
-    FinalModel <- base_model
-    EvalMetric <- BaseMetrics@metrics$RMSE
-    ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-  } else if (tolower(eval_metric) == "mse") {
-    FinalModel <- base_model
-    EvalMetric <- BaseMetrics@metrics$MSE
-    ConfusionMatrix <- data.table::as.data.table(BaseMetrics@metrics$cm$table)
-  }
-
-  # MultiClass Save Final Model----
-  if(SaveModelObjects) {
-    if(tolower(IfSaveModel) == "mojo") {
-      SaveModel <- h2o::h2o.saveMojo(object = FinalModel, path = model_path, force = TRUE)
-      h2o::h2o.download_mojo(
-        model = FinalModel,
-        path = model_path,
-        get_genmodel_jar = TRUE,
-        genmodel_path = model_path,
-        genmodel_name = ModelID)
-    } else {
-      SaveModel <- h2o::h2o.saveModel(object = FinalModel, path = model_path, force = TRUE)
-    }
-  }
-
-  # MultiClass Score Final Test Data----
-  if(!is.null(TestData)) {
-    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatest))
-  } else if(!TrainOnFull) {
-    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datavalidate))
-  } else {
-    Predict <- data.table::as.data.table(h2o::h2o.predict(object = FinalModel, newdata = datatrain))
-  }
-
-  # MultiClass Variable Importance----
-  VariableImportance <- data.table::as.data.table(h2o::h2o.varimp(object = FinalModel))
-
-  # MultiClass Format Variable Importance Table----
-  data.table::setnames(VariableImportance, c("variable","relative_importance","scaled_importance","percentage"), c("Variable","RelativeImportance","ScaledImportance","Percentage"))
-  VariableImportance[, ':=' (
-    RelativeImportance = round(RelativeImportance, 4L),
-    ScaledImportance = round(ScaledImportance, 4L),
-    Percentage = round(Percentage, 4L))]
-
-  # MultiClass Save Variable Importance----
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_VariableImportance.csv")))
-    } else {
-      data.table::fwrite(VariableImportance, file = file.path(normalizePath(model_path), paste0(ModelID, "_VariableImportance.csv")))
-    }
-  }
-
-  # MultiClass H2O Shutdown ----
+  # H2O Shutdown ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # MultiClass Create Validation Data ----
-  if(!is.null(TestData)) {
-    ValidationData <- data.table::as.data.table(cbind(TestData, Predict))
-    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
-  } else if(!TrainOnFull) {
-    ValidationData <- data.table::as.data.table(cbind(dataTest, Predict))
-    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
-  } else {
-    ValidationData <- data.table::as.data.table(cbind(dataTrain, Predict))
-    data.table::setnames(ValidationData, "predict", "Predict", skip_absent = TRUE)
-  }
-
-  # MultiClass Metrics Accuracy ----
+  # Evaluation metrics ----
+  if(DebugMode) print("Evaluation metrics ----")
   if(!TrainOnFull) {
-    ValidationData[, eval(TargetColumnName) := as.character(get(TargetColumnName))]
-    ValidationData[, Predict := as.character(Predict)]
-    MetricAcc <- ValidationData[, mean(data.table::fifelse(get(TargetColumnName) == Predict, 1.0, 0.0), na.rm = TRUE)]
+    EvaluationMetrics <- MultiClassMetrics(ModelClass="h2o", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
-  # MultiClass Evaluation Metrics Table ----
-  if(!TrainOnFull) {
-    EvaluationMetrics <- data.table::data.table(Metric = c("Accuracy", "MicroAUC", "temp"), Value = c(round(MetricAcc, 4L), NA, round(EvalMetric, 4L)))
-    data.table::set(EvaluationMetrics, i = 3L, j = 1L, value = paste0(eval_metric))
-  }
-
-  # MultiClass Save Validation Data to File ----
-  if(SaveModelObjects & !TrainOnFull) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
-    } else {
-      data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
-    }
-  }
-
-  # MultiClass Save ConfusionMatrix to File ----
-  if(SaveModelObjects & !TrainOnFull) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(ConfusionMatrix, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-    } else {
-      data.table::fwrite(ConfusionMatrix, file = file.path(normalizePath(model_path), paste0(ModelID, "_EvaluationMetrics.csv")))
-    }
-  }
-
-  # VI_Plot_Function ----
-  if(!TrainOnFull) {
-    VI_Plot <- function(VI_Data, ColorHigh = "darkblue", ColorLow = "white") {
-      ggplot2::ggplot(VI_Data[1:min(10,.N)], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
-        ggplot2::geom_bar(stat = "identity") +
-        ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-        ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-        ggplot2::coord_flip() +
-        ggplot2::labs(title = "Global Variable Importance") +
-        ggplot2::xlab("Top Model Features") +
-        ggplot2::ylab("Value") +
-        ggplot2::theme(legend.position = "none")
-    }
-  }
-
-  # MultiClass Return Objects ----
+  # Return Objects ----
+  if(DebugMode) print("Return Objects ----")
   if(ReturnModelObjects) {
-    if(!TrainOnFull) {
-      return(list(
-        Model = FinalModel,
-        ValidationData = ValidationData,
-        ConfusionMatrix = ConfusionMatrix,
-        EvaluationMetrics = EvaluationMetrics,
-        VariableImportance = VariableImportance,
-        VI_Plot = VI_Plot(VI_Data = VariableImportance),
-        ColNames = Names))
-    } else {
-      return(list(
-        Model = FinalModel,
-        ColNames = Names))
-    }
+    return(list(
+      Model = base_model,
+      H2OExplain = if(exists("Explain") && !is.null(Explain)) Explain else NULL,
+      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
   }
 }

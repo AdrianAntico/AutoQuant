@@ -94,17 +94,14 @@ AutoTS <- function(data,
                    PrintUpdates     = FALSE,
                    PlotPredictionIntervals = TRUE) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
   # Check arguments----
-  if(!is.character(TargetName)) return("TargetName needs to be a character value")
-  if (!is.character(DateName)) return("DateName needs to be a character value")
-  if(FCPeriods < 0) return("FCPeriods needs to be greater than 0")
-  if(HoldOutPeriods < 0) return("HoldOutPeriods needs to be greater than 0")
-  if(!is.character(TimeUnit)) return("TimeUnit needs to be a character value")
-  if(Lags < 0) return("Lags needs to be greater than 0")
-  if(!is.null(SkipModels)) if(!any(toupper(SkipModels) %chin% c("DSHW", "ARFIMA", "ARIMA", "ETS", "NNET", "TBATS", "TSLM"))) return("SkipModels needs to be one of DSHW, ARFIMA, ARIMA, ETS, NNET, TBATS, TSLM")
+  if(!is.character(TargetName)) stop("TargetName needs to be a character value")
+  if (!is.character(DateName)) stop("DateName needs to be a character value")
+  if(FCPeriods < 0) stop("FCPeriods needs to be greater than 0")
+  if(HoldOutPeriods < 0) stop("HoldOutPeriods needs to be greater than 0")
+  if(!is.character(TimeUnit)) stop("TimeUnit needs to be a character value")
+  if(Lags < 0) stop("Lags needs to be greater than 0")
+  if(!is.null(SkipModels)) if(!any(toupper(SkipModels) %chin% c("DSHW", "ARFIMA", "ARIMA", "ETS", "NNET", "TBATS", "TSLM"))) stop("SkipModels needs to be one of DSHW, ARFIMA, ARIMA, ETS, NNET, TBATS, TSLM")
 
   # Turn off warnings
   options(warn = -1)
@@ -136,24 +133,24 @@ AutoTS <- function(data,
     }
   }
 
-  # Correct ordering----
-  if (is.numeric(data[[1]]) | is.integer(data[[1]])) {
-    data.table::setcolorder(data, c(2, 1))
+  # Correct ordering ----
+  if(is.numeric(data[[1L]]) || is.integer(data[[1L]])) {
+    data.table::setcolorder(data, c(2L, 1L))
   }
 
-  # Ensure data is sorted----
+  # Ensure data is sorted ----
   data <- data[order(get(DateName))]
 
-  # Change Target Name----
+  # Change Target Name ----
   TempTargetName <- TargetName
   data.table::setnames(data, paste0(eval(TargetName)), "Target")
   TargetName <- "Target"
 
-  # Create Training data----
-  data_train <- data[1:(nrow(data) - HoldOutPeriods)]
+  # Create Training data ----
+  data_train <- data[seq_len(nrow(data) - HoldOutPeriods)]
 
-  # Create Test data----
-  data_test <- data[(nrow(data) - HoldOutPeriods + 1):nrow(data)]
+  # Create Test data ----
+  data_test <- data[(nrow(data) - HoldOutPeriods + 1L):nrow(data)]
   data_test_fourier <- data
 
   # Check for different time aggregations

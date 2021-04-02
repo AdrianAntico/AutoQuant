@@ -27,9 +27,9 @@ AutoH2oGLMRegression(
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
   H2OStartUp = TRUE,
+  DebugMode = FALSE,
   TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   NumOfParDepPlots = 3,
   GridTune = FALSE,
   GridStrategy = "Cartesian",
@@ -95,6 +95,8 @@ AutoH2oGLMRegression(
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 
+\item{DebugMode}{Set to TRUE to print out steps to screen}
+
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
 \item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
@@ -147,7 +149,7 @@ AutoH2oGLMRegression(
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 }
 \description{
-AutoH2oGLMRegression is an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
+AutoH2oGLMis an automated H2O modeling framework with grid-tuning and model evaluation that runs a variety of steps. First, the function will run a random grid tune over N number of models and find which model is the best (a default model is always included in that set). Once the model is identified and built, several other outputs are generated: validation data with predictions, evaluation plot, evaluation boxplot, evaluation metrics, variable importance, partial dependence calibration plots, partial dependence calibration box plots, and column names used in model fitting.
 }
 \examples{
 \donttest{
@@ -182,6 +184,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
+    DebugMode = FALSE,
 
     # Data arguments:
     data = data,

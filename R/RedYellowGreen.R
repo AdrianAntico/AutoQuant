@@ -52,25 +52,24 @@ RedYellowGreen <- function(data,
                            Precision         = 0.01,
                            Boundaries        = c(0.05, 0.75)) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
+  # Turn on full speed ahead ----
   requireNamespace('doParallel', quietly = FALSE)
   requireNamespace('parallel', quietly = FALSE)
 
-  # Check data.table
+  # Check data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Ensure arguments are valid
-  if(is.character(TruePositiveCost)) return("TruePositiveCost must be numeric")
-  if(is.character(TrueNegativeCost)) return("TruePositiveCost must be numeric")
-  if(is.character(FalsePositiveCost)) return("TruePositiveCost must be numeric")
+  # Ensure arguments are valid ----
+  if(is.character(TruePositiveCost)) stop("TruePositiveCost must be numeric")
+  if(is.character(TrueNegativeCost)) stop("TruePositiveCost must be numeric")
+  if(is.character(FalsePositiveCost)) stop("TruePositiveCost must be numeric")
   if(is.character(FalseNegativeCost)) return("TruePositiveCost must be numeric")
-  if(is.character(MidTierCost)) return("TruePositiveCost must be numeric")
-  if(Precision < 0 | Precision > 0.5) return("Precision should be a decimal value greater than 0 and less than 0.5")
-  if(min(Boundaries) < 0 | max(Boundaries) > 0.99999999999999999999) return("Boundaries should be a decimal value greater than 0 and less than 0.99999999999999999999")
-  if(Boundaries[1L] > Boundaries[2L]) return("The first Boundaries element should be less than the second element")
+  if(is.character(MidTierCost)) stop("TruePositiveCost must be numeric")
+  if(Precision < 0 || Precision > 0.5) stop("Precision should be a decimal value greater than 0 and less than 0.5")
+  if(min(Boundaries) < 0 || max(Boundaries) > 0.99999999999999999999) stop("Boundaries should be a decimal value greater than 0 and less than 0.99999999999999999999")
+  if(Boundaries[1L] > Boundaries[2L]) stop("The first Boundaries element should be less than the second element")
 
-  # Set up evaluation table
+  # Set up evaluation table ----
   analysisTable <- data.table::data.table(
     TPP = rep(TruePositiveCost, 1L),
     TNP = rep(TrueNegativeCost, 1L),
@@ -80,22 +79,22 @@ RedYellowGreen <- function(data,
     MTC = rep(MidTierCost, 1L),
     Threshold = runif(1L))
 
-  # Do nothing possibilities
+  # Do nothing possibilities ----
   temp <- data.table::CJ(MTLT = seq(Boundaries[1L], Boundaries[2L], Precision), MTHT = seq(Boundaries[1L], Boundaries[2L], Precision))[MTHT > MTLT]
   new <- cbind(analysisTable, temp)
   new[, Utility := stats::runif(nrow(new))]
 
-  # Parallel components
+  # Parallel setup ----
   requireNamespace(c("parallel", "doParallel", "foreach"))
   packages <- c("data.table","RemixAutoML")
-  cores    <- Cores
-  bat      <- ceiling(nrow(new) / cores)
-  parts    <- floor(nrow(new) / bat)
-  cl       <- parallel::makePSOCKcluster(cores)
+  cores <- Cores
+  bat <- ceiling(nrow(new) / cores)
+  parts <- floor(nrow(new) / bat)
+  cl <- parallel::makePSOCKcluster(cores)
   doParallel::registerDoParallel(cl)
   on.exit(parallel::stopCluster(cl))
 
-  # Kick off run
+  # Kick off run ----
   results <- foreach::foreach(
     i = itertools::isplitRows(new, chunks = parts),
     .combine = function(...) data.table::rbindlist(list(...)),
@@ -208,7 +207,7 @@ RedYellowGreen <- function(data,
       data
     }
 
-  # 3D Scatterplot
+  # 3D Scatterplot ----
   s3d <- scatterplot3d::scatterplot3d(
     x = results[["MTLT"]],
     y = results[["MTHT"]],
@@ -223,9 +222,9 @@ RedYellowGreen <- function(data,
   s3d$plane3d(model)
   N <- nrow(results)
   s3d$points3d(
-    x = results[order(-Utility)][1L:(N / 100), "MTLT"][[1L]],
-    y = results[order(-Utility)][1L:(N / 100), "MTHT"][[1L]],
-    z = results[order(-Utility)][1L:(N / 100), "Utility"][[1L]],
+    x = results[order(-Utility)][seq_len(N / 100), "MTLT"][[1L]],
+    y = results[order(-Utility)][seq_len(N / 100), "MTHT"][[1L]],
+    z = results[order(-Utility)][seq_len(N / 100), "Utility"][[1L]],
     col = "#00aa9d",
     type = "h",
     pch = 1L)

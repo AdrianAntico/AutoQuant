@@ -1,4 +1,4 @@
-![Version: 0.5.0](https://img.shields.io/static/v1?label=Version&message=0.5.0&color=blue&?style=plastic)
+![Version: 0.5.1](https://img.shields.io/static/v1?label=Version&message=0.5.1&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -13,18 +13,18 @@
 <details><summary>Expand to view content</summary>
 <p>
  
-> Automated Machine Learning - In my view, AutoML should consist of functions to help make professional model development and operationalization more efficient. Most ML projects include at least one of the following: data wrangling, feature engineering, feature selection, model development, model evaluation, model interpretation, model optimization, and model operationalization. The functions in this package have been tested across a variety of industries and have consistently out-performd "state of the art" deep learning methods. I've watched coworkers spend months tuning and reconfiguring deep learning models just to have them lose to the functions here, in a matter of a day or two. My recommendation is to first utilize the functions here to establish a legit baseline performance. Then go and test out all the other methods. 
+> Automated Machine Learning - In my view, AutoML should consist of functions to help make professional model development and operationalization more efficient. The functions in this package are there to help no matter which part of the ML lifecycle you are working on. The functions in this package have been tested across a variety of industries and have consistently outperformed competing methods. RemixAutoML has enabled me to deliver exceptionally high quality solutions in minimal time and as a result I can focus more time on the other aspects of projects that are critical for generating a high ROI and high adoption rate.
 
 ### Package Details
-> Supervised Learning - Currently, I'm utilizing CatBoost, XGBoost, and H2O for all of the automated Machine Learning related functions. GPU's can be utilized with CatBoost and XGBoost. Multi-armed bandit grid tuning is available for CatBoost and XGBoost models, which utilize the concept of randomized probability matching, which is detailed in the R pacakge "bandit". 
+> Supervised Learning - Currently, I'm utilizing CatBoost, XGBoost, and H2O for all of the automated Machine Learning related functions. GPU's can be utilized with CatBoost and XGBoost. Multi-armed bandit grid tuning is available for CatBoost and XGBoost models, which utilize the concept of randomized probability matching, which is detailed in the R pacakge "bandit". My choice of included ML algorithms in the package is based on previous success when compared against other algorithms on real world use cases, the additional utilities these packages offer aside from accurate predictions, their ability to work on big data, and the fact that they're available in both R and Python which makes managing multiple languages a little more seamless in a professional setting.
 
 > Time series forecasting - Automated functions for single series, panel data, vector autoregression, intermittent demand, and cohort panel data. The panel data models utilize the machine learning algos from above and the feature engineering functions below. They are extremely feature rich and the combination of all possible feature settings is huge. The models for individual series are fully optimized versions from the R package "forecast". I utilize the multi-armed bandit grid tuning algo used in the supervised learning models and apply it to the SARIMA and NNETAR models from the forecast package. I also measure performance on hold out data (and training data, or a blend of the two).
 
-> Feature Engineering - Some of the feature engineering functions you can only find in this package, such as the <code>AutoLagRollStats()</code> and <code>AutoLagRollStatsScoring()</code> functions. You could classify the above functions into several buckets: categorical encoding, target encoding, and distributed lag. You can generate any number of discontiguous lags and rolling statistics (mean, sd, skewness, kurtosis, and every 5th percentile) along with time between records and their associated lags and rolling statistics for transactional level data. The function runs extremely fast if you don't utilize rolling stats other than mean (I still use <code>data.table::frollapply()</code> but the data.table guys admit it isn't optimized like the <code>data.table::frollmean()</code> function). Furthermore, you can generate all these features by any number of categorical variables and their interactions PLUS you can request those sets of features to be generated for differnt levels of time aggregations such as transactional, hourly, daily, weekly, monthly, quarterly, and yearly, all in one shot (that is, you do not have to run the function repeatedly to generate the features). Lastly, generating these kinds of time series features on the fly for only a subset of records in a data.table (typically for on-demand model scoring) is not an easy task to do correctly and quickly. However, I spent the time to make it run as fast as I could but I am open to suggestions for making it faster (that goes for any of the functions in RemixAutoML).
-
-> Data Management - Every function here is written with fully-optimized data.table code so they run blazingly fast and are as memory efficient as possible. The current set of machine learning algorithms were chosen for their ability to work with big data and their ability to outperform other models, as demonstrated across a variety of real world use cases. The focus of the package is quality, not quantity.
+> Feature Engineering - Some of the feature engineering functions can only be found in this package. I believe feature engineering is your best bet for improving model performance. I have functions that cover all feature types except image data. There are feature engineering functions for numeric data, categorical data, text data, and date data. They are all designed to generate features for training and scoring pipelines and they run extremely fast with low memory utilization. The purpose of utilizing data.table for all feature engineering functions is to ensure that I only go to big data tools if absolutely necessary. If you're using the tidyverse packages (or even Pandas in Python) then you will be forced to use big data tools far more often than you would if you used data.table. 
 
 > Documentation - Each exported function in the package has a help file and can be viewed in your RStudio session, e.g. <code>?RemixAutoML::ModelDataPrep</code>. Many of them come with examples coded up in the help files (at the bottom) that you can run to get a feel for how to set the parameters. There's also a listing of exported functions by category with code examples at the bottom of this readme. You can also jump into the R folder here to dig into the source code. 
+
+> Overall process: Typically, I go to the warehouse to get all of my base features and then I run through all the relevant feature engineering functions in this package. Personally, I set up templates for features engineering, model training optimization, and model scoring (which feature engineering). I collect all relevant metdata in a list that is shared across templates and as a result, I never have to touch the model scoring template, which makes operationalize and maintenace a breeze. I can simply list out the columns of interest, which feature engineering functions I want to utilize, and then I simply kick off some command line scripts and everything else is automatically managed.
 
 </p>
 </details>
@@ -40,10 +40,9 @@ XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but
  
 ```
 # Install Dependencies----
-if(!("remotes" %in% rownames(installed.packages()))) install.packages("remotes"); print("remotes")
+if(!("devtools" %in% rownames(installed.packages()))) install.packages("devtools"); print("devtools")
 if(!("arules" %in% rownames(installed.packages()))) install.packages("arules"); print("arules")
 if(!("bit64" %in% rownames(installed.packages()))) install.packages("bit64"); print("bit64")
-if(!("caTools" %in% rownames(installed.packages()))) install.packages("caTools"); print("caTools")
 if(!("combinat" %in% rownames(install.packages()))) install.packages("combinat"); print("combinat")
 if(!("data.table" %in% rownames(installed.packages()))) install.packages("data.table"); print("data.table")
 if(!("doParallel" %in% rownames(installed.packages()))) install.packages("doParallel"); print("doParallel")
@@ -54,13 +53,9 @@ if(!("forecast" %in% rownames(installed.packages()))) install.packages("forecast
 if(!("fpp" %in% rownames(installed.packages()))) install.packages("fpp"); print("fpp")
 if(!("ggplot2" %in% rownames(installed.packages()))) install.packages("ggplot2"); print("ggplot2")
 if(!("gridExtra" %in% rownames(installed.packages()))) install.packages("gridExtra"); print("gridExtra")
-if(!("here" %in% rownames(installed.packages()))) install.packages("here"); print("here")
 if(!("itertools" %in% rownames(installed.packages()))) install.packages("itertools"); print("itertools")
-if(!("lime" %in% rownames(installed.packages()))) install.packages("lime"); print("lime")
 if(!("lubridate" %in% rownames(installed.packages()))) install.packages("lubridate"); print("lubridate")
-if(!("Matrix" %in% rownames(installed.packages()))) install.packages("Matrix"); print("Matrix")
 if(!("MLmetrics" %in% rownames(installed.packages()))) install.packages("MLmetrics"); print("MLmetrics")
-if(!("monreg" %in% rownames(installed.packages()))) install.packages("monreg"); print("monreg")
 if(!("nortest" %in% rownames(installed.packages()))) install.packages("nortest"); print("nortest")
 if(!("RColorBrewer" %in% rownames(installed.packages()))) install.packages("RColorBrewer"); print("RColorBrewer")
 if(!("recommenderlab" %in% rownames(installed.packages()))) install.packages("recommenderlab"); print("recommenderlab")
@@ -69,15 +64,13 @@ if(!("pROC" %in% rownames(installed.packages()))) install.packages("pROC"); prin
 if(!("Rfast" %in% rownames(installed.packages()))) install.packages("Rfast"); print("Rfast")
 if(!("scatterplot3d" %in% rownames(installed.packages()))) install.packages("scatterplot3d"); print("scatterplot3d")
 if(!("stringr" %in% rownames(installed.packages()))) install.packages("stringr"); print("stringr")
-if(!("sde" %in% rownames(installed.packages()))) install.packages("sde"); print("sde")
 if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate"); print("timeDate")
 if(!("tsoutliers" %in% rownames(installed.packages()))) install.packages("tsoutliers"); print("tsoutliers")
-if(!("wordcloud" %in% rownames(installed.packages()))) install.packages("wordcloud"); print("wordcloud")
 if(!("xgboost" %in% rownames(installed.packages()))) install.packages("xgboost"); print("xgboost")
 for (pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
 install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))
-remotes::install_github('catboost/catboost', subdir = 'catboost/R-package')
-remotes::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
 ### Installation Troubleshooting 
@@ -1879,8 +1872,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in%
-                                  c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
   IDcols = c("IDcol_1","IDcol_2"),
   
   # Model evaluation
@@ -2108,8 +2100,6 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
   RandomColNumbers = NULL,
   InteractionColNumbers = NULL,
   WeightsColumn = NULL,
-  TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
   
   # ML args
   GridTune = FALSE,
@@ -2610,8 +2600,6 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
   RandomColNumbers = NULL,
   InteractionColNumbers = NULL,
   WeightsColumn = NULL,
-  TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
   
   # Model args
   GridTune = FALSE,
@@ -2790,31 +2778,6 @@ First step is to build either a binary classification model (in the case of a si
 #### **AutoH2oGBMHurdleModel()**
 <code>AutoH2oGBMHurdleModel()</code> utilizes the H2O gradient boosting machine algorithm on the backend. 
 
-</p>
-</details>
-
-#### Nonlinear Regression Modeling
-
-<details><summary>click to expand</summary>
-<p>
-  
-#### **AutoNLS()**
-
-<img src="Images/AutoNLS_Image.png" align="center" width="400" />
-
-<code>AutoNLS()</code> is an automated nonlinear regression modeling function. This function automatically finds the best model fit from the set of models listed below and merges predictions to source data file. Great for forecasting growth (extrapolation) when domain knowledge can guide model selection.
-* Models included:
-  * Asymptotic
-  * Asymptotic through origin
-  * Asymptotic with offset
-  * Bi-exponential
-  * Four parameter logistic
-  * Three parameter logistic
-  * Gompertz
-  * Michal Menton
-  * Weibull
-  * Polynomial regression or monotonic regression
-  
 </p>
 </details>
 
@@ -3791,20 +3754,6 @@ Choose from:
   * maxmin - Fill from the absolute min date to the min of the max dates (panel data)
   * minmin - Fill from the max date of the min dates to the min date of the max dates (panel data)
 
-#### **ContinuousTimeDataGenerator()**
-<code>ContinuousTimeDataGenerator()</code> is for frequency and size data sets. This function generates count and size data sets for intermittent demand forecasting, using the methods in this package.
-
-#### **AutoCatBoostSizeFreqDist()**
-<code>AutoCatBoostSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
-
-#### **AutoH2oGBMSizeFreqDist()**
-<code>AutoH2oGBMSizeFreqDist()</code> is for building size and frequency predictive distributions via quantile regressions. Size (or severity) and frequency (or count) quantile regressions are build and you supply the actual percentiles you want predicted. Use this with the <code>ID_SingleLevelGibbsSampler()</code> function to simulate from the joint distribution.
-
-#### **AutoCatBoostFreqSizeScoring()**
-<code>AutoCatBoostFreqSizeScoring()</code> is for scoring the models build with <code>AutoCatBoostSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
-
-#### **AutoH2oGBMFreqSizeScoring()**
-<code>AutoH2oGBMFreqSizeScoring()</code> is for scoring the models build with <code>AutoH2oGBMSizeFreqDist()</code>. It will return the predicted values for every quantile model for both distributions for 1 to the max forecast periods you provided to build the scoring data. 
 
 </p>
 </details>
@@ -3981,14 +3930,6 @@ For each of the models tested internally, several aspects should be noted:
 #### **SQL_SaveTable()**
 <code>SQL_SaveTable()</code> Write a sql server table
 
-#### **SQL_UpdateTable()**
-<code>SQL_UpdateTable()</code> Update a sql server table
-
-#### **SQL_Server_BulkPull()**
-<code>SQL_Server_BulkPull()</code> Query a sql server table using bulk copy process
-
-#### **SQL_Server_BulkPush()**
-<code>SQL_Server_BulkPush()</code> Write to a sql server table using bulk copy process
 
 </p>
 </details>
@@ -4002,9 +3943,6 @@ For each of the models tested internally, several aspects should be noted:
 <code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
 <img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
-
-#### **ProblematicFeatures()**
-<code>ProblematicFeatures()</code> identifies columns that have either little to no variance, categorical variables with extremely high cardinality, too many NA's, too many zeros, or too high of a skew.
 
 #### **RemixTheme()** 
 <code>RemixTheme()</code> is a specific font, set of colors, and style for plots.

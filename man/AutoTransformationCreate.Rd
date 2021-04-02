@@ -2,7 +2,7 @@
 % Please edit documentation in R/TransformationFunctions.R
 \name{AutoTransformationCreate}
 \alias{AutoTransformationCreate}
-\title{AutoTransformationCreate is a function for automatically identifying the optimal transformations for numeric features and transforming them once identified.}
+\title{AutoTransformationCreate}
 \usage{
 AutoTransformationCreate(
   data,
@@ -71,17 +71,12 @@ Other Feature Engineering:
 \code{\link{AutoTransformationScore}()},
 \code{\link{AutoWord2VecModeler}()},
 \code{\link{AutoWord2VecScoring}()},
-\code{\link{ContinuousTimeDataGenerator}()},
 \code{\link{CreateCalendarVariables}()},
 \code{\link{CreateHolidayVariables}()},
-\code{\link{DT_GDL_Feature_Engineering}()},
-\code{\link{DifferenceDataReverse}()},
-\code{\link{DifferenceData}()},
 \code{\link{DummifyDT}()},
 \code{\link{H2OAutoencoderScoring}()},
 \code{\link{H2OAutoencoder}()},
 \code{\link{ModelDataPrep}()},
-\code{\link{Partial_DT_GDL_Feature_Engineering}()},
 \code{\link{TimeSeriesFill}()}
 }
 \author{

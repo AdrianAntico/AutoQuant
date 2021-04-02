@@ -13,8 +13,7 @@ AutoH2oGBMRegression(
   FeatureColNames = NULL,
   WeightsColumn = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
@@ -29,9 +28,10 @@ AutoH2oGBMRegression(
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
   H2OStartUp = TRUE,
+  DebugMode = FALSE,
   GridTune = FALSE,
   GridStrategy = "Cartesian",
-  MaxRuntimeSecs = 60 * 60 * 24,
+  MaxRunTimeSecs = 60 * 60 * 24,
   StoppingRounds = 10,
   MaxModelsInGrid = 2,
   eval_metric = "RMSE",
@@ -97,11 +97,13 @@ AutoH2oGBMRegression(
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 
+\item{DebugMode}{Set to TRUE to print steps to screen}
+
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
 
 \item{GridStrategy}{Default "Cartesian"}
 
-\item{MaxRuntimeSecs}{Default 60*60*24}
+\item{MaxRunTimeSecs}{Default 60*60*24}
 
 \item{StoppingRounds}{Number of runs}
 
@@ -179,6 +181,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
+    DebugMode = FALSE,
 
     # Data arguments
     data = data,
@@ -194,7 +197,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
     # ML grid tuning args
     GridTune = FALSE,
     GridStrategy = "Cartesian",
-    MaxRuntimeSecs = 60*60*24,
+    MaxRunTimeSecs = 60*60*24,
     StoppingRounds = 10,
     MaxModelsInGrid = 2,
 

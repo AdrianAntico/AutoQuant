@@ -27,9 +27,7 @@ AutoH2oGLMClassifier(
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
   H2OStartUp = TRUE,
-  TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  DebugMode = FALSE,
   MaxModelsInGrid = 2,
   NumOfParDepPlots = 3,
   GridTune = FALSE,
@@ -94,9 +92,7 @@ AutoH2oGLMClassifier(
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 
-\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
-
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
+\item{DebugMode}{Set to TRUE to print steps to screen}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
@@ -180,6 +176,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
+    DebugMode = FALSE,
 
     # Data args
     data = data,
@@ -192,8 +189,6 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
     RandomColNumbers = NULL,
     InteractionColNumbers = NULL,
     WeightsColumn = NULL,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
     # ML args
     GridTune = FALSE,

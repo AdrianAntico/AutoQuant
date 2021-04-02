@@ -71,13 +71,9 @@ data <- RedYellowGreen(
 }
 \seealso{
 Other Model Evaluation and Interpretation: 
-\code{\link{AutoLimeAid}()},
 \code{\link{EvalPlot}()},
-\code{\link{LimeModel}()},
-\code{\link{ML_EvalPlots}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},
-\code{\link{VI_Plot}()},
 \code{\link{threshOptim}()}
 }
 \author{

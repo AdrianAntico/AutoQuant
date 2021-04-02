@@ -22,14 +22,12 @@ AutoH2oGLMMultiClass(
   ReturnModelObjects = TRUE,
   model_path = NULL,
   metadata_path = NULL,
+  DebugMode = FALSE,
   SaveModelObjects = FALSE,
   SaveInfoToPDF = FALSE,
   IfSaveModel = "mojo",
   H2OShutdown = TRUE,
   H2OStartUp = TRUE,
-  TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
   MaxModelsInGrid = 2,
   NumOfParDepPlots = 3,
   GridTune = FALSE,
@@ -83,6 +81,8 @@ AutoH2oGLMMultiClass(
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
+\item{DebugMode}{Set to TRUE to see a printout of each step}
+
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
 
 \item{SaveInfoToPDF}{Set to TRUE to save insights to PDF}
@@ -92,10 +92,6 @@ AutoH2oGLMMultiClass(
 \item{H2OShutdown}{Set to TRUE to shutdown H2O inside the function}
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
-
-\item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
-
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{MaxModelsInGrid}{Number of models to test from grid options (1080 total possible options)}
 
@@ -176,6 +172,7 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
+    DebugMode = FALSE,
 
     # Data arguments:
     data = data,
@@ -187,8 +184,6 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
     RandomColNumbers = NULL,
     InteractionColNumbers = NULL,
     WeightsColumn = NULL,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
     # Model args
     GridTune = FALSE,

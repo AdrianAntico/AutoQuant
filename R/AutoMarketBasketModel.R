@@ -42,31 +42,28 @@ AutoMarketBasketModel <- function(data,
                                   MinLength = 2,
                                   MaxTime = 5) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
-  # Convert to data.table----
+  # Convert to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Total number of unique OrderIDColumns----
+  # Total number of unique OrderIDColumns ----
   n <- length(unique(data[[eval(OrderIDColumnName)]]))
 
-  # Check args----
-  if(!is.character(OrderIDColumnName)) return("OrderIDColumnName needs to be a character value")
-  if(!is.character(ItemIDColumnName)) return("ItemIDColumnName needs to be a character value")
-  if(!(Confidence > 0 & Confidence < 1)) return("Confidence needs to be between zero and one")
-  if(!(Support > 0 & Support < 1)) return("Support needs to be between zero and one")
-  if(MaxLength <= 0) return("MaxLength needs to be a positive number")
-  if(MinLength > MaxLength | MinLength < 0) return("MinLength needs to be less than MaxLength and greater than zero")
+  # Check args ----
+  if(!is.character(OrderIDColumnName)) stop("OrderIDColumnName needs to be a character value")
+  if(!is.character(ItemIDColumnName)) stop("ItemIDColumnName needs to be a character value")
+  if(!(Confidence > 0 && Confidence < 1)) stop("Confidence needs to be between zero and one")
+  if(!(Support > 0 && Support < 1)) stop("Support needs to be between zero and one")
+  if(MaxLength <= 0) stop("MaxLength needs to be a positive number")
+  if(MinLength > MaxLength | MinLength < 0) stop("MinLength needs to be less than MaxLength and greater than zero")
 
-  # Subset data----
-  data <- data[, .(get(OrderIDColumnName), get(ItemIDColumnName))]
+  # Subset data ----
+  data <- data[, list(get(OrderIDColumnName), get(ItemIDColumnName))]
   data.table::setnames(data, c("V1", "V2"), c(eval(OrderIDColumnName),eval(ItemIDColumnName)))
 
-  # Look into data.table split----
+  # Look into data.table split ----
   TransactionData <- methods::as(split(data[[eval(ItemIDColumnName)]], data[[eval(OrderIDColumnName)]]), "transactions")
 
-  # Association rules----
+  # Association rules ----
   options(warn = -1L)
   rules <- arules::apriori(
     data = TransactionData,
@@ -79,32 +76,32 @@ AutoMarketBasketModel <- function(data,
       maxtime = MaxTime))
   options(warn = 0L)
 
-  # Convet back to data.table---
+  # Convet back to data.table ---
   rules_data <- data.table::data.table(ProductA = arules::labels(arules::lhs(rules)), ProductB = arules::labels(arules::rhs(rules)), rules@quality)
   data.table::setnames(rules_data, c("support","confidence","lift","count"), c("Support","Confidence", "Lift","Count"))
 
-  # Delimeter time----
+  # Delimeter time ----
   if(LHS_Delimeter != ",") rules_data[, ProductA := gsub(",", LHS_Delimeter, ProductA)]
 
-  # Remove left Brackets from ProductA, ProductB Columns----
+  # Remove left Brackets from ProductA, ProductB Columns ----
   rules_data[, ':=' (ProductA = gsub("\\}.*", "", ProductA, ignore.case = TRUE), ProductB = gsub("\\}.*", "", ProductB, ignore.case = TRUE))]
 
-  # Remove right Brackets from ProductA, ProductB Columns----
+  # Remove right Brackets from ProductA, ProductB Columns ----
   rules_data[, ':=' (ProductA = gsub("\\{", "", ProductA, ignore.case = TRUE), ProductB = gsub("\\{", "", ProductB, ignore.case = TRUE))]
 
-  # Compute Chi-Sq. and P-Value----
+  # Compute Chi-Sq. and P-Value ----
   rules_data[, Chi_SQ := n * (Lift - 1) ^ 2 * Support * Confidence / ((Confidence - Support) * (Lift - Confidence))]
   rules_data[, P_Value := round(1 - pchisq(Chi_SQ, 1L), 10L)]
 
-  # Sort data properly----
+  # Sort data properly ----
   rules_data <- rules_data[order(ProductA, -Lift)]
 
-  # Add Rule Rank by ProductA----
-  rules_data[, RuleRank := 1L:.N, by = "ProductA"]
+  # Add Rule Rank by ProductA ----
+  rules_data[, RuleRank := seq_len(.N), by = "ProductA"]
 
-  # Change Column Names----
+  # Change Column Names ----
   data.table::setnames(rules_data, c("ProductA", "ProductB"), c(paste0(ItemIDColumnName, "_LHS"), paste0(ItemIDColumnName, "_RHS")))
 
-  # Done----
+  # Done ----
   return(rules_data)
 }

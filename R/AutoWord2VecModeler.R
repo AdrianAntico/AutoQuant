@@ -140,7 +140,7 @@ AutoWord2VecModeler <- function(data,
 
     # It is important to remove "\n"----
     Final[, Text := gsub("  ", " ", Text)]
-    Final[, Text := stringr::str_replace_all(Text, "[[:punct:]]", "")]
+    Final[, Text := gsub(Text, "[[:punct:]]", "")]
     Final <- Final[, list(Text)]
 
     # Tokenize----
@@ -180,7 +180,7 @@ AutoWord2VecModeler <- function(data,
 
       # It is important to remove "\n" ----
       data[, eval(string) := gsub("  ", " ", get(string))]
-      data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
+      data[, eval(string) := gsub(get(string), "[[:punct:]]", "")]
       data2 <- data[, .(get(string))]
 
       # Tokenize ----
@@ -217,7 +217,7 @@ AutoWord2VecModeler <- function(data,
 
       # It is important to remove "\n" --
       data[, eval(string) := gsub("  ", " ", get(string))]
-      data[, eval(string) := stringr::str_replace_all(get(string), "[[:punct:]]", "")]
+      data[, eval(string) := gsub(get(string), "[[:punct:]]", "")]
       data2 <- data[, .(get(string))]
 
       # Tokenize ----

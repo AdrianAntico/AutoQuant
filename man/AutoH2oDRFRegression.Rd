@@ -18,6 +18,7 @@ AutoH2oDRFRegression(
   NThreads = max(1, parallel::detectCores() - 2),
   H2OShutdown = TRUE,
   H2OStartUp = TRUE,
+  DebugMode = FALSE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   SaveInfoToPDF = FALSE,
@@ -26,13 +27,12 @@ AutoH2oDRFRegression(
   metadata_path = NULL,
   ModelID = "FirstModel",
   TransformNumericColumns = NULL,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   NumOfParDepPlots = 3,
   eval_metric = "RMSE",
   GridTune = FALSE,
-  GridStrategy = "Cartesian",
-  MaxRuntimeSecs = 60 * 60 * 24,
+  GridStrategy = "RandomDiscrete",
+  MaxRunTimeSecs = 60 * 60 * 24,
   StoppingRounds = 10,
   MaxModelsInGrid = 2,
   Trees = 50,
@@ -72,6 +72,8 @@ AutoH2oDRFRegression(
 
 \item{H2OStartUp}{Defaults to TRUE which means H2O will be started inside the function}
 
+\item{DebugMode}{Set to TRUE to print steps to screen}
+
 \item{ReturnModelObjects}{Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)}
 
 \item{SaveModelObjects}{Set to TRUE to return all modeling objects to your environment}
@@ -98,7 +100,7 @@ AutoH2oDRFRegression(
 
 \item{GridStrategy}{Default "Cartesian"}
 
-\item{MaxRuntimeSecs}{Default 86400}
+\item{MaxRunTimeSecs}{Default 86400}
 
 \item{StoppingRounds}{Default 10}
 
@@ -167,6 +169,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,
     SaveInfoToPDF = FALSE,
+    DebugMode = FALSE,
 
     # Data Args
     data = data,
@@ -182,10 +185,10 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
       "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
 
     # Grid Tuning Args
-    GridStrategy = "Cartesian",
+    GridStrategy = "RandomDiscrete",
     GridTune = FALSE,
     MaxModelsInGrid = 10,
-    MaxRuntimeSecs = 60*60*24,
+    MaxRunTimeSecs = 60*60*24,
     StoppingRounds = 10,
 
     # ML Args

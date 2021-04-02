@@ -1,3 +1,208 @@
+#' @title DifferenceData
+#'
+#' @description DifferenceData differences your data set
+#'
+#' @family Feature Engineering
+#'
+#' @author Adrian Antico
+#'
+#' @param data Source data
+#' @param ColumnsToDiff The column numbers you want differenced
+#' @param CARMA Set to TRUE for CARMA functions
+#' @param TargetVariable The target variable name
+#' @param GroupingVariable Difference data by group
+#'
+#' @noRd
+DifferenceData <- function(data,
+                           ColumnsToDiff = c(names(data)[2:ncol(data)]),
+                           CARMA = FALSE,
+                           TargetVariable = NULL,
+                           GroupingVariable = NULL) {
+
+  # Turn on full speed ahead----
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+
+  # Ensure data.table----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
+  # Keep First Row of Data
+  if(!is.null(GroupingVariable)) {
+    FirstRow <- data[data[, .I[1], get(GroupingVariable)]$V1]
+  } else {
+    FirstRow <- data[1,]
+  }
+
+  # Keep Last Row of Target Variable----
+  if(!is.null(GroupingVariable)) {
+    LastRow <- data[data[, .I[.N], get(GroupingVariable)]]$V1
+  } else {
+    LastRow <- data[data[, .I[.N]]]
+  }
+
+  # Diff data
+  if(!is.null(GroupingVariable)) {
+    DiffData <- cbind(data[1:(data[, .I[.N-1], get(GroupingVariable)]$V1),1],data[, lapply(.SD,diff), by = eval(GroupingVariable), .SDcols = ColumnsToDiff])
+  } else {
+    DiffData <- cbind(data[1:(nrow(data)-1),1],data[, lapply(.SD,diff), .SDcols = ColumnsToDiff])
+  }
+
+  # Return data
+  if(!CARMA) {
+    return(list(DiffData = DiffData, FirstRow = FirstRow, LastRow = data[nrow(data),]))
+  } else {
+    if(!is.null(GroupingVariable)) {
+      FirstRow <- FirstRow[, get(TargetVariable), by = eval(GroupingVariable)]
+      return(list(DiffData = DiffData, FirstRow = FirstRow, LastRow = LastRow))
+    } else {
+
+      #FirstRow <- FirstRow[, get(TargetVariable)]
+      return(list(DiffData = DiffData, FirstRow = FirstRow, LastRow = LastRow))
+    }
+  }
+}
+
+#' @title DifferenceDataReverse
+#'
+#' @description DifferenceDataReverse reverses the difference
+#'
+#' @family Feature Engineering
+#'
+#' @author Adrian Antico
+#'
+#' @param data Pre differenced scoring data
+#' @param ScoreData Predicted values from ML model
+#' @param LastRow The last row from training data target variables
+#' @param TargetCol Target column name
+#' @param CARMA Set to TRUE for CARMA utilization
+#' @param FirstRow The first row of the target variable
+#' @param GroupingVariables Group columns
+#'
+#' @noRd
+DifferenceDataReverse <- function(data,
+                                  ScoreData = Forecasts$Predictions,
+                                  LastRow = DiffTrainOutput$LastRow$Weekly_Sales,
+                                  CARMA = FALSE,
+                                  TargetCol = TargetColumnName,
+                                  FirstRow = DiffTrainOutput$FirstRow,
+                                  GroupingVariables = NULL) {
+
+  # Turn on full speed ahead----
+  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
+
+  # Ensure data.table----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
+  ModifiedData <- data.table::copy(data)
+  if(!CARMA) {
+    if(!is.null(GroupingVariables)) {
+      ""
+    } else {
+      return(ModifiedData[, Predictions := cumsum(c(LastRow,ScoreData))])
+    }
+  } else {
+    if(!is.null(GroupingVariables)) {
+      ""
+    } else {
+      x <- cumsum(c(FirstRow,ModifiedData[[eval(TargetCol)]]))
+      xx <- x[-length(x)]
+      return(ModifiedData[, eval(TargetCol) := xx][, Predictions := xx])
+    }
+  }
+}
+
+#' @title FullFactorialCatFeatures
+#'
+#' @description FullFactorialCatFeatures reverses the difference
+#'
+#' @family Data Wrangling
+#'
+#' @author Adrian Antico
+#'
+#' @param GroupVars Character vector of categorical columns to fully interact
+#' @param MaxCombin The max K in N choose K. If NULL, K will loop through 1 to length(GroupVars)
+#' @param BottomsUp TRUE or FALSE. TRUE starts with the most comlex interaction to the main effects
+#'
+#' @noRd
+FullFactorialCatFeatures <- function(GroupVars = GroupVariables,
+                                     MaxCombin = NULL,
+                                     BottomsUp = TRUE) {
+
+  if(is.null(MaxCombin)) {
+    MaxCombin <- N <- length(GroupVars)
+  } else {
+    N <- MaxCombin
+  }
+  Categoricals <- c()
+
+  # N choose 1 case ----
+  for(j in seq_along(GroupVars)) Categoricals <- c(Categoricals,GroupVars[j])
+
+  # N choose i for 2 <= i < N
+  for(i in seq_len(N)[-1L]) {
+
+    # Case 2: N choose 2 up to N choose N-1: Middle-Hierarchy Interactions
+    if(MaxCombin == length(GroupVars)) {
+      if(i < N) {
+        temp <- combinat::combn(GroupVars, m = i)
+        temp2 <- c()
+        for(k in seq_len(ncol(temp))) {
+          for(l in seq_len(i)) {
+            if(l == 1L) {
+              temp2 <- temp[l,k]
+            } else {
+              temp2 <- paste(temp2,temp[l,k], sep = "_")
+            }
+          }
+          Categoricals <- c(Categoricals, temp2)
+        }
+
+        # Case 3: N choose N - Full Interaction
+      } else if(i == length(GroupVars)) {
+        temp <- combinat::combn(GroupVars, m = i)
+        for(m in seq_len(N)) {
+          if(m == 1) {
+            temp2 <- temp[m]
+          } else {
+            temp2 <- paste(temp2,temp[m], sep = "_")
+          }
+        }
+        Categoricals <- c(Categoricals, temp2)
+      }
+    } else {
+      if(i <= N) {
+        temp <- combinat::combn(GroupVars, m = i)
+        temp2 <- c()
+        for(k in seq_len(ncol(temp))) {
+          for(l in seq_len(i)) {
+            if(l == 1L) {
+              temp2 <- temp[l,k]
+            } else {
+              temp2 <- paste(temp2,temp[l,k], sep = "_")
+            }
+          }
+          Categoricals <- c(Categoricals, temp2)
+        }
+
+        # Case 3: N choose N - Full Interaction
+      } else if(i == length(GroupVars)) {
+        temp <- combinat::combn(GroupVars, m = i)
+        for(m in seq_len(N)) {
+          if(m == 1) {
+            temp2 <- temp[m]
+          } else {
+            temp2 <- paste(temp2,temp[m], sep = "_")
+          }
+        }
+        Categoricals <- c(Categoricals, temp2)
+      }
+    }
+
+  }
+
+  # Order of output ----
+  if(BottomsUp) return(rev(Categoricals)) else return(Categoricals)
+}
+
 #' @title CARMA_GroupHierarchyCheck
 #'
 #' @author Adrian Antico
@@ -6,7 +211,7 @@
 #' @param data data fed into function
 #' @param Group_Variables Takes GroupVariables from caram function
 #' @param HierarchyGroups Vector of group variables
-#' @export
+#' @noRd
 CARMA_GroupHierarchyCheck <- function(data = data,
                                       Group_Variables = GroupVariables,
                                       HierarchyGroups = HierarchGroups) {
@@ -45,7 +250,7 @@ CARMA_GroupHierarchyCheck <- function(data = data,
 #' @param Skew_Periods = 0L turns it off, otherwise values must be greater than 2 such as c(3L,5L,6L,25L)
 #' @param Kurt_Periods = 0L turns it off, otherwise values must be greater than 3 such as c(4L,5L,6L,25L)
 #' @param Quantile_Periods = 0L turns it off, otherwise values must be greater than 3 such as c(5L,6L,25L)
-#' @export
+#' @noRd
 CARMA_Define_Args <- function(TimeUnit = NULL,
                               TimeGroups = NULL,
                               HierarchGroups = NULL,
@@ -132,7 +337,7 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
 #' @author Adrian Antico
 #' @family Carma Helper
 #' @param HierarchGroups Supply HierarchGroups
-#' @export
+#' @noRd
 CARMA_Get_IndepentVariablesPass <- function(HierarchGroups) {
 
   # Determine how to define IndependentVariablePass based on HierarchGroups----
@@ -172,7 +377,7 @@ CARMA_Get_IndepentVariablesPass <- function(HierarchGroups) {
 #' @param HolidayVariable Supply HolidayVariable
 #' @param TargetColumnName Supply TargetColumnName
 #' @param DateColumnName Supply DateColumnName
-#' @export
+#' @noRd
 CarmaH2OKeepVarsGDL <- function(data,
                                 IndepVarPassTRUE = "GroupVar",
                                 UpdateData,
@@ -339,7 +544,7 @@ CarmaH2OKeepVarsGDL <- function(data,
 #' @param HolidayVariable Supply HolidayVariable
 #' @param TargetColumnName Supply TargetColumnName
 #' @param DateColumnName Supply DateColumnName
-#' @export
+#' @noRd
 CarmaXGBoostKeepVarsGDL <- function(data,
                                     IndepVarPassTRUE = "GroupVar",
                                     UpdateData,
@@ -588,7 +793,7 @@ CarmaXGBoostKeepVarsGDL <- function(data,
 #' @param TargetColumnName Supply TargetColumnName
 #' @param DateColumnName Supply DateColumnName
 #' @param Preds Supply Preds
-#' @export
+#' @noRd
 CarmaCatBoostKeepVarsGDL <- function(data,
                                      IndepVarPassTRUE = "GroupVar",
                                      UpdateData,

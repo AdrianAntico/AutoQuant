@@ -82,8 +82,6 @@ Other Automated Time Series:
 \code{\link{AutoArfima}()},
 \code{\link{AutoBanditNNet}()},
 \code{\link{AutoBanditSarima}()},
-\code{\link{AutoCatBoostFreqSizeScoring}()},
-\code{\link{AutoH2oGBMFreqSizeScoring}()},
 \code{\link{AutoTBATS}()},
 \code{\link{AutoTS}()}
 }

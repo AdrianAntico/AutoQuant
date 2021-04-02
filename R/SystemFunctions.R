@@ -9,7 +9,7 @@
 #' @param ExistsButNoProjectList Set to TRUE if the folder exists but not the ProjectList file
 #' @param Local Local or cloud
 #' @return Returns a proper path file string
-#' @export
+#' @noRd
 CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
                                  RootPath = input$ID_Root_Folder,
                                  ExistsButNoProjectList = FALSE,
@@ -98,7 +98,7 @@ CreateProjectFolders <- function(ProjectName = input$ID_NewProjectName,
 #' @param SaveCSVName The name you want to give the csv that will be saved
 #' @param UploadLocation The location to where the data is saved in the Azure Storage Explorer
 #' @param DataStoreName The name of the store in data factory where you uploaded your data
-#' @export
+#' @noRd
 DownloadCSVFromStorageExplorer <- function(UploadCSVObjectName = 'data.csv',
                                            SaveCSVFilePath = file.path(Root),
                                            SaveCSVName = "RawData.csv",

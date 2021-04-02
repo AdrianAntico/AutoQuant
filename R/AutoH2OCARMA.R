@@ -56,7 +56,7 @@
 #' @param LearnRate Default 0.10, models available include gbm
 #' @param LearnRateAnnealing Default 1, models available include gbm
 #' @param GridStrategy Default "Cartesian", models available include
-#' @param MaxRuntimeSecs Default 60*60*24, models available include
+#' @param MaxRunTimeSecs Default 60*60*24, models available include
 #' @param StoppingRounds Default 10, models available include
 #' @param MaxDepth Default 20, models available include drf, gbm
 #' @param SampleRate Default 0.632, models available include drf, gbm
@@ -183,7 +183,7 @@
 #'   GridTune = FALSE,
 #'   GridStrategy = "Cartesian",
 #'   ModelCount = 5,
-#'   MaxRuntimeSecs = 60*60*24,
+#'   MaxRunTimeSecs = 60*60*24,
 #'   StoppingRounds = 10,
 #'
 #'   # ML Args
@@ -285,7 +285,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          LearnRate = 0.10,
                          LearnRateAnnealing = 1,
                          GridStrategy = "Cartesian",
-                         MaxRuntimeSecs = 60*60*24,
+                         MaxRunTimeSecs = 60*60*24,
                          StoppingRounds = 10,
                          MaxDepth = 20,
                          SampleRate = 0.632,
@@ -1048,14 +1048,14 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Machine Learning: Build Model----")
 
   # Define CARMA feature names
-  if(Difference == FALSE | is.null(GroupVariables)) {
+  if(Difference == FALSE || is.null(GroupVariables)) {
     if(!is.null(XREGS)) {
       ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))
     } else {
       ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
     }
     TargetVariable <- eval(TargetColumnName)
-  } else if(Difference == TRUE & !is.null(GroupVariables)) {
+  } else if(Difference == TRUE && !is.null(GroupVariables)) {
     ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),"ModTarget",eval(DateColumnName)))
     TargetVariable <- "ModTarget"
   } else {
@@ -1096,6 +1096,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,
+      DebugMode = DebugMode,
 
       # Data arguments
       data = train,
@@ -1112,7 +1113,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       GridTune = GridTune,
       MaxModelsInGrid = ModelCount,
       GridStrategy = GridStrategy,
-      MaxRuntimeSecs = MaxRuntimeSecs,
+      MaxRunTimeSecs = MaxRunTimeSecs,
       StoppingRounds = StoppingRounds,
 
       # ML Args
@@ -1154,6 +1155,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,
+      DebugMode = DebugMode,
 
       # Data arguments
       data = train,
@@ -1170,7 +1172,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       GridTune = GridTune,
       MaxModelsInGrid = ModelCount,
       GridStrategy = GridStrategy,
-      MaxRuntimeSecs = MaxRuntimeSecs,
+      MaxRunTimeSecs = MaxRunTimeSecs,
       StoppingRounds = StoppingRounds,
 
       # ML args
@@ -1212,6 +1214,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,
+      DebugMode = DebugMode,
 
       # Data arguments
       data = train,
@@ -1265,6 +1268,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,
+      DebugMode = DebugMode,
 
       # Data arguments
       data = data,
@@ -1309,6 +1313,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
       SaveModelObjects = TRUE,
+      DebugMode = DebugMode,
 
       # Data arguments
       data = train,

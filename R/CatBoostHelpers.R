@@ -45,7 +45,7 @@
 #' @param score_function. Passthrough
 #' @param min_data_in_leaf. Passthrough
 #'
-#' @export
+#' @noRd
 CatBoostArgsCheck <- function(ModelType = "regression",
                               DummifyCols.=DummifyCols,
                               data.=data,
@@ -244,7 +244,7 @@ CatBoostArgsCheck <- function(ModelType = "regression",
 #' @param TrainOnFull. Passthrough
 #' @param SaveModelObjects. Passthrough
 #'
-#' @export
+#' @noRd
 CatBoostDataPrep <- function(ModelType = "regression",
                              data. = data,
                              ValidationData. = ValidationData,
@@ -610,7 +610,7 @@ CatBoostDataPrep <- function(ModelType = "regression",
 #' @param FinalTestTarget. Passthrough
 #' @param TrainOnFull. Passthrough
 #'
-#' @export
+#' @noRd
 CatBoostDataConversion <- function(CatFeatures. = CatFeatures,
                                    dataTrain. = dataTrain,
                                    dataTest. = dataTest,
@@ -693,7 +693,7 @@ CatBoostDataConversion <- function(CatFeatures. = CatFeatures,
 #' @param subsample. Passthrough
 #' @param min_data_in_leaf. Passthrough
 #'
-#' @export
+#' @noRd
 CatBoostFinalParams <- function(ModelType = "classification",
                                 UseBestModel. = UseBestModel,
                                 ClassWeights. = ClassWeights,
@@ -925,7 +925,7 @@ CatBoostFinalParams <- function(ModelType = "classification",
 #' @param TransformationResults. Passthrough regression
 #' @param TargetLevels. Passthrough multiclass
 #'
-#' @export
+#' @noRd
 CatBoostValidationData <- function(ModelType = "classification",
                                    TrainOnFull. = TrainOnFull,
                                    TestDataCheck = !is.null(TestData),
@@ -1149,7 +1149,7 @@ CatBoostValidationData <- function(ModelType = "classification",
 #' @param metadata_path. Passthrough
 #' @param GrowPolicy. = GrowPolicy
 #'
-#' @export
+#' @noRd
 CatBoostImportances <- function(ModelType = "regression",
                                 TargetColumnName.=TargetColumnName,
                                 BestGrid. = BestGrid,
@@ -1239,7 +1239,7 @@ CatBoostImportances <- function(ModelType = "regression",
 #' @param model_path. Passthrough
 #' @param metadata_path. Passthrough
 #'
-#' @export
+#' @noRd
 CatBoostPDF <- function(ModelClass = "catboost",
                         ModelType = "regression",
                         TrainOnFull. = TrainOnFull,
@@ -1309,7 +1309,7 @@ CatBoostPDF <- function(ModelClass = "catboost",
 #'
 #' @param GridTune. Passthrough
 #'
-#' @export
+#' @noRd
 CatBoostRemoveFiles <- function(GridTune. = GridTune, model_path.=model_path) {
   if(GridTune.) {
     if(file.exists(file.path(model_path.,"catboost_training.json"))) file.remove(file.path(model_path.,"catboost_training.json"))
@@ -1345,7 +1345,7 @@ CatBoostRemoveFiles <- function(GridTune. = GridTune, model_path.=model_path) {
 #' @param GrowPolicy c("SymmetricTree", "Depthwise", "Lossguide")
 #'
 #' @return A list containing data.table's with the parameters shuffled and ready to test in the bandit framework
-#' @export
+#' @noRd
 CatBoostParameterGrids <- function(TaskType = "CPU",
                                    Shuffles = 1L,
                                    NTrees = seq(1000L, 10000L, 1000L),
@@ -1447,7 +1447,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
 #' @param Grid. Passthrough
 #' @param GridClusters. Passthrough
 #'
-#' @export
+#' @noRd
 CatBoostGridParams <- function(N.=N,
                                counter. = NULL,
                                BanditArmsN. = NULL,

@@ -557,7 +557,7 @@ SQL_SaveTable <- function(DataToPush,
 #' @param Fast Set to TRUE to update table in one shot versus row by row
 #' @param CloseChannel TRUE to close when done, FALSE to leave the channel open
 #'
-#' @export
+#' @noRd
 SQL_UpdateTable <- function(DataToPush,
                             DBConnection,
                             SQLTableName = "",
@@ -592,7 +592,7 @@ SQL_UpdateTable <- function(DataToPush,
 #' @param PkgPath Path to SSIS package includin the package name and the package extension .dtsx
 #' @param CSVPath Path to the csv output data location including the name of the file and the .csv extension
 #'
-#' @export
+#' @noRd
 ExecuteSSIS <- function(PkgPath = NULL,
                         CSVPath = NULL) {
 
@@ -639,7 +639,7 @@ ExecuteSSIS <- function(PkgPath = NULL,
 #' @param SaveFileName Name of the text file to create
 #' @param DeleteTextFile Remove text file when done loading into R
 #'
-#' @export
+#' @noRd
 SQL_Server_BulkPull <- function(Server = NULL,
                                 DBName = NULL,
                                 TableName = NULL,
@@ -759,7 +759,7 @@ SQL_Server_BulkPull <- function(Server = NULL,
 #' @param SaveFileName Name of the text file to create
 #' @param DeleteTextFile Remove text file when done loading into R
 #'
-#' @export
+#' @noRd
 SQL_Server_BulkPush <- function(Server = NULL,
                                 DBName = NULL,
                                 TableName = NULL,

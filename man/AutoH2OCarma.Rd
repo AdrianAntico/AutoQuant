@@ -61,7 +61,7 @@ AutoH2OCARMA(
   LearnRate = 0.1,
   LearnRateAnnealing = 1,
   GridStrategy = "Cartesian",
-  MaxRuntimeSecs = 60 * 60 * 24,
+  MaxRunTimeSecs = 60 * 60 * 24,
   StoppingRounds = 10,
   MaxDepth = 20,
   SampleRate = 0.632,
@@ -195,7 +195,7 @@ AutoH2OCARMA(
 
 \item{GridStrategy}{Default "Cartesian", models available include}
 
-\item{MaxRuntimeSecs}{Default 60*60*24, models available include}
+\item{MaxRunTimeSecs}{Default 60*60*24, models available include}
 
 \item{StoppingRounds}{Default 10, models available include}
 
@@ -357,7 +357,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
   GridTune = FALSE,
   GridStrategy = "Cartesian",
   ModelCount = 5,
-  MaxRuntimeSecs = 60*60*24,
+  MaxRunTimeSecs = 60*60*24,
   StoppingRounds = 10,
 
   # ML Args

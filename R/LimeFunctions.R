@@ -12,7 +12,7 @@
 #' @param ModelPath Set to the path where your ML model is saved
 #' @param ModelID ID used to identify your ML model
 #' @return Model for utilizing lime
-#' @export
+#' @noRd
 LimeModel <- function(data,
                       Model = NULL,
                       Bins = 10,
@@ -385,7 +385,7 @@ LimeModel <- function(data,
 #' lime::plot_features(LimeOutput$LimeExplanations)
 #' suppressWarnings(lime::plot_explanations(LimeOutput$LimeExplanations))
 #' }
-#' @export
+#' @noRd
 AutoLimeAid <- function(EvalPredsData = data,
                         LimeTrainingData = data,
                         LimeBins = 10,
