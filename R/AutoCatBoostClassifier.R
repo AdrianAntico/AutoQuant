@@ -295,27 +295,17 @@ AutoCatBoostClassifier <- function(data,
 
   # Return Model Objects ----
   if(DebugMode) print("Return Model Objects")
-  if(ReturnModelObjects && TrainOnFull) {
-    return(list(
-      Model = model,
-      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-      InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
-      ShapValuesDT = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
-      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = NULL) else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
-  } else if(ReturnModelObjects) {
-    return(list(
-      Model = model,
-      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-      ROC_Plot = if(exists("ROC_Plot") && !is.null(ROC_Plot)) ROC_Plot else NULL,
-      EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot)) EvaluationPlot else NULL,
-      EvaluationMetrics = if(exists("EvalMetrics") && !is.null(EvalMetrics)) EvalMetrics else NULL,
-      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-      InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
-      ShapValuesDT = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
-      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
-      PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots)) ParDepPlots else NULL,
-      GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = -1L, na.last = TRUE) else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
-  }
+  return(list(
+    Model = model,
+    ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+    ROC_Plot = if(exists("ROC_Plot") && !is.null(ROC_Plot)) ROC_Plot else NULL,
+    EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot)) EvaluationPlot else NULL,
+    EvaluationMetrics = if(exists("EvalMetrics") && !is.null(EvalMetrics)) EvalMetrics else NULL,
+    VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+    InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+    ShapValuesDT = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
+    VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
+    PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots)) ParDepPlots else NULL,
+    GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = -1L, na.last = TRUE) else NULL,
+    ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
 }
