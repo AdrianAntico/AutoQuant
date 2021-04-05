@@ -168,6 +168,6 @@ AutoH2OTextPrepScoring <- function(data,
   data2 <- data[, ..string]
 
   # Tokenize
-  tokenized_words <- RemixAutoML::tokenizeH2O(data2)
+  tokenized_words <- tokenizeH2O(data2)
   return(tokenized_words)
 }
