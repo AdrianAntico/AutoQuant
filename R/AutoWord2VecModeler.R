@@ -100,13 +100,10 @@ AutoWord2VecModeler <- function(data,
   if(is.null(stringCol)) stop("stringCol cannot be NULL")
   if(length(stringCol) == 1L) BuildType <- "individual"
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
-  # Ensure data is a data.table----
+  # Ensure data is a data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Two processes----
+  # Two processes ----
   if(tolower(BuildType) == "combined") {
 
     # Create storage file----
@@ -216,9 +213,8 @@ AutoWord2VecModeler <- function(data,
       h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
       # It is important to remove "\n" --
-      data[, eval(string) := gsub("  ", " ", get(string))]
-      data[, eval(string) := gsub(get(string), "[[:punct:]]", "")]
-      data2 <- data[, .(get(string))]
+      data[, eval(string) := gsub(pattern = "[[:punct:][:blank:]]", replacement = " ", x = data[[eval(string)]])]
+      data2 <- data[, list(get(string))]
 
       # Tokenize ----
       tokenized_words <- tokenizeH2O(data2)
