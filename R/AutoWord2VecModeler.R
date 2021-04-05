@@ -136,7 +136,7 @@ AutoWord2VecModeler <- function(data,
     localH2O <- h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory, enable_assertions = FALSE)
 
     # It is important to remove "\n"----
-    Final[, Text := gsub(pattern = "[[:punct:][:blank:]]", replacement = " ", x = Final[[eval(Text)]])]
+    Final[, Text := gsub(pattern = "[[:punct:][:blank:]]", replacement = " ", x = Final[["Text"]])]
     Final <- Final[, list(Text)]
 
     # Tokenize----
