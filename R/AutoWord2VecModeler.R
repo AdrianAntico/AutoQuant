@@ -136,8 +136,7 @@ AutoWord2VecModeler <- function(data,
     localH2O <- h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory, enable_assertions = FALSE)
 
     # It is important to remove "\n"----
-    Final[, Text := gsub("  ", " ", Text)]
-    Final[, Text := gsub(Text, "[[:punct:]]", "")]
+    Final[, Text := gsub(pattern = "[[:punct:][:blank:]]", replacement = " ", x = Final[[eval(Text)]])]
     Final <- Final[, list(Text)]
 
     # Tokenize----
@@ -176,9 +175,8 @@ AutoWord2VecModeler <- function(data,
       h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
       # It is important to remove "\n" ----
-      data[, eval(string) := gsub("  ", " ", get(string))]
-      data[, eval(string) := gsub(get(string), "[[:punct:]]", "")]
-      data2 <- data[, .(get(string))]
+      data[, eval(string) := gsub(pattern = "[[:punct:][:blank:]]", replacement = " ", x = data[[eval(string)]])]
+      data2 <- data[, list(get(string))]
 
       # Tokenize ----
       tokenized_words <- tokenizeH2O(data2)
@@ -202,7 +200,7 @@ AutoWord2VecModeler <- function(data,
 
   } else {
 
-    # Create storage file----
+    # Create storage file ----
     N <- length(stringCol)
     StoreFile <- data.table::data.table(ModelName = rep("a", N), Path = rep("a", N), Jar = rep("a", N))
     i <- 0L
