@@ -716,7 +716,7 @@ AutoCatBoostCARMA <- function(data,
   # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
   if(!is.null(SplitRatios) || !TrainOnFull) {
-    if(Difference & !is.null(GroupVariables)) {
+    if(Difference && !is.null(GroupVariables)) {
       x <- length(unique(data[[eval(DateColumnName)]]))
       N1 <- x+1L - SplitRatios[1]*(x+1L)
       DataSets <- AutoDataPartition(
@@ -754,7 +754,7 @@ AutoCatBoostCARMA <- function(data,
         TimeColumnName = eval(DateColumnName))
     }
 
-    # Remove ID Column----
+    # Remove ID Column
     if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
   }
 
@@ -773,25 +773,9 @@ AutoCatBoostCARMA <- function(data,
 
   # Create TimeWeights ----
   if(DebugMode) print("Create TimeWeights ----")
-  if(!is.null(TimeWeights)) {
-    if(!is.null(GroupVariables)) {
-      data.table::setorderv(x = train, cols = c("GroupVar", DateColumnName), order = c(1,-1))
-      train[, PowerValue := seq_len(.N), by = "GroupVar"]
-      train[, Weights := eval(TimeWeights) ^ PowerValue]
-      Weightss <- train[["Weights"]]
-      train[, ":=" (PowerValue = NULL, Weights = NULL)]
-      data.table::setorderv(x = train, cols = c("GroupVar", DateColumnName), order = c(1,1))
-    } else {
-      data.table::setorderv(x = train, cols = c(DateColumnName), order = c(-1))
-      train[, PowerValue := seq_len(.N)]
-      train[, Weights := eval(TimeWeights) ^ PowerValue]
-      Weightss <- train[["Weights"]]
-      train[, ":=" (PowerValue = NULL, Weights = NULL)]
-      data.table::setorderv(x = train, cols = c(DateColumnName), order = c(1))
-    }
-  } else {
-    Weightss <- NULL
-  }
+  Output <- CarmaTimeWeights(train.=train, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+  train <- Output$train; Output$train <- NULL
+  Weightss <- Output$Weightss; rm(Output)
 
   # Variables for CARMA function IDcols ----
   if(DebugMode) print("Variables for CARMA function:IDcols----")

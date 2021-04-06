@@ -2165,4 +2165,34 @@ CarmaDateStandardize <- function(data. = data,
   return(list(data = data., XREGS = XREGS.))
 }
 
-
+#' @param train. Passthrough
+#' @param TimeWeights. Passthrough
+#' @param GroupVariables. Passthrough
+#' @param DateColumnName. Passthrough
+#'
+#' @noRd
+CarmaTimeWeights <- function(train. = train,
+                             TimeWeights. = TimeWeights,
+                             GroupVariables. = GroupVariables,
+                             DateColumnName. = DateColumnName) {
+  if(!is.null(TimeWeights.)) {
+    if(!is.null(GroupVariables.)) {
+      data.table::setorderv(x = train., cols = c("GroupVar", DateColumnName.), order = c(1,-1))
+      train.[, PowerValue := seq_len(.N), by = "GroupVar"]
+      train.[, Weights := eval(TimeWeights.) ^ PowerValue]
+      Weightss <- train.[["Weights"]]
+      train.[, ":=" (PowerValue = NULL, Weights = NULL)]
+      data.table::setorderv(x = train., cols = c("GroupVar", DateColumnName.), order = c(1,1))
+    } else {
+      data.table::setorderv(x = train., cols = c(DateColumnName.), order = c(-1))
+      train.[, PowerValue := seq_len(.N)]
+      train.[, Weights := eval(TimeWeights.) ^ PowerValue]
+      Weightss <- train.[["Weights"]]
+      train.[, ":=" (PowerValue = NULL, Weights = NULL)]
+      data.table::setorderv(x = train., cols = c(DateColumnName.), order = c(1))
+    }
+  } else {
+    Weightss <- NULL
+  }
+  return(list(train = train., Weightss = Weightss))
+}

@@ -184,7 +184,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
 
   # Pull in ColNames ----
-  if(is.null(FeatureColumnNames) && !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID,"_ColNames.csv")))
+  if(is.null(FeatureColumnNames) && !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID, "_ColNames.csv")))
 
   # Pull In Transformation Object ----
   if(is.null(TransformationObject) && (TransformNumeric || BackTransNumeric)) {
@@ -195,7 +195,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
   if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
 
-  # DummifyDT categorical columns----
+  # DummifyDT categorical columns ----
   if(!is.null(CatFeatures) && TargetType == "multiregression") {
     if(!is.null(FactorLevelsList)) {
       ScoringData <- DummifyDT(
