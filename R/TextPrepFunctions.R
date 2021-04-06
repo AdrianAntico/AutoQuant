@@ -157,12 +157,12 @@ AutoH2OTextPrepScoring <- function(data,
                                    MaxMem = NULL,
                                    NThreads = NULL,
                                    StartH2O = TRUE) {
-  # Ensure data.table----
+  # Ensure data.table
   if(!is.data.table(data)) data.table::setDT((data))
   data[, eval(string) := as.character(get(string))]
   if(StartH2O) h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem)
 
-  # It is important to remove "\n" --
+  # It is important to remove "\n"
   data[, eval(string) := gsub(pattern = "[[:punct:][:blank:]]", replacement = " ", x = data[[eval(string)]])]
   data2 <- data[, list(get(string))]
 
