@@ -227,114 +227,57 @@ AutoXGBoostCARMA <- function(data,
                              SubSample = 1.0,
                              ColSampleByTree = 1.0) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
-  # Purified args: see CARMA HELPER FUNCTIONS----
+  # Purified args: see CARMA HELPER FUNCTIONS ----
   Args <- CARMA_Define_Args(TimeUnit=TimeUnit,TimeGroups=TimeGroups,HierarchGroups=HierarchGroups,GroupVariables=GroupVariables,FC_Periods=FC_Periods,PartitionType=PartitionType,TrainOnFull=TrainOnFull,SplitRatios=SplitRatios)
-
-  # Store purified args----
   IndepentVariablesPass <- Args$IndepentVariablesPass
-  TimeUnit              <- Args$TimeUnit
-  TimeGroups            <- Args$TimeGroups
-  TimeUnit              <- Args$TimeUnit
-  TimeGroup             <- Args$TimeGroupPlaceHolder
-  HierarchGroups        <- Args$HierarchGroups
-  GroupVariables        <- Args$GroupVariables
-  FC_Periods            <- Args$FC_Periods
-  HoldOutPeriods        <- Args$HoldOutPeriods
+  HoldOutPeriods <- Args$HoldOutPeriods
+  HierarchGroups <- Args$HierarchGroups
+  GroupVariables <- Args$GroupVariables
+  TimeGroups <- Args$TimeGroups
+  FC_Periods <- Args$FC_Periods
+  TimeGroup <- Args$TimeGroupPlaceHolder
+  TimeUnit <- Args$TimeUnit
 
-  # Arg check ----
+  # Additonal Args check ----
   if(!is.null(HolidayLookback) && !is.numeric(HolidayLookback)) stop("HolidayLookback has to be numeric")
-
-  # EvalMetric----
   if(!tolower(EvalMetric) %chin% c("RMSE","MAE","MAPE","r2")) EvalMetric <- "RMSE"
-
-  # Variables for Program: Redefine HoldOutPerids----
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
 
-  # Convert data to data.table----
+  # Convert data to data.table ----
   if(DebugMode) print("Convert data to data.table----")
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-
-  # Feature Engineering: Add Zero Padding for missing dates----
-  if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
-  if(!is.null(ZeroPadSeries)) {
-    data <- TimeSeriesFill(
-      data,
-      DateColumnName = eval(DateColumnName),
-      GroupVariables = GroupVariables,
-      TimeUnit = TimeUnit,
-      FillType = ZeroPadSeries,
-      MaxMissingPercent = 0.0,
-      SimpleImpute = FALSE)
-    data <- RemixAutoML::ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = 0, IgnoreCols = NULL)
-
-  } else {
-
-    # Ensure series are filled
-    temp <- RemixAutoML::TimeSeriesFill(
-      data,
-      DateColumnName = eval(DateColumnName),
-      GroupVariables = GroupVariables,
-      TimeUnit = TimeUnit,
-      FillType = "maxmax",
-      MaxMissingPercent = 0.25,
-      SimpleImpute = FALSE)
-
-    # If not, stop and explain to the user what to do
-    if(temp[,.N] != data[,.N]) {
-      stop("There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function")
-    }
-  }
-
-  # Feature Engineering: Add XREGS----
-  if(DebugMode) print("Feature Engineering: Add XREGS----")
-
-  # Convert XREGS to data.table
-  if(DebugMode) print("# Convert XREGS to data.table")
   if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
 
-  # Modify FC_Periods ----
-  if(DebugMode) print(names(XREGS))
-  if(DebugMode) print("# Check lengths of XREGS")
-  if(!is.null(XREGS) & TrainOnFull) {
+  # Feature Engineering: Add Zero Padding for missing dates ----
+  if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
+  if(!is.null(ZeroPadSeries)) {
+    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.0, SimpleImpute=FALSE)
+    data <- RemixAutoML::ModelDataPrep(data=data, Impute=TRUE, CharToFactor=FALSE, FactorToChar=FALSE, IntToNumeric=FALSE, LogicalToBinary=FALSE, DateToChar=FALSE, RemoveDates=FALSE, MissFactor="0", MissNum=0, IgnoreCols=NULL)
+  } else {
+    temp <- RemixAutoML::TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType="maxmax", MaxMissingPercent=0.25, SimpleImpute=FALSE)
+    if(temp[,.N] != data[,.N]) stop("There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function")
+  }
+
+  # Update FC_Periods  ----
+  if(DebugMode) print("Feature Engineering: Add XREGS----")
+  if(!is.null(XREGS) && TrainOnFull) {
     if(Difference) {
       FC_Periods <- min(-1L + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
     } else {
       FC_Periods <- min(length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
     }
-
-    # Stop if XREGS doesn't supply forward looking data
     if(FC_Periods < 1) return("Your XREGS does not have forward looking data")
-
   } else if(!is.null(XREGS)) {
     FC_Periods <- HoldOutPeriods
     HoldOutPeriods <- FC_Periods
   }
 
-  # Check for any Target Variable hiding in XREGS ----
-  if(DebugMode) print("# Check for any Target Variable hiding in XREGS")
-  if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
-
-  # Merge data and XREG for Training ----
-  if(DebugMode) print("merging xregs to data")
+  # Xregs mgt ----
   if(!is.null(XREGS)) {
+    if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
     if(!is.null(GroupVariables)) {
-
-      # I need GroupVar in the xregs. if not there, add it
-      if(!"GroupVar" %chin% names(XREGS)) {
-        XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      }
-
-      # I need the GroupVariable names to be different from data
-      if(any(GroupVariables %chin% names(XREGS))) {
-        for(g in GroupVariables) {
-          data.table::setnames(x = XREGS, old = eval(g), new = paste0("Add_",eval(g)))
-        }
-      }
-
-      # Merge data and XREGS
+      if(!"GroupVar" %chin% names(XREGS)) XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
+      if(any(GroupVariables %chin% names(XREGS))) for(g in GroupVariables) data.table::setnames(x = XREGS, old = eval(g), new = paste0("Add_",eval(g)))
       if(length(GroupVariables) > 1) {
         data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
         data <- merge(data, XREGS, by = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
@@ -409,22 +352,9 @@ AutoXGBoostCARMA <- function(data,
 
   # Data Wrangling: Convert DateColumnName to Date or POSIXct ----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if(is.character(data[[eval(DateColumnName)]])) {
-    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-      x <- data[1, get(DateColumnName)]
-      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-      data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
-    } else {
-      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    }
-  }
-  if(!is.null(XREGS)) {
-    if(is.character(XREGS[[eval(DateColumnName)]])) {
-      x <- XREGS[1, get(DateColumnName)]
-      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-      XREGS[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
-    }
-  }
+  Output <- CarmaDateStandardize(data.=data, XREGS.=NULL, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
+  data <- Output$data; Output$data <- NULL
+  XREGS <- Output$XREGS; rm(Output)
 
   # Data Wrangling: Ensure TargetColumnName is Numeric ----
   if(DebugMode) print("Data Wrangling: Ensure TargetColumnName is Numeric----")
@@ -565,14 +495,8 @@ AutoXGBoostCARMA <- function(data,
   Categoricals <- Output$Categoricals; Output$Categoricals <- NULL
   data <- Output$data; rm(Output)
 
-  # Create GroupVar----
-  if(!is.null(GroupVariables)) {
-    if(length(GroupVariables) > 1) {
-      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-    } else {
-      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-    }
-  }
+  # Create GroupVar ----
+  if(!is.null(GroupVariables)) if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
 
   # Data Wrangling: ModelDataPrep() to prepare data----
   if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data----")
@@ -714,10 +638,8 @@ AutoXGBoostCARMA <- function(data,
   }
 
   # Define features ----
-  if(DebugMode) print("Machine Learning: Build Model----")
-
-  # Define CARMA feature names
-  if(!Difference | is.null(GroupVariables)) {
+  if(DebugMode) print("Define features ----")
+  if(!Difference || is.null(GroupVariables)) {
     if(!is.null(XREGS)) {
       ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))
     } else {
@@ -782,26 +704,19 @@ AutoXGBoostCARMA <- function(data,
     subsample = SubSample,
     colsample_bytree = ColSampleByTree)
 
-  # Return if TrainOnFull is FALSE----
+  # Return if TrainOnFull is FALSE ----
   if(!TrainOnFull) return(TestModel)
 
-  # Turn warnings into errors back on
-  if(DebugMode) options(warn = 2)
-
-  # Variable for storing ML model: Pull model object out of TestModel list----
+  # Variable for storing ML model: Pull model object out of TestModel list ----
   if(DebugMode) print("Variable for storing ML model: Pull model object out of TestModel list----")
   Model <- TestModel$Model
 
-  # Grab factor level list----
+  # Grab factor level list ----
   if(DebugMode) print("Grab factor level list----")
-  if(!is.null(GroupVariables)) {
-    FactorList <- TestModel$FactorLevelsList
-  } else {
-    FactorList <- NULL
-  }
+  if(!is.null(GroupVariables)) FactorList <- TestModel$FactorLevelsList else FactorList <- NULL
 
-  # Variable for interation counts: max number of rows in train data.table across all group----
-  if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
+  # Variable for interation counts: max number of rows in train data.table across all group ----
+  if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group ----")
   if(!is.null(GroupVariables)) {
     if(Difference) {
       if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) else N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
@@ -831,7 +746,7 @@ AutoXGBoostCARMA <- function(data,
 
   #----
 
-  # Begin loop for generating forecasts----
+  # Begin loop for generating forecasts ----
   for(i in seq_len(ForecastRuns + 1L)) {
 
     # Row counts----

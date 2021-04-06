@@ -2133,3 +2133,36 @@ CarmaDifferencing <- function(GroupVariables. = GroupVariables,
     FC_Periods = FC_Periods.,
     Train = Train))
 }
+
+#' @param data. Passthrough
+#' @param XREGS. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param TimeUnit. Passthrough
+#'
+#' @noRd
+CarmaDateStandardize <- function(data. = data,
+                                 XREGS. = NULL,
+                                 DateColumnName. = DateColumnName,
+                                 TimeUnit. = TimeUnit) {
+  if(is.character(data.[[eval(DateColumnName.)]])) {
+    if(!(tolower(TimeUnit.) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      x <- data.[1L, get(DateColumnName.)]
+      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+      data.[, eval(DateColumnName.) := as.Date(get(DateColumnName.), tryFormats = x1)]
+    } else {
+      data.[, eval(DateColumnName.) := as.POSIXct(get(DateColumnName.))]
+    }
+  }
+  if(!is.null(XREGS.) && is.character(XREGS.[[eval(DateColumnName.)]])) {
+    if(!(tolower(TimeUnit.) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      x <- XREGS.[1L, get(DateColumnName.)]
+      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+      XREGS.[, eval(DateColumnName.) := as.Date(get(DateColumnName.), tryFormats = x1)]
+    } else {
+      XREGS.[, eval(DateColumnName.) := as.POSIXct(get(DateColumnName.))]
+    }
+  }
+  return(list(data = data., XREGS = XREGS.))
+}
+
+

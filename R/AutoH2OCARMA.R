@@ -504,26 +504,13 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
   }
 
-  # Data Wrangling: Convert DateColumnName to Date or POSIXct----
+  # Data Wrangling: Convert DateColumnName to Date or POSIXct ----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct----")
-  if(is.character(data[[eval(DateColumnName)]])) {
-    if(!(tolower(TimeUnit) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-      x <- data[1,get(DateColumnName)]
-      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-      data[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
-    } else {
-      data[, eval(DateColumnName) := as.POSIXct(get(DateColumnName))]
-    }
-  }
-  if(!is.null(XREGS)) {
-    if(is.character(XREGS[[eval(DateColumnName)]])) {
-      x <- XREGS[1,get(DateColumnName)]
-      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-      XREGS[, eval(DateColumnName) := as.Date(get(DateColumnName), tryFormats = x1)]
-    }
-  }
+  Output <- CarmaDateStandardize(data.=data, XREGS.=NULL, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
+  data <- Output$data; Output$data <- NULL
+  XREGS <- Output$XREGS; rm(Output)
 
-  # Data Wrangling: Ensure TargetColumnName is Numeric----
+  # Data Wrangling: Ensure TargetColumnName is Numeric ----
   if(DebugMode) print("Data Wrangling: Ensure TargetColumnName is Numeric----")
   if(!is.numeric(data[[eval(TargetColumnName)]])) data[, eval(TargetColumnName) := as.numeric(get(TargetColumnName))]
 
