@@ -408,6 +408,7 @@ AutoCatBoostCARMA <- function(data,
   } else {
     if(TaskType == "GPU" && BootStrapType == "MVS") BootStrapType <- "Bayesian"
   }
+  if(NonNegativePred && Difference) NonNegativePred <- FALSE
 
   # Convert data to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -671,35 +672,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----")
-  if(DataTruncate && !is.null(Lags)) {
-    mindate <- data[, min(get(DateColumnName))]
-    if(tolower(TimeUnit) %chin% c("hour","hours")) {
-      newdate <- mindate + lubridate::hours(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 5)
-    } else if(tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 10)
-    } else if(tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 15)
-    } else if(tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 30)
-    } else if(tolower(TimeUnit) %chin% c("day","days")) {
-      newdate <- mindate + lubridate::days(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("week","weeks")) {
-      newdate <- mindate + lubridate::weeks(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("month","months")) {
-      newdate <- mindate %m+% months(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("quarter","quarters")) {
-      newdate <- mindate %m+% months(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("years","year")) {
-      newdate <- mindate + lubridate::years(val + 1)
-    }
-
-    # Update date
-    data <- data[get(DateColumnName) >= eval(newdate)]
-  }
+  if(DataTruncate && !is.null(Lags)) data <- CarmaTruncateData(data.=data, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
 
   # Feature Engineering: Add TimeTrend Variable ----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
@@ -716,43 +689,13 @@ AutoCatBoostCARMA <- function(data,
   # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
   if(!is.null(SplitRatios) || !TrainOnFull) {
-    if(Difference && !is.null(GroupVariables)) {
-      x <- length(unique(data[[eval(DateColumnName)]]))
-      N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- AutoDataPartition(
-        data = data,
-        NumDataSets = NumSets,
-        Ratios = SplitRatios,
-        PartitionType = PartitionType,
-        StratifyColumnNames = "GroupVar",
-        TimeColumnName = eval(DateColumnName))
-    } else if(Difference) {
-      x <- length(unique(data[[eval(DateColumnName)]]))
-      N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- AutoDataPartition(
-        data = data,
-        NumDataSets = NumSets,
-        Ratios = SplitRatios,
-        PartitionType = PartitionType,
-        StratifyColumnNames = NULL,
-        TimeColumnName = eval(DateColumnName))
-    } else if(!is.null(GroupVariables)) {
-      DataSets <- AutoDataPartition(
-        data = data,
-        NumDataSets = NumSets,
-        Ratios = SplitRatios,
-        PartitionType = PartitionType,
-        StratifyColumnNames = "GroupVar",
-        TimeColumnName = eval(DateColumnName))
-    } else {
-      DataSets <- AutoDataPartition(
-        data = data,
-        NumDataSets = NumSets,
-        Ratios = SplitRatios,
-        PartitionType = PartitionType,
-        StratifyColumnNames = NULL,
-        TimeColumnName = eval(DateColumnName))
-    }
+    DataSets <- AutoDataPartition(
+      data = data,
+      NumDataSets = NumSets,
+      Ratios = SplitRatios,
+      PartitionType = PartitionType,
+      StratifyColumnNames = if(!is.null(GroupVariables)) "GroupVar" else NULL,
+      TimeColumnName = eval(DateColumnName))
 
     # Remove ID Column
     if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
@@ -763,7 +706,7 @@ AutoCatBoostCARMA <- function(data,
   if(!is.null(SplitRatios) || !TrainOnFull) {
     train <- DataSets$TrainData
     valid <- DataSets$ValidationData
-    if(NumSets == 2L) test  <- NULL else test  <- DataSets$TestData
+    if(NumSets == 2L) test  <- NULL else test <- DataSets$TestData
     rm(DataSets)
   } else {
     train <- data
@@ -780,6 +723,7 @@ AutoCatBoostCARMA <- function(data,
   # Variables for CARMA function IDcols ----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
   IDcols <- which(names(data) %chin% DateColumnName)
+  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) == TargetColumnName))
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----")

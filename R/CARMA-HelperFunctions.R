@@ -1034,7 +1034,7 @@ CarmaScore <- function(i. = i,
       if(eval(DateColumnName.) %chin% names(Step1SCore.)) data.table::set(Step1SCore., j = eval(DateColumnName.), value = NULL)
       if(eval(DateColumnName.) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName.), value = NULL)
       if(!is.null(GroupVariables.)) {
-        UpdateData. <- cbind(FutureDateData., Step1SCore.[, .SD, .SDcols = eval(TargetColumnName.)], Preds)
+        UpdateData. <- cbind(FutureDateData., Preds)
       } else {
         UpdateData. <- cbind(FutureDateData.[2L:(nrow(Step1SCore.)+1L)], Step1SCore.[, .SD, .SDcols = eval(TargetColumnName.)], Preds)
       }
@@ -1092,7 +1092,7 @@ CarmaScore <- function(i. = i,
       UpdateData. <- UpdateData.[ID != N.]
       if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c("POSIXct","POSIXt")) && any(class(Preds[[eval(DateColumnName.)]]) == "Date")) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
       UpdateData. <- data.table::rbindlist(list(UpdateData., Preds))
-      if(Difference.) UpdateData..[ID %in% c(N.-1, N.), eval(TargetColumnName.) := cumsum(get(TargetColumnName.)), by = "GroupVar"]
+      if(Difference.) UpdateData.[ID %in% c(N.-1, N.), eval(TargetColumnName.) := cumsum(get(TargetColumnName.)), by = "GroupVar"]
       UpdateData.[, ID := NULL]
 
     } else {
@@ -2195,4 +2195,40 @@ CarmaTimeWeights <- function(train. = train,
     Weightss <- NULL
   }
   return(list(train = train., Weightss = Weightss))
+}
+
+#' @param data. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param TimeUnit. Passthrough
+#'
+#' @noRd
+CarmaTruncateData <- function(data. = data,
+                              DateColumnName. = DateColumnName,
+                              TimeUnit. = TimeUnit) {
+  mindate <- data.[, min(get(DateColumnName.))]
+  if(tolower(TimeUnit.) %chin% c("hour","hours")) {
+    newdate <- mindate + lubridate::hours(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("1min","1mins","1minute","1minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("5min","5mins","5minute","5minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 5)
+  } else if(tolower(TimeUnit.) %chin% c("10min","10mins","10minute","10minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 10)
+  } else if(tolower(TimeUnit.) %chin% c("15min","15mins","15minute","15minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 15)
+  } else if(tolower(TimeUnit.) %chin% c("30min","30mins","30minute","30minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 30)
+  } else if(tolower(TimeUnit.) %chin% c("day","days")) {
+    newdate <- mindate + lubridate::days(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("week","weeks")) {
+    newdate <- mindate + lubridate::weeks(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("month","months")) {
+    newdate <- mindate %m+% months(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("quarter","quarters")) {
+    newdate <- mindate %m+% months(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("years","year")) {
+    newdate <- mindate + lubridate::years(val + 1)
+  }
+  data. <- data.[get(DateColumnName.) >= eval(newdate)]
+  return(data.)
 }

@@ -684,37 +684,9 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     MissFactor = "0",
     MissNum    = -1)
 
-  # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----
-  if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features----")
-  if(DataTruncate & !is.null(Lags)) {
-    mindate <- data[, min(get(DateColumnName))]
-    if(tolower(TimeUnit) %chin% c("hour","hours")) {
-      newdate <- mindate + lubridate::hours(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("1min","1mins","1minute","1minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("5min","5mins","5minute","5minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("10min","10mins","10minute","10minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("15min","15mins","15minute","15minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("30min","30mins","30minute","30minutes")) {
-      newdate <- mindate + lubridate::minutes(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("day","days")) {
-      newdate <- mindate + lubridate::days(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("week","weeks")) {
-      newdate <- mindate + lubridate::weeks(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("month","months")) {
-      newdate <- mindate %m+% months(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("quarter","quarters")) {
-      newdate <- mindate %m+% months(val + 1)
-    } else if(tolower(TimeUnit) %chin% c("years","year")) {
-      newdate <- mindate + lubridate::years(val + 1)
-    }
-
-    # Update date
-    data <- data[get(DateColumnName) >= eval(newdate)]
-  }
+  # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----
+  if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----")
+  if(DataTruncate && !is.null(Lags)) data <- CarmaTruncateData(data.=data, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
 
   # Feature Engineering: Add TimeTrend Variable----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
@@ -735,48 +707,18 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     data.table::fwrite(data, file.path(SaveDataPath, "ModelData.csv"))
   }
 
-  # Data Wrangling: Partition data with AutoDataPartition() ----
+  # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
-  if(!TrainOnFull) {
-    if(Difference & !is.null(GroupVariables)) {
-      x <- length(unique(data[[eval(DateColumnName)]]))
-      N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- AutoDataPartition(
-        data,
-        NumDataSets = NumSets,
-        Ratios = c(1-N1/x,N1/x),
-        PartitionType = PartitionType,
-        StratifyColumnNames = "GroupVar",
-        TimeColumnName = eval(DateColumnName))
-    } else if(Difference) {
-      x <- length(unique(data[[eval(DateColumnName)]]))
-      N1 <- x+1L - SplitRatios[1]*(x+1L)
-      DataSets <- AutoDataPartition(
-        data,
-        NumDataSets = NumSets,
-        Ratios = c(1-N1/x,N1/x),
-        PartitionType = PartitionType,
-        StratifyColumnNames = NULL,
-        TimeColumnName = eval(DateColumnName))
-    } else if(!is.null(GroupVariables)) {
-      DataSets <- AutoDataPartition(
-        data,
-        NumDataSets = NumSets,
-        Ratios = SplitRatios,
-        PartitionType = PartitionType,
-        StratifyColumnNames = "GroupVar",
-        TimeColumnName = eval(DateColumnName))
-    } else {
-      DataSets <- AutoDataPartition(
-        data,
-        NumDataSets = NumSets,
-        Ratios = SplitRatios,
-        PartitionType = PartitionType,
-        StratifyColumnNames = NULL,
-        TimeColumnName = eval(DateColumnName))
-    }
+  if(!is.null(SplitRatios) || !TrainOnFull) {
+    DataSets <- AutoDataPartition(
+      data = data,
+      NumDataSets = NumSets,
+      Ratios = SplitRatios,
+      PartitionType = PartitionType,
+      StratifyColumnNames = if(!is.null(GroupVariables)) "GroupVar" else NULL,
+      TimeColumnName = eval(DateColumnName))
 
-    # Remove ID Column----
+    # Remove ID Column
     if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
   }
 
@@ -813,18 +755,18 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Machine Learning: Build Model----")
 
   # Define CARMA feature names
-  if(Difference == FALSE || is.null(GroupVariables)) {
+  if(!Difference || is.null(GroupVariables)) {
     if(!is.null(XREGS)) {
-      ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName)))
+      ModelFeatures <- setdiff(names(data), c(eval(TargetColumnName), eval(DateColumnName)))
     } else {
-      ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
+      ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), eval(DateColumnName)))
     }
     TargetVariable <- eval(TargetColumnName)
-  } else if(Difference == TRUE && !is.null(GroupVariables)) {
-    ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),"ModTarget",eval(DateColumnName)))
+  } else if(Difference && !is.null(GroupVariables)) {
+    ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), "ModTarget", eval(DateColumnName)))
     TargetVariable <- "ModTarget"
   } else {
-    ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
+    ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), eval(DateColumnName)))
   }
 
   # Initialize H2O ----
