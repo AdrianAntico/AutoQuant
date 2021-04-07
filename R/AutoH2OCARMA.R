@@ -688,14 +688,10 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----")
   if(DataTruncate && !is.null(Lags)) data <- CarmaTruncateData(data.=data, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
 
-  # Feature Engineering: Add TimeTrend Variable----
+  # Feature Engineering: Add TimeTrend Variable ----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
   if(TimeTrendVariable) {
-    if(!is.null(GroupVariables)) {
-      data[, TimeTrend := 1:.N, by = "GroupVar"]
-    } else {
-      data[, TimeTrend := 1:.N]
-    }
+    if(!is.null(GroupVariables)) data[, TimeTrend := seq_len(.N), by = "GroupVar"] else data[, TimeTrend := seq_len(.N)]
   }
 
   # Store Date Info----
@@ -709,37 +705,11 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
   # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
-  if(!is.null(SplitRatios) || !TrainOnFull) {
-    DataSets <- AutoDataPartition(
-      data = data,
-      NumDataSets = NumSets,
-      Ratios = SplitRatios,
-      PartitionType = PartitionType,
-      StratifyColumnNames = if(!is.null(GroupVariables)) "GroupVar" else NULL,
-      TimeColumnName = eval(DateColumnName))
-
-    # Remove ID Column
-    if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
-  }
-
-  # Variables for CARMA function: Define data sets----
-  if(DebugMode) print("Variables for CARMA function: Define data sets----")
-  if(!TrainOnFull) {
-    if(NumSets == 2) {
-      train <- DataSets$TrainData
-      valid <- DataSets$ValidationData
-      test  <- NULL
-    } else if(NumSets == 3) {
-      train <- DataSets$TrainData
-      valid <- DataSets$ValidationData
-      test  <- DataSets$TestData
-    }
-    rm(DataSets)
-  } else {
-    train <- data
-    valid <- NULL
-    test  <- NULL
-  }
+  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+  train <- Output$train; Output$train <- NULL
+  valid <- Output$valid; Output$valid <- NULL
+  data <- Output$data; Output$data <- NULL
+  test <- Output$test; rm(Output)
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
@@ -751,30 +721,11 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     Step1SCore <- data.table::copy(data)
   }
 
-  # Define features for training ----
-  if(DebugMode) print("Machine Learning: Build Model----")
-
-  # Define CARMA feature names
-  if(!Difference || is.null(GroupVariables)) {
-    if(!is.null(XREGS)) {
-      ModelFeatures <- setdiff(names(data), c(eval(TargetColumnName), eval(DateColumnName)))
-    } else {
-      ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), eval(DateColumnName)))
-    }
-    TargetVariable <- eval(TargetColumnName)
-  } else if(Difference && !is.null(GroupVariables)) {
-    ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), "ModTarget", eval(DateColumnName)))
-    TargetVariable <- "ModTarget"
-  } else {
-    ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), eval(DateColumnName)))
-  }
-
-  # Initialize H2O ----
-
-  ####
-  #if(DebugMode) print("Initialize H2O----")
-  #tryCatch({h2o::h2o.init(startH2O = FALSE)}, error = function(x) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE))
-  ####
+  # Define Target and Features ----
+  if(DebugMode) print("Define ML args ----")
+  Output <- CarmaFeatures(data.=data, train.=train, XREGS.=XREGS, Difference.=Difference, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, GroupVariables.=GroupVariables)
+  ModelFeatures <- Output$ModelFeatures
+  TargetVariable <- Output$TargetVariable; rm(Output)
 
   # Return warnings to default since h2o will issue warning for constant valued coluns
   if(DebugMode) options(warn = 0)
@@ -1048,17 +999,9 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Variable for storing ML model: Pull model object out of TestModel list----")
   Model <- TestModel$Model
 
-  # Variable for interation counts: max number of rows in train data.table across all group----
-  if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group----")
-  if(!is.null(GroupVariables)) {
-    if(Difference) {
-      if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) - 2L else N <- as.integer(train[, .N, by = "GroupVar"][, max(N)]) - 2L
-    } else {
-      N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
-    }
-  } else {
-    N <- as.integer(train[, .N])
-  }
+  # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
+  if(DebugMode) print("Variable for interation counts: max number of rows in Step1SCore data.table across all group ----")
+  N <- CarmaRecordCount(GroupVariables.=GroupVariables,Difference.=Difference, Step1SCore.=Step1SCore)
 
   # Number of forecast periods----
   if(DebugMode) print("Number of forecast periods----")

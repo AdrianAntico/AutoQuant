@@ -688,31 +688,11 @@ AutoCatBoostCARMA <- function(data,
 
   # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
-  if(!is.null(SplitRatios) || !TrainOnFull) {
-    DataSets <- AutoDataPartition(
-      data = data,
-      NumDataSets = NumSets,
-      Ratios = SplitRatios,
-      PartitionType = PartitionType,
-      StratifyColumnNames = if(!is.null(GroupVariables)) "GroupVar" else NULL,
-      TimeColumnName = eval(DateColumnName))
-
-    # Remove ID Column
-    if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
-  }
-
-  # Variables for CARMA function: Define data sets ----
-  if(DebugMode) print("Variables for CARMA function: Define data sets----")
-  if(!is.null(SplitRatios) || !TrainOnFull) {
-    train <- DataSets$TrainData
-    valid <- DataSets$ValidationData
-    if(NumSets == 2L) test  <- NULL else test <- DataSets$TestData
-    rm(DataSets)
-  } else {
-    train <- data
-    valid <- NULL
-    test  <- NULL
-  }
+  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+  train <- Output$train; Output$train <- NULL
+  valid <- Output$valid; Output$valid <- NULL
+  data <- Output$data; Output$data <- NULL
+  test <- Output$test; rm(Output)
 
   # Create TimeWeights ----
   if(DebugMode) print("Create TimeWeights ----")
@@ -730,17 +710,11 @@ AutoCatBoostCARMA <- function(data,
   if(!is.null(GroupVariables)) data.table::setorderv(x = data, cols = c("GroupVar",eval(DateColumnName)), order = c(1,1)) else data.table::setorderv(x = data, cols = c(eval(DateColumnName)), order = c(1))
   Step1SCore <- data.table::copy(data)
 
-  # Define ML args ----
+  # Define Target and Features ----
   if(DebugMode) print("Define ML args ----")
-  if(!Difference || is.null(GroupVariables)) {
-    if(!is.null(XREGS)) ModelFeatures <- setdiff(names(data),c(eval(TargetColumnName),eval(DateColumnName))) else ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
-    TargetVariable <- eval(TargetColumnName)
-  } else if(Difference && !is.null(GroupVariables)) {
-    ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),"ModTarget",eval(DateColumnName)))
-    TargetVariable <- "ModTarget"
-  } else {
-    ModelFeatures <- setdiff(names(train),c(eval(TargetColumnName),eval(DateColumnName)))
-  }
+  Output <- CarmaFeatures(data.=data, train.=train, XREGS.=XREGS, Difference.=Difference, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, GroupVariables.=GroupVariables)
+  ModelFeatures <- Output$ModelFeatures
+  TargetVariable <- Output$TargetVariable; rm(Output)
 
   # Switch up TrainOnFull if SplitRatios is not null ----
   if(!is.null(SplitRatios) || !TrainOnFull) TOF <- FALSE else TOF <- TRUE
@@ -816,7 +790,7 @@ AutoCatBoostCARMA <- function(data,
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) return(TestModel)
 
-  # Turn warnings into errors back on
+  # Turn warnings into errors back on ----
   if(DebugMode) options(warn = 2)
 
   # Variable for storing ML model: Pull model object out of TestModel list ----
@@ -825,19 +799,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
   if(DebugMode) print("Variable for interation counts: max number of rows in Step1SCore data.table across all group ----")
-  if(!is.null(GroupVariables)) {
-    if(Difference) {
-      if(!"GroupVar" %chin% names(Step1SCore)) N <- as.integer(Step1SCore[, .N, by = c(eval(GroupVariables))][, max(N)]) else N <- as.integer(Step1SCore[, .N, by = "GroupVar"][, max(N)])
-    } else {
-      N <- as.integer(Step1SCore[, .N, by = "GroupVar"][, max(N)])
-    }
-  } else {
-    N <- as.integer(Step1SCore[, .N])
-  }
-
-  #----
-
-  #----
+  N <- CarmaRecordCount(GroupVariables.=GroupVariables,Difference.=Difference, Step1SCore.=Step1SCore)
 
   # ARMA PROCESS FORECASTING ----
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
@@ -880,10 +842,6 @@ AutoCatBoostCARMA <- function(data,
     # Memory support ----
     gc()
   }
-
-  #----
-
-  #----
 
   # Return data prep ----
   if(DebugMode) print("Return data prep ----")

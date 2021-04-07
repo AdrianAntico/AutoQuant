@@ -1508,3 +1508,23 @@ CatBoostGridParams <- function(N.=N,
   # Return
   return(base_params)
 }
+
+#' @param GroupVariables. Passthrough
+#' @param Difference. Passthrough
+#' @param Step1SCore. Passthrough
+#'
+#' @noRd
+CarmaRecordCount <- function(GroupVariables. = GroupVariables,
+                             Difference. = Difference,
+                             Step1SCore. = Step1SCore) {
+  if(!is.null(GroupVariables.)) {
+    if(Difference.) {
+      if(!"GroupVar" %chin% names(Step1SCore.)) N. <- as.integer(Step1SCore.[, .N, by = c(eval(GroupVariables.))][, max(N)]) else N. <- as.integer(Step1SCore.[, .N, by = "GroupVar"][, max(N)])
+    } else {
+      N. <- as.integer(Step1SCore.[, .N, by = "GroupVar"][, max(N)])
+    }
+  } else {
+    N. <- as.integer(Step1SCore.[, .N])
+  }
+  return(N.)
+}

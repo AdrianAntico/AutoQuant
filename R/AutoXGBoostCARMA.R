@@ -512,14 +512,10 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----")
   if(DataTruncate && !is.null(Lags)) data <- CarmaTruncateData(data.=data, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
 
-  # Feature Engineering: Add TimeTrend Variable----
+  # Feature Engineering: Add TimeTrend Variable ----
   if(DebugMode) print("Feature Engineering: Add TimeTrend Variable----")
   if(TimeTrendVariable) {
-    if(!is.null(GroupVariables)) {
-      data[, TimeTrend := 1L:.N, by = "GroupVar"]
-    } else {
-      data[, TimeTrend := 1L:.N]
-    }
+    if(!is.null(GroupVariables)) data[, TimeTrend := seq_len(.N), by = "GroupVar"] else data[, TimeTrend := seq_len(.N)]
   }
 
   # Store Date Info----
@@ -533,37 +529,11 @@ AutoXGBoostCARMA <- function(data,
 
   # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
-  if(!is.null(SplitRatios) || !TrainOnFull) {
-    DataSets <- AutoDataPartition(
-      data = data,
-      NumDataSets = NumSets,
-      Ratios = SplitRatios,
-      PartitionType = PartitionType,
-      StratifyColumnNames = if(!is.null(GroupVariables)) "GroupVar" else NULL,
-      TimeColumnName = eval(DateColumnName))
-
-    # Remove ID Column
-    if("ID" %chin% names(data)) data.table::set(data, j = "ID", value = NULL)
-  }
-
-  # Variables for CARMA function: Define data sets----
-  if(DebugMode) print("Variables for CARMA function: Define data sets----")
-  if(!TrainOnFull) {
-    if(NumSets == 2L) {
-      train <- DataSets$TrainData
-      valid <- DataSets$ValidationData
-      test  <- NULL
-    } else if(NumSets == 3L) {
-      train <- DataSets$TrainData
-      valid <- DataSets$ValidationData
-      test  <- DataSets$TestData
-    }
-    rm(DataSets)
-  } else {
-    train <- data
-    valid <- NULL
-    test  <- NULL
-  }
+  Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+  train <- Output$train; Output$train <- NULL
+  valid <- Output$valid; Output$valid <- NULL
+  data <- Output$data; Output$data <- NULL
+  test <- Output$test; rm(Output)
 
   # Variables for CARMA function IDcols ----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
@@ -580,21 +550,11 @@ AutoXGBoostCARMA <- function(data,
     Step1SCore <- data.table::copy(data)
   }
 
-  # Define features ----
-  if(DebugMode) print("Define features ----")
-  if(!Difference || is.null(GroupVariables)) {
-    if(!is.null(XREGS)) {
-      ModelFeatures <- setdiff(names(data), c(eval(TargetColumnName), eval(DateColumnName)))
-    } else {
-      ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), eval(DateColumnName)))
-    }
-    TargetVariable <- eval(TargetColumnName)
-  } else if(Difference && !is.null(GroupVariables)) {
-    ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), "ModTarget", eval(DateColumnName)))
-    TargetVariable <- "ModTarget"
-  } else {
-    ModelFeatures <- setdiff(names(train), c(eval(TargetColumnName), eval(DateColumnName)))
-  }
+  # Define Target and Features ----
+  if(DebugMode) print("Define ML args ----")
+  Output <- CarmaFeatures(data.=data, train.=train, XREGS.=XREGS, Difference.=Difference, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, GroupVariables.=GroupVariables)
+  ModelFeatures <- Output$ModelFeatures
+  TargetVariable <- Output$TargetVariable; rm(Output)
 
   # Machine Learning: Build Model ----
   if(DebugMode) options(warn = 0)
@@ -658,17 +618,9 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Grab factor level list----")
   if(!is.null(GroupVariables)) FactorList <- TestModel$FactorLevelsList else FactorList <- NULL
 
-  # Variable for interation counts: max number of rows in train data.table across all group ----
-  if(DebugMode) print("Variable for interation counts: max number of rows in train data.table across all group ----")
-  if(!is.null(GroupVariables)) {
-    if(Difference) {
-      if(!"GroupVar" %chin% names(train)) N <- as.integer(train[, .N, by = c(eval(GroupVariables))][, max(N)]) else N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
-    } else {
-      N <- as.integer(train[, .N, by = "GroupVar"][, max(N)])
-    }
-  } else {
-    N <- as.integer(train[, .N])
-  }
+  # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
+  if(DebugMode) print("Variable for interation counts: max number of rows in Step1SCore data.table across all group ----")
+  N <- CarmaRecordCount(GroupVariables.=GroupVariables,Difference.=Difference, Step1SCore.=Step1SCore)
 
   # Number of forecast periods----
   if(DebugMode) print("Number of forecast periods----")

@@ -1130,6 +1130,80 @@ CarmaScore <- function(i. = i,
   return(list(UpdateData = UpdateData., Preds = Preds, N = N.))
 }
 
+#' @param SplitRatios Passthrough
+#' @param TrainOnFull. Passthrough
+#' @param data. Passthrough
+#' @param NumSets. Passthrough
+#' @param PartitionType. Passthrough
+#' @param GroupVariables. Passthrough
+#' @param DateColumnName. Passthrough
+#'
+#' @noRd
+CarmaPartition <- function(data. = data,
+                           SplitRatios. = SplitRatios,
+                           TrainOnFull. = TrainOnFull,
+                           NumSets. = NumSets,
+                           PartitionType. = PartitionType,
+                           GroupVariables. = GroupVariables,
+                           DateColumnName. = DateColumnName) {
+
+  # Data Wrangling: Partition data with AutoDataPartition ----
+  if(!is.null(SplitRatios.) || !TrainOnFull.) {
+    DataSets <- AutoDataPartition(
+      data = data.,
+      NumDataSets = NumSets.,
+      Ratios = SplitRatios.,
+      PartitionType = PartitionType.,
+      StratifyColumnNames = if(!is.null(GroupVariables.)) "GroupVar" else NULL,
+      TimeColumnName = eval(DateColumnName.))
+
+    # Remove ID Column
+    if("ID" %chin% names(data.)) data.table::set(data., j = "ID", value = NULL)
+  }
+
+  # Variables for CARMA function: Define data sets ----
+  if(!is.null(SplitRatios.) || !TrainOnFull.) {
+    train <- DataSets$TrainData
+    valid <- DataSets$ValidationData
+    if(NumSets. == 2L) test  <- NULL else test <- DataSets$TestData
+    rm(DataSets)
+  } else {
+    train <- data.
+    valid <- NULL
+    test  <- NULL
+  }
+  return(list(train = train, valid = valid, test = test, data = data.))
+}
+
+#' @param data. Passthrough
+#' @param train. Passthrough
+#' @param XREGS. Passthrough
+#' @param Difference. Passthrough
+#' @param TargetColumnName. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param GroupVariables. Passthrough
+#'
+#' @noRd
+CarmaFeatures <- function(data. = data,
+                          train. = train,
+                          XREGS. = XREGS,
+                          Difference. = Difference,
+                          TargetColumnName. = TargetColumnName,
+                          DateColumnName. = DateColumnName,
+                          GroupVariables. = GroupVariables) {
+  if(!Difference. || is.null(GroupVariables.)) {
+    if(!is.null(XREGS.)) ModelFeatures <- setdiff(names(data.), c(eval(TargetColumnName.), eval(DateColumnName.))) else ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), eval(DateColumnName.)))
+    TargetVariable <- eval(TargetColumnName.)
+  } else if(Difference. && !is.null(GroupVariables.)) {
+    ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), "ModTarget", eval(DateColumnName.)))
+    TargetVariable <- "ModTarget"
+  } else {
+    ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), eval(DateColumnName.)))
+    TargetVariable <- eval(TargetColumnName.)
+  }
+  return(list(ModelFeatures = ModelFeatures, TargetVariable = TargetVariable))
+}
+
 #' @param UpdateData. Passthrough
 #' @param TimeUnit. Passthrough
 #' @param DateColumnName. Passthrough
