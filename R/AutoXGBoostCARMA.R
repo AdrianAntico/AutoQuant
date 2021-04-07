@@ -258,38 +258,18 @@ AutoXGBoostCARMA <- function(data,
     if(temp[,.N] != data[,.N]) stop("There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function")
   }
 
-  # Update FC_Periods  ----
-  if(DebugMode) print("Feature Engineering: Add XREGS----")
-  if(!is.null(XREGS) && TrainOnFull) {
-    if(Difference) {
-      FC_Periods <- min(-1L + length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
-    } else {
-      FC_Periods <- min(length(unique(XREGS[[eval(DateColumnName)]])) - length(unique(data[[eval(DateColumnName)]])), FC_Periods)
-    }
-    if(FC_Periods < 1) return("Your XREGS does not have forward looking data")
-  } else if(!is.null(XREGS)) {
-    FC_Periods <- HoldOutPeriods
-    HoldOutPeriods <- FC_Periods
-  }
+  # Modify FC_Periods ----
+  if(DebugMode) print("# Check lengths of XREGS")
+  Output <- CarmaFCHorizon(data.=data, XREGS.=XREGS, TrainOnFull.=TrainOnFull, Difference.= Difference, FC_Periods.=FC_Periods, HoldOutPeriods.=HoldOutPeriods, DateColumnName.=DateColumnName)
+  FC_Periods <- Output$FC_Periods
+  HoldOutPeriods <- Output$HoldOutPeriods; rm(Output)
 
-  # Xregs mgt ----
+  # Merge data and XREG for Training ----
+  if(DebugMode) print("merging xregs to data")
   if(!is.null(XREGS)) {
-    if(any(eval(TargetColumnName) %chin% names(XREGS))) data.table::set(XREGS, j = eval(TargetColumnName), value = NULL)
-    if(!is.null(GroupVariables)) {
-      if(!"GroupVar" %chin% names(XREGS)) XREGS[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      if(any(GroupVariables %chin% names(XREGS))) for(g in GroupVariables) data.table::setnames(x = XREGS, old = eval(g), new = paste0("Add_",eval(g)))
-      if(length(GroupVariables) > 1) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        data <- merge(data, XREGS, by = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
-        data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-      } else {
-        data <- merge(data, XREGS, by.x = c(eval(GroupVariables), eval(DateColumnName)), by.y = c("GroupVar", eval(DateColumnName)), all.x = TRUE)
-        data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-      }
-    } else {
-      data <- merge(data, XREGS, by = c(eval(DateColumnName)), all.x = TRUE)
-      data <- ModelDataPrep(data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, LogicalToBinary = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = -1, IgnoreCols = NULL)
-    }
+    Output <- CarmaMergeXREGS(data.=data, XREGS.=XREGS, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+    data <- Output$data; Output$data <- NULL
+    XREGS <- Output$XREGS; rm(Output)
   }
 
   # Check for duplication in the data ----

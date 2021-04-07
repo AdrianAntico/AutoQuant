@@ -172,6 +172,9 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
   # Layer selection - Eventually put in an arg for Type for some alternative pre-set LayerStructure----
   if(is.null(LayerStructure)) LayerStructure <- c(F_Length, ceiling(F_Length * NodeShrinkRate), ceiling(F_Length * NodeShrinkRate ^ 2), ceiling(F_Length * NodeShrinkRate ^ 3), ceiling(F_Length * NodeShrinkRate ^ 2), ceiling(F_Length * NodeShrinkRate), F_Length)
 
+  # Update Features ----
+  Features <- Features[Features %chin% names(H2O_Data)]
+
   # Build Model ----
   Model <- h2o::h2o.deeplearning(
     autoencoder = TRUE,
