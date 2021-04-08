@@ -232,6 +232,13 @@ CARMA_GroupHierarchyCheck <- function(data = data,
 #' @param Skew_Periods = 0L turns it off, otherwise values must be greater than 2 such as c(3L,5L,6L,25L)
 #' @param Kurt_Periods = 0L turns it off, otherwise values must be greater than 3 such as c(4L,5L,6L,25L)
 #' @param Quantile_Periods = 0L turns it off, otherwise values must be greater than 3 such as c(5L,6L,25L)
+#' @param TaskType = TaskType
+#' @param BootStrapType = BootStrapType
+#' @param GrowPolicy = GrowPolicy
+#' @param TimeWeights = TimeWeights
+#' @param HolidayLookback = HolidayLookback
+#' @param Difference = Difference
+#' @param NonNegativePred = NonNegativePred
 #' @noRd
 CARMA_Define_Args <- function(TimeUnit = NULL,
                               TimeGroups = NULL,
@@ -244,7 +251,14 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
                               SD_Periods = 0L,
                               Skew_Periods = 0L,
                               Kurt_Periods = 0L,
-                              Quantile_Periods = 0L) {
+                              Quantile_Periods = 0L,
+                              TaskType = "GPU",
+                              BootStrapType = "MVS",
+                              GrowPolicy = "SymmetricTree",
+                              TimeWeights = NULL,
+                              HolidayLookback = 7,
+                              Difference = FALSE,
+                              NonNegativePred = FALSE) {
 
   # TimeUnit and TimeGroups Args
   TimeGroupPlaceHolder <- c()
@@ -296,20 +310,40 @@ CARMA_Define_Args <- function(TimeUnit = NULL,
   }
 
   # Check arguments
-  if (!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) {
-    return("PartitionType needs to be one of 'random', 'time', or 'timeseries'")
+  if(!(tolower(PartitionType) %chin% c("random", "time", "timeseries"))) stop("PartitionType needs to be one of 'random', 'time', or 'timeseries'")
+  if(tolower(PartitionType) == "timeseries" && is.null(GroupVariables)) PartitionType <- "time"
+
+  # Additional Args check ----
+  if(NonNegativePred && Difference) NonNegativePred <- FALSE
+  if(!is.null(HolidayLookback) && !is.numeric(HolidayLookback)) stop("HolidayLookback has to be numeric")
+  if(!is.null(TimeWeights) && length(TimeWeights) != 1L) TimeWeights <- NULL
+  if(is.null(GrowPolicy)) {
+    GrowPolicy <- "SymmetricTree"
+  } else {
+    if(tolower(GrowPolicy) == "lossguide") GrowPolicy <- "Lossguide"
+    if(tolower(GrowPolicy) == "depthwise") GrowPolicy <- "Depthwise"
   }
-  if(tolower(PartitionType) == "timeseries" & is.null(GroupVariables)) {
-    PartitionType <- "time"
+  if(is.null(BootStrapType)) {
+    if(TaskType == "GPU") BootStrapType <- "Bayesian" else BootStrapType <- "MVS"
+  } else {
+    if(TaskType == "GPU" && BootStrapType == "MVS") BootStrapType <- "Bayesian"
   }
 
   # Return args
-  return(list(TimeUnit              = TimeUnit,
-              TimeGroups            = TimeGroupPlaceHolder,
-              IndepentVariablesPass = IndepentVariablesPass,
-              HierarchGroups        = HierarchGroups,
-              GroupVariables        = GroupVariables,
-              FC_Periods            = FC_Periods))
+  return(list(
+    TimeUnit = TimeUnit,
+    TimeGroups = TimeGroupPlaceHolder,
+    IndepentVariablesPass = IndepentVariablesPass,
+    HierarchGroups = HierarchGroups,
+    GroupVariables = GroupVariables,
+    FC_Periods = FC_Periods,
+    TaskType = TaskType,
+    BootStrapType = BootStrapType,
+    GrowPolicy = GrowPolicy,
+    TimeWeights = TimeWeights,
+    HolidayLookback = HolidayLookback,
+    Difference = Difference,
+    NonNegativePred = NonNegativePred))
 }
 
 #' @param data. Passthrough

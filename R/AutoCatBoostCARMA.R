@@ -382,33 +382,24 @@ AutoCatBoostCARMA <- function(data,
   # Load catboost ----
   loadNamespace(package = "catboost")
 
-  # Purified args: see CARMA HELPER FUNCTIONS ----
+  # Args checking ----
   if(DebugMode) print("# Purified args: see CARMA HELPER FUNCTIONS----")
-  Args <- CARMA_Define_Args(TimeUnit=TimeUnit, TimeGroups=TimeGroups, HierarchGroups=HierarchGroups, GroupVariables=GroupVariables, FC_Periods=FC_Periods, PartitionType=PartitionType, TrainOnFull=TrainOnFull, SplitRatios=SplitRatios, SD_Periods=SD_Periods, Skew_Periods=Skew_Periods, Kurt_Periods=Kurt_Periods, Quantile_Periods=Quantile_Periods)
+  Args <- CARMA_Define_Args(TimeUnit=TimeUnit, TimeGroups=TimeGroups, HierarchGroups=HierarchGroups, GroupVariables=GroupVariables, FC_Periods=FC_Periods, PartitionType=PartitionType, TrainOnFull=TrainOnFull, SplitRatios=SplitRatios, SD_Periods=SD_Periods, Skew_Periods=Skew_Periods, Kurt_Periods=Kurt_Periods, Quantile_Periods=Quantile_Periods, TaskType=TaskType, BootStrapType=BootStrapType, GrowPolicy=GrowPolicy, TimeWeights=TimeWeights, HolidayLookback=HolidayLookback, Difference=Difference, NonNegativePred=NonNegativePred)
   IndepentVariablesPass <- Args$IndepentVariablesPass
+  NonNegativePred <- Args$NonNegativePred
+  HolidayLookback <- Args$HolidayLookback
   HoldOutPeriods <- Args$HoldOutPeriods
   HierarchGroups <- Args$HierarchGroups
   GroupVariables <- Args$GroupVariables
+  BootStrapType <- Args$BootStrapType
+  TimeWeights <- Args$TimeWeights
   TimeGroups <- Args$TimeGroups
   FC_Periods <- Args$FC_Periods
+  GrowPolicy <- Args$GrowPolicy
+  Difference <- Args$Difference
   TimeGroup <- Args$TimeGroupPlaceHolder
   TimeUnit <- Args$TimeUnit
-
-  # Additional Args check ----
-  if(!is.null(HolidayLookback) && !is.numeric(HolidayLookback)) stop("HolidayLookback has to be numeric")
-  if(!is.null(TimeWeights) && length(TimeWeights) != 1L) TimeWeights <- NULL
-  if(is.null(GrowPolicy)) {
-    GrowPolicy <- "SymmetricTree"
-  } else {
-    if(tolower(GrowPolicy) == "lossguide") GrowPolicy <- "Lossguide"
-    if(tolower(GrowPolicy) == "depthwise") GrowPolicy <- "Depthwise"
-  }
-  if(is.null(BootStrapType)) {
-    if(TaskType == "GPU") BootStrapType <- "Bayesian" else BootStrapType <- "MVS"
-  } else {
-    if(TaskType == "GPU" && BootStrapType == "MVS") BootStrapType <- "Bayesian"
-  }
-  if(NonNegativePred && Difference) NonNegativePred <- FALSE
+  TaskType <- Args$TaskType; rm(Args)
 
   # Convert data to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -494,22 +485,22 @@ AutoCatBoostCARMA <- function(data,
     if(is.list(Lags) && is.list(MA_Periods)) val <- max(unlist(Lags), unlist(MA_Periods)) else val <- max(Lags, MA_Periods)
   }
 
-  # Data Wrangling: Sort data by GroupVar then DateColumnName ----
+  # Data Wrangling: Sort data ----
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName ----")
   if(!is.null(GroupVariables)) data <- data[order(GroupVar, get(DateColumnName))] else data <- data[order(get(DateColumnName))]
 
-  # Feature Engineering: Fourier Features ----
+  # Feature Engineering: Create Fourier Features ----
   if(DebugMode) print("Feature Engineering: Fourier Features ----")
   Output <- CarmaFourier(data.=data, XREGS.=XREGS, FourierTerms.=FourierTerms, TimeUnit.=TimeUnit, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, HierarchGroups.=HierarchGroups)
   FourierTerms <- Output$FourierTerms; Output$FourierTerms <- NULL
   FourierFC <- Output$FourierFC; Output$FourierFC <- NULL
   data <- Output$data; rm(Output)
 
-  # Feature Engineering: Add Create Calendar Variables ----
+  # Feature Engineering: Create Calendar Variables ----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables ----")
   if(!is.null(CalendarVariables)) data <- CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
 
-  # Feature Engineering: Add Create Holiday Variables ----
+  # Feature Engineering: Create Holiday Variables ----
   if(DebugMode) print("Feature Engineering: Add Create Holiday Variables ----")
   if(!is.null(HolidayVariable)) {
     data <- CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL)
@@ -533,7 +524,7 @@ AutoCatBoostCARMA <- function(data,
     data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
   }
 
-  # Feature Engineering: Add Target Transformation ----
+  # Feature Engineering: Target Transformation ----
   if(DebugMode) print("Feature Engineering: Add Target Transformation ----")
   if(TargetTransformation) {
     TransformResults <- AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID="Trans", SaveOutput=FALSE)
@@ -547,7 +538,7 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Copy data for non grouping + difference ----")
   if(is.null(GroupVariables) && Difference) antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
 
-  # Feature Engineering: Add Difference Data ----
+  # Feature Engineering: Differencing ----
   if(DebugMode) print("Feature Engineering: Add Difference Data ----")
   Output <- CarmaDifferencing(GroupVariables.=GroupVariables, Difference.=Difference, data.=data, TargetColumnName.=TargetColumnName, FC_Periods.=FC_Periods)
   data <- Output$data; Output$data <- NULL
@@ -587,7 +578,7 @@ AutoCatBoostCARMA <- function(data,
   # Save data to file before Partitioning ----
   if(!is.null(SaveDataPath)) data.table::fwrite(data, file.path(SaveDataPath, "ModelData.csv"))
 
-  # Data Wrangling: Partition data with AutoDataPartition ----
+  # Data Wrangling: Partition data ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
   Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
   train <- Output$train; Output$train <- NULL
