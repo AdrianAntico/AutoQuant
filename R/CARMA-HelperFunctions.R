@@ -374,6 +374,118 @@ CarmaMergeXREGS <- function(data. = data,
   return(list(data = data., XREGS = XREGS.))
 }
 
+#' @param data. Passthrough
+#' @param XREGS. Passthrough
+#' @param GroupVariables. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param TargetColumnName. Passthrough
+#'
+#' @noRd
+CaramSubsetColumns <- function(data. = data,
+                               XREGS. = XREGS,
+                               GroupVariables. = GroupVariables,
+                               DateColumnName. = DateColumnName,
+                               TargetColumnName. = TargetColumnName) {
+  if(!is.null(XREGS.)) {
+    if(!is.null(GroupVariables.)) {
+      xx <- c(DateColumnName., TargetColumnName., GroupVariables., setdiff(c(names(data.), names(XREGS.)), c(DateColumnName., TargetColumnName., GroupVariables.)))
+      xx <- xx[!xx %chin% "GroupVar"]
+      data. <- data.[, .SD, .SDcols = c(xx)]
+    } else {
+      data. <- data.[, .SD, .SDcols = c(DateColumnName., TargetColumnName., setdiff(c(names(data.), names(XREGS.)), c(DateColumnName., TargetColumnName.)))]
+    }
+  } else {
+    if(!is.null(GroupVariables.)) {
+      data. <- data.[, .SD, .SDcols = c(DateColumnName., TargetColumnName., GroupVariables.)]
+    } else {
+      data. <- data.[, .SD, .SDcols = c(DateColumnName., TargetColumnName.)]
+    }
+  }
+  return(data.)
+}
+
+#' @param data. Passthrough
+#' @param XREGS. Passthrough
+#' @param FourierTerms. Passthrough
+#' @param TimeUnit. Passthrough
+#' @param TargetColumnName. Passthrough
+#' @param GroupVariables. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param HierarchGroups. Passthrough
+#'
+#' @noRd
+CarmaFourier <- function(data. = data,
+                         XREGS. = XREGS,
+                         FourierTerms. = FourierTerms,
+                         TimeUnit. = TimeUnit,
+                         TargetColumnName. = TargetColumnName,
+                         GroupVariables. = GroupVariables,
+                         DateColumnName. = DateColumnName,
+                         HierarchGroups. = HierarchGroups) {
+  if(FourierTerms. > 0L) {
+
+    # Split GroupVar and Define HierarchyGroups and IndependentGroups
+    Output <- CARMA_GroupHierarchyCheck(data = data., Group_Variables = GroupVariables., HierarchyGroups = HierarchGroups.)
+    data. <- Output$data
+    HierarchSupplyValue. <- Output$HierarchSupplyValue
+    IndependentSupplyValue. <- Output$IndependentSupplyValue
+
+    # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
+    Output <- tryCatch({AutoHierarchicalFourier(
+      datax = data.,
+      xRegs = names(XREGS.),
+      FourierTermS = FourierTerms.,
+      TimeUniT = TimeUnit.,
+      FC_PeriodS = FC_Periods.,
+      TargetColumN = TargetColumnName.,
+      DateColumN = DateColumnName.,
+      HierarchGroups = HierarchSupplyValue.,
+      IndependentGroups = IndependentSupplyValue.)},
+      error = function(x) NULL)
+
+    # Store Objects If No Error in Hierarchy Run
+    if(!is.null(Output)) {
+      if(Output$data[, .N] != 0) {
+        data. <- Output$data
+        FourierFC. <- Output$FourierFC
+      } else {
+        print("Turning off Fourier Terms. Failed to build.")
+        FourierTerms. <- 0
+      }
+    } else {
+      print("Turning off Fourier Terms. Failed to build.")
+      FourierTerms. <- 0
+    }
+
+    # If Fourier is turned off, concatenate grouping cols
+    if(FourierTerms. == 0) {
+      if(!is.null(HierarchGroups.)) {
+        if(length(HierarchGroups.) > 1) {
+          if(any(HierarchGroups. %chin% names(data.))) {
+            data.[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c(HierarchGroups.)]
+            data.[, eval(HierarchGroups.) := NULL]
+          }
+        } else {
+          data.[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c(HierarchGroups.)]
+          if(HierarchGroups. != "GroupVar") {
+            data.[, eval(HierarchGroups.) := NULL]
+          }
+        }
+      } else if(!is.null(GroupVariables.)) {
+        if(all(GroupVariables. %chin% names(data.))) {
+          data.[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c(GroupVariables.)]
+        }
+      }
+    } else if(!is.null(HierarchGroups.)) {
+      if(!"GroupVar" %chin% names(data.)) data.[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c(HierarchGroups.)]
+    }
+  } else {
+    FourierFC. <- NULL
+  }
+  if(!exists("FourierFC.")) FourierFC. <- NULL
+  return(list(data = data., FourierFC = FourierFC., FourierTerms = FourierTerms.))
+}
+
 #' @title CARMA_Get_IndepentVariablesPass
 #'
 #' CARMA_Get_IndepentVariablesPass is to help manage carma code

@@ -394,7 +394,7 @@ AutoCatBoostCARMA <- function(data,
   TimeGroup <- Args$TimeGroupPlaceHolder
   TimeUnit <- Args$TimeUnit
 
-  # Arg check ----
+  # Additional Args check ----
   if(!is.null(HolidayLookback) && !is.numeric(HolidayLookback)) stop("HolidayLookback has to be numeric")
   if(!is.null(TimeWeights) && length(TimeWeights) != 1L) TimeWeights <- NULL
   if(is.null(GrowPolicy)) {
@@ -412,7 +412,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Convert data to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-  if(!is.null(XREGS)) if(!data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
+  if(!is.null(XREGS) && !data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
 
   # Variables for Program: Redefine HoldOutPerids ----
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L] * length(unique(data[[eval(DateColumnName)]])), 0L)
@@ -422,9 +422,9 @@ AutoCatBoostCARMA <- function(data,
   if(data[, .N] != unique(data)[, .N]) stop("There is duplicates in your data")
   if(!is.null(ZeroPadSeries)) {
     data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.0, SimpleImpute=FALSE)
-    data <- RemixAutoML::ModelDataPrep(data=data, Impute=TRUE, CharToFactor=FALSE, FactorToChar=FALSE, IntToNumeric=FALSE, LogicalToBinary=FALSE, DateToChar=FALSE, RemoveDates=FALSE, MissFactor="0", MissNum=0, IgnoreCols=NULL)
+    data <- ModelDataPrep(data=data, Impute=TRUE, CharToFactor=FALSE, FactorToChar=FALSE, IntToNumeric=FALSE, LogicalToBinary=FALSE, DateToChar=FALSE, RemoveDates=FALSE, MissFactor="0", MissNum=0, IgnoreCols=NULL)
   } else {
-    temp <- RemixAutoML::TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType="maxmax", MaxMissingPercent=0.25, SimpleImpute=FALSE)
+    temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType="maxmax", MaxMissingPercent=0.25, SimpleImpute=FALSE)
     if(temp[,.N] != data[,.N]) stop("There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function")
   }
 
@@ -442,37 +442,19 @@ AutoCatBoostCARMA <- function(data,
     XREGS <- Output$XREGS; rm(Output)
   }
 
-  # Set Keys for data.table usage----
-  if(DebugMode) print("# Set Keys for data.table usage----")
+  # Set Keys for data.table usage ----
+  if(DebugMode) print("# Set Keys for data.table usage ----")
   if(!is.null(GroupVariables)) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
-    if(!is.null(XREGS)) {
-      data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
-    }
+    if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c("GroupVar", eval(DateColumnName)))
   } else {
     data.table::setkeyv(x = data, cols = c(eval(DateColumnName)))
-    if(!is.null(XREGS)) {
-      data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
-    }
+    if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c(eval(DateColumnName)))
   }
 
-  # Data Wrangling: Remove Unnecessary Columns----
-  if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
-  if(!is.null(XREGS)) {
-    if(!is.null(GroupVariables)) {
-      xx <- c(DateColumnName, TargetColumnName, GroupVariables, setdiff(c(names(data), names(XREGS)), c(DateColumnName, TargetColumnName, GroupVariables)))
-      xx <- xx[!xx %chin% "GroupVar"]
-      data <- data[, .SD, .SDcols = xx]
-    } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, setdiff(c(names(data), names(XREGS)), c(DateColumnName, TargetColumnName)))]
-    }
-  } else {
-    if(!is.null(GroupVariables)) {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName, GroupVariables)]
-    } else {
-      data <- data[, .SD, .SDcols = c(DateColumnName, TargetColumnName)]
-    }
-  }
+  # Data Wrangling: Remove Unnecessary Columns ----
+  if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns ----")
+  data <- CaramSubsetColumns(data.=data, XREGS.=XREGS, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName)
 
   # Feature Engineering: Concat Categorical Columns - easier to deal with this way ----
   if(DebugMode) print("Feature Engineering: Concat Categorical Columns - easier to deal with this way ----")
@@ -516,69 +498,12 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName ----")
   if(!is.null(GroupVariables)) data <- data[order(GroupVar, get(DateColumnName))] else data <- data[order(get(DateColumnName))]
 
-  # Feature Engineering: Add Fourier Features by GroupVar ----
-  if(DebugMode) print("Feature Engineering: Add Fourier Features by GroupVar ----")
-  if(FourierTerms > 0L) {
-
-    # Split GroupVar and Define HierarchyGroups and IndependentGroups
-    Output <- CARMA_GroupHierarchyCheck(data = data, Group_Variables = GroupVariables, HierarchyGroups = HierarchGroups)
-    data <- Output$data
-    HierarchSupplyValue <- Output$HierarchSupplyValue
-    IndependentSupplyValue <- Output$IndependentSupplyValue
-    rm(Output)
-
-    # Run Independently or Hierarchy (Source: EconometricsFunctions.R)
-    Output <- tryCatch({AutoHierarchicalFourier(
-      datax = data,
-      xRegs = names(XREGS),
-      FourierTermS = FourierTerms,
-      TimeUniT = TimeUnit,
-      FC_PeriodS = FC_Periods,
-      TargetColumN = TargetColumnName,
-      DateColumN = DateColumnName,
-      HierarchGroups = HierarchSupplyValue,
-      IndependentGroups = IndependentSupplyValue)},
-      error = function(x) NULL)
-
-    # Store Objects If No Error in Hierarchy Run----
-    if(!is.null(Output)) {
-      if(Output$data[, .N] != 0) {
-        data <- Output$data
-        FourierFC <- Output$FourierFC
-      } else {
-        print("Turning off Fourier Terms. Failed to build.")
-        FourierTerms <<- 0
-      }
-    } else {
-      print("Turning off Fourier Terms. Failed to build.")
-      FourierTerms <<- 0
-    }
-
-    # If Fourier is turned off, concatenate grouping cols
-    if(FourierTerms == 0) {
-      if(!is.null(HierarchGroups)) {
-        if(length(HierarchGroups) > 1) {
-          if(any(HierarchGroups %chin% names(data))) {
-            data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-            data[, eval(HierarchGroups) := NULL]
-          }
-        } else {
-          data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-          if(HierarchGroups != "GroupVar") {
-            data[, eval(HierarchGroups) := NULL]
-          }
-        }
-      } else if(!is.null(GroupVariables)) {
-        if(all(GroupVariables %chin% names(data))) {
-          data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-        }
-      }
-    } else if(!is.null(HierarchGroups)) {
-      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = HierarchGroups]
-    }
-  } else {
-    FourierFC <- NULL
-  }
+  # Feature Engineering: Fourier Features ----
+  if(DebugMode) print("Feature Engineering: Fourier Features ----")
+  Output <- CarmaFourier(data.=data, XREGS.=XREGS, FourierTerms.=FourierTerms, TimeUnit.=TimeUnit, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, HierarchGroups.=HierarchGroups)
+  FourierTerms <- Output$FourierTerms; Output$FourierTerms <- NULL
+  FourierFC <- Output$FourierFC; Output$FourierFC <- NULL
+  data <- Output$data; rm(Output)
 
   # Feature Engineering: Add Create Calendar Variables ----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables ----")
@@ -598,14 +523,12 @@ AutoCatBoostCARMA <- function(data,
   # Anomaly detection by Group and Calendar Vars ----
   if(DebugMode) print("Anomaly detection by Group and Calendar Vars ----")
   if(!is.null(AnomalyDetection)) {
-    data <- RemixAutoML::GenTSAnomVars(
+    data <- GenTSAnomVars(
       data = data, ValueCol = eval(TargetColumnName),
       GroupVars = if(!is.null(CalendarVariables) && !is.null(GroupVariables)) c("GroupVar", paste0(DateColumnName, "_", CalendarVariables[1])) else if(!is.null(GroupVariables)) "GroupVar" else NULL,
-      DateVar = eval(DateColumnName),
+      DateVar = eval(DateColumnName), KeepAllCols = TRUE, IsDataScaled = FALSE,
       HighThreshold = AnomalyDetection$tstat_high,
-      LowThreshold = AnomalyDetection$tstat_low,
-      KeepAllCols = TRUE,
-      IsDataScaled = FALSE)
+      LowThreshold = AnomalyDetection$tstat_low)
     data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
     data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
   }
@@ -780,7 +703,7 @@ AutoCatBoostCARMA <- function(data,
   N <- CarmaRecordCount(GroupVariables.=GroupVariables,Difference.=Difference, Step1SCore.=Step1SCore)
 
   # ARMA PROCESS FORECASTING ----
-  if(DebugMode) print("ARMA PROCESS FORECASTING----")
+  if(DebugMode) print("ARMA PROCESS FORECASTING ----")
   for(i in seq_len(FC_Periods+1L)) {
 
     # Score model ----
@@ -801,7 +724,7 @@ AutoCatBoostCARMA <- function(data,
       if(Timer) starttime <- Sys.time()
 
       # Create single future record ----
-      if(DebugMode) print("Create single future record----")
+      if(DebugMode) print("Create single future record ----")
       CalendarFeatures <- NextTimePeriod(UpdateData.=UpdateData, TimeUnit.=TimeUnit, DateColumnName.=DateColumnName)
 
       # Update flat feature engineering ----
@@ -809,17 +732,17 @@ AutoCatBoostCARMA <- function(data,
       UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i)
 
       # Update Lags and MA's ----
-      if(DebugMode) print("Update Lags and MA's----")
+      if(DebugMode) print("Update Lags and MA's ----")
       UpdateData <- CarmaRollingStatsUpdate(ModelType="catboost", DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=Preds, HierarchSupplyValue.=HierarchSupplyValue, IndependentSupplyValue.=IndependentSupplyValue, TimeUnit.=TimeUnit, TimeGroups.=TimeGroups, Lags.=Lags, MA_Periods.=MA_Periods, SD_Periods.=SD_Periods, Skew_Periods.=Skew_Periods, Kurt_Periods.=Kurt_Periods, Quantile_Periods.=Quantile_Periods, Quantiles_Selected.=Quantiles_Selected, HolidayLags.=HolidayLags, HolidayMovingAverages.=HolidayMovingAverages)
 
       # Print time to complete ----
       if(Timer) endtime <- Sys.time()
-      if(Timer) if(i != 1) print(endtime - starttime)
+      if(Timer && i != 1) print(endtime - starttime)
     }
-
-    # Memory support ----
-    gc()
   }
+
+  # Memory support ----
+  gc()
 
   # Return data prep ----
   if(DebugMode) print("Return data prep ----")
