@@ -327,7 +327,7 @@ AutoCatBoostCARMA <- function(data,
                               SaveDataPath = NULL,
                               NumOfParDepPlots = 10L,
                               TargetTransformation = FALSE,
-                              Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                              Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                               AnomalyDetection = NULL,
                               XREGS = NULL,
                               Lags = c(1L:5L),
@@ -711,7 +711,7 @@ AutoCatBoostCARMA <- function(data,
 
       # Timer ----
       if(DebugMode) print("Timer----")
-      if(Timer) if(i != 1) print(paste("Forecast future step: ", i-1))
+      if(Timer) if(i != 1) print(paste0("Forecast future step: ", i-1))
       if(Timer) starttime <- Sys.time()
 
       # Create single future record ----

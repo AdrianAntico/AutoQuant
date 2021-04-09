@@ -401,15 +401,9 @@ AutoXGBoostCARMA <- function(data,
   # Create GroupVar ----
   if(!is.null(GroupVariables)) if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
 
-  # Data Wrangling: ModelDataPrep() to prepare data----
-  if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data----")
-  data <- ModelDataPrep(
-    data,
-    Impute = TRUE,
-    CharToFactor = TRUE,
-    RemoveDates = FALSE,
-    MissFactor = "0",
-    MissNum    = -1)
+  # Data Wrangling: ModelDataPrep() to prepare data ----
+  if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data ----")
+  data <- ModelDataPrep(data, Impute=TRUE, CharToFactor=TRUE, RemoveDates=FALSE, MissFactor="0", MissNum=-1)
 
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----")
