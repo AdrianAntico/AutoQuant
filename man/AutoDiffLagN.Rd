@@ -10,6 +10,7 @@ AutoDiffLagN(
   GroupVariables = NULL,
   DiffVariables = NULL,
   DiffDateVariables = NULL,
+  DiffGroupVariables = NULL,
   NLag1 = 0L,
   NLag2 = 1L,
   Sort = FALSE,
@@ -26,6 +27,8 @@ AutoDiffLagN(
 \item{DiffVariables}{Column names of numeric columns to difference}
 
 \item{DiffDateVariables}{Columns names for date variables to difference. Output is a numeric value representing the difference in days.}
+
+\item{DiffGroupVariables}{Column names for categorical variables to difference. If no change then the output is 'No_Change' else 'New=NEWVAL Old=OLDVAL' where NEWVAL and OLDVAL are placeholders for the actual values}
 
 \item{NLag1}{If the diff calc, we have column 1 - column 2. NLag1 is in reference to column 1. If you want to take the current value minus the previous weeks value, supply a zero. If you want to create a lag2 - lag4 NLag1 gets a 2.}
 
@@ -67,6 +70,7 @@ data <- RemixAutoML::AutoDiffLagN(
   GroupVariables = c("Factor_1", "Factor_2"),
   DiffVariables = Cols,
   DiffDateVariables = NULL,
+  DiffGroupVariables = NULL,
   NLag1 = 0L,
   NLag2 = 1L,
   Sort = TRUE,

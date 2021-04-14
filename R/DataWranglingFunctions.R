@@ -758,8 +758,19 @@ DiffDT <- function(data, x, NLag1, NLag2, Type = "numeric") {
     } else {
       temp <- difftime(time1 = data[[paste0("Diff_",NLag1, "_", x, "_temp")]], time2 = data[[paste0("Diff_", NLag1,"-", NLag2, "_", x, "_temp")]], units = "days")
     }
+  } else if(Type == "categorical") {
+    if(NLag1 == 0) {
+      temp <- "No_Change"
+      temp <- ifelse(data[[eval(x)]] != data[[paste0("Diff_", NLag2, "_", x)]], paste0("New=",data[[eval(x)]]," Old=",data[[paste0("Diff_", NLag2, "_", x)]]), "No_Change")
+    } else {
+      temp <- ifelse(data[[paste0("Diff_", NLag1, "_", x)]] != data[[paste0("Diff_", NLag2, "_", x)]], paste0("New=",data[[eval(x)]]," Old=",data[[paste0("Diff_", NLag2, "_", x)]]), "No_Change")
+    }
   }
-  return(as.numeric(temp))
+  if(Type == "categorical") {
+    return(temp)
+  } else {
+    return(as.numeric(temp))
+  }
 }
 
 #' @title AutoDiffLagN
@@ -774,6 +785,7 @@ DiffDT <- function(data, x, NLag1, NLag2, Type = "numeric") {
 #' @param GroupVariables Difference data by group
 #' @param DiffVariables Column names of numeric columns to difference
 #' @param DiffDateVariables Columns names for date variables to difference. Output is a numeric value representing the difference in days.
+#' @param DiffGroupVariables Column names for categorical variables to difference. If no change then the output is 'No_Change' else 'New=NEWVAL Old=OLDVAL' where NEWVAL and OLDVAL are placeholders for the actual values
 #' @param NLag1 If the diff calc, we have column 1 - column 2. NLag1 is in reference to column 1. If you want to take the current value minus the previous weeks value, supply a zero. If you want to create a lag2 - lag4 NLag1 gets a 2.
 #' @param NLag2 If the diff calc, we have column 1 - column 2. NLag2 is in reference to column 2. If you want to take the current value minus the previous weeks value, supply a 1. If you want to create a lag2 - lag4 NLag1 gets a 4.
 #' @param Sort TRUE to sort your data inside the function
@@ -807,6 +819,7 @@ DiffDT <- function(data, x, NLag1, NLag2, Type = "numeric") {
 #'   GroupVariables = c("Factor_1", "Factor_2"),
 #'   DiffVariables = Cols,
 #'   DiffDateVariables = NULL,
+#'   DiffGroupVariables = NULL,
 #'   NLag1 = 0L,
 #'   NLag2 = 1L,
 #'   Sort = TRUE,
@@ -819,6 +832,7 @@ AutoDiffLagN <- function(data,
                          GroupVariables = NULL,
                          DiffVariables = NULL,
                          DiffDateVariables = NULL,
+                         DiffGroupVariables = NULL,
                          NLag1 = 0L,
                          NLag2 = 1L,
                          Sort = FALSE,
@@ -850,7 +864,6 @@ AutoDiffLagN <- function(data,
   # Diff numeric data ----
   if(!is.null(DiffVariables)) {
     if(NLag1 == 0L) {
-      ColNames <- names(data.table::copy(data))
       ModDiffVariables <- paste0("Diff_", NLag2, "_", DiffVariables)
       if(!is.null(GroupVariables)) {
         data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables), by = eval(GroupVariables)]
@@ -859,7 +872,6 @@ AutoDiffLagN <- function(data,
       }
       data <- data[, (ModDiffVariables) := {g <- list(); for(x in DiffVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "numeric"); g}]
     } else {
-      ColNames <- names(data.table::copy(data))
       ModDiffVariables1 <- paste0("Diff_", NLag1, "_", DiffVariables)
       ModDiffVariables2 <- paste0("Diff_", NLag1,"-", NLag2, "_", DiffVariables)
       if(!is.null(GroupVariables)) {
@@ -877,7 +889,6 @@ AutoDiffLagN <- function(data,
   # Diff date data ----
   if(!is.null(DiffDateVariables)) {
     if(NLag1 == 0L) {
-      ColNames <- names(data.table::copy(data))
       ModDiffVariables1 <- paste0("Diff_", NLag2, "_", DiffDateVariables)
       ModDiffVariables2 <- paste0("Diff_", NLag2, "_", DiffDateVariables, "_temp")
       if(!is.null(GroupVariables)) {
@@ -888,7 +899,6 @@ AutoDiffLagN <- function(data,
       data <- data[, (ModDiffVariables1) := {g <- list(); for(x in DiffDateVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "date"); g}]
       data.table::set(data, j = ModDiffVariables2, value = NULL)
     } else {
-      ColNames <- names(data.table::copy(data))
       ModDiffVariables1 <- paste0("Diff_", NLag1, "_", DiffDateVariables,"_temp")
       ModDiffVariables2 <- paste0("Diff_", NLag1,"-", NLag2, "_", DiffDateVariables,"_temp")
       ModDiffVariables22 <- paste0("Diff_", NLag1,"-", NLag2, "_", DiffDateVariables)
@@ -901,6 +911,31 @@ AutoDiffLagN <- function(data,
       }
       data <- data[, (ModDiffVariables22) := {g <- list(); for(x in DiffDateVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "date"); g}]
       data.table::set(data, j = c(ModDiffVariables1, ModDiffVariables2), value = NULL)
+    }
+  }
+
+  # Diff categorical data ----
+  if(!is.null(DiffGroupVariables)) {
+    if(NLag1 == 0L) {
+      ModDiffVariables <- paste0("Diff_", NLag2, "_", DiffGroupVariables)
+      if(!is.null(GroupVariables)) {
+        data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = "missing", type = "lag"), .SDcols = c(DiffGroupVariables), by = eval(GroupVariables)]
+      } else {
+        data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = "missing", type = "lag"), .SDcols = c(DiffGroupVariables)]
+      }
+      data <- data[, (ModDiffVariables) := {g <- list(); for(x in DiffGroupVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "categorical"); g}]
+    } else {
+      ModDiffVariables1 <- paste0("Diff_", NLag1, "_", DiffGroupVariables)
+      ModDiffVariables2 <- paste0("Diff_", NLag1,"-", NLag2, "_", DiffGroupVariables)
+      if(!is.null(GroupVariables)) {
+        data <- data[, (ModDiffVariables1) := data.table::shift(x = .SD, n = NLag1, fill = "missing", type = "lag"), .SDcols = c(DiffGroupVariables), by = eval(GroupVariables)]
+        data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = "missing", type = "lag"), .SDcols = c(DiffGroupVariables), by = eval(GroupVariables)]
+      } else {
+        data <- data[, (ModDiffVariables1) := data.table::shift(x = .SD, n = NLag1, fill = "missing", type = "lag"), .SDcols = c(DiffGroupVariables)]
+        data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = "missing", type = "lag"), .SDcols = c(DiffGroupVariables)]
+      }
+      data <- data[, (ModDiffVariables2) := {g <- list(); for(x in DiffGroupVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "categorical"); g}]
+      data.table::set(data, j = ModDiffVariables1, value = NULL)
     }
   }
 
