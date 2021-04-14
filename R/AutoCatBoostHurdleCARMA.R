@@ -252,13 +252,13 @@
 #'   NumGPU = 1,
 #'   MaxRunsWithoutNewWinner = 50,
 #'   MaxRunMinutes = 60*60,
-#'   NTrees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
-#'   Depth = list("classifier" = seq(6,10,1), "regression" = seq(6,10,1)),
-#'   LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
-#'   L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
-#'   RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
-#'   BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
-#'   BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"))
+#'   NTrees = list("classifier" = 200, "regression" = 200),
+#'   Depth = list("classifier" = 9, "regression" = 9),
+#'   LearningRate = NULL,
+#'   L2_Leaf_Reg = NULL,
+#'   RandomStrength = list("classifier" = 1, "regression" = 1),
+#'   BorderCount = list("classifier" = 254, "regression" = 254),
+#'   BootStrapType = "Bayesian"
 #' }
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
@@ -276,7 +276,7 @@ AutoCatBoostHurdleCARMA <- function(data,
                                     TimeGroups = c("weeks","months"),
                                     NumOfParDepPlots = 10L,
                                     TargetTransformation = FALSE,
-                                    Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                                    Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                                     AnomalyDetection = NULL,
                                     XREGS = NULL,
                                     Lags = c(1L:5L),
@@ -305,13 +305,13 @@ AutoCatBoostHurdleCARMA <- function(data,
                                     ModelCount = 100,
                                     MaxRunsWithoutNewWinner = 50,
                                     MaxRunMinutes = 24L*60L,
-                                    NTrees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100)),
-                                    Depth = list("classifier" = seq(6,10,1), "regression" = seq(6,10,1)),
-                                    LearningRate = list("classifier" = seq(0.01,0.25,0.01), "regression" = seq(0.01,0.25,0.01)),
-                                    L2_Leaf_Reg = list("classifier" = 3.0:6.0, "regression" = 3.0:6.0),
-                                    RandomStrength = list("classifier" = 1:10, "regression" = 1:10),
-                                    BorderCount = list("classifier" = seq(32,256,16), "regression" = seq(32,256,16)),
-                                    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
+                                    NTrees = list("classifier" = 200, "regression" = 200),
+                                    Depth = list("classifier" = 9, "regression" = 9),
+                                    LearningRate = NULL,
+                                    L2_Leaf_Reg = NULL,
+                                    RandomStrength = list("classifier" = 1, "regression" = 1),
+                                    BorderCount = list("classifier" = 254, "regression" = 254),
+                                    BootStrapType = "Bayesian",
                                     PartitionType = "timeseries",
                                     Timer = TRUE,
                                     DebugMode = FALSE) {
@@ -530,7 +530,7 @@ AutoCatBoostHurdleCARMA <- function(data,
   # Variables for CARMA function IDcols ----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
   IDcols <- which(names(data) %chin% DateColumnName)
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) == TargetColumnName))
+  IDcols <- c(IDcols, which(names(data) == TargetColumnName))
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----")
@@ -641,10 +641,11 @@ AutoCatBoostHurdleCARMA <- function(data,
           ModelClass = "catboost",
           ModelList = TestModel$ModelList,
           ArgList = TestModel$ArgsList,
-          Threshold = Threshold)
+          Threshold = Threshold,
+          CARMA = TRUE)
 
         # Modify data to match AutoCatBoostCARMA output ----
-        Preds[, (names(Preds)[3:6]) := NULL]
+        Preds[, (names(Preds)[2:5]) := NULL]
         data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         data.table::setnames(Preds, "FinalPredictedValue", "Predictions")
         data.table::setcolorder(Preds, c(2,1,3:ncol(Preds)))
@@ -719,7 +720,8 @@ AutoCatBoostHurdleCARMA <- function(data,
           ModelClass = "catboost",
           ModelList = TestModel$ModelList,
           ArgList = TestModel$ArgsList,
-          Threshold = Threshold)
+          Threshold = Threshold,
+          CARMA = TRUE)
 
         # Modify data ----
         Preds[, (setdiff(names(Preds),"FinalPredictedValue")) := NULL]
@@ -771,7 +773,7 @@ AutoCatBoostHurdleCARMA <- function(data,
     ###############
 
     # Update lags and moving average features for next run----
-    if(i != ForecastRuns+1L) {
+    if(i != FC_Periods+1L) {
 
       # Timer----
       if(DebugMode) print("Timer----")

@@ -11,7 +11,8 @@ AutoHurdleScoring(
   ModelClass = "catboost",
   ArgList = NULL,
   ModelList = NULL,
-  Threshold = NULL
+  Threshold = NULL,
+  CARMA = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ AutoHurdleScoring(
 \item{ModelList}{Output from the hurdle model}
 
 \item{Threshold}{NULL to use raw probabilities to predict. Otherwise, supply a threshold}
+
+\item{CARMA}{Keep FALSE. Used for CARMA functions internals}
 }
 \value{
 A data.table with the final predicted value, the intermediate model predictions, and your source data

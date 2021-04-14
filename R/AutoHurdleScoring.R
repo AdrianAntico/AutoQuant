@@ -12,6 +12,7 @@
 #' @param ArgList Output from the hurdle model
 #' @param ModelList Output from the hurdle model
 #' @param Threshold NULL to use raw probabilities to predict. Otherwise, supply a threshold
+#' @param CARMA Keep FALSE. Used for CARMA functions internals
 #' @return A data.table with the final predicted value, the intermediate model predictions, and your source data
 #' @examples
 #' \dontrun{
@@ -101,7 +102,8 @@ AutoHurdleScoring <- function(TestData = NULL,
                               ModelClass = "catboost",
                               ArgList = NULL,
                               ModelList = NULL,
-                              Threshold = NULL) {
+                              Threshold = NULL,
+                              CARMA = FALSE) {
 
   # Load ArgList and ModelList if NULL----
   if(is.null(Path) && (is.null(ArgList) || is.null(ModelList))) stop("Supply a value to the Path argument to where the ArgList and ModelList are located")
@@ -411,24 +413,24 @@ AutoHurdleScoring <- function(TestData = NULL,
       data.table::setcolorder(TestData, c(1L:(counter+Degenerate),(2L+counter+Degenerate):(1L+2L*(counter+Degenerate)),(1L+counter+Degenerate),(2L+2L*(counter+Degenerate)):ncol(TestData)))
       data.table::setcolorder(TestData, c((2L*(counter+Degenerate)+1L):ncol(TestData),1L:(2L*(counter+Degenerate))))
     }
-  } else if(counter == 2L & length(Buckets) == 1L) {
+  } else if(counter == 2L && length(Buckets) == 1L && !CARMA) {
     if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L, 2L, (3L + length(IDcols)):ncol(TestData), 3L:(2L + length(IDcols))))
-  } else if(counter == 2L & length(Buckets) != 1L) {
+  } else if(counter == 2L && length(Buckets) != 1L) {
     if(length(IDcols) != 0L) {
       data.table::setcolorder(TestData, c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L), which(names(TestData) %in% c(setdiff(names(TestData), names(TestData)[c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L))])))))
       data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter), which(names(TestData) %in% setdiff(names(TestData), names(TestData)[c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter))]))))
     } else {
       data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L), which(!names(TestData) %in% names(TestData)[c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L))])))
     }
-  } else {
+  } else if(!CARMA) {
     if(length(IDcols) != 0L) {
       data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L),3L:(2L + length(IDcols)),(((3L + length(IDcols)) + 2L):ncol(TestData))))
       data.table::setcolorder(TestData, c(5L:ncol(TestData), 1L:4L))
     }
   }
 
-  # Final Combination of Predictions----
-  if(counter > 2L || (counter == 2L & length(Buckets) != 1L)) {
+  # Final Combination of Predictions ----
+  if(counter > 2L || (counter == 2L && length(Buckets) != 1L)) {
     for(i in seq_len(length(Buckets) + 1L)) {
       if(i == 1L) {
         TestData[, FinalPredictedValue := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
@@ -441,7 +443,7 @@ AutoHurdleScoring <- function(TestData = NULL,
   }
 
   # Final column rearrange----
-  if(ArgList$TargetColumnName %chin% names(TestData)) {
+  if(ArgList$TargetColumnName %chin% names(TestData) && !CARMA) {
     while(which(names(TestData) == ArgList$TargetColumnName) > 1L) data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
   } else {
     data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
