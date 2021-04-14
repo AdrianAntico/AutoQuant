@@ -1175,15 +1175,18 @@ CatBoostImportances <- function(ModelType = "regression",
     # Feature Information
     Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = if(TestDataCheck) FinalTestPool. else if(TrainOnFull.) TrainPool. else if(!is.null(ValidationData.)) TestPool., type = "Interaction"))}, error = function(x) NULL)
     Imp <- catboost::catboost.get_feature_importance(model., pool = if(TestDataCheck) FinalTestPool. else if(TrainOnFull.) TrainPool. else if(!is.null(ValidationData.)) TestPool., type = "PredictionValuesChange")
+    VariableImportance <- data.table::data.table(cbind(Variable = rownames(Imp), Imp))
     if(ModelType != "multiclass" && length(TargetColumnName.) == 1L) ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = if(TestDataCheck) FinalTestPool. else if(TrainOnFull.) TrainPool. else if(!is.null(ValidationData.)) TestPool., type = "ShapValues")) else ShapValues <- NULL
 
     # Gather importances
-    temp <- data.table::data.table(ColNames = FeatureColNames.)[, Index := 0:(.N - 1)]
+    temp <- data.table::data.table(ColNames = VariableImportance[[1L]])[, Index := 0:(.N - 1)]
     if(!is.null(ShapValues)) {
-      data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_temp",temp[[1L]]), "Predictions"))
+      data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_temp",temp[[1L]]), "Predictions"), skip_absent = TRUE)
       ShapValues[, Predictions := NULL]
       ShapValues <- cbind(ValidationData., ShapValues)
     }
+
+    # Gather interaction importances
     if(!is.null(Interaction)) {
       Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
       data.table::setnames(Interaction, "ColNames", "Features1")
@@ -1194,7 +1197,7 @@ CatBoostImportances <- function(ModelType = "regression",
       data.table::setorderv(Interaction, "score", -1)
     }
 
-    VariableImportance <- data.table::data.table(cbind(Variable = rownames(Imp), Imp))
+    # Structure data
     tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
     VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
     VariableImportance <- VariableImportance[order(-Importance)]
