@@ -103,11 +103,8 @@ AutoHurdleScoring <- function(TestData = NULL,
                               ModelList = NULL,
                               Threshold = NULL) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
   # Load ArgList and ModelList if NULL----
-  if(is.null(Path) & (is.null(ArgList) || is.null(ModelList))) return("Supply a value to the Path argument to where the ArgList and ModelList are located")
+  if(is.null(Path) && (is.null(ArgList) || is.null(ModelList))) stop("Supply a value to the Path argument to where the ArgList and ModelList are located")
 
   # Load ArgList and ModelList if not supplied----
   if(is.null(ArgList)) {
@@ -131,23 +128,23 @@ AutoHurdleScoring <- function(TestData = NULL,
       load(file.path(normalizePath(ArgList$Paths), ArgList$ModelID))
       ClassModel <- model; rm(model)
     } else {
-      return("Need to supply a ModelList")
+      stop("Need to supply a ModelList")
     }
   }
 
-  # Store FeatureNames----
+  # Store FeatureNames ----
   FeatureNames <- ArgList$FeatureColNames
 
-  # Factor levels list----
+  # Factor levels list ----
   if(!is.null(ArgList$FactorLevelsList)) FactorLevelsList <- ArgList$FactorLevelsList else FactorLevelsList <- NULL
 
-  # Store IDcols----
+  # Store IDcols ----
   IDcols <- c(setdiff(names(TestData), c(ArgList$FeatureColNames)))
 
-  # Store colnames----
+  # Store colnames ----
   ColumnNames <- names(TestData)
 
-  # Classification Model Scoring----
+  # Classification Model Scoring ----
   if(tolower(ModelClass) == "catboost") {
     TestData <- AutoCatBoostScoring(
       TargetType = TargetType,

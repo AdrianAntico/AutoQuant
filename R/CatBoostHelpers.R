@@ -1201,8 +1201,12 @@ CatBoostImportances <- function(ModelType = "regression",
     if(SaveModelObjects.) {
       if(!is.null(metadata_path.)) {
         data.table::fwrite(VariableImportance, file = file.path(metadata_path., paste0(ModelID., "_VariableImportance.csv")))
+        if(!is.null(ShapValues)) data.table::fwrite(ShapValues, file = file.path(metadata_path., paste0(ModelID., "_ShapValues.csv")))
+        if(!is.null(Interaction)) data.table::fwrite(Interaction, file = file.path(metadata_path., paste0(ModelID., "_Interaction.csv")))
       } else {
         data.table::fwrite(VariableImportance, file = file.path(model_path., paste0(ModelID., "_VariableImportance.csv")))
+        if(!is.null(ShapValues)) data.table::fwrite(ShapValues, file = file.path(model_path., paste0(ModelID., "_ShapValues.csv")))
+        if(!is.null(Interaction)) data.table::fwrite(Interaction, file = file.path(model_path., paste0(ModelID., "_Interaction.csv")))
       }
     }
   } else {

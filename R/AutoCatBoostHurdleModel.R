@@ -152,7 +152,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     BootStrapType = list("classifier" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"), "regression" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")),
                                     GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"), "regression" = c("SymmetricTree", "Depthwise", "Lossguide"))) {
 
-  # Store args----
+  # Store args ----
   ArgsList <- list()
   ArgsList[["Buckets"]] <- Buckets
   ArgsList[["TargetColumnName"]] <- TargetColumnName
@@ -168,10 +168,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   ArgsList[["MetaDataPaths"]] <- MetaDataPaths
   ArgsList[["SaveModelObjects"]] <- SaveModelObjects
 
-  # Check args----
-  if(is.character(Buckets) || is.factor(Buckets) || is.logical(Buckets)) return("Buckets needs to be a numeric scalar or vector")
-  if(!is.logical(SaveModelObjects)) return("SaveModelOutput needs to be set to either TRUE or FALSE")
-  if(!is.logical(GridTune)) return("GridTune needs to be either TRUE or FALSE")
+  # Check args ----
+  if(is.character(Buckets) || is.factor(Buckets) || is.logical(Buckets)) stop("Buckets needs to be a numeric scalar or vector")
+  if(!is.logical(SaveModelObjects)) stop("SaveModelOutput needs to be set to either TRUE or FALSE")
+  if(!is.logical(GridTune)) stop("GridTune needs to be either TRUE or FALSE")
 
   # Args management ----
 
@@ -364,28 +364,25 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     }
   }
 
-  # Turn on full speed ahead----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
+  # Ensure Paths and metadata_path exists ----
+  if(!is.null(Paths)) if(!dir.exists(Paths)) dir.create(Paths)
+  if(is.null(MetaDataPaths)) MetaDataPaths <- Paths else if(!dir.exists(MetaDataPaths)) dir.create(MetaDataPaths)
 
-  # Ensure Paths and metadata_path exists----
-  if(!is.null(Paths)) if(!dir.exists(normalizePath(Paths))) dir.create(normalizePath(Paths))
-  if(is.null(MetaDataPaths)) MetaDataPaths <- Paths else if(!dir.exists(normalizePath(MetaDataPaths))) dir.create(normalizePath(MetaDataPaths))
-
-  # Data.table check----
+  # Data.table check ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(ValidationData)) if(!data.table::is.data.table(ValidationData)) data.table::setDT(ValidationData)
   if(!is.null(TestData)) if(!data.table::is.data.table(TestData)) data.table::setDT(TestData)
 
-  # IDcols to Names----
+  # IDcols to Names ----
   if(!is.null(IDcols)) if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
 
-  # Primary Date Column----
+  # Primary Date Column ----
   if(is.numeric(PrimaryDateColumn) || is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
 
-  # FeatureColumnNames----
+  # FeatureColumnNames ----
   if(is.numeric(FeatureColNames) || is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
 
-  # Add target bucket column----
+  # Add target bucket column ----
   if(length(Buckets) == 1L) {
     data[, Target_Buckets := data.table::fifelse(get(TargetColumnName) <= eval(Buckets[1L]), 0, 1)]
   } else {
@@ -458,6 +455,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
       # GPU or CPU
       task_type = task_type,
+      NumGPUs = 1,
 
       # Metadata arguments
       ModelID = ModelID,
@@ -478,7 +476,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       IDcols = IDcols,
 
       # Model evaluation
-      EvalMetric = "AUC",
+      EvalMetric = "MCC",
+      LossFunction = "Logloss",
       MetricPeriods = MetricPeriods,
       NumOfParDepPlots = NumOfParDepPlots,
 
@@ -499,7 +498,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       L2_Leaf_Reg = ClassifierL2_Leaf_Reg,
       RSM = ClassifierRSM,
       BootStrapType = ClassifierBootStrapType,
-      GrowPolicy = ClassifierGrowPolicy)
+      GrowPolicy = ClassifierGrowPolicy,
+      langevin = FALSE,
+      diffusion_temperature = 10000,
+      model_size_reg = 0.5,
+      feature_border_type = "GreedyLogSum",
+      sampling_unit = "Object",
+      subsample = NULL,
+      score_function = "Cosine",
+      min_data_in_leaf = 1)
 
   } else {
 
@@ -548,7 +555,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       BorderCount = ClassifierBorderCount,
       RSM = ClassifierRSM,
       BootStrapType = ClassifierBootStrapType,
-      GrowPolicy = ClassifierGrowPolicy)
+      GrowPolicy = ClassifierGrowPolicy,
+      langevin = FALSE,
+      diffusion_temperature = 10000,
+      model_size_reg = 0.5,
+      feature_border_type = "GreedyLogSum",
+      sampling_unit = "Object",
+      subsample = NULL,
+      score_function = "Cosine",
+      min_data_in_leaf = 1)
   }
 
   # Store metadata----
@@ -734,7 +749,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             RSM = RegressionRSM,
             BootStrapType = RegressionBootStrapType,
             GrowPolicy = RegressionGrowPolicy,
-            Methods = RegressionMethods)
+            Methods = RegressionMethods,
+            langevin = FALSE,
+            diffusion_temperature = 10000,
+            model_size_reg = 0.5,
+            feature_border_type = "GreedyLogSum",
+            sampling_unit = "Object",
+            subsample = NULL,
+            score_function = "Cosine",
+            min_data_in_leaf = 1)
 
         # Store Model----
         RegressionModel <- RegModel$Model
