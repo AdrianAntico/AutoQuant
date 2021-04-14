@@ -335,9 +335,10 @@ data <- RemixAutoML::ModelDataPrep(
 data <- RemixAutoML::AutoDiffLagN(
   data,
   DateVariable = "DateTime",
-  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
+  GroupVariables = c("Factor_2"),
   DiffVariables = Cols,
   DiffDateVariables = "DateTime",
+  DiffGroupVariables = "Factor_1",
   NLag1 = 0,
   NLag2 = 1,
   Sort = TRUE,
@@ -374,9 +375,10 @@ data <- RemixAutoML::ModelDataPrep(
 data <- RemixAutoML::AutoDiffLagN(
   data,
   DateVariable = "DateTime",
-  GroupVariables = c("Factor_1", "Factor_2", "Factor_3"),
+  GroupVariables = c("Factor_2"),
   DiffVariables = Cols,
   DiffDateVariables = "DateTime",
+  DiffGroupVariables = "Factor_1",
   NLag1 = 1,
   NLag2 = 3,
   Sort = TRUE,
@@ -389,7 +391,7 @@ data <- RemixAutoML::AutoDiffLagN(
 <details><summary>Function Description</summary>
 <p>
  
-<code>AutoDiffLagN()</code> Generate differences for numeric columns and date columns, by groups. You can specify NLag1 = 0 and NLag2 to generate the diffs based on a lag 1 to lag 2 differences for a column, and multiple columns.
+<code>AutoDiffLagN()</code> Generate differences for numeric columns, date columns, and categorical columns, by groups. You can specify NLag1 = 0 and NLag2 to generate the diffs based on a lag 1 to lag 2 differences for a column, and multiple columns.
 
 </p>
 </details>
