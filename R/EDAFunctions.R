@@ -39,7 +39,7 @@
 #'   PartialCorr = FALSE,
 #'   BayesianCorr = FALSE)
 #' }
-#' @export
+#' @noRd
 AutoCorrAnalysis <- function(data = NULL,
                              CorVars = NULL,
                              SkipCorVars = NULL,
@@ -51,11 +51,7 @@ AutoCorrAnalysis <- function(data = NULL,
                              RobustCalc = TRUE,
                              PartialCorr = FALSE,
                              BayesianCorr = FALSE) {
-
-  # Convert to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-
-  # Features ----
   if(!is.null(CorVars)) {
     CorVars <- CorVars[!CorVars %chin% SkipCorVars]
   } else {
@@ -64,8 +60,6 @@ AutoCorrAnalysis <- function(data = NULL,
 
   # Subset data
   if(!all(names(data) %chin% CorVars)) data <- data[, .SD, .SDcols = c(CorVars)]
-
-  # Sampling ----
   if(DataSampleRate < 1.0) data <- data[order(runif(.N))][seq_len(floor(.N*DataSampleRate))]
 
   # Bayesian calc ----
@@ -115,105 +109,53 @@ AutoCorrAnalysis <- function(data = NULL,
 #' @param ByGroupVars Group variables that you want to have the analysis done by
 #' @param MinRows Minimum number of rows to utilize in the ByGroupVars analysis
 #'
-#' @export
+#' @noRd
 BNLearnArcStrength <- function(data = NULL,
                                NetworkVars = NULL,
                                DataSampleRate = 0.50,
                                ByGroupVars = NULL,
                                MinRows = 30) {
 
-  # Convert to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
-
-  # Sample data ----
   if(DataSampleRate < 1.0) data <- data[order(runif(.N))][seq_len(floor(.N * DataSampleRate))]
-
-  # Collection list ----
   OutputList <- list()
-
-  # Network Analysis ----
   if(is.null(ByGroupVars)) {
-
-    # Subset columns ----
     data1 <- data[, .SD, .SDcols = c(NetworkVars)]
-
-    # Hill climbing algo ----
     net <- bnlearn::hc(data1)
-
-    # Model fit ----
     fitted <- bnlearn::bn.fit(net, data1)
-
-    # Arc Strength ----
     ArcStrength <- data.table::setDT(bnlearn::arc.strength(net, data1))
-
-    # Loop through arc strengths ----
     for(arc in ArcStrength$to) {
-
-      # Initialize data.table ----
       Collect <- data.table::data.table()
-
-      # Add data ----
       Collect[, ChildVar := fitted[[arc]][["node"]]]
       Collect <- cbind(Collect, ParentVar = fitted[[arc]][["parents"]])
-
-      # Add weights ----
       Collect[, ArcStrengths := ArcStrength[from %chin% fitted[[arc]][["parents"]] & to %chin% fittled[[arc]][["node"]]][, strength]]
-
-      # Store data ----
       OutputList[[arc]] <- Collect
     }
-
-    # Return data ----
-    return(list(Data = data.table::rbindlist(OutputList)[!is.na(ArcStrengths)][order(-abs(ArcStrengths))],
-                Structure = invisible(dbnR::plot_network(structure = fitted))))
-
+    return(list(Data = data.table::rbindlist(OutputList)[!is.na(ArcStrengths)][order(-abs(ArcStrengths))], Structure = invisible(dbnR::plot_network(structure = fitted))))
   } else {
-
-    # ByGroupVar case ----
     data1 <- data[, .SD, .SDcols = c(NetworkVars)]
     net <- bnlearn::hc(data1)
     FittedOutput <- bnlearn::bn.fit(net, data1)
-
-    # ByGroup ----
     for(group in ByGroupVars) {
       Levels <- as.character(data[, .N, by = eval(group)][N > MinRows][, get(group)])
       for(lev in Levels) {
         data1 <- data[get(group) == eval(lev)]
         data1 <- data1[, .SD, .SDcols = c(NetworkVars)]
-
-        # Hill climbing
         net <- bnlearn::hc(data1)
-
-        # Model ----
         fitted <- bnlearn::bn.fit(net, data1)
-
-        # Arc Strengths ----
         ArcStrength <- data.table::setDT(bnlearn::arc.strength(net, data1))
-
-        # By level ----
         for(arc in names(fitted)) {
-
-          # Initialize data.table ----
           Collect <- data.table::data.table()
-
-          # Set Values ----
           Collect[, GroupName := eval(group)]
           Collect[, GroupLevel := eval(lev)]
           Collect <- cbind(Collect, ChildVar = fitted[[arc]][["node"]])
           Collect <- cbind(Collect, ParentVar = fittled[[arc]][["parents"]])
-
-          # Add strengths ----
           Collect[, ArcStrengths := ArcStrength[from %chin% fittled[[arc]][["parents"]] & to %chin% fitted[[arc]][["node"]]][, strength]]
-
-          # Add to list ----
           OutputList[[paste0(group,"-",lev,"-",arc)]] <- Collect
         }
       }
     }
-
-    # Return data ----
-    return(list(Data = data.table::rbindlist(OutputList)[!is.na(ArcStrengths)][order(-abs(ArcStrengths))],
-                Structure = invisible(dbnR::plot_network(structure = FittedOutput))))
+    return(list(Data = data.table::rbindlist(OutputList)[!is.na(ArcStrengths)][order(-abs(ArcStrengths))], Structure = invisible(dbnR::plot_network(structure = FittedOutput))))
   }
 }
 
