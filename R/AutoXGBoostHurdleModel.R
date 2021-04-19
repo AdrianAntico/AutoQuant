@@ -583,7 +583,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
         if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
 
         # Build model----
-        RegModel <- RemixAutoML::AutoXGBoostRegression(
+        RegModel <- AutoXGBoostRegression(
 
           # GPU or CPU
           TreeMethod = TreeMethod,
