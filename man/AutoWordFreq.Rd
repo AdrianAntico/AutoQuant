@@ -62,11 +62,6 @@ data <- AutoWordFreq(
   StopWords = c("Bla"))
 }
 }
-\seealso{
-Other EDA: 
-\code{\link{AutoCorrAnalysis}()},
-\code{\link{BNLearnArcStrength}()}
-}
 \author{
 Adrian Antico
 }
