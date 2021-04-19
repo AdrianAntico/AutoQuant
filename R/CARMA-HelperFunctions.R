@@ -520,6 +520,153 @@ CarmaFourier <- function(data. = data,
   return(list(data = data., FourierFC = FourierFC., FourierTerms = FourierTerms.))
 }
 
+#' @param GroupVariables. Passthrough
+#' @param Difference. Passthrough
+#' @param data. Passthrough
+#' @param TargetColumnName. Passthrough
+#' @param FC_Periods. Passthrough
+#'
+#' @noRd
+CarmaDifferencing <- function(GroupVariables. = GroupVariables,
+                              Difference. = Difference,
+                              data. = data,
+                              TargetColumnName. = TargetColumnName,
+                              FC_Periods. = FC_Periods) {
+
+  if(!is.null(GroupVariables.) && Difference.) {
+    data.[, TargetDiffMidStep := data.table::shift(x = get(TargetColumnName.), n = 1, fill = NA, type = "lag"), by = c("GroupVar")][, ModTarget := get(TargetColumnName.) - TargetDiffMidStep]
+    dataStart <- data.[is.na(TargetDiffMidStep)]
+    data. <- data.[!is.na(TargetDiffMidStep)]
+    FC_Periods. <- FC_Periods. + 1L
+    Train <- NULL
+    DiffTrainOutput <- NULL
+  } else if(Difference.) {
+    DiffTrainOutput <- DifferenceData(
+      data = data.,
+      ColumnsToDiff = eval(TargetColumnName.),
+      CARMA = TRUE,
+      TargetVariable = eval(TargetColumnName.),
+      GroupingVariable = NULL)
+    Train <- DiffTrainOutput$DiffData
+    if(ncol(data.) >= 3) {
+      data. <- cbind(Train,data.[seq_len(nrow(data.)-1)][,.SD, .SDcols = names(data.)[3L:ncol(data.)]])
+    } else {
+      data. <- Train
+    }
+    FC_Periods. <- FC_Periods. + 1L
+    dataStart <- NULL
+  } else {
+    dataStart <- NULL
+    Train <- NULL
+    DiffTrainOutput <- NULL
+  }
+  return(list(
+    data = data.,
+    dataStart = dataStart,
+    FC_Periods = FC_Periods.,
+    Train = Train,
+    DiffTrainOutput = DiffTrainOutput))
+}
+
+#' @param data. Passthrough
+#' @param XREGS. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param TimeUnit. Passthrough
+#'
+#' @noRd
+CarmaDateStandardize <- function(data. = data,
+                                 XREGS. = NULL,
+                                 DateColumnName. = DateColumnName,
+                                 TimeUnit. = TimeUnit) {
+  if(is.character(data.[[eval(DateColumnName.)]])) {
+    if(!(tolower(TimeUnit.) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      x <- data.[1L, get(DateColumnName.)]
+      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+      data.[, eval(DateColumnName.) := as.Date(get(DateColumnName.), tryFormats = x1)]
+    } else {
+      data.[, eval(DateColumnName.) := as.POSIXct(get(DateColumnName.))]
+    }
+  }
+  if(!is.null(XREGS.) && is.character(XREGS.[[eval(DateColumnName.)]])) {
+    if(!(tolower(TimeUnit.) %chin% c("1min","5min","10min","15min","30min","hour"))) {
+      x <- XREGS.[1L, get(DateColumnName.)]
+      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
+      XREGS.[, eval(DateColumnName.) := as.Date(get(DateColumnName.), tryFormats = x1)]
+    } else {
+      XREGS.[, eval(DateColumnName.) := as.POSIXct(get(DateColumnName.))]
+    }
+  }
+  return(list(data = data., XREGS = XREGS.))
+}
+
+#' @param train. Passthrough
+#' @param TimeWeights. Passthrough
+#' @param GroupVariables. Passthrough
+#' @param DateColumnName. Passthrough
+#'
+#' @noRd
+CarmaTimeWeights <- function(train. = train,
+                             TimeWeights. = TimeWeights,
+                             GroupVariables. = GroupVariables,
+                             DateColumnName. = DateColumnName) {
+  if(!is.null(TimeWeights.)) {
+    if(!is.null(GroupVariables.)) {
+      data.table::setorderv(x = train., cols = c("GroupVar", DateColumnName.), order = c(1,-1))
+      train.[, PowerValue := seq_len(.N), by = "GroupVar"]
+      train.[, Weights := eval(TimeWeights.) ^ PowerValue]
+      Weightss <- train.[["Weights"]]
+      train.[, ":=" (PowerValue = NULL, Weights = NULL)]
+      data.table::setorderv(x = train., cols = c("GroupVar", DateColumnName.), order = c(1,1))
+    } else {
+      data.table::setorderv(x = train., cols = c(DateColumnName.), order = c(-1))
+      train.[, PowerValue := seq_len(.N)]
+      train.[, Weights := eval(TimeWeights.) ^ PowerValue]
+      Weightss <- train.[["Weights"]]
+      train.[, ":=" (PowerValue = NULL, Weights = NULL)]
+      data.table::setorderv(x = train., cols = c(DateColumnName.), order = c(1))
+    }
+  } else {
+    Weightss <- NULL
+  }
+  return(list(train = train., Weightss = Weightss))
+}
+
+#' @param data. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param TimeUnit. Passthrough
+#'
+#' @noRd
+CarmaTruncateData <- function(data. = data,
+                              DateColumnName. = DateColumnName,
+                              TimeUnit. = TimeUnit) {
+  mindate <- data.[, min(get(DateColumnName.))]
+  if(tolower(TimeUnit.) %chin% c("hour","hours")) {
+    newdate <- mindate + lubridate::hours(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("1min","1mins","1minute","1minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("5min","5mins","5minute","5minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 5)
+  } else if(tolower(TimeUnit.) %chin% c("10min","10mins","10minute","10minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 10)
+  } else if(tolower(TimeUnit.) %chin% c("15min","15mins","15minute","15minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 15)
+  } else if(tolower(TimeUnit.) %chin% c("30min","30mins","30minute","30minutes")) {
+    newdate <- mindate + lubridate::minutes(val + 30)
+  } else if(tolower(TimeUnit.) %chin% c("day","days")) {
+    newdate <- mindate + lubridate::days(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("week","weeks")) {
+    newdate <- mindate + lubridate::weeks(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("month","months")) {
+    newdate <- mindate %m+% months(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("quarter","quarters")) {
+    newdate <- mindate %m+% months(val + 1)
+  } else if(tolower(TimeUnit.) %chin% c("years","year")) {
+    newdate <- mindate + lubridate::years(val + 1)
+  }
+  data. <- data.[get(DateColumnName.) >= eval(newdate)]
+  return(data.)
+}
+
 #' @title CARMA_Get_IndepentVariablesPass
 #'
 #' CARMA_Get_IndepentVariablesPass is to help manage carma code
@@ -1039,13 +1186,6 @@ CarmaCatBoostKeepVarsGDL <- function(data,
       }
     }
 
-    # Return data based on GDL condition in CARMA
-    if(!is.null(IndepVarPassTRUE)) {
-      keep <- unique(c(keep,IndepVarPassTRUE))
-      return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
-    } else {
-      return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
-    }
   } else if(!is.null(GroupVariables)) {
     if(!is.null(HierarchGroups)) {
       data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
@@ -1080,16 +1220,6 @@ CarmaCatBoostKeepVarsGDL <- function(data,
       }
     }
 
-    # Return data based on GDL condition in CARMA
-    if(!is.null(IndepVarPassTRUE)) {
-      keep <- unique(c(keep,IndepVarPassTRUE))
-      UpdateData <- UpdateData[, ..keep]
-      return(list(data = UpdateData, keep = keep))
-    } else {
-      UpdateData <- UpdateData[, ..keep]
-      return(list(data = UpdateData, keep = keep))
-    }
-
   } else {
     UpdateData <- UpdateData[order(get(DateColumnName))]
     UpdateData[, ID := .N:1]
@@ -1122,16 +1252,12 @@ CarmaCatBoostKeepVarsGDL <- function(data,
         keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
       }
     }
-
-    # Return data based on GDL condition in CARMA
-    if(!is.null(IndepVarPassTRUE)) {
-      keep <- unique(c(keep,IndepVarPassTRUE))
-      UpdateData <- UpdateData[, ..keep]
-      return(list(data = UpdateData, keep = keep))
-    } else {
-      return(list(data = UpdateData, keep = keep))
-    }
   }
+
+  # Return data based on GDL condition in CARMA
+  if(!is.null(IndepVarPassTRUE)) keep <- unique(c(keep,IndepVarPassTRUE))
+  UpdateData <- UpdateData[, ..keep]
+  return(list(data = UpdateData, keep = keep))
 }
 
 #' @param i. Passthrough
@@ -1244,14 +1370,16 @@ CarmaScore <- function(i. = i,
       if(!is.null(GroupVariables.)) {
         UpdateData. <- cbind(FutureDateData., Preds)
       } else {
-        UpdateData. <- cbind(FutureDateData.[2L:(nrow(Step1SCore.)+1L)], Step1SCore.[, .SD, .SDcols = eval(TargetColumnName.)], Preds)
+        UpdateData. <- cbind(FutureDateData. = FutureDateData.[1L:nrow(Step1SCore.)], Preds)
       }
-      data.table::setnames(UpdateData., "FutureDateData.", eval(DateColumnName.))
     } else {
       if(NonNegativePred.) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
-      UpdateData. <- cbind(FutureDateData.[1L:N.], Preds)
-      data.table::setnames(UpdateData., c("V1"), c(eval(DateColumnName.)))
+      UpdateData. <- cbind(FutureDateData. = FutureDateData.[1L:N.], Preds)
     }
+
+    # Update names
+    data.table::setnames(UpdateData., "FutureDateData.", eval(DateColumnName.))
+
   } else {
     if(!is.null(GroupVariables.)) {
 
@@ -1527,8 +1655,10 @@ UpdateFeatures <- function(UpdateData. = UpdateData,
   if(TimeTrendVariable.) CalendarFeatures.[, TimeTrend := eval(N.) + 1]
 
   # Prepare data for scoring
-  temp <- cbind(CalendarFeatures., 1)
-  data.table::setnames(temp, c("V2"), c(eval(TargetColumnName.)))
+  for(zz in seq_len(length(TargetColumnName.))) {
+    if(zz == 1) temp <- cbind(CalendarFeatures., 1) else temp <- cbind(temp, 1)
+    data.table::setnames(temp, "V2", c(eval(TargetColumnName.[zz])))
+  }
   if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c("POSIXct","POSIXt","IDate"))) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
   if(any(class(temp[[eval(DateColumnName.)]]) %chin% c("POSIXct","POSIXt","IDate"))) temp[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
   UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
@@ -2056,87 +2186,6 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
   return(UpdateData.)
 }
 
-#' @param UpdateData. Passthrough
-#' @param FutureDateData. Passthrough
-#' @param dataStart. Passthrough
-#' @param DateColumnName. Passthrough
-#' @param TargetColumnName. Passthrough
-#' @param GroupVariables. Passthrough
-#' @param Difference. Passthrough
-#' @param TargetTransformation. Passthrough
-#' @param TransformObject. Passthrough
-#'
-#' @noRd
-CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
-                                FutureDateData. = FutureDateData,
-                                dataStart. = dataStart,
-                                DateColumnName. = DateColumnName,
-                                TargetColumnName. = TargetColumnName,
-                                GroupVariables. = GroupVariables,
-                                Difference. = Difference,
-                                TargetTransformation. = TargetTransformation,
-                                TransformObject. = TransformObject,
-                                NonNegativePred. = NonNegativePred) {
-
-  # Remove duplicate columns
-  if(sum(names(UpdateData.) %chin% eval(DateColumnName.)) > 1) data.table::set(UpdateData., j = which(names(UpdateData.) %chin% eval(DateColumnName.))[2L], value = NULL)
-  if(sum(names(UpdateData.) %chin% eval(TargetColumnName.)) > 1) data.table::set(UpdateData., j = which(names(UpdateData.) %chin% eval(TargetColumnName.))[2L], value = NULL)
-
-  # Reverse Difference
-  if(is.null(GroupVariables.) && Difference.) {
-    UpdateData. <- DifferenceDataReverse( data = UpdateData., ScoreData = NULL, CARMA = TRUE, TargetCol = eval(TargetColumnName.), FirstRow = DiffTrainOutput$FirstRow[[eval(TargetColumnName.)]], LastRow = NULL)
-  } else if(!is.null(GroupVariables.) && Difference.) {
-    if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c("POSIXct","POSIXt")) && any(class(dataStart.[[eval(DateColumnName.)]]) == "Date")) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
-    UpdateData. <- data.table::rbindlist(list(dataStart.,UpdateData.), fill = TRUE)
-    UpdateData. <- UpdateData.[, .SD, .SDcols = c(eval(DateColumnName.),eval(TargetColumnName.),"Predictions","GroupVar")]
-    data.table::set(UpdateData., j = "Predictions", value = UpdateData.[[eval(TargetColumnName.)]])
-    if(NonNegativePred.) UpdateData.[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
-  }
-
-  # BackTransform
-  if(TargetTransformation.) {
-
-    # Prepare transformobject
-    temptrans <- data.table::copy(TransformObject.)
-    data.table::set(TransformObject., i = 1L, j = "ColumnName", value = "Predictions")
-    TransformObject. <- data.table::rbindlist(list(temptrans, TransformObject.))
-
-    # Ensure positive values in case transformation method requires that
-    if(Difference. && !is.null(GroupVariables.)) {
-      UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := 1, by = "GroupVar"]
-    }
-
-    # Backtrans
-    UpdateData. <- AutoTransformationScore(
-      ScoringData = UpdateData.,
-      FinalResults = TransformObject.,
-      Type = "Inverse",
-      TransID = NULL,
-      Path = NULL)
-  }
-
-  # Remove target variables values on FC periods
-  if(!is.null(GroupVariables.)) {
-    UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := NA, by = "GroupVar"]
-  } else {
-    UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := NA]
-  }
-
-  # Return data prep
-  if(!is.null(GroupVariables.)) {
-    keep <- c("GroupVar", eval(DateColumnName.), eval(TargetColumnName.), "Predictions")
-    UpdateData. <- UpdateData.[, ..keep]
-    if(length(GroupVariables.) > 1L) {
-      UpdateData.[, eval(GroupVariables.) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
-    } else {
-      UpdateData.[, eval(GroupVariables.) := GroupVar][, GroupVar := NULL]
-    }
-  }
-
-  # Return data
-  return(list(UpdateData = UpdateData., TransformObject = TransformObject.))
-}
-
 #' @param data. Passthrough
 #' @param TargetColumnName. Passthrough
 #' @param DateColumnName. Passthrough
@@ -2311,29 +2360,9 @@ CarmaTimeSeriesFeatures <- function(data. = data,
         Quantile_RollWindows  = Quantile_Periods.,
         Quantiles_Selected    = Quantiles_Selected.,
         Debug                 = DebugMode.)
-    }
 
-    # Feature Engineering: Add Lag / Lead, MA Holiday Variables
-    if(!is.null(HolidayVariable.) && max(HolidayLags.) > 0 && max(HolidayMovingAverages.) > 0) {
-      if(!is.null(GroupVariables.)) {
-        data. <- DT_GDL_Feature_Engineering(
-          data            = data.,
-          lags            = HolidayLags.,
-          periods         = HolidayMovingAverages.[!HolidayMovingAverages. %in% 1],
-          SDperiods       = 0,
-          Skewperiods     = 0,
-          Kurtperiods     = 0,
-          Quantileperiods = 0,
-          statsFUNs       = "mean",
-          targets         = "HolidayCounts",
-          groupingVars    = IndependentSupplyValue,
-          sortDateName    = eval(DateColumnName.),
-          timeDiffTarget  = NULL,
-          timeAgg         = TimeGroups.[1],
-          WindowingLag    = 1,
-          Type            = "Lag",
-          SimpleImpute    = TRUE)
-      } else {
+      # Feature Engineering: Add Lag / Lead, MA Holiday Variables
+      if(!is.null(HolidayVariable.) && max(HolidayLags.) > 0 && max(HolidayMovingAverages.) > 0) {
         data. <- DT_GDL_Feature_Engineering(
           data            = data.,
           lags            = HolidayLags.,
@@ -2352,6 +2381,13 @@ CarmaTimeSeriesFeatures <- function(data. = data,
           Type            = "Lag",
           SimpleImpute    = TRUE)
       }
+
+      # NULL out objects
+      HierarchSupplyValue <- NULL
+      IndependentSupplyValue <- NULL
+      GroupVarVector <- NULL
+      Categoricals <- NULL
+
     }
   } else {
     Output <- CARMA_GroupHierarchyCheck(data = data., Group_Variables = GroupVariables., HierarchyGroups = HierarchGroups.)
@@ -2371,146 +2407,114 @@ CarmaTimeSeriesFeatures <- function(data. = data,
     Categoricals = Categoricals))
 }
 
+#' @param UpdateData. Passthrough
+#' @param FutureDateData. Passthrough
+#' @param dataStart. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param TargetColumnName. Passthrough
 #' @param GroupVariables. Passthrough
 #' @param Difference. Passthrough
-#' @param data. Passthrough
-#' @param TargetColumnName. Passthrough
-#' @param FC_Periods. Passthrough
+#' @param TargetTransformation. Passthrough
+#' @param TransformObject. Passthrough
+#' @param DiffTrainOutput. Passthrough
 #'
 #' @noRd
-CarmaDifferencing <- function(GroupVariables. = GroupVariables,
-                              Difference. = Difference,
-                              data. = data,
-                              TargetColumnName. = TargetColumnName,
-                              FC_Periods. = FC_Periods) {
+CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
+                                FutureDateData. = FutureDateData,
+                                dataStart. = dataStart,
+                                DateColumnName. = DateColumnName,
+                                TargetColumnName. = TargetColumnName,
+                                GroupVariables. = GroupVariables,
+                                Difference. = Difference,
+                                TargetTransformation. = TargetTransformation,
+                                TransformObject. = TransformObject,
+                                NonNegativePred. = NonNegativePred,
+                                DiffTrainOutput. = NULL) {
 
-  if(!is.null(GroupVariables.) && Difference.) {
-    data.[, TargetDiffMidStep := data.table::shift(x = get(TargetColumnName.), n = 1, fill = NA, type = "lag"), by = c("GroupVar")][, ModTarget := get(TargetColumnName.) - TargetDiffMidStep]
-    dataStart <- data.[is.na(TargetDiffMidStep)]
-    data. <- data.[!is.na(TargetDiffMidStep)]
-    FC_Periods. <- FC_Periods. + 1L
-    Train <- NULL
-  } else if(Difference.) {
-    DiffTrainOutput <- DifferenceData(
-      data = data.,
-      ColumnsToDiff = eval(TargetColumnName.),
-      CARMA = TRUE,
-      TargetVariable = eval(TargetColumnName.),
-      GroupingVariable = NULL)
-    Train <- DiffTrainOutput$DiffData
-    if(ncol(data.) >= 3) {
-      data. <- cbind(Train,data.[seq_len(nrow(data.)-1)][,.SD, .SDcols = names(data.)[3L:ncol(data.)]])
+  # Remove duplicate columns
+  if(sum(names(UpdateData.) %chin% eval(DateColumnName.)) > 1) data.table::set(UpdateData., j = which(names(UpdateData.) %chin% eval(DateColumnName.))[2L], value = NULL)
+  if(sum(names(UpdateData.) %chin% eval(TargetColumnName.)) > length(TargetColumnName.)) {
+    x <- which(names(UpdateData.) %chin% eval(TargetColumnName.))
+    x <- x[(length(TargetColumnName.) + 1L):length(x)]
+    data.table::set(UpdateData., j = x, value = NULL)
+  }
+
+  # Reverse Difference
+  if(is.null(GroupVariables.) && Difference.) {
+    UpdateData. <- DifferenceDataReverse(data = UpdateData., ScoreData = NULL, CARMA = TRUE, TargetCol = eval(TargetColumnName.), FirstRow = DiffTrainOutput.$FirstRow[[eval(TargetColumnName.)]], LastRow = NULL)
+  } else if(!is.null(GroupVariables.) && Difference.) {
+    if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c("POSIXct","POSIXt")) && any(class(dataStart.[[eval(DateColumnName.)]]) == "Date")) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
+    UpdateData. <- data.table::rbindlist(list(dataStart.,UpdateData.), fill = TRUE)
+    UpdateData. <- UpdateData.[, .SD, .SDcols = c(eval(DateColumnName.),eval(TargetColumnName.),"Predictions","GroupVar")]
+    data.table::set(UpdateData., j = "Predictions", value = UpdateData.[[eval(TargetColumnName.)]])
+    if(NonNegativePred.) UpdateData.[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+  }
+
+  # BackTransform
+  if(TargetTransformation.) {
+    if(length(TargetColumnName.) == 1L) {
+      temptrans <- data.table::copy(TransformObject.)
+      data.table::set(TransformObject., i = 1L, j = "ColumnName", value = "Predictions")
+      TransformObject. <- data.table::rbindlist(list(temptrans, TransformObject.))
+
+      # Ensure positive values in case transformation method requires that
+      if(Difference. && !is.null(GroupVariables.)) {
+        UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := 1, by = "GroupVar"]
+      }
+
+      # Backtrans
+      UpdateData. <- AutoTransformationScore(
+        ScoringData = UpdateData.,
+        FinalResults = TransformObject.,
+        Type = "Inverse",
+        TransID = NULL,
+        Path = NULL)
     } else {
-      data. <- Train
+      for(zz in seq_along(TargetColumnName.)) {
+
+        # One at a time
+        temptrans <- data.table::copy(TransformObject.[[zz]])
+        data.table::set(TransformObject.[[zz]], i = 1L, j = "ColumnName", value = paste0("Predictions.V",zz))
+        TransformObjectTemp <- data.table::rbindlist(list(temptrans,TransformObject.[[zz]]))
+
+        # Ensure positive values in case transformation method requires so----
+        if(Difference.) {
+          if(!is.null(GroupVariables.) && TrainOnFull.) {
+            UpdateData[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := 1, by = "GroupVar"]
+          } else if(TrainOnFull) {
+            UpdateData[!get(DateColumnName) %in% FutureDateData., eval(TargetColumnName.) := 1]
+          }
+        }
+
+        # Backtrans----
+        UpdateData. <- AutoTransformationScore(
+          ScoringData = UpdateData.,
+          FinalResults = TransformObjectTemp,
+          Type = "Inverse",
+          TransID = NULL,
+          Path = NULL)
+      }
     }
-    FC_Periods. <- FC_Periods. + 1L
-    dataStart <- NULL
+  }
+
+  # Remove target variables values on FC periods
+  if(!is.null(GroupVariables.)) {
+    UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := NA, by = "GroupVar"]
   } else {
-    dataStart <- NULL
-    Train <- NULL
+    UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := NA]
   }
-  return(list(
-    data = data.,
-    dataStart = dataStart,
-    FC_Periods = FC_Periods.,
-    Train = Train))
-}
 
-#' @param data. Passthrough
-#' @param XREGS. Passthrough
-#' @param DateColumnName. Passthrough
-#' @param TimeUnit. Passthrough
-#'
-#' @noRd
-CarmaDateStandardize <- function(data. = data,
-                                 XREGS. = NULL,
-                                 DateColumnName. = DateColumnName,
-                                 TimeUnit. = TimeUnit) {
-  if(is.character(data.[[eval(DateColumnName.)]])) {
-    if(!(tolower(TimeUnit.) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-      x <- data.[1L, get(DateColumnName.)]
-      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-      data.[, eval(DateColumnName.) := as.Date(get(DateColumnName.), tryFormats = x1)]
+  # Return data prep
+  if(!is.null(GroupVariables.)) {
+    keep <- c("GroupVar", eval(DateColumnName.), eval(TargetColumnName.), names(UpdateData.)[which(names(UpdateData.) %like% "Predictions")])
+    UpdateData. <- UpdateData.[, ..keep]
+    if(length(GroupVariables.) > 1L) {
+      UpdateData.[, eval(GroupVariables.) := data.table::tstrsplit(GroupVar, " ")][, GroupVar := NULL]
     } else {
-      data.[, eval(DateColumnName.) := as.POSIXct(get(DateColumnName.))]
+      UpdateData.[, eval(GroupVariables.) := GroupVar][, GroupVar := NULL]
     }
   }
-  if(!is.null(XREGS.) && is.character(XREGS.[[eval(DateColumnName.)]])) {
-    if(!(tolower(TimeUnit.) %chin% c("1min","5min","10min","15min","30min","hour"))) {
-      x <- XREGS.[1L, get(DateColumnName.)]
-      x1 <- lubridate::guess_formats(x, orders = c("mdY", "BdY", "Bdy", "bdY", "bdy", "mdy", "dby", "Ymd", "Ydm"))
-      XREGS.[, eval(DateColumnName.) := as.Date(get(DateColumnName.), tryFormats = x1)]
-    } else {
-      XREGS.[, eval(DateColumnName.) := as.POSIXct(get(DateColumnName.))]
-    }
-  }
-  return(list(data = data., XREGS = XREGS.))
-}
 
-#' @param train. Passthrough
-#' @param TimeWeights. Passthrough
-#' @param GroupVariables. Passthrough
-#' @param DateColumnName. Passthrough
-#'
-#' @noRd
-CarmaTimeWeights <- function(train. = train,
-                             TimeWeights. = TimeWeights,
-                             GroupVariables. = GroupVariables,
-                             DateColumnName. = DateColumnName) {
-  if(!is.null(TimeWeights.)) {
-    if(!is.null(GroupVariables.)) {
-      data.table::setorderv(x = train., cols = c("GroupVar", DateColumnName.), order = c(1,-1))
-      train.[, PowerValue := seq_len(.N), by = "GroupVar"]
-      train.[, Weights := eval(TimeWeights.) ^ PowerValue]
-      Weightss <- train.[["Weights"]]
-      train.[, ":=" (PowerValue = NULL, Weights = NULL)]
-      data.table::setorderv(x = train., cols = c("GroupVar", DateColumnName.), order = c(1,1))
-    } else {
-      data.table::setorderv(x = train., cols = c(DateColumnName.), order = c(-1))
-      train.[, PowerValue := seq_len(.N)]
-      train.[, Weights := eval(TimeWeights.) ^ PowerValue]
-      Weightss <- train.[["Weights"]]
-      train.[, ":=" (PowerValue = NULL, Weights = NULL)]
-      data.table::setorderv(x = train., cols = c(DateColumnName.), order = c(1))
-    }
-  } else {
-    Weightss <- NULL
-  }
-  return(list(train = train., Weightss = Weightss))
-}
-
-#' @param data. Passthrough
-#' @param DateColumnName. Passthrough
-#' @param TimeUnit. Passthrough
-#'
-#' @noRd
-CarmaTruncateData <- function(data. = data,
-                              DateColumnName. = DateColumnName,
-                              TimeUnit. = TimeUnit) {
-  mindate <- data.[, min(get(DateColumnName.))]
-  if(tolower(TimeUnit.) %chin% c("hour","hours")) {
-    newdate <- mindate + lubridate::hours(val + 1)
-  } else if(tolower(TimeUnit.) %chin% c("1min","1mins","1minute","1minutes")) {
-    newdate <- mindate + lubridate::minutes(val + 1)
-  } else if(tolower(TimeUnit.) %chin% c("5min","5mins","5minute","5minutes")) {
-    newdate <- mindate + lubridate::minutes(val + 5)
-  } else if(tolower(TimeUnit.) %chin% c("10min","10mins","10minute","10minutes")) {
-    newdate <- mindate + lubridate::minutes(val + 10)
-  } else if(tolower(TimeUnit.) %chin% c("15min","15mins","15minute","15minutes")) {
-    newdate <- mindate + lubridate::minutes(val + 15)
-  } else if(tolower(TimeUnit.) %chin% c("30min","30mins","30minute","30minutes")) {
-    newdate <- mindate + lubridate::minutes(val + 30)
-  } else if(tolower(TimeUnit.) %chin% c("day","days")) {
-    newdate <- mindate + lubridate::days(val + 1)
-  } else if(tolower(TimeUnit.) %chin% c("week","weeks")) {
-    newdate <- mindate + lubridate::weeks(val + 1)
-  } else if(tolower(TimeUnit.) %chin% c("month","months")) {
-    newdate <- mindate %m+% months(val + 1)
-  } else if(tolower(TimeUnit.) %chin% c("quarter","quarters")) {
-    newdate <- mindate %m+% months(val + 1)
-  } else if(tolower(TimeUnit.) %chin% c("years","year")) {
-    newdate <- mindate + lubridate::years(val + 1)
-  }
-  data. <- data.[get(DateColumnName.) >= eval(newdate)]
-  return(data.)
+  # Return data
+  return(list(UpdateData = UpdateData., TransformObject = TransformObject.))
 }

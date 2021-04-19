@@ -192,7 +192,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Identify column numbers for factor variables ----
-  CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
+  CatFeatures <- tryCatch({sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))}, error = function(x) NULL)
   if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
 
   # DummifyDT categorical columns ----
@@ -271,8 +271,16 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Subset Columns Needed ----
   if(ReturnFeatures && TargetType != "multiclass") ScoringMerge <- data.table::copy(ScoringData)
-  if(!is.null(IDcols)) FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% c(IDcols)]
-  if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0))) {
+  if(!is.null(IDcols) && TargetType != "multiregression") {
+    FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% c(IDcols)]
+  } else if(TargetType == "multiregression") {
+    temp <- setdiff(names(ScoringData), c(TargetColumnName, FeatureColumnNames))
+    FeatureColumnNames <- c(FeatureColumnNames, temp)
+    FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% "GroupVar"]
+  }
+  if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != "multiregression") {
+    data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
+  } else if(TargetType == "multiregression") {
     data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
   }
 
@@ -338,9 +346,13 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Rename predicted value ----
-  if(TargetType == "regression") data.table::setnames(predict, "V1", "Predictions")
-  if(TargetType == "multiregression") data.table::setnames(predict, paste0("V",seq_along(predict)), paste0("Predictions.V", seq_along(predict)))
-  if(TargetType == "classification") data.table::setnames(predict, "V1", "p1")
+  if(TargetType == "regression") {
+    data.table::setnames(predict, "V1", "Predictions")
+  } else if(TargetType == "multiregression") {
+    data.table::setnames(predict, paste0("V",seq_along(predict)), paste0("Predictions.V", seq_along(predict)))
+  } else if(TargetType == "classification") {
+    data.table::setnames(predict, "V1", "p1")
+  }
 
   # Merge features back on ----
   if(ReturnFeatures && TargetType != "multiclass") predict <- cbind(predict, ScoringMerge)
@@ -358,7 +370,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       FinalResults = grid_trans_results,
       TransID = NULL,
       Path = NULL)
-  } else {
+  } else if(BackTransNumeric && TargetType == "multiregression") {
 
     # Prepare transformation object
     TransformationObject <- data.table::rbindlist(list(TransformationObject, TransformationObject))

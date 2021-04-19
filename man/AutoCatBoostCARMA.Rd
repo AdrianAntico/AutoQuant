@@ -48,6 +48,7 @@ AutoCatBoostCARMA(
   TaskType = "GPU",
   NumGPU = 1,
   DebugMode = FALSE,
+  Timer = TRUE,
   EvalMetric = "RMSE",
   EvalMetricValue = 1.5,
   LossFunction = "RMSE",
@@ -60,15 +61,14 @@ AutoCatBoostCARMA(
   Langevin = FALSE,
   DiffusionTemperature = 10000,
   NTrees = 1000,
-  L2_Leaf_Reg = 3,
+  L2_Leaf_Reg = NULL,
   LearningRate = NULL,
   RandomStrength = 1,
   BorderCount = 254,
   Depth = 6,
   RSM = 1,
-  BootStrapType = NULL,
+  BootStrapType = "Bayesian",
   GrowPolicy = "SymmetricTree",
-  Timer = TRUE,
   ModelSizeReg = 0.5,
   FeatureBorderType = "GreedyLogSum",
   SamplingUnit = "Group",
@@ -160,6 +160,8 @@ AutoCatBoostCARMA(
 
 \item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
 
+\item{Timer}{Set to FALSE to turn off the updating print statements for progress}
+
 \item{EvalMetric}{Select from "RMSE", "MAE", "MAPE", "Poisson", "Quantile", "LogLinQuantile", "Lq", "NumErrors", "SMAPE", "R2", "MSLE", "MedianAbsoluteError"}
 
 \item{EvalMetricValue}{Used when EvalMetric accepts an argument. See \code{\link{AutoCatBoostRegression}}}
@@ -199,8 +201,6 @@ AutoCatBoostCARMA(
 \item{BootStrapType}{If NULL, then if TaskType is GPU then Bayesian will be used. If CPU then MVS will be used. If MVS is selected when TaskType is GPU, then BootStrapType will be switched to Bayesian}
 
 \item{GrowPolicy}{Default is SymmetricTree. Others include Lossguide and Depthwise}
-
-\item{Timer}{Set to FALSE to turn off the updating print statements for progress}
 
 \item{ModelSizeReg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
 

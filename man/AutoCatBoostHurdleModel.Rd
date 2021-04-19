@@ -22,6 +22,7 @@ AutoCatBoostHurdleModel(
   task_type = "GPU",
   ModelID = "ModelTest",
   Paths = NULL,
+  DebugMode = FALSE,
   MetaDataPaths = NULL,
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
@@ -84,6 +85,8 @@ AutoCatBoostHurdleModel(
 \item{ModelID}{Define a character name for your models}
 
 \item{Paths}{The path to your folder where you want your model information saved}
+
+\item{DebugMode}{Print steps to screen by setting to TRUE}
 
 \item{MetaDataPaths}{TA character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.}
 
@@ -158,6 +161,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
   IDcols = NULL,
+  DebugMode = FALSE,
 
   # Metadata args
   Paths = normalizePath("./"),

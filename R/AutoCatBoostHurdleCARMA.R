@@ -565,6 +565,7 @@ AutoCatBoostHurdleCARMA <- function(data,
     FeatureColNames = ModelFeatures,
     PrimaryDateColumn = eval(DateColumnName),
     IDcols = IDcols,
+    DebugMode = DebugMode,
 
     # Metadata args
     Paths = normalizePath("./"),

@@ -420,7 +420,7 @@ CatBoostDataPrep <- function(ModelType = "regression",
 
       data.table::set(data., j = "ID_Factorizer", value = "TRAIN")
       if(!TrainOnFull.) {
-        data.table::set(ValidationData.,j = "ID_Factorizer", value = "TRAIN")
+        data.table::set(ValidationData.,j = "ID_Factorizer", value = "VALIDATE")
         temp <- data.table::rbindlist(list(data., ValidationData.))
       } else {
         temp <- data.
@@ -469,14 +469,14 @@ CatBoostDataPrep <- function(ModelType = "regression",
   }
 
   # Data Subset Columns Needed ----
-  keep <- setdiff(names(data.), c(PrimaryDateColumn., IDcols.))
-  data. <- data.[, ..keep]
-  if(!TrainOnFull.) ValidationData. <- ValidationData.[, ..keep] else ValidationData. <- NULL
+  keep <- unique(c(PrimaryDateColumn., IDcols.))
+  if(!is.null(keep)) data.table::set(data., j = c(keep), value = NULL)
+  if(!TrainOnFull. && !is.null(keep)) data.table::set(ValidationData., j = c(keep), value = NULL) else ValidationData. <- NULL
 
   # TestData Subset Columns Needed ----
   if(!is.null(TestData.)) {
     TestMerge <- data.table::copy(TestData.)
-    TestData. <- TestData.[, ..keep]
+    if(!is.null(keep)) data.table::set(TestData., j = c(keep), value = NULL)
   } else {
     TestMerge <- NULL
     TestData. <- NULL
@@ -551,10 +551,12 @@ CatBoostDataPrep <- function(ModelType = "regression",
   if(ncol(TrainTarget) > 1L) TrainTarget <- as.matrix(TrainTarget) else TrainTarget <- TrainTarget[[1L]]
   data.table::set(data., j = TargetColumnName., value = NULL)
   if(!TrainOnFull.) {
-    TestTarget <- ValidationData.[, get(TargetColumnName.)]
+    TestTarget <- ValidationData.[, .SD, .SDcols = c(TargetColumnName.)]
+    if(ncol(TestTarget) > 1L) TestTarget <- as.matrix(TestTarget) else TestTarget <- TestTarget[[1L]]
     data.table::set(ValidationData., j = TargetColumnName., value = NULL)
     if(!is.null(TestData.)) {
-      FinalTestTarget <- TestData.[, get(TargetColumnName.)]
+      FinalTestTarget <- TestData.[, .SD, .SDcols = c(TargetColumnName.)]
+      if(ncol(FinalTestTarget) > 1L) FinalTestTarget <- as.matrix(FinalTestTarget) else FinalTestTarget <- FinalTestTarget[[1L]]
       data.table::set(TestData., j = TargetColumnName., value = NULL)
     } else {
       FinalTestTarget <- NULL
@@ -565,12 +567,12 @@ CatBoostDataPrep <- function(ModelType = "regression",
   }
 
   # Identify column numbers for factor variables ----
-  if(ModelType != "multiclass") {
+  if(ModelType != "multiclass" && (DummifyCols. || (!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
     CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
     if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
-  } else {
-    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
-    TargetNum <- which(names(data) == TargetColumnName.)
+  } else if((DummifyCols. || (!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data, is.character)))))
+    TargetNum <- which(names(data.) == TargetColumnName.)
     CatFeatures <- setdiff(CatFeatures, TargetNum)
     if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
   }
@@ -976,29 +978,38 @@ CatBoostValidationData <- function(ModelType = "classification",
     # Generate validation data
     if(!TrainOnFull.) {
       if(TestDataCheck) {
-        if(length(TargetColumnName.) > 1) {
+        if(length(TargetColumnName.) > 1L) {
           ValidationData <- data.table::as.data.table(cbind(TestMerge., Predict = predict.))
         } else {
           ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., Predict = predict.))
           data.table::setnames(ValidationData, "Target", TargetColumnName.)
         }
       } else {
-        if(length(TargetColumnName.) > 1) {
-          ValidationData <- data.table::as.data.table(cbind(dataTest., Predict = predict.))
+        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., Predict = predict.))
+        if(length(TargetColumnName.) > 1L) {
+          data.table::setnames(ValidationData, c(names(ValidationData)[seq_along(TargetColumnName.)]), c(TargetColumnName.))
         } else {
-          ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., Predict = predict.))
           data.table::setnames(ValidationData, "Target", TargetColumnName.)
         }
       }
     } else {
-      ValidationData <- data.table::as.data.table(cbind(data., Predict = predict.))
+      if(!is.null(dataTest.)) {
+        ValidationData <- data.table::as.data.table(cbind(dataTest., Predict = predict.))
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., Predict = predict.))
+        if(length(TargetColumnName.) > 1L) {
+          data.table::setnames(ValidationData, c(names(ValidationData)[seq_along(TargetColumnName.)]), c(TargetColumnName.))
+        } else {
+          data.table::setnames(ValidationData, "Target", TargetColumnName.)
+        }
+      }
       if("ID_Factorizer" %chin% names(ValidationData)) data.table::set(ValidationData, j = "ID_Factorizer", value = NULL)
     }
 
     # Back transform before running metrics and plots
     if(!is.null(TransformNumericColumns.)) {
-      if(GridTune. & !TrainOnFull.) TransformationResults. <- TransformationResults.[ColumnName != "Predicted"]
-      if(length(TargetColumnName.) == 1) {
+      if(GridTune. && !TrainOnFull.) TransformationResults. <- TransformationResults.[ColumnName != "Predicted"]
+      if(length(TargetColumnName.) == 1L) {
 
         # Prepare transformation object
         TransformationResults. <- data.table::rbindlist(list(

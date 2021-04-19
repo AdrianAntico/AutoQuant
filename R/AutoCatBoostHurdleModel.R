@@ -22,6 +22,7 @@
 #' @param task_type Set to "GPU" or "CPU"
 #' @param ModelID Define a character name for your models
 #' @param Paths The path to your folder where you want your model information saved
+#' @param DebugMode Print steps to screen by setting to TRUE
 #' @param ReturnModelObjects TRUE to return the models
 #' @param MetaDataPaths TA character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to Paths.
 #' @param SaveModelObjects Set to TRUE to save the model objects to file in the folders listed in Paths
@@ -68,6 +69,7 @@
 #'   FeatureColNames = NULL,
 #'   PrimaryDateColumn = NULL,
 #'   IDcols = NULL,
+#'   DebugMode = FALSE,
 #'
 #'   # Metadata args
 #'   Paths = normalizePath("./"),
@@ -129,6 +131,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     task_type = "GPU",
                                     ModelID = "ModelTest",
                                     Paths = NULL,
+                                    DebugMode = FALSE,
                                     MetaDataPaths = NULL,
                                     SaveModelObjects = FALSE,
                                     ReturnModelObjects = TRUE,
@@ -375,6 +378,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   # IDcols to Names ----
   if(!is.null(IDcols)) if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
+  IDcols <- c(IDcols, TargetColumnName)
 
   # Primary Date Column ----
   if(is.numeric(PrimaryDateColumn) || is.integer(PrimaryDateColumn)) PrimaryDateColumn <- names(data)[PrimaryDateColumn]
@@ -432,7 +436,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
 
   # AutoDataPartition if Validation and TestData are NULL----
-  if(is.null(ValidationData) && is.null(TestData) & !TrainOnFull) {
+  if(is.null(ValidationData) && is.null(TestData) && !TrainOnFull) {
     DataSets <- AutoDataPartition(
       data = data,
       NumDataSets = 3L,
@@ -445,7 +449,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     TestData <- DataSets$TestData
     rm(DataSets)
   } else if(TrainOnFull) {
-    ValidationData <- NULL
     TestData <- NULL
   }
 
@@ -589,12 +592,13 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Score Classification Model----
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
 
-  # Model Scoring----
-  if(!TrainOnFull) {
+  # Model Scoring ----
+  if(!TrainOnFull || !is.null(ValidationData)) {
+    if(is.null(TestData)) ValTrue <<- TRUE else ValTrue <<- FALSE
     TestData <- AutoCatBoostScoring(
       RemoveModel = TRUE,
       TargetType = TargetType,
-      ScoringData = TestData,
+      ScoringData = if(!is.null(TestData)) TestData else if(!is.null(ValidationData)) data.table::copy(ValidationData) else data,
       FeatureColumnNames = FeatureNames,
       IDcols = IDcols,
       ModelObject = ClassModel,
@@ -604,6 +608,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MultiClassTargetLevels = TargetLevels,
       TransformNumeric = FALSE,
       BackTransNumeric = FALSE,
+      ReturnShapValues = FALSE,
       TargetColumnName = NULL,
       TransformationObject = NULL,
       TransID = NULL,
@@ -614,16 +619,37 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)
 
+    # Rename data output
+    if(ValTrue) {
+      ValidationData <- TestData
+      TestData <- NULL
+    }
+
     # Change name for classification----
+    if(DebugMode) print("Change name for classification----")
     if(TargetType == "Classification") {
-      data.table::setnames(TestData, "p1", "Predictions_C1")
-      TestData[, Predictions_C0 := 1 - Predictions_C1]
-      data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
+      if(!is.null(TestData)) {
+        data.table::setnames(TestData, "p1", "Predictions_C1")
+        TestData[, Predictions_C0 := 1 - Predictions_C1]
+        data.table::setcolorder(TestData, c(ncol(TestData), 1L, 2L:(ncol(TestData) - 1L)))
+      } else if(!is.null(ValidationData)) {
+        data.table::setnames(ValidationData, "p1", "Predictions_C1")
+        ValidationData[, Predictions_C0 := 1 - Predictions_C1]
+        data.table::setcolorder(ValidationData, c(ncol(ValidationData), 1L, 2L:(ncol(ValidationData) - 1L)))
+      }
     }
 
     # Change Name of Predicted MultiClass Column----
-    if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
-    data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
+    if(DebugMode) print("Change Name of Predicted MultiClass Column----")
+    if(TargetType != "classification") {
+      if(!is.null(TestData)) {
+        if(length(Buckets) != 1L) data.table::setnames(TestData, "Predictions", "Predictions_MultiClass")
+        data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
+      } else if(!is.null(ValidationData)) {
+        if(length(Buckets) != 1L) data.table::setnames(ValidationData, "Predictions", "Predictions_MultiClass")
+        data.table::set(ValidationData, j = "Target_Buckets", value = NULL)
+      }
+    }
 
   } else {
     TestData <- NULL
@@ -633,9 +659,11 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   rm(ClassModel)
 
   # Remove Target_Buckets----
+  if(DebugMode) print("Remove Target_Buckets----")
   data.table::set(data, j = "Target_Buckets", value = NULL)
 
   # Prepare for regression runs ----
+  if(DebugMode) print("Prepare for regression runs ----")
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
   counter <- max(rev(seq_len(length(Buckets) + 1L)))
   Degenerate <- 0L
@@ -643,15 +671,20 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   R_ParDepPlots <- list()
 
   # Begin regression model building----
+  if(DebugMode) print("Begin regression model building----")
   for(bucket in rev(seq_len(length(Buckets) + 1L))) {
 
-    # Define data sets----
+    # Define data sets ----
     if(bucket == max(seq_len(length(Buckets) + 1L))) {
       if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- TestData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
+      } else if(!is.null(ValidationData)) {
+        trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        testBucket <- NULL
       } else {
         trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         validBucket <- NULL
@@ -663,8 +696,18 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
         testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket])]
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
+      } else if(!is.null(ValidationData)) {
+        if(length(Buckets) == 1 && Buckets == 0) {
+          trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+          validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+          testBucket <- NULL
+        } else {
+          trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket])]
+          validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket])]
+          testBucket <- NULL
+        }
       } else {
-        if(length(Buckets) == 1 & Buckets == 0) {
+        if(length(Buckets) == 1 && Buckets == 0) {
           trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
           validBucket <- NULL
           testBucket <- NULL
@@ -680,6 +723,10 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         testBucket <- TestData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         data.table::set(testBucket, j = setdiff(names(testBucket), names(data)), value = NULL)
+      } else if(!is.null(ValidationData)) {
+        trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        validBucket <- ValidationData[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
+        testBucket <- NULL
       } else {
         trainBucket <- data[get(TargetColumnName) <= eval(Buckets[bucket]) & get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         validBucket <- NULL
@@ -687,10 +734,17 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       }
     }
 
-    # Create Modified IDcols----
-    IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)), TargetColumnName)
+    # Create Modified IDcols ----
+    if(!is.null(TestData)) {
+      IDcolsModified <- c(IDcols, setdiff(names(TestData), names(trainBucket)))
+      IDcolsModified <- IDcolsModified[!IDcolsModified %chin% TargetColumnName]
+    } else if(!is.null(ValidationData)) {
+      IDcolsModified <- c(IDcols, setdiff(names(ValidationData), names(trainBucket)))
+      IDcolsModified <- IDcolsModified[!IDcolsModified %chin% TargetColumnName]
+    }
 
     # AutoCatBoostRegression()----
+    if(DebugMode) print("AutoCatBoostRegression()----")
     if(trainBucket[, .N] != 0L) {
 
       # If there is some variance then build model
@@ -703,63 +757,74 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,"_",bucket,"+") else ModelIDD <- paste0(ModelID, "_", bucket)
 
         # Build model----
+        if(DebugMode) print("Build model----")
+        if(DebugMode) {
+          print(str(trainBucket))
+          print(str(validBucket))
+          print(str(testBucket))
+        }
         RegModel <- AutoCatBoostRegression(
 
-            # GPU or CPU
-            task_type = task_type,
+          # GPU or CPU
+          task_type = task_type,
+          NumGPUs = 1,
+          DebugMode = DebugMode,
 
-            # Metadata arguments
-            ModelID = ModelIDD,
-            model_path = Paths,
-            metadata_path = MetaDataPaths,
-            SaveModelObjects = SaveModelObjects,
-            ReturnModelObjects = ReturnModelObjects,
+          # Metadata arguments
+          ModelID = ModelIDD,
+          model_path = Paths,
+          metadata_path = MetaDataPaths,
+          SaveModelObjects = SaveModelObjects,
+          ReturnModelObjects = ReturnModelObjects,
 
-            # Data arguments
-            data = data.table::copy(trainBucket),
-            TrainOnFull = TrainOnFull,
-            ValidationData = data.table::copy(validBucket),
-            TestData = data.table::copy(testBucket),
-            TargetColumnName = TargetColumnName,
-            FeatureColNames = FeatureNames,
-            PrimaryDateColumn = PrimaryDateColumn,
-            IDcols = IDcols,
-            TransformNumericColumns = TransformNumericColumns,
+          # Data arguments
+          data = data.table::copy(trainBucket),
+          TrainOnFull = TrainOnFull,
+          ValidationData = data.table::copy(validBucket),
+          TestData = data.table::copy(testBucket),
+          TargetColumnName = TargetColumnName,
+          FeatureColNames = FeatureNames,
+          PrimaryDateColumn = PrimaryDateColumn,
+          IDcols = IDcolsModified,
+          DummifyCols = FALSE,
+          TransformNumericColumns = TransformNumericColumns,
+          Methods = Methods,
 
-            # Model evaluation
-            eval_metric = "RMSE",
-            MetricPeriods = MetricPeriods,
-            NumOfParDepPlots = NumOfParDepPlots,
+          # Model evaluation
+          eval_metric = "RMSE",
+          loss_function = "RMSE",
+          MetricPeriods = MetricPeriods,
+          NumOfParDepPlots = NumOfParDepPlots,
 
-            # Grid tuning arguments - PassInGrid is the best of GridMetrics
-            PassInGrid = PassInGrid,
-            GridTune = GridTune,
-            MaxModelsInGrid = MaxModelsInGrid,
-            MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-            MaxRunMinutes = MaxRunMinutes,
-            BaselineComparison = BaselineComparison,
+          # Grid tuning arguments - PassInGrid is the best of GridMetrics
+          PassInGrid = PassInGrid,
+          GridTune = GridTune,
+          MaxModelsInGrid = MaxModelsInGrid,
+          MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+          MaxRunMinutes = MaxRunMinutes,
+          BaselineComparison = BaselineComparison,
 
-            # Trees, Depth, and LearningRate used in the bandit grid tuning
-            Trees = RegressionTrees,
-            Depth = RegressionDepth,
-            LearningRate = RegressionLearningRate,
-            L2_Leaf_Reg = RegressionL2_Leaf_Reg,
-            RandomStrength = RegressionRandomStrength,
-            BorderCount = RegressionBorderCount,
-            RSM = RegressionRSM,
-            BootStrapType = RegressionBootStrapType,
-            GrowPolicy = RegressionGrowPolicy,
-            Methods = RegressionMethods,
-            langevin = FALSE,
-            diffusion_temperature = 10000,
-            model_size_reg = 0.5,
-            feature_border_type = "GreedyLogSum",
-            sampling_unit = "Object",
-            subsample = NULL,
-            score_function = "Cosine",
-            min_data_in_leaf = 1)
+          # Trees, Depth, and LearningRate used in the bandit grid tuning
+          Trees = RegressionTrees,
+          Depth = RegressionDepth,
+          LearningRate = RegressionLearningRate,
+          L2_Leaf_Reg = RegressionL2_Leaf_Reg,
+          RandomStrength = RegressionRandomStrength,
+          BorderCount = RegressionBorderCount,
+          RSM = RegressionRSM,
+          BootStrapType = RegressionBootStrapType,
+          GrowPolicy = RegressionGrowPolicy,
+          langevin = FALSE,
+          diffusion_temperature = 10000,
+          model_size_reg = 0.5,
+          feature_border_type = "GreedyLogSum",
+          sampling_unit = "Object",
+          subsample = NULL,
+          score_function = "Cosine",
+          min_data_in_leaf = 1)
 
         # Store Model----
+        if(DebugMode) print("Store Model----")
         RegressionModel <- RegModel$Model
         if(ReturnModelObjects || SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
         if(!is.null(TransformNumericColumns)) {
@@ -771,10 +836,11 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         R_ParDepPlots[[paste0(ModelIDD)]] <- RegModel$PartialDependencePlots
 
         # Score models----
-        if(!is.null(TestData)) {
+        if(DebugMode) print("Score models----")
+        if(!is.null(TestData) || !is.null(ValidationData)) {
           TestData <- AutoCatBoostScoring(
             TargetType = "regression",
-            ScoringData = TestData,
+            ScoringData = if(!is.null(TestData)) TestData else ValidationData,
             FeatureColumnNames = FeatureNames,
             IDcols = IDcolsModified,
             ModelObject = RegressionModel,
@@ -793,13 +859,25 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             MDP_MissFactor = "0",
             MDP_MissNum = -1)
 
+          # Switch object names
+          if(ValTrue) {
+            ValidationData <- TestData
+            TestData <- NULL
+          }
+
           # Clear TestModel From Memory----
           rm(RegModel)
           gc()
 
           # Change prediction name to prevent duplicates----
+          if(DebugMode) print("Change prediction name to prevent duplicates----")
           if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0("Predictions_", bucket - 1L, "+") else Val <- paste0("Predictions_", bucket)
-          data.table::setnames(TestData, "Predictions", Val)
+          if(ValTrue) {
+            data.table::setnames(ValidationData, "Predictions", Val)
+          } else {
+            data.table::setnames(TestData, "Predictions", Val)
+          }
+
         } else {
           rm(RegModel); gc()
         }
@@ -807,21 +885,34 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       } else {
 
         # Check for TrainOnFull ----
-        if(!is.null(TestData)) {
+        if(!is.null(TestData) || !is.null(ValidationData)) {
 
           # Account for degenerate distributions----
           ArgsList[["constant"]] <- c(ArgsList[["constant"]], bucket)
 
           # Use single value for predictions in the case of zero variance----
-          if(bucket == max(seq_len(length(Buckets) + 1L))) {
-            Degenerate <- Degenerate + 1L
-            data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
-            data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
-          } else {
-            Degenerate <- Degenerate + 1L
-            data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
-            data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+          if(!is.null(TestData)) {
+            if(bucket == max(seq_len(length(Buckets) + 1L))) {
+              Degenerate <- Degenerate + 1L
+              data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
+              data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+            } else {
+              Degenerate <- Degenerate + 1L
+              data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
+              data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
+            }
+          } else if(!is.null(ValidationData)) {
+            if(bucket == max(seq_len(length(Buckets) + 1L))) {
+              Degenerate <- Degenerate + 1L
+              data.table::set(ValidationData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
+              data.table::setcolorder(ValidationData, c(ncol(ValidationData), 1L:(ncol(ValidationData) - 1L)))
+            } else {
+              Degenerate <- Degenerate + 1L
+              data.table::set(ValidationData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
+              data.table::setcolorder(ValidationData, c(ncol(ValidationData), 1L:(ncol(ValidationData) - 1L)))
+            }
           }
+
         } else {
 
           # Account for degenerate distributions----
@@ -843,7 +934,14 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   }
 
   # Rearrange Column order----
-  if(!TrainOnFull) {
+  if(DebugMode) print("Rearrange Column order----")
+  if(!TrainOnFull || !is.null(ValidationData)) {
+
+    # Change object names
+    if(ValTrue) {
+      TestData <- ValidationData
+      ValidationData <- NULL
+    }
 
     # Rearrange cols ----
     counter <- length(Buckets)
@@ -871,7 +969,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       }
     } else {
       if(length(IDcols) != 0L) {
-        data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L), 3L:(2L + length(IDcols)), (((3L + length(IDcols)) + 2L):ncol(TestData))))
+        if(!ValTrue) data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L), 3L:(2L + length(IDcols)), (((3L + length(IDcols)) + 2L):ncol(TestData))))
       }
     }
 
@@ -885,7 +983,11 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         }
       }
     } else {
-      TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
+      if(Buckets != 0) {
+        TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
+      } else {
+        TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]]]
+      }
     }
 
     # Regression r2 via sqrt of correlation----
@@ -1028,8 +1130,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   # Save args list to file----
   if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(Paths), paste0(ModelID, "_HurdleArgList.Rdata")))
+  rm(ValTrue, envir = .GlobalEnv)
 
-  # Return Output----
+  # Return Output ----
   if(!TrainOnFull) {
     return(list(
       ArgsList = ArgsList,

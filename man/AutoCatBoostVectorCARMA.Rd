@@ -44,6 +44,9 @@ AutoCatBoostVectorCARMA(
   SplitRatios = c(0.7, 0.2, 0.1),
   TaskType = "GPU",
   NumGPU = 1,
+  PartitionType = "timeseries",
+  Timer = TRUE,
+  DebugMode = FALSE,
   EvalMetric = "RMSE",
   EvalMetricValue = 1.5,
   LossFunction = "RMSE",
@@ -56,14 +59,20 @@ AutoCatBoostVectorCARMA(
   Langevin = FALSE,
   DiffusionTemperature = 10000,
   NTrees = 1000,
-  L2_Leaf_Reg = 3,
+  L2_Leaf_Reg = NULL,
+  LearningRate = NULL,
   RandomStrength = 1,
   BorderCount = 254,
   Depth = 6,
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  PartitionType = "timeseries",
-  Timer = TRUE,
-  DebugMode = FALSE
+  RSM = 1,
+  BootStrapType = "Bayesian",
+  GrowPolicy = "SymmetricTree",
+  ModelSizeReg = 0.5,
+  FeatureBorderType = "GreedyLogSum",
+  SamplingUnit = "Group",
+  SubSample = NULL,
+  ScoreFunction = "Cosine",
+  MinDataInLeaf = 1
 )
 }
 \arguments{
@@ -141,6 +150,12 @@ AutoCatBoostVectorCARMA(
 
 \item{NumGPU}{Defaults to 1. If CPU is set this argument will be ignored.}
 
+\item{PartitionType}{Select "random" for random data partitioning "timeseries" for partitioning by time frames}
+
+\item{Timer}{Set to FALSE to turn off the updating print statements for progress}
+
+\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
+
 \item{EvalMetric}{"MultiRMSE" only. If catboost updates this I'll add more later}
 
 \item{EvalMetricValue}{Placeholder for later}
@@ -159,13 +174,15 @@ AutoCatBoostVectorCARMA(
 
 \item{MaxRunMinutes}{Default is 60*60}
 
-\item{Langevin}{TRUE or FALSE}
+\item{Langevin}{Enables the Stochastic Gradient Langevin Boosting mode. If TRUE and TaskType == "GPU" then TaskType will be converted to "CPU"}
 
-\item{DiffusionTemperature}{Default value of 10000}
+\item{DiffusionTemperature}{Default is 10000}
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
 \item{L2_Leaf_Reg}{l2 reg parameter}
+
+\item{LearningRate}{Defaults to NULL. Catboost will dynamically define this if L2_Leaf_Reg is NULL and RMSE is chosen (otherwise catboost will default it to 0.03). Then you can pull it out of the model object and pass it back in should you wish.}
 
 \item{RandomStrength}{Default is 1}
 
@@ -173,13 +190,23 @@ AutoCatBoostVectorCARMA(
 
 \item{Depth}{Depth of catboost model}
 
-\item{BootStrapType}{Select from Catboost list}
+\item{RSM}{CPU only. If TaskType is GPU then RSM will not be used}
 
-\item{PartitionType}{Select "random" for random data partitioning "timeseries" for partitioning by time frames}
+\item{BootStrapType}{If NULL, then if TaskType is GPU then Bayesian will be used. If CPU then MVS will be used. If MVS is selected when TaskType is GPU, then BootStrapType will be switched to Bayesian}
 
-\item{Timer}{Set to FALSE to turn off the updating print statements for progress}
+\item{GrowPolicy}{Default is SymmetricTree. Others include Lossguide and Depthwise}
 
-\item{DebugMode}{Defaults to FALSE. Set to TRUE to get a print statement of each high level comment in function}
+\item{ModelSizeReg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
+
+\item{FeatureBorderType}{Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
+
+\item{SamplingUnit}{Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the loss_function is YetiRankPairWise}
+
+\item{SubSample}{Can use if BootStrapType is neither Bayesian nor No. Pass NULL to use Catboost default. Used for bagging.}
+
+\item{ScoreFunction}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
+
+\item{MinDataInLeaf}{Defaults to 1. Used if GrowPolicy is not SymmetricTree}
 }
 \value{
 Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
@@ -191,7 +218,7 @@ AutoCatBoostVectorCARMA Multiple Regression, Mutlivariate Forecasting with calen
 \dontrun{
 # Two group variables and xregs
 
-# Load Walmart Data from Dropbox----
+# Load Walmart Data from Dropbox
 data <- data.table::fread(
  "https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
@@ -230,6 +257,8 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
   TimeGroups = c("weeks","months"),
 
   # Production args
+  TaskType = "GPU",
+  NumGPU = 1,
   TrainOnFull = TRUE,
   SplitRatios = c(1 - 10 / 138, 10 / 138),
   PartitionType = "random",
@@ -273,27 +302,38 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
 
-  # ML Args
+  # Eval args
   NumOfParDepPlots = 100L,
   EvalMetric = "MultiRMSE",
   EvalMetricValue = 1.5,
   LossFunction = "MultiRMSE",
   LossFunctionValue = 1.5,
+
+  # Grid args
   GridTune = FALSE,
   PassInGrid = NULL,
   ModelCount = 5,
-  TaskType = "GPU",
-  NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60*60,
-  Langevin = FALSE,
-  DiffusionTemperature = 10000,
-  NTrees = 2500,
-  L2_Leaf_Reg = 3.0,
+
+  # ML Args
+  NTrees = 1000,
+  Depth = 6,
+  LearningRate = NULL,
+  L2_Leaf_Reg = NULL,
   RandomStrength = 1,
   BorderCount = 254,
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  Depth = 6)
+  RSM = 1,
+  BootStrapType = "Bayesian",
+  GrowPolicy = "SymmetricTree",
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
+  ModelSizeReg = 0.5,
+  FeatureBorderType = "GreedyLogSum",
+  SamplingUnit = "Group",
+  SubSample = NULL,
+  ScoreFunction = "Cosine",
+  MinDataInLeaf = 1)
 }
 }
 \seealso{

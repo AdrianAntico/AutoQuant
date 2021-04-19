@@ -682,7 +682,7 @@ AutoLagRollStatsScoring <- function(data,
   if(Debug) print("AutoLagRollStatsScoring: No Categoricals")
 
   # No Categoricals----
-  if(is.null(HierarchyGroups) & is.null(IndependentGroups)) {
+  if(is.null(HierarchyGroups) && is.null(IndependentGroups)) {
 
     # Initialize counter----
     Counter <- 0L
@@ -696,7 +696,7 @@ AutoLagRollStatsScoring <- function(data,
       # Check if timeaggs is same of TimeUnitAgg----
       if(Counter > 1L) {
 
-        # Copy data----
+        # Copy data ----
         tempData <- data.table::copy(data)
         data.table::setnames(tempData, eval(DateColumn), "TEMPDATE")
 
@@ -767,9 +767,10 @@ AutoLagRollStatsScoring <- function(data,
       # Combine data sets----
       if(Counter > 1L) {
         KeepData[, TEMPDATE := lubridate::floor_date(get(DateColumn), unit = eval(timeaggs))]
+        data.table::set(tempData, j = setdiff(names(tempData), c(setdiff(names(tempData), Targets))), value = NULL)
         KeepData <- merge(
           x = KeepData,
-          y = data.table::set(tempData, j = c(setdiff(names(tempData),c("TEMPDATE",setdiff(names(tempData),names(KeepData))))), value = NULL),
+          y = tempData,
           by = c("TEMPDATE"),
           all.x = TRUE)
         data.table::set(KeepData, j = "TEMPDATE", value = NULL)

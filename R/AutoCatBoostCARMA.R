@@ -352,6 +352,7 @@ AutoCatBoostCARMA <- function(data,
                               TaskType = "GPU",
                               NumGPU = 1,
                               DebugMode = FALSE,
+                              Timer = TRUE,
                               EvalMetric = "RMSE",
                               EvalMetricValue = 1.5,
                               LossFunction = "RMSE",
@@ -364,15 +365,14 @@ AutoCatBoostCARMA <- function(data,
                               Langevin = FALSE,
                               DiffusionTemperature = 10000,
                               NTrees = 1000,
-                              L2_Leaf_Reg = 3.0,
+                              L2_Leaf_Reg = NULL,
                               LearningRate = NULL,
                               RandomStrength = 1,
                               BorderCount = 254,
                               Depth = 6,
                               RSM = 1,
-                              BootStrapType = NULL,
+                              BootStrapType = "Bayesian",
                               GrowPolicy = "SymmetricTree",
-                              Timer = TRUE,
                               ModelSizeReg = 0.5,
                               FeatureBorderType = "GreedyLogSum",
                               SamplingUnit = "Group",
@@ -544,6 +544,7 @@ AutoCatBoostCARMA <- function(data,
   data <- Output$data; Output$data <- NULL
   dataStart <- Output$dataStart; Output$dataStart <- NULL
   FC_Periods <- Output$FC_Periods; Output$FC_Periods <- NULL
+  DiffTrainOutput <- Output$DiffTrainOutput
   Train <- Output$Train; rm(Output)
 
   # Feature Engineering: Lags and Rolling Stats ----
@@ -737,7 +738,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Return data prep ----
   if(DebugMode) print("Return data prep ----")
-  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred)
+  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, DiffTrainOutput.=DiffTrainOutput)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
 
