@@ -694,324 +694,6 @@ CARMA_Get_IndepentVariablesPass <- function(HierarchGroups) {
   return(IndepentVariablesPass)
 }
 
-#' @title CarmaH2OKeepVarsGDL
-#'
-#' @description CarmaH2OKeepVarsGDL is to help manage carma code
-#'
-#' @author Adrian Antico
-#' @family Carma Helper
-#'
-#' @param data Supply data
-#' @param IndepVarPassTRUE Name of the column used as a single grouping variable.
-#' @param UpdateData Supply UpdateData
-#' @param CalendarFeatures Supply CalendarFeatures
-#' @param XREGS Supply XREGS
-#' @param Difference Supply Difference
-#' @param HierarchGroups Supply HierarchGroups
-#' @param GroupVariables Supply GroupVariables
-#' @param GroupVarVector Supply GroupVarVector
-#' @param CalendarVariables Supply CalendarVariables
-#' @param HolidayVariable Supply HolidayVariable
-#' @param TargetColumnName Supply TargetColumnName
-#' @param DateColumnName Supply DateColumnName
-#' @noRd
-CarmaH2OKeepVarsGDL <- function(data,
-                                IndepVarPassTRUE = "GroupVar",
-                                UpdateData,
-                                CalendarFeatures,
-                                XREGS,
-                                Difference,
-                                HierarchGroups,
-                                GroupVariables,
-                                GroupVarVector,
-                                CalendarVariables = NULL,
-                                HolidayVariable = NULL,
-                                TargetColumnName,
-                                DateColumnName) {
-
-  if(any(is.na(UpdateData[["Predictions"]]))) {
-    data.table::set(UpdateData, i = which(is.na(UpdateData[["Predictions"]])), j = "Predictions", value = 1.0)
-  }
-  if(Difference && !is.null(GroupVariables)) {
-    if(any(is.na(UpdateData[["ModTarget"]]))) {
-      data.table::set(x = UpdateData, i = which(is.na(UpdateData[["ModTarget"]])), j = "ModTarget", value = 1.0)
-    }
-    if(!is.null(HierarchGroups)) {
-      data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
-      UpdateData[, ID := .N:1, by = c(eval(GroupVariables))]
-    } else {
-      data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
-      UpdateData[, ID := .N:1, by = "GroupVar"]
-    }
-    if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID",names(CalendarFeatures),"HolidayCounts"))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID",names(CalendarFeatures),"HolidayCounts"))
-      }
-    } else if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID",names(CalendarFeatures)))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID",names(CalendarFeatures)))
-      }
-    } else if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID","HolidayCounts"))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID","HolidayCounts"))
-      }
-    } else {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions",names(GroupVarVector),"ID"))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","Predictions","GroupVar","ID"))
-      }
-    }
-
-    # Return data based on GDL condition in CARMA
-    if(!is.null(IndepVarPassTRUE)) {
-      keep <- unique(c(keep,IndepVarPassTRUE))
-      return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
-    } else {
-      return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
-    }
-
-  } else if (!is.null(GroupVariables)) {
-    if(!is.null(HierarchGroups)) {
-      data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
-      UpdateData[, ID := .N:1, by = c(eval(GroupVariables))]
-    } else {
-      data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
-      UpdateData[, ID := .N:1, by = "GroupVar"]
-    }
-    if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID",names(CalendarFeatures),"HolidayCounts"))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures),"HolidayCounts"))
-      }
-    } else if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID",names(CalendarFeatures)))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID",names(CalendarFeatures)))
-      }
-    } else if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID","HolidayCounts"))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID","HolidayCounts"))
-      }
-    } else {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions",names(GroupVarVector),"ID"))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","GroupVar","ID"))
-      }
-    }
-
-    # Return data based on GDL condition in CARMA
-    if(!is.null(IndepVarPassTRUE)) {
-      keep <- unique(c(keep,IndepVarPassTRUE))
-      return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
-    } else {
-      return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
-    }
-
-  } else {
-
-    if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(XREGS)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures),"HolidayCounts"))
-        keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures),"HolidayCounts"))
-      }
-    } else if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(XREGS)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures)))
-        keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID",names(CalendarFeatures)))
-      }
-    } else if(!is.null(CalendarVariables) && !is.null(HolidayVariable)) {
-      if(!is.null(XREGS)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID","HolidayCounts"))
-        keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID","HolidayCounts"))
-      }
-    } else {
-      if(!is.null(XREGS)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID"))
-        keep <- c(keep[1:2],setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"Predictions","ID"))
-      }
-    }
-
-    # Return data based on GDL condition in CARMA
-    if(!is.null(IndepVarPassTRUE)) {
-      keep <- unique(c(keep,IndepVarPassTRUE))
-      return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
-    } else {
-      return(list(data = data.table::copy(UpdateData[, ..keep]), keep = keep))
-    }
-  }
-}
-
-#' @title CarmaCatBoostKeepVarsGDL
-#'
-#' @description CarmaCatBoostKeepVarsGDL is to help manage carma code
-#'
-#' @author Adrian Antico
-#' @family Carma Helper
-#'
-#' @param data Supply data
-#' @param IndepVarPassTRUE Name of the column used as a single grouping variable.
-#' @param UpdateData Supply UpdateData
-#' @param CalendarFeatures Supply CalendarFeatures
-#' @param XREGS Supply XREGS
-#' @param Difference Supply Difference
-#' @param HierarchGroups Supply HierarchGroups
-#' @param GroupVariables Supply GroupVariables
-#' @param GroupVarVector Supply GroupVarVector
-#' @param CalendarVariables Supply CalendarVariables
-#' @param HolidayVariable Supply HolidayVariable
-#' @param TargetColumnName Supply TargetColumnName
-#' @param DateColumnName Supply DateColumnName
-#' @param Preds Supply Preds
-#' @noRd
-CarmaCatBoostKeepVarsGDL <- function(data,
-                                     IndepVarPassTRUE = "GroupVar",
-                                     UpdateData,
-                                     CalendarFeatures,
-                                     XREGS,
-                                     Difference,
-                                     HierarchGroups,
-                                     GroupVariables,
-                                     GroupVarVector,
-                                     CalendarVariables,
-                                     HolidayVariable,
-                                     TargetColumnName,
-                                     DateColumnName,
-                                     Preds) {
-
-  if(any(is.na(UpdateData[["Predictions"]]))) {
-    data.table::set(x = UpdateData, i = which(is.na(UpdateData[["Predictions"]])), j = "Predictions", value = 1.0)
-  }
-  if(Difference && !is.null(GroupVariables)) {
-    if(any(is.na(UpdateData[["ModTarget"]]))) {
-      data.table::set(x = UpdateData, i = which(is.na(UpdateData[["ModTarget"]])), j = "ModTarget", value = 1.0)
-    }
-    if(!is.null(HierarchGroups)) {
-      data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
-      UpdateData[, ID := .N:1, by = c(eval(GroupVariables))]
-    } else {
-      data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
-      UpdateData[, ID := .N:1, by = "GroupVar"]
-    }
-    if(CalendarVariables && HolidayVariable) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget",names(GroupVarVector),"ID","HolidayCounts", names(Preds)[which(names(Preds) %like% "Predictions")]))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","GroupVar","ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else if(CalendarVariables && !HolidayVariable) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget",names(GroupVarVector),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","GroupVar","ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else if(!CalendarVariables && HolidayVariable) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget",names(GroupVarVector),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","GroupVar","ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget",names(GroupVarVector),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","GroupVar","ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    }
-
-  } else if(!is.null(GroupVariables)) {
-    if(!is.null(HierarchGroups)) {
-      data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
-      UpdateData[, ID := .N:1, by = c(eval(GroupVariables))]
-    } else {
-      data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
-      UpdateData[, ID := .N:1, by = "GroupVar"]
-    }
-    if(CalendarVariables && HolidayVariable) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),names(GroupVarVector),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"GroupVar","ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else if(CalendarVariables && !HolidayVariable) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),names(GroupVarVector),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"GroupVar","ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else if(!CalendarVariables && HolidayVariable) {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),names(GroupVarVector),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"GroupVar","ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else {
-      if(!is.null(HierarchGroups)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),names(GroupVarVector),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"GroupVar","ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    }
-
-  } else {
-    UpdateData <- UpdateData[order(get(DateColumnName))]
-    UpdateData[, ID := .N:1]
-    if(CalendarVariables && HolidayVariable) {
-      if(!is.null(XREGS)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-        keep <- c(keep[1L], setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else if(CalendarVariables && !HolidayVariable) {
-      if(!is.null(XREGS)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-        keep <- c(keep[1L], setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else if(!CalendarVariables && HolidayVariable) {
-      if(!is.null(XREGS)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-        keep <- c(keep[1L:2L], setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    } else {
-      if(!is.null(XREGS)) {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-        keep <- c(keep[1L:2L], setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
-      } else {
-        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
-      }
-    }
-  }
-
-  # Return data based on GDL condition in CARMA
-  if(!is.null(IndepVarPassTRUE)) keep <- unique(c(keep,IndepVarPassTRUE))
-  UpdateData <- UpdateData[, ..keep]
-  return(list(data = UpdateData, keep = keep))
-}
-
 #' @param i. Passthrough
 #' @param N. Passthrough
 #' @param GroupVariables. Passthrough
@@ -1434,6 +1116,157 @@ UpdateFeatures <- function(UpdateData. = UpdateData,
   return(UpdateData = UpdateData.)
 }
 
+#' @title CarmaTimeSeriesScorePrep
+#'
+#' @description CarmaTimeSeriesScorePrep is to help manage carma code
+#'
+#' @author Adrian Antico
+#' @family Carma Helper
+#'
+#' @param data Supply data
+#' @param IndepVarPassTRUE Name of the column used as a single grouping variable.
+#' @param UpdateData Supply UpdateData
+#' @param CalendarFeatures Supply CalendarFeatures
+#' @param XREGS Supply XREGS
+#' @param Difference Supply Difference
+#' @param HierarchGroups Supply HierarchGroups
+#' @param GroupVariables Supply GroupVariables
+#' @param GroupVarVector Supply GroupVarVector
+#' @param CalendarVariables Supply CalendarVariables
+#' @param HolidayVariable Supply HolidayVariable
+#' @param TargetColumnName Supply TargetColumnName
+#' @param DateColumnName Supply DateColumnName
+#' @param Preds Supply Preds
+#' @noRd
+CarmaTimeSeriesScorePrep <- function(data,
+                                     IndepVarPassTRUE = "GroupVar",
+                                     UpdateData,
+                                     CalendarFeatures,
+                                     XREGS,
+                                     Difference,
+                                     HierarchGroups,
+                                     GroupVariables,
+                                     GroupVarVector,
+                                     CalendarVariables,
+                                     HolidayVariable,
+                                     TargetColumnName,
+                                     DateColumnName,
+                                     Preds) {
+
+  if(any(is.na(UpdateData[["Predictions"]]))) {
+    data.table::set(x = UpdateData, i = which(is.na(UpdateData[["Predictions"]])), j = "Predictions", value = 1.0)
+  }
+  if(Difference && !is.null(GroupVariables)) {
+    if(any(is.na(UpdateData[["ModTarget"]]))) {
+      data.table::set(x = UpdateData, i = which(is.na(UpdateData[["ModTarget"]])), j = "ModTarget", value = 1.0)
+    }
+    if(!is.null(HierarchGroups)) {
+      data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
+      UpdateData[, ID := .N:1, by = c(eval(GroupVariables))]
+    } else {
+      data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
+      UpdateData[, ID := .N:1, by = "GroupVar"]
+    }
+    if(CalendarVariables && HolidayVariable) {
+      if(!is.null(HierarchGroups)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget",names(GroupVarVector),"ID","HolidayCounts", names(Preds)[which(names(Preds) %like% "Predictions")]))
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","GroupVar","ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else if(CalendarVariables && !HolidayVariable) {
+      if(!is.null(HierarchGroups)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget",names(GroupVarVector),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","GroupVar","ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else if(!CalendarVariables && HolidayVariable) {
+      if(!is.null(HierarchGroups)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget",names(GroupVarVector),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","GroupVar","ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else {
+      if(!is.null(HierarchGroups)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget",names(GroupVarVector),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ModTarget","GroupVar","ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    }
+
+  } else if(!is.null(GroupVariables)) {
+    if(!is.null(HierarchGroups)) {
+      data.table::setorderv(x = UpdateData, cols = c(eval(GroupVariables), eval(DateColumnName)))
+      UpdateData[, ID := .N:1, by = c(eval(GroupVariables))]
+    } else {
+      data.table::setorderv(x = UpdateData, cols = c("GroupVar", eval(DateColumnName)))
+      UpdateData[, ID := .N:1, by = "GroupVar"]
+    }
+    if(CalendarVariables && HolidayVariable) {
+      if(!is.null(HierarchGroups)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),names(GroupVarVector),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"GroupVar","ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else if(CalendarVariables && !HolidayVariable) {
+      if(!is.null(HierarchGroups)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),names(GroupVarVector),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"GroupVar","ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else if(!CalendarVariables && HolidayVariable) {
+      if(!is.null(HierarchGroups)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),names(GroupVarVector),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"GroupVar","ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else {
+      if(!is.null(HierarchGroups)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),names(GroupVarVector),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"GroupVar","ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    }
+
+  } else {
+    UpdateData <- UpdateData[order(get(DateColumnName))]
+    UpdateData[, ID := .N:1]
+    if(CalendarVariables && HolidayVariable) {
+      if(!is.null(XREGS)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+        keep <- c(keep[1L], setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else if(CalendarVariables && !HolidayVariable) {
+      if(!is.null(XREGS)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+        keep <- c(keep[1L], setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else if(!CalendarVariables && HolidayVariable) {
+      if(!is.null(XREGS)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+        keep <- c(keep[1L:2L], setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID","HolidayCounts",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    } else {
+      if(!is.null(XREGS)) {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+        keep <- c(keep[1L:2L], setdiff(names(XREGS)[length(XREGS)],keep),keep[(2+length(setdiff(names(XREGS)[length(XREGS)],keep))):length(keep)])
+      } else {
+        keep <- unique(c(eval(DateColumnName),eval(TargetColumnName),"ID",names(Preds)[which(names(Preds) %like% "Predictions")]))
+      }
+    }
+  }
+
+  # Return data based on GDL condition in CARMA
+  if(!is.null(IndepVarPassTRUE)) keep <- unique(c(keep,IndepVarPassTRUE))
+  UpdateData <- UpdateData[, ..keep]
+  return(list(data = UpdateData, keep = keep))
+}
+
 #' @param ModelType 'catboost', 'xgboost', 'h2o'
 #' @param DebugMode. Passthrough
 #' @param UpdateData. Passthrough
@@ -1503,19 +1336,9 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
     if(!is.null(HolidayVariable.)) HolVar <- TRUE else HolVar <- FALSE
 
     # Create data for GDL
-    if(ModelType %chin% c("catboost","h2o")) {
-      temp <- CarmaCatBoostKeepVarsGDL(
-        IndepVarPassTRUE = NULL,data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-        GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
-    } else if(ModelType == "xgboost") {
-      temp <- CarmaXGBoostKeepVarsGDL(
-        IndepVarPassTRUE = NULL,data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-        GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.)
-    }
-
-    # Collect output
+    temp <- CarmaTimeSeriesScorePrep(IndepVarPassTRUE=NULL, data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
     Temporary <- temp$data
-    keep <- temp$keep
+    keep <- temp$keep; rm(temp)
 
     # Build Features
     Temporary <- AutoLagRollStatsScoring(
@@ -1532,7 +1355,7 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
       # Services
       TimeBetween          = NULL,
       TimeUnit             = TimeUnit.,
-      TimeUnitAgg          = TimeGroups.[1],
+      TimeUnitAgg          = TimeGroups.[1L],
       TimeGroups           = TimeGroups.,
       RollOnLag1           = TRUE,
       Type                 = "Lag",
@@ -1549,7 +1372,7 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
       Debug                = DebugMode.)
 
     # Lag / Lead, MA Holiday Variables
-    if(!is.null(HolidayVariable.) & max(HolidayLags.) > 0 & max(HolidayMovingAverages.) > 0) {
+    if(!is.null(HolidayVariable.) && max(HolidayLags.) > 0 && max(HolidayMovingAverages.) > 0) {
 
       # Calendar and Holiday----
       if(!is.null(CalendarVariables.)) CalVar <- TRUE else CalVar <- FALSE
@@ -1557,18 +1380,9 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
 
       # Create copy of data
       # Create data for GDL
-      if(ModelType %chin% c("catboost","h2o")) {
-        temp <- CarmaCatBoostKeepVarsGDL(
-          IndepVarPassTRUE = IndepVarPassTRUE., data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-          GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
-      } else if(ModelType == "xgboost") {
-        temp <- CarmaXGBoostKeepVarsGDL(
-          IndepVarPassTRUE = IndepVarPassTRUE., data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-          GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.)
-      }
-
+      temp <- CarmaTimeSeriesScorePrep(IndepVarPassTRUE=IndepVarPassTRUE., data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
       Temporary1 <- temp$data
-      keep <- temp$keep
+      keep <- temp$keep; rm(temp)
 
       # Generate GDL Features for Updated Records
       IndepVarPassTRUE. <- CARMA_Get_IndepentVariablesPass(HierarchGroups.)
@@ -1587,8 +1401,8 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
 
         # Services
         TimeUnit              = TimeUnit.,
-        TimeUnitAgg          = TimeGroups.[1],
-        TimeGroups            = TimeGroups.[1],
+        TimeUnitAgg          = TimeGroups.[1L],
+        TimeGroups            = TimeGroups.[1L],
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
@@ -1626,11 +1440,7 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
     # Calendar and Holiday
     if(!is.null(CalendarVariables.)) CalVar <- TRUE else CalVar <- FALSE
     if(!is.null(HolidayVariable.)) HolVar <- TRUE else HolVar <- FALSE
-    if(ModelType %chin% c("catboost","h2o")) {
-      CarmaCatBoostKeepVarsGDL(IndepVarPassTRUE = IndepVarPassTRUE.,data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
-    } else if(ModelType %chin% c("xgboost")) {
-      CarmaXGBoostKeepVarsGDL(IndepVarPassTRUE = IndepentVariablesPass,data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.)
-    }
+    CarmaTimeSeriesScorePrep(IndepVarPassTRUE = IndepVarPassTRUE., data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
   }
 
   # Group and Diff
@@ -1641,21 +1451,9 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
     if(!is.null(HolidayVariable.)) HolVar <- TRUE else HolVar <- FALSE
 
     # Create data for GDL
-    if(ModelType %chin% c("catboost","h2o")) {
-      temp <- CarmaCatBoostKeepVarsGDL(
-        IndepVarPassTRUE = NULL,
-        data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-        GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
-    } else if(ModelType %chin% c("xgboost")) {
-      temp <- CarmaXGBoostKeepVarsGDL(
-        IndepVarPassTRUE = IndepVarPassTRUE., data., UpdateData., CalendarFeatures., XREGS.,
-        Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar,
-        HolidayVariable=HolVar,TargetColumnName.,DateColumnName.)
-    }
-
-    # Collect output
+    temp <- CarmaTimeSeriesScorePrep(IndepVarPassTRUE=NULL, data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
     Temporary <- temp$data
-    keep <- temp$keep
+    keep <- temp$keep; rm(temp)
 
     # Build Features
     Temporary <- AutoLagRollStatsScoring(
@@ -1699,19 +1497,9 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
       IndepVarPassTRUE. <- CARMA_Get_IndepentVariablesPass(HierarchGroups.)
 
       # Create copy of data
-      if(ModelType %chin% c("catboost","h2o")) {
-        temp <- CarmaCatBoostKeepVarsGDL(
-          IndepVarPassTRUE = IndepVarPassTRUE., data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-          GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
-      } else if(ModelType %chin% c("xgboost")) {
-        temp <- CarmaXGBoostKeepVarsGDL(
-          IndepVarPassTRUE = IndepVarPassTRUE., data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-          GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.)
-      }
-
-      # Collect output
+      temp <- CarmaTimeSeriesScorePrep(IndepVarPassTRUE=IndepVarPassTRUE., data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
       Temporary1 <- temp$data
-      keep <- temp$keep
+      keep <- temp$keep; rm(temp)
 
       # Generate GDL Features for Updated Records
       Temporary1 <- AutoLagRollStatsScoring(
@@ -1779,15 +1567,7 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
     # No lags
     if(!is.null(CalendarVariables.)) CalVar <- TRUE else CalVar <- FALSE
     if(!is.null(HolidayVariable.)) HolVar <- TRUE else HolVar <- FALSE
-    if(ModelType %chin% c("catboost","h2o")) {
-      CarmaCatBoostKeepVarsGDL(
-        IndepVarPassTRUE = NULL,data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-        GroupVarVector.,CalendarVariables=CalVar, HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
-    } else if(ModelType %chin% c("xgboost")) {
-      CarmaXGBoostKeepVarsGDL(
-        IndepVarPassTRUE = IndepVarPassTRUE., data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-        GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.)
-    }
+    CarmaTimeSeriesScorePrep(IndepVarPassTRUE=NULL, data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
   }
 
   # No Group with or without Diff
@@ -1798,21 +1578,9 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
     if(!is.null(HolidayVariable.)) HolVar <- TRUE else HolVar <- FALSE
 
     # Create data for GDL
-    if(ModelType %chin% c("catboost","h2o")) {
-      temp <- CarmaCatBoostKeepVarsGDL(
-        IndepVarPassTRUE = NULL,
-        data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-        GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
-    } else if(ModelType %chin% c("xgboost")) {
-      temp <- CarmaXGBoostKeepVarsGDL(
-        IndepVarPassTRUE = NULL,
-        data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,
-        GroupVarVector.,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.)
-    }
-
-    # Collect output
+    temp <- CarmaTimeSeriesScorePrep(IndepVarPassTRUE=NULL, data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
     Temporary <- temp$data
-    keep <- temp$keep
+    keep <- temp$keep; rm(temp)
     if("GroupVar" %chin% keep) keep <- keep[!keep %chin% "GroupVar"]
 
     # Generate GDL Features for Updated Records
@@ -1830,7 +1598,7 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
       # Services
       TimeBetween          = NULL,
       TimeUnit             = TimeUnit.,
-      TimeUnitAgg          = TimeGroups.[1],
+      TimeUnitAgg          = TimeGroups.[1L],
       TimeGroups           = TimeGroups.,
       RollOnLag1           = TRUE,
       Type                 = "Lag",
@@ -1854,19 +1622,9 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
       if(!is.null(HolidayVariable.)) HolVar <- TRUE else HolVar <- FALSE
 
       # Copy data
-      if(ModelType %chin% c("catboost","h2o")) {
-        temp <- CarmaCatBoostKeepVarsGDL(
-          IndepVarPassTRUE=NULL, data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,
-          GroupVariables.,GroupVarVector., CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
-      } else if(ModelType %chin% c("xgboost")) {
-        temp <- CarmaXGBoostKeepVarsGDL(
-          IndepVarPassTRUE=NULL, data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,
-          GroupVariables.,NULL,CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.)
-      }
-
-      # Collect output
+      temp <- CarmaTimeSeriesScorePrep(IndepVarPassTRUE=NULL, data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups.,GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
       Temporary1 <- temp$data
-      keep <- temp$keep
+      keep <- temp$keep; rm(temp)
 
       # Generate GDL Features for Updated Records
       Temporary1 <- AutoLagRollStatsScoring(
@@ -1882,8 +1640,8 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
 
         # Services
         TimeUnit             = TimeUnit.,
-        TimeUnitAgg          = TimeGroups.[1],
-        TimeGroups           = TimeGroups.[1],
+        TimeUnitAgg          = TimeGroups.[1L],
+        TimeGroups           = TimeGroups.[1L],
         TimeBetween          = NULL,
         RollOnLag1           = TRUE,
         Type                 = "Lag",
@@ -1927,9 +1685,7 @@ CarmaRollingStatsUpdate <- function(ModelType = "catboost",
     if(!is.null(CalendarVariables.)) CalVar <- TRUE else CalVar <- FALSE
     if(!is.null(HolidayVariable.)) HolVar <- TRUE else HolVar <- FALSE
     if(ModelType %chin% c("catboost","h2o")) {
-      CarmaCatBoostKeepVarsGDL(
-        IndepVarPassTRUE = NULL,data.,UpdateData.,CalendarFeatures.,XREGS.,Difference.,HierarchGroups.,GroupVariables.,GroupVarVector.,
-        CalendarVariables=CalVar,HolidayVariable=HolVar,TargetColumnName.,DateColumnName.,Preds.)
+      CarmaTimeSeriesScorePrep(IndepVarPassTRUE=NULL, data., UpdateData., CalendarFeatures., XREGS., Difference., HierarchGroups., GroupVariables., GroupVarVector., CalendarVariables=CalVar, HolidayVariable=HolVar, TargetColumnName., DateColumnName., Preds.)
       UpdateData. <- UpdateData.[ID > 1L][, ID := NULL]
     }
   }
