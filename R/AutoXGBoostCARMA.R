@@ -337,9 +337,9 @@ AutoXGBoostCARMA <- function(data,
   # Feature Engineering: Fourier Features ----
   if(DebugMode) print("Feature Engineering: Fourier Features ----")
   Output <- CarmaFourier(data.=data, XREGS.=XREGS, FourierTerms.=FourierTerms, TimeUnit.=TimeUnit, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, HierarchGroups.=HierarchGroups)
-  FourierTerms <- Output$FourierTerms; rm(Output)
+  FourierTerms <- Output$FourierTerms; Output$FourierTerms <- NULL
   FourierFC <- Output$FourierFC
-  data <- Output$data; Output$data <- NULL
+  data <- Output$data; rm(Output)
 
   # Feature Engineering: Add Create Calendar Variables ----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables----")
@@ -529,16 +529,6 @@ AutoXGBoostCARMA <- function(data,
 
   # ARMA PROCESS FORECASTING----
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
-  if(DebugMode) print("ARMA PROCESS FORECASTING----")
-  if(DebugMode) print("ARMA PROCESS FORECASTING----")
-  if(DebugMode) print("ARMA PROCESS FORECASTING----")
-  if(DebugMode) print("ARMA PROCESS FORECASTING----")
-
-  #----
-
-  #----
-
-  # Begin loop for generating forecasts ----
   for(i in seq_len(ForecastRuns + 1L)) {
 
     # Row counts----
@@ -739,7 +729,7 @@ AutoXGBoostCARMA <- function(data,
       # Update Lags and MA's----
       if(DebugMode) print("Update Lags and MA's----")
       UpdateData <- CarmaRollingStatsUpdate(
-        ModelType = "xgboost", DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=NULL,
+        ModelType = "catboost", DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=Preds,
         HierarchSupplyValue.=HierarchSupplyValue, IndependentSupplyValue.=IndependentSupplyValue, TimeUnit.=TimeUnit, TimeGroups.=TimeGroups, Lags.=Lags, MA_Periods.=MA_Periods, SD_Periods.=SD_Periods, Skew_Periods.=Skew_Periods, Kurt_Periods.=Kurt_Periods, Quantile_Periods.=Quantile_Periods, Quantiles_Selected.=Quantiles_Selected, HolidayLags.=HolidayLags, HolidayMovingAverages.=HolidayMovingAverages)
     }
   }
