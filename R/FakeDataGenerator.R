@@ -198,10 +198,9 @@ FakeDataGenerator <- function(Correlation = 0.70,
     x[, Leads := runif(n = x[, .N], min = 100, max = 500)]
     ChainLadderData <- merge(ChainLadderData[, .SD, .SDcols = c("CalendarDateColumn","CohortDateColumn","CohortDays","Appointments","Rates")], x, by = "CalendarDateColumn", all = FALSE)
     ChainLadderData[, Appointments := Leads * Rates]
+    ChainLadderData[, Sales := Appointments * Rates * (runif(.N))]
     ChainLadderData[, Rates := NULL]
     data.table::setcolorder(ChainLadderData, c(1,2,3,5,4))
-    ChainLadderData[, Leads2 := runif(n = ChainLadderData[,.N], min = 100, max = 500)]
-    data.table::setcolorder(ChainLadderData, c(1:4, 6, 5))
     return(ChainLadderData)
   }
 

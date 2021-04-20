@@ -100,9 +100,6 @@ DummifyDT <- function(data,
                       ReturnFactorLevels = FALSE,
                       GroupVar           = FALSE) {
 
-  # Turn on full speed ahead ----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-
   # Check data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
@@ -118,7 +115,7 @@ DummifyDT <- function(data,
   if(!is.logical(ClustScore)) stop("ClustScore needs to be either TRUE or FALSE")
   if(!is.null(SavePath)) if(!is.character(SavePath)) stop("SavePath needs to be a character value of a folder location")
 
-  # Ensure correct argument settings----
+  # Ensure correct argument settings ----
   if(OneHot && ClustScore) {
     OneHot <- FALSE
     KeepFactorCols <- FALSE
@@ -126,7 +123,7 @@ DummifyDT <- function(data,
 
   # Build dummies start ----
   FactorsLevelsList <- list()
-  if(!GroupVar) if(length(cols) > 1L & "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
+  if(!GroupVar) if(length(cols) > 1L && "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
   if(length(TopN) > 1L) Counter <- 1L
   for(col in rev(cols)) {
     size <- ncol(data)
@@ -139,51 +136,54 @@ DummifyDT <- function(data,
       inds <- sort(unique(temp[[eval(col)]]))
     } else if(!is.null(TopN)) {
       if(length(TopN) > 1L) {
-        inds <- data[, .N, by = eval(col)][order(-N)]
-        inds <- sort(inds[seq_len(min(TopN[Counter], .N)), get(col)])
+        indss <- data[, .N, by = eval(col)][order(-N)]
+        inds <- sort(indss[seq_len(min(TopN[Counter], .N)), get(col)])
         if(length(TopN) > 1L) Counter <- Counter + 1L
       } else {
-        inds <- data[, .N, by = eval(col)][order(-N)]
-        inds <- sort(inds[seq_len(min(TopN, .N)), get(col)])
+        indss <- data[, .N, by = eval(col)][order(-N)]
+        inds <- sort(indss[seq_len(min(TopN, .N)), get(col)])
       }
     } else {
+      indss <- data[, .N, by = eval(col)][order(-N)]
       inds <- sort(unique(data[[eval(col)]]))
     }
 
-    # Allocate columns----
+    # Allocate columns ----
     data.table::alloc.col(data, n = ncol(data) + length(inds))
 
-    # Save factor levels for scoring later----
+    # Save factor levels for scoring later ----
     if(SaveFactorLevels) {
       if(!is.null(TopN)) {
         if(length(TopN) > 1L) {
-          temp <- data[, get(col), by = eval(col)]
-          temp <- temp[seq_len(min(TopN[Counter-1L], .N))][, V1 := NULL]
-          data.table::fwrite(x = temp, file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
+          temp <- indss[seq_len(min(TopN[Counter-1L], .N))][, N := NULL]
+          data.table::fwrite(x = temp, file = file.path(SavePath, paste0(col, ".csv")), sep = ",")
         } else {
-          temp <- data[, get(col), by = eval(col)]
-          temp <- temp[seq_len(min(TopN, .N))][, V1 := NULL]
-          data.table::fwrite(x = temp, file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
+          temp <- indss[seq_len(min(TopN, .N))][, N := NULL]
+          data.table::fwrite(x = temp, file = file.path(SavePath, paste0(col, ".csv")), sep = ",")
         }
       } else {
-        data.table::fwrite(x = data[, get(col), by = eval(col)][, V1 := NULL], file = file.path(normalizePath(SavePath), paste0(col, ".csv")))
+        data.table::fwrite(x = data.table::set(indss, j = N, value = NULL), file = file.path(SavePath, paste0(col, ".csv")), sep = ",")
       }
     }
 
-    # Collect Factor Levels----
-    if(ReturnFactorLevels) FactorsLevelsList[[eval(col)]] <- data[, get(col), by = eval(col)][, V1 := NULL]
+    # Collect Factor Levels ----
+    if(ReturnFactorLevels && SaveFactorLevels) {
+      FactorsLevelsList[[eval(col)]] <- temp
+    } else if(ReturnFactorLevels) {
+      data[, get(col), by = eval(col)][, V1 := NULL]
+    }
 
-    # Convert to character if col is factor----
+    # Convert to character if col is factor ----
     if(is.factor(data[[eval(col)]])) data.table::set(data, j = eval(col), value = as.character(data[[eval(col)]]))
 
-    # If for clustering set up old school way----
+    # If for clustering set up old school way ----
     if(!ClustScore) {
       data.table::set(data, j = paste0(col, "_", inds), value = 0L)
     } else {
       data.table::set(data, j = paste0(col, inds), value = 0L)
     }
 
-    # Build dummies----
+    # Build dummies ----
     for(ind in inds) {
       if(!ClustScore) {
         data.table::set(data, i = which(data[[col]] %chin% ind), j = paste0(col, "_", ind), value = 1L)
@@ -192,16 +192,16 @@ DummifyDT <- function(data,
       }
     }
 
-    # Remove original factor columns----
+    # Remove original factor columns ----
     if(!KeepFactorCols) data.table::set(data, j = eval(col), value = NULL)
     if(ClustScore) setcolorder(data, c(setdiff(names(data), Names), Names))
     if(OneHot) data.table::set(data, j = paste0(col, "_Base"), value = 0L)
   }
 
-  # Clustering section----
+  # Clustering section ----
   if(ClustScore) data.table::setnames(data, names(data), tolower(gsub('[[:punct:] ]+', replacement = "", names(data))))
 
-  # Return data----
+  # Return data ----
   if(ReturnFactorLevels) {
     return(list(data = data, FactorLevelsList = FactorsLevelsList))
   } else {
