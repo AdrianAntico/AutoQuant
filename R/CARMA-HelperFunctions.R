@@ -694,212 +694,6 @@ CARMA_Get_IndepentVariablesPass <- function(HierarchGroups) {
   return(IndepentVariablesPass)
 }
 
-#' @param i. Passthrough
-#' @param N. Passthrough
-#' @param GroupVariables. Passthrough
-#' @param Difference. Passthrough
-#' @param TargetColumnName. Passthrough
-#' @param Step1SCore. Passthrough
-#' @param ModelFeatures. Passthrough
-#' @param Model. Passthrough
-#' @param DateColumnName. Passthrough
-#' @param FutureDateData. Passthrough
-#' @param NonNegativePred. Passthrough
-#' @param HierarchGroups. Passthrough
-#' @param UpdateData. Passthrough
-#'
-#' @noRd
-CarmaScore <- function(i. = i,
-                       N. = N,
-                       GroupVariables. = GroupVariables,
-                       HierarchGroups. = HierarchGroups,
-                       DateColumnName. = DateColumnName,
-                       ModelFeatures. = ModelFeatures,
-                       Difference. = Difference,
-                       TargetColumnName. = TargetColumnName,
-                       Step1SCore. = Step1SCore,
-                       Model. = Model,
-                       FutureDateData. = FutureDateData,
-                       NonNegativePred. = NonNegativePred,
-                       UpdateData. = UpdateData) {
-
-  # Row counts
-  if(i. != 1) N. <- as.integer(N. + 1L)
-
-  # Machine Learning: Generate predictions
-  if(i. == 1L) {
-
-    # Score model
-    if(!is.null(GroupVariables.)) {
-
-      # Define IDcols
-      if(Difference.) IDcols <- "ModTarget" else IDcols <- eval(TargetColumnName.)
-
-      # i. = 1 Score Model With Group Variables
-      Preds <- AutoCatBoostScoring(
-        TargetType = "regression",
-        ScoringData = Step1SCore.,
-        FeatureColumnNames = ModelFeatures.,
-        FactorLevelsList = NULL,
-        IDcols = IDcols,
-        OneHot = FALSE,
-        ModelObject = Model.,
-        ModelPath = getwd(),
-        ReturnShapValues = FALSE,
-        MultiClassTargetLevels = NULL,
-        RemoveModel = FALSE,
-        ModelID = "ModelTest",
-        ReturnFeatures = TRUE,
-        TransformNumeric = FALSE,
-        BackTransNumeric = FALSE,
-        TransformationObject = NULL,
-        TransID = NULL,
-        TransPath = NULL,
-        TargetColumnName = NULL,
-        MDP_Impute = FALSE,
-        MDP_CharToFactor = FALSE,
-        MDP_RemoveDates = TRUE,
-        MDP_MissFactor = "0",
-        MDP_MissNum = -1)
-
-    } else {
-
-      # i. = 1 Define IDcols
-      IDcols <- eval(TargetColumnName.)
-
-      # i. = 1 Score Model No Group Variables
-      Preds <- AutoCatBoostScoring(
-        TargetType = "regression",
-        ScoringData = Step1SCore.,
-        FeatureColumnNames = ModelFeatures.,
-        FactorLevelsList = NULL,
-        IDcols = IDcols,
-        OneHot = FALSE,
-        ModelObject = Model.,
-        ModelPath = getwd(),
-        ModelID = "ModelTest",
-        ReturnFeatures = TRUE,
-        TransformNumeric = FALSE,
-        BackTransNumeric = FALSE,
-        TransformationObject = NULL,
-        TransID = NULL,
-        TransPath = NULL,
-        TargetColumnName = NULL,
-        MDP_Impute = FALSE,
-        MDP_CharToFactor = FALSE,
-        MDP_RemoveDates = TRUE,
-        MDP_MissFactor = "0",
-        MDP_MissNum = -1)
-    }
-
-    # Data Wrangline: grab historical data and one more future record
-    if(Difference.) {
-      if(eval(TargetColumnName.) %chin% names(Step1SCore.)) {
-        if(eval(TargetColumnName.) %chin% names(Preds)) {
-          data.table::set(Preds, j = eval(TargetColumnName.), value = NULL)
-        }
-      }
-      if(eval(DateColumnName.) %chin% names(Step1SCore.)) data.table::set(Step1SCore., j = eval(DateColumnName.), value = NULL)
-      if(eval(DateColumnName.) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName.), value = NULL)
-      if(!is.null(GroupVariables.)) {
-        UpdateData. <- cbind(FutureDateData., Preds)
-      } else {
-        UpdateData. <- cbind(FutureDateData. = FutureDateData.[1L:nrow(Step1SCore.)], Preds)
-      }
-    } else {
-      if(NonNegativePred.) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
-      UpdateData. <- cbind(FutureDateData. = FutureDateData.[1L:N.], Preds)
-    }
-
-    # Update names
-    data.table::setnames(UpdateData., "FutureDateData.", eval(DateColumnName.))
-
-  } else {
-    if(!is.null(GroupVariables.)) {
-
-      # Modify target reference
-      if(Difference.) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName.)
-
-      # GroupVar or Hierarchical
-      if(!is.null(HierarchGroups.)) {
-        temp <- data.table::copy(UpdateData.[, ID := seq_len(.N), by = c(eval(GroupVariables.))])
-        temp <- temp[ID == N.][, ID := NULL]
-      } else {
-        temp <- data.table::copy(UpdateData.[, ID := seq_len(.N), by = "GroupVar"])
-        temp <- temp[ID == N.][, ID := NULL]
-      }
-
-      # Score model----
-      Preds <- AutoCatBoostScoring(
-        TargetType = "regression",
-        ScoringData = temp,
-        FeatureColumnNames = ModelFeatures.,
-        FactorLevelsList = NULL,
-        IDcols = IDcols,
-        OneHot = FALSE,
-        ModelObject = Model.,
-        ModelPath = getwd(),
-        ModelID = "ModelTest",
-        ReturnFeatures = FALSE,
-        TransformNumeric = FALSE,
-        BackTransNumeric = FALSE,
-        TargetColumnName = NULL,
-        TransformationObject = NULL,
-        TransID = NULL,
-        TransPath = NULL,
-        MDP_Impute = FALSE,
-        MDP_CharToFactor = FALSE,
-        MDP_RemoveDates = TRUE,
-        MDP_MissFactor = "0",
-        MDP_MissNum = -1)
-
-      # Update data group case
-      data.table::setnames(Preds, "Predictions", "Preds")
-      if(NonNegativePred. && !Difference.) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
-      Preds <- cbind(UpdateData.[ID == N.], Preds)
-      if(Difference.) Preds[, ModTarget := Preds][, eval(TargetColumnName.) := Preds] else Preds[, eval(TargetColumnName.) := Preds]
-      Preds[, Predictions := Preds][, Preds := NULL]
-      UpdateData. <- UpdateData.[ID != N.]
-      if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c("POSIXct","POSIXt")) && any(class(Preds[[eval(DateColumnName.)]]) == "Date")) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
-      UpdateData. <- data.table::rbindlist(list(UpdateData., Preds))
-      if(Difference.) UpdateData.[ID %in% c(N.-1, N.), eval(TargetColumnName.) := cumsum(get(TargetColumnName.)), by = "GroupVar"]
-      UpdateData.[, ID := NULL]
-
-    } else {
-
-      # Score Model
-      Preds <- AutoCatBoostScoring(
-        TargetType = "regression",
-        ScoringData = UpdateData.[.N],
-        FeatureColumnNames = ModelFeatures.,
-        FactorLevelsList = NULL,
-        IDcols = NULL,
-        OneHot = FALSE,
-        ModelObject = Model.,
-        ModelPath = getwd(),
-        ModelID = "ModelTest",
-        ReturnFeatures = FALSE,
-        TransformNumeric = FALSE,
-        BackTransNumeric = FALSE,
-        TargetColumnName = eval(TargetColumnName.),
-        TransformationObject = NULL,
-        TransID = NULL,
-        TransPath = NULL,
-        MDP_Impute = FALSE,
-        MDP_CharToFactor = FALSE,
-        MDP_RemoveDates = TRUE,
-        MDP_MissFactor = "0",
-        MDP_MissNum = -1)
-
-      # Update data non-group case
-      data.table::set(UpdateData., i = N., j = as.integer(2L:3L), value = Preds[[1L]])
-    }
-  }
-
-  # Return
-  return(list(UpdateData = UpdateData., Preds = Preds, N = N.))
-}
-
 #' @param SplitRatios Passthrough
 #' @param TrainOnFull. Passthrough
 #' @param data. Passthrough
@@ -1007,6 +801,314 @@ NextTimePeriod <- function(UpdateData. = UpdateData,
     CalendarFeatures <- data.table::as.data.table(d + lubridate::years(1))
   }
   return(CalendarFeatures)
+}
+
+#' @param Type 'catboost', 'xgboost', 'h2o'
+#' @param i. Passthrough
+#' @param N. Passthrough
+#' @param GroupVariables. Passthrough
+#' @param Difference. Passthrough
+#' @param TargetColumnName. Passthrough
+#' @param Step1SCore. Passthrough
+#' @param ModelFeatures. Passthrough
+#' @param Model. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param FutureDateData. Passthrough
+#' @param NonNegativePred. Passthrough
+#' @param RoundPreds. Passthrough
+#' @param HierarchGroups. Passthrough
+#' @param UpdateData. Passthrough
+#' @param FactorList. Passthrough
+#'
+#' @noRd
+CarmaScore <- function(Type = "catboost",
+                       i. = i,
+                       N. = N,
+                       GroupVariables. = GroupVariables,
+                       HierarchGroups. = HierarchGroups,
+                       DateColumnName. = DateColumnName,
+                       ModelFeatures. = ModelFeatures,
+                       Difference. = Difference,
+                       TargetColumnName. = TargetColumnName,
+                       Step1SCore. = Step1SCore,
+                       Model. = Model,
+                       FutureDateData. = FutureDateData,
+                       NonNegativePred. = NonNegativePred,
+                       RoundPreds. = RoundPreds,
+                       UpdateData. = UpdateData,
+                       FactorList. = NULL) {
+
+  # Row counts
+  if(i. != 1) N. <- as.integer(N. + 1L)
+
+  # Machine Learning: Generate predictions
+  if(i. == 1L) {
+
+    # Score model
+    if(!is.null(GroupVariables.)) {
+
+      # Define IDcols
+      if(Difference.) IDcols <- "ModTarget" else IDcols <- eval(TargetColumnName.)
+
+      # Score Model With Group Variables
+      if(Type == "catboost") {
+        Preds <- AutoCatBoostScoring(
+          TargetType = "regression",
+          ScoringData = Step1SCore.,
+          FeatureColumnNames = ModelFeatures.,
+          FactorLevelsList = NULL,
+          IDcols = IDcols,
+          OneHot = FALSE,
+          ModelObject = Model.,
+          ModelPath = getwd(),
+          ReturnShapValues = FALSE,
+          MultiClassTargetLevels = NULL,
+          RemoveModel = FALSE,
+          ModelID = "ModelTest",
+          ReturnFeatures = TRUE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TransformationObject = NULL,
+          TransID = NULL,
+          TransPath = NULL,
+          TargetColumnName = NULL,
+          MDP_Impute = FALSE,
+          MDP_CharToFactor = FALSE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      } else if(Type == "xgboost") {
+        Preds <- AutoXGBoostScoring(
+          TargetType = "regression",
+          ScoringData = Step1SCore.,
+          FeatureColumnNames = ModelFeatures.,
+          OneHot = FALSE,
+          IDcols = IDcols,
+          ModelObject = Model.,
+          ModelPath = getwd(),
+          ModelID = "ModelTest",
+          ReturnFeatures = TRUE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = NULL,
+          TransformationObject = NULL,
+          FactorLevelsList = FactorList.,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      }
+
+    } else {
+
+      # Define IDcols
+      IDcols <- eval(TargetColumnName.)
+
+      # Score Model No Group Variables
+      if(Type == "catboost") {
+        Preds <- AutoCatBoostScoring(
+          TargetType = "regression",
+          ScoringData = Step1SCore.,
+          FeatureColumnNames = ModelFeatures.,
+          FactorLevelsList = NULL,
+          IDcols = IDcols,
+          OneHot = FALSE,
+          ModelObject = Model.,
+          ModelPath = getwd(),
+          ModelID = "ModelTest",
+          ReturnFeatures = TRUE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TransformationObject = NULL,
+          TransID = NULL,
+          TransPath = NULL,
+          TargetColumnName = NULL,
+          MDP_Impute = FALSE,
+          MDP_CharToFactor = FALSE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      } else if(Type == "xgboost") {
+        Preds <- AutoXGBoostScoring(
+          TargetType = "regression",
+          ScoringData = Step1SCore.,
+          FeatureColumnNames = ModelFeatures.,
+          OneHot = FALSE,
+          IDcols = IDcols,
+          ModelObject = Model.,
+          ModelPath = getwd(),
+          ModelID = "ModelTest",
+          ReturnFeatures = TRUE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = NULL,
+          TransformationObject = NULL,
+          FactorLevelsList = FactorList.,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      }
+    }
+
+    # Data Wrangline: grab historical data and one more future record
+    if(Difference.) {
+      if(eval(TargetColumnName.) %chin% names(Step1SCore.)) if(eval(TargetColumnName.) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName.), value = NULL)
+      if(eval(DateColumnName.) %chin% names(Step1SCore.)) data.table::set(Step1SCore., j = eval(DateColumnName.), value = NULL)
+      if(eval(DateColumnName.) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName.), value = NULL)
+      if(!is.null(GroupVariables.)) UpdateData. <- cbind(FutureDateData., Preds) else UpdateData. <- cbind(FutureDateData. = FutureDateData.[1L:nrow(Step1SCore.)], Preds)
+    } else {
+      if(NonNegativePred.) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+      if(RoundPreds.) Preds[, Predictions := round(Predictions)]
+      UpdateData. <- cbind(FutureDateData. = FutureDateData.[1L:N.], Preds)
+    }
+
+    # Update names
+    data.table::setnames(UpdateData., "FutureDateData.", eval(DateColumnName.))
+
+  } else {
+    if(!is.null(GroupVariables.)) {
+
+      # Modify target reference
+      if(Difference.) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName.)
+
+      # GroupVar or Hierarchical
+      if(!is.null(HierarchGroups.)) {
+        temp <- data.table::copy(UpdateData.[, ID := seq_len(.N), by = c(eval(GroupVariables.))])
+        temp <- temp[ID == N.][, ID := NULL]
+      } else {
+        temp <- data.table::copy(UpdateData.[, ID := seq_len(.N), by = "GroupVar"])
+        temp <- temp[ID == N.][, ID := NULL]
+      }
+
+      # Score model
+      if(Type == "catboost") {
+        Preds <- AutoCatBoostScoring(
+          TargetType = "regression",
+          ScoringData = temp,
+          FeatureColumnNames = ModelFeatures.,
+          FactorLevelsList = NULL,
+          IDcols = IDcols,
+          OneHot = FALSE,
+          ModelObject = Model.,
+          ModelPath = getwd(),
+          ModelID = "ModelTest",
+          ReturnFeatures = FALSE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = NULL,
+          TransformationObject = NULL,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = FALSE,
+          MDP_CharToFactor = FALSE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      } else if(Type == "xgboost") {
+        Preds <- AutoXGBoostScoring(
+          TargetType = "regression",
+          ScoringData = temp,
+          FeatureColumnNames = ModelFeatures.,
+          OneHot = FALSE,
+          IDcols = IDcols,
+          ModelObject = Model.,
+          ModelPath = getwd(),
+          ModelID = "ModelTest",
+          ReturnFeatures = FALSE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = eval(TargetColumnName.),
+          TransformationObject = NULL,
+          FactorLevelsList = FactorList.,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      }
+
+      # Update data group case
+      data.table::setnames(Preds, "Predictions", "Preds")
+      if(NonNegativePred. && !Difference.) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
+      Preds <- cbind(UpdateData.[ID == N.], Preds)
+      if(Difference.) Preds[, ModTarget := Preds][, eval(TargetColumnName.) := Preds] else Preds[, eval(TargetColumnName.) := Preds]
+      Preds[, Predictions := Preds][, Preds := NULL]
+      if(RoundPreds.) Preds[, Predictions := round(Predictions)]
+      UpdateData. <- UpdateData.[ID != N.]
+      if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c("POSIXct","POSIXt")) && any(class(Preds[[eval(DateColumnName.)]]) == "Date")) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
+      UpdateData. <- data.table::rbindlist(list(UpdateData., Preds))
+      if(Difference.) UpdateData.[ID %in% c(N.-1, N.), eval(TargetColumnName.) := cumsum(get(TargetColumnName.)), by = "GroupVar"]
+      UpdateData.[, ID := NULL]
+
+    } else {
+
+      # Score Model
+      if(Type == "catboost") {
+        Preds <- AutoCatBoostScoring(
+          TargetType = "regression",
+          ScoringData = UpdateData.[.N],
+          FeatureColumnNames = ModelFeatures.,
+          FactorLevelsList = NULL,
+          IDcols = NULL,
+          OneHot = FALSE,
+          ModelObject = Model.,
+          ModelPath = getwd(),
+          ModelID = "ModelTest",
+          ReturnFeatures = FALSE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = eval(TargetColumnName.),
+          TransformationObject = NULL,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = FALSE,
+          MDP_CharToFactor = FALSE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      } else if(Type == "xgboost") {
+        Preds <- AutoXGBoostScoring(
+          TargetType = "regression",
+          ScoringData = UpdateData.[.N, ],
+          FeatureColumnNames = ModelFeatures.,
+          OneHot = FALSE,
+          IDcols = NULL,
+          ModelObject = Model.,
+          ModelPath = getwd(),
+          ModelID = "ModelTest",
+          ReturnFeatures = FALSE,
+          TransformNumeric = FALSE,
+          BackTransNumeric = FALSE,
+          TargetColumnName = eval(TargetColumnName.),
+          TransformationObject = NULL,
+          FactorLevelsList = NULL,
+          TransID = NULL,
+          TransPath = NULL,
+          MDP_Impute = TRUE,
+          MDP_CharToFactor = TRUE,
+          MDP_RemoveDates = TRUE,
+          MDP_MissFactor = "0",
+          MDP_MissNum = -1)
+      }
+
+      # Update data non-group case
+      if(NonNegativePred.) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
+      if(RoundPreds.) Preds[, Predictions := round(Predictions)]
+      data.table::set(UpdateData., i = N., j = as.integer(2L:3L), value = Preds[[1L]])
+    }
+  }
+
+  # Return
+  return(list(UpdateData = UpdateData., Preds = Preds, N = N.))
 }
 
 #' @param UpdateData. Passthrough

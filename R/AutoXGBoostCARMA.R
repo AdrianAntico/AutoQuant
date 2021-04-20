@@ -367,7 +367,7 @@ AutoXGBoostCARMA <- function(data,
     data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
   }
 
-  # Feature Engineering: Add Target Transformation----
+  # Feature Engineering: Add Target Transformation ----
   if(DebugMode) print("Feature Engineering: Add Target Transformation----")
   if(TargetTransformation) {
     TransformResults <- AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID="Trans", SaveOutput=FALSE)
@@ -377,11 +377,11 @@ AutoXGBoostCARMA <- function(data,
     TransformObject <- NULL
   }
 
-  # Copy data for non grouping + difference----
+  # Copy data for non grouping + difference ----
   if(DebugMode) print("Copy data for non grouping + difference----")
   if(is.null(GroupVariables) && Difference) antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
 
-  # Feature Engineering: Add Difference Data----
+  # Feature Engineering: Add Difference Data ----
   if(DebugMode) print("Feature Engineering: Add Difference Data----")
   Output <- CarmaDifferencing(GroupVariables.=GroupVariables, Difference.=Difference, data.=data, TargetColumnName.=TargetColumnName, FC_Periods.=FC_Periods)
   data <- Output$data; Output$data <- NULL
@@ -523,194 +523,19 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Number of forecast periods----")
   ForecastRuns <- FC_Periods
 
-  #----
-
-  #----
-
-  # ARMA PROCESS FORECASTING----
+  # ARMA PROCESS FORECASTING ----
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
   for(i in seq_len(ForecastRuns + 1L)) {
 
-    # Row counts----
-    if(i != 1) N <- N + 1L
+    # Score model ----
+    if(DebugMode) print("Score model ----")
+    if(i == 1L) UpdateData <- NULL
+    Output <- CarmaScore(Type = "xgboost", i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=FactorList)
+    UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
+    Preds <- Output$Preds; Output$Preds <- NULL
+    N <- Output$N; rm(Output)
 
-    ###############
-    # ML Scoring
-    ###############
-
-    # Machine Learning: Generate predictions----
-    if(DebugMode) print("# Machine Learning: Generate predictions----")
-    if(i == 1L) {
-      if(!is.null(GroupVariables)) {
-
-        # i = 1 Define IDcols----
-        if(DebugMode) print("# i = 1 Define IDcols----")
-        if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
-
-        # Score model----
-        Preds <- AutoXGBoostScoring(
-          TargetType = "regression",
-          ScoringData = Step1SCore,
-          FeatureColumnNames = ModelFeatures,
-          OneHot = FALSE,
-          IDcols = IDcols,
-          ModelObject = Model,
-          ModelPath = getwd(),
-          ModelID = "ModelTest",
-          ReturnFeatures = TRUE,
-          TransformNumeric = FALSE,
-          BackTransNumeric = FALSE,
-          TargetColumnName = NULL,
-          TransformationObject = NULL,
-          FactorLevelsList = FactorList,
-          TransID = NULL,
-          TransPath = NULL,
-          MDP_Impute = TRUE,
-          MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = TRUE,
-          MDP_MissFactor = "0",
-          MDP_MissNum = -1)
-
-      } else {
-
-        # Score model----
-        if(DebugMode) print("# i = 1 Define IDcols----")
-        IDcols <- eval(TargetVariable)
-        Preds <- AutoXGBoostScoring(
-          TargetType = "regression",
-          ScoringData = Step1SCore,
-          FeatureColumnNames = ModelFeatures,
-          OneHot = FALSE,
-          IDcols = IDcols,
-          ModelObject = Model,
-          ModelPath = getwd(),
-          ModelID = "ModelTest",
-          ReturnFeatures = TRUE,
-          TransformNumeric = FALSE,
-          BackTransNumeric = FALSE,
-          TargetColumnName = NULL,
-          TransformationObject = NULL,
-          FactorLevelsList = FactorList,
-          TransID = NULL,
-          TransPath = NULL,
-          MDP_Impute = TRUE,
-          MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = TRUE,
-          MDP_MissFactor = "0",
-          MDP_MissNum = -1)
-      }
-
-      # Data Wrangline: grab historical data and one more future record----
-      if(Difference) {
-        if(eval(TargetColumnName) %chin% names(Step1SCore)) if(eval(TargetColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName), value = NULL)
-        if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
-        if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
-        UpdateData <- cbind(FutureDateData[1L:N], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)], Preds)
-        data.table::setnames(UpdateData, c("V1"), c(eval(DateColumnName)))
-      } else {
-        if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
-        if(RoundPreds) Preds[, Predictions := round(Predictions)]
-        UpdateData <- cbind(FutureDateData[1L:N], Preds)
-        data.table::setnames(UpdateData, c("V1"), c(eval(DateColumnName)))
-      }
-    } else {
-      if(!is.null(GroupVariables)) {
-
-        # Correctly indicate the target variables being generated----
-        if(Difference) IDcols = "ModTarget" else IDcols <- eval(TargetColumnName)
-
-        # GroupVar or Hierarchical----
-        if(!is.null(HierarchGroups)) {
-          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = c(eval(GroupVariables))])
-        } else {
-          temp <- data.table::copy(UpdateData[, ID := 1:.N, by = "GroupVar"])
-        }
-
-        # Score model----
-        temp <- temp[ID == max(ID)][, ID := NULL]
-        Preds <- AutoXGBoostScoring(
-          TargetType = "regression",
-          ScoringData = temp,
-          FeatureColumnNames = ModelFeatures,
-          OneHot = FALSE,
-          IDcols = IDcols,
-          ModelObject = Model,
-          ModelPath = getwd(),
-          ModelID = "ModelTest",
-          ReturnFeatures = FALSE,
-          TransformNumeric = FALSE,
-          BackTransNumeric = FALSE,
-          TargetColumnName = eval(TargetColumnName),
-          TransformationObject = NULL,
-          FactorLevelsList = FactorList,
-          TransID = NULL,
-          TransPath = NULL,
-          MDP_Impute = TRUE,
-          MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = TRUE,
-          MDP_MissFactor = "0",
-          MDP_MissNum = -1)
-
-        # Update data group case----
-        data.table::setnames(Preds, "Predictions", "Preds")
-        Preds <- cbind(UpdateData[ID == N], Preds)
-        if(Difference) {
-          Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds]
-          if(RoundPreds) Preds[, ModTarget := round(ModTarget)]
-        } else {
-          if(NonNegativePred) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
-          Preds[, eval(TargetColumnName) := Preds]
-        }
-        Preds[, Predictions := Preds][, Preds := NULL]
-        if(RoundPreds) Preds[, Predictions := round(Predictions)]
-        UpdateData <- UpdateData[ID != N]
-        if(any(class(UpdateData[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
-        if(any(class(Preds[[eval(DateColumnName)]]) %chin% c("POSIXct","POSIXt","IDate"))) Preds[, eval(DateColumnName) := as.Date(get(DateColumnName))]
-        UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
-        if(Difference) {
-          if(!is.null(HierarchGroups)) {
-            UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = c(eval(GroupVariables))]
-          } else {
-            UpdateData[ID %in% c(N-1,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
-          }
-        }
-        UpdateData[, ID := NULL]
-      } else {
-        Preds <- AutoXGBoostScoring(
-          TargetType = "regression",
-          ScoringData = UpdateData[.N, ],
-          FeatureColumnNames = ModelFeatures,
-          OneHot = FALSE,
-          IDcols = NULL,
-          ModelObject = Model,
-          ModelPath = getwd(),
-          ModelID = "ModelTest",
-          ReturnFeatures = FALSE,
-          TransformNumeric = FALSE,
-          BackTransNumeric = FALSE,
-          TargetColumnName = eval(TargetColumnName),
-          TransformationObject = NULL,
-          FactorLevelsList = NULL,
-          TransID = NULL,
-          TransPath = NULL,
-          MDP_Impute = TRUE,
-          MDP_CharToFactor = TRUE,
-          MDP_RemoveDates = TRUE,
-          MDP_MissFactor = "0",
-          MDP_MissNum = -1)
-
-        # Update data non-group case----
-        if(NonNegativePred) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
-        if(RoundPreds) Preds[, Predictions := round(Predictions)]
-        data.table::set(UpdateData, i = N, j = 2L:3L, value = Preds[[1]])
-      }
-    }
-
-    ###############
-    # Forecasting
-    ###############
-
-    # Update features for next run----
+    # Update features for next run ----
     if(i != ForecastRuns + 1L) {
 
       # Timer----
@@ -718,7 +543,7 @@ AutoXGBoostCARMA <- function(data,
       if(Timer) if(i != 1) print(paste("Forecast future step: ", i-1))
       if(Timer) starttime <- Sys.time()
 
-      # Create single future record----
+      # Create single future record ----
       if(DebugMode) print("Create single future record----")
       CalendarFeatures <- NextTimePeriod(UpdateData.=UpdateData, TimeUnit.=TimeUnit, DateColumnName.=DateColumnName)
 
@@ -726,7 +551,7 @@ AutoXGBoostCARMA <- function(data,
       if(DebugMode) print("Update feature engineering ----")
       UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i)
 
-      # Update Lags and MA's----
+      # Update Lags and MA's ----
       if(DebugMode) print("Update Lags and MA's----")
       UpdateData <- CarmaRollingStatsUpdate(
         ModelType = "catboost", DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=Preds,
@@ -740,7 +565,7 @@ AutoXGBoostCARMA <- function(data,
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
 
-  # Return
+  # Return ----
   return(list(
     Forecast = UpdateData,
     ModelInformation = TestModel,

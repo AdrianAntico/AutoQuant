@@ -701,7 +701,7 @@ AutoCatBoostCARMA <- function(data,
     # Score model ----
     if(DebugMode) print("Score model ----")
     if(i == 1L) UpdateData <- NULL
-    Output <- CarmaScore(i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, UpdateData.=UpdateData)
+    Output <- CarmaScore(Type = "catboost", i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=NULL)
     UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
     Preds <- Output$Preds; Output$Preds <- NULL
     N <- Output$N; rm(Output)
