@@ -186,9 +186,9 @@ DummifyDT <- function(data,
     # Build dummies ----
     for(ind in inds) {
       if(!ClustScore) {
-        data.table::set(data, i = which(data[[col]] %chin% ind), j = paste0(col, "_", ind), value = 1L)
+        data.table::set(data, i = which(data[[col]] %in% ind), j = paste0(col, "_", ind), value = 1L)
       } else {
-        data.table::set(data, i = which(data[[col]] %chin% ind), j = paste0(col, ind),value = 1L)
+        data.table::set(data, i = which(data[[col]] %in% ind), j = paste0(col, ind),value = 1L)
       }
     }
 
