@@ -129,7 +129,7 @@ DummifyDT <- function(data,
     size <- ncol(data)
     Names <- setdiff(names(data), col)
     if(ImportFactorLevels) {
-      temp <- data.table::fread(file.path(SavePath, paste0(col, ".csv")))
+      temp <- data.table::fread(file.path(SavePath, paste0(col, ".csv")), sep = ",")
       inds <- sort(unique(temp[[eval(col)]]))
     } else if(!is.null(FactorLevelsList)) {
       temp <- FactorLevelsList[[eval(col)]]
