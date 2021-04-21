@@ -1275,9 +1275,10 @@ CatBoostPDF <- function(ModelClass = "catboost",
   # Classification
   if(ModelType == "classification") {
     if(!TrainOnFull. && SaveInfoToPDF.) {
+      Metrics <- EvalMetrics.[, .SD, .SDcols = c("Threshold", "TN", "TP", "FN", "FP", "N", "P", "Utility", "MCC", "Accuracy")]
       EvalPlotList <- list(EvaluationPlot., if(!is.null(VariableImportance.)) VI_Plot(Type = ModelClass, VI_Data = VariableImportance.) else NULL)
       ParDepList <- list(if(!is.null(ParDepPlots.)) ParDepPlots. else NULL)
-      TableMetrics <- list(EvalMetrics., if(!is.null(VariableImportance.)) VariableImportance. else NULL, if(!is.null(Interaction.)) Interaction. else NULL)
+      TableMetrics <- list(Metrics, if(!is.null(VariableImportance.)) VariableImportance. else NULL, if(!is.null(Interaction.)) Interaction. else NULL)
     } else {
       return(NULL)
     }
