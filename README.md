@@ -80,7 +80,7 @@ If you're still having trouble submit an issue and I'll work with you to get it 
 ```
 # Be sure to use the version you want versus what is listed below
 options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
-install.packages("https://github.com/catboost/catboost/releases/download/v0.24.3/catboost-R-Windows-0.24.3.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+install.packages("https://github.com/catboost/catboost/releases/download/v0.25.1/catboost-R-Windows-0.25.1.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
 ```
  
 If you're having still having trouble installing see if the issue below helps out:
