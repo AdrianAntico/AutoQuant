@@ -287,7 +287,7 @@ AutoXGBoostCARMA <- function(data,
 
   # Data Wrangling: Remove Unnecessary Columns ----
   if(DebugMode) print("Data Wrangling: Remove Unnecessary Columns----")
-  data <- CaramSubsetColumns(data.=data, XREGS.=XREGS, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName)
+  data <- CarmaSubsetColumns(data.=data, XREGS.=XREGS, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName)
 
   # Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----
   if(DebugMode) print("Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----")

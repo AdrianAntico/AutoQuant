@@ -415,7 +415,7 @@ CarmaMergeXREGS <- function(data. = data,
 #' @param TargetColumnName. Passthrough
 #'
 #' @noRd
-CaramSubsetColumns <- function(data. = data,
+CarmaSubsetColumns <- function(data. = data,
                                XREGS. = XREGS,
                                GroupVariables. = GroupVariables,
                                DateColumnName. = DateColumnName,

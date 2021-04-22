@@ -1249,6 +1249,7 @@ CatBoostImportances <- function(ModelType = "regression",
 #' @param SaveInfoToPDF. Passthrough
 #' @param EvaluationPlot. Passthrough
 #' @param EvaluationBoxPlot. Passthrough
+#' @param ROC_Plot. Passthrough
 #' @param VariableImportance. Passthrough
 #' @param ParDepPlots. Passthrough
 #' @param ParDepBoxPlots. Passthrough
@@ -1264,6 +1265,7 @@ CatBoostPDF <- function(ModelClass = "catboost",
                         SaveInfoToPDF. = SaveInfoToPDF,
                         EvaluationPlot. = EvaluationPlot,
                         EvaluationBoxPlot. = EvaluationBoxPlot,
+                        ROC_Plot. = NULL,
                         ParDepPlots. = ParDepPlots,
                         ParDepBoxPlots. = ParDepBoxPlots,
                         EvalMetrics. = EvalMetrics,
@@ -1276,7 +1278,7 @@ CatBoostPDF <- function(ModelClass = "catboost",
   if(ModelType == "classification") {
     if(!TrainOnFull. && SaveInfoToPDF.) {
       Metrics <- EvalMetrics.[, .SD, .SDcols = c("Threshold", "TN", "TP", "FN", "FP", "N", "P", "Utility", "MCC", "Accuracy")]
-      EvalPlotList <- list(EvaluationPlot., if(!is.null(VariableImportance.)) VI_Plot(Type = ModelClass, VI_Data = VariableImportance.) else NULL)
+      EvalPlotList <- list(EvaluationPlot., ROC_Plot., if(!is.null(VariableImportance.)) VI_Plot(Type = ModelClass, VI_Data = VariableImportance.) else NULL)
       ParDepList <- list(if(!is.null(ParDepPlots.)) ParDepPlots. else NULL)
       TableMetrics <- list(Metrics, if(!is.null(VariableImportance.)) VariableImportance. else NULL, if(!is.null(Interaction.)) Interaction. else NULL)
     } else {

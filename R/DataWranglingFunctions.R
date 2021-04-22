@@ -835,9 +835,6 @@ AutoDiffLagN <- function(data,
                          Sort = FALSE,
                          RemoveNA = TRUE) {
 
-  # Turn on full speed ahead ----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Ensure data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
