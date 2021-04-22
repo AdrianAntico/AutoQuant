@@ -467,7 +467,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Data Wrangling: Convert DateColumnName to Date or POSIXct ----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct ----")
-  Output <- CarmaDateStandardize(data.=data, XREGS.=NULL, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
+  Output <- CarmaDateStandardize(data.=data, XREGS.=XREGS, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
   data <- Output$data; Output$data <- NULL
   XREGS <- Output$XREGS; rm(Output)
 

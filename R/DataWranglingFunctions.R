@@ -277,17 +277,14 @@ ModelDataPrep <- function(data,
                           MissNum         = -1,
                           IgnoreCols      = NULL) {
 
-  # Full speed ahead ----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-
   # Check data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Prepare columns for action----
+  # Prepare columns for action ----
   x <- as.integer(seq_along(data))
   if(!is.null(IgnoreCols)) if(class(IgnoreCols)[1L] == "character") x <- setdiff(x, which(names(data) %chin% IgnoreCols)) else x <- setdiff(x, IgnoreCols)
 
-  # Replace any inf values with NA----
+  # Replace any inf values with NA ----
   for(col in x) data.table::set(data, j = col, value = replace(data[[col]], is.infinite(data[[col]]), NA))
 
   # Turn character columns into factors----
@@ -944,14 +941,18 @@ AutoDiffLagN <- function(data,
     if(NLag1 == 0L) {
       if(!is.null(DiffVariables)) {
         data <- data[!is.na(get(paste0("Diff_", NLag2, "_", DiffVariables[[1L]])))]
-      } else {
+      } else if(!is.null(DiffDateVariables)) {
         data <- data[!is.na(get(paste0("Diff_", NLag2, "_", DiffDateVariables[[1L]])))]
+      } else {
+        data <- data[!is.na(get(paste0("Diff_", NLag2, "_", DiffGroupVariables[[1L]])))]
       }
     } else {
       if(!is.null(DiffVariables)) {
         data <- data[!is.na(get(paste0("Diff_", NLag1,"-", NLag2, "_", DiffVariables[[1L]])))]
-      } else {
+      } else if(!is.null(DiffDateVariables)) {
         data <- data[!is.na(get(paste0("Diff_", NLag1,"-", NLag2, "_", DiffDateVariables[[1L]])))]
+      } else {
+        data <- data[!is.na(get(paste0("Diff_", NLag1,"-", NLag2, "_", DiffGroupVariables[[1L]])))]
       }
     }
   }
