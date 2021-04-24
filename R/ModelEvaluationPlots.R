@@ -292,11 +292,12 @@ ROCPlot <- function(data = ValidationData,
     ggplot2::ylab("Sensitivity")
 
   # Save plot
-  if(SavePlot)
-  if(!is.null(metapath)) {
-    ggplot2::ggsave(plot = ROC_Plot, filename = paste0(Name, "_ROC_Plot.png"), path = file.path(metapath))
-  } else {
-    ggplot2::ggsave(plot = ROC_Plot, filename = paste0(Name, "_ROC_Plot.png"), path = file.path(modelpath))
+  if(SavePlot) {
+    if(!is.null(metapath)) {
+      ggplot2::ggsave(plot = ROC_Plot, filename = paste0(Name, "_ROC_Plot.png"), path = file.path(metapath))
+    } else {
+      ggplot2::ggsave(plot = ROC_Plot, filename = paste0(Name, "_ROC_Plot.png"), path = file.path(modelpath))
+    }
   }
 
   # Return
@@ -362,6 +363,122 @@ VI_Plot <- function(Type = "catboost",
   }
 }
 
+#' @title CumGainsChart
+#'
+#' @description Create a cumulative gains chart
+#'
+#' @family Model Evaluation and Interpretation
+#'
+#' @author Adrian Antico
+#'
+#' @param data Test data with predictions. data.table
+#' @param PredictionColumnName Name of column that is the model score
+#' @param TargetColumnName Name of your target variable column
+#' @param NumBins Number of percentile bins to plot
+#' @param SavePlot FALSE by default
+#' @param Name File name for saving
+#' @param metapath Path to directory
+#' @param modelpath Path to directory
+#'
+#' @export
+CumGainsChart <- function(data = NULL,
+                          PredictedColumnName = "p1",
+                          TargetColumnName = NULL,
+                          NumBins = 20,
+                          SavePlot = FALSE,
+                          Name = NULL,
+                          metapath = NULL,
+                          modelpath = NULL) {
+  options(scipen = 999)
+  temp <- data[, .SD, .SDcols = c(eval(PredictedColumnName), eval(TargetColumnName))]
+  temp[, NegScore := -get(PredictedColumnName)]
+  if(NumBins < 1 || missing(NumBins)) NumBins <- 20
+  Bins <- c(seq(1/NumBins, 1 - 1/NumBins, 1/NumBins), 1)
+  Cuts <- quantile(x = temp[["NegScore"]], probs = Bins)
+  temp[, eval(TargetColumnName) := as.character(get(TargetColumnName))]
+  grp <- temp[, .N, by = eval(TargetColumnName)][order(N)]
+  smaller_class <- grp[1L, 1L]
+  LiftTable <- round(100 * sapply(Cuts, function(x) {
+    sum(temp[NegScore <= x, get(TargetColumnName) == eval(smaller_class)]) / sum(temp[, get(TargetColumnName) == eval(smaller_class)])
+  }), 2)
+  LiftRes <- rbind(LiftTable, -Cuts)
+  rownames(LiftRes) <- c("Gain", "Score.Point")
+  likelihood_lrc <- grp[1,2] / (grp[2,2] + grp[1,2])
+  LiftRes_T <- data.table::as.data.table(t(LiftRes))
+  LiftRes_T[, Population := as.numeric(100 * eval(Bins))]
+  LiftRes_T[, Lift := round(Gain / 100 / Bins, 2)]
+  LiftRes_T_Gain <- data.table::rbindlist(list(data.table::data.table(Gain = 0, Score.Point = 0, Population = 0, Lift = 0), LiftRes_T))
+
+  # Create Gains Plot
+  p_gain <- eval(ggplot2::ggplot(
+    data = LiftRes_T_Gain,
+    ggplot2::aes(x = Population, y = Gain, label = round(Gain, 1), group = 1)) +
+      ggplot2::geom_line(stat = "identity") +
+      ggplot2::geom_point(ggplot2::aes(colour = Gain)) +
+      ggplot2::theme_bw() +
+      ggplot2::ylab("Cumulative Gain (%)") + ggplot2::xlab("Population (%)") +
+      ggplot2::theme(
+        panel.grid.minor = ggplot2::element_blank(),
+        legend.title = ggplot2::element_blank(),
+        plot.title = ggplot2::element_text(vjust = 2),
+        axis.ticks.y = ggplot2::element_blank(),
+        axis.text.y = ggplot2::element_blank(),
+        panel.background = ggplot2::element_blank(),
+        axis.title.x = ggplot2::element_text(margin = ggplot2::margin(15,0,0,0)),
+        axis.title.y = ggplot2::element_text(margin = ggplot2::margin(1,15,0,0))) +
+      ggplot2::geom_label(
+        ggplot2::aes(fill = factor(Gain)),
+        colour = "white",
+        fontface = "bold",
+        vjust = -0.5,
+        label.padding = ggplot2::unit(0.2, "lines")) +
+      ggplot2::ylim(0,110) +
+      ggplot2::guides(fill = FALSE) +
+      ggplot2::scale_colour_continuous(breaks = c(0, seq(10, 100, 10))))
+
+  # Create Lift Chart
+  p_lift <- (ggplot2::ggplot(
+    data = LiftRes_T,
+    ggplot2::aes(Population, Lift, label = Lift, group = 1)) +
+      ggplot2::geom_line(stat = "identity") +
+      ggplot2::geom_point(ggplot2::aes(colour = Lift)) +
+      ggplot2::theme_bw() +
+      ggplot2::ylab("Lift") +
+      ggplot2::xlab("Population (%)") +
+      ggplot2::theme(
+        panel.grid.minor = ggplot2::element_blank(),
+        legend.title = ggplot2::element_blank(),
+        plot.title = ggplot2::element_text(vjust = 2),
+        axis.ticks.y = ggplot2::element_blank(),
+        axis.text.y = ggplot2::element_blank(),
+        axis.title.x = ggplot2::element_text(margin = ggplot2::margin(15,0,0,0)),
+        axis.title.y = ggplot2::element_text(margin = ggplot2::margin(0,15,0,0))) +
+      ggplot2::geom_label(
+        ggplot2::aes(fill = -Lift),
+        size = 3.5,
+        colour = "white",
+        vjust = -0.5,
+        label.padding = ggplot2::unit(0.2, "lines")) +
+      ggplot2::ylim(min(LiftRes_T[["Lift"]]), max(LiftRes_T[["Lift"]] * 1.1)) +
+      ggplot2::guides(fill = FALSE) +
+      ggplot2::scale_colour_continuous(guide = FALSE) +
+      ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10))))
+
+  # Save plot
+  if(SavePlot) {
+    if(!is.null(metapath)) {
+      ggplot2::ggsave(plot = p_gain, filename = paste0(Name, "_Gain_Plot.png"), path = file.path(metapath))
+      ggplot2::ggsave(plot = p_lift, filename = paste0(Name, "_Lift_Plot.png"), path = file.path(metapath))
+    } else {
+      ggplot2::ggsave(plot = p_gain, filename = paste0(Name, "_Gain_Plot.png"), path = file.path(modelpath))
+      ggplot2::ggsave(plot = p_lift, filename = paste0(Name, "_Lift_Plot.png"), path = file.path(modelpath))
+    }
+  }
+
+  # Return
+  return(list(GainsPlot = p_gain, LiftPlot = p_lift))
+}
+
 #' @title ML_EvalPlots
 #'
 #' @description Generate evaluation plots
@@ -424,6 +541,11 @@ ML_EvalPlots <- function(ModelType = "classification",
         }
       }
 
+      # Gains and Lift
+      Output <- CumGainsChart(data = ValidationData., PredictedColumnName = "p1", TargetColumnName = eval(TargetColumnName.), NumBins = 20, SavePlot = SaveModelObjects., Name = ModelID., metapath = metadata_path., modelpath = model_path.)
+      Gains <- Output$GainsPlot
+      Lift <- Output$LiftPlot; rm(Output)
+
       # ParDep
       ParDepPlots <- list()
       j <- 0L
@@ -455,10 +577,12 @@ ML_EvalPlots <- function(ModelType = "classification",
       ROC_Plot <- NULL
       EvaluationPlot <- NULL
       ParDepPlots <- NULL
+      Gains <- NULL
+      Lift <- NULL
     }
 
     # Return
-    return(list(ROC_Plot = ROC_Plot, EvaluationPlot = EvaluationPlot, ParDepPlots = ParDepPlots))
+    return(list(ROC_Plot = ROC_Plot, EvaluationPlot = EvaluationPlot, GainsPlot = Gains, LiftPlot = Lift, ParDepPlots = ParDepPlots))
   }
 
   # Regression
@@ -691,3 +815,45 @@ ML_EvalPlots <- function(ModelType = "classification",
     return(list(EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, ParDepPlots = ParDepPlots, ParDepBoxPlots = ParDepBoxPlots))
   }
 }
+
+#' #' @title CumGainsChart
+#' #'
+#' #' @description Create a cumulative gains chart
+#' #'
+#' #' @family Model Evaluation and Interpretation
+#' #'
+#' #' @author Adrian Antico
+#' #'
+#' #' @param data Test data with predictions. data.table
+#' #' @param PredictionColumnName Name of column that is the model score
+#' #' @param TargetColumnName Name of your target variable column
+#' #' @param NumBins Number of percentile bins to plot
+#' #' @param SavePlot FALSE by default
+#' #' @param Name File name for saving
+#' #' @param metapath Path to directory
+#' #' @param modelpath Path to directory
+#' #'
+#' #' @export
+#' ShapPlot <- function(ShapData = NULL,
+#'                      VarList = NULL,
+#'                      PlotTitle = "Shap Plot") {
+#'
+#'   eval(
+#'     ggplot2::ggplot(
+#'       data = ShapData[Variable %chin% VarList],
+#'       ggplot2::aes(
+#'         x = Variable,
+#'         y = SumShapValue,
+#'         fill = Variable)) +
+#'       ggplot2::geom_boxplot() +
+#'       ggplot2::coord_flip() +
+#'       ChartTheme() +
+#'       ggplot2::theme(
+#'         legend.position = "none",
+#'         axis.title.x = ggplot2::element_blank(),
+#'         axis.title.y = ggplot2::element_blank()) +
+#'       ggplot2::scale_fill_viridis(discrete = TRUE, alpha = 0.6) +
+#'       ggplot2::geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+#'       ggplot2::ggtitle(PlotTitle))
+#'
+#' }

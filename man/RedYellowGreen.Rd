@@ -71,6 +71,7 @@ data <- RedYellowGreen(
 }
 \seealso{
 Other Model Evaluation and Interpretation: 
+\code{\link{CumGainsChart}()},
 \code{\link{EvalPlot}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},

@@ -330,18 +330,18 @@ AutoCatBoostRegression <- function(data,
   if(ReturnModelObjects) {
     return(list(
       Model = model,
-      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      ValidationData = if(exists("ValidationData")) ValidationData else NULL,
       EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot) && !is.list(EvaluationPlot)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(EvaluationPlot) else EvaluationPlot} else NULL,
-      EvaluationBoxPlot = if(exists("EvaluationBoxPlot") && !is.null(EvaluationBoxPlot)) EvaluationBoxPlot else NULL,
-      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
-      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-      InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
+      EvaluationBoxPlot = if(exists("EvaluationBoxPlot")) EvaluationBoxPlot else NULL,
+      EvaluationMetrics = if(exists("EvaluationMetrics")) EvaluationMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
+      InteractionImportance = if(exists("Interaction")) Interaction else NULL,
       VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = function(x) NULL) else NULL,
       PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots) && !is.list(ParDepPlots)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(ParDepPlots) else ParDepPlots} else NULL,
-      PartialDependenceBoxPlots = if(exists("ParDepBoxPlots") && !is.null(VariableImportance)) ParDepBoxPlots else NULL,
+      PartialDependenceBoxPlots = if(exists("ParDepBoxPlots")) ParDepBoxPlots else NULL,
       GridList = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
-      TransformationResults = if(exists("TransformationResults") && !is.null(TransformationResults)) TransformationResults else NULL,
-      FactorLevelsList = if(exists("FactorLevelsList") && !is.null(FactorLevelsList)) FactorLevelsList))
+      ColNames = if(exists("Names")) Names else NULL,
+      TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
+      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList))
   }
 }

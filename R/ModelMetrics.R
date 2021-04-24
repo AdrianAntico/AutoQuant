@@ -329,10 +329,8 @@ BinaryMetrics <- function(ClassWeights. = ClassWeights,
     } else {
       data.table::fwrite(EvalMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
     }
-  } else if(!TrainOnFull.) {
-    EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
   } else {
-    EvalMetrics <- NULL
+    EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
   }
   return(EvalMetrics)
 }

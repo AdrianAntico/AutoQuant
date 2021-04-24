@@ -280,6 +280,8 @@ AutoCatBoostClassifier <- function(data,
   Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
   EvaluationPlot <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
   ParDepPlots <- Output$ParDepPlots; Output$ParDepPlots <- NULL
+  GainsPlot <- Output$GainsPlot; Output$GainsPlot <- NULL
+  LiftPlot <- Output$LiftPlot; Output$LiftPlot <- NULL
   ROC_Plot <- Output$ROC_Plot; rm(Output)
 
   # Remove extenal files if GridTune is TRUE ----
@@ -288,7 +290,7 @@ AutoCatBoostClassifier <- function(data,
 
   # Send output to pdf ----
   if(DebugMode) print("Running CatBoostPDF()")
-  CatBoostPDF(ModelClass = "catboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, ROC_Plot.=ROC_Plot, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
+  CatBoostPDF(ModelClass = "catboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, ROC_Plot.=ROC_Plot, Gains.=GainsPlot, Lift.=LiftPlot, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
 
   # Final Garbage Collection ----
   if(tolower(task_type) == "gpu") gc()
@@ -298,14 +300,16 @@ AutoCatBoostClassifier <- function(data,
   return(list(
     Model = model,
     ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-    ROC_Plot = if(exists("ROC_Plot") && !is.null(ROC_Plot)) ROC_Plot else NULL,
-    EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot)) EvaluationPlot else NULL,
-    EvaluationMetrics = if(exists("EvalMetrics") && !is.null(EvalMetrics)) EvalMetrics else NULL,
-    VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-    InteractionImportance = if(exists("Interaction") && !is.null(Interaction)) Interaction else NULL,
-    ShapValuesDT = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
+    GainsPlot = if(exists("GainsPlot")) GainsPlot else NULL,
+    LiftPlot = if(exists("LiftPlot")) LiftPlot else NULL,
+    ROC_Plot = if(exists("ROC_Plot")) ROC_Plot else NULL,
+    EvaluationPlot = if(exists("EvaluationPlot")) EvaluationPlot else NULL,
+    EvaluationMetrics = if(exists("EvalMetrics")) EvalMetrics else NULL,
+    VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
+    InteractionImportance = if(exists("Interaction")) Interaction else NULL,
+    ShapValuesDT = if(exists("ShapValues")) ShapValues else NULL,
     VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = function(x) NULL) else NULL,
-    PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots)) ParDepPlots else NULL,
+    PartialDependencePlots = if(exists("ParDepPlots")) ParDepPlots else NULL,
     GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "eval_metric", order = -1L, na.last = TRUE) else NULL,
-    ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
+    ColNames = if(exists("Names")) Names else NULL))
 }

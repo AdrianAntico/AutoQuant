@@ -269,7 +269,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
   }
 
   # Classification----
-  if(Classification) data[, Adrian := data.table::fifelse(x1 > 0.5, 1, 0)]
+  if(Classification) data[, Adrian := data.table::fifelse(runif(.N) > 0.5, 1, 0)]
 
   # Remove----
   data[, ":=" (x1 = NULL)]

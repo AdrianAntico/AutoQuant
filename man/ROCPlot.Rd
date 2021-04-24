@@ -34,6 +34,7 @@ Internal usage for classification methods. Returns an ROC plot
 }
 \seealso{
 Other Model Evaluation and Interpretation: 
+\code{\link{CumGainsChart}()},
 \code{\link{EvalPlot}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{RedYellowGreen}()},
