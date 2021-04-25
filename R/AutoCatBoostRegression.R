@@ -336,12 +336,13 @@ AutoCatBoostRegression <- function(data,
       EvaluationMetrics = if(exists("EvaluationMetrics")) EvaluationMetrics else NULL,
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
       InteractionImportance = if(exists("Interaction")) Interaction else NULL,
+      ShapValuesDT = if(exists("ShapValues")) ShapValues else NULL,
       VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance)) else VI_Plot(Type = "catboost", VariableImportance)}, error = function(x) NULL) else NULL,
       PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots) && !is.list(ParDepPlots)) {if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(ParDepPlots) else ParDepPlots} else NULL,
       PartialDependenceBoxPlots = if(exists("ParDepBoxPlots")) ParDepBoxPlots else NULL,
       GridList = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = 1L, na.last = TRUE) else NULL,
       ColNames = if(exists("Names")) Names else NULL,
       TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
-      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList))
+      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL))
   }
 }

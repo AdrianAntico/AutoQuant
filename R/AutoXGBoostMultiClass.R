@@ -154,7 +154,7 @@ AutoXGBoostMultiClass <- function(data,
   datatrain <- Output$datatrain; Output$datatrain <- NULL
   dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
   TestMerge <- Output$TestMerge; Output$TestMerge <- NULL
-  TestData <- Output$TestData.; Output$TestData. <- NULL
+  TestData <- Output$TestData; Output$TestData <- NULL
   datatest <- Output$datatest; Output$datatest <- NULL
   EvalSets <- Output$EvalSets; Output$EvalSets <- NULL
   dataTest <- Output$dataTest; Output$dataTest <- NULL

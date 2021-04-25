@@ -315,30 +315,33 @@ ROCPlot <- function(data = ValidationData,
 #' @param VI_Data Source data
 #' @param ColorHigh darkblue
 #' @param ColorLow white
+#' @param TopN Number of variables to display
 #'
 #' @return ROC Plot for classification models
 #' @noRd
 VI_Plot <- function(Type = "catboost",
                     VI_Data = NULL,
                     ColorHigh = "darkblue",
-                    ColorLow = "white") {
+                    ColorLow = "white",
+                    TopN = 10) {
 
   # Catboost
   if(Type == "catboost") {
-    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(10L,.N))], ggplot2::aes(x = reorder(Variable, Importance), y = Importance, fill = Importance)) +
-                  ggplot2::geom_bar(stat = "identity") +
-                  ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
-                  ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-                  ggplot2::coord_flip() +
-                  ggplot2::labs(title = "Global Variable Importance") +
-                  ggplot2::xlab("Top Model Features") +
-                  ggplot2::ylab("Value") +
-                  ggplot2::theme(legend.position = "none")))
+    return(eval(
+      ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Variable, abs(Importance)), y = Importance, fill = Importance)) +
+        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
+        ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
+        ggplot2::coord_flip() +
+        ggplot2::labs(title = "Global Variable Importance") +
+        ggplot2::xlab("Top Model Features") +
+        ggplot2::ylab("Value") +
+        ggplot2::theme(legend.position = "none")))
   }
 
   # XGBoost
   if(Type == "xgboost") {
-    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(10L,.N))], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
+    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
                   ggplot2::geom_bar(stat = "identity") +
                   ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
                   ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
@@ -351,7 +354,7 @@ VI_Plot <- function(Type = "catboost",
 
   # H2O
   if(Type == "h2o") {
-    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(10,.N))], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
+    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
                   ggplot2::geom_bar(stat = "identity") +
                   ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
                   ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
@@ -816,44 +819,44 @@ ML_EvalPlots <- function(ModelType = "classification",
   }
 }
 
-#' #' @title CumGainsChart
-#' #'
-#' #' @description Create a cumulative gains chart
-#' #'
-#' #' @family Model Evaluation and Interpretation
-#' #'
-#' #' @author Adrian Antico
-#' #'
-#' #' @param data Test data with predictions. data.table
-#' #' @param PredictionColumnName Name of column that is the model score
-#' #' @param TargetColumnName Name of your target variable column
-#' #' @param NumBins Number of percentile bins to plot
-#' #' @param SavePlot FALSE by default
-#' #' @param Name File name for saving
-#' #' @param metapath Path to directory
-#' #' @param modelpath Path to directory
-#' #'
-#' #' @export
-#' ShapPlot <- function(ShapData = NULL,
-#'                      VarList = NULL,
-#'                      PlotTitle = "Shap Plot") {
+#' @title CumGainsChart
 #'
-#'   eval(
-#'     ggplot2::ggplot(
-#'       data = ShapData[Variable %chin% VarList],
-#'       ggplot2::aes(
-#'         x = Variable,
-#'         y = SumShapValue,
-#'         fill = Variable)) +
-#'       ggplot2::geom_boxplot() +
-#'       ggplot2::coord_flip() +
-#'       ChartTheme() +
-#'       ggplot2::theme(
-#'         legend.position = "none",
-#'         axis.title.x = ggplot2::element_blank(),
-#'         axis.title.y = ggplot2::element_blank()) +
-#'       ggplot2::scale_fill_viridis(discrete = TRUE, alpha = 0.6) +
-#'       ggplot2::geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
-#'       ggplot2::ggtitle(PlotTitle))
+#' @description Create a cumulative gains chart
 #'
-#' }
+#' @family Model Evaluation and Interpretation
+#'
+#' @author Adrian Antico
+#'
+#' @param data Test data with predictions. data.table
+#' @param PredictionColumnName Name of column that is the model score
+#' @param TargetColumnName Name of your target variable column
+#' @param NumBins Number of percentile bins to plot
+#' @param SavePlot FALSE by default
+#' @param Name File name for saving
+#' @param metapath Path to directory
+#' @param modelpath Path to directory
+#'
+#' @export
+ShapPlot <- function(ShapData = NULL,
+                     VarList = NULL,
+                     PlotTitle = "Shap Plot") {
+
+  eval(
+    ggplot2::ggplot(
+      data = ShapData[Variable %chin% VarList],
+      ggplot2::aes(
+        x = Variable,
+        y = SumShapValue,
+        fill = Variable)) +
+      ggplot2::geom_boxplot() +
+      ggplot2::coord_flip() +
+      ChartTheme() +
+      ggplot2::theme(
+        legend.position = "none",
+        axis.title.x = ggplot2::element_blank(),
+        axis.title.y = ggplot2::element_blank()) +
+      ggplot2::scale_fill_viridis(discrete = TRUE, alpha = 0.6) +
+      ggplot2::geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+      ggplot2::ggtitle(PlotTitle))
+
+}

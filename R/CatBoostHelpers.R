@@ -953,11 +953,11 @@ CatBoostValidationData <- function(ModelType = "classification",
   if(ModelType == "classification") {
     if(!TrainOnFull.) {
       if(TestDataCheck) {
-        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., p1 = predict.))
+        ValidationData <- data.table::as.data.table(cbind(TestMerge., p1 = predict.))
       } else {
         ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., p1 = predict.))
+        data.table::setnames(ValidationData, "Target", eval(TargetColumnName.), skip_absent = TRUE)
       }
-      data.table::setnames(ValidationData, "Target", eval(TargetColumnName.))
       if(SaveModelObjects.) {
         if(!is.null(metadata_path.)) {
           data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_ValidationData.csv")))
@@ -967,9 +967,8 @@ CatBoostValidationData <- function(ModelType = "classification",
       }
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., p1 = predict.))
-      data.table::setnames(ValidationData, "Target", eval(TargetColumnName.))
+      data.table::setnames(ValidationData, "Target", eval(TargetColumnName.), skip_absent = TRUE)
     }
-
   }
 
   # Regression
@@ -981,8 +980,8 @@ CatBoostValidationData <- function(ModelType = "classification",
         if(length(TargetColumnName.) > 1L) {
           ValidationData <- data.table::as.data.table(cbind(TestMerge., Predict = predict.))
         } else {
-          ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., Predict = predict.))
-          data.table::setnames(ValidationData, "Target", TargetColumnName.)
+          ValidationData <- data.table::as.data.table(cbind(TestMerge., Predict = predict.))
+          data.table::setnames(ValidationData, "Target", TargetColumnName., skip_absent = TRUE)
         }
       } else {
         ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., Predict = predict.))
@@ -1192,7 +1191,7 @@ CatBoostImportances <- function(ModelType = "regression",
     # Gather importances
     temp <- data.table::data.table(ColNames = VariableImportance[[1L]])[, Index := 0:(.N - 1)]
     if(!is.null(ShapValues)) {
-      data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_temp",temp[[1L]]), "Predictions"), skip_absent = TRUE)
+      data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_", temp[[1L]]), "Predictions"), skip_absent = TRUE)
       ShapValues[, Predictions := NULL]
       ShapValues <- cbind(ValidationData., ShapValues)
     }
@@ -1204,7 +1203,7 @@ CatBoostImportances <- function(ModelType = "regression",
       Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
       data.table::setnames(Interaction, "ColNames", "Features2")
       Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
-      data.table::setcolorder(Interaction, c(2L,3L,1L))
+      data.table::setcolorder(Interaction, c(2L, 3L, 1L))
       data.table::setorderv(Interaction, "score", -1)
     }
 

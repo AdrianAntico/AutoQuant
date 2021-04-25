@@ -872,7 +872,7 @@ AutoCatBoostVectorCARMA <- function(data,
   if(DebugMode) print("ARMA PROCESS FORECASTING----")
   for(i in seq_len(ForecastRuns+1L)) {
 
-    # Row counts----
+    # Row counts ----
     if(DebugMode) print("Row counts----")
     if(i != 1) N <- as.integer(N + 1L)
 

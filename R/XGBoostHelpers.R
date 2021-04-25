@@ -104,7 +104,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
     }
 
     # Data Partition
-    if(is.null(ValidationData.) & is.null(TestData.) & !TrainOnFull.) {
+    if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
       dataSets <- AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
@@ -134,7 +134,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
     # Dummify dataTrain Categorical Features
     if(!is.null(CatFeatures)) {
       if(SaveModelObjects.) {
-        if(!is.null(dataTest) & !is.null(TestData.) & !TrainOnFull.) {
+        if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
           data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
           data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
           data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
@@ -168,6 +168,8 @@ XGBoostDataPrep <- function(ModelType = "regression",
                 SavePath = model_path.,
                 ImportFactorLevels = FALSE)
               IDcols. <- c(IDcols.,CatFeatures)
+              FactorLevelsList <- temp$FactorLevelsList
+              temp <- temp$data
             } else {
               FactorLevelsList <- NULL
             }
@@ -187,22 +189,18 @@ XGBoostDataPrep <- function(ModelType = "regression",
             temp <- dataTrain
           }
           if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
+            temp <- DummifyDT(
+              data = temp,
+              cols = CatFeatures,
+              KeepFactorCols = FALSE,
+              OneHot = FALSE,
+              SaveFactorLevels = TRUE,
+              ReturnFactorLevels = ReturnFactorLevels.,
+              SavePath = model_path.,
+              ImportFactorLevels = FALSE)
+            IDcols. <- c(IDcols.,CatFeatures)
+            FactorLevelsList <- temp$FactorLevelsList
+            temp <- temp$data
           } else {
             if(!is.null(CatFeatures)) {
               temp <- DummifyDT(

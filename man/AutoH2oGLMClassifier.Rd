@@ -16,7 +16,7 @@ AutoH2oGLMClassifier(
   WeightsColumn = NULL,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1000000)), "G") },
+    intern = TRUE))/1e+06)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
   ModelID = "FirstModel",
   ReturnModelObjects = TRUE,

@@ -163,7 +163,7 @@ AutoXGBoostRegression <- function(data,
   datatrain <- Output$datatrain; Output$datatrain <- NULL
   dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
   TestMerge <- Output$TestMerge; Output$TestMerge <- NULL
-  TestData <- Output$TestData.; Output$TestData. <- NULL
+  TestData <- Output$TestData; Output$TestData <- NULL
   datatest <- Output$datatest; Output$datatest <- NULL
   EvalSets <- Output$EvalSets; Output$EvalSets <- NULL
   dataTest <- Output$dataTest; Output$dataTest <- NULL
@@ -296,18 +296,18 @@ AutoXGBoostRegression <- function(data,
   if(ReturnModelObjects) {
     return(list(
       Model = model,
-      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-      ShapValues = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
-      EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot)) EvaluationPlot else NULL,
-      EvaluationBoxPlot = if(exists("EvaluationBoxPlot") && !is.null(EvaluationBoxPlot)) EvaluationBoxPlot else NULL,
-      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
-      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      ValidationData = if(exists("ValidationData")) ValidationData else NULL,
+      ShapValues = if(exists("ShapValues")) ShapValues else NULL,
+      EvaluationPlot = if(exists("EvaluationPlot")) EvaluationPlot else NULL,
+      EvaluationBoxPlot = if(exists("EvaluationBoxPlot")) EvaluationBoxPlot else NULL,
+      EvaluationMetrics = if(exists("EvaluationMetrics")) EvaluationMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
       VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
-      PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots)) ParDepPlots else NULL,
-      PartialDependenceBoxPlots = if(exists("ParDepBoxPlots") && !is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL,
-      GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
-      TransformationResults = if(exists("TransformationResults") && !is.null(TransformationResults)) TransformationResults else NULL,
-      FactorLevelsList = if(exists("FactorLevelsList") && !is.null(FactorLevelsList)) FactorLevelsList else NULL))
+      PartialDependencePlots = if(exists("ParDepPlots")) ParDepPlots else NULL,
+      PartialDependenceBoxPlots = if(exists("ParDepBoxPlots")) ParDepBoxPlots else NULL,
+      GridMetrics = if(exists("ExperimentalGrid")) ExperimentalGrid else NULL,
+      ColNames = if(exists("Names")) Names else NULL,
+      TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
+      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL))
   }
 }

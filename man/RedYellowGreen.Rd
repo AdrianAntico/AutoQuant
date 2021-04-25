@@ -75,6 +75,7 @@ Other Model Evaluation and Interpretation:
 \code{\link{EvalPlot}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},
+\code{\link{ShapPlot}()},
 \code{\link{threshOptim}()}
 }
 \author{
