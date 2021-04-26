@@ -25,8 +25,8 @@ XGBoostArgsCheck <- function(GridTune.=GridTune,
                              colsample_bytree.=colsample_bytree) {
 
   # Ensure model_path. and metadata_path. exists----
-  if(!is.null(model_path.)) if(!dir.exists(file.path(model_path.))) dir.create(model_path.)
-  if(!is.null(metadata_path.)) if(!is.null(metadata_path.)) if(!dir.exists(file.path(metadata_path.))) dir.create(metadata_path.)
+  if(!is.null(model_path.) && !dir.exists(file.path(model_path.))) dir.create(model_path.)
+  if(!is.null(metadata_path.) && !is.null(metadata_path.)) if(!dir.exists(file.path(metadata_path.))) dir.create(metadata_path.)
 
   # Ensure only one value if not grid tuning
   if(!GridTune. && length(Trees.) > 1) stop("Trees cannot have more than one value supplied")
@@ -79,29 +79,28 @@ XGBoostDataPrep <- function(ModelType = "regression",
                             SaveModelObjects. = SaveModelObjects,
                             ReturnFactorLevels.=ReturnFactorLevels) {
 
+  # Ensure data. is a data.table
+  if(!data.table::is.data.table(data.)) data.table::setDT(data.)
+  if(!is.null(ValidationData.) && !data.table::is.data.table(ValidationData.)) data.table::setDT(ValidationData.)
+  if(!is.null(TestData.) && !data.table::is.data.table(TestData.)) data.table::setDT(TestData.)
+
+  # Target Name Storage
+  if(!is.character(TargetColumnName.)) TargetColumnName. <- names(data.)[TargetColumnName.]
+  if(!is.character(FeatureColNames.)) FeatureColNames. <- names(data.)[FeatureColNames.]
+  if(!is.null(IDcols.) && !is.character(IDcols.)) IDcols. <- names(data.)[IDcols.]
+
+  # Identify column numbers for factor variables
+  CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
+  if(!identical(numeric(0), CatFeatures)) {
+    CatFeatures <- names(data.)[CatFeatures]
+    CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols.]
+  } else {
+    if(length(CatFeatures) == 0L) CatFeatures <- NULL
+  }
+  if(ModelType == "multiclass") CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
+
   # Classification
   if(ModelType == "classification") {
-
-    # Ensure data. is a data.table
-    if(!data.table::is.data.table(data.)) data.table::setDT(data.)
-    if(!is.null(ValidationData.)) if(!data.table::is.data.table(ValidationData.)) data.table::setDT(ValidationData.)
-    if(!is.null(TestData.)) if(!data.table::is.data.table(TestData.)) data.table::setDT(TestData.)
-
-    # Target Name Storage
-    if(!is.character(TargetColumnName.)) TargetColumnName. <- names(data.)[TargetColumnName.]
-    if(!is.character(FeatureColNames.)) FeatureColNames. <- names(data.)[FeatureColNames.]
-
-    # IDcol Name Storage
-    if(!is.null(IDcols.)) if(!is.character(IDcols.)) IDcols. <- names(data.)[IDcols.]
-
-    # Identify column numbers for factor variables
-    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
-    if(!identical(numeric(0), CatFeatures)) {
-      CatFeatures <- names(data.)[CatFeatures]
-      CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols.]
-    } else {
-      if(length(CatFeatures) == 0L) CatFeatures <- NULL
-    }
 
     # Data Partition
     if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
@@ -361,7 +360,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
     } else if(!TrainOnFull.) {
       EvalSets <- list(train = datatrain, test = datavalidate)
     } else {
-      EvalSets <- list(train = datatrain, test = datatrain)
+      EvalSets <- list(train = datatrain)
       datavalidate <- NULL
       datatest <- NULL
       TestTarget <- NULL
@@ -372,26 +371,6 @@ XGBoostDataPrep <- function(ModelType = "regression",
 
   # Regression
   if(ModelType == "regression") {
-
-    # Regression Ensure data is a data.table
-    if(!data.table::is.data.table(data.)) data.table::setDT(data.)
-    if(!is.null(ValidationData.)) if(!data.table::is.data.table(ValidationData.)) data.table::setDT(ValidationData.)
-    if(!is.null(TestData.)) if(!data.table::is.data.table(TestData.)) data.table::setDT(TestData.)
-
-    # Regression Target Name Storage
-    if(!is.character(TargetColumnName.)) TargetColumnName. <- names(data.)[TargetColumnName.]
-
-    # Regression IDcol Name Storage
-    if(!is.null(IDcols.)) if(!is.character(IDcols.)) IDcols. <- names(data.)[IDcols.]
-
-    # Identify column numbers for factor variables
-    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
-    if(!identical(numeric(0), CatFeatures)) {
-      CatFeatures <- names(data.)[CatFeatures]
-      CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols.]
-    } else {
-      if(length(CatFeatures) == 0L) CatFeatures <- NULL
-    }
 
     # Transform data., ValidationData., and TestData.
     if(!is.null(ValidationData.) && !is.null(TransformNumericColumns.)) {
@@ -754,6 +733,8 @@ XGBoostDataPrep <- function(ModelType = "regression",
         data.table::setnames(Names, "V1", "ColNames")
       }
     }
+
+    # Save feature names
     if(SaveModelObjects.) data.table::fwrite(Names, file = file.path(model_path., paste0(ModelID., "_ColNames.csv")))
 
     # Regression Subset Target Variables
@@ -788,24 +769,6 @@ XGBoostDataPrep <- function(ModelType = "regression",
 
   # MultiClass
   if(ModelType == "multiclass") {
-
-    # MultiClass Ensure data is a data.table
-    if(!data.table::is.data.table(data.)) data.table::setDT(data.)
-    if(!is.null(ValidationData.)) if (!data.table::is.data.table(ValidationData.)) data.table::setDT(ValidationData.)
-    if(!is.null(TestData.)) if(!data.table::is.data.table(TestData.)) data.table::setDT(TestData.)
-
-    # MultiClass Target Name Storage
-    if(!is.character(TargetColumnName.)) TargetColumnName. <- names(data.)[TargetColumnName.]
-
-    # MultiClass IDcol Name Storage
-    if(!is.null(IDcols.)) if(!is.character(IDcols.)) IDcols. <- names(data.)[IDcols.]
-
-    # MultiClass Identify column numbers for factor variables
-    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
-    CatFeatures <- names(data.)[CatFeatures]
-    CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols.]
-    if(length(CatFeatures) == 0L) CatFeatures <- NULL
-    CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
 
     # MultiClass Data Partition
     if(is.null(ValidationData.) && is.null(TestData.) && TrainOnFull. == FALSE) {
@@ -1122,42 +1085,28 @@ XGBoostDataPrep <- function(ModelType = "regression",
     }
   }
 
-  # Define non existent objects
-  if(!exists("datavalidate")) datavalidate <- NULL
-  if(!exists("datatest")) datatest <- NULL
-  if(!exists("TestTarget")) TestTarget <- NULL
-  if(!exists("FinalTestTarget")) FinalTestTarget <- NULL
-  if(!exists("dataTest")) dataTest <- NULL
-  if(!exists("TestData.")) TestData. <- NULL
-  if(!exists("TestMerge")) TestMerge <- NULL
-  if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
-  if(!exists("ValidMerge")) ValidMerge <- NULL
-  if(!exists("TargetLevels")) TargetLevels <- NULL
-  if(!exists("TrainMerge")) TrainMerge <- NULL
-  if(!exists("NumLevels")) NumLevels <- NULL
-
   # Return objects
   return(list(
     datatrain = datatrain,
-    datavalidate = datavalidate,
-    datatest = datatest,
+    datavalidate = if(exists("datavalidate")) datavalidate else NULL,
+    datatest = if(exists("datatest")) datatest else NULL,
     EvalSets = EvalSets,
     dataTrain = dataTrain,
-    dataTest = dataTest,
-    TrainMerge = TrainMerge,
-    ValidMerge = ValidMerge,
-    TestMerge = TestMerge,
-    TestData = TestData.,
+    dataTest = if(exists("dataTest")) dataTest else NULL,
+    TrainMerge = if(exists("TrainMerge")) TrainMerge else NULL,
+    ValidMerge = if(exists("ValidMerge")) ValidMerge else NULL,
+    TestMerge = if(exists("TestMerge")) TestMerge else NULL,
+    TestData = if(exists("TestData.")) TestData. else NULL,
     TrainTarget = TrainTarget,
-    TestTarget = TestTarget,
-    FinalTestTarget = FinalTestTarget,
-    TargetLevels = TargetLevels,
+    TestTarget = if(exists("TestTarget")) TestTarget else NULL,
+    FinalTestTarget = if(exists("FinalTestTarget")) FinalTestTarget else NULL,
+    TargetLevels = if(exists("TargetLevels")) TargetLevels else NULL,
     Names = Names,
-    FactorLevelsList = FactorLevelsList,
+    FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL,
     IDcols = IDcols.,
     TransformNumericColumns = TransformNumericColumns.,
     TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
-    NumLevels = NumLevels))
+    NumLevels = if(exists("NumLevels")) NumLevels else NULL))
 }
 
 #' @title XGBoostFinalParams

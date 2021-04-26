@@ -194,8 +194,8 @@ AutoXGBoostClassifier <- function(data,
     }
   }
 
-  # Grid Score Model ----
-  if(DebugMode) print("Grid Score Model ----")
+  # Score Model ----
+  if(DebugMode) print("Score Model ----")
   predict <- stats::predict(model, if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain)
 
   # Validation, Importance, Shap data ----
