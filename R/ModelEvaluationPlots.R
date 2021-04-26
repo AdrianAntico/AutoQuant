@@ -398,11 +398,11 @@ CumGainsChart <- function(data = NULL,
   if(NumBins < 1 || missing(NumBins)) NumBins <- 20
   Bins <- c(seq(1/NumBins, 1 - 1/NumBins, 1/NumBins), 1)
   Cuts <- quantile(x = temp[["NegScore"]], probs = Bins)
-  temp[, eval(TargetColumnName) := as.character(get(TargetColumnName))]
+  temp[, eval(TargetColumnName) := as.character(get(TargetColumnName))][, eval(TargetColumnName) := as.character(get(TargetColumnName))]
   grp <- temp[, .N, by = eval(TargetColumnName)][order(N)]
-  smaller_class <- grp[1L, 1L]
+  smaller_class <- grp[1L, 1L][[1L]]
   LiftTable <- round(100 * sapply(Cuts, function(x) {
-    sum(temp[NegScore <= x, get(TargetColumnName) == eval(smaller_class)]) / sum(temp[, get(TargetColumnName) == eval(smaller_class)])
+    temp[NegScore <= x & get(TargetColumnName) == eval(smaller_class), .N] / temp[get(TargetColumnName) == eval(smaller_class), .N]
   }), 2)
   LiftRes <- rbind(LiftTable, -Cuts)
   rownames(LiftRes) <- c("Gain", "Score.Point")
