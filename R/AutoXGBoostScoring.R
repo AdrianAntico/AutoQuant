@@ -158,14 +158,14 @@ AutoXGBoostScoring <- function(TargetType = NULL,
 
   # Shap values ----
   if(ReturnShapValues) {
-    ShapValues <- xgboost:::xgb.shap.data(as.matrix(ScoringData), model = ModelObject, features = names(ScoringData))$shap_contrib
+    ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(ScoringData), model = ModelObject, features = names(ScoringData))$shap_contrib)
   }
 
   # Change Output Predictions Column Name----
   if(tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
   } else if(tolower(TargetType) == "multiclass") {
-    if(is.null(TargetLevels)) TargetLevels <- data.table::fread(file.path(normalizePath(ModelPath), paste0(ModelID, "_TargetLevels.csv")))
+    if(is.null(TargetLevels)) TargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, "_TargetLevels.csv")))
     if(Objective == "multi:softprob") {
       NumLevels <- TargetLevels[, .N]
       PredictLength <- predict[, .N]
