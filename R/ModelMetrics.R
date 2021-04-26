@@ -195,9 +195,9 @@ ClassificationMetrics <- function(TestData,
     FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
     FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
     N1  <- TestData[, .N]
-    N  <- TestData[get(PredictColumnName) <= eval(Thresh), .N]
+    N  <- TestData[get(PredictColumnName) < eval(Thresh), .N]
     P1  <- TestData[get(Target) == 1, .N]
-    P  <- TestData[get(Target) == 1 & get(PredictColumnName) <= Thresh, .N]
+    P  <- TestData[get(Target) == 1 & get(PredictColumnName) > Thresh, .N]
 
     # Calculate metrics ----
     MCC         <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
