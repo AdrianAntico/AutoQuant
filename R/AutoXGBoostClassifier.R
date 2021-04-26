@@ -198,35 +198,11 @@ AutoXGBoostClassifier <- function(data,
   if(DebugMode) print("Grid Score Model ----")
   predict <- stats::predict(model, if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain)
 
-  # Validation Data ----
-  if(DebugMode) print("Validation Data ----")
-  if(!is.null(TestData)) {
-    ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
-    data.table::setnames(ValidationData, "Target", TargetColumnName)
-    ShapValues <- xgboost:::xgb.shap.data(as.matrix(TestData), model = model, features = names(TestData))$shap_contrib
-  } else if(!TrainOnFull) {
-    ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
-    data.table::setnames(ValidationData, "Target", TargetColumnName)
-    ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTest), model = model, features = names(dataTest))$shap_contrib
-  } else {
-    ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget, dataTrain, p1 = predict))
-    data.table::setnames(ValidationData, "Target", TargetColumnName)
-    ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTrain), model = model, features = names(dataTrain))$shap_contrib
-  }
-
-  # Variable Importance ----
-  if(DebugMode) print("Variable Importance ----")
-  VariableImportance <- tryCatch({data.table::as.data.table(xgboost::xgb.importance(model = model))}, error = function(x) NULL)
-  if(!is.null(VariableImportance)) {
-    VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
-    if(SaveModelObjects) {
-      if(!is.null(metadata_path)) {
-        data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
-      } else {
-        data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
-      }
-    }
-  }
+  # Validation, Importance, Shap data ----
+  Output <- XGBoostValidation(ModelType.="classifier", TrainOnFull.=TrainOnFull, model.=model, TargetColumnName.=TargetColumnName, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TestData.=TestData, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TestMerge.=TestMerge, dataTest.=dataTest, TrainTarget.=TrainTarget, dataTrain.=dataTrain, Final.=NULL, predict.=predict, TransformNumericColumns.=NULL, TransformationResults.=NULL, GridTune.=NULL, data.=NULL)
+  VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
+  ValidationData <- Output$ValidationData; Output$ValidationData <- NULL
+  ShapValues <- Output$ShapValues; rm(Output)
 
   # Evaluation plots ----
   if(DebugMode) print("Evaluation plots ----")

@@ -152,6 +152,8 @@ AutoXGBoostRegression <- function(data,
   # Data prep ----
   if(DebugMode) print("Data prep ----")
   Output <- XGBoostDataPrep(ModelType="regression", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels)
+  TransformNumericColumns <- Output$TransformNumericColumns; Output$TransformNumericColumns <- NULL
+  TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
   datavalidate <- Output$datavalidate; Output$datavalidate <- NULL
@@ -203,68 +205,18 @@ AutoXGBoostRegression <- function(data,
 
   # Grid Score Model ----
   if(DebugMode) print("Grid Score Model ----")
-  predict <- stats::predict(object = model, if(!is.null(TestData)) datatest else if(!is.null(ValidationData) & !TrainOnFull) datavalidate else datatrain)
+  predict <- stats::predict(object = model, if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
 
-  # Validation Data ----
-  if(DebugMode) print("Validation Data ----")
-  if(!is.null(TestData)) {
-    ValidationData <- data.table::as.data.table(cbind(TestMerge, Predict = predict))
-    ShapValues <- xgboost:::xgb.shap.data(as.matrix(TestData), model = model, features = names(TestData))$shap_contrib
-    VariableImportance <- tryCatch({xgboost::xgb.importance(model = model)}, error = function(x) NULL)
-  } else if(!is.null(ValidationData) & !TrainOnFull) {
-    ValidationData <- data.table::as.data.table(cbind(ValidMerge, Predict = predict))
-    ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTest), model = model, features = names(dataTest))$shap_contrib
-    VariableImportance <- tryCatch({xgboost::xgb.importance(model = model)}, error = function(x) NULL)
-  } else {
-    ValidationData <- data.table::as.data.table(cbind(TrainMerge, Predict = predict))
-    ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTrain), model = model, features = names(dataTrain))$shap_contrib
-    VariableImportance <- tryCatch({xgboost::xgb.importance(model = model)}, error = function(x) NULL)
-  }
-
-  # Inverse Transform ----
-  if(DebugMode) print("Inverse Transform ----")
-  if(!is.null(TransformNumericColumns)) {
-
-    # Append record for Predicted Column ----
-    if(GridTune) TransformationResults <- TransformationResults[ColumnName != "Predict"]
-    TransformationResults <- data.table::rbindlist(list(
-      TransformationResults,
-      data.table::data.table(
-        ColumnName = "Predict",
-        MethodName = rep(TransformationResults[ColumnName == eval(TargetColumnName), MethodName], 1L),
-        Lambda = rep(TransformationResults[ColumnName == eval(TargetColumnName), Lambda], 1L),
-        NormalizedStatistics = rep(0, 1))))
-
-    # If Actual target columnname == "Target" remove the duplicate version ----
-    if(length(unique(TransformationResults[["ColumnName"]])) != nrow(TransformationResults)) {
-      temp <- TransformationResults[, .N, by = "ColumnName"][N != 1L][[1L]]
-      temp1 <- which(names(ValidationData) == temp)[1L]
-      ValidationData[, eval(names(data)[temp1]) := NULL]
-      TransformationResults <- TransformationResults[, ID := 1L:.N][ID != which(TransformationResults[["ID"]] == temp1)][, ID := NULL]
-    }
-
-    # Transform Target and Predicted Value ----
-    ValidationData <- AutoTransformationScore(
-      ScoringData = ValidationData,
-      Type = "Inverse",
-      FinalResults = TransformationResults,
-      TransID = NULL,
-      Path = NULL)
-  }
+  # Validation, Importance, Shap data ----
+  Output <- XGBoostValidation(ModelType.="regression", TrainOnFull.=TrainOnFull, model.=model, TargetColumnName.=TargetColumnName, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TestData.=TestData, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TestMerge.=TestMerge, dataTest.=dataTest, TrainTarget.=TrainTarget, dataTrain.=dataTrain, Final.=NULL, predict.=predict, TransformNumericColumns.=TransformNumericColumns, TransformationResults.=TransformationResults, GridTune.=GridTune, data.=data)
+  TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
+  VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
+  ValidationData <- Output$ValidationData; Output$ValidationData <- NULL
+  ShapValues <- Output$ShapValues; rm(Output)
 
   # Eval Metrics ----
   if(DebugMode) print("Eval Metrics ----")
   EvaluationMetrics <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.="Adrian", EvalMetric.=NULL, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
-
-  # Save Validation Data to File ----
-  if(DebugMode) print("Save Validation Data to File ----")
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(ValidationData, file = file.path(normalizePath(metadata_path), paste0(ModelID, "_ValidationData.csv")))
-    } else {
-      data.table::fwrite(ValidationData, file = file.path(normalizePath(model_path), paste0(ModelID, "_ValidationData.csv")))
-    }
-  }
 
   # Generate plots ----
   if(DebugMode) print("Generate plots ----")

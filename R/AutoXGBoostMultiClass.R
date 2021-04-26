@@ -212,31 +212,11 @@ AutoXGBoostMultiClass <- function(data,
     }
   }
 
-  # Validation Data ----
-  if(DebugMode) print("Validation Data ----")
-  if(LossFunction == "multi:softprob") {
-    if(!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, Final))
-      ShapValues <- xgboost:::xgb.shap.data(as.matrix(TestData), model = model, features = names(TestData))$shap_contrib
-    } else if(!TrainOnFull) {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, Final))
-      ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTest), model = model, features = names(dataTest))$shap_contrib
-    } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget, dataTrain, Final))
-      ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTrain), model = model, features = names(dataTrain))$shap_contrib
-    }
-  } else {
-    if(!is.null(TestData)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget, TestMerge, p1 = predict))
-      ShapValues <- xgboost:::xgb.shap.data(as.matrix(TestData), model = model, features = names(TestData))$shap_contrib
-    } else if(!TrainOnFull) {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget, dataTest, p1 = predict))
-      ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTest), model = model, features = names(dataTest))$shap_contrib
-    } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget, dataTrain, p1 = predict))
-      ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTrain), model = model, features = names(dataTrain))$shap_contrib
-    }
-  }
+  # Validation, Importance, Shap data ----
+  Output <- XGBoostValidation(ModelType.="multiclass", TrainOnFull.=TrainOnFull, model.=model, TargetColumnName.=TargetColumnName, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TestData.=TestData, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TestMerge.=TestMerge, dataTest.=dataTest, TrainTarget.=TrainTarget, dataTrain.=dataTrain, Final.=Final, predict.=predict, TransformNumericColumns.=NULL, TransformationResults.=NULL, GridTune.=NULL, data.=NULL, LossFunction.=LossFunction)
+  VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
+  ValidationData <- Output$ValidationData; Output$ValidationData <- NULL
+  ShapValues <- Output$ShapValues; rm(Output)
 
   # Evaluation Metrics ----
   if(DebugMode) print("Evaluation Metrics ----")
@@ -256,18 +236,6 @@ AutoXGBoostMultiClass <- function(data,
       } else {
         data.table::fwrite(EvaluationMetrics, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
       }
-    }
-  }
-
-  # Variable Importance ----
-  if(DebugMode) print("Variable Importance ----")
-  VariableImportance <- xgboost::xgb.importance(model = model)
-  VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      data.table::fwrite(VariableImportance, file = file.path(metadata_path, paste0(ModelID, "_VariableImportance.csv")))
-    } else {
-      data.table::fwrite(VariableImportance, file = file.path(model_path, paste0(ModelID, "_VariableImportance.csv")))
     }
   }
 
@@ -291,14 +259,14 @@ AutoXGBoostMultiClass <- function(data,
   if(ReturnModelObjects) {
     return(list(
       Model = model,
-      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-      ShapValues = if(exists("ShapValues") && !is.null(ShapValues)) ShapValues else NULL,
-      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
-      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
+      ValidationData = if(exists("ValidationData")) ValidationData else NULL,
+      ShapValues = if(exists("ShapValues")) ShapValues else NULL,
+      EvaluationMetrics = if(exists("EvaluationMetrics")) EvaluationMetrics else NULL,
+      VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
       VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
-      GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
-      TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL,
-      FactorLevels = if(exists("FactorLevelsList") && !is.null(FactorLevelsList)) FactorLevelsList else NULL))
+      GridMetrics = if(exists("ExperimentalGrid")) ExperimentalGrid else NULL,
+      ColNames = if(exists("Names")) Names else NULL,
+      TargetLevels = if(exists("TargetLevels")) TargetLevels else NULL,
+      FactorLevels = if(exists("FactorLevelsList")) FactorLevelsList else NULL))
   }
 }

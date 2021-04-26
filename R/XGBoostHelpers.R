@@ -1156,6 +1156,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
     FactorLevelsList = FactorLevelsList,
     IDcols = IDcols.,
     TransformNumericColumns = TransformNumericColumns.,
+    TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
     NumLevels = NumLevels))
 }
 
@@ -1347,6 +1348,169 @@ XGBoostGridParams <- function(N. = N,
 
   # Return
   return(base_params)
+}
+
+#' @title XGBoostValidation
+#'
+#' @description Generate validation, importance, and shap data
+#'
+#' @family XGBoost Helpers
+#' @author Adrian Antico
+#'
+#' @param ModelType. Passthrough
+#' @param TrainOnFull. Passthrough
+#' @param model. Passthrough
+#' @param TestData. Passthrough
+#' @param TestTarget. Passthrough
+#' @param FinalTestTarget. Passthrough
+#' @param TestMerge. Passthrough
+#' @param dataTest. Passthrough
+#' @param TrainTarget. Passthrough
+#' @param dataTrain. Passthrough
+#' @param predict. Passthrough
+#' @param TargetColumnName. Passthrough
+#' @param SaveModelObjects. Passthrough
+#' @param metadata_path. Passthrough
+#' @param model_path. Passthrough
+#' @param ModelID. Passthrough
+#' @param Final. Passthrough
+#' @param TransformNumericColumns. Regression Passthrough
+#' @param TransformationResults. Regression Passthrough
+#' @param GridTune. Regression Passthrough
+#' @param data. Regression Passthrough
+#' @param LossFunction. MultiClass Passthrough
+#'
+#' @noRd
+XGBoostValidation <- function(ModelType. = "classifier",
+                              TrainOnFull. = TrainOnFull,
+                              model. = model,
+                              TargetColumnName. = TargetColumnName,
+                              SaveModelObjects. = SaveModelObjects,
+                              metadata_path. = metadata_path,
+                              model_path. = model_path,
+                              ModelID. = ModelID,
+                              TestData. = NULL,
+                              TestTarget. = NULL,
+                              FinalTestTarget. = NULL,
+                              TestMerge. = NULL,
+                              dataTest. = NULL,
+                              TrainTarget. = NULL,
+                              dataTrain. = NULL,
+                              Final. = NULL,
+                              predict. = NULL,
+                              LossFunction. = NULL,
+                              TransformNumericColumns. = NULL,
+                              TransformationResults. = NULL,
+                              GridTune. = GridTune,
+                              data. = NULL) {
+
+  if(ModelType. %chin% c("regression","classifier")) {
+    if(!is.null(TestData.)) {
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., p1 = predict.))
+      if(ModelType. == "regression") {
+        data.table::setnames(ValidationData, c("Target","p1"), c(TargetColumnName., "Predict"))
+      } else {
+        data.table::setnames(ValidationData, "Target", TargetColumnName.)
+      }
+      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+    } else if(!TrainOnFull. || (!is.null(TestTarget.) && !is.null(dataTest.))) {
+      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., p1 = predict.))
+      if(ModelType. == "regression") {
+        data.table::setnames(ValidationData, c("Target","p1"), c(TargetColumnName., "Predict"))
+      } else {
+        data.table::setnames(ValidationData, "Target", TargetColumnName.)
+      }
+      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+    } else {
+      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., dataTrain., p1 = predict.))
+      if(ModelType. == "regression") {
+        data.table::setnames(ValidationData, c("Target","p1"), c(TargetColumnName., "Predict"))
+      } else {
+        data.table::setnames(ValidationData, "Target", TargetColumnName.)
+      }
+      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTrain.), model = model., features = names(dataTrain.))$shap_contrib)
+    }
+
+    # Transformation
+    if(ModelType. == "regression") {
+      if(!is.null(TransformNumericColumns.)) {
+        if(GridTune.) TransformationResults. <- TransformationResults.[ColumnName != "Predict"]
+
+        # Combine transform metadata
+        TransformationResults. <- data.table::rbindlist(list(
+          TransformationResults.,
+          data.table::data.table(
+            ColumnName = "Predict",
+            MethodName = rep(TransformationResults.[ColumnName == eval(TargetColumnName.), MethodName], 1L),
+            Lambda = rep(TransformationResults.[ColumnName == eval(TargetColumnName.), Lambda], 1L),
+            NormalizedStatistics = rep(0, 1))))
+
+        # Model output
+        if(length(unique(TransformationResults.[["ColumnName"]])) != nrow(TransformationResults.)) {
+          temp <- TransformationResults.[, .N, by = "ColumnName"][N != 1L][[1L]]
+          temp1 <- which(names(ValidationData) == temp)[1L]
+          ValidationData[, eval(names(data.)[temp1]) := NULL]
+          TransformationResults. <- TransformationResults.[, ID := 1L:.N][ID != which(TransformationResults.[["ID"]] == temp1)][, ID := NULL]
+        }
+
+        # Transform Target and Predicted Value ----
+        ValidationData <- AutoTransformationScore(
+          ScoringData = ValidationData,
+          Type = "Inverse",
+          FinalResults = TransformationResults.,
+          TransID = NULL,
+          Path = NULL)
+      }
+    }
+  } else if(ModelType. == "multiclass") {
+    if(LossFunction. == "multi:softprob") {
+      if(!is.null(TestData.)) {
+        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., Final.))
+        ShapValues <- xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib
+      } else if(!TrainOnFull. || (!is.null(TestTarget.) && !is.null(dataTest.))) {
+        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., Final.))
+        ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., dataTrain., Final.))
+        ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTrain.), model = model., features = names(dataTrain.))$shap_contrib
+      }
+    } else {
+      if(!is.null(TestData.)) {
+        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., p1 = predict.))
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+      } else if(!TrainOnFull.) {
+        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., p1 = predict.))
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., dataTrain., p1 = predict.))
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTrain.), model = model., features = names(dataTrain.))$shap_contrib)
+      }
+    }
+  }
+
+  # Shap Values
+  data.table::setnames(ShapValues, old = names(ShapValues), new = paste0("Shap_", names(ShapValues)))
+  ShapValues <- cbind(ValidationData, ShapValues)
+
+  # Variable Importance ----
+  VariableImportance <- tryCatch({data.table::as.data.table(xgboost::xgb.importance(model = model.))}, error = function(x) NULL)
+  if(!is.null(VariableImportance)) {
+    VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
+    if(SaveModelObjects.) {
+      if(!is.null(metadata_path.)) {
+        data.table::fwrite(VariableImportance, file = file.path(metadata_path., paste0(ModelID., "_VariableImportance.csv")))
+      } else {
+        data.table::fwrite(VariableImportance, file = file.path(model_path., paste0(ModelID., "_VariableImportance.csv")))
+      }
+    }
+  }
+
+  # Return
+  return(list(
+    ValidationData = ValidationData,
+    VariableImportance = VariableImportance,
+    ShapValues = ShapValues,
+    TransformationResults = if(exists("TransformationResults.")) TransformationResults. else NULL))
 }
 
 #' @title XGBoostRegressionMetrics
