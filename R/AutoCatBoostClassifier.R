@@ -273,7 +273,8 @@ AutoCatBoostClassifier <- function(data,
 
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Running BinaryMetrics()")
-  EvalMetrics <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  EvalMetrics <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+  EvalMetrics2 <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
 
   # Classification evaluation plots ----
   if(DebugMode) print("Running ML_EvalPlots()")
@@ -305,6 +306,7 @@ AutoCatBoostClassifier <- function(data,
     ROC_Plot = if(exists("ROC_Plot")) ROC_Plot else NULL,
     EvaluationPlot = if(exists("EvaluationPlot")) EvaluationPlot else NULL,
     EvaluationMetrics = if(exists("EvalMetrics")) EvalMetrics else NULL,
+    EvaluationMetrics2 = if(exists("EvalMetrics2")) EvalMetrics2 else NULL,
     VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
     InteractionImportance = if(exists("Interaction")) Interaction else NULL,
     ShapValuesDT = if(exists("ShapValues")) ShapValues else NULL,

@@ -215,7 +215,8 @@ AutoXGBoostClassifier <- function(data,
 
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Generate EvaluationMetrics ----")
-  EvalMetrics <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  EvalMetrics <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+  EvalMetrics2 <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
 
   # Send output to pdf ----
   if(DebugMode) print("Send output to pdf ----")
@@ -235,6 +236,7 @@ AutoXGBoostClassifier <- function(data,
       ROC_Plot = if(exists("ROC_Plot")) ROC_Plot else NULL,
       EvaluationPlot = if(exists("EvaluationPlot")) EvaluationPlot else NULL,
       EvaluationMetrics = if(exists("EvalMetrics")) EvalMetrics else NULL,
+      EvaluationMetrics2 = if(exists("EvalMetrics2")) EvalMetrics2 else NULL,
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
       ShapValues = if(exists("ShapValues")) ShapValues else NULL,
       VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,

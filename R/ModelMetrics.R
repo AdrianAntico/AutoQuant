@@ -190,29 +190,22 @@ ClassificationMetrics <- function(TestData,
   counter <- 0L
   for(Thresh in Thresholds) {
     counter <- counter + 1L
-    if(PositiveOutcome == 1L) {
-      TN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
-      TP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
-      FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
-      FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
-      N  <- TestData[,.N]
-      P  <- TestData[get(Target) == 1, .N]
-    } else {
-      TN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
-      TP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
-      FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
-      FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
-      N  <- TestData[,.N]
-      P  <- TestData[get(Target) == 1, .N]
-    }
+    TN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
+    TP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
+    FN <- TestData[, sum(data.table::fifelse(get(PredictColumnName) < Thresh & get(Target) == eval(PositiveOutcome), 1, 0))]
+    FP <- TestData[, sum(data.table::fifelse(get(PredictColumnName) > Thresh & get(Target) == eval(NegativeOutcome), 1, 0))]
+    N1  <- TestData[, .N]
+    N  <- TestData[get(PredictColumnName) <= eval(Thresh), .N]
+    P1  <- TestData[get(Target) == 1, .N]
+    P  <- TestData[get(Target) == 1 & get(PredictColumnName) <= Thresh, .N]
 
     # Calculate metrics ----
     MCC         <- (TP*TN-FP*FN)/sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))
-    Accuracy    <- (TP+TN)/N
-    TPR         <- TP/P
-    TNR         <- TN/(N-P)
-    FNR         <- FN / P
-    FPR         <- FP / N
+    Accuracy    <- (TP+TN)/N1
+    TPR         <- TP/P1
+    TNR         <- TN/(N1-P1)
+    FNR         <- FN / P1
+    FPR         <- FP / N1
     FDR         <- FP / (FP + TP)
     FOR         <- FN / (FN + TN)
     F1_Score    <- 2 * TP / (2 * TP + FP + FN)
@@ -221,7 +214,7 @@ ClassificationMetrics <- function(TestData,
     NPV         <- TN / (TN + FN)
     PPV         <- TP / (TP + FP)
     ThreatScore <- TP / (TP + FN + FP)
-    Utility     <- P/N * (CostMatrix[1L] * TPR + CostMatrix[2L] * (1 - TPR)) + (1 - P/N) * (CostMatrix[3L] * FPR + CostMatrix[4L] * (1 - FPR))
+    Utility     <- P1/N1 * (CostMatrix[1L] * TPR + CostMatrix[2L] * (1 - TPR)) + (1 - P1/N1) * (CostMatrix[3L] * FPR + CostMatrix[4L] * (1 - FPR))
 
     # Fill in values ----
     data.table::set(ThresholdOutput, i = counter, j = "Threshold",   value = Thresh)
@@ -288,7 +281,7 @@ RemixClassificationMetrics <- function(TargetVariable = NULL,
     PositiveOutcome = ClassLabels[1L],
     NegativeOutcome = ClassLabels[2L],
     CostMatrix = CostMatrix)
-  data.table::setorderv(temp, cols = "MCC", order = -1L, na.last = TRUE)
+  if(temp[,.N] > 95) data.table::setorderv(temp, cols = "MCC", order = -1L, na.last = TRUE)
 
   # Return values----
   return(temp)
@@ -310,6 +303,7 @@ RemixClassificationMetrics <- function(TargetVariable = NULL,
 #' @param ModelID. = ModelID
 #' @param model_path. = model_path
 #' @param metadata_path. = metadata_path
+#' @param Method 'threshold' for 0.01 to 0.99 by 0.01 thresholds or 'bins' for 20 equally sized bins
 #'
 #' @noRd
 BinaryMetrics <- function(ClassWeights. = ClassWeights,
@@ -320,17 +314,24 @@ BinaryMetrics <- function(ClassWeights. = ClassWeights,
                           TargetColumnName. = TargetColumnName,
                           ModelID. = ModelID,
                           model_path. = model_path,
-                          metadata_path. = metadata_path) {
+                          metadata_path. = metadata_path,
+                          Method = "threshold") {
   if(is.null(CostMatrixWeights.)) CostMatrixWeights. <- c(ClassWeights.[1L], 0, 0, ClassWeights.[2L])
+  if(Method == "threshold") {
+    vals <- seq(0.01,0.99,0.01)
+  } else if(Method == "bins") {
+    temp <- ValidationData.$p1
+    vals <- quantile(temp, probs = seq(0.05,1,0.05), type = 7)
+  }
   if(SaveModelObjects. && !TrainOnFull.) {
-    EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
+    EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = unique(vals), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
     if(!is.null(metadata_path.)) {
       data.table::fwrite(EvalMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
     } else {
       data.table::fwrite(EvalMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
     }
   } else {
-    EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = seq(0.01,0.99,0.01), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
+    EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = unique(vals), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
   }
   return(EvalMetrics)
 }
