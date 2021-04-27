@@ -851,7 +851,7 @@ AutoDiffLagN <- function(data,
 
   # Sort if TRUE ----
   if(!is.null(GroupVariables)) {
-    data.table::setorderv(x = data, cols = c(GroupVariables, DateVariable), order = c(rep(1, length(c(GroupVariables, DateVariable)))), na.last = FALSE)
+    data.table::setorderv(x = data, cols = c(GroupVariables, DateVariable), order = c(rep(1, length(GroupVariables)), 1), na.last = FALSE)
   } else {
     data.table::setorderv(x = data, cols = c(DateVariable), order = 1L, na.last = FALSE)
   }

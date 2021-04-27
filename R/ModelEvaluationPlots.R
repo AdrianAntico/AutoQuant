@@ -855,7 +855,7 @@ ShapPlot <- function(ShapData = NULL,
         legend.position = "none",
         axis.title.x = ggplot2::element_blank(),
         axis.title.y = ggplot2::element_blank()) +
-      ggplot2::scale_fill_viridis(discrete = TRUE, alpha = 0.6) +
+      viridis::scale_fill_viridis(discrete = TRUE, alpha = 0.6) +
       ggplot2::geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
       ggplot2::ggtitle(PlotTitle))
 
