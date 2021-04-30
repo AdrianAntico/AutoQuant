@@ -1192,19 +1192,19 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       for(z in c(seq(5,95,5))) {
         if(any(paste0("q",z) %chin% tolower(statsFUNs))) {
           TargetN <- 0L
-          for (t in TargetS) {
+          for(t in TargetS) {
             TargetN <- TargetN + 1L
-            for (j in tempperiods) {
+            for(j in tempperiods) {
               if(!is.null(timeDiffTarget)) {
                 if(grepl(pattern = eval(timeDiffTarget),x = t)) {
-                  data[, eval(paste0(timeAggss, "_", "Q_",z,"_",j,"_",t)) := fBasics::rowKurtosis(.SD), .SDcols = TimeLagCols[1:j]]
+                  data[, eval(paste0(timeAggss, "_", "Q_",z,"_",j,"_",t)) := fBasics::rowQuantiles(x = .SD, prob = z/100), .SDcols = TimeLagCols[1:j]]
                   PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Q_",z,"_",j,"_",t))
                 } else {
-                  data[, eval(paste0(timeAggss, "_", "Q_",z,"_",j,"_",t)) := fBasics::rowKurtosis(.SD), .SDcols = LagColss[[TargetN]][1:j]]
+                  data[, eval(paste0(timeAggss, "_", "Q_",z,"_",j,"_",t)) := rowQuantiles(x = .SD, prob = z/100), .SDcols = LagColss[[TargetN]][1:j]]
                   PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Q_",z,"_",j,"_",t))
                 }
               } else {
-                data[, eval(paste0(timeAggss, "_", "Q_",z,"_",j,"_",t)) := fBasics::rowKurtosis(.SD), .SDcols = LagColss[[TargetN]][1:j]]
+                data[, eval(paste0(timeAggss, "_", "Q_",z,"_",j,"_",t)) := rowQuantiles(x = .SD, prob = z/100), .SDcols = LagColss[[TargetN]][1:j]]
                 PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Q_",z,"_",j,"_",t))
               }
             }

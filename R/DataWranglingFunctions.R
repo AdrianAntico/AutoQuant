@@ -975,15 +975,15 @@ AutoDiffLagN <- function(data,
 ShapStep1 <- function(ShapData = NULL,
                       EntityID = NULL,
                       DateColumnName = NULL) {
-  Ent <- tryCatch({ShapData[[eval(EntityID)]]}, error = function(x) "Placeholder")
-  Date <- tryCatch({ShapData[[eval(DateColumnName)]]}, error = function(x) Sys.time())
+  if(!is.null(EntityID)) Ent <- ShapData[[eval(EntityID)]] else Ent <- "Placeholder"
+  if(!is.null(DateColumnName)) Date <- ShapData[[eval(DateColumnName)]] else Date <- Sys.Time()
   data.table::set(ShapData, j = setdiff(names(ShapData), names(ShapData)[names(ShapData) %like% "Shap_"]), value = NULL)
   ShapVals <- data.table::transpose(ShapData)
   data.table::setnames(ShapVals, "V1", "ShapValue")
   data.table::set(ShapVals, j = "Variable", value = gsub(pattern = "Shap_", replacement = "", x = names(ShapData)))
   ShapVals <- ShapVals[!Variable %like% "Diff"]
-  data.table::set(ShapVals, j = eval(EntityID), value = Ent)
-  data.table::set(ShapVals, j = eval(DateColumnName), value = Date)
+  if(!is.null(EntityID)) data.table::set(ShapVals, j = eval(EntityID), value = Ent) else data.table::set(ShapVals, j = "EntityID", value = Ent)
+  if(!is.null(DateColumnName)) data.table::set(ShapVals, j = eval(DateColumnName), value = Date) else data.table::set(ShapVals, j = "Date", value = Date)
   data.table::set(ShapVals, j = "ShapValue", value = round(ShapVals[["ShapValue"]], 4L))
   data.table::set(ShapVals, j = "Variable", value = gsub(pattern = "Shap_", replacement = "", x = ShapVals[["Variable"]]))
   return(ShapVals)
@@ -1103,6 +1103,13 @@ AutoShapeShap <- function(ScoringData = NULL,
                           DateColumnName = "Date",
                           ByVariableName = "GroupVariable") {
 
+  # NULL Corrections
+  if(is.null(DateColumnName)) DateColumnName <- "Date"
+  if(is.null(ByVariableName)) {
+    ScoringData[, ID__ := seq_len(.N)]
+    ByVariableName <- "ID__"
+  }
+
   # Parallel env setup
   if(Threads > 1L) {
     library(parallel); library(doParallel); library(foreach)
@@ -1112,6 +1119,8 @@ AutoShapeShap <- function(ScoringData = NULL,
     on.exit(parallel::stopCluster(cl))
     NumRowsPerThread <- floor(ScoringData[, .N] / Threads)
     Chunks <- floor(ScoringData[, .N] / NumRowsPerThread)
+
+    # stopCluster(cl)
 
     # Parallel loop
     ShapValues <- foreach::foreach(
