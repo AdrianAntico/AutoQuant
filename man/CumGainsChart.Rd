@@ -18,6 +18,8 @@ CumGainsChart(
 \arguments{
 \item{data}{Test data with predictions. data.table}
 
+\item{PredictedColumnName}{Name of column that is the model score}
+
 \item{TargetColumnName}{Name of your target variable column}
 
 \item{NumBins}{Number of percentile bins to plot}
@@ -29,8 +31,6 @@ CumGainsChart(
 \item{metapath}{Path to directory}
 
 \item{modelpath}{Path to directory}
-
-\item{PredictionColumnName}{Name of column that is the model score}
 }
 \description{
 Create a cumulative gains chart

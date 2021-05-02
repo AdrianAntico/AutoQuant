@@ -375,7 +375,7 @@ VI_Plot <- function(Type = "catboost",
 #' @author Adrian Antico
 #'
 #' @param data Test data with predictions. data.table
-#' @param PredictionColumnName Name of column that is the model score
+#' @param PredictedColumnName Name of column that is the model score
 #' @param TargetColumnName Name of your target variable column
 #' @param NumBins Number of percentile bins to plot
 #' @param SavePlot FALSE by default

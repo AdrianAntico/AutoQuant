@@ -205,4 +205,20 @@ ParseOptParse <- function(x) {
 ColTypes <- function(data) {
   CT <- c()
   for(Col in names(data)) CT <- c(CT, class(data[[Col]][[1L]]))
+  CT
+}
+
+#' @title LoadAssign
+#'
+#' @description LoadAssign will assign the loaded object to a new object. xx <- LoadAssign`(FilePath)
+#'
+#' @author Adrian Antico
+#' @family Utilities
+#'
+#' @param FilePath
+#'
+#' @noRd
+LoadAssign <- function(FilePath) {
+  load(FilePath, envir = .GlobalEnv)
+  get(ls()[ls() != "FilePath"])
 }
