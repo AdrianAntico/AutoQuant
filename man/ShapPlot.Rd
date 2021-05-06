@@ -28,11 +28,13 @@ Create a cumulative gains chart
 }
 \seealso{
 Other Model Evaluation and Interpretation: 
+\code{\link{AutoShapeShap}()},
 \code{\link{CumGainsChart}()},
 \code{\link{EvalPlot}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},
 \code{\link{RedYellowGreen}()},
+\code{\link{SingleRowShapeShap}()},
 \code{\link{threshOptim}()}
 }
 \author{

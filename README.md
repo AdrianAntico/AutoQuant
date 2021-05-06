@@ -101,7 +101,7 @@ If you're having still having trouble installing see if the issue below helps ou
 <p>
  
 1. Pull in data from your data warehouse (or from wherever) and clean it up
-2. Run all the applicable feature engineering functions, such as <code>AutoLagRollStats()</code>, <code>AutoInteraction()</code>,  <code>AutoDiffLagN()</code>, <code>AutoWord2VecModeler()</code>, <code>H2OAutoencoder()</code>, <code>CreateCalendarVariables()</code>, <code>CreateHolidayVariables()</code>, etc.
+2. Run all the applicable feature engineering functions (see the README Feature Engineering)
 3. Partition your data with <code>AutoDataPartition()</code> You can create any number of data sets, supply stratification variables, and you can choose between 'random' splits, 'time' splits, and 'timeseries' splits. The distinction between 'time' and 'timeseries' splits is that 'time' should be used when you aren't directly working with panel data whereas the 'timeseries' split is for panel data (meaning that the number of records for each combination of group variables are identical). 'time' will first sort you data by the date column and then sort by stratification variables, if you provide some, but there is a risk that some group levels won't make it into all of your data sets.
 4. Run <code>AutoCatBoostRegression()</code> or <code>AutoCatBoostClassifier()</code> or <code>AutoCatBoostMultiClass()</code> with GPU if you have access to one
 5. Run <code>AutoXGBoostRegression()</code> or <code>AutoXGBoostClassifier()</code> or <code>AutoXGBoostMultiClass()</code> with GPU if you have access to one
@@ -577,6 +577,82 @@ data <- RemixAutoML::AutoWord2VecScoring(
 
 </p>
 </details>
+
+#### **CategoricalEncoding()**
+
+<details><summary>Code Example</summary>
+<p>
+
+```
+# Create fake data with 10 categorical
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000000,
+  ID = 2L,
+  ZIP = 0,
+  FactorCount = 10L,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
+
+# Take your pick
+Meth <- c('m_estimator',
+          'credibility',
+          'woe',
+          'target_encoding',
+          'poly_encode',
+          'backward_difference',
+          'helmert')
+
+# Pass to function
+MethNum <- 1
+
+# Mock test data with same factor levels
+test <- data.table::copy(data)
+
+# Run in Train Mode
+data <- RemixAutoML::CategoricalEncoding(
+  data = data,
+  ML_Type = "classification",
+  GroupVariables = paste0("Factor_", 1:10),
+  TargetVariable = "Adrian",
+  Method = Meth[MethNum],
+  SavePath = getwd(),
+  Scoring = FALSE,
+  ReturnFactorLevelList = FALSE,
+  SupplyFactorLevelList = NULL,
+  KeepOriginalFactors = FALSE)
+
+# View results
+print(data)
+
+# Run in Score Mode by pulling in the csv's
+test <- RemixAutoML::CategoricalEncoding(
+  data = data,
+  ML_Type = "classification",
+  GroupVariables = paste0("Factor_", 1:10),
+  TargetVariable = "Adrian",
+  Method = Meth[MethNum],
+  SavePath = getwd(),
+  Scoring = TRUE,
+  ImputeValueScoring = 222,
+  ReturnFactorLevelList = FALSE,
+  SupplyFactorLevelList = NULL,
+  KeepOriginalFactors = FALSE)
+}
+```
+
+</p>
+</details>
+
+<details><summary>Function Description</summary>
+<p>
+ 
+<code>CategoricalEncoding()</code> enables you to convert your categorical variables into numeric variables in seven different ways. You can choose from m_estimator, credibility (a.k.a. James Stein), weight of evidence, target encoding, poly encoding, backward difference encoding, and helmert encoding. You can run the function for training data and for scoring situations (on demand or batch). For scoring, you can choose to supply an imputation value for new levels that may show up or you can manage them somewhere else in the pipeline. For scoring, you have two options: during the training run you can save the metadata to file by supplying a path to SavePath or you can have the metadata returned by setting ReturnFactorLevelList to TRUE and in scoring your can either have the files pulled from file using the SavePath argument and the function will take care of the rest or you can supply the ReturnFactorLevelList to the SupplyFactorLevelList argument and the function will take care of the rest.
+
+</p>
+</details>
+
 
 #### **H2OAutoencoder()** and **H2OAutoencoderScoring()**
 

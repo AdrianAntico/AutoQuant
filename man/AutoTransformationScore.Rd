@@ -80,6 +80,7 @@ Other Feature Engineering:
 \code{\link{AutoTransformationCreate}()},
 \code{\link{AutoWord2VecModeler}()},
 \code{\link{AutoWord2VecScoring}()},
+\code{\link{CategoricalEncoding}()},
 \code{\link{CreateCalendarVariables}()},
 \code{\link{CreateHolidayVariables}()},
 \code{\link{DummifyDT}()},

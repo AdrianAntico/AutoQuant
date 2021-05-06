@@ -170,22 +170,50 @@ LB <- function(TimeAgg) {
   }
 }
 
-#' @title UpdatePackageDocs
-#' @param BuildManual FALSE
-#' @param Path Package path
+#' @title Install
+#'
+#' @description To install the package
+#'
+#' @author Adrian Antico
+#'
+#' @family Utilities
+#'
+#' @param Root NULL will setwd to project root as defined in function
+#'
 #' @noRd
-UpdatePackageDocs <- function(BuildManual = FALSE, Path = "C:/Users/Bizon/Documents/GitHub/RemixAutoML") {
-  setwd(Path)
-  devtools::document()
-  if(BuildManual) devtools::build_manual()
+Install <- function(Root = NULL) {
+  x <- getwd()
+  if(!is.null(Root)) {
+    setwd(Root)
+    devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
+  } else {
+    setwd("C:/Users/Bizon/Documents/GitHub")
+    devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
+  }
+  setwd(x)
 }
 
-#' @title InstallLocal
-#' @param Path Package path cd ..
+#' @title UpdateDocs
+#'
+#' @description Update helf files and reference manual
+#'
+#' @author Adrian Antico
+#'
+#' @family Utilities
+#'
 #' @noRd
-InstallLocal <- function(Path = "C:/Users/Bizon/Documents/GitHub") {
-  setwd(Path)
-  devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
+UpdateDocs <- function(BuildVignette = FALSE, Root = NULL) {
+  x <- getwd()
+  if(!is.null(Root)) {
+    setwd(Root)
+    devtools::document()
+    if(BuildVignette) devtools::build_manual()
+  } else {
+    setwd("C:/Users/Bizon/Documents/GitHub/RemixAutoML")
+    devtools::document()
+    if(BuildVignette) devtools::build_manual()
+  }
+  setwd(x)
 }
 
 #' @title ParseOptParse
@@ -204,7 +232,7 @@ ParseOptParse <- function(x) {
 #' @noRd
 ColTypes <- function(data) {
   CT <- c()
-  for(Col in names(data)) CT <- c(CT, class(data[[Col]][[1L]]))
+  for(Col in names(data)) CT <- c(CT, class(data[[Col]])[[1L]])
   CT
 }
 

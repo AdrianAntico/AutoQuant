@@ -63,6 +63,7 @@ Other Feature Engineering:
 \code{\link{AutoTransformationScore}()},
 \code{\link{AutoWord2VecModeler}()},
 \code{\link{AutoWord2VecScoring}()},
+\code{\link{CategoricalEncoding}()},
 \code{\link{CreateCalendarVariables}()},
 \code{\link{CreateHolidayVariables}()},
 \code{\link{DummifyDT}()},

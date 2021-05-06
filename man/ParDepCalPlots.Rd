@@ -59,11 +59,13 @@ Plot <- RemixAutoML::ParDepCalPlots(
 }
 \seealso{
 Other Model Evaluation and Interpretation: 
+\code{\link{AutoShapeShap}()},
 \code{\link{CumGainsChart}()},
 \code{\link{EvalPlot}()},
 \code{\link{ROCPlot}()},
 \code{\link{RedYellowGreen}()},
 \code{\link{ShapPlot}()},
+\code{\link{SingleRowShapeShap}()},
 \code{\link{threshOptim}()}
 }
 \author{

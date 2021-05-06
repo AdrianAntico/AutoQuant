@@ -303,9 +303,9 @@ CLTrainer <- function(data,
   ArgsList[["GrowPolicy"]] <- GrowPolicy
   ArgsList[["PassInGrid"]] <- PassInGrid
 
-  # Special Args----
-  ArgsList[[paste0("Min","-",eval(CalendarDate))]] <- data[, min(get(CalendarDate))][[1L]]
-  ArgsList[[paste0("Max","-",eval(CalendarDate))]] <- data[, max(get(CalendarDate))][[1L]]
+  # Special Args ----
+  ArgsList[[paste0("Min","-", eval(CalendarDate))]] <- data[, min(get(CalendarDate))][[1L]]
+  ArgsList[[paste0("Max","-", eval(CalendarDate))]] <- data[, max(get(CalendarDate))][[1L]]
 
   # Init: Define SaveTimers() function----
   SaveTimers <- function(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID) {

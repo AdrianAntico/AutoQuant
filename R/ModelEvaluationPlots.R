@@ -437,7 +437,8 @@ CumGainsChart <- function(data = NULL,
         label.padding = ggplot2::unit(0.2, "lines")) +
       ggplot2::ylim(0,110) +
       ggplot2::guides(fill = FALSE) +
-      ggplot2::scale_colour_continuous(breaks = c(0, seq(10, 100, 10))))
+      ggplot2::scale_colour_continuous(breaks = c(0, seq(10, 100, 10)))) +
+    ChartTheme() + ggplot2::theme(legend.position = "none")
 
   # Create Lift Chart
   p_lift <- (ggplot2::ggplot(
@@ -465,7 +466,8 @@ CumGainsChart <- function(data = NULL,
       ggplot2::ylim(min(LiftRes_T[["Lift"]]), max(LiftRes_T[["Lift"]] * 1.1)) +
       ggplot2::guides(fill = FALSE) +
       ggplot2::scale_colour_continuous(guide = FALSE) +
-      ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10))))
+      ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10)))) +
+    ChartTheme() + ggplot2::theme(legend.position = "none")
 
   # Save plot
   if(SavePlot) {
@@ -816,6 +818,210 @@ ML_EvalPlots <- function(ModelType = "classification",
       ParDepPlots <- NULL
     }
     return(list(EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, ParDepPlots = ParDepPlots, ParDepBoxPlots = ParDepBoxPlots))
+  }
+}
+
+#' @title ShapStep1
+#'
+#' @description ShapStep1 shap helper
+#'
+#' @family Model Evaluation and Interpretation
+#'
+#' @author Adrian Antico
+#'
+#' @param ShapData Scoring data from AutoCatBoostScoring with classification or regression
+#' @param EntityID Typically something like a user id
+#' @param DateColumnName Date column name in your data. Alternatively, supply an ID of sorts to distinguish scoring data from one session to another
+#'
+#' @noRd
+ShapStep1 <- function(ShapData = NULL,
+                      EntityID = NULL,
+                      DateColumnName = NULL) {
+  if(!is.null(EntityID)) Ent <- ShapData[[eval(EntityID)]] else Ent <- "Placeholder"
+  if(!is.null(DateColumnName)) Date <- ShapData[[eval(DateColumnName)]] else Date <- Sys.Time()
+  data.table::set(ShapData, j = setdiff(names(ShapData), names(ShapData)[names(ShapData) %like% "Shap_"]), value = NULL)
+  ShapVals <- data.table::transpose(ShapData)
+  data.table::setnames(ShapVals, "V1", "ShapValue")
+  data.table::set(ShapVals, j = "Variable", value = gsub(pattern = "Shap_", replacement = "", x = names(ShapData)))
+  ShapVals <- ShapVals[!Variable %like% "Diff"]
+  if(!is.null(EntityID)) data.table::set(ShapVals, j = eval(EntityID), value = Ent) else data.table::set(ShapVals, j = "EntityID", value = Ent)
+  if(!is.null(DateColumnName)) data.table::set(ShapVals, j = eval(DateColumnName), value = Date) else data.table::set(ShapVals, j = "Date", value = Date)
+  data.table::set(ShapVals, j = "ShapValue", value = round(ShapVals[["ShapValue"]], 4L))
+  data.table::set(ShapVals, j = "Variable", value = gsub(pattern = "Shap_", replacement = "", x = ShapVals[["Variable"]]))
+  return(ShapVals)
+}
+
+#' @title ShapStep2
+#'
+#' @description ShapStep2 shap helper
+#'
+#' @family Model Evaluation and Interpretation
+#'
+#' @author Adrian Antico
+#'
+#' @param ShapData Scoring data from AutoCatBoostScoring with classification or regression
+#' @param Step1Out Output from ShapStep1
+#'
+#' @noRd
+ShapStep2 <- function(ShapData = NULL,
+                      Step1Out = NULL) {
+  Keep <- names(ShapData)[names(ShapData) %like% "Diff"]
+  if(!identical(Keep, character(0))) {
+    Keep <- Keep[Keep %like% "Shap_Diff_1"]
+    data.table::set(ShapData, j = setdiff(names(ShapData), Keep), value = NULL)
+    if(any(ColTypes(ShapData) == "character")) {
+      ShapData[, (names(ShapData)) := lapply(.SD, as.character), .SDcols = c(names(ShapData))]
+    }
+    DiffVal <- data.table::transpose(ShapData)
+    data.table::set(DiffVal, j = "Variable", value = gsub(pattern = "Diff_1", replacement = "", gsub(pattern = "Shap_Diff_1_", replacement = "", x = names(ShapData))))
+    data.table::setnames(DiffVal, "V1", "ShapDiffValue")
+    data.table::set(DiffVal, j = "ShapDiffValue", value = round(DiffVal[["ShapDiffValue"]], 4L))
+    Step1Out[DiffVal, on = "Variable", ShapDiffValue := i.ShapDiffValue]
+    return(Step1Out)
+  } else {
+    return(Step1Out)
+  }
+}
+
+#' @title ShapStep3
+#'
+#' @description ShapStep3 shap helper
+#'
+#' @family Model Evaluation and Interpretation
+#'
+#' @author Adrian Antico
+#'
+#' @param ShapData Scoring data from AutoCatBoostScoring with classification or regression
+#' @param Step2Out Output from ShapStep2
+#'
+#' @noRd
+ShapStep3 <- function(ShapData = NULL,
+                      Step2Out = NULL) {
+  Keep <- names(ShapData)[!names(ShapData) %like% "Diff"]
+  Keep <- Keep[Keep %like% "Shap_"]
+  Keep <- gsub(pattern = "Shap_", replacement = "", x = Keep)
+  CurrVals <- ShapData[, .SD, .SDcols = c(Keep)]
+  if(any(ColTypes(CurrVals) == "character")) {
+    CurrVals[, (names(CurrVals)) := lapply(.SD, as.character), .SDcols = c(names(CurrVals))]
+  }
+  CurrVal <- data.table::transpose(CurrVals)
+  CurrVal[, Variable := names(CurrVals)]
+  data.table::setnames(CurrVal, "V1", "CurrentValue")
+  Step2Out[CurrVal, on = "Variable", CurrentValue := i.CurrentValue]
+
+  # Diff actuals
+  Keep <- names(ShapData)[names(ShapData) %like% "Diff_1"]
+  if(!identical(Keep, character(0))) {
+    Keep <- Keep[Keep %like% "Shap_"]
+    Keep <- gsub(pattern = "Shap_", replacement = "", x = Keep)
+    DiffVals <- ShapData[, .SD, .SDcols = c(Keep)]
+    if(any(ColTypes(DiffVals) == "character")) {
+      DiffVals[, (names(DiffVals)) := lapply(.SD, as.character), .SDcols = c(names(DiffVals))]
+    }
+    DiffVal <- data.table::transpose(DiffVals)
+    DiffVal[, Variable := gsub(pattern = "Diff_1_", replacement = "", names(DiffVals))]
+    data.table::setnames(DiffVal, "V1", "DiffValue")
+    Step2Out <- merge(Step2Out, DiffVal, by = "Variable", all.x = TRUE)
+    return(Step2Out)
+  } else {
+    return(Step2Out)
+  }
+}
+
+#' @title SingleRowShapeShap
+#'
+#' @description SingleRowShapeShap will convert a single row of your shap data into a table
+#'
+#' @family Model Evaluation and Interpretation
+#'
+#' @author Adrian Antico
+#'
+#' @param ShapData Scoring data from AutoCatBoostScoring with classification or regression
+#'
+#' @export
+SingleRowShapeShap <- function(ShapData = NULL, EntityID = NULL, DateColumnName = NULL) {
+  x <- ShapStep1(ShapData = data.table::copy(ShapData), EntityID = EntityID, DateColumnName = DateColumnName)
+  x <- ShapStep2(ShapData = data.table::copy(ShapData), Step1Out = x)
+  x <- ShapStep3(ShapData = ShapData, Step2Out = x)
+  return(x)
+}
+
+#' @title AutoShapeShap
+#'
+#' @description AutoShapeShap will convert your scored shap values from CatBoost
+#'
+#' @family Model Evaluation and Interpretation
+#'
+#' @author Adrian Antico
+#'
+#' @param ScoringData Scoring data from AutoCatBoostScoring with classification or regression
+#' @param Threads Number of threads to use for the parellel routine
+#' @param DateColumnName Name of the date column in scoring data
+#' @param ByVariableName Name of your base entity column name
+#'
+#' @export
+AutoShapeShap <- function(ScoringData = NULL,
+                          Threads = max(1L, parallel::detectCores()-2L),
+                          DateColumnName = "Date",
+                          ByVariableName = "GroupVariable") {
+
+  # NULL Corrections
+  if(is.null(DateColumnName)) DateColumnName <- "Date"
+  if(is.null(ByVariableName)) {
+    ScoringData[, ID__ := seq_len(.N)]
+    ByVariableName <- "ID__"
+  }
+
+  # Parallel env setup
+  if(Threads > 1L) {
+    library(parallel); library(doParallel); library(foreach)
+    Packages <- c("RemixAutoML", "data.table", "parallel", "doParallel", "foreach")
+    cl <- parallel::makePSOCKcluster(Threads)
+    doParallel::registerDoParallel(cl)
+    on.exit(parallel::stopCluster(cl))
+    NumRowsPerThread <- floor(ScoringData[, .N] / Threads)
+    Chunks <- floor(ScoringData[, .N] / NumRowsPerThread)
+
+    # stopCluster(cl)
+
+    # Parallel loop
+    ShapValues <- foreach::foreach(
+      i = itertools::isplitRows(ScoringData, chunks = Chunks),
+      .combine = function(...) data.table::rbindlist(list(...)),
+      .multicombine = TRUE,
+      .packages = Packages
+    ) %dopar% {
+      Rows <- i[, .N]
+      Output <- list()
+      for(j in seq_len(Rows)) Output[[j]] <- SingleRowShapeShap(ShapData = i[j], EntityID = ByVariableName, DateColumnName = DateColumnName)
+      out <- data.table::rbindlist(Output)
+      out
+    }
+  } else {
+    Rows <- ScoringData[, .N]
+    Output <- list()
+    for(j in seq_len(Rows)) Output[[j]] <- SingleRowShapeShap(ShapData = ScoringData[j], EntityID = ByVariableName, DateColumnName = DateColumnName)
+    ShapValues <- data.table::rbindlist(Output)
+  }
+
+  # Add more columns
+  if(any(names(ShapValues) %like% "Diff")) {
+    options(warn = -1)
+    ShapValues[, PreviousValue := data.table::fcase(
+      DiffValue %like% "New=", gsub('.*Old=', '', DiffValue),
+      DiffValue == "No_Change", CurrentValue,
+      DiffValue == CurrentValue, CurrentValue,
+      DiffValue != CurrentValue, as.character(as.numeric(CurrentValue) - as.numeric(DiffValue)))]
+    ShapValues[, SumShapValue := data.table::fifelse(is.na(DiffValue), ShapValue, ShapValue + ShapDiffValue)]
+    ShapValues[, AbsSumShapValue := abs(SumShapValue)]
+    data.table::setcolorder(ShapValues, c(4,3,1,10,9,2,5:8))
+    data.table::setorderv(ShapValues, cols = c(DateColumnName, ByVariableName, "AbsSumShapValue"), order = c(-1,1,-1))
+    return(ShapValues)
+  } else {
+    ShapValues[, AbsShapValue := abs(ShapValue)]
+    data.table::setcolorder(ShapValues, c(4,3,2,6,1,5))
+    data.table::setorderv(ShapValues, cols = c(DateColumnName, ByVariableName, "AbsShapValue"), order = c(-1,1,-1))
+    return(ShapValues)
   }
 }
 

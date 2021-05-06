@@ -71,11 +71,13 @@ data <- RedYellowGreen(
 }
 \seealso{
 Other Model Evaluation and Interpretation: 
+\code{\link{AutoShapeShap}()},
 \code{\link{CumGainsChart}()},
 \code{\link{EvalPlot}()},
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},
 \code{\link{ShapPlot}()},
+\code{\link{SingleRowShapeShap}()},
 \code{\link{threshOptim}()}
 }
 \author{
