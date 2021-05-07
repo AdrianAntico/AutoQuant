@@ -84,10 +84,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                MDP_MissFactor = "0",
                                MDP_MissNum = -1) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
-  # Check arguments----
+  # Check arguments ----
   if(is.null(ScoringData)) return("ScoringData cannot be NULL")
   if(is.null(FeatureColumnNames)) return("FeatureColumnNames cannot be NULL")
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
@@ -97,8 +94,8 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
   if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
 
-  # IDcols conversion----
-  if(is.numeric(IDcols) | is.integer(IDcols)) IDcols <- names(data)[IDcols]
+  # IDcols conversion ----
+  if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
 
   # Apply Transform Numeric Variables----
   if(TransformNumeric) {
@@ -112,7 +109,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # Subset Columns Needed----
-  if(is.numeric(FeatureColumnNames) | is.integer(FeatureColumnNames)) {
+  if(is.numeric(FeatureColumnNames) || is.integer(FeatureColumnNames)) {
     keep1 <- names(ScoringData)[c(FeatureColumnNames)]
     if(!is.null(IDcols)) keep <- c(IDcols, keep1) else keep <- c(keep1)
     ScoringData <- ScoringData[, ..keep]
@@ -129,29 +126,27 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     ScoringMerge <- data.table::copy(ScoringData)
   }
 
-  # Binary Identify column numbers for factor variables----
-  CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
-  CatFeatures <- names(ScoringData)[CatFeatures]
-
-  # DummifyDT categorical columns----
-  if(!is.null(CatFeatures)) {
-    if(!is.null(FactorLevelsList)) {
-      ScoringData <- DummifyDT(data = ScoringData, cols = CatFeatures, KeepFactorCols = FALSE, OneHot = OneHot, SaveFactorLevels = FALSE, SavePath = ModelPath,
-        ImportFactorLevels = FALSE, FactorLevelsList = FactorLevelsList, ReturnFactorLevels = FALSE, ClustScore = FALSE, GroupVar = TRUE)
-    } else {
-      ScoringData <- DummifyDT(data = ScoringData, cols = CatFeatures, KeepFactorCols = FALSE, OneHot = OneHot, SaveFactorLevels = FALSE, SavePath = ModelPath,
-        ImportFactorLevels = TRUE, ReturnFactorLevels = FALSE,  ClustScore = FALSE, GroupVar = TRUE)
+  # DummifyDT categorical columns ----
+  if(!is.null(FactorLevelsList)) {
+    ScoringData <- DummifyDT(data=ScoringData, cols=names(FactorLevelsList), KeepFactorCols=FALSE, OneHot=OneHot, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
+  } else {
+    CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
+    CatFeatures <- names(ScoringData)[CatFeatures]
+    if(!identical(CatFeatures, character(0)) || !is.null(CatFeatures)) {
+      ScoringData <- DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=OneHot, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
     }
   }
 
-  # ModelDataPrep Check----
+  # Load model ----
+  if(!is.null(ModelObject)) model <- ModelObject else model <- tryCatch({load(file.path(ModelPath, ModelID))}, error = function(x) stop(paste0("Model not found in ModelPath: " , file.path(ModelPath, ModelID))))
+
+  # ModelDataPrep Check ----
   ScoringData <- ModelDataPrep(data = ScoringData, Impute = MDP_Impute, CharToFactor = MDP_CharToFactor, RemoveDates = MDP_RemoveDates, MissFactor = MDP_MissFactor, MissNum = MDP_MissNum)
+  a <- which(!names(ScoringData) %in% model$feature_names)
+  if(!identical(a, integer(0))) data.table::set(ScoringData, j = c(names(ScoringData)[which(!names(ScoringData) %in% model$feature_names)]), value = NULL)
 
   # Initialize XGBoost Data Conversion----
   ScoringMatrix <- xgboost::xgb.DMatrix(as.matrix(ScoringData))
-
-  # Load model----
-  if(!is.null(ModelObject)) model <- ModelObject else model <- tryCatch({load(file.path(normalizePath(ModelPath), ModelID))}, error = function(x) return("Model not found in ModelPath"))
 
   # Score model----
   predict <- data.table::as.data.table(stats::predict(model, ScoringMatrix))

@@ -125,7 +125,7 @@ DummifyDT <- function(data,
   FactorsLevelsList <- list()
   if(!GroupVar) if(length(cols) > 1L && "GroupVar" %chin% cols) cols <- cols[!cols %chin% "GroupVar"]
   if(length(TopN) > 1L) Counter <- 1L
-  for(col in rev(cols)) {
+  for(col in cols) {
     size <- ncol(data)
     Names <- setdiff(names(data), col)
     if(ImportFactorLevels) {

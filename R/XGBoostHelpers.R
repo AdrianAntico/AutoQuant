@@ -132,196 +132,52 @@ XGBoostDataPrep <- function(ModelType = "regression",
 
     # Dummify dataTrain Categorical Features
     if(!is.null(CatFeatures)) {
-      if(SaveModelObjects.) {
-        if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+
+      # Prepare data
+      if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
+        data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
+        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
+      } else if(!is.null(dataTest)) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull.) {
           data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-          data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-          temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-          if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
+          if(!is.null(TestData.)) {
+            data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
+            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
           } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          dataTest <- temp[ID_Factorizer == "VALIDATE"]
-          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          TestData. <- temp[ID_Factorizer == "TEST"]
-          data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-        } else {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
             temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          } else {
-            temp <- dataTrain
           }
-          if(ReturnFactorLevels.) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = TRUE,
-              ReturnFactorLevels = ReturnFactorLevels.,
-              SavePath = model_path.,
-              ImportFactorLevels = FALSE)
-            IDcols. <- c(IDcols.,CatFeatures)
-            FactorLevelsList <- temp$FactorLevelsList
-            temp <- temp$data
-          } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          }
+        } else {
+          temp <- dataTrain
         }
       } else {
-        if(!is.null(dataTest)) {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-            if(!is.null(TestData.)) {
-              data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-              temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-            } else {
-              temp <- data.table::rbindlist(list(dataTrain, dataTest))
-            }
-          } else {
-            temp <- dataTrain
-          }
-          if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                FactorLevelsList = NULL,
-                SavePath = NULL,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
-          } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = NULL,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-            if(!is.null(TestData.)) {
-              TestData. <- temp[ID_Factorizer == "TEST"]
-              data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-            }
-          }
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull.) {
+          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
+          temp <- data.table::rbindlist(list(dataTrain, dataTest))
         } else {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest, j = "ID_Factorizer", value = "TRAIN")
-            FactorLevelsList <- temp$FactorLevelsList
-            temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          } else {
-            temp <- dataTrain
-            FactorLevelsList <- NULL
-          }
-          if(ReturnFactorLevels.) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = FALSE,
-              ReturnFactorLevels = ReturnFactorLevels.,
-              SavePath = NULL,
-              ImportFactorLevels = FALSE)
-          } else {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = FALSE,
-              ReturnFactorLevels = ReturnFactorLevels.,
-              SavePath = NULL,
-              ImportFactorLevels = FALSE)
-          }
-          IDcols. <- c(IDcols.,CatFeatures)
-          FactorLevelsList <- temp$FactorLevelsList
-          temp <- temp$data
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          }
+          temp <- dataTrain
         }
+      }
+
+      # Encode
+      temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
+      IDcols. <- c(IDcols.,CatFeatures)
+      FactorLevelsList <- temp$FactorLevelsList
+      temp <- temp$data
+
+      # Finalize data
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+      if(exists("dataTest") && !is.null(dataTest)) {
+        dataTest <- temp[ID_Factorizer == "VALIDATE"]
+        data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
+      }
+      if(exists("TestData.") && !is.null(TestData.)) {
+        TestData. <- temp[ID_Factorizer == "TEST"]
+        data.table::set(TestData., j = "ID_Factorizer", value = NULL)
       }
     }
 
@@ -357,7 +213,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
     if(!is.null(TestData.)) {
       datatest <- xgboost::xgb.DMatrix(as.matrix(TestData.), label = FinalTestTarget)
       EvalSets <- list(train = datavalidate, test = datatest)
-    } else if(!TrainOnFull.) {
+    } else if(!TrainOnFull. && exists("datavalidate")) {
       EvalSets <- list(train = datatrain, test = datavalidate)
     } else {
       EvalSets <- list(train = datatrain)
@@ -519,205 +375,54 @@ XGBoostDataPrep <- function(ModelType = "regression",
       }
     }
 
-    # Regression Dummify Categorical Features
+    # Dummify dataTrain Categorical Features
     if(!is.null(CatFeatures)) {
-      if(SaveModelObjects.) {
-        if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+
+      # Prepare data
+      if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
+        data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
+        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
+      } else if(!is.null(dataTest)) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull.) {
           data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-          data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-          temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-          if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE,
-                ClustScore = FALSE,
-                GroupVar = TRUE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
+          if(!is.null(TestData.)) {
+            data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
+            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
           } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE,
-                ClustScore = FALSE,
-                GroupVar = TRUE)
-              IDcols. <- c(IDcols.,CatFeatures)
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          dataTest <- temp[ID_Factorizer == "VALIDATE"]
-          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          TestData. <- temp[ID_Factorizer == "TEST"]
-          data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-        } else {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
             temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          } else {
-            temp <- dataTrain
           }
-          if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE,
-                ClustScore = FALSE,
-                GroupVar = TRUE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
-          } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE,
-                ClustScore = FALSE,
-                GroupVar = TRUE)
-              IDcols. <- c(IDcols.,CatFeatures)
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          }
+        } else {
+          temp <- dataTrain
         }
       } else {
-        if(!is.null(dataTest)) {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-            if(!is.null(TestData.)) {
-              data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-              temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-            } else {
-              temp <- data.table::rbindlist(list(dataTrain, dataTest))
-            }
-          } else {
-            temp <- dataTrain
-          }
-          if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                FactorLevelsList = NULL,
-                SavePath = NULL,
-                ImportFactorLevels = FALSE,
-                ClustScore = FALSE,
-                GroupVar = TRUE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
-          } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = NULL,
-                ImportFactorLevels = FALSE,
-                ClustScore = FALSE,
-                GroupVar = TRUE)
-              IDcols. <- c(IDcols.,CatFeatures)
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-            if(!is.null(TestData.)) {
-              TestData. <- temp[ID_Factorizer == "TEST"]
-              data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-            }
-          }
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull.) {
+          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
+          temp <- data.table::rbindlist(list(dataTrain, dataTest))
         } else {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest, j = "ID_Factorizer", value = "TRAIN")
-            FactorLevelsList <- temp$FactorLevelsList
-            temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          } else {
-            temp <- dataTrain
-            FactorLevelsList <- NULL
-          }
-
-          # Dummify
-          temp <- DummifyDT(
-            data = temp,
-            FactorLevelsList = FactorLevelsList,
-            cols = CatFeatures,
-            KeepFactorCols = FALSE,
-            OneHot = FALSE,
-            SaveFactorLevels = FALSE,
-            ReturnFactorLevels = ReturnFactorLevels.,
-            SavePath = NULL,
-            ImportFactorLevels = FALSE,
-            ClustScore = FALSE,
-            GroupVar = TRUE)
-          IDcols. <- c(IDcols.,CatFeatures)
-          FactorLevelsList <- temp$FactorLevelsList
-          temp <- temp$data
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          }
+          temp <- dataTrain
         }
+      }
+
+      # Encode
+      temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
+      IDcols. <- c(IDcols.,CatFeatures)
+      FactorLevelsList <- temp$FactorLevelsList
+      temp <- temp$data
+
+      # Finalize data
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+      if(exists("dataTest") && !is.null(dataTest)) {
+        dataTest <- temp[ID_Factorizer == "VALIDATE"]
+        data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
+      }
+      if(exists("TestData.") && !is.null(TestData.)) {
+        TestData. <- temp[ID_Factorizer == "TEST"]
+        data.table::set(TestData., j = "ID_Factorizer", value = NULL)
       }
     }
 
@@ -847,200 +552,54 @@ XGBoostDataPrep <- function(ModelType = "regression",
       }
     }
 
-    # MultiClass Dummify dataTrain Categorical Features
+    # Dummify dataTrain Categorical Features
     if(!is.null(CatFeatures)) {
-      if(SaveModelObjects.) {
-        if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+
+      # Prepare data
+      if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
+        data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
+        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
+      } else if(!is.null(dataTest)) {
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull.) {
           data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-          data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-          temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-          if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
+          if(!is.null(TestData.)) {
+            data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
+            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
           } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          dataTest <- temp[ID_Factorizer == "VALIDATE"]
-          data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          TestData. <- temp[ID_Factorizer == "TEST"]
-          data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-        } else {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
             temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          } else {
-            temp <- dataTrain
           }
-          if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
-          } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = TRUE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = model_path.,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          }
+        } else {
+          temp <- dataTrain
         }
       } else {
-        if(!is.null(dataTest)) {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-            if(!is.null(TestData.)) {
-              data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-              temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-            } else {
-              temp <- data.table::rbindlist(list(dataTrain, dataTest))
-            }
-          } else {
-            temp <- dataTrain
-          }
-          if(ReturnFactorLevels.) {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                FactorLevelsList = NULL,
-                SavePath = NULL,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-              FactorLevelsList <- temp$FactorLevelsList
-              temp <- temp$data
-            } else {
-              FactorLevelsList <- NULL
-            }
-          } else {
-            if(!is.null(CatFeatures)) {
-              temp <- DummifyDT(
-                data = temp,
-                cols = CatFeatures,
-                KeepFactorCols = FALSE,
-                OneHot = FALSE,
-                SaveFactorLevels = FALSE,
-                ReturnFactorLevels = ReturnFactorLevels.,
-                SavePath = NULL,
-                ImportFactorLevels = FALSE)
-              IDcols. <- c(IDcols.,CatFeatures)
-            } else {
-              FactorLevelsList <- NULL
-            }
-          }
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-            if(!is.null(TestData.)) {
-              TestData. <- temp[ID_Factorizer == "TEST"]
-              data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-            }
-          }
+        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
+        if(!TrainOnFull.) {
+          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
+          temp <- data.table::rbindlist(list(dataTrain, dataTest))
         } else {
-          data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-          if(!TrainOnFull.) {
-            data.table::set(dataTest, j = "ID_Factorizer", value = "TRAIN")
-            FactorLevelsList <- temp$FactorLevelsList
-            temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          } else {
-            temp <- dataTrain
-            FactorLevelsList <- NULL
-          }
-          if(ReturnFactorLevels.) {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = FALSE,
-              ReturnFactorLevels = ReturnFactorLevels.,
-              SavePath = NULL,
-              ImportFactorLevels = FALSE)
-          } else {
-            temp <- DummifyDT(
-              data = temp,
-              cols = CatFeatures,
-              KeepFactorCols = FALSE,
-              OneHot = FALSE,
-              SaveFactorLevels = FALSE,
-              ReturnFactorLevels = ReturnFactorLevels.,
-              SavePath = NULL,
-              ImportFactorLevels = FALSE)
-          }
-          IDcols. <- c(IDcols.,CatFeatures)
-          FactorLevelsList <- temp$FactorLevelsList
-          temp <- temp$data
-          dataTrain <- temp[ID_Factorizer == "TRAIN"]
-          data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-          if(!TrainOnFull.) {
-            dataTest <- temp[ID_Factorizer == "VALIDATE"]
-            data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-          }
+          temp <- dataTrain
         }
+      }
+
+      # Encode
+      temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
+      IDcols. <- c(IDcols.,CatFeatures)
+      FactorLevelsList <- temp$FactorLevelsList
+      temp <- temp$data
+
+      # Finalize data
+      dataTrain <- temp[ID_Factorizer == "TRAIN"]
+      data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
+      if(exists("dataTest") && !is.null(dataTest)) {
+        dataTest <- temp[ID_Factorizer == "VALIDATE"]
+        data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
+      }
+      if(exists("TestData.") && !is.null(TestData.)) {
+        TestData. <- temp[ID_Factorizer == "TEST"]
+        data.table::set(TestData., j = "ID_Factorizer", value = NULL)
       }
     }
 

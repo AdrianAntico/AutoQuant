@@ -187,65 +187,6 @@ AutoDataPartition <- function(data,
   return(DataCollect)
 }
 
-
-#' @title PartitionData
-#'
-#' @description Create data sets for machine learning
-#'
-#' @author Adrian Antico
-#' @family Feature Engineering - DataSet
-#'
-#' @param data Source data
-#' @param ArgsList ArgsList_FFE
-#' @param PartitionRatios Allocation percentages for data sets
-#' @param Method 'random' or 'time'
-#' @param ByVariables Names of variables for sampling by
-#'
-#' @examples
-#' \dontrun{
-#' Output <- RemixAutoML:::PartitionData(
-#'   data = data,
-#'   ArgsList = ArgsList_FE,
-#'   PartitionRatios = c(0.70, 0.20, 0.10),
-#'   Method = 'random',
-#'   ByVariables = NULL)
-#' TrainData <- Output$TrainData
-#' ArgsList_FE <- Output$ArgsList
-#' }
-#'
-#' @return A list containing the data and the ArgsList
-#' @noRd
-PartitionData <- function(data = NULL,
-                          ArgsList = ArgsList_FFE,
-                          PartitionRatios = c(0.70, 0.20, 0.10),
-                          Method = 'random',
-                          ByVariables = NULL) {
-
-  # Metadata
-  Start <- Sys.time()
-
-  # Run function
-  DataSets <- RemixAutoML::AutoDataPartition(
-    data = data,
-    NumDataSets = length(PartitionRatios),
-    Ratios = PartitionRatios,
-    PartitionType = Method,
-    StratifyColumnNames = ByVariables,
-    TimeColumnName = NULL)
-
-  # Collect data
-  TrainData <- DataSets$TrainData; DataSets$TrainData <- NULL
-  ValidationData <- DataSets$ValidationData; DataSets$ValidationData <- NULL
-  TestData <- DataSets$TestData; DataSets$TestData <- NULL
-
-  # Run time tracking
-  End <- Sys.time()
-  ArgsList$RunTime$FE_PartitionData <- difftime(End, Start, units = "mins")
-
-  # Return
-  return(list(TrainData = TrainData, ValidationData = ValidationData, TestData = TestData, ArgsList = ArgsList))
-}
-
 #' @title ModelDataPrep
 #'
 #' @description This function replaces inf values with NA, converts characters to factors, and imputes with constants
@@ -371,4 +312,62 @@ ModelDataPrep <- function(data,
 
   # Return data----
   return(data)
+}
+
+#' @title PartitionData
+#'
+#' @description Create data sets for machine learning
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering - DataSet
+#'
+#' @param data Source data
+#' @param ArgsList ArgsList_FFE
+#' @param PartitionRatios Allocation percentages for data sets
+#' @param Method 'random' or 'time'
+#' @param ByVariables Names of variables for sampling by
+#'
+#' @examples
+#' \dontrun{
+#' Output <- RemixAutoML:::PartitionData(
+#'   data = data,
+#'   ArgsList = ArgsList_FE,
+#'   PartitionRatios = c(0.70, 0.20, 0.10),
+#'   Method = 'random',
+#'   ByVariables = NULL)
+#' TrainData <- Output$TrainData
+#' ArgsList_FE <- Output$ArgsList
+#' }
+#'
+#' @return A list containing the data and the ArgsList
+#' @noRd
+PartitionData <- function(data = NULL,
+                          ArgsList = ArgsList_FFE,
+                          PartitionRatios = c(0.70, 0.20, 0.10),
+                          Method = 'random',
+                          ByVariables = NULL) {
+
+  # Metadata
+  Start <- Sys.time()
+
+  # Run function
+  DataSets <- RemixAutoML::AutoDataPartition(
+    data = data,
+    NumDataSets = length(PartitionRatios),
+    Ratios = PartitionRatios,
+    PartitionType = Method,
+    StratifyColumnNames = ByVariables,
+    TimeColumnName = NULL)
+
+  # Collect data
+  TrainData <- DataSets$TrainData; DataSets$TrainData <- NULL
+  ValidationData <- DataSets$ValidationData; DataSets$ValidationData <- NULL
+  TestData <- DataSets$TestData; DataSets$TestData <- NULL
+
+  # Run time tracking
+  End <- Sys.time()
+  ArgsList$RunTime$FE_PartitionData <- difftime(End, Start, units = "mins")
+
+  # Return
+  return(list(TrainData = TrainData, ValidationData = ValidationData, TestData = TestData, ArgsList = ArgsList))
 }
