@@ -16,6 +16,7 @@ AutoXGBoostClassifier(
   metadata_path = NULL,
   SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
+  EncodingMethod = "binary",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
@@ -64,6 +65,8 @@ AutoXGBoostClassifier(
 \item{SaveInfoToPDF}{Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory}
 
 \item{ModelID}{A character string to name your model and output}
+
+\item{EncodingMethod}{Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{ReturnFactorLevels}{TRUE or FALSE. Set to FALSE to not return factor levels.}
 
@@ -142,6 +145,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
     model_path = normalizePath("./"),
     metadata_path = NULL,
     ModelID = "Test_Model_1",
+    EncodingMethod = "binary",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,

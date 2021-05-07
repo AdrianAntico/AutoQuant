@@ -10,10 +10,10 @@
 #' @param ReturnShapValues Set to TRUE to return shap values for the predicted values
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
+#' @param EncodingMethod Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param FactorLevelsList Supply the factor variables' list from DummifyDT()
 #' @param TargetLevels Supply the target levels output from AutoXGBoostMultiClass() or the scoring function will go looking for it in the file path you supply.
 #' @param Objective Set to 'multi:softprobs' if you did so in training. Default is softmax
-#' @param OneHot Set to TRUE to have one-hot-encoding run. Otherwise, N columns will be made for N levels of a factor variable
 #' @param ModelObject Supply a model for scoring, otherwise it will have to search for it in the file path you specify
 #' @param ModelPath Supply your path file used in the AutoXGBoost__() function
 #' @param ModelID Supply the model ID used in the AutoXGBoost__() function
@@ -37,10 +37,10 @@
 #'   ReturnShapValues = FALSE,
 #'   FeatureColumnNames = 2:12,
 #'   IDcols = NULL,
+#'   EncodingMethod = "binary",
 #'   FactorLevelsList = NULL,
 #'   TargetLevels = NULL,
 #'   Objective = "multi:softmax",
-#'   OneHot = FALSE,
 #'   ModelObject = NULL,
 #'   ModelPath = "home",
 #'   ModelID = "ModelTest",
@@ -64,6 +64,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                ReturnShapValues = FALSE,
                                FeatureColumnNames = NULL,
                                IDcols = NULL,
+                               EncodingMethod = "binary",
                                FactorLevelsList = NULL,
                                TargetLevels = NULL,
                                Objective = "multi:softmax",
@@ -85,14 +86,14 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                MDP_MissNum = -1) {
 
   # Check arguments ----
-  if(is.null(ScoringData)) return("ScoringData cannot be NULL")
-  if(is.null(FeatureColumnNames)) return("FeatureColumnNames cannot be NULL")
+  if(is.null(ScoringData)) stop("ScoringData cannot be NULL")
+  if(is.null(FeatureColumnNames)) stop("FeatureColumnNames cannot be NULL")
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
-  if(!is.logical(MDP_Impute)) return("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
-  if(!is.logical(MDP_CharToFactor)) return("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
-  if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
-  if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
-  if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
+  if(!is.logical(MDP_Impute)) stop("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_CharToFactor)) stop("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_RemoveDates)) stop("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.character(MDP_MissFactor) && !is.factor(MDP_MissFactor)) stop("MDP_MissFactor should be a character or factor value")
+  if(!is.numeric(MDP_MissNum)) stop("MDP_MissNum should be a numeric or integer value")
 
   # IDcols conversion ----
   if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
@@ -127,13 +128,25 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # DummifyDT categorical columns ----
-  if(!is.null(FactorLevelsList)) {
-    ScoringData <- DummifyDT(data=ScoringData, cols=names(FactorLevelsList), KeepFactorCols=FALSE, OneHot=OneHot, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
+  if(EncodingMethod == "binary") {
+    if(!is.null(FactorLevelsList)) {
+      ScoringData <- DummifyDT(data=ScoringData, cols=names(FactorLevelsList), KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
+    } else {
+      CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
+      CatFeatures <- names(ScoringData)[CatFeatures]
+      if(!identical(CatFeatures, character(0)) && !is.null(CatFeatures)) {
+        ScoringData <- DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
+      }
+    }
   } else {
-    CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
-    CatFeatures <- names(ScoringData)[CatFeatures]
-    if(!identical(CatFeatures, character(0)) || !is.null(CatFeatures)) {
-      ScoringData <- DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=OneHot, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
+    if(!is.null(FactorLevelsList)) {
+      ScoringData <- CategoricalEncoding(data=ScoringData, ML_Type=TargetType, GroupVariables=names(FactorLevelsList), TargetVariable=NULL, Method=EncodingMethod, SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
+    } else {
+      CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
+      CatFeatures <- names(ScoringData)[CatFeatures]
+      if(!identical(CatFeatures, character(0)) && !is.null(CatFeatures)) {
+        ScoringData <- CategoricalEncoding(data=ScoringData, ML_Type=TargetType, GroupVariables=CatFeatures, TargetVariable=NULL, Method=EncodingMethod, SavePath=model_path., Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
+      }
     }
   }
 
@@ -191,15 +204,15 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     predict <- cbind(predict, ShapValues)
   }
 
-  # Back Transform Numeric Variables----
+  # Back Transform Numeric Variables ----
   if(BackTransNumeric) {
     grid_trans_results <- data.table::copy(TransformationObject)
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
 
-    # Append record for Predicted Column----
+    # Append record for Predicted Column ----
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
 
-    # Run Back-Transform----
+    # Run Back-Transform ----
     predict <- AutoTransformationScore(ScoringData = predict, Type = "Inverse", FinalResults = grid_trans_results, TransID = NULL, Path = NULL)
   }
 

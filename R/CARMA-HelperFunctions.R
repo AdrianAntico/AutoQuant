@@ -760,7 +760,7 @@ CarmaFeatures <- function(data. = data,
     if(!is.null(XREGS.)) ModelFeatures <- setdiff(names(data.), c(eval(TargetColumnName.), eval(DateColumnName.))) else ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), eval(DateColumnName.)))
     TargetVariable <- eval(TargetColumnName.)
   } else if(Difference. && !is.null(GroupVariables.)) {
-    ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), "ModTarget", eval(DateColumnName.)))
+    ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), "ModTarget", "TargetDiffMidStep", eval(DateColumnName.)))
     TargetVariable <- "ModTarget"
   } else {
     ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), eval(DateColumnName.)))
@@ -785,6 +785,7 @@ CarmaFeatures <- function(data. = data,
 #' @param HierarchGroups. Passthrough
 #' @param UpdateData. Passthrough
 #' @param FactorList. Passthrough
+#' @param EncodingMethod. Passthrough
 #'
 #' @noRd
 CarmaScore <- function(Type = "catboost",
@@ -802,7 +803,8 @@ CarmaScore <- function(Type = "catboost",
                        NonNegativePred. = NonNegativePred,
                        RoundPreds. = RoundPreds,
                        UpdateData. = UpdateData,
-                       FactorList. = NULL) {
+                       FactorList. = NULL,
+                       EncodingMethod. = NULL) {
 
   # Row counts
   if(i. != 1) N. <- as.integer(N. + 1L)
@@ -814,7 +816,7 @@ CarmaScore <- function(Type = "catboost",
     if(!is.null(GroupVariables.)) {
 
       # Define IDcols
-      if(Difference.) IDcols <- "ModTarget" else IDcols <- eval(TargetColumnName.)
+      if(Difference.) IDcols <- c("ModTarget","TargetDiffMidStep") else IDcols <- eval(TargetColumnName.)
 
       # Score Model With Group Variables
       if(Type == "catboost") {
@@ -848,11 +850,11 @@ CarmaScore <- function(Type = "catboost",
           TargetType = "regression",
           ScoringData = Step1SCore.,
           FeatureColumnNames = ModelFeatures.,
-          OneHot = FALSE,
           IDcols = IDcols,
           ModelObject = Model.,
           ModelPath = getwd(),
           ModelID = "ModelTest",
+          EncodingMethod = EncodingMethod.,
           ReturnFeatures = TRUE,
           TransformNumeric = FALSE,
           BackTransNumeric = FALSE,
@@ -907,6 +909,7 @@ CarmaScore <- function(Type = "catboost",
           ModelObject = Model.,
           ModelPath = getwd(),
           ModelID = "ModelTest",
+          EncodingMethod = NULL,
           ReturnFeatures = TRUE,
           TransformNumeric = FALSE,
           BackTransNumeric = FALSE,
@@ -987,6 +990,7 @@ CarmaScore <- function(Type = "catboost",
           ModelObject = Model.,
           ModelPath = getwd(),
           ModelID = "ModelTest",
+          EncodingMethod = EncodingMethod.,
           ReturnFeatures = FALSE,
           TransformNumeric = FALSE,
           BackTransNumeric = FALSE,
@@ -1051,6 +1055,7 @@ CarmaScore <- function(Type = "catboost",
           ModelObject = Model.,
           ModelPath = getwd(),
           ModelID = "ModelTest",
+          EncodingMethod = NULL,
           ReturnFeatures = FALSE,
           TransformNumeric = FALSE,
           BackTransNumeric = FALSE,

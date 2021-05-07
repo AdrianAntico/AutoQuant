@@ -20,6 +20,7 @@
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
+#' @param EncodingMethod Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert'
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param ReturnFactorLevels TRUE or FALSE. Set to FALSE to not return factor levels.
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
@@ -61,6 +62,7 @@
 #'     model_path = normalizePath("./"),
 #'     metadata_path = normalizePath("./"),
 #'     ModelID = "Test_Model_1",
+#'     EncodingMethod = "binary",
 #'     ReturnFactorLevels = TRUE,
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,
@@ -112,6 +114,7 @@ AutoXGBoostMultiClass <- function(data,
                                   metadata_path = NULL,
                                   ModelID = "FirstModel",
                                   LossFunction = 'multi:softmax',
+                                  EncodingMethod = "binary",
                                   ReturnFactorLevels = TRUE,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
@@ -141,7 +144,8 @@ AutoXGBoostMultiClass <- function(data,
 
   # Data prep ----
   if(DebugMode) print("Data prep ----")
-  Output <- XGBoostDataPrep(ModelType="multiclass", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels)
+  if(EncodingMethod %chin% c("target_encode", "credibility", "m_estimator", "woe")) EncodingMethod <- "poly_encode"
+  Output <- XGBoostDataPrep(ModelType="multiclass", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
   TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL

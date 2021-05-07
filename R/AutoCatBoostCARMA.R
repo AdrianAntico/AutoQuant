@@ -546,6 +546,7 @@ AutoCatBoostCARMA <- function(data,
   FC_Periods <- Output$FC_Periods; Output$FC_Periods <- NULL
   DiffTrainOutput <- Output$DiffTrainOutput
   Train <- Output$Train; rm(Output)
+  if(Difference) IDcols <- c(IDcols, "TargetDiffMidStep")
 
   # Feature Engineering: Lags and Rolling Stats ----
   if(DebugMode) print("Feature Engineering: Lags and Rolling Stats ----")
@@ -596,7 +597,7 @@ AutoCatBoostCARMA <- function(data,
   # Variables for CARMA function IDcols ----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
   IDcols <- which(names(data) %chin% DateColumnName)
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) == TargetColumnName))
+  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) == TargetColumnName), which(names(data) == "TargetDiffMidStep"))
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----")

@@ -17,6 +17,7 @@ AutoXGBoostRegression(
   DebugMode = FALSE,
   SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
+  EncodingMethod = "binary",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
@@ -67,6 +68,8 @@ AutoXGBoostRegression(
 \item{SaveInfoToPDF}{Set to TRUE to save model insights to pdf}
 
 \item{ModelID}{A character string to name your model and output}
+
+\item{EncodingMethod}{Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{ReturnFactorLevels}{Set to TRUE to have the factor levels returned with the other model objects}
 
@@ -146,6 +149,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     model_path = normalizePath("./"),
     metadata_path = NULL,
     ModelID = "Test_Model_1",
+    EncodingMethod = "binary",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,

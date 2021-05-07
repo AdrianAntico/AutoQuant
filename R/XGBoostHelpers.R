@@ -62,6 +62,7 @@ XGBoostArgsCheck <- function(GridTune.=GridTune,
 #' @param TrainOnFull. Passthrough
 #' @param SaveModelObjects. Passthrough
 #' @param ReturnFactorLevels. Passthrough
+#' @param EncodingMethod. Passthrough
 #'
 #' @noRd
 XGBoostDataPrep <- function(ModelType = "regression",
@@ -77,7 +78,8 @@ XGBoostDataPrep <- function(ModelType = "regression",
                             model_path. = model_path,
                             TrainOnFull. = TrainOnFull,
                             SaveModelObjects. = SaveModelObjects,
-                            ReturnFactorLevels.=ReturnFactorLevels) {
+                            ReturnFactorLevels.=ReturnFactorLevels,
+                            EncodingMethod. = EncodingMethod) {
 
   # Ensure data. is a data.table
   if(!data.table::is.data.table(data.)) data.table::setDT(data.)
@@ -163,10 +165,36 @@ XGBoostDataPrep <- function(ModelType = "regression",
       }
 
       # Encode
-      temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
-      IDcols. <- c(IDcols.,CatFeatures)
-      FactorLevelsList <- temp$FactorLevelsList
-      temp <- temp$data
+      if(EncodingMethod. == "binary") {
+        temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+      } else if(EncodingMethod. %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
+        temp_train <- temp[ID_Factorizer == "TRAIN"]
+        temp1 <- RemixAutoML::CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp1$FactorCompenents
+        temp_train <- temp1$data
+        if(!is.null(dataTest) && !is.null(TestData.)) {
+          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
+          temp_test <- temp[ID_Factorizer == "TEST"]
+          temp_other <- data.table::rbindlist(list(temp_validate, temp_test))
+          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
+          temp <- data.table::rbindlist(list(temp2,temp_train))
+        } else if(!is.null(dataTest)) {
+          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
+          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
+          temp <- data.table::rbindlist(list(temp2,temp_train))
+        } else {
+          temp <- temp_train
+        }
+      } else {
+        temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp$FactorCompenents
+        temp <- temp$data
+      }
 
       # Finalize data
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
@@ -408,10 +436,36 @@ XGBoostDataPrep <- function(ModelType = "regression",
       }
 
       # Encode
-      temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
-      IDcols. <- c(IDcols.,CatFeatures)
-      FactorLevelsList <- temp$FactorLevelsList
-      temp <- temp$data
+      if(EncodingMethod. == "binary") {
+        temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+      } else if(EncodingMethod. %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
+        temp_train <- temp[ID_Factorizer == "TRAIN"]
+        temp1 <- RemixAutoML::CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp1$FactorCompenents
+        temp_train <- temp1$data
+        if(!is.null(dataTest) && !is.null(TestData.)) {
+          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
+          temp_test <- temp[ID_Factorizer == "TEST"]
+          temp_other <- data.table::rbindlist(list(temp_validate, temp_test))
+          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
+          temp <- data.table::rbindlist(list(temp2,temp_train))
+        } else if(!is.null(dataTest)) {
+          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
+          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
+          temp <- data.table::rbindlist(list(temp2,temp_train))
+        } else {
+          temp <- temp_train
+        }
+      } else {
+        temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp$FactorCompenents
+        temp <- temp$data
+      }
 
       # Finalize data
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
@@ -584,11 +638,18 @@ XGBoostDataPrep <- function(ModelType = "regression",
         }
       }
 
-      # Encode
-      temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
-      IDcols. <- c(IDcols.,CatFeatures)
-      FactorLevelsList <- temp$FactorLevelsList
-      temp <- temp$data
+      # Encode (cant do target style encoding yet. When possible, overwrite code with classification version)
+      if(EncodingMethod. == "binary") {
+        temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+      } else {
+        temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp$FactorLevelsList
+        temp <- temp$data
+      }
 
       # Finalize data
       dataTrain <- temp[ID_Factorizer == "TRAIN"]
@@ -662,7 +723,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
     TargetLevels = if(exists("TargetLevels")) TargetLevels else NULL,
     Names = Names,
     FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL,
-    IDcols = IDcols.,
+    IDcols = unique(IDcols.),
     TransformNumericColumns = TransformNumericColumns.,
     TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
     NumLevels = if(exists("NumLevels")) NumLevels else NULL))

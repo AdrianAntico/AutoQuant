@@ -21,6 +21,7 @@ AutoXGBoostCARMA(
   TargetTransformation = FALSE,
   Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
     "Logit"),
+  EncodingMethod = "binary",
   AnomalyDetection = NULL,
   XREGS = NULL,
   Lags = c(1:5),
@@ -93,6 +94,8 @@ AutoXGBoostCARMA(
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
 \item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
+
+\item{EncodingMethod}{Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
 
@@ -220,6 +223,7 @@ XGBoostResults <- AutoXGBoostCARMA(
   TimeGroups = c("weeks","months"),
 
   # Data Wrangling Features
+  EncodingMethod = "binary",
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 138, 10 / 138),

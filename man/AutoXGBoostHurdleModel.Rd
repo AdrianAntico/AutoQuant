@@ -19,6 +19,7 @@ AutoXGBoostHurdleModel(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   IDcols = NULL,
+  EncodingMethod = "binary",
   TransformNumericColumns = NULL,
   SplitRatios = c(0.7, 0.2, 0.1),
   SaveModelObjects = FALSE,
@@ -67,6 +68,8 @@ AutoXGBoostHurdleModel(
 \item{FeatureColNames}{Supply the column names or number of the features (not included the PrimaryDateColumn)}
 
 \item{IDcols}{Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions}
+
+\item{EncodingMethod}{Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert' for multiclass cases and additionally 'm_estimator', 'credibility', 'woe', 'target_encoding' for classification use cases.}
 
 \item{TransformNumericColumns}{Transform numeric column inside the AutoCatBoostRegression() function}
 
@@ -133,6 +136,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
    IDcols = NULL,
 
    # options
+   EncodingMethod = "binary",
    TransformNumericColumns = NULL,
    SplitRatios = c(0.70, 0.20, 0.10),
    ReturnModelObjects = TRUE,

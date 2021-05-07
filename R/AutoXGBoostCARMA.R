@@ -20,6 +20,7 @@
 #' @param SaveDataPath Path to save modeling data
 #' @param TargetTransformation Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).
 #' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
+#' @param EncodingMethod Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
 #' @param Lags Select the periods for all lag variables you want to create. E.g. c(1:5,52) or list("day" = c(1:10), "weeks" = c(1:4))
 #' @param MA_Periods Select the periods for all moving average variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))
@@ -102,6 +103,7 @@
 #'   TimeGroups = c("weeks","months"),
 #'
 #'   # Data Wrangling Features
+#'   EncodingMethod = "binary",
 #'   ZeroPadSeries = NULL,
 #'   DataTruncate = FALSE,
 #'   SplitRatios = c(1 - 10 / 138, 10 / 138),
@@ -188,6 +190,7 @@ AutoXGBoostCARMA <- function(data,
                              TimeGroups = c("weeks","months"),
                              TargetTransformation = FALSE,
                              Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                             EncodingMethod = "binary",
                              AnomalyDetection = NULL,
                              XREGS = NULL,
                              Lags = c(1:5),
@@ -435,7 +438,7 @@ AutoXGBoostCARMA <- function(data,
   # Variables for CARMA function IDcols ----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
   IDcols <- which(names(data) %chin% DateColumnName)
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) == TargetColumnName))
+  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) == TargetColumnName), which(names(data) == "TargetDiffMidStep"))
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
@@ -480,6 +483,7 @@ AutoXGBoostCARMA <- function(data,
     IDcols = IDcols,
     TransformNumericColumns = NULL,
     Methods = NULL,
+    EncodingMethod = EncodingMethod,
 
     # Model evaluation
     LossFunction = LossFunction,
@@ -530,7 +534,7 @@ AutoXGBoostCARMA <- function(data,
     # Score model ----
     if(DebugMode) print("Score model ----")
     if(i == 1L) UpdateData <- NULL
-    Output <- CarmaScore(Type = "xgboost", i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=FactorList)
+    Output <- CarmaScore(EncodingMethod.=EncodingMethod, Type = "xgboost", i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=FactorList)
     UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
     Preds <- Output$Preds; Output$Preds <- NULL
     N <- Output$N; rm(Output)

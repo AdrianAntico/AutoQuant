@@ -28,6 +28,7 @@
 #' @param ModelID A character string to name your model and output
 #' @param NumOfParDepPlots Tell the function the number of partial dependence calibration plots you want to create.
 #' @param Verbose Set to 0 if you want to suppress model evaluation updates in training
+#' @param EncodingMethod Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param ReturnModelObjects Set to TRUE to output all modeling objects (E.g. plots and evaluation metrics)
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param SaveInfoToPDF Set to TRUE to save model insights to pdf
@@ -65,6 +66,7 @@
 #'     model_path = normalizePath("./"),
 #'     metadata_path = NULL,
 #'     ModelID = "Test_Model_1",
+#'     EncodingMethod = "binary",
 #'     ReturnFactorLevels = TRUE,
 #'     ReturnModelObjects = TRUE,
 #'     SaveModelObjects = FALSE,
@@ -120,6 +122,7 @@ AutoXGBoostRegression <- function(data,
                                   DebugMode = FALSE,
                                   SaveInfoToPDF = FALSE,
                                   ModelID = "FirstModel",
+                                  EncodingMethod = "binary",
                                   ReturnFactorLevels = TRUE,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
@@ -151,7 +154,7 @@ AutoXGBoostRegression <- function(data,
 
   # Data prep ----
   if(DebugMode) print("Data prep ----")
-  Output <- XGBoostDataPrep(ModelType="regression", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels)
+  Output <- XGBoostDataPrep(ModelType="regression", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
   TransformNumericColumns <- Output$TransformNumericColumns; Output$TransformNumericColumns <- NULL
   TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL

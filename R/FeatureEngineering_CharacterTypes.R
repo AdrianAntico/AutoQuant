@@ -312,38 +312,38 @@ CategoricalEncoding <- function(data = NULL,
   # Helmert Encoding ----
   if(tolower(Method) == "helmert") {
     if(!Scoring) ComponentList <- list()
-    for(GroupVar in GroupVariables) {
+    for(GroupValue in GroupVariables) {
 
       # Setkey to join easily
-      data.table::setkeyv(x = data, cols = GroupVar)
+      data.table::setkeyv(x = data, cols = eval(GroupValue))
 
       # Encode
       if(!Scoring) {
-        Levels <- sort(data[, unique(get(GroupVar))])
+        Levels <- sort(data[, unique(get(GroupValue))])
         Levels_Count <- length(Levels)
         GroupMean <- data.table::as.data.table({
           m <- t((diag(seq(Levels_Count-1, 0)) - upper.tri(matrix(1, Levels_Count, Levels_Count)))[-Levels_Count,])
           t(apply(m, 1, rev))
         })
-        GroupMean[, eval(GroupVar) := Levels]
-        data.table::setnames(GroupMean, names(GroupMean)[-Levels_Count], paste0(GroupVar, Levels[-Levels_Count]))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupVar, "_Helmert.csv")))
+        GroupMean[, eval(GroupValue) := Levels]
+        data.table::setnames(GroupMean, names(GroupMean)[-Levels_Count], paste0(GroupValue, Levels[-Levels_Count]))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Helmert.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
-        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupVar, "_Helmert.csv")))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Helmert.csv")))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
-        GroupMean <- SupplyFactorLevelList[[paste0(GroupVar, "_Helmert")]]
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- SupplyFactorLevelList[[eval(GroupValue)]]
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
       N <- GroupMean[,.N-1L]
-      data[GroupMean, paste0(GroupVar, GroupMean[seq_len(N), get(GroupVar)]) := mget(paste0("i.", GroupVar, GroupMean[seq_len(N), get(GroupVar)]))]
-      if(!KeepOriginalFactors) data.table::set(data, j = GroupVar, value = NULL)
-      if(!Scoring) ComponentList[[paste0(GroupVar, "_Helmert")]] <- GroupMean
+      data[GroupMean, paste0(GroupValue, GroupMean[seq_len(N), get(GroupValue)]) := mget(paste0("i.", GroupValue, GroupMean[seq_len(N), get(GroupValue)]))]
+      if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
-        Vars <- paste0(GroupVar, GroupMean[seq_len(N), get(GroupVar)])
+        Vars <- paste0(GroupValue, GroupMean[seq_len(N), get(GroupValue)])
         for(z in Vars) {
           data.table::set(data, i = which(is.na(data[[z]])), j = z, value = ImputeValueScoring)
         }
@@ -361,14 +361,14 @@ CategoricalEncoding <- function(data = NULL,
   # Backward Difference Encoding ----
   if(tolower(Method) == "backward_difference") {
     if(!Scoring) ComponentList <- list()
-    for(GroupVar in GroupVariables) {
+    for(GroupValue in GroupVariables) {
 
       # Setkey to join easily
-      data.table::setkeyv(x = data, cols = GroupVar)
+      data.table::setkeyv(x = data, cols = eval(GroupValue))
 
       # Encode
       if(!Scoring) {
-        Levels <- sort(data[, unique(get(GroupVar))])
+        Levels <- sort(data[, unique(get(GroupValue))])
         Levels_Count <- length(Levels)
         GroupMean <- data.table::as.data.table({
           Mat <- matrix(0:(Levels_Count-1), nrow = Levels_Count, ncol = Levels_Count)
@@ -379,25 +379,25 @@ CategoricalEncoding <- function(data = NULL,
           Mat <- (t(Mat))[, -Levels_Count]
           Mat
         })
-        GroupMean[, eval(GroupVar) := Levels]
-        data.table::setnames(GroupMean, names(GroupMean)[-Levels_Count], paste0(GroupVar, Levels[-Levels_Count]))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupVar, "_backward_difference.csv")))
+        GroupMean[, eval(GroupValue) := Levels]
+        data.table::setnames(GroupMean, names(GroupMean)[-Levels_Count], paste0(GroupValue, Levels[-Levels_Count]))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_backward_difference.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
-        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupVar, "_backward_difference.csv")))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_backward_difference.csv")))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
-        GroupMean <- SupplyFactorLevelList[[paste0(GroupVar, "_backward_difference")]]
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- SupplyFactorLevelList[[eval(GroupValue)]]
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
       N <- GroupMean[,.N-1L]
-      data[GroupMean, paste0(GroupVar, GroupMean[seq_len(N), get(GroupVar)]) := mget(paste0("i.", GroupVar, GroupMean[seq_len(N), get(GroupVar)]))]
-      if(!KeepOriginalFactors) data.table::set(data, j = GroupVar, value = NULL)
-      if(!Scoring) ComponentList[[paste0(GroupVar, "_backward_difference")]] <- GroupMean
+      data[GroupMean, paste0(GroupValue, GroupMean[seq_len(N), get(GroupValue)]) := mget(paste0("i.", GroupValue, GroupMean[seq_len(N), get(GroupValue)]))]
+      if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
-        Vars <- paste0(GroupVar, GroupMean[seq_len(N), get(GroupVar)])
+        Vars <- paste0(GroupValue, GroupMean[seq_len(N), get(GroupValue)])
         for(z in Vars) {
           data.table::set(data, i = which(is.na(data[[z]])), j = z, value = ImputeValueScoring)
         }
@@ -415,35 +415,35 @@ CategoricalEncoding <- function(data = NULL,
   # Polynomial Encoding ----
   if(tolower(Method) == "poly_encode") {
     if(!Scoring) ComponentList <- list()
-    for(GroupVar in GroupVariables) {
+    for(GroupValue in GroupVariables) {
 
       # Setkey to join easily
-      data.table::setkeyv(x = data, cols = GroupVar)
+      data.table::setkeyv(x = data, cols = eval(GroupValue))
 
       # Encode
       if(!Scoring) {
-        Levels <- sort(data[, unique(get(GroupVar))])
+        Levels <- sort(data[, unique(get(GroupValue))])
         Levels_Count <- length(Levels)
         GroupMean <- data.table::as.data.table(contr.poly(Levels_Count))
-        GroupMean[, eval(GroupVar) := Levels]
-        data.table::setnames(GroupMean, names(GroupMean)[-Levels_Count], paste0(GroupVar, Levels[-Levels_Count]))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupVar, "_PolyEncode.csv")))
+        GroupMean[, eval(GroupValue) := Levels]
+        data.table::setnames(GroupMean, names(GroupMean)[-Levels_Count], paste0(GroupValue, Levels[-Levels_Count]))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_PolyEncode.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
-        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupVar, "_PolyEncode.csv")))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_PolyEncode.csv")))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
-        GroupMean <- SupplyFactorLevelList[[paste0(GroupVar, "_PolyEncode")]]
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- SupplyFactorLevelList[[eval(GroupValue)]]
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
       N <- GroupMean[,.N-1L]
-      data[GroupMean, eval(paste0(GroupVar, GroupMean[seq_len(N), get(GroupVar)])) := mget(paste0("i.", GroupVar, GroupMean[seq_len(N), get(GroupVar)]))]
-      if(!KeepOriginalFactors) data.table::set(data, j = GroupVar, value = NULL)
-      if(!Scoring) ComponentList[[paste0(GroupVar, "_PolyEncode")]] <- GroupMean
+      data[GroupMean, eval(paste0(GroupValue, GroupMean[seq_len(N), get(GroupValue)])) := mget(paste0("i.", GroupValue, GroupMean[seq_len(N), get(GroupValue)]))]
+      if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
-        Vars <- paste0(GroupVar, GroupMean[seq_len(N), get(GroupVar)])
+        Vars <- paste0(GroupValue, GroupMean[seq_len(N), get(GroupValue)])
         for(z in Vars) {
           data.table::set(data, i = which(is.na(data[[z]])), j = z, value = ImputeValueScoring)
         }
@@ -461,30 +461,30 @@ CategoricalEncoding <- function(data = NULL,
   # Target Encoding ----
   if(tolower(Method) == "target_encoding") {
     if(!Scoring) ComponentList <- list()
-    for(GroupVar in GroupVariables) {
+    for(GroupValue in GroupVariables) {
 
       # Setkey to join easily
-      data.table::setkeyv(x = data, cols = GroupVar)
+      data.table::setkeyv(x = data, cols = eval(GroupValue))
 
       # Encode
       if(!Scoring) {
-        GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupVar)]
-        data.table::setnames(GroupMean, "Mean", paste0(GroupVar, "_TargetEncode"))
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupVar, "_TargetEncode.csv")))
+        GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
+        data.table::setnames(GroupMean, "Mean", paste0(GroupValue, "_TargetEncode"))
+        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_TargetEncode.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
-        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupVar, "_TargetEncode.csv")))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_TargetEncode.csv")))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
-        GroupMean <- SupplyFactorLevelList[[paste0(GroupVar, "_TargetEncode")]]
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- SupplyFactorLevelList[[eval(GroupValue)]]
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
-      data[GroupMean, paste0(GroupVar, "_TargetEncode") := get(paste0("i.", paste0(GroupVar, "_TargetEncode")))]
-      if(!KeepOriginalFactors) data.table::set(data, j = GroupVar, value = NULL)
-      if(!Scoring) ComponentList[[paste0(GroupVar, "_TargetEncode")]] <- GroupMean
+      data[GroupMean, paste0(GroupValue, "_TargetEncode") := get(paste0("i.", paste0(GroupValue, "_TargetEncode")))]
+      if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
-        data.table::set(data, i = which(is.na(data[[paste0(GroupVar, "_TargetEncode")]])), j = paste0(GroupVar, "_TargetEncode"), value = ImputeValueScoring)
+        data.table::set(data, i = which(is.na(data[[paste0(GroupValue, "_TargetEncode")]])), j = paste0(GroupValue, "_TargetEncode"), value = ImputeValueScoring)
       }
     }
 
@@ -499,37 +499,37 @@ CategoricalEncoding <- function(data = NULL,
   # WOE Encoding ----
   if(tolower(Method) == "woe") {
     if(!Scoring) ComponentList <- list()
-    for(GroupVar in GroupVariables) {
+    for(GroupValue in GroupVariables) {
 
       # Setkey to join easily
-      data.table::setkeyv(x = data, cols = GroupVar)
+      data.table::setkeyv(x = data, cols = eval(GroupValue))
 
       # Encode
       if(!Scoring) {
 
         # Encode
-        GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupVar)]
-        GroupMean[, paste0(GroupVar, "_WOE") := log(((1 / Mean) - 1) * (data[, sum(get(TargetVariable))] / sum(1-data[[eval(TargetVariable)]])))]
-        if(any(is.infinite(GroupMean[[paste0(GroupVar, "_WOE")]]))) {
-          data.table::set(GroupMean, i = which(is.infinite(GroupMean[[paste0(GroupVar, "_WOE")]])), j = paste0(GroupVar, "_WOE"), value = 0)
+        GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
+        GroupMean[, paste0(GroupValue, "_WOE") := log(((1 / Mean) - 1) * (data[, sum(get(TargetVariable))] / sum(1-data[[eval(TargetVariable)]])))]
+        if(any(is.infinite(GroupMean[[paste0(GroupValue, "_WOE")]]))) {
+          data.table::set(GroupMean, i = which(is.infinite(GroupMean[[paste0(GroupValue, "_WOE")]])), j = paste0(GroupValue, "_WOE"), value = 0)
         }
         GroupMean[, ":=" (Mean = NULL)]
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupVar, "_WOE.csv")))
+        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_WOE.csv")))
 
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
-        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupVar, "_WOE.csv")))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_WOE.csv")))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
-        GroupMean <- SupplyFactorLevelList[[paste0(GroupVar, "_WOE")]]
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- SupplyFactorLevelList[[eval(GroupValue)]]
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
-      data[GroupMean, eval(paste0(GroupVar, "_WOE")) := get(paste0("i.", paste0(GroupVar, "_WOE")))]
-      if(!KeepOriginalFactors) data.table::set(data, j = GroupVar, value = NULL)
-      if(!Scoring) ComponentList[[paste0(GroupVar, "_WOE")]] <- GroupMean
+      data[GroupMean, eval(paste0(GroupValue, "_WOE")) := get(paste0("i.", paste0(GroupValue, "_WOE")))]
+      if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
-        data.table::set(data, i = which(is.na(data[[paste0(GroupVar, "_WOE")]])), j = paste0(GroupVar, "_WOE"), value = ImputeValueScoring)
+        data.table::set(data, i = which(is.na(data[[paste0(GroupValue, "_WOE")]])), j = paste0(GroupValue, "_WOE"), value = ImputeValueScoring)
       }
     }
 
@@ -544,42 +544,42 @@ CategoricalEncoding <- function(data = NULL,
   # credibility; a.k.a James Stein ----
   if(tolower(Method) == "credibility") {
     if(!Scoring) ComponentList <- list()
-    for(GroupVar in GroupVariables) {
+    for(GroupValue in GroupVariables) {
 
       # Setkey to join easily
-      data.table::setkeyv(x = data, cols = GroupVar)
+      data.table::setkeyv(x = data, cols = eval(GroupValue))
 
       # Encode
       if(!Scoring) {
         GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
         if(ML_Type == "classification") {
-          GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), N = .N, Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N), keyby = eval(GroupVar)]
+          GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), N = .N, Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N), keyby = eval(GroupValue)]
           PopVar <- (GrandMean * (1 - GrandMean)) / data[, .N]
           GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
-          GroupMean[, paste0(GroupVar, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
+          GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
           GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
         } else if(ML_Type == "regression") {
-          GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), Var_Group = var(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupVar)]
+          GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), Var_Group = var(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
           PopVar <- data[, var(get(TargetVariable), na.rm = TRUE)]
           GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
-          GroupMean[, paste0(GroupVar, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
-          GroupMean[, ":=" (Mean = NULL, N = NULL)]
+          GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
+          GroupMean[, ":=" (Mean = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
         }
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupVar, "_Credibility.csv")))
+        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
-        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupVar, "_Credibility.csv")))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
-        GroupMean <- SupplyFactorLevelList[[paste0(GroupVar, "_Credibility")]]
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- SupplyFactorLevelList[[eval(GroupValue)]]
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
-      data[GroupMean, eval(paste0(GroupVar, "_Credibility")) := get(paste0("i.", paste0(GroupVar, "_Credibility")))]
-      if(!KeepOriginalFactors) data.table::set(data, j = GroupVar, value = NULL)
-      if(!Scoring) ComponentList[[paste0(GroupVar, "_Credibility")]] <- GroupMean
+      data[GroupMean, eval(paste0(GroupValue, "_Credibility")) := get(paste0("i.", paste0(GroupValue, "_Credibility")))]
+      if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
-        data.table::set(data, i = which(is.na(data[[paste0(GroupVar, "_Credibility")]])), j = paste0(GroupVar, "_Credibility"), value = ImputeValueScoring)
+        data.table::set(data, i = which(is.na(data[[paste0(GroupValue, "_Credibility")]])), j = paste0(GroupValue, "_Credibility"), value = ImputeValueScoring)
       }
     }
 
@@ -596,35 +596,34 @@ CategoricalEncoding <- function(data = NULL,
 
     # Loop through GroupVariables
     if(!Scoring) ComponentList <- list()
-    for(GroupVar in GroupVariables) {
+    for(GroupValue in GroupVariables) {
 
       # Setkey to join easily
-      data.table::setkeyv(x = data, cols = GroupVar)
+      data.table::setkeyv(x = data, cols = eval(GroupValue))
 
       # Encode
       if(!Scoring) {
 
         # Encode
         GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
-        GroupMean <- data[, list(Mean = sum(get(TargetVariable), na.rm = TRUE), N = .N), keyby = eval(GroupVar)]
-        GroupMean[, paste0(GroupVar, "_Mest") := (Mean + GrandMean) / N]
+        GroupMean <- data[, list(Mean = sum(get(TargetVariable), na.rm = TRUE), N = .N), keyby = eval(GroupValue)]
+        GroupMean[, paste0(GroupValue, "_Mest") := (Mean + GrandMean) / N]
         GroupMean[, ":=" (Mean = NULL, N = NULL)]
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupVar, "_Mest.csv")))
-
+        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Mest.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
-        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupVar, "_Mest.csv")))
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Mest.csv")))
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
-        GroupMean <- SupplyFactorLevelList[[paste0(GroupVar, "_Mest")]]
-        data.table::setkeyv(GroupMean, cols = GroupVar)
+        GroupMean <- SupplyFactorLevelList[[paste0(GroupValue)]]
+        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
-      data[GroupMean, eval(paste0(GroupVar, "_Mest")) := get(paste0("i.", paste0(GroupVar, "_Mest")))]
-      if(!KeepOriginalFactors) data.table::set(data, j = GroupVar, value = NULL)
-      if(!Scoring) ComponentList[[paste0(GroupVar, "_Mest")]] <- GroupMean
+      data[GroupMean, eval(paste0(GroupValue, "_Mest")) := get(paste0("i.", paste0(GroupValue, "_Mest")))]
+      if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
-        data.table::set(data, i = which(is.na(data[[paste0(GroupVar, "_Mest")]])), j = paste0(GroupVar, "_Mest"), value = ImputeValueScoring)
+        data.table::set(data, i = which(is.na(data[[paste0(GroupValue, "_Mest")]])), j = paste0(GroupValue, "_Mest"), value = ImputeValueScoring)
       }
     }
 

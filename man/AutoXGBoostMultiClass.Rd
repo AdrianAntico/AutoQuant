@@ -16,6 +16,7 @@ AutoXGBoostMultiClass(
   metadata_path = NULL,
   ModelID = "FirstModel",
   LossFunction = "multi:softmax",
+  EncodingMethod = "binary",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
@@ -62,6 +63,8 @@ AutoXGBoostMultiClass(
 \item{ModelID}{A character string to name your model and output}
 
 \item{LossFunction}{'multi:softmax'}
+
+\item{EncodingMethod}{Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{ReturnFactorLevels}{TRUE or FALSE. Set to FALSE to not return factor levels.}
 
@@ -136,6 +139,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     model_path = normalizePath("./"),
     metadata_path = normalizePath("./"),
     ModelID = "Test_Model_1",
+    EncodingMethod = "binary",
     ReturnFactorLevels = TRUE,
     ReturnModelObjects = TRUE,
     SaveModelObjects = FALSE,

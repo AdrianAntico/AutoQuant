@@ -17,6 +17,7 @@
 #' @param TargetColumnName Supply the column name or number for the target variable
 #' @param FeatureColNames Supply the column names or number of the features (not included the PrimaryDateColumn)
 #' @param IDcols Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions
+#' @param EncodingMethod Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert' for multiclass cases and additionally 'm_estimator', 'credibility', 'woe', 'target_encoding' for classification use cases.
 #' @param TransformNumericColumns Transform numeric column inside the AutoCatBoostRegression() function
 #' @param SplitRatios Supply vector of partition ratios. For example, c(0.70,0.20,0,10).
 #' @param TreeMethod Set to hist or gpu_hist depending on if you have an xgboost installation capable of gpu processing
@@ -62,6 +63,7 @@
 #'    IDcols = NULL,
 #'
 #'    # options
+#'    EncodingMethod = "binary",
 #'    TransformNumericColumns = NULL,
 #'    SplitRatios = c(0.70, 0.20, 0.10),
 #'    ReturnModelObjects = TRUE,
@@ -107,6 +109,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
                                    TargetColumnName = NULL,
                                    FeatureColNames = NULL,
                                    IDcols = NULL,
+                                   EncodingMethod = "binary",
                                    TransformNumericColumns = NULL,
                                    SplitRatios = c(0.70, 0.20, 0.10),
                                    SaveModelObjects = FALSE,
@@ -365,6 +368,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
 
       # options----
       ReturnModelObjects = TRUE,
+      EncodingMethod = EncodingMethod,
       ReturnFactorLevels = TRUE,
       Verbose = 1L,
       NumOfParDepPlots = NumOfParDepPlots,
@@ -411,6 +415,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
       model_path = Paths,
       metadata_path = MetaDataPaths,
       ModelID = ModelID,
+      EncodingMethod = EncodingMethod,
 
       # options----
       ReturnModelObjects = TRUE,
@@ -478,6 +483,8 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
   # Model Scoring----
   if(!TrainOnFull) {
     TestData <- AutoXGBoostScoring(
+      ReturnShapValues = FALSE,
+      EncodingMethod = EncodingMethod,
       TargetType = TargetType,
       ScoringData = TestData,
       FeatureColumnNames = FeatureNames,
@@ -597,6 +604,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           ReturnModelObjects = ReturnModelObjects,
           SaveModelObjects = SaveModelObjects,
           Verbose = 1L,
+          EncodingMethod = EncodingMethod,
 
           # Data arguments
           data = trainBucket,
@@ -651,6 +659,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           FeatureColumnNames = FeatureNames,
           IDcols = IDcolsModified,
           FactorLevelsList = FactorLevelsList,
+          EncodingMethod = EncodingMethod,
           OneHot = FALSE,
           ModelObject = RegressionModel,
           ModelPath = Paths,
