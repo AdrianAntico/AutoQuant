@@ -307,17 +307,20 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
-        prediction_type = "Probability"))
+        prediction_type = "Probability",
+        thread_count = -1L))
   } else if(TargetType == "multiclass") {
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
-        prediction_type = "Class"),
+        prediction_type = "Class",
+        thread_count = -1L),
       catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
-        prediction_type = "Probability")))
+        prediction_type = "Probability",
+        thread_count = -1L)))
   }
 
   # Create ShapValues ----
