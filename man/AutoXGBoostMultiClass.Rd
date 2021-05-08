@@ -64,7 +64,7 @@ AutoXGBoostMultiClass(
 
 \item{LossFunction}{'multi:softmax'}
 
-\item{EncodingMethod}{Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert'}
+\item{EncodingMethod}{Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{ReturnFactorLevels}{TRUE or FALSE. Set to FALSE to not return factor levels.}
 

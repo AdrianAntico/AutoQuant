@@ -1389,6 +1389,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   FeatureColNames = names(data)[!names(data) %in%
                                   c("IDcol_1", "IDcol_2","Adrian")],
   IDcols = c("IDcol_1","IDcol_2"),
+  EncodingMethod = "binary",
   TransformNumericColumns = NULL,
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
               "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
@@ -1943,6 +1944,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
   TargetColumnName = "Adrian",
   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
   IDcols = c("IDcol_1","IDcol_2"),
+  EncodingMethod = "binary",
   
   # Model evaluation
   LossFunction = 'reg:logistic',
@@ -2463,6 +2465,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
   TargetColumnName = "Adrian",
   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
   IDcols = c("IDcol_1","IDcol_2"),
+  EncodingMethod = "binary",
   
   # Model evaluation args
   eval_metric = "merror",
@@ -3556,6 +3559,7 @@ XGBoostResults <- AutoXGBoostCARMA(
   SplitRatios = c(1 - 10 / 138, 10 / 138),
   PartitionType = "timeseries",
   AnomalyDetection = NULL,
+  EncodingMethod = "binary",
 
   # Productionize
   FC_Periods = 0,
