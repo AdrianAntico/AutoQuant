@@ -575,37 +575,6 @@ XGBoostDataPrep <- function(ModelType = "regression",
       }
     }
 
-    # MultiClass Obtain Unique Target Levels
-    if(!is.null(TestData.)) {
-      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-    } else if(!TrainOnFull.) {
-      temp <- data.table::rbindlist(list(dataTrain, dataTest))
-    } else {
-      temp <- dataTrain
-    }
-    TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName.)]])))
-    data.table::setnames(TargetLevels, "V1", "OriginalLevels")
-    TargetLevels[, NewLevels := 0L:(.N - 1L)]
-    if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., "_TargetLevels.csv")))
-
-    # Number of levels
-    NumLevels <- TargetLevels[, .N]
-
-    # MultiClass Convert Target to Numeric Factor
-    dataTrain <- merge(dataTrain, TargetLevels, by.x = eval(TargetColumnName.), by.y = "OriginalLevels", all = FALSE)
-    dataTrain[, paste0(TargetColumnName.) := NewLevels]
-    dataTrain[, NewLevels := NULL]
-    if(!TrainOnFull.) {
-      dataTest <- merge(dataTest, TargetLevels, by.x = eval(TargetColumnName.), by.y = "OriginalLevels", all = FALSE)
-      dataTest[, paste0(TargetColumnName.) := NewLevels]
-      dataTest[, NewLevels := NULL]
-      if(!is.null(TestData.)) {
-        TestData. <- merge(TestData., TargetLevels, by.x = eval(TargetColumnName.), by.y = "OriginalLevels", all = FALSE)
-        TestData.[, paste0(TargetColumnName.) := NewLevels]
-        TestData.[, NewLevels := NULL]
-      }
-    }
-
     # Dummify dataTrain Categorical Features
     if(!is.null(CatFeatures)) {
 
@@ -638,16 +607,35 @@ XGBoostDataPrep <- function(ModelType = "regression",
         }
       }
 
-      # Encode (cant do target style encoding yet. When possible, overwrite code with classification version)
+      # Encode
       if(EncodingMethod. == "binary") {
         temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
         IDcols. <- c(IDcols.,CatFeatures)
         FactorLevelsList <- temp$FactorLevelsList
         temp <- temp$data
+      } else if(EncodingMethod. %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
+        temp_train <- temp[ID_Factorizer == "TRAIN"]
+        temp1 <- RemixAutoML::CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
+        IDcols. <- c(IDcols.,CatFeatures)
+        FactorLevelsList <- temp1$FactorCompenents
+        temp_train <- temp1$data
+        if(!is.null(dataTest) && !is.null(TestData.)) {
+          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
+          temp_test <- temp[ID_Factorizer == "TEST"]
+          temp_other <- data.table::rbindlist(list(temp_validate, temp_test))
+          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
+          temp <- data.table::rbindlist(list(temp2,temp_train))
+        } else if(!is.null(dataTest)) {
+          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
+          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
+          temp <- data.table::rbindlist(list(temp2,temp_train))
+        } else {
+          temp <- temp_train
+        }
       } else {
         temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
         IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp$FactorLevelsList
+        FactorLevelsList <- temp$FactorCompenents
         temp <- temp$data
       }
 
@@ -661,6 +649,37 @@ XGBoostDataPrep <- function(ModelType = "regression",
       if(exists("TestData.") && !is.null(TestData.)) {
         TestData. <- temp[ID_Factorizer == "TEST"]
         data.table::set(TestData., j = "ID_Factorizer", value = NULL)
+      }
+    }
+
+    # MultiClass Obtain Unique Target Levels
+    if(!is.null(TestData.)) {
+      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
+    } else if(!TrainOnFull.) {
+      temp <- data.table::rbindlist(list(dataTrain, dataTest))
+    } else {
+      temp <- dataTrain
+    }
+    TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName.)]])))
+    data.table::setnames(TargetLevels, "V1", "OriginalLevels")
+    TargetLevels[, NewLevels := 0L:(.N - 1L)]
+    if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., "_TargetLevels.csv")))
+
+    # Number of levels
+    NumLevels <- TargetLevels[, .N]
+
+    # MultiClass Convert Target to Numeric Factor
+    dataTrain <- merge(dataTrain, TargetLevels, by.x = eval(TargetColumnName.), by.y = "OriginalLevels", all = FALSE)
+    dataTrain[, paste0(TargetColumnName.) := NewLevels]
+    dataTrain[, NewLevels := NULL]
+    if(!TrainOnFull.) {
+      dataTest <- merge(dataTest, TargetLevels, by.x = eval(TargetColumnName.), by.y = "OriginalLevels", all = FALSE)
+      dataTest[, paste0(TargetColumnName.) := NewLevels]
+      dataTest[, NewLevels := NULL]
+      if(!is.null(TestData.)) {
+        TestData. <- merge(TestData., TargetLevels, by.x = eval(TargetColumnName.), by.y = "OriginalLevels", all = FALSE)
+        TestData.[, paste0(TargetColumnName.) := NewLevels]
+        TestData.[, NewLevels := NULL]
       }
     }
 

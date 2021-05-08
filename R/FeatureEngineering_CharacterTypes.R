@@ -304,7 +304,6 @@ CategoricalEncoding <- function(data = NULL,
 
   # Args Check
   if(length(Method) > 1L) stop("You can only run one Method per function call.")
-  if(!any(ML_Type %chin% c("classification", "regression")) && Method == "credibility") stop("Must designate ML_Type to either 'classification' or 'regression' for Method 'credibility'")
 
   # Convert to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -468,8 +467,16 @@ CategoricalEncoding <- function(data = NULL,
 
       # Encode
       if(!Scoring) {
-        GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
-        data.table::setnames(GroupMean, "Mean", paste0(GroupValue, "_TargetEncode"))
+        if(ML_Type == "multiclass") {
+          GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
+          GroupMean[, paste0(GroupValue, "_TargetEncode") := N / sum(N), by = eval(TargetVariable)]
+          GroupMean <- data.table::dcast.data.table(data = GroupMean, formula = get(GroupValue) ~ get(TargetVariable), fun.aggregate = sum, value.var = paste0(GroupValue, "_TargetEncode"), fill = 0)
+          data.table::setnames(x = GroupMean, names(GroupMean), c(eval(GroupValue), paste0(GroupValue, "_TargetEncode_TargetLevel_", names(GroupMean)[-1L])))
+          data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+        } else {
+          GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
+          data.table::setnames(GroupMean, "Mean", paste0(GroupValue, "_TargetEncode"))
+        }
         if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_TargetEncode.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
         GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_TargetEncode.csv")))
@@ -480,7 +487,11 @@ CategoricalEncoding <- function(data = NULL,
       }
 
       # Merge back to data
-      data[GroupMean, paste0(GroupValue, "_TargetEncode") := get(paste0("i.", paste0(GroupValue, "_TargetEncode")))]
+      if(ML_Type == "multiclass") {
+        data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
+      } else {
+        data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
+      }
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
@@ -508,14 +519,27 @@ CategoricalEncoding <- function(data = NULL,
       if(!Scoring) {
 
         # Encode
-        GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
-        GroupMean[, paste0(GroupValue, "_WOE") := log(((1 / Mean) - 1) * (data[, sum(get(TargetVariable))] / sum(1-data[[eval(TargetVariable)]])))]
-        if(any(is.infinite(GroupMean[[paste0(GroupValue, "_WOE")]]))) {
-          data.table::set(GroupMean, i = which(is.infinite(GroupMean[[paste0(GroupValue, "_WOE")]])), j = paste0(GroupValue, "_WOE"), value = 0)
+        if(ML_Type == "multiclass") {
+          GroupMean <- data[, list(N = .N), by = c(eval(TargetVariable), eval(GroupValue))]
+          GroupMean[, N_Target := sum(N), by = c(eval(TargetVariable))]
+          GroupMean[, N_All := sum(N)]
+          GroupMean[, Mean := N / N_Target]
+          GroupMean[, paste0(GroupValue, "_WOE") := log(((1 / Mean) - 1) * ((N_Target / N_All) / (N_All / N_Target)))]
+          if(any(is.infinite(GroupMean[[paste0(GroupValue, "_WOE")]]))) {
+            data.table::set(GroupMean, i = which(is.infinite(GroupMean[[paste0(GroupValue, "_WOE")]])), j = paste0(GroupValue, "_WOE"), value = 0)
+          }
+          GroupMean <- data.table::dcast.data.table(data = GroupMean, formula = get(GroupValue) ~ get(TargetVariable), fun.aggregate = sum, value.var = paste0(GroupValue, "_WOE"), fill = 0)
+          data.table::setnames(x = GroupMean, names(GroupMean), c(eval(GroupValue), paste0(GroupValue, "_WOE_TargetLevel_", names(GroupMean)[-1L])))
+          data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+        } else {
+          GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
+          GroupMean[, paste0(GroupValue, "_WOE") := log(((1 / Mean) - 1) * (data[, sum(get(TargetVariable))] / sum(1-data[[eval(TargetVariable)]])))]
+          if(any(is.infinite(GroupMean[[paste0(GroupValue, "_WOE")]]))) {
+            data.table::set(GroupMean, i = which(is.infinite(GroupMean[[paste0(GroupValue, "_WOE")]])), j = paste0(GroupValue, "_WOE"), value = 0)
+          }
+          GroupMean[, ":=" (Mean = NULL)]
         }
-        GroupMean[, ":=" (Mean = NULL)]
         if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_WOE.csv")))
-
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
         GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_WOE.csv")))
         data.table::setkeyv(GroupMean, cols = eval(GroupValue))
@@ -525,7 +549,11 @@ CategoricalEncoding <- function(data = NULL,
       }
 
       # Merge back to data
-      data[GroupMean, eval(paste0(GroupValue, "_WOE")) := get(paste0("i.", paste0(GroupValue, "_WOE")))]
+      if(ML_Type == "multiclass") {
+        data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
+      } else {
+        data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
+      }
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
@@ -551,21 +579,37 @@ CategoricalEncoding <- function(data = NULL,
 
       # Encode
       if(!Scoring) {
-        GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
-        if(ML_Type == "classification") {
-          GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), N = .N, Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N), keyby = eval(GroupValue)]
-          PopVar <- (GrandMean * (1 - GrandMean)) / data[, .N]
-          GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
-          GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
-          GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
-        } else if(ML_Type == "regression") {
-          GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), Var_Group = var(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
-          PopVar <- data[, var(get(TargetVariable), na.rm = TRUE)]
-          GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
-          GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
-          GroupMean[, ":=" (Mean = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
+        if(ML_Type == "multiclass") {
+          GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
+          GroupMean[, GrandSum := sum(N)]
+          GroupMean[, TargetSum := sum(N), by = eval(TargetVariable)]
+          GroupMean[, TargetMean := TargetSum / GrandSum]
+          GroupMean[, TargetGroupMean := N / TargetSum]
+          GroupMean[, TargetVariance := TargetMean * (1 - TargetMean) / TargetSum]
+          GroupMean[, TargetGroupVariance := TargetGroupMean * (1 - TargetGroupMean) / N]
+          GroupMean[, Adj_Var_Group := TargetGroupVariance / (TargetGroupVariance + TargetVariance)]
+          GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * TargetGroupMean + Adj_Var_Group * TargetMean]
+          GroupMean[, (setdiff(names(GroupMean), c(paste0(GroupValue, "_Credibility"), TargetVariable, GroupValue))) := NULL]
+          GroupMean <- data.table::dcast.data.table(data = GroupMean, formula = get(GroupValue) ~ get(TargetVariable), fun.aggregate = sum, value.var = paste0(GroupValue, "_Credibility"), fill = 0)
+          data.table::setnames(x = GroupMean, names(GroupMean), c(eval(GroupValue), paste0(GroupValue, "_Credibility_TargetLevel_", names(GroupMean)[-1L])))
+          data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+        } else {
+          GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
+          if(ML_Type == "classification") {
+            GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), N = .N, Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N), keyby = eval(GroupValue)]
+            PopVar <- (GrandMean * (1 - GrandMean)) / data[, .N]
+            GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
+            GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
+            GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
+          } else if(ML_Type == "regression") {
+            GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), Var_Group = var(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
+            PopVar <- data[, var(get(TargetVariable), na.rm = TRUE)]
+            GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
+            GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
+            GroupMean[, ":=" (Mean = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
+          }
+          if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
         }
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
         GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
         data.table::setkeyv(GroupMean, cols = eval(GroupValue))
@@ -575,7 +619,11 @@ CategoricalEncoding <- function(data = NULL,
       }
 
       # Merge back to data
-      data[GroupMean, eval(paste0(GroupValue, "_Credibility")) := get(paste0("i.", paste0(GroupValue, "_Credibility")))]
+      if(ML_Type == "multiclass") {
+        data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
+      } else {
+        data[GroupMean, (eval(names(GroupMean)[-1L])) := get(paste0("i.", names(GroupMean)[-1L]))]
+      }
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
@@ -605,10 +653,23 @@ CategoricalEncoding <- function(data = NULL,
       if(!Scoring) {
 
         # Encode
-        GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
-        GroupMean <- data[, list(Mean = sum(get(TargetVariable), na.rm = TRUE), N = .N), keyby = eval(GroupValue)]
-        GroupMean[, paste0(GroupValue, "_Mest") := (Mean + GrandMean) / N]
-        GroupMean[, ":=" (Mean = NULL, N = NULL)]
+        if(ML_Type == "multiclass") {
+          GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
+          GroupMean[, GrandSum := sum(N)]
+          GroupMean[, TargetSum := sum(N), by = eval(TargetVariable)]
+          GroupMean[, TargetMean := TargetSum / GrandSum]
+          GroupMean[, TargetGroupMean := N / TargetSum]
+          GroupMean[, paste0(GroupValue, "_Mest") := (TargetGroupMean + TargetMean) / N]
+          GroupMean[, (setdiff(names(GroupMean), c(paste0(GroupValue, "_Mest"), TargetVariable, GroupValue))) := NULL]
+          GroupMean <- data.table::dcast.data.table(data = GroupMean, formula = get(GroupValue) ~ get(TargetVariable), fun.aggregate = sum, value.var = paste0(GroupValue, "_Mest"), fill = 0)
+          data.table::setnames(x = GroupMean, names(GroupMean), c(eval(GroupValue), paste0(GroupValue, "_Mest_TargetLevel_", names(GroupMean)[-1L])))
+          data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+        } else {
+          GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
+          GroupMean <- data[, list(Mean = sum(get(TargetVariable), na.rm = TRUE), N = .N), keyby = eval(GroupValue)]
+          GroupMean[, paste0(GroupValue, "_Mest") := (Mean + GrandMean) / N]
+          GroupMean[, ":=" (Mean = NULL, N = NULL)]
+        }
         if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Mest.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
         GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Mest.csv")))
@@ -619,7 +680,11 @@ CategoricalEncoding <- function(data = NULL,
       }
 
       # Merge back to data
-      data[GroupMean, eval(paste0(GroupValue, "_Mest")) := get(paste0("i.", paste0(GroupValue, "_Mest")))]
+      if(ML_Type == "mutliclass") {
+        data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
+      } else {
+        data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
+      }
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
