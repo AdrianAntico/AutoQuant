@@ -450,7 +450,7 @@ AutoXGBoostCARMA <- function(data,
     Step1SCore <- data.table::copy(data)
   }
 
-  # Define Target and Features ----
+  # Define ML args  ----
   if(DebugMode) print("Define ML args ----")
   Output <- CarmaFeatures(data.=data, train.=train, XREGS.=XREGS, Difference.=Difference, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, GroupVariables.=GroupVariables)
   ModelFeatures <- Output$ModelFeatures
@@ -458,11 +458,13 @@ AutoXGBoostCARMA <- function(data,
 
   # Machine Learning: Build Model ----
   if(DebugMode) options(warn = 0)
+  if(DebugMode) print("Machine Learning: Build Model")
   TestModel <- AutoXGBoostRegression(
 
     # GPU or CPU
     TreeMethod = TreeMethod,
     NThreads = NThreads,
+    DebugMode = DebugMode,
 
     # Metadata arguments
     model_path = getwd(),

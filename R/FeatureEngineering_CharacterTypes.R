@@ -800,3 +800,100 @@ DummyVariables <- function(data,
   # Return
   return(list(data = data, ArgsList = ArgsList))
 }
+
+#' @param RunMode 'train' or 'score'
+#' @param ModelType 'classification', 'regression', 'multiclass'
+#' @param ArgsList NULL
+#' @param TrainData Must supply data.table
+#' @param ValidationData Optional
+#' @param TestData Optional
+#' @param TargetVariableName Column name
+#' @param CategoricalVariableNames Column names
+#' @param EncodeMethod Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
+#' @param KeepCategoricalVariables Logical
+#' @param ReturnMetaData Logical
+#' @param MetaDataPath Supply a directory path or NULL
+#' @param MetaDataList Supply a metadata list or NULL
+#' @param ImputeMissingValue Supply a value or leave NULL to handle elsewhere
+#'
+#' @noRd
+EncodeCharacterVariables <- function(RunMode = 'train',
+                                     ModelType = "classification",
+                                     TrainData = NULL,
+                                     ValidationData = NULL,
+                                     TestData = NULL,
+                                     TargetVariableName = NULL,
+                                     CategoricalVariableNames = NULL,
+                                     EncodeMethod = NULL,
+                                     KeepCategoricalVariables = FALSE,
+                                     ReturnMetaData = FALSE,
+                                     MetaDataPath = NULL,
+                                     MetaDataList = NULL,
+                                     ImputeMissingValue = 0) {
+
+  # Change of variable
+  if(RunMode != 'train') Score <- TRUE else Score <- FALSE
+
+  # Prepare data
+  if(!is.null(ValidationData) && !is.null(TestData)) {
+    data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
+    data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
+    data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
+    temp <- data.table::rbindlist(list(TrainData, ValidationData, TestData))
+  } else if(!is.null(ValidationData)) {
+    data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
+    data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
+    temp <- data.table::rbindlist(list(TrainData, ValidationData))
+  } else {
+    data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
+    temp <- TrainData
+  }
+
+  # Encode
+  if(EncodeMethod == "binary") {
+    temp <- DummifyDT(data=temp, cols=CategoricalVariableNames, KeepFactorCols=KeepCategoricalVariables, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=ReturnMetaData, SavePath=MetaDataPath, ImportFactorLevels=FALSE, FactorLevelsList=MetaDataList)
+    MetaData <- temp$FactorLevelsList
+    temp <- temp$data
+  } else if(EncodeMethod %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
+    temp_train <- temp[ID_Factorizer == "TRAIN"]
+    temp1 <- CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=ReturnMetaData, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+    MetaData <- temp1$FactorCompenents
+    temp_train <- temp1$data
+    if(!is.null(ValidationData) && !is.null(TestData)) {
+      temp_validate <- temp[ID_Factorizer == "VALIDATE"]
+      temp_test <- temp[ID_Factorizer == "TEST"]
+      temp_other <- data.table::rbindlist(list(temp_validate, temp_test))
+      temp2 <- CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+      temp <- data.table::rbindlist(list(temp2,temp_train))
+    } else if(!is.null(ValidationData)) {
+      temp_validate <- temp[ID_Factorizer == "VALIDATE"]
+      temp2 <- CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+      temp <- data.table::rbindlist(list(temp2,temp_train))
+    } else {
+      temp <- temp_train
+    }
+  } else {
+    temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=ReturnMetaData, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+    MetaData <- temp$FactorCompenents
+    temp <- temp$data
+  }
+
+  # Finalize data
+  TrainData <- temp[ID_Factorizer == "TRAIN"]
+  data.table::set(TrainData, j = "ID_Factorizer", value = NULL)
+  if(!is.null(ValidationData)) {
+    ValidationData <- temp[ID_Factorizer == "VALIDATE"]
+    data.table::set(ValidationData, j = "ID_Factorizer", value = NULL)
+  }
+  if(!is.null(TestData)) {
+    TestData <- temp[ID_Factorizer == "TEST"]
+    data.table::set(TestData, j = "ID_Factorizer", value = NULL)
+  }
+
+  # Return
+  return(list(
+    TrainData = TrainData,
+    ValidationData = ValidationData,
+    TestData = TestData,
+    MetaData = if(exists("MetaData")) MetaData else NULL))
+}

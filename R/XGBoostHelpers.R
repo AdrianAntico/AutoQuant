@@ -96,9 +96,11 @@ XGBoostDataPrep <- function(ModelType = "regression",
   if(!identical(numeric(0), CatFeatures)) {
     CatFeatures <- names(data.)[CatFeatures]
     CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols.]
-  } else {
-    if(length(CatFeatures) == 0L) CatFeatures <- NULL
+  } else if(length(CatFeatures) == 0L) {
+    CatFeatures <- NULL
   }
+
+  # Target var management
   if(ModelType == "multiclass") CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
 
   # Classification
@@ -121,7 +123,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
     # Data Subset Columns Needed ----
     keep <- c(TargetColumnName., FeatureColNames.)
     dataTrain <- data.[, ..keep]
-    if(!TrainOnFull.) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
+    if(!is.null(ValidationData.)) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
 
     # TestData Subset Columns Needed ----
     if(!is.null(TestData.)) {
@@ -132,82 +134,12 @@ XGBoostDataPrep <- function(ModelType = "regression",
       TestData. <- NULL
     }
 
-    # Dummify dataTrain Categorical Features
-    if(!is.null(CatFeatures)) {
-
-      # Prepare data
-      if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-        data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-      } else if(!is.null(dataTest)) {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull.) {
-          data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-          if(!is.null(TestData.)) {
-            data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-          } else {
-            temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          }
-        } else {
-          temp <- dataTrain
-        }
-      } else {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull.) {
-          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
-          temp <- data.table::rbindlist(list(dataTrain, dataTest))
-        } else {
-          temp <- dataTrain
-        }
-      }
-
-      # Encode
-      if(EncodingMethod. == "binary") {
-        temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp$FactorLevelsList
-        temp <- temp$data
-      } else if(EncodingMethod. %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
-        temp_train <- temp[ID_Factorizer == "TRAIN"]
-        temp1 <- RemixAutoML::CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp1$FactorCompenents
-        temp_train <- temp1$data
-        if(!is.null(dataTest) && !is.null(TestData.)) {
-          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
-          temp_test <- temp[ID_Factorizer == "TEST"]
-          temp_other <- data.table::rbindlist(list(temp_validate, temp_test))
-          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
-          temp <- data.table::rbindlist(list(temp2,temp_train))
-        } else if(!is.null(dataTest)) {
-          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
-          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
-          temp <- data.table::rbindlist(list(temp2,temp_train))
-        } else {
-          temp <- temp_train
-        }
-      } else {
-        temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp$FactorCompenents
-        temp <- temp$data
-      }
-
-      # Finalize data
-      dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-      if(exists("dataTest") && !is.null(dataTest)) {
-        dataTest <- temp[ID_Factorizer == "VALIDATE"]
-        data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-      }
-      if(exists("TestData.") && !is.null(TestData.)) {
-        TestData. <- temp[ID_Factorizer == "TEST"]
-        data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-      }
-    }
+    # Dummify dataTrain Categorical Features ----
+    Output <- RemixAutoML:::EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+    dataTrain <- Output$TrainData; Output$TrainData <- NULL
+    dataTest <- Output$ValidationData; Output$ValidationData <- NULL
+    TestData. <- Output$TestData.; Output$TestData. <- NULL
+    FactorLevelsList <- Output$MetaData; rm(Output)
 
     # Save Names of data
     if(is.numeric(FeatureColNames.)) {
@@ -237,7 +169,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
 
     # Initialize xgboost Data Conversion
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
-    if(!TrainOnFull.) datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
+    if(!is.null(dataTest)) datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
     if(!is.null(TestData.)) {
       datatest <- xgboost::xgb.DMatrix(as.matrix(TestData.), label = FinalTestTarget)
       EvalSets <- list(train = datavalidate, test = datatest)
@@ -379,19 +311,11 @@ XGBoostDataPrep <- function(ModelType = "regression",
     if(!is.null(TestData.)) {
       if(is.numeric(FeatureColNames.) || is.integer(FeatureColNames.)) {
         keep1 <- names(TestData.)[c(FeatureColNames.)]
-        if(!is.null(IDcols.)) {
-          keep <- c(IDcols., keep1, TargetColumnName.)
-        } else {
-          keep <- c(keep1, TargetColumnName.)
-        }
+        if(!is.null(IDcols.)) keep <- c(IDcols., keep1, TargetColumnName.) else keep <- c(keep1, TargetColumnName.)
         TestData. <- TestData.[, ..keep]
       } else {
         keep1 <- c(FeatureColNames.)
-        if(!is.null(IDcols.)) {
-          keep <- c(IDcols., FeatureColNames., TargetColumnName.)
-        } else {
-          keep <- c(FeatureColNames., TargetColumnName.)
-        }
+        if(!is.null(IDcols.)) keep <- c(IDcols., FeatureColNames., TargetColumnName.) else keep <- c(FeatureColNames., TargetColumnName.)
         TestData. <- TestData.[, ..keep]
       }
       if(!is.null(IDcols.)) {
@@ -403,82 +327,12 @@ XGBoostDataPrep <- function(ModelType = "regression",
       }
     }
 
-    # Dummify dataTrain Categorical Features
-    if(!is.null(CatFeatures)) {
-
-      # Prepare data
-      if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-        data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-      } else if(!is.null(dataTest)) {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull.) {
-          data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-          if(!is.null(TestData.)) {
-            data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-          } else {
-            temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          }
-        } else {
-          temp <- dataTrain
-        }
-      } else {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull.) {
-          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
-          temp <- data.table::rbindlist(list(dataTrain, dataTest))
-        } else {
-          temp <- dataTrain
-        }
-      }
-
-      # Encode
-      if(EncodingMethod. == "binary") {
-        temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp$FactorLevelsList
-        temp <- temp$data
-      } else if(EncodingMethod. %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
-        temp_train <- temp[ID_Factorizer == "TRAIN"]
-        temp1 <- RemixAutoML::CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp1$FactorCompenents
-        temp_train <- temp1$data
-        if(!is.null(dataTest) && !is.null(TestData.)) {
-          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
-          temp_test <- temp[ID_Factorizer == "TEST"]
-          temp_other <- data.table::rbindlist(list(temp_validate, temp_test))
-          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
-          temp <- data.table::rbindlist(list(temp2,temp_train))
-        } else if(!is.null(dataTest)) {
-          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
-          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
-          temp <- data.table::rbindlist(list(temp2,temp_train))
-        } else {
-          temp <- temp_train
-        }
-      } else {
-        temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp$FactorCompenents
-        temp <- temp$data
-      }
-
-      # Finalize data
-      dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-      if(exists("dataTest") && !is.null(dataTest)) {
-        dataTest <- temp[ID_Factorizer == "VALIDATE"]
-        data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-      }
-      if(exists("TestData.") && !is.null(TestData.)) {
-        TestData. <- temp[ID_Factorizer == "TEST"]
-        data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-      }
-    }
+    # Dummify dataTrain Categorical Features ----
+    Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+    dataTrain <- Output$TrainData; Output$TrainData <- NULL
+    dataTest <- Output$ValidationData; Output$ValidationData <- NULL
+    TestData. <- Output$TestData.; Output$TestData. <- NULL
+    FactorLevelsList <- Output$MetaData; rm(Output)
 
     # Regression Save Names of data
     if(is.numeric(FeatureColNames.)) {
@@ -498,14 +352,14 @@ XGBoostDataPrep <- function(ModelType = "regression",
 
     # Regression Subset Target Variables
     TrainTarget <- dataTrain[, get(TargetColumnName.)]
-    if(!TrainOnFull.) {
+    if(!is.null(dataTest)) {
       TestTarget <- dataTest[, get(TargetColumnName.)]
       if(!is.null(TestData.)) FinalTestTarget <- TestData.[, get(TargetColumnName.)]
     }
 
     # Regression Remove Target Variable from Feature Data
     data.table::set(dataTrain, j = TargetColumnName., value = NULL)
-    if(!TrainOnFull.) data.table::set(dataTest, j = TargetColumnName., value = NULL)
+    if(!is.null(dataTest)) data.table::set(dataTest, j = TargetColumnName., value = NULL)
     if(!is.null(TestData.)) data.table::set(TestData., j = TargetColumnName., value = NULL)
 
     # Regression Initialize Catboost Data Conversion
@@ -530,7 +384,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
   if(ModelType == "multiclass") {
 
     # MultiClass Data Partition
-    if(is.null(ValidationData.) && is.null(TestData.) && TrainOnFull. == FALSE) {
+    if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
       dataSets <- AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
@@ -548,11 +402,11 @@ XGBoostDataPrep <- function(ModelType = "regression",
       keep1 <- names(data.)[c(FeatureColNames.)]
       keep <- c(keep1, TargetColumnName.)
       dataTrain <- data.[, ..keep]
-      if(!TrainOnFull.) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
+      if(!is.null(ValidationData.)) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
     } else if(!TrainOnFull.) {
       keep <- c(FeatureColNames., TargetColumnName.)
       dataTrain <- data.[, ..keep]
-      if(!TrainOnFull.) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
+      if(!is.null(ValidationData.)) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
     }
 
     # MultiClass TestData Subset Columns Needed
@@ -575,87 +429,17 @@ XGBoostDataPrep <- function(ModelType = "regression",
       }
     }
 
-    # Dummify dataTrain Categorical Features
-    if(!is.null(CatFeatures)) {
-
-      # Prepare data
-      if(!is.null(dataTest) && !is.null(TestData.) && !TrainOnFull.) {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-        data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-        temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-      } else if(!is.null(dataTest)) {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull.) {
-          data.table::set(dataTest, j = "ID_Factorizer", value = "VALIDATE")
-          if(!is.null(TestData.)) {
-            data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-            temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-          } else {
-            temp <- data.table::rbindlist(list(dataTrain, dataTest))
-          }
-        } else {
-          temp <- dataTrain
-        }
-      } else {
-        data.table::set(dataTrain, j = "ID_Factorizer", value = "TRAIN")
-        if(!TrainOnFull.) {
-          data.table::set(dataTest,j = "ID_Factorizer",value = "TRAIN")
-          temp <- data.table::rbindlist(list(dataTrain, dataTest))
-        } else {
-          temp <- dataTrain
-        }
-      }
-
-      # Encode
-      if(EncodingMethod. == "binary") {
-        temp <- DummifyDT(data=temp, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=TRUE, SavePath=model_path., ImportFactorLevels=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp$FactorLevelsList
-        temp <- temp$data
-      } else if(EncodingMethod. %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
-        temp_train <- temp[ID_Factorizer == "TRAIN"]
-        temp1 <- RemixAutoML::CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp1$FactorCompenents
-        temp_train <- temp1$data
-        if(!is.null(dataTest) && !is.null(TestData.)) {
-          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
-          temp_test <- temp[ID_Factorizer == "TEST"]
-          temp_other <- data.table::rbindlist(list(temp_validate, temp_test))
-          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
-          temp <- data.table::rbindlist(list(temp2,temp_train))
-        } else if(!is.null(dataTest)) {
-          temp_validate <- temp[ID_Factorizer == "VALIDATE"]
-          temp2 <- RemixAutoML::CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
-          temp <- data.table::rbindlist(list(temp2,temp_train))
-        } else {
-          temp <- temp_train
-        }
-      } else {
-        temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CatFeatures, TargetVariable=TargetColumnName., Method=EncodingMethod., SavePath=model_path., Scoring=FALSE, ImputeValueScoring=0, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
-        IDcols. <- c(IDcols.,CatFeatures)
-        FactorLevelsList <- temp$FactorCompenents
-        temp <- temp$data
-      }
-
-      # Finalize data
-      dataTrain <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(dataTrain, j = "ID_Factorizer", value = NULL)
-      if(exists("dataTest") && !is.null(dataTest)) {
-        dataTest <- temp[ID_Factorizer == "VALIDATE"]
-        data.table::set(dataTest, j = "ID_Factorizer", value = NULL)
-      }
-      if(exists("TestData.") && !is.null(TestData.)) {
-        TestData. <- temp[ID_Factorizer == "TEST"]
-        data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-      }
-    }
+    # Dummify dataTrain Categorical Features ----
+    Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+    dataTrain <- Output$TrainData; Output$TrainData <- NULL
+    dataTest <- Output$ValidationData; Output$ValidationData <- NULL
+    TestData. <- Output$TestData.; Output$TestData. <- NULL
+    FactorLevelsList <- Output$MetaData; rm(Output)
 
     # MultiClass Obtain Unique Target Levels
-    if(!is.null(TestData.)) {
+    if(!is.null(dataTest) && !is.null(TestData.)) {
       temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-    } else if(!TrainOnFull.) {
+    } else if(!is.null(dataTest)) {
       temp <- data.table::rbindlist(list(dataTrain, dataTest))
     } else {
       temp <- dataTrain
@@ -672,7 +456,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
     dataTrain <- merge(dataTrain, TargetLevels, by.x = eval(TargetColumnName.), by.y = "OriginalLevels", all = FALSE)
     dataTrain[, paste0(TargetColumnName.) := NewLevels]
     dataTrain[, NewLevels := NULL]
-    if(!TrainOnFull.) {
+    if(!is.null(dataTest)) {
       dataTest <- merge(dataTest, TargetLevels, by.x = eval(TargetColumnName.), by.y = "OriginalLevels", all = FALSE)
       dataTest[, paste0(TargetColumnName.) := NewLevels]
       dataTest[, NewLevels := NULL]
@@ -701,17 +485,17 @@ XGBoostDataPrep <- function(ModelType = "regression",
 
     # MultiClass Subset Target Variables----
     TrainTarget <- dataTrain[, get(TargetColumnName.)]
-    if(!TrainOnFull.) TestTarget <- dataTest[, get(TargetColumnName.)]
+    if(!is.null(dataTest)) TestTarget <- dataTest[, get(TargetColumnName.)]
     if(!is.null(TestData.)) FinalTestTarget <- TestData.[, get(TargetColumnName.)]
 
     # MultiClass Remove Target Variable from Feature Data
     dataTrain[, eval(TargetColumnName.) := NULL]
-    if(!TrainOnFull.) dataTest[, eval(TargetColumnName.) := NULL]
+    if(!is.null(dataTest)) dataTest[, eval(TargetColumnName.) := NULL]
     if(!is.null(TestData.)) TestData.[, eval(TargetColumnName.) := NULL]
 
-    # MultiClass Initialize XGBoost Data Conversion----
+    # MultiClass Initialize XGBoost Data Conversion ----
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
-    if(!TrainOnFull.) {
+    if(!is.null(dataTest)) {
       datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
       if(!is.null(TestData.)) {
         datatest <- xgboost::xgb.DMatrix(as.matrix(TestData.), label = FinalTestTarget)
@@ -993,63 +777,58 @@ XGBoostValidation <- function(ModelType. = "classifier",
                               data. = NULL) {
 
   if(ModelType. %chin% c("regression","classifier")) {
+
+    # Validation and Shaps
     if(!is.null(TestData.)) {
       ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., p1 = predict.))
-      if(ModelType. == "regression") {
-        data.table::setnames(ValidationData, c("Target","p1"), c(TargetColumnName., "Predict"))
-      } else {
-        data.table::setnames(ValidationData, "Target", TargetColumnName.)
-      }
       ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
     } else if(!TrainOnFull. || (!is.null(TestTarget.) && !is.null(dataTest.))) {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., p1 = predict.))
-      if(ModelType. == "regression") {
-        data.table::setnames(ValidationData, c("Target","p1"), c(TargetColumnName., "Predict"))
-      } else {
-        data.table::setnames(ValidationData, "Target", TargetColumnName.)
-      }
       ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., dataTrain., p1 = predict.))
-      if(ModelType. == "regression") {
-        data.table::setnames(ValidationData, c("Target","p1"), c(TargetColumnName., "Predict"))
-      } else {
-        data.table::setnames(ValidationData, "Target", TargetColumnName.)
-      }
       ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTrain.), model = model., features = names(dataTrain.))$shap_contrib)
     }
 
-    # Transformation
+    # Update names Validation Data
     if(ModelType. == "regression") {
-      if(!is.null(TransformNumericColumns.)) {
-        if(GridTune.) TransformationResults. <- TransformationResults.[ColumnName != "Predict"]
-
-        # Combine transform metadata
-        TransformationResults. <- data.table::rbindlist(list(
-          TransformationResults.,
-          data.table::data.table(
-            ColumnName = "Predict",
-            MethodName = rep(TransformationResults.[ColumnName == eval(TargetColumnName.), MethodName], 1L),
-            Lambda = rep(TransformationResults.[ColumnName == eval(TargetColumnName.), Lambda], 1L),
-            NormalizedStatistics = rep(0, 1))))
-
-        # Model output
-        if(length(unique(TransformationResults.[["ColumnName"]])) != nrow(TransformationResults.)) {
-          temp <- TransformationResults.[, .N, by = "ColumnName"][N != 1L][[1L]]
-          temp1 <- which(names(ValidationData) == temp)[1L]
-          ValidationData[, eval(names(data.)[temp1]) := NULL]
-          TransformationResults. <- TransformationResults.[, ID := 1L:.N][ID != which(TransformationResults.[["ID"]] == temp1)][, ID := NULL]
-        }
-
-        # Transform Target and Predicted Value ----
-        ValidationData <- AutoTransformationScore(
-          ScoringData = ValidationData,
-          Type = "Inverse",
-          FinalResults = TransformationResults.,
-          TransID = NULL,
-          Path = NULL)
-      }
+      data.table::setnames(ValidationData, c("Target","p1"), c(TargetColumnName., "Predict"))
+    } else {
+      data.table::setnames(ValidationData, "Target", TargetColumnName.)
     }
+
+    # Transformation
+    if(ModelType. == "regression" && !is.null(TransformNumericColumns.)) {
+
+      # Update
+      if(GridTune.) TransformationResults. <- TransformationResults.[ColumnName != "Predict"]
+
+      # Combine transform metadata
+      TransformationResults. <- data.table::rbindlist(list(
+        TransformationResults.,
+        data.table::data.table(
+          ColumnName = "Predict",
+          MethodName = rep(TransformationResults.[ColumnName == eval(TargetColumnName.), MethodName], 1L),
+          Lambda = rep(TransformationResults.[ColumnName == eval(TargetColumnName.), Lambda], 1L),
+          NormalizedStatistics = rep(0, 1))))
+
+      # Model output
+      if(length(unique(TransformationResults.[["ColumnName"]])) != nrow(TransformationResults.)) {
+        temp <- TransformationResults.[, .N, by = "ColumnName"][N != 1L][[1L]]
+        temp1 <- which(names(ValidationData) == temp)[1L]
+        ValidationData[, eval(names(data.)[temp1]) := NULL]
+        TransformationResults. <- TransformationResults.[, ID := 1L:.N][ID != which(TransformationResults.[["ID"]] == temp1)][, ID := NULL]
+      }
+
+      # Transform Target and Predicted Value ----
+      ValidationData <- AutoTransformationScore(
+        ScoringData = ValidationData,
+        Type = "Inverse",
+        FinalResults = TransformationResults.,
+        TransID = NULL,
+        Path = NULL)
+    }
+
   } else if(ModelType. == "multiclass") {
     if(LossFunction. == "multi:softprob") {
       if(!is.null(TestData.)) {
