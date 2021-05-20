@@ -5,7 +5,8 @@
 \title{AutoH2oGAMMultiClass}
 \usage{
 AutoH2oGAMMultiClass(
-  data,
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -16,7 +17,7 @@ AutoH2oGAMMultiClass(
   eval_metric = "logloss",
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1000000)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
   model_path = NULL,
   metadata_path = NULL,
@@ -48,6 +49,8 @@ AutoH2oGAMMultiClass(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
@@ -145,46 +148,47 @@ GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
-   data,
-   TrainOnFull = FALSE,
-   ValidationData = NULL,
-   TestData = NULL,
-   TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
-   WeightsColumn = NULL,
-   GamColNames = GamCols,
-   eval_metric = "logloss",
-   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-   NThreads = max(1, parallel::detectCores()-2),
-   model_path = normalizePath("./"),
-   metadata_path = NULL,
-   ModelID = "FirstModel",
-   ReturnModelObjects = TRUE,
-   SaveModelObjects = FALSE,
-   IfSaveModel = "mojo",
-   H2OShutdown = FALSE,
-   H2OStartUp = TRUE,
-   DebugMode = FALSE,
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumn = NULL,
+  GamColNames = GamCols,
+  eval_metric = "logloss",
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
+  H2OShutdown = FALSE,
+  H2OStartUp = TRUE,
+  DebugMode = FALSE,
 
-   # ML args
-   num_knots = NULL,
-   keep_gam_cols = TRUE,
-   GridTune = FALSE,
-   GridStrategy = "Cartesian",
-   StoppingRounds = 10,
-   MaxRunTimeSecs = 3600 * 24 * 7,
-   MaxModelsInGrid = 10,
-   Distribution = "multinomial",
-   Link = "Family_Default",
-   Solver = "AUTO",
-   Alpha = 0.5,
-   Lambda = NULL,
-   LambdaSearch = FALSE,
-   NLambdas = -1,
-   Standardize = TRUE,
-   RemoveCollinearColumns = FALSE,
-   InterceptInclude = TRUE,
-   NonNegativeCoefficients = FALSE)
+  # ML args
+  num_knots = NULL,
+  keep_gam_cols = TRUE,
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 10,
+  Distribution = "multinomial",
+  Link = "Family_Default",
+  Solver = "AUTO",
+  Alpha = 0.5,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 }
 }
 \seealso{

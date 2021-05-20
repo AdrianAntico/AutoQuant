@@ -6,7 +6,6 @@
 \usage{
 AutoCatBoostVectorCARMA(
   data,
-  TimeWeights = NULL,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
   TrainOnFull = FALSE,
@@ -14,6 +13,7 @@ AutoCatBoostVectorCARMA(
   DateColumnName = "DateTime",
   HierarchGroups = NULL,
   GroupVariables = NULL,
+  TimeWeights = 1,
   FC_Periods = 30,
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
@@ -78,8 +78,6 @@ AutoCatBoostVectorCARMA(
 \arguments{
 \item{data}{Supply your full series data set here}
 
-\item{TimeWeights}{NULL or a value.}
-
 \item{NonNegativePred}{TRUE or FALSE}
 
 \item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
@@ -93,6 +91,8 @@ AutoCatBoostVectorCARMA(
 \item{HierarchGroups}{Vector of hierachy categorical columns.}
 
 \item{GroupVariables}{Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.}
+
+\item{TimeWeights}{NULL or a value.}
 
 \item{FC_Periods}{Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead}
 
@@ -248,11 +248,11 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
 
   # data args
   data = data, # TwoGroup_Data,
-  TimeWeights = NULL,
   TargetColumnName = c("Weekly_Sales","Weekly_Profit"),
   DateColumnName = "Date",
   HierarchGroups = NULL,
   GroupVariables = c("Store","Dept"),
+  TimeWeights = 1,
   TimeUnit = "weeks",
   TimeGroups = c("weeks","months"),
 

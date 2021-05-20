@@ -44,13 +44,15 @@ XGBoostArgsCheck <- function(GridTune.=GridTune,
 #' @family XGBoost Helpers
 #' @author Adrian Antico
 #'
-#' @param ModelType 'regression', 'vector', 'classification', or 'multiclass'
+#' @param OutputSelection. Passthrough
+#' @param ModelType 'regression', 'classification', or 'multiclass'
 #' @param data. Passthrough
 #' @param ValidationData. Passthrough
 #' @param TestData. Passthrough
 #' @param TargetColumnName. Passthrough
 #' @param FeatureColNames. Passthrough
 #' @param PrimaryDateColumn. Passthrough
+#' @param WeightsColumnName. Passthrough
 #' @param IDcols. Passthrough
 #' @param TransformNumericColumns. Passthrough regression
 #' @param Methods. Passthrough regression
@@ -65,13 +67,15 @@ XGBoostArgsCheck <- function(GridTune.=GridTune,
 #' @param EncodingMethod. Passthrough
 #'
 #' @noRd
-XGBoostDataPrep <- function(ModelType = "regression",
+XGBoostDataPrep <- function(OutputSelection. = NULL,
+                            ModelType = "regression",
                             data. = data,
                             ValidationData. = ValidationData,
                             TestData. = TestData,
                             TargetColumnName. = TargetColumnName,
                             FeatureColNames. = FeatureColNames,
-                            IDcols. = IDcols,
+                            WeightsColumnName. = NULL,
+                            IDcols. = NULL,
                             TransformNumericColumns. = TransformNumericColumns,
                             Methods. = Methods,
                             ModelID. = ModelID,
@@ -100,6 +104,15 @@ XGBoostDataPrep <- function(ModelType = "regression",
     CatFeatures <- NULL
   }
 
+  # Remove WeightsVector ----
+  if(!is.null(WeightsColumnName.)) {
+    WeightsVector <- data.[[eval(WeightsColumnName.)]]
+    data.table::set(data., j = WeightsColumnName., value = NULL)
+    if(!is.null(ValidationData.) && WeightsColumnName. %chin% names(ValidationData.)) data.table::set(ValidationData., j = WeightsColumnName., value = NULL)
+    if(!is.null(TestData.) && WeightsColumnName. %chin% names(TestData.)) data.table::set(TestData., j = WeightsColumnName., value = NULL)
+    FeatureColNames. <- FeatureColNames.[!FeatureColNames. %chin% WeightsColumnName.]
+  }
+
   # Target var management
   if(ModelType == "multiclass") CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
 
@@ -120,25 +133,28 @@ XGBoostDataPrep <- function(ModelType = "regression",
       TestData. <- dataSets$TestData
     }
 
-    # Data Subset Columns Needed ----
-    keep <- c(TargetColumnName., FeatureColNames.)
-    dataTrain <- data.[, ..keep]
-    if(!is.null(ValidationData.)) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
-
-    # TestData Subset Columns Needed ----
-    if(!is.null(TestData.)) {
-      TestMerge <- data.table::copy(TestData.)
-      TestData. <- TestData.[, ..keep]
+    # Classification data. Subset Columns Needed
+    if(!is.null(ValidationData.)) {
+      TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      dataTest <- ValidationData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      if(!is.null(TestData.)) {
+        TestMerge <- data.table::copy(TestData.)
+        TestData. <- TestData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      }
     } else {
-      TestMerge <- NULL
+      TrainMerge <- data.table::copy(data.)
+      dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      dataTest <- NULL
       TestData. <- NULL
+      TestMerge <- NULL
     }
 
     # Dummify dataTrain Categorical Features ----
     Output <- RemixAutoML:::EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
     dataTrain <- Output$TrainData; Output$TrainData <- NULL
     dataTest <- Output$ValidationData; Output$ValidationData <- NULL
-    TestData. <- Output$TestData.; Output$TestData. <- NULL
+    TestData. <- Output$TestData; Output$TestData. <- NULL
     FactorLevelsList <- Output$MetaData; rm(Output)
 
     # Save Names of data
@@ -189,7 +205,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
   if(ModelType == "regression") {
 
     # Transform data., ValidationData., and TestData.
-    if(!is.null(ValidationData.) && !is.null(TransformNumericColumns.)) {
+    if((TrainOnFull. || !is.null(ValidationData.)) && !is.null(TransformNumericColumns.)) {
       MeanTrainTarget <- data.[, mean(get(TargetColumnName.))]
       Output <- AutoTransformationCreate(
         data.,
@@ -202,12 +218,14 @@ XGBoostDataPrep <- function(ModelType = "regression",
       TransformationResults <- Output$FinalResults
 
       # Transform ValidationData.
-      ValidationData. <- AutoTransformationScore(
-        ScoringData = ValidationData.,
-        Type = "Apply",
-        FinalResults = TransformationResults,
-        TransID = NULL,
-        Path = NULL)
+      if(!is.null(ValidationData.)) {
+        ValidationData. <- AutoTransformationScore(
+          ScoringData = ValidationData.,
+          Type = "Apply",
+          FinalResults = TransformationResults,
+          TransID = NULL,
+          Path = NULL)
+      }
 
       # Transform TestData.
       if(!is.null(TestData.)) {
@@ -281,70 +299,35 @@ XGBoostDataPrep <- function(ModelType = "regression",
     }
 
     # Regression data. Subset Columns Needed
-    if((is.numeric(FeatureColNames.) || is.integer(FeatureColNames.)) && !TrainOnFull.) {
-      keep1 <- names(data.)[c(FeatureColNames.)]
-      keep <- c(keep1, TargetColumnName.)
-      TrainMerge <- data.table::copy(data.)
-      dataTrain <- data.[, ..keep]
-      ValidMerge <- data.table::copy(ValidationData.)
-      dataTest <- ValidationData.[, ..keep]
-    } else if((is.numeric(FeatureColNames.) || is.integer(FeatureColNames.)) && TrainOnFull.) {
-      keep1 <- names(data.)[c(FeatureColNames.)]
-      keep <- c(keep1, TargetColumnName.)
-      dataTrain <- data.[, ..keep]
-      TrainMerge <- data.table::copy(dataTrain)
-      dataTest <- NULL
-    } else if(!TrainOnFull.) {
-      keep <- c(FeatureColNames., TargetColumnName.)
-      dataTrain <- data.[, ..keep]
-      TrainMerge <- data.table::copy(dataTrain)
-      ValidMerge <- data.table::copy(ValidationData.)
-      dataTest <- ValidationData.[, ..keep]
+    if(!is.null(ValidationData.)) {
+      TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      dataTest <- ValidationData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      if(!is.null(TestData.)) {
+        TestMerge <- data.table::copy(TestData.)
+        TestData. <- TestData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      }
     } else {
-      keep <- c(FeatureColNames., TargetColumnName.)
-      dataTrain <- data.[, ..keep]
-      TrainMerge <- data.table::copy(dataTrain)
+      TrainMerge <- data.table::copy(data.)
+      dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
       dataTest <- NULL
-    }
-
-    # Regression TestData. Subset Columns Needed
-    if(!is.null(TestData.)) {
-      if(is.numeric(FeatureColNames.) || is.integer(FeatureColNames.)) {
-        keep1 <- names(TestData.)[c(FeatureColNames.)]
-        if(!is.null(IDcols.)) keep <- c(IDcols., keep1, TargetColumnName.) else keep <- c(keep1, TargetColumnName.)
-        TestData. <- TestData.[, ..keep]
-      } else {
-        keep1 <- c(FeatureColNames.)
-        if(!is.null(IDcols.)) keep <- c(IDcols., FeatureColNames., TargetColumnName.) else keep <- c(FeatureColNames., TargetColumnName.)
-        TestData. <- TestData.[, ..keep]
-      }
-      if(!is.null(IDcols.)) {
-        TestMerge <- data.table::copy(TestData.)
-        keep <- c(keep1, TargetColumnName.)
-        TestData. <- TestData.[, ..keep]
-      } else {
-        TestMerge <- data.table::copy(TestData.)
-      }
+      TestData. <- NULL
+      TestMerge <- NULL
     }
 
     # Dummify dataTrain Categorical Features ----
     Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
     dataTrain <- Output$TrainData; Output$TrainData <- NULL
     dataTest <- Output$ValidationData; Output$ValidationData <- NULL
-    TestData. <- Output$TestData.; Output$TestData. <- NULL
+    TestData. <- Output$TestData; Output$TestData. <- NULL
     FactorLevelsList <- Output$MetaData; rm(Output)
 
     # Regression Save Names of data
-    if(is.numeric(FeatureColNames.)) {
-      Names <- data.table::as.data.table(names(data.)[FeatureColNames.])
-      data.table::setnames(Names, "V1", "ColNames")
+    Names <- data.table::as.data.table(FeatureColNames.)
+    if(!"V1" %chin% names(Names)) {
+      data.table::setnames(Names, "FeatureColNames.", "ColNames")
     } else {
-      Names <- data.table::as.data.table(FeatureColNames.)
-      if(!"V1" %chin% names(Names)) {
-        data.table::setnames(Names, "FeatureColNames.", "ColNames")
-      } else {
-        data.table::setnames(Names, "V1", "ColNames")
-      }
+      data.table::setnames(Names, "V1", "ColNames")
     }
 
     # Save feature names
@@ -397,43 +380,28 @@ XGBoostDataPrep <- function(ModelType = "regression",
       TestData. <- dataSets$TestData
     }
 
-    # MultiClass data. Subset Columns Needed
-    if(is.numeric(FeatureColNames.) || is.integer(FeatureColNames.)) {
-      keep1 <- names(data.)[c(FeatureColNames.)]
-      keep <- c(keep1, TargetColumnName.)
-      dataTrain <- data.[, ..keep]
-      if(!is.null(ValidationData.)) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
-    } else if(!TrainOnFull.) {
-      keep <- c(FeatureColNames., TargetColumnName.)
-      dataTrain <- data.[, ..keep]
-      if(!is.null(ValidationData.)) dataTest <- ValidationData.[, ..keep] else dataTest <- NULL
-    }
-
-    # MultiClass TestData Subset Columns Needed
-    if(!is.null(TestData.)) {
-      if(is.numeric(FeatureColNames.) || is.integer(FeatureColNames.)) {
-        keep1 <- names(TestData.)[c(FeatureColNames.)]
-        if(!is.null(IDcols.)) keep <- c(IDcols., keep1, TargetColumnName.) else keep <- c(keep1, TargetColumnName.)
-        TestData. <- TestData.[, ..keep]
-      } else {
-        keep1 <- c(FeatureColNames.)
-        if(!is.null(IDcols.)) keep <- c(IDcols., FeatureColNames., TargetColumnName.) else keep <- c(FeatureColNames., TargetColumnName.)
-        TestData. <- TestData.[, ..keep]
-      }
-      if(!is.null(IDcols.)) {
+    # Regression data. Subset Columns Needed
+    if(!is.null(ValidationData.)) {
+      TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      dataTest <- ValidationData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      if(!is.null(TestData.)) {
         TestMerge <- data.table::copy(TestData.)
-        keep <- c(keep1, TargetColumnName.)
-        TestData. <- TestData.[, ..keep]
-      } else {
-        TestMerge <- data.table::copy(TestData.)
+        TestData. <- TestData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
       }
+    } else {
+      TrainMerge <- data.table::copy(data.)
+      dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
+      dataTest <- NULL
+      TestData. <- NULL
+      TestMerge <- NULL
     }
 
     # Dummify dataTrain Categorical Features ----
     Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
     dataTrain <- Output$TrainData; Output$TrainData <- NULL
     dataTest <- Output$ValidationData; Output$ValidationData <- NULL
-    TestData. <- Output$TestData.; Output$TestData. <- NULL
+    TestData. <- Output$TestData; Output$TestData. <- NULL
     FactorLevelsList <- Output$MetaData; rm(Output)
 
     # MultiClass Obtain Unique Target Levels
@@ -510,6 +478,7 @@ XGBoostDataPrep <- function(ModelType = "regression",
 
   # Return objects
   return(list(
+    WeightsVector = if(exists("WeightsVector")) WeightsVector else NULL,
     datatrain = datatrain,
     datavalidate = if(exists("datavalidate")) datavalidate else NULL,
     datatest = if(exists("datatest")) datatest else NULL,
@@ -517,7 +486,6 @@ XGBoostDataPrep <- function(ModelType = "regression",
     dataTrain = dataTrain,
     dataTest = if(exists("dataTest")) dataTest else NULL,
     TrainMerge = if(exists("TrainMerge")) TrainMerge else NULL,
-    ValidMerge = if(exists("ValidMerge")) ValidMerge else NULL,
     TestMerge = if(exists("TestMerge")) TestMerge else NULL,
     TestData = if(exists("TestData.")) TestData. else NULL,
     TrainTarget = TrainTarget,
@@ -722,6 +690,37 @@ XGBoostGridParams <- function(N. = N,
   return(base_params)
 }
 
+#' @title XGBoostMultiClassPredict
+#'
+#' @description Create prediction output that matches catboost for multiclass models. Class prediction along with probabilities for each class
+#'
+#' @param model Passthrough
+#' @param datatest Passthrough
+#' @param TargetLevels Passthrough
+#' @param NumLevels Passthrough
+#' @param NumberRows rows in scoring data
+#'
+#' @noRd
+XGBoostMultiClassPredict <- function(model,
+                                     datatest,
+                                     TargetLevels,
+                                     NumLevels,
+                                     NumberRows = TestData[,.N]) {
+  temp1 <- stats::predict(model, datatest)
+  predict <- data.table::data.table(Preds = temp1, Label = 0L:(NumLevels-1L), ID = sort(rep(seq_len(NumberRows), NumLevels)))
+  data.table::setkeyv(predict, "Label")
+  data.table::setkeyv(TargetLevels, "NewLevels")
+  predict[TargetLevels, OriginalLevels := i.OriginalLevels][, Predict := OriginalLevels][, c("OriginalLevels") := NULL]
+  data.table::setorderv(predict, c("ID","Preds"), c(1L,-1L))
+  Class <- predict[, list(Predict = data.table::first(Predict)), keyby = "ID"]
+  predict <- data.table::dcast.data.table(data = predict, formula = ID ~ Label, fun.aggregate = data.table::first, value.var = "Preds", fill = 0)
+  data.table::setkeyv(predict, "ID")
+  predict[Class, Predict := i.Predict][, ID := NULL]
+  data.table::setcolorder(predict, c(ncol(predict), seq_len((ncol(predict)-1L))))
+  data.table::setnames(predict, names(predict)[2L:ncol(predict)], as.character(TargetLevels[[1L]]))
+  return(predict)
+}
+
 #' @title XGBoostValidation
 #'
 #' @description Generate validation, importance, and shap data
@@ -729,140 +728,216 @@ XGBoostGridParams <- function(N. = N,
 #' @family XGBoost Helpers
 #' @author Adrian Antico
 #'
-#' @param ModelType. Passthrough
-#' @param TrainOnFull. Passthrough
 #' @param model. Passthrough
+#' @param ModelType Passthrough
+#' @param TrainOnFull. Passthrough
+#' @param TestDataCheck Passthrough
+#' @param FinalTestTarget. Passthrough
 #' @param TestData. Passthrough
 #' @param TestTarget. Passthrough
-#' @param FinalTestTarget. Passthrough
+#' @param TrainTarget. Passthrough
+#' @param TrainMerge. Passthrough
 #' @param TestMerge. Passthrough
 #' @param dataTest. Passthrough
-#' @param TrainTarget. Passthrough
-#' @param dataTrain. Passthrough
+#' @param data. Passthrough
 #' @param predict. Passthrough
 #' @param TargetColumnName. Passthrough
 #' @param SaveModelObjects. Passthrough
 #' @param metadata_path. Passthrough
 #' @param model_path. Passthrough
 #' @param ModelID. Passthrough
-#' @param Final. Passthrough
-#' @param TransformNumericColumns. Regression Passthrough
-#' @param TransformationResults. Regression Passthrough
-#' @param GridTune. Regression Passthrough
-#' @param data. Regression Passthrough
-#' @param LossFunction. MultiClass Passthrough
+#' @param LossFunction. Passthrough
+#' @param TransformNumericColumns. Passthrough
+#' @param GridTune. Passthrough
+#' @param TransformationResults. Passthrough
+#' @param TargetLevels. Passthrough
 #'
 #' @noRd
-XGBoostValidation <- function(ModelType. = "classifier",
-                              TrainOnFull. = TrainOnFull,
-                              model. = model,
-                              TargetColumnName. = TargetColumnName,
-                              SaveModelObjects. = SaveModelObjects,
-                              metadata_path. = metadata_path,
-                              model_path. = model_path,
-                              ModelID. = ModelID,
-                              TestData. = NULL,
-                              TestTarget. = NULL,
-                              FinalTestTarget. = NULL,
-                              TestMerge. = NULL,
-                              dataTest. = NULL,
-                              TrainTarget. = NULL,
-                              dataTrain. = NULL,
-                              Final. = NULL,
-                              predict. = NULL,
-                              LossFunction. = NULL,
-                              TransformNumericColumns. = NULL,
-                              TransformationResults. = NULL,
-                              GridTune. = GridTune,
-                              data. = NULL) {
+XGBoostValidationData <- function(model.=model,
+                                  ModelType = "classification",
+                                  TrainOnFull. = TrainOnFull,
+                                  TestDataCheck = FALSE,
+                                  FinalTestTarget. = FinalTestTarget,
+                                  TestTarget. = TestTarget,
+                                  TrainTarget. = TrainTarget,
+                                  TrainMerge. = NULL,
+                                  TestMerge. = TestMerge,
+                                  TestData. = TestData,
+                                  dataTest. = dataTest,
+                                  data. = data,
+                                  predict. = predict,
+                                  TargetColumnName. = TargetColumnName,
+                                  SaveModelObjects. = SaveModelObjects,
+                                  metadata_path. = metadata_path,
+                                  model_path. = model_path,
+                                  ModelID. = ModelID,
+                                  LossFunction. = LossFunction,
+                                  TransformNumericColumns. = TransformNumericColumns,
+                                  GridTune. = GridTune,
+                                  TransformationResults. = TransformationResults,
+                                  TargetLevels.=TargetLevels) {
 
-  if(ModelType. %chin% c("regression","classifier")) {
+  # Classification
+  if(ModelType == "classification") {
 
-    # Validation and Shaps
-    if(!is.null(TestData.)) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., p1 = predict.))
-      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
-    } else if(!TrainOnFull. || (!is.null(TestTarget.) && !is.null(dataTest.))) {
-      ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., p1 = predict.))
-      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+    # Generate validation data
+    if(!TrainOnFull.) {
+      if(TestDataCheck) {
+        ValidationData <- data.table::as.data.table(cbind(TestMerge., p1 = predict.))
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., p1 = predict.))
+        data.table::setnames(ValidationData, "Target", eval(TargetColumnName.), skip_absent = TRUE)
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+      }
+    } else if(!is.null(TrainMerge.)) {
+      ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
+      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+      Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+      ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test))
+      rm(Shap_test)
     } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., dataTrain., p1 = predict.))
-      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTrain.), model = model., features = names(dataTrain.))$shap_contrib)
+      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., p1 = predict.))
+      data.table::setnames(ValidationData, "Target", eval(TargetColumnName.), skip_absent = TRUE)
+      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
     }
+  }
 
-    # Update names Validation Data
-    if(ModelType. == "regression") {
-      data.table::setnames(ValidationData, c("Target","p1"), c(TargetColumnName., "Predict"))
+  # Regression
+  if(ModelType == "regression") {
+
+    # Generate validation data
+    if(!TrainOnFull.) {
+      if(TestDataCheck) {
+        ValidationData <- data.table::as.data.table(cbind(TestMerge., Predict = predict.))
+        data.table::setnames(ValidationData, "Target", TargetColumnName., skip_absent = TRUE)
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., Predict = predict.))
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+        if(length(TargetColumnName.) > 1L) {
+          data.table::setnames(ValidationData, c(names(ValidationData)[seq_along(TargetColumnName.)]), c(TargetColumnName.))
+        } else {
+          data.table::setnames(ValidationData, "Target", TargetColumnName.)
+        }
+      }
+    } else if(!is.null(TrainMerge.)) {
+      ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
+      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+      Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+      ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test))
+      rm(Shap_test)
     } else {
+      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., Predict = predict.))
+      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
       data.table::setnames(ValidationData, "Target", TargetColumnName.)
     }
 
-    # Transformation
-    if(ModelType. == "regression" && !is.null(TransformNumericColumns.)) {
+    # Back transform before running metrics and plots
+    if(!is.null(TransformNumericColumns.)) {
+      if(GridTune. && !TrainOnFull.) TransformationResults. <- TransformationResults.[ColumnName != "Predicted"]
+      if(length(TargetColumnName.) == 1L) {
 
-      # Update
-      if(GridTune.) TransformationResults. <- TransformationResults.[ColumnName != "Predict"]
+        # Prepare transformation object
+        TransformationResults. <- data.table::rbindlist(list(
+          TransformationResults.,
+          data.table::data.table(
+            ColumnName = c("Predict"),
+            MethodName = TransformationResults.[ColumnName == eval(TargetColumnName.), MethodName],
+            Lambda = TransformationResults.[ColumnName == eval(TargetColumnName.), Lambda],
+            NormalizedStatistics = 0L)))
+        if(length(unique(TransformationResults.[["ColumnName"]])) != nrow(TransformationResults.)) {
+          temp <- TransformationResults.[, .N, by = "ColumnName"][N != 1L][[1L]]
+          if(!is.null(ValidationData)) temp1 <- which(names(ValidationData) == temp)[1L]
+          if(!TrainOnFull.) {
+            ValidationData[, eval(names(data.)[temp1]) := NULL]
+          } else {
+            if(TrainOnFull.) {
+              if(length(which(names(data.) %chin% eval(TargetColumnName.))) > 1L) {
+                temp1 <- which(names(data.) %chin% eval(TargetColumnName.))[1L]
+                data.[, which(names(data.) %chin% eval(TargetColumnName.))[2L] := NULL]
+              }
+            } else {
+              data.[, eval(names(data.)[temp]) := NULL]
+            }
+          }
+          TransformationResults. <- TransformationResults.[, ID := 1L:.N][ID != max(ID)]
+        }
 
-      # Combine transform metadata
-      TransformationResults. <- data.table::rbindlist(list(
-        TransformationResults.,
-        data.table::data.table(
-          ColumnName = "Predict",
-          MethodName = rep(TransformationResults.[ColumnName == eval(TargetColumnName.), MethodName], 1L),
-          Lambda = rep(TransformationResults.[ColumnName == eval(TargetColumnName.), Lambda], 1L),
-          NormalizedStatistics = rep(0, 1))))
+        # Back transform
+        ValidationData <- AutoTransformationScore(
+          ScoringData = ValidationData,
+          Type = "Inverse",
+          FinalResults = TransformationResults.,
+          TransID = NULL,
+          Path = NULL)
 
-      # Model output
-      if(length(unique(TransformationResults.[["ColumnName"]])) != nrow(TransformationResults.)) {
-        temp <- TransformationResults.[, .N, by = "ColumnName"][N != 1L][[1L]]
-        temp1 <- which(names(ValidationData) == temp)[1L]
-        ValidationData[, eval(names(data.)[temp1]) := NULL]
-        TransformationResults. <- TransformationResults.[, ID := 1L:.N][ID != which(TransformationResults.[["ID"]] == temp1)][, ID := NULL]
-      }
-
-      # Transform Target and Predicted Value ----
-      ValidationData <- AutoTransformationScore(
-        ScoringData = ValidationData,
-        Type = "Inverse",
-        FinalResults = TransformationResults.,
-        TransID = NULL,
-        Path = NULL)
-    }
-
-  } else if(ModelType. == "multiclass") {
-    if(LossFunction. == "multi:softprob") {
-      if(!is.null(TestData.)) {
-        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., Final.))
-        ShapValues <- xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib
-      } else if(!TrainOnFull. || (!is.null(TestTarget.) && !is.null(dataTest.))) {
-        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., Final.))
-        ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib
       } else {
-        ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., dataTrain., Final.))
-        ShapValues <- xgboost:::xgb.shap.data(as.matrix(dataTrain.), model = model., features = names(dataTrain.))$shap_contrib
-      }
-    } else {
-      if(!is.null(TestData.)) {
-        ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., TestMerge., p1 = predict.))
-        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
-      } else if(!TrainOnFull.) {
-        ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., dataTest., p1 = predict.))
-        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
-      } else {
-        ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., dataTrain., p1 = predict.))
-        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTrain.), model = model., features = names(dataTrain.))$shap_contrib)
+
+        # Prepare transformation object
+        TransformationResults. <- data.table::rbindlist(list(TransformationResults., TransformationResults.))
+        for(z in seq_along(TargetColumnName.)) TransformationResults.[length(TargetColumnName.) + z, ColumnName := paste0("Predict.V",z)]
+
+        # Back transform
+        ValidationData <- AutoTransformationScore(
+          ScoringData = ValidationData,
+          Type = "Inverse",
+          FinalResults = TransformationResults.,
+          TransID = NULL,
+          Path = NULL)
       }
     }
   }
 
-  # Shap Values
-  data.table::setnames(ShapValues, old = names(ShapValues), new = paste0("Shap_", names(ShapValues)))
-  ShapValues <- cbind(ValidationData, ShapValues)
+  # Multiclass
+  if(ModelType == "multiclass") {
+    if(!TrainOnFull.) {
+      if(TestDataCheck) {
+        ValidationData <- data.table::as.data.table(cbind(predict., TestMerge.))
+        data.table::setnames(ValidationData, "Target", TargetColumnName., skip_absent = TRUE)
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(TestData.), model = model., features = names(TestData.))$shap_contrib)
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(predict., Target = TestTarget., dataTest.))
+        ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
+        if(length(TargetColumnName.) > 1L) {
+          data.table::setnames(ValidationData, c(names(ValidationData)[seq_along(TargetColumnName.)]), c(TargetColumnName.))
+        } else {
+          data.table::setnames(ValidationData, "Target", TargetColumnName.)
+        }
+      }
+    } else if(!is.null(TrainMerge.)) {
+      ValidationData <- data.table::as.data.table(cbind(predict., TrainMerge.))
+      ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
+    }
+  }
 
-  # Variable Importance ----
+  # Finalize data
+  if("ID_Factorizer" %chin% names(ValidationData)) data.table::set(ValidationData, j = "ID_Factorizer", value = NULL)
+  if(!is.null(ShapValues)) {
+    data.table::setnames(ShapValues, names(ShapValues), paste0("Shap_", names(ShapValues)))
+    ValidationData <- cbind(ValidationData, ShapValues)
+  }
+
+  # Save validation data
+  if(SaveModelObjects. && !TrainOnFull.) {
+    if(!is.null(metadata_path.)) {
+      data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_ValidationData.csv")))
+    } else {
+      data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_ValidationData.csv")))
+    }
+  } else if(SaveModelObjects.) {
+    if(!is.null(metadata_path.)) {
+      data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_TrainData.csv")))
+    } else {
+      data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_TrainData.csv")))
+    }
+  }
+
+  # Variable Importance
   VariableImportance <- tryCatch({data.table::as.data.table(xgboost::xgb.importance(model = model.))}, error = function(x) NULL)
   if(!is.null(VariableImportance)) {
     VariableImportance[, ':=' (Gain = round(Gain, 4L), Cover = round(Cover, 4L), Frequency = round(Frequency, 4L))]
+    data.table::setnames(VariableImportance, c("Feature","Gain"), c("Variable","Importance"))
     if(SaveModelObjects.) {
       if(!is.null(metadata_path.)) {
         data.table::fwrite(VariableImportance, file = file.path(metadata_path., paste0(ModelID., "_VariableImportance.csv")))

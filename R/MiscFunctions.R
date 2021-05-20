@@ -30,8 +30,7 @@ PrintToPDF <- function(Path,
   if("grDevices" %chin% installed.packages()) {
 
     # Ensure procedure can run ----
-    if(!"grDevices" %chin% installed.packages() ||
-       is.null(ObjectList) ||
+    if(is.null(ObjectList) ||
        is.null(Path) ||
        !is.list(ObjectList)) {
       print("Nothing to print")
@@ -40,7 +39,7 @@ PrintToPDF <- function(Path,
 
     # Print away ----
     if(!Tables) {
-      grDevices::pdf(file = file.path(normalizePath(Path), paste0(OutputName,".pdf")),
+      grDevices::pdf(file = file.path(Path, paste0(OutputName,".pdf")),
                      onefile = TRUE,
                      title = Title,
                      width = Width,
@@ -50,7 +49,7 @@ PrintToPDF <- function(Path,
                      bg = BackgroundColor,
                      fg = ForegroundColor,
                      compress = TRUE)
-      for(i in seq_along(ObjectList)) multiplot(plotlist = list(ObjectList[[i]]), cols = 1)
+      for(i in seq_along(ObjectList)) for(j in seq_along(ObjectList[[i]])) multiplot(plotlist = list(ObjectList[[i]][[j]]), cols = 1)
       while(grDevices::dev.cur() > 1) grDevices::dev.off()
     } else {
       for(i in seq_along(ObjectList)) {
@@ -64,19 +63,18 @@ PrintToPDF <- function(Path,
                        bg = BackgroundColor,
                        fg = ForegroundColor,
                        compress = TRUE)
-        tryCatch({if(nrow(ObjectList[[i]]) > 15) {
-          counter <- 1L
-          repeat{
-            temp <- ObjectList[[i]][counter:(counter + 14L)]
-            temp <- temp[!is.na(temp[[eval(names(temp)[1])]])]
-            counter <- counter + 15L
-            if(temp[,.N] < 15 || counter == MaxPages+1L) break
-            print(gridExtra::grid.table(temp, rows = NULL))
-            grid::grid.newpage()
-          }
-        } else {
-          print(gridExtra::grid.table(ObjectList[[i]], rows = NULL))
-        }}, error = function(x) NULL)
+        tryCatch({
+          for(j in seq_along(ObjectList[[i]])) {
+            counter <- 1L
+            repeat{
+              temp <- ObjectList[[i]][[j]][counter:(counter + 14L)]
+              temp <- temp[!is.na(temp[[eval(names(temp)[1])]])]
+              counter <- counter + 15L
+              if(temp[,.N] < 15 || counter == MaxPages+1L) break
+              print(gridExtra::grid.table(temp, rows = NULL))
+              grid::grid.newpage()
+            }
+          }}, error = function(x) NULL)
         while(grDevices::dev.cur() > 1) grDevices::dev.off()
       }
     }

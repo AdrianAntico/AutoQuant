@@ -182,15 +182,15 @@ CatBoostGridTuner <- function(ModelType="classification",
         # Update Experimental Grid with Param values
         data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = if(counter == 1L) 0 else NewGrid)
         data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
-        data.table::set(ExperimentalGrid, i = counter, j = "eval_metric", value = NewPerformance)
+        data.table::set(ExperimentalGrid, i = counter, j = "MetricValue", value = NewPerformance)
         data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
 
         # BestPerformance thus far
         if(counter > 1L) {
           if(tolower(BaselineComparison.) == "default") {
-            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["eval_metric"]]
+            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["MetricValue"]]
           } else {
-            BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["eval_metric"]], na.rm = TRUE)
+            BestPerformance <- max(ExperimentalGrid[RunNumber < counter][["MetricValue"]], na.rm = TRUE)
           }
         }
 
@@ -204,32 +204,46 @@ CatBoostGridTuner <- function(ModelType="classification",
         # Score and measure model ----
         if(!is.null(TestData.)) {
           predict <- catboost::catboost.predict(model = model, pool = FinalTestPool., prediction_type = "RawFormulaVal", thread_count = parallel::detectCores())
-          ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., Predict = predict))
-          data.table::setnames(ValidationData, "Target", TargetColumnName.)
+          if(length(TargetColumnName.) > 1L) {
+            ValidationData <- data.table::as.data.table(cbind(TestMerge., Predict = predict))
+          } else {
+            ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., Predict = predict))
+            data.table::setnames(ValidationData, "Target", TargetColumnName.)
+          }
         } else {
           predict <- catboost::catboost.predict(model = model, pool = TestPool., prediction_type = "RawFormulaVal", thread_count = parallel::detectCores())
-          ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., Predict = predict))
-          data.table::setnames(ValidationData, "Target", TargetColumnName.)
+          if(length(TargetColumnName.) > 1L) {
+            ValidationData <- data.table::as.data.table(cbind(TestTarget., Predict = predict))
+            data.table::setnames(ValidationData, c("V1","V2"), TargetColumnName.)
+          } else {
+            ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., Predict = predict))
+            data.table::setnames(ValidationData, "Target", TargetColumnName.)
+          }
         }
 
         # Generate EvaluationMetrics
         EvalMetrics <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull., LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName., ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
 
         # New performance
-        NewPerformance <- EvalMetrics[Metric == eval(toupper(grid_eval_metric.))]$MetricValue
+        if(length(TargetColumnName.) > 1L) {
+          EvalMetrics <- data.table::rbindlist(EvalMetrics)
+          NewPerformance <- EvalMetrics[Metric == eval(toupper(grid_eval_metric.)), mean(MetricValue, na.rm = TRUE)]
+        } else {
+          NewPerformance <- EvalMetrics[Metric == eval(toupper(grid_eval_metric.))]$MetricValue
+        }
 
         # Update Experimental Grid with Param values----
         data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
         data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
-        data.table::set(ExperimentalGrid, i = counter, j = "EvalMetric", value = NewPerformance)
+        data.table::set(ExperimentalGrid, i = counter, j = "MetricValue", value = NewPerformance)
         data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
 
         # BestPerformance thus far
         if(counter > 1L) {
           if(tolower(BaselineComparison.) == "default") {
-            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["EvalMetric"]]
+            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["MetricValue"]]
           } else {
-            BestPerformance <- ExperimentalGrid[RunNumber < counter, min(EvalMetric, na.rm = TRUE)]
+            BestPerformance <- ExperimentalGrid[RunNumber < counter, min(MetricValue, na.rm = TRUE)]
           }
         }
 
@@ -261,55 +275,36 @@ CatBoostGridTuner <- function(ModelType="classification",
         } else {
           ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., predict))
         }
-        if(TrainOnFull.) {
-          ValidationData <- merge(
-            ValidationData,
-            TargetLevels.,
-            by.x = "Target",
-            by.y = "NewLevels",
-            all = FALSE)
-          ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
-          ValidationData <- merge(
-            ValidationData,
-            TargetLevels.,
-            by.x = "V2",
-            by.y = "NewLevels",
-            all = FALSE)
-          ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
-        } else {
-          ValidationData <- merge(
-            ValidationData,
-            TargetLevels.,
-            by.x = "V1",
-            by.y = "NewLevels",
-            all = FALSE)
-          ValidationData[, V1 := OriginalLevels][, OriginalLevels := NULL]
-          ValidationData <- merge(
-            ValidationData,
-            TargetLevels.,
-            by.x = "Target",
-            by.y = "NewLevels",
-            all = FALSE)
-          ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
-        }
+        ValidationData <- merge(
+          ValidationData,
+          TargetLevels.,
+          by.x = "V1",
+          by.y = "NewLevels",
+          all = FALSE)
+        ValidationData[, V1 := OriginalLevels][, OriginalLevels := NULL]
+        ValidationData <- merge(
+          ValidationData,
+          TargetLevels.,
+          by.x = "Target",
+          by.y = "NewLevels",
+          all = FALSE)
+        ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
 
         # MultiClass Update Names for Predicted Value Columns----
-        if(!TrainOnFull.) k <- 1L else k <- 2L
+        k <- 1L
         for(name in as.character(TargetLevels.[[1L]])) {
           k <- k + 1L
           data.table::setnames(ValidationData, paste0("V", k), name)
         }
-        if(!TrainOnFull.) data.table::setnames(ValidationData, "V1", "Predict") else data.table::setnames(ValidationData, "V2", "Predict")
+        data.table::setnames(ValidationData, "V1", "Predict")
         data.table::set(ValidationData, j = "Target", value = as.character(ValidationData[["Target"]]))
         data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
 
         # MultiClass Metrics Accuracy----
         if(tolower(grid_eval_metric.) == "accuracy") {
           NewPerformance <- ValidationData[, mean(data.table::fifelse(as.character(Target) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
-
         } else if(tolower(grid_eval_metric.) == "microauc") {
           NewPerformance <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData[["Target"]], predictor = as.matrix(ValidationData[, .SD, .SDcols = names(ValidationData)[3L:(ncol(predict)+1L)]]))$auc, "\\d+\\.*\\d*"))), 4L)
-
         } else if(tolower(grid_eval_metric.) == "logloss") {
           temp <- ValidationData[, 1L]
           temp[, Truth := get(TargetColumnName.)]
@@ -331,15 +326,15 @@ CatBoostGridTuner <- function(ModelType="classification",
         # Update Experimental Grid with Param values ----
         data.table::set(ExperimentalGrid, i = counter, j = "GridNumber", value = NewGrid)
         data.table::set(ExperimentalGrid, i = counter, j = "RunTime", value = RunTime[[3L]])
-        data.table::set(ExperimentalGrid, i = counter, j = "eval_metric", value = NewPerformance)
+        data.table::set(ExperimentalGrid, i = counter, j = "MetricValue", value = NewPerformance)
         data.table::set(ExperimentalGrid, i = counter, j = "TreesBuilt", value = model$tree_count)
 
         # BestPerformance thus far
         if(counter > 1L) {
           if(tolower(BaselineComparison.) == "default") {
-            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["EvalMetric"]]
+            BestPerformance <- ExperimentalGrid[RunNumber == 1L][["MetricValue"]]
           } else {
-            BestPerformance <- ExperimentalGrid[RunNumber < counter, min(EvalMetric, na.rm = TRUE)]
+            BestPerformance <- ExperimentalGrid[RunNumber < counter, min(MetricValue, na.rm = TRUE)]
           }
         }
 
@@ -375,11 +370,11 @@ CatBoostGridTuner <- function(ModelType="classification",
     data.table::set(ExperimentalGrid, i = counter+1L, j = "RandomStrength", value = GridClusters[[paste0("Grid_",NewGrid)]][["RandomStrength"]][Trials[NewGrid]+1L])
     data.table::set(ExperimentalGrid, i = counter+1L, j = "BorderCount", value = GridClusters[[paste0("Grid_",NewGrid)]][["BorderCount"]][Trials[NewGrid]+1L])
     data.table::set(ExperimentalGrid, i = counter+1L, j = "BootStrapType", value = GridClusters[[paste0("Grid_",NewGrid)]][["BootStrapType"]][Trials[NewGrid]+1L])
+    data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
 
     # GPU args ----
-    if(!tolower(task_type.) == "gpu") {
+    if(tolower(task_type.) != "gpu") {
       data.table::set(ExperimentalGrid, i = counter+1L, j = "RSM", value = GridClusters[[paste0("Grid_",NewGrid)]][["RSM"]][Trials[NewGrid]+1L])
-      data.table::set(ExperimentalGrid, i = counter+1L, j = "GrowPolicy", value = GridClusters[[paste0("Grid_",NewGrid)]][["GrowPolicy"]][Trials[NewGrid]+1L])
     }
 
     # Update bandit probs
@@ -398,14 +393,14 @@ CatBoostGridTuner <- function(ModelType="classification",
   # Remove unneeded rows ----
   ExperimentalGrid <- ExperimentalGrid[RunTime != -1L]
 
-  # Sort by EvalMetric
+  # Sort by MetricValue
   PositiveClassificationMeasures <- c('Utility','MCC','Acc','F1_Score','F2_Score','F0.5_Score','TPR','TNR','NPV','PPV','ThreatScore')
   PositiveRegressionMeasures <- c('r2')
   PositiveMultiClassMeasures <- c('AUC', 'Accuracy')
   if(grid_eval_metric. %chin% c(PositiveClassificationMeasures, PositiveRegressionMeasures, PositiveMultiClassMeasures)) {
-    BestGrid <- ExperimentalGrid[order(-EvalMetric)][1L]
+    BestGrid <- ExperimentalGrid[order(-MetricValue)][1L]
   } else {
-    BestGrid <- ExperimentalGrid[order(EvalMetric)][1L]
+    BestGrid <- ExperimentalGrid[order(MetricValue)][1L]
   }
 
   # Return

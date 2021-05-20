@@ -13,7 +13,6 @@
 #' @param EncodingMethod Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param FactorLevelsList Supply the factor variables' list from DummifyDT()
 #' @param TargetLevels Supply the target levels output from AutoXGBoostMultiClass() or the scoring function will go looking for it in the file path you supply.
-#' @param Objective Set to 'multi:softprobs' if you did so in training. Default is softmax
 #' @param ModelObject Supply a model for scoring, otherwise it will have to search for it in the file path you specify
 #' @param ModelPath Supply your path file used in the AutoXGBoost__() function
 #' @param ModelID Supply the model ID used in the AutoXGBoost__() function
@@ -40,7 +39,6 @@
 #'   EncodingMethod = "binary",
 #'   FactorLevelsList = NULL,
 #'   TargetLevels = NULL,
-#'   Objective = "multi:softmax",
 #'   ModelObject = NULL,
 #'   ModelPath = "home",
 #'   ModelID = "ModelTest",
@@ -67,7 +65,6 @@ AutoXGBoostScoring <- function(TargetType = NULL,
                                EncodingMethod = "binary",
                                FactorLevelsList = NULL,
                                TargetLevels = NULL,
-                               Objective = "multi:softmax",
                                OneHot = FALSE,
                                ModelObject = NULL,
                                ModelPath = NULL,
@@ -128,7 +125,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   }
 
   # DummifyDT categorical columns ----
-  if(EncodingMethod == "binary") {
+  if(!is.null(EncodingMethod) && EncodingMethod == "binary") {
     if(!is.null(FactorLevelsList)) {
       ScoringData <- DummifyDT(data=ScoringData, cols=names(FactorLevelsList), KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
     } else {
@@ -138,7 +135,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
         ScoringData <- DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
       }
     }
-  } else {
+  } else if(!is.null(EncodingMethod)) {
     if(!is.null(FactorLevelsList)) {
       ScoringData <- CategoricalEncoding(data=ScoringData, ML_Type=TargetType, GroupVariables=names(FactorLevelsList), TargetVariable=NULL, Method=EncodingMethod, SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
     } else {
@@ -158,44 +155,26 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   a <- which(!names(ScoringData) %in% model$feature_names)
   if(!identical(a, integer(0))) data.table::set(ScoringData, j = c(names(ScoringData)[which(!names(ScoringData) %in% model$feature_names)]), value = NULL)
 
-  # Initialize XGBoost Data Conversion----
+  # Initialize XGBoost Data Conversion ----
   ScoringMatrix <- xgboost::xgb.DMatrix(as.matrix(ScoringData))
 
-  # Score model----
-  predict <- data.table::as.data.table(stats::predict(model, ScoringMatrix))
-
-  # Shap values ----
-  if(ReturnShapValues) {
-    ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(ScoringData), model = ModelObject, features = names(ScoringData))$shap_contrib)
+  # Score model ----
+  if(tolower(TargetType) != "multiclass") {
+    predict <- data.table::as.data.table(stats::predict(model, ScoringMatrix))
+    if(ReturnShapValues) ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(ScoringData), model = ModelObject, features = names(ScoringData))$shap_contrib)
   }
 
-  # Change Output Predictions Column Name----
+  # Change Output Predictions Column Name ----
   if(tolower(TargetType) != "multiclass") {
     data.table::setnames(predict, "V1", "Predictions")
   } else if(tolower(TargetType) == "multiclass") {
     if(is.null(TargetLevels)) TargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, "_TargetLevels.csv")))
-    if(Objective == "multi:softprob") {
-      NumLevels <- TargetLevels[, .N]
-      PredictLength <- predict[, .N]
-      for(counter in seq.int(NumLevels)) {
-        if(counter == 1L) {
-          Final <- data.table::as.data.table(predict[seq_len(PredictLength/NumLevels)])
-          data.table::setnames(x = Final, old = "V1", new = as.character(TargetLevels[counter,OriginalLevels]))
-        } else {
-          temp <- data.table::as.data.table(predict[(1 + (counter - 1) * (PredictLength/NumLevels)):(counter * (PredictLength/NumLevels))])
-          data.table::setnames(x = temp, old = "V1", new = as.character(TargetLevels[counter,OriginalLevels]))
-          Final <- cbind(Final, temp)
-        }
-      }
-      predict <- Final
-    } else {
-      data.table::setnames(predict, "V1", "Predictions")
-      predict <- merge(predict, TargetLevels, by.x = "Predictions", by.y = "NewLevels", all = FALSE)
-      predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
-    }
+    NumLevels <- TargetLevels[, .N]
+    predict <- XGBoostMultiClassPredict(model, ScoringMatrix, TargetLevels, NumLevels, NumberRows = nrow(ScoringMatrix))
+    if(ReturnShapValues) ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(ScoringData), model = ModelObject, features = names(ScoringData))$shap_contrib)
   }
 
-  # Merge features back on----
+  # Merge features back ----
   if(ReturnFeatures && ReturnShapValues) {
     predict <- cbind(predict, ScoringMerge, ShapValues)
   } else if(ReturnFeatures) {
@@ -208,11 +187,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if(BackTransNumeric) {
     grid_trans_results <- data.table::copy(TransformationObject)
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
-
-    # Append record for Predicted Column ----
     data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
-
-    # Run Back-Transform ----
     predict <- AutoTransformationScore(ScoringData = predict, Type = "Inverse", FinalResults = grid_trans_results, TransID = NULL, Path = NULL)
   }
 

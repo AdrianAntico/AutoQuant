@@ -24,7 +24,7 @@ ShapPlot(ShapData = NULL, VarList = NULL, PlotTitle = "Shap Plot")
 \item{modelpath}{Path to directory}
 }
 \description{
-Create a cumulative gains chart
+Bar plot of importance
 }
 \seealso{
 Other Model Evaluation and Interpretation: 

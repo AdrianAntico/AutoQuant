@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Multiclass Classification
 #'
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -60,52 +61,54 @@
 #'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
-#'    data,
-#'    TrainOnFull = FALSE,
-#'    ValidationData = NULL,
-#'    TestData = NULL,
-#'    TargetColumnName = "Adrian",
-#'    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-#'    WeightsColumn = NULL,
-#'    eval_metric = "logloss",
-#'    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-#'    NThreads = max(1, parallel::detectCores()-2),
-#'    model_path = normalizePath("./"),
-#'    metadata_path = file.path(normalizePath("./")),
-#'    ModelID = "FirstModel",
-#'    ReturnModelObjects = TRUE,
-#'    SaveModelObjects = FALSE,
-#'    IfSaveModel = "mojo",
-#'    H2OShutdown = TRUE,
-#'    H2OStartUp = TRUE,
-#'    DebugMode = FALSE,
+#'   OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'   data,
+#'   TrainOnFull = FALSE,
+#'   ValidationData = NULL,
+#'   TestData = NULL,
+#'   TargetColumnName = "Adrian",
+#'   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+#'   WeightsColumn = NULL,
+#'   eval_metric = "logloss",
+#'   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+#'   NThreads = max(1, parallel::detectCores()-2),
+#'   model_path = normalizePath("./"),
+#'   metadata_path = file.path(normalizePath("./")),
+#'   ModelID = "FirstModel",
+#'   ReturnModelObjects = TRUE,
+#'   SaveModelObjects = FALSE,
+#'   IfSaveModel = "mojo",
+#'   H2OShutdown = TRUE,
+#'   H2OStartUp = TRUE,
+#'   DebugMode = FALSE,
 #'
-#'    # Model args
-#'    GridTune = FALSE,
-#'    GridStrategy = "Cartesian",
-#'    MaxRunTimeSecs = 60*60*24,
-#'    StoppingRounds = 10,
-#'    MaxModelsInGrid = 2,
-#'    Trees = 50,
-#'    LearnRate = 0.10,
-#'    LearnRateAnnealing = 1,
-#'    eval_metric = "RMSE",
-#'    Distribution = "multinomial",
-#'    MaxDepth = 20,
-#'    SampleRate = 0.632,
-#'    ColSampleRate = 1,
-#'    ColSampleRatePerTree = 1,
-#'    ColSampleRatePerTreeLevel  = 1,
-#'    MinRows = 1,
-#'    NBins = 20,
-#'    NBinsCats = 1024,
-#'    NBinsTopLevel = 1024,
-#'    HistogramType = "AUTO",
-#'    CategoricalEncoding = "AUTO")
+#'   # Model args
+#'   GridTune = FALSE,
+#'   GridStrategy = "Cartesian",
+#'   MaxRunTimeSecs = 60*60*24,
+#'   StoppingRounds = 10,
+#'   MaxModelsInGrid = 2,
+#'   Trees = 50,
+#'   LearnRate = 0.10,
+#'   LearnRateAnnealing = 1,
+#'   eval_metric = "RMSE",
+#'   Distribution = "multinomial",
+#'   MaxDepth = 20,
+#'   SampleRate = 0.632,
+#'   ColSampleRate = 1,
+#'   ColSampleRatePerTree = 1,
+#'   ColSampleRatePerTreeLevel  = 1,
+#'   MinRows = 1,
+#'   NBins = 20,
+#'   NBinsCats = 1024,
+#'   NBinsTopLevel = 1024,
+#'   HistogramType = "AUTO",
+#'   CategoricalEncoding = "AUTO")
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
-AutoH2oGBMMultiClass <- function(data,
+AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+                                 data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
                                  TestData = NULL,
@@ -269,8 +272,20 @@ AutoH2oGBMMultiClass <- function(data,
   if(DebugMode) print("Save Final Model ----")
   H2OSaveModel(SaveModelObjects.=SaveModelObjects, IfSaveModel.=IfSaveModel, base_model.=base_model, model_path.=model_path, ModelID.=ModelID)
 
-  # Score Final Test Data ----
+  # Score Train Data ----
   if(DebugMode) print("Score Final Test Data ----")
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = datatrain))
+  }
+
+  # Create Train Validation Data ----
+  if(DebugMode) print("Create Train Validation Data ----")
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    Output <- H2OValidationData(Predict.=Predict, TestData.=NULL, dataTest.=NULL, dataTrain.=dataTrain, TrainOnFull.=TRUE, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+    TrainData <- Output$ValidationData; rm(Output)
+  }
+
+  # Score Validation Data ----
   Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
 
   # Create Validation Data ----
@@ -282,19 +297,30 @@ AutoH2oGBMMultiClass <- function(data,
   if(DebugMode) print("Variable Importance ----")
   VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
 
-  # H2O Explain ----
-  if(DebugMode) print("H2O Explain ----")
+  # H2O Explain TrainData ----
+  if(DebugMode) print("H2O Explain TrainData ----")
+  ExplainList <- list()
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
+  }
+
+  # H2O Explain ValidationData ----
+  if(DebugMode) print("H2O Explain ValidationData ----")
   if(!TrainOnFull) {
-    Explain <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
+    ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
   # H2O Shutdown ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # Evaluation metrics ----
-  if(DebugMode) print("Evaluation metrics ----")
-  if(!TrainOnFull) {
-    EvaluationMetrics <- MultiClassMetrics(ModelClass="h2o", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  # Generate EvaluationMetrics ----
+  if(DebugMode) print("Running BinaryMetrics()")
+  EvalMetricsList <- list()
+  if("evalmetrics" %chin% tolower(OutputSelection)) {
+    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+      EvalMetricsList[["TrainData"]] <- MultiClassMetrics(ModelClass="h2o", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    }
+    EvalMetricsList[["TestData"]] <- MultiClassMetrics(ModelClass="h2o", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Return Objects ----
@@ -302,11 +328,11 @@ AutoH2oGBMMultiClass <- function(data,
   if(ReturnModelObjects) {
     return(list(
       Model = base_model,
-      H2OExplain = if(exists("Explain") && !is.null(Explain)) Explain else NULL,
-      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
+      TrainData = if(exists("TrainData")) TrainData else NULL,
+      TestData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      H2OExplain = if(exists("ExplainList") && !is.null(ExplainList)) ExplainList else NULL,
+      EvaluationMetrics = if(exists("EvalMetricsList") && !is.null(EvalMetricsList)) EvalMetricsList else NULL,
       VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
       ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
   }
 }

@@ -6,7 +6,6 @@
 #' @family CatBoost Helpers
 #'
 #' @param ModelType Passthrough
-#' @param DummifyCols. Passthrough
 #' @param data. Passthrough
 #' @param FeatureColNames. Passthrough
 #' @param PrimaryDateColumn. Passthrough
@@ -47,7 +46,6 @@
 #'
 #' @noRd
 CatBoostArgsCheck <- function(ModelType = "regression",
-                              DummifyCols.=DummifyCols,
                               data.=data,
                               FeatureColNames.=FeatureColNames,
                               PrimaryDateColumn. = PrimaryDateColumn,
@@ -226,38 +224,40 @@ CatBoostArgsCheck <- function(ModelType = "regression",
 #' @family CatBoost Helpers
 #' @author Adrian Antico
 #'
+#' @param OutputSelection. Passthrough
 #' @param ModelType 'regression', 'vector', 'classification', or 'multiclass'
 #' @param data. Passthrough
 #' @param ValidationData. Passthrough
 #' @param TestData. Passthrough
 #' @param TargetColumnName. Passthrough
 #' @param FeatureColNames. Passthrough
+#' @param WeightsColumnName. Passthrough
 #' @param PrimaryDateColumn. Passthrough
 #' @param IDcols. Passthrough
 #' @param TransformNumericColumns. Passthrough regression
 #' @param Methods. Passthrough regression
 #' @param ModelID. Passthrough regression
 #' @param model_path. Passthrough regression
-#' @param DummifyCols. Passthrough regression
 #' @param LossFunction. Passthrough regression
 #' @param EvalMetric. Passthrough regression
 #' @param TrainOnFull. Passthrough
 #' @param SaveModelObjects. Passthrough
 #'
 #' @noRd
-CatBoostDataPrep <- function(ModelType = "regression",
+CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
+                             ModelType = "regression",
                              data. = data,
                              ValidationData. = ValidationData,
                              TestData. = TestData,
                              TargetColumnName. = TargetColumnName,
                              FeatureColNames. = FeatureColNames,
+                             WeightsColumnName. = NULL,
                              PrimaryDateColumn. = PrimaryDateColumn,
                              IDcols. = IDcols,
                              TransformNumericColumns. = TransformNumericColumns,
                              Methods. = Methods,
                              ModelID. = ModelID,
                              model_path. = model_path,
-                             DummifyCols. = DummifyCols,
                              LossFunction. = LossFunction,
                              EvalMetric. = EvalMetric,
                              TrainOnFull. = TrainOnFull,
@@ -344,6 +344,7 @@ CatBoostDataPrep <- function(ModelType = "regression",
         data. <- dataSets$TrainData
         ValidationData. <- dataSets$ValidationData
         TestData. <- dataSets$TestData
+        TransformationResults <- NULL
         rm(dataSets)
         if(length(TargetColumnName.) > 1) {
           MeanTrainTarget <- c()
@@ -388,7 +389,7 @@ CatBoostDataPrep <- function(ModelType = "regression",
   }
 
   # Dummify ----
-  if(length(CatFeatures) > 0L && (DummifyCols. || (!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+  if(length(CatFeatures) > 0L && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
 
     # Regression Dummify Categorical Features ----
     if(!is.null(ValidationData.) && !is.null(TestData.) && !TrainOnFull.) {
@@ -469,7 +470,12 @@ CatBoostDataPrep <- function(ModelType = "regression",
   }
 
   # Data Subset Columns Needed ----
-  keep <- unique(c(PrimaryDateColumn., IDcols.))
+  if(!is.null(PrimaryDateColumn.) && PrimaryDateColumn. %chin% names(data.)) {
+    keep <- unique(c(PrimaryDateColumn., WeightsColumnName., IDcols.))
+  } else {
+    keep <- unique(c(WeightsColumnName., IDcols.))
+  }
+  if("score_traindata" %chin% tolower(OutputSelection.)) TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), fill = TRUE) else TrainMerge <- NULL
   if(!is.null(keep)) data.table::set(data., j = c(keep), value = NULL)
   if(!TrainOnFull. && !is.null(keep)) data.table::set(ValidationData., j = c(keep), value = NULL) else ValidationData. <- NULL
 
@@ -567,10 +573,10 @@ CatBoostDataPrep <- function(ModelType = "regression",
   }
 
   # Identify column numbers for factor variables ----
-  if(ModelType != "multiclass" && (DummifyCols. || (!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+  if(ModelType != "multiclass" && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
     CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
     if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
-  } else if((DummifyCols. || (!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+  } else if(((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
     CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data, is.character)))))
     TargetNum <- which(names(data.) == TargetColumnName.)
     CatFeatures <- setdiff(CatFeatures, TargetNum)
@@ -582,6 +588,7 @@ CatBoostDataPrep <- function(ModelType = "regression",
 
   # Return
   return(list(dataTrain = data.,
+              TrainMerge = TrainMerge,
               dataTest = ValidationData.,
               TestData = TestData.,
               TestMerge = TestMerge,
@@ -611,6 +618,7 @@ CatBoostDataPrep <- function(ModelType = "regression",
 #' @param TestTarget. Passthrough
 #' @param FinalTestTarget. Passthrough
 #' @param TrainOnFull. Passthrough
+#' @param Weights. Passthrough
 #'
 #' @noRd
 CatBoostDataConversion <- function(CatFeatures. = CatFeatures,
@@ -620,30 +628,51 @@ CatBoostDataConversion <- function(CatFeatures. = CatFeatures,
                                    TrainTarget. = TrainTarget,
                                    TestTarget. = TestTarget,
                                    FinalTestTarget. = FinalTestTarget,
-                                   TrainOnFull. = TrainOnFull) {
+                                   TrainOnFull. = TrainOnFull,
+                                   Weights. = NULL) {
+  if(is.character(Weights.) && Weights. %chin% names(dataTrain.)) {
+    TrainWeightVector <- dataTrain.[[eval(TrainWeights.)]]
+    dataTrain.[, eval(TrainWeights.) := NULL]
+    if(!is.null(dataTest.)) {
+      ValidationWeightVector <- dataTest.[[eval(ValidationWeights.)]]
+      dataTest.[, eval(ValidationWeights.) := NULL]
+    } else {
+      ValidationWeightVector <- NULL
+    }
+    if(!is.null(TestData.)) {
+      TestWeightVector <- TestData.[[eval(TestWeights.)]]
+      TestData.[, eval(TestWeights.) := NULL]
+    }  else {
+      TestWeightVector <- NULL
+    }
+  } else {
+    TrainWeightVector <- NULL
+    ValidationWeightVector <- NULL
+    TestWeightVector <- NULL
+  }
   if(!is.null(CatFeatures.) || length(CatFeatures.) > 0) {
     if(!is.null(TestData.)) {
-      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = CatFeatures.)
+      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = CatFeatures., weight = TrainWeightVector)
       if(!TrainOnFull.) {
-        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = CatFeatures.)
-        FinalTestPool <- catboost::catboost.load_pool(TestData., label = FinalTestTarget., cat_features = CatFeatures.)
+        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = CatFeatures., weight = ValidationWeightVector)
+        FinalTestPool <- catboost::catboost.load_pool(TestData., label = FinalTestTarget., cat_features = CatFeatures., weight = TestWeightVector)
       }
     } else {
-      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = CatFeatures.)
+      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = CatFeatures., weight = TrainWeightVector)
       if(!TrainOnFull.) {
-        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = CatFeatures.)
+        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = CatFeatures., weight = ValidationWeightVector)
       }
     }
   } else {
     if(!is.null(TestData.)) {
-      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget.)
+      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., weight = TrainWeightVector)
       if(!TrainOnFull.) {
-        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget.)
-        FinalTestPool <- catboost::catboost.load_pool(TestData., label = FinalTestTarget.)
+        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., weight = ValidationWeightVector)
+        FinalTestPool <- catboost::catboost.load_pool(TestData., label = FinalTestTarget., weight = TestWeightVector)
       }
     } else {
-      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget.)
-      if(!TrainOnFull.) TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget.)
+      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., weight = TrainWeightVector)
+      if(!TrainOnFull.) TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., weight = ValidationWeightVector)
     }
   }
 
@@ -912,6 +941,7 @@ CatBoostFinalParams <- function(ModelType = "classification",
 #' @param FinalTestTarget. Passthrough
 #' @param TestTarget. Passthrough
 #' @param TrainTarget. Passthrough
+#' @param TrainMerge. Passthrough
 #' @param TestMerge. Passthrough
 #' @param dataTest. Passthrough
 #' @param data. Passthrough
@@ -934,6 +964,7 @@ CatBoostValidationData <- function(ModelType = "classification",
                                    FinalTestTarget. = FinalTestTarget,
                                    TestTarget. = TestTarget,
                                    TrainTarget. = TrainTarget,
+                                   TrainMerge. = NULL,
                                    TestMerge. = TestMerge,
                                    dataTest. = dataTest,
                                    data. = data,
@@ -965,9 +996,25 @@ CatBoostValidationData <- function(ModelType = "classification",
           data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_ValidationData.csv")))
         }
       }
+    } else if(!is.null(TrainMerge.)) {
+      ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
+      if(SaveModelObjects.) {
+        if(!is.null(metadata_path.)) {
+          data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_TrainData.csv")))
+        } else {
+          data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_TrainData.csv")))
+        }
+      }
     } else {
       ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., p1 = predict.))
       data.table::setnames(ValidationData, "Target", eval(TargetColumnName.), skip_absent = TRUE)
+      if(SaveModelObjects.) {
+        if(!is.null(metadata_path.)) {
+          data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_TrainData.csv")))
+        } else {
+          data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_TrainData.csv")))
+        }
+      }
     }
   }
 
@@ -994,6 +1041,8 @@ CatBoostValidationData <- function(ModelType = "classification",
     } else {
       if(!is.null(dataTest.)) {
         ValidationData <- data.table::as.data.table(cbind(dataTest., Predict = predict.))
+      } else if(!is.null(TrainMerge.)) {
+        ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
       } else {
         ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., data., Predict = predict.))
         if(length(TargetColumnName.) > 1L) {
@@ -1061,11 +1110,17 @@ CatBoostValidationData <- function(ModelType = "classification",
     }
 
     # Save validation data
-    if(SaveModelObjects.) {
+    if(SaveModelObjects. && is.null(TrainMerge.)) {
       if(!is.null(metadata_path.)) {
         data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_ValidationData.csv")))
       } else {
         data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_ValidationData.csv")))
+      }
+    } else if(SaveModelObjects. && !is.null(TrainMerge.)) {
+      if(!is.null(metadata_path.)) {
+        data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_TrainData.csv")))
+      } else {
+        data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_TrainData.csv")))
       }
     }
   }
@@ -1079,9 +1134,13 @@ CatBoostValidationData <- function(ModelType = "classification",
     } else if(!TrainOnFull.) {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., predict.))
     } else {
-      ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., predict.))
+      if(!is.null(TrainMerge.)) {
+        ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
+      } else {
+        ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., predict.))
+      }
     }
-    if(TrainOnFull.) {
+    if(TrainOnFull. && is.null(TrainMerge.)) {
       ValidationData <- merge(
         ValidationData,
         TargetLevels.,
@@ -1092,11 +1151,11 @@ CatBoostValidationData <- function(ModelType = "classification",
       ValidationData <- merge(
         ValidationData,
         TargetLevels.,
-        by.x = "V2",
+        by.x = "V1",
         by.y = "NewLevels",
         all = FALSE)
-      ValidationData[, V2 := OriginalLevels][, OriginalLevels := NULL]
-    } else {
+      ValidationData[, V1 := OriginalLevels][, OriginalLevels := NULL]
+    } else if(is.null(TrainMerge.)) {
       ValidationData <- merge(
         ValidationData,
         TargetLevels.,
@@ -1114,16 +1173,26 @@ CatBoostValidationData <- function(ModelType = "classification",
     }
 
     # MultiClass Update Names for Predicted Value Columns ----
-    if(!TrainOnFull.) k <- 1L else k <- 2L
+    k <- 1L
     for(name in as.character(TargetLevels.[[1L]])) {
       k <- k + 1L
       data.table::setnames(ValidationData, paste0("V", k), name)
     }
-    if(!TrainOnFull.) {
-      data.table::setnames(ValidationData, c("V1","Target"), c("Predict", eval(TargetColumnName.)))
+    if(!TrainOnFull. || !is.null(TrainMerge.)) {
+      data.table::setnames(ValidationData, c("V1","Target"), c("Predict", eval(TargetColumnName.)), skip_absent = TRUE)
       data.table::set(ValidationData, j = eval(TargetColumnName.), value = as.character(ValidationData[[eval(TargetColumnName.)]]))
+      if(!is.null(TrainMerge.)) {
+        ValidationData <- merge(
+          ValidationData,
+          TargetLevels.,
+          by.x = "Predict",
+          by.y = "NewLevels",
+          all = FALSE)
+        ValidationData[, Predict := OriginalLevels][, OriginalLevels := NULL]
+        data.table::setcolorder(ValidationData, c(1, (ncol(ValidationData)-TargetLevels.[,.N]+1):ncol(ValidationData), 2:(ncol(ValidationData)-TargetLevels.[,.N])))
+      }
     } else {
-      data.table::setnames(ValidationData, c("V2","Target"), c("Predict", eval(TargetColumnName.)))
+      data.table::setnames(ValidationData, c("V1","Target"), c("Predict", eval(TargetColumnName.)))
       data.table::set(ValidationData, j = eval(TargetColumnName.), value = as.character(ValidationData[[eval(TargetColumnName.)]]))
     }
     data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
@@ -1142,16 +1211,11 @@ CatBoostValidationData <- function(ModelType = "classification",
 #'
 #' @param ModelType 'regression', 'classification', or 'multiclass'
 #' @param TargetColumnName. Passthrough
-#' @param BestGrid. Passthrough
-#' @param TrainOnFull. Passthrough
 #' @param TrainPool. Passthrough
 #' @param TestPool. Passthrough
 #' @param FinalTestPool. Passthrough
-#' @param TestDataCheck Check if TestData is not null
+#' @param TrainData. Passthrough
 #' @param ValidationData. Passthrough
-#' @param FeatureColNames. Passthrough
-#' @param GridTune. Passthrough
-#' @param task_type. Passthrough
 #' @param SaveModelObjects. Passthrough
 #' @param model. Passthrough
 #' @param ModelID. Passthrough
@@ -1162,16 +1226,11 @@ CatBoostValidationData <- function(ModelType = "classification",
 #' @noRd
 CatBoostImportances <- function(ModelType = "regression",
                                 TargetColumnName.=TargetColumnName,
-                                BestGrid. = BestGrid,
-                                TrainOnFull. = TrainOnFull,
                                 TrainPool. = TrainPool,
                                 TestPool. = TestPool,
                                 FinalTestPool. = FinalTestPool,
-                                TestDataCheck = !is.null(TestData),
+                                TrainData. = NULL,
                                 ValidationData. = ValidationData,
-                                FeatureColNames. = FeatureColNames,
-                                GridTune. = GridTune,
-                                task_type. = task_type,
                                 SaveModelObjects. = SaveModelObjects,
                                 model. = model,
                                 ModelID. = ModelID,
@@ -1182,57 +1241,102 @@ CatBoostImportances <- function(ModelType = "regression",
   # Gather artifacts
   if(!GrowPolicy. %chin% c("Depthwise","Lossguide")) {
 
-    # Feature Information
-    Interaction <- tryCatch({data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = if(TestDataCheck) FinalTestPool. else if(TrainOnFull.) TrainPool. else if(!is.null(ValidationData.)) TestPool., type = "Interaction"))}, error = function(x) NULL)
-    Imp <- catboost::catboost.get_feature_importance(model., pool = if(TestDataCheck) FinalTestPool. else if(TrainOnFull.) TrainPool. else if(!is.null(ValidationData.)) TestPool., type = "PredictionValuesChange")
-    VariableImportance <- data.table::data.table(cbind(Variable = rownames(Imp), Imp))
-    if(ModelType != "multiclass" && length(TargetColumnName.) == 1L) ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = if(TestDataCheck) FinalTestPool. else if(TrainOnFull.) TrainPool. else if(!is.null(ValidationData.)) TestPool., type = "ShapValues")) else ShapValues <- NULL
+    # Interaction Importance
+    InteractionList <- list()
+    if(!is.null(TrainPool.)) InteractionList[["Train_Interaction"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = TrainPool., type = "Interaction"))
+    if(!is.null(TestPool.)) InteractionList[["Validation_Interaction"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = TestPool., type = "Interaction"))
+    if(!is.null(FinalTestPool.)) InteractionList[["Test_Interaction"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = FinalTestPool., type = "Interaction"))
+
+    # Importance
+    ImportanceList <- list()
+    if(!is.null(TrainPool.)) ImportanceList[["Train_Importance"]] <- catboost::catboost.get_feature_importance(model., pool = TrainPool., type = "PredictionValuesChange")
+    if(!is.null(TestPool.)) ImportanceList[["Validation_Importance"]] <- catboost::catboost.get_feature_importance(model., pool = TestPool., type = "PredictionValuesChange")
+    if(!is.null(FinalTestPool.)) ImportanceList[["Test_Importance"]] <- catboost::catboost.get_feature_importance(model., pool = FinalTestPool., type = "PredictionValuesChange")
+    if(length(ImportanceList) > 0L) {
+      for(i in names(ImportanceList)) ImportanceList[[i]] <- data.table::data.table(cbind(Variable = rownames(ImportanceList[[i]]), ImportanceList[[i]]))
+    }
+
+    # Shap Values
+    ShapList <- list()
+    if(ModelType != "multiclass" && length(TargetColumnName.) == 1L) {
+      if(!is.null(TrainPool.)) ShapList[["Train_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = TrainPool., type = "ShapValues"))
+      if(!is.null(TestPool.)) {
+        ShapList[["Validation_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = TestPool., type = "ShapValues"))
+        ShapList[["Train_Shap"]] <- data.table::rbindlist(list(ShapList$Train_Shap, ShapList$Validation_Shap))
+        ShapList$Validation_Shap <- NULL
+      }
+      if(!is.null(FinalTestPool.)) ShapList[["Test_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = FinalTestPool., type = "ShapValues"))
+    }
 
     # Gather importances
-    temp <- data.table::data.table(ColNames = VariableImportance[[1L]])[, Index := 0:(.N - 1)]
-    if(!is.null(ShapValues)) {
-      data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_", temp[[1L]]), "Predictions"), skip_absent = TRUE)
-      ShapValues[, Predictions := NULL]
-      ShapValues <- cbind(ValidationData., ShapValues)
+    temp <- data.table::data.table(ColNames = ImportanceList[[1L]][[1L]])[, Index := 0:(.N - 1)]
+    if(length(ShapList) > 0L) {
+      for(i in names(ShapList)) {
+        data.table::setnames(ShapList[[i]], names(ShapList[[i]]), c(paste0("Shap_", temp[[1L]]), "Predictions"), skip_absent = TRUE)
+        data.table::set(ShapList[[i]], j = "Predictions", value = NULL)
+        if(i == "Test_Shap") ShapList[[i]] <- cbind(ValidationData., ShapList[[i]]) else if(!is.null(TrainData.)) ShapList[[i]] <- cbind(TrainData., ShapList[[i]]) else ShapList[[i]] <- cbind(ValidationData., ShapList[[i]])
+      }
     }
 
     # Gather interaction importances
-    if(!is.null(Interaction)) {
-      Interaction <- merge(Interaction, temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
-      data.table::setnames(Interaction, "ColNames", "Features1")
-      Interaction <- merge(Interaction, temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
-      data.table::setnames(Interaction, "ColNames", "Features2")
-      Interaction[, ":=" (feature2_index = NULL, feature1_index = NULL)]
-      data.table::setcolorder(Interaction, c(2L, 3L, 1L))
-      data.table::setorderv(Interaction, "score", -1)
+    for(i in names(InteractionList)) {
+      if(length(InteractionList) > 0L) {
+        InteractionList[[i]] <- merge(InteractionList[[i]], temp, by.x = "feature1_index", by.y = "Index", all = FALSE)
+        data.table::setnames(InteractionList[[i]], "ColNames", "Features1")
+        InteractionList[[i]] <- merge(InteractionList[[i]], temp, by.x = "feature2_index", by.y = "Index", all = FALSE)
+        data.table::setnames(InteractionList[[i]], "ColNames", "Features2")
+        InteractionList[[i]][, ":=" (feature2_index = NULL, feature1_index = NULL)]
+        data.table::setcolorder(InteractionList[[i]], c(2L, 3L, 1L))
+        data.table::setorderv(InteractionList[[i]], "score", -1)
+      }
     }
 
     # Structure data
-    tryCatch({data.table::setnames(VariableImportance, "V2", "Importance")}, error = function(x) data.table::setnames(VariableImportance, "V1", "Importance"))
-    VariableImportance[, Importance := round(as.numeric(Importance), 4L)]
-    VariableImportance <- VariableImportance[order(-Importance)]
+    for(i in names(ImportanceList)) {
+      tryCatch({data.table::setnames(ImportanceList[[i]], "V2", "Importance")}, error = function(x) data.table::setnames(ImportanceList[[i]], "V1", "Importance"))
+      ImportanceList[[i]][, Importance := round(as.numeric(Importance), 4L)]
+      ImportanceList[[i]] <- ImportanceList[[i]][order(-Importance)]
+      if(SaveModelObjects.) {
+        if(!is.null(metadata_path.)) {
+          data.table::fwrite(ImportanceList[[i]], file = file.path(metadata_path., paste0(ModelID., "_", i, "_VariableImportance.csv")))
+        } else {
+          data.table::fwrite(ImportanceList[[i]], file = file.path(model_path., paste0(ModelID., "_", i, "_VariableImportance.csv")))
+        }
+      }
+    }
+
+    # Structure data
+    if(SaveModelObjects. && length(ShapList) > 0L) {
+      for(i in names(ShapList)) {
+        if(!is.null(metadata_path.)) {
+          if(!is.null(ShapList[[i]])) data.table::fwrite(ShapList[[i]], file = file.path(metadata_path., paste0(ModelID., "_", i, "_ShapValues.csv")))
+        } else {
+          if(!is.null(ShapList[[i]])) data.table::fwrite(ShapList[[i]], file = file.path(model_path., paste0(ModelID., "_", i, "_ShapValues.csv")))
+        }
+      }
+    }
+
+    # Structure data
     if(SaveModelObjects.) {
-      if(!is.null(metadata_path.)) {
-        data.table::fwrite(VariableImportance, file = file.path(metadata_path., paste0(ModelID., "_VariableImportance.csv")))
-        if(!is.null(ShapValues)) data.table::fwrite(ShapValues, file = file.path(metadata_path., paste0(ModelID., "_ShapValues.csv")))
-        if(!is.null(Interaction)) data.table::fwrite(Interaction, file = file.path(metadata_path., paste0(ModelID., "_Interaction.csv")))
-      } else {
-        data.table::fwrite(VariableImportance, file = file.path(model_path., paste0(ModelID., "_VariableImportance.csv")))
-        if(!is.null(ShapValues)) data.table::fwrite(ShapValues, file = file.path(model_path., paste0(ModelID., "_ShapValues.csv")))
-        if(!is.null(Interaction)) data.table::fwrite(Interaction, file = file.path(model_path., paste0(ModelID., "_Interaction.csv")))
+      for(i in names(InteractionList)) {
+        if(!is.null(metadata_path.)) {
+          if(!is.null(InteractionList[[i]])) data.table::fwrite(InteractionList[[i]], file = file.path(metadata_path., paste0(ModelID., "_", i, "_Interaction.csv")))
+        } else {
+          if(!is.null(InteractionList[[i]])) data.table::fwrite(InteractionList[[i]], file = file.path(model_path., paste0(ModelID., "_", i, "_Interaction.csv")))
+        }
       }
     }
   } else {
-    VariableImportance <- NULL
-    Interaction <- NULL
-    ShapValues <- NULL
+    ImportanceList <- NULL
+    InteractionList <- NULL
+    ShapList <- NULL
   }
 
   # Return
   return(list(
-    Interaction = Interaction,
-    VariableImportance = VariableImportance,
-    ShapValues = ShapValues))
+    Interaction = InteractionList,
+    VariableImportance = ImportanceList,
+    ShapValues = ShapList))
 }
 
 #' @title CatBoostPDF
@@ -1246,15 +1350,9 @@ CatBoostImportances <- function(ModelType = "regression",
 #' @param ModelType 'regression', 'classification', 'multiclass', or 'vector'
 #' @param TrainOnFull. Passthrough
 #' @param SaveInfoToPDF. Passthrough
-#' @param EvaluationPlot. Passthrough
-#' @param EvaluationBoxPlot. Passthrough
-#' @param ROC_Plot. Passthrough
-#' @param Gains Passthrough
-#' @param Lift Passthrough
+#' @param PlotList. Passthrough
 #' @param VariableImportance. Passthrough
-#' @param ParDepPlots. Passthrough
-#' @param ParDepBoxPlots. Passthrough
-#' @param EvalMetrics. Passthrough
+#' @param EvalMetricsList. Passthrough
 #' @param Interaction. Passthrough
 #' @param model_path. Passthrough
 #' @param metadata_path. Passthrough
@@ -1264,40 +1362,32 @@ CatBoostPDF <- function(ModelClass = "catboost",
                         ModelType = "regression",
                         TrainOnFull. = TrainOnFull,
                         SaveInfoToPDF. = SaveInfoToPDF,
-                        EvaluationPlot. = EvaluationPlot,
-                        EvaluationBoxPlot. = EvaluationBoxPlot,
-                        Gains. = NULL,
-                        Lift. = NULL,
-                        ROC_Plot. = NULL,
-                        ParDepPlots. = ParDepPlots,
-                        ParDepBoxPlots. = ParDepBoxPlots,
-                        EvalMetrics. = EvalMetrics,
+                        EvalMetricsList. = EvalMetricsList,
+                        PlotList. = PlotList,
                         VariableImportance. = VariableImportance,
                         Interaction. = Interaction,
                         model_path. = model_path,
                         metadata_path. = metadata_path) {
 
-  # Classification
-  if(ModelType == "classification") {
-    if(!TrainOnFull. && SaveInfoToPDF.) {
-      Metrics <- EvalMetrics.[, .SD, .SDcols = c("Threshold", "TN", "TP", "FN", "FP", "N", "P", "Utility", "MCC", "Accuracy")]
-      EvalPlotList <- list(EvaluationPlot., ROC_Plot., Gains., Lift., if(!is.null(VariableImportance.)) VI_Plot(Type = ModelClass, VI_Data = VariableImportance.) else NULL)
-      ParDepList <- list(if(!is.null(ParDepPlots.)) ParDepPlots. else NULL)
-      TableMetrics <- list(Metrics, if(!is.null(VariableImportance.)) VariableImportance. else NULL, if(!is.null(Interaction.)) Interaction. else NULL)
-    } else {
-      return(NULL)
+  # Prepare objects
+  if(!TrainOnFull. && SaveInfoToPDF.) {
+    if(ModelType == "classification") {
+      for(i in names(EvalMetricsList.)) {
+        EvalMetricsList.[[i]] <- EvalMetricsList.[[i]][, .SD, .SDcols = c("Threshold", "TN", "TP", "FN", "FP", "N", "P", "Utility", "MCC", "Accuracy")]
+      }
     }
-  }
-
-  # Regression
-  if(ModelType == "regression") {
-    if(!TrainOnFull. && SaveInfoToPDF.) {
-      EvalPlotList <- list(EvaluationPlot., EvaluationBoxPlot., if(!is.null(VariableImportance.)) VI_Plot(Type = ModelClass, VI_Data = VariableImportance.) else NULL)
-      ParDepList <- list(if(!is.null(ParDepPlots.)) ParDepPlots. else NULL, if(!is.null(ParDepBoxPlots.)) ParDepBoxPlots. else NULL)
-      TableMetrics <- list(EvalMetrics., if(!is.null(VariableImportance.)) VariableImportance. else NULL, if(!is.null(Interaction.)) Interaction. else NULL)
+    VI_List <- list()
+    if(!data.table::is.data.table(VariableImportance.)) {
+      for(i in names(VariableImportance.)) {
+        VI_List[[i]] <- VI_Plot(Type = ModelClass, VI_Data = VariableImportance.[[i]])
+      }
     } else {
-      return(NULL)
+      VI_List[[1L]] <- VI_Plot(Type = ModelClass, VI_Data = VariableImportance.)
     }
+    EvalPlotList <- list(PlotList., if(!is.null(VariableImportance.)) VI_List else NULL)
+    TableMetrics <- list(EvalMetricsList., if(!is.null(VariableImportance.)) VariableImportance. else NULL, if(!is.null(Interaction.)) Interaction. else NULL)
+  } else {
+    return(NULL)
   }
 
   # Print to pdf
@@ -1306,12 +1396,6 @@ CatBoostPDF <- function(ModelClass = "catboost",
     OutputName = "EvaluationPlots",
     ObjectList = EvalPlotList,
     Title = "Model Evaluation Plots",
-    Width = 12, Height = 7, Paper = "USr", BackgroundColor = "transparent", ForegroundColor = "black"))
-  try(PrintToPDF(
-    Path = if(!is.null(metadata_path.)) metadata_path. else if(!is.null(model_path.)) model_path. else getwd(),
-    OutputName = "PartialDependencePlots",
-    ObjectList = ParDepList,
-    Title = "Partial Dependence Calibration Plots",
     Width = 12, Height = 7, Paper = "USr", BackgroundColor = "transparent", ForegroundColor = "black"))
   try(PrintToPDF(
     Path = if(!is.null(metadata_path.)) metadata_path. else if(!is.null(model_path.)) model_path. else getwd(),
@@ -1429,6 +1513,7 @@ CatBoostParameterGrids <- function(TaskType = "CPU",
   eGrid <- data.table::data.table(
     GridNumber = rep(-1, 10000L),
     RunNumber = 1L:10000L,
+    MetricValue = runif(10000L),
     RunTime = rep(-1, 10000L),
     TreesBuilt = rep(-1,10000L),
     NTrees = rep(-1,10000L),

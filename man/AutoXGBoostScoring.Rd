@@ -13,7 +13,6 @@ AutoXGBoostScoring(
   EncodingMethod = "binary",
   FactorLevelsList = NULL,
   TargetLevels = NULL,
-  Objective = "multi:softmax",
   OneHot = FALSE,
   ModelObject = NULL,
   ModelPath = NULL,
@@ -48,8 +47,6 @@ AutoXGBoostScoring(
 \item{FactorLevelsList}{Supply the factor variables' list from DummifyDT()}
 
 \item{TargetLevels}{Supply the target levels output from AutoXGBoostMultiClass() or the scoring function will go looking for it in the file path you supply.}
-
-\item{Objective}{Set to 'multi:softprobs' if you did so in training. Default is softmax}
 
 \item{ModelObject}{Supply a model for scoring, otherwise it will have to search for it in the file path you specify}
 
@@ -98,7 +95,6 @@ Preds <- AutoXGBoostScoring(
   EncodingMethod = "binary",
   FactorLevelsList = NULL,
   TargetLevels = NULL,
-  Objective = "multi:softmax",
   ModelObject = NULL,
   ModelPath = "home",
   ModelID = "ModelTest",

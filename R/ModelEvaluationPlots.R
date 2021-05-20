@@ -67,17 +67,17 @@ EvalPlot <- function(data,
     zz2[, Type := 'actual']
     data.table::setnames(zz2, c("acts"), c("output"))
     data <- data.table::rbindlist(list(zz1, zz2))
-    plot <- ggplot2::ggplot(data, ggplot2::aes(x = rank, y = output, fill = Type)) +
+    plot <- eval(ggplot2::ggplot(data, ggplot2::aes(x = rank, y = output, fill = Type)) +
       ggplot2::geom_boxplot(outlier.color = "red", color = "black") +
       ggplot2::ggtitle("Calibration Evaluation Boxplot") +
       ggplot2::xlab("Predicted Percentile") +
       ggplot2::ylab("Observed Values") +
       ChartTheme(Size = 15) +
-      ggplot2::scale_fill_manual(values = c("red", "blue"))
+      ggplot2::scale_fill_manual(values = c("red", "blue")))
 
   } else {
     data <- data[, lapply(.SD, noquote(aggrfun)), by = list(rank)]
-    plot  <- ggplot2::ggplot(data, ggplot2::aes(x = rank))  +
+    plot <- eval(ggplot2::ggplot(data, ggplot2::aes(x = rank))  +
       ggplot2::geom_line(ggplot2::aes(y = data[[3L]], color = "Actual")) +
       ggplot2::geom_line(ggplot2::aes(y = data[[2L]], color = "Predicted")) +
       ggplot2::xlab("Predicted Percentile") +
@@ -87,7 +87,7 @@ EvalPlot <- function(data,
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::ggtitle("Calibration Evaluation Plot") +
       ChartTheme(Size = 15) +
-      ggplot2::scale_fill_manual(values = c("blue", "gold"))
+      ggplot2::scale_fill_manual(values = c("blue", "gold")))
   }
   return(plot)
 }
@@ -139,11 +139,11 @@ ParDepCalPlots <- function(data,
   # Turn off ggplot2 warnings----
   options(warn = -1L)
 
-  # Build buckets by independent variable of choice----
-  preds2 <- data.table::as.data.table(data)
-
   # Cap number of records----
   if(data[,.N] > 1000000) data <- data[order(runif(.N))][seq_len(1000000)]
+
+  # Build buckets by independent variable of choice----
+  preds2 <- data.table::as.data.table(data)
 
   # Subset columns----
   cols <- c(PredictionColName, TargetColName, IndepVar)
@@ -190,15 +190,16 @@ ParDepCalPlots <- function(data,
     preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
 
     # Partial dependence calibration plot----
-    plot <- ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
-      ggplot2::geom_line(ggplot2::aes(y = preds3[[PredictionColName]], color = "Predicted")) +
-      ggplot2::geom_line(ggplot2::aes(y = preds3[[TargetColName]], color = "Actuals")) +
-      ggplot2::ylab("Actual | Predicted") +
-      ggplot2::xlab(IndepVar) +
-      ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
-      ChartTheme(Size = 15) +
-      ggplot2::ggtitle("Partial Dependence Calibration Plot")
-  } else if (GraphType == "boxplot") {
+    plot <- eval(
+      ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
+        ggplot2::geom_line(ggplot2::aes(y = preds3[[PredictionColName]], color = "Predicted")) +
+        ggplot2::geom_line(ggplot2::aes(y = preds3[[TargetColName]], color = "Actuals")) +
+        ggplot2::ylab("Actual | Predicted") +
+        ggplot2::xlab(IndepVar) +
+        ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
+        ChartTheme(Size = 15) +
+        ggplot2::ggtitle("Partial Dependence Calibration Plot"))
+  } else if(GraphType == "boxplot") {
     keep <- c("rank", TargetColName, IndepVar)
     actual <- preds2[, ..keep]
     actual[, Type := "actual"]
@@ -213,14 +214,15 @@ ParDepCalPlots <- function(data,
     data <- data[, eval(IndepVar) := round(Function(get(IndepVar)), 3L), by = rank]
     data[, eval(IndepVar) := as.factor(get(IndepVar))]
     data[, rank := NULL]
-    plot <- ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
-      ggplot2::geom_boxplot(ggplot2::aes(fill = Type)) +
-      ggplot2::scale_fill_manual(values = c("red", "blue")) +
-      ggplot2::ggtitle("Partial Dependence Calibration Boxplot") +
-      ggplot2::xlab(eval(IndepVar)) +
-      ggplot2::ylab("Actual | Predicted") +
-      ChartTheme(Size = 15)
-  } else if (GraphType == "FactorVar") {
+    plot <- eval(
+      ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
+        ggplot2::geom_boxplot(ggplot2::aes(fill = Type)) +
+        ggplot2::scale_fill_manual(values = c("red", "blue")) +
+        ggplot2::ggtitle("Partial Dependence Calibration Boxplot") +
+        ggplot2::xlab(eval(IndepVar)) +
+        ggplot2::ylab("Actual | Predicted") +
+        ChartTheme(Size = 15))
+  } else if(GraphType == "FactorVar") {
     keep <- c(IndepVar, TargetColName)
     actual <- preds3[, ..keep]
     actual[, Type := "actual"]
@@ -230,13 +232,14 @@ ParDepCalPlots <- function(data,
     predicted[, Type := "predicted"]
     data.table::setnames(predicted, PredictionColName, "Output")
     data <- data.table::rbindlist(list(actual, predicted))[order(-Output)]
-    plot <- ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
-      ggplot2::geom_bar(stat = "identity", position = "dodge", ggplot2::aes(fill = Type)) +
-      ggplot2::scale_fill_manual(values = c("red", "blue")) +
-      ggplot2::ggtitle("Partial Dependence Calibration Barplot") +
-      ggplot2::xlab(eval(IndepVar)) +
-      ggplot2::ylab("Actual | Predicted") +
-      ChartTheme(Size = 15)
+    plot <- eval(
+      ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
+       ggplot2::geom_bar(stat = "identity", position = "dodge", ggplot2::aes(fill = Type)) +
+        ggplot2::scale_fill_manual(values = c("red", "blue")) +
+        ggplot2::ggtitle("Partial Dependence Calibration Barplot") +
+        ggplot2::xlab(eval(IndepVar)) +
+        ggplot2::ylab("Actual | Predicted") +
+        RemixAutoML::ChartTheme(Size = 15))
   }
 
   # Return plot----
@@ -284,12 +287,12 @@ ROCPlot <- function(data = ValidationData,
     Specificity = AUC_Metrics$specificities)
 
   # Create plot
-  ROC_Plot <- ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
+  ROC_Plot <- eval(ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
     ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
     ggplot2::geom_abline(slope = 1, color = "black") +
     ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
     ChartTheme() + ggplot2::xlab("Specificity") +
-    ggplot2::ylab("Sensitivity")
+    ggplot2::ylab("Sensitivity"))
 
   # Save plot
   if(SavePlot) {
@@ -326,8 +329,8 @@ VI_Plot <- function(Type = "catboost",
                     TopN = 10) {
 
   # Catboost
-  if(Type == "catboost") {
-    return(eval(
+  if(Type != "h2o") {
+    p1 <- eval(
       ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Variable, abs(Importance)), y = Importance, fill = Importance)) +
         ggplot2::geom_bar(stat = "identity") +
         ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
@@ -336,33 +339,23 @@ VI_Plot <- function(Type = "catboost",
         ggplot2::labs(title = "Global Variable Importance") +
         ggplot2::xlab("Top Model Features") +
         ggplot2::ylab("Value") +
-        ggplot2::theme(legend.position = "none")))
-  }
-
-  # XGBoost
-  if(Type == "xgboost") {
-    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Feature, Gain), y = Gain, fill = Gain)) +
-                  ggplot2::geom_bar(stat = "identity") +
-                  ggplot2::scale_fill_gradient2(mid = ColorLow, high = ColorHigh) +
-                  ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-                  ggplot2::coord_flip() +
-                  ggplot2::labs(title = "Global Variable Importance") +
-                  ggplot2::xlab("Top Model Features") +
-                  ggplot2::ylab("Value") +
-                  ggplot2::theme(legend.position = "none")))
+        ggplot2::theme(legend.position = "none"))
+    return(p1)
   }
 
   # H2O
   if(Type == "h2o") {
-    return(eval(ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
-                  ggplot2::geom_bar(stat = "identity") +
-                  ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
-                  ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
-                  ggplot2::coord_flip() +
-                  ggplot2::labs(title = "Global Variable Importance") +
-                  ggplot2::xlab("Top Model Features") +
-                  ggplot2::ylab("Value") +
-                  ggplot2::theme(legend.position = "none")))
+    p1 <- eval(
+      ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
+        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
+        ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
+        ggplot2::coord_flip() +
+        ggplot2::labs(title = "Global Variable Importance") +
+        ggplot2::xlab("Top Model Features") +
+        ggplot2::ylab("Value") +
+        ggplot2::theme(legend.position = "none"))
+    return(p1)
   }
 }
 
@@ -437,11 +430,11 @@ CumGainsChart <- function(data = NULL,
         label.padding = ggplot2::unit(0.2, "lines")) +
       ggplot2::ylim(0,110) +
       ggplot2::guides(fill = FALSE) +
-      ggplot2::scale_colour_continuous(breaks = c(0, seq(10, 100, 10)))) +
-    ChartTheme() + ggplot2::theme(legend.position = "none")
+      ggplot2::scale_colour_continuous(breaks = c(0, seq(10, 100, 10))) +
+      ChartTheme() + ggplot2::theme(legend.position = "none"))
 
   # Create Lift Chart
-  p_lift <- (ggplot2::ggplot(
+  p_lift <- eval(ggplot2::ggplot(
     data = LiftRes_T,
     ggplot2::aes(Population, Lift, label = Lift, group = 1)) +
       ggplot2::geom_line(stat = "identity") +
@@ -466,8 +459,8 @@ CumGainsChart <- function(data = NULL,
       ggplot2::ylim(min(LiftRes_T[["Lift"]]), max(LiftRes_T[["Lift"]] * 1.1)) +
       ggplot2::guides(fill = FALSE) +
       ggplot2::scale_colour_continuous(guide = FALSE) +
-      ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10)))) +
-    ChartTheme() + ggplot2::theme(legend.position = "none")
+      ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10))) +
+      ChartTheme() + ggplot2::theme(legend.position = "none"))
 
   # Save plot
   if(SavePlot) {
@@ -523,6 +516,13 @@ ML_EvalPlots <- function(ModelType = "classification",
                          model_path. = model_path,
                          predict. = predict) {
 
+  # Variable Importance Managment
+  if(!data.table::is.data.table(VariableImportance.)) {
+    VarImp <- VariableImportance.[[1L]]
+  } else {
+    VarImp <- VariableImportance.
+  }
+
   # Classification
   if(ModelType == "classification") {
 
@@ -555,27 +555,27 @@ ML_EvalPlots <- function(ModelType = "classification",
       ParDepPlots <- list()
       j <- 0L
       if(!is.null(VariableImportance.) && NumOfParDepPlots. > 0L && !TrainOnFull.) {
-        for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VariableImportance.[,.N]))) {
+        for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VarImp[,.N]))) {
           tryCatch({
             Out <- ParDepCalPlots(
               data = ValidationData.,
               PredictionColName = "p1",
               TargetColName = eval(TargetColumnName.),
-              IndepVar = if("Variable" %in% names(VariableImportance.)) gsub("\\..*","", VariableImportance.[i, Variable]) else gsub("\\..*","", VariableImportance.[i, Feature]),
+              IndepVar = if("Variable" %in% names(VarImp)) gsub("\\..*","", VarImp[i, Variable]) else gsub("\\..*","", VarImp[i, Variable]),
               GraphType = "calibration",
               PercentileBucket = 0.05,
               FactLevels = 10L,
               Function = function(x) mean(x, na.rm = TRUE))
             j <- j + 1L
-            if("Variable" %in% names(VariableImportance.)) ParDepPlots[[paste0(VariableImportance.[j, Variable])]] <- Out else ParDepPlots[[paste0(VariableImportance.[j, Feature])]] <- Out
+            if("Variable" %in% names(VarImp)) ParDepPlots[[paste0(VarImp[j, Variable])]] <- Out else ParDepPlots[[paste0(VarImp[j, Variable])]] <- Out
           }, error = function(x) "skip")
         }
       }
       if(SaveModelObjects.) {
         if(!is.null(metadata_path.)) {
-          if(!is.null(VariableImportance.)) save(ParDepPlots, file = file.path(metadata_path., paste0(ModelID., "_ParDepPlots.R")))
+          if(!is.null(VarImp)) save(ParDepPlots, file = file.path(metadata_path., paste0(ModelID., "_ParDepPlots.R")))
         } else {
-          if(!is.null(VariableImportance.)) save(ParDepPlots, file = file.path(model_path., paste0(ModelID., "_ParDepPlots.R")))
+          if(!is.null(VarImp)) save(ParDepPlots, file = file.path(model_path., paste0(ModelID., "_ParDepPlots.R")))
         }
       }
     } else {
@@ -604,7 +604,7 @@ ML_EvalPlots <- function(ModelType = "classification",
         aggrfun = function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
-      if(!TrainOnFull.) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[Metric == "R2", MetricValue], 3L)))
+      if(!TrainOnFull.) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[1L]][Metric == "R2", MetricValue], 3L)))
 
       # Save plot to file
       if(!TrainOnFull.) {
@@ -627,7 +627,7 @@ ML_EvalPlots <- function(ModelType = "classification",
         aggrfun = function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
-      if(!TrainOnFull.) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[Metric == "R2", MetricValue], 3L)))
+      if(!TrainOnFull.) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[1L]][Metric == "R2", MetricValue], 3L)))
 
       # Save plot to file
       if(SaveModelObjects.) {
@@ -645,32 +645,32 @@ ML_EvalPlots <- function(ModelType = "classification",
         if(NumOfParDepPlots. > 0L) {
           j <- 0L
           k <- 0L
-          for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VariableImportance.[,.N]))) {
+          for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VarImp[,.N]))) {
             tryCatch({
               Out <- ParDepCalPlots(
                 data = ValidationData.,
                 PredictionColName = "Predict",
                 TargetColName = eval(TargetColumnName.),
-                IndepVar = if("Variable" %in% names(VariableImportance.)) gsub("\\..*","", VariableImportance.[i, Variable]) else gsub("\\..*","", VariableImportance.[i, Feature]),
+                IndepVar = if("Variable" %in% names(VarImp)) gsub("\\..*","", VarImp[i, Variable]) else gsub("\\..*","", VarImp[i, Variable]),
                 GraphType = "calibration",
                 PercentileBucket = 0.05,
                 FactLevels = 10L,
                 Function = function(x) mean(x, na.rm = TRUE))
               j <- j + 1L
-              if("Variable" %in% names(VariableImportance.)) ParDepPlots[[paste0(VariableImportance.[j, Variable])]] <- Out else ParDepPlots[[paste0(VariableImportance.[j, Feature])]] <- Out
+              if("Variable" %in% names(VarImp)) ParDepPlots[[paste0(VarImp[j, Variable])]] <- Out else ParDepPlots[[paste0(VarImp[j, Variable])]] <- Out
             }, error = function(x) "skip")
             tryCatch({
               Out1 <- ParDepCalPlots(
                 data = ValidationData.,
                 PredictionColName = "Predict",
                 TargetColName = eval(TargetColumnName.),
-                IndepVar = if("Variable" %in% names(VariableImportance.)) VariableImportance.[i, Variable] else VariableImportance.[i, Feature],
+                IndepVar = if("Variable" %in% names(VarImp)) VarImp[i, Variable] else VarImp[i, Variable],
                 GraphType = "boxplot",
                 PercentileBucket = 0.05,
                 FactLevels = 10L,
                 Function = function(x) mean(x, na.rm = TRUE))
               k <- k + 1L
-              if("Variable" %in% names(VariableImportance.)) ParDepBoxPlots[[paste0(VariableImportance.[k, Variable])]] <- Out1 else ParDepBoxPlots[[paste0(VariableImportance.[k, Feature])]] <- Out1
+              if("Variable" %in% names(VarImp)) ParDepBoxPlots[[paste0(VarImp[k, Variable])]] <- Out1 else ParDepBoxPlots[[paste0(VarImp[k, Variable])]] <- Out1
             }, error = function(x) "skip")
           }
 
@@ -707,7 +707,6 @@ ML_EvalPlots <- function(ModelType = "classification",
       # Build plots
       for(TV in seq_along(TargetColumnName.)) {
 
-
         # Eval Plots
         EvaluationPlot[[TargetColumnName.[TV]]] <- EvalPlot(
           data = ValidationData.,
@@ -718,7 +717,7 @@ ML_EvalPlots <- function(ModelType = "classification",
           aggrfun = function(x) mean(x, na.rm = TRUE))
 
         # Add Number of Trees to Title
-        if(!TrainOnFull.) EvaluationPlot[[TargetColumnName.[TV]]] <- EvaluationPlot[[TargetColumnName.[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[TargetColumnName.[TV]]][Metric == "R2", MetricValue], 3L)))
+        if(!TrainOnFull.) EvaluationPlot[[TargetColumnName.[TV]]] <- EvaluationPlot[[TargetColumnName.[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[1L]][[TargetColumnName.[TV]]][Metric == "R2", MetricValue], 3L)))
 
         # Save plot to file
         if(!TrainOnFull.) {
@@ -741,7 +740,7 @@ ML_EvalPlots <- function(ModelType = "classification",
           aggrfun = function(x) mean(x, na.rm = TRUE))
 
         # Add Number of Trees to Title
-        if(!TrainOnFull.) EvaluationBoxPlot[[TargetColumnName.[TV]]] <- EvaluationBoxPlot[[TargetColumnName.[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[TargetColumnName.[TV]]][Metric == "R2", MetricValue], 3L)))
+        if(!TrainOnFull.) EvaluationBoxPlot[[TargetColumnName.[TV]]] <- EvaluationBoxPlot[[TargetColumnName.[TV]]] + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[1L]][[TargetColumnName.[TV]]][Metric == "R2", MetricValue], 3L)))
 
         # Save plot to file
         if(SaveModelObjects.) {
@@ -759,32 +758,32 @@ ML_EvalPlots <- function(ModelType = "classification",
           if(NumOfParDepPlots. > 0L) {
             j <- 0L
             k <- 0L
-            for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VariableImportance.[,.N]))) {
+            for(i in seq_len(min(length(FeatureColNames.), NumOfParDepPlots., VarImp[,.N]))) {
               tryCatch({
                 Out <- ParDepCalPlots(
                   data = ValidationData.,
                   PredictionColName = paste0("Predict.V",TV),
                   TargetColName = eval(TargetColumnName.[TV]),
-                  IndepVar = gsub("\\..*","", VariableImportance.[i, Variable]),
+                  IndepVar = gsub("\\..*","", VarImp[i, Variable]),
                   GraphType = "calibration",
                   PercentileBucket = 0.05,
                   FactLevels = 10L,
                   Function = function(x) mean(x, na.rm = TRUE))
                 j <- j + 1L
-                ParDepPlots[[paste0(TargetColumnName.[TV],"_",VariableImportance.[j, Variable])]] <- Out
+                ParDepPlots[[paste0(TargetColumnName.[TV], "_", VarImp[j, Variable])]] <- Out
               }, error = function(x) "skip")
               tryCatch({
                 Out1 <- ParDepCalPlots(
                   data = ValidationData.,
-                  PredictionColName = paste0("Predict.V",TV),
+                  PredictionColName = paste0("Predict.V", TV),
                   TargetColName = eval(TargetColumnName.[TV]),
-                  IndepVar = gsub("\\..*","", VariableImportance.[i, Variable]),
+                  IndepVar = gsub("\\..*","", VarImp[i, Variable]),
                   GraphType = "boxplot",
                   PercentileBucket = 0.05,
                   FactLevels = 10L,
                   Function = function(x) mean(x, na.rm = TRUE))
                 k <- k + 1L
-                ParDepBoxPlots[[paste0(TargetColumnName.[TV],"_",VariableImportance.[k, Variable])]] <- Out1
+                ParDepBoxPlots[[paste0(TargetColumnName.[TV], "_", VarImp[k, Variable])]] <- Out1
               }, error = function(x) "skip")
             }
 
@@ -1027,7 +1026,7 @@ AutoShapeShap <- function(ScoringData = NULL,
 
 #' @title CumGainsChart
 #'
-#' @description Create a cumulative gains chart
+#' @description Bar plot of importance
 #'
 #' @family Model Evaluation and Interpretation
 #'

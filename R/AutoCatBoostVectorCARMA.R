@@ -6,7 +6,6 @@
 #' @family Automated Panel Data Forecasting
 #'
 #' @param data Supply your full series data set here
-#' @param TimeWeights NULL or a value.
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TaskType Has to CPU for now. If catboost makes GPU available for "MultiRMSE" then it will be enabled. If you set to GPU the function will coerce it back to CPU.
 #' @param NumGPU Defaults to 1. If CPU is set this argument will be ignored.
@@ -16,6 +15,7 @@
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param HierarchGroups Vector of hierachy categorical columns.
+#' @param TimeWeights NULL or a value.
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
@@ -105,11 +105,11 @@
 #'
 #'   # data args
 #'   data = data, # TwoGroup_Data,
-#'   TimeWeights = NULL,
 #'   TargetColumnName = c("Weekly_Sales","Weekly_Profit"),
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
 #'   GroupVariables = c("Store","Dept"),
+#'   TimeWeights = 1,
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
 #'
@@ -195,7 +195,6 @@
 #' @return Returns a data.table of original series and forecasts, the catboost model objects (everything returned from AutoCatBoostRegression()), a time series forecast plot, and transformation info if you set TargetTransformation to TRUE. The time series forecast plot will plot your single series or aggregate your data to a single series and create a plot from that.
 #' @export
 AutoCatBoostVectorCARMA <- function(data,
-                                    TimeWeights = NULL,
                                     NonNegativePred = FALSE,
                                     RoundPreds = FALSE,
                                     TrainOnFull = FALSE,
@@ -203,6 +202,7 @@ AutoCatBoostVectorCARMA <- function(data,
                                     DateColumnName = "DateTime",
                                     HierarchGroups = NULL,
                                     GroupVariables = NULL,
+                                    TimeWeights = 1,
                                     FC_Periods = 30,
                                     TimeUnit = "week",
                                     TimeGroups = c("weeks","months"),
@@ -514,6 +514,8 @@ AutoCatBoostVectorCARMA <- function(data,
       data <- TransformResults$Data
       TransformObject[[zz]] <- TransformResults$FinalResults
     }
+  } else {
+    TransformObject <- NULL
   }
 
   # Copy data for non grouping + difference ----
@@ -535,12 +537,15 @@ AutoCatBoostVectorCARMA <- function(data,
       TargetVariable = eval(TargetColumnName),
       GroupingVariable = NULL)
     Train <- DiffTrainOutput$DiffData
+    dataStart <- NULL
     if(ncol(data) >= 3) {
       data <- cbind(Train,data[1:(nrow(data)-1)][,.SD, .SDcols = names(data)[3:ncol(data)]])
     } else {
       data <- Train
     }
     FC_Periods <- FC_Periods + 1L
+  } else {
+    dataStart <- NULL
   }
 
   # Feature Engineering: Add GDL Features based on the TargetColumnName----
@@ -741,6 +746,10 @@ AutoCatBoostVectorCARMA <- function(data,
     if(!is.null(GroupVariables)) data[, TimeTrend := seq_len(.N), by = "GroupVar"] else data[, TimeTrend := seq_len(.N)]
   }
 
+  # Create TimeWeights ----
+  if(DebugMode) print("Create TimeWeights ----")
+  train <- CarmaTimeWeights(train.=data, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+
   # Store Date Info ----
   FutureDateData <- unique(data[, get(DateColumnName)])
 
@@ -752,16 +761,10 @@ AutoCatBoostVectorCARMA <- function(data,
   data <- Output$data; Output$data <- NULL
   test <- Output$test; rm(Output)
 
-  # Create TimeWeights ----
-  if(DebugMode) print("Create TimeWeights ----")
-  Output <- CarmaTimeWeights(train.=train, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
-  train <- Output$train; Output$train <- NULL
-  Weightss <- Output$Weightss; rm(Output)
-
   # Variables for CARMA function IDcols ----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
-  IDcols <- which(names(data) %chin% DateColumnName)
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) %chin% TargetColumnName))
+  IDcols <- names(data)[which(names(data) %chin% DateColumnName)]
+  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, names(data)[which(names(data) %chin% TargetColumnName)])
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")
@@ -780,6 +783,7 @@ AutoCatBoostVectorCARMA <- function(data,
   if(!is.null(SplitRatios) || !TrainOnFull) TOF <- FALSE else TOF <- TRUE
 
   # Run AutoCatBoostRegression and return list of ml objects ----
+  if(DebugMode) print("Run AutoCatBoostRegression and return list of ml objects ----")
   TestModel <- AutoCatBoostRegression(
 
     # GPU or CPU and the number of available GPUs
@@ -787,6 +791,7 @@ AutoCatBoostVectorCARMA <- function(data,
     NumGPUs = NumGPU,
 
     # Metadata arguments
+    OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
     ModelID = "ModelTest",
     model_path = getwd(),
     metadata_path = getwd(),
@@ -799,14 +804,13 @@ AutoCatBoostVectorCARMA <- function(data,
     TrainOnFull = TOF,
     ValidationData = valid,
     TestData = test,
-    Weights = Weightss,
+    WeightsColumnName = if("Weights" %in% names(train)) "Weights" else NULL,
     TargetColumnName = TargetVariable,
     FeatureColNames = ModelFeatures,
     PrimaryDateColumn = eval(DateColumnName),
     IDcols = IDcols,
-    DummifyCols = TRUE,
-    TransformNumericColumns = NULL,
-    Methods = NULL,
+    TransformNumericColumns = if(TargetTransformation) TargetVariable else NULL,
+    Methods = Methods,
 
     # Model evaluation
     eval_metric = EvalMetric,
@@ -815,7 +819,6 @@ AutoCatBoostVectorCARMA <- function(data,
     loss_function_value = LossFunctionValue,
     MetricPeriods = 10L,
     NumOfParDepPlots = NumOfParDepPlots,
-    EvalPlots = TRUE,
 
     # Grid tuning arguments
     PassInGrid = PassInGrid,
@@ -1066,9 +1069,8 @@ AutoCatBoostVectorCARMA <- function(data,
 
         # Update data non-group case----
         if(DebugMode) print("Update data non-group case----")
-        for(zz in seq_len(length(TargetColumnName))) {
-          data.table::set(UpdateData, i = N, j = (zz*2), value = Preds[[paste0("Predictions.V",zz)]])
-          data.table::set(UpdateData, i = N, j = (zz*2+1), value = Preds[[paste0("Predictions.V",zz)]])
+        for(zz in seq_along(TargetColumnName)) {
+          data.table::set(UpdateData, i = N, j = names(UpdateData)[1L + zz], value = Preds[[paste0("Predictions.V",zz)]])
         }
       }
     }

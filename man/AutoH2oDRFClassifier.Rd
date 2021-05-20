@@ -5,7 +5,8 @@
 \title{AutoH2oDRFClassifier}
 \usage{
 AutoH2oDRFClassifier(
-  data,
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -14,7 +15,7 @@ AutoH2oDRFClassifier(
   WeightsColumn = NULL,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1000000)), "G") },
   NThreads = max(1L, parallel::detectCores() - 2L),
   model_path = NULL,
   metadata_path = NULL,
@@ -49,6 +50,8 @@ AutoH2oDRFClassifier(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
@@ -145,56 +148,57 @@ data <- RemixAutoML::FakeDataGenerator(
 
 TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 
-    # Compute management args
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1L, parallel::detectCores() - 2L),
-    IfSaveModel = "mojo",
-    H2OShutdown = FALSE,
-    H2OStartUp = TRUE,
+  # Compute management args
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1L, parallel::detectCores() - 2L),
+  IfSaveModel = "mojo",
+  H2OShutdown = FALSE,
+  H2OStartUp = TRUE,
 
-    # Model evaluation args
-    eval_metric = "auc",
-    NumOfParDepPlots = 3L,
-    CostMatrixWeights = c(1,0,0,1),
+  # Model evaluation args
+  eval_metric = "auc",
+  NumOfParDepPlots = 3L,
+  CostMatrixWeights = c(1,0,0,1),
 
-    # Metadata args
-    model_path = normalizePath("./"),
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-    DebugMode = FALSE,
+  # Metadata args
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
 
-    # Data args
-    data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2", "Adrian")],
-    WeightsColumn = NULL,
+  # Data args
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2", "Adrian")],
+  WeightsColumn = NULL,
 
-    # Grid Tuning Args
-    GridStrategy = "RandomDiscrete",
-    GridTune = FALSE,
-    MaxModelsInGrid = 10,
-    MaxRunTimeSecs = 60*60*24,
-    StoppingRounds = 10,
+  # Grid Tuning Args
+  GridStrategy = "RandomDiscrete",
+  GridTune = FALSE,
+  MaxModelsInGrid = 10,
+  MaxRunTimeSecs = 60*60*24,
+  StoppingRounds = 10,
 
-    # Model args
-    Trees = 50L,
-    MaxDepth = 20,
-    SampleRate = 0.632,
-    MTries = -1,
-    ColSampleRatePerTree = 1,
-    ColSampleRatePerTreeLevel = 1,
-    MinRows = 1,
-    NBins = 20,
-    NBinsCats = 1024,
-    NBinsTopLevel = 1024,
-    HistogramType = "AUTO",
-    CategoricalEncoding = "AUTO")
+  # Model args
+  Trees = 50L,
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO")
 }
 }
 \seealso{

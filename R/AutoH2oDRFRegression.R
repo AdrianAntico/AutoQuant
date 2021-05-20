@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #'
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -71,7 +72,8 @@
 #'     eval_metric = "RMSE",
 #'     NumOfParDepPlots = 3,
 #'
-#'     # Metadata arguments:
+#'     # Metadata arguments
+#'     OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
 #'     model_path = normalizePath("./"),
 #'     metadata_path = NULL,
 #'     ModelID = "FirstModel",
@@ -116,7 +118,8 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export
-AutoH2oDRFRegression <- function(data,
+AutoH2oDRFRegression <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+                                 data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
                                  TestData = NULL,
@@ -269,44 +272,60 @@ AutoH2oDRFRegression <- function(data,
     base_model <- do.call(what = h2o::h2o.randomForest, args = H2OArgs, quote = TRUE, envir = .GlobalEnv)
   }
 
-  # Save Model ----
+  # Save Final Model ----
   if(DebugMode) print("Save Final Model ----")
   H2OSaveModel(SaveModelObjects.=SaveModelObjects, IfSaveModel.=IfSaveModel, base_model.=base_model, model_path.=model_path, ModelID.=ModelID)
 
-  # Score Final Test Data ----
+  # Score Train Data ----
   if(DebugMode) print("Score Final Test Data ----")
-  Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain))
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = datatrain))
+  }
+
+  # Create Train Validation Data ----
+  if(DebugMode) print("Create Validation Data ----")
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    Output <- H2OValidationData(Predict.=Predict, TestData.=NULL, dataTest.=NULL, dataTrain.=dataTrain, TrainOnFull.=TRUE, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+    TrainData <- Output$ValidationData; rm(Output)
+  }
+
+  # Score Validation Data
+  Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
 
   # Create Validation Data ----
-  if(DebugMode) print("Create Validation Data ----")
-  Output <- H2OValidationData(Predict.=Predict, TestData.=TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=TransformNumericColumns, TransformationResults.=TransformationResults, TargetColumnName.=TargetColumnName, data.=data)
-  ValidationData <- Output$ValidationData; Output$ValidationData <- NULL
-  TransformationResults <- Output$TransformationResults; rm(Output)
+  Output <- H2OValidationData(Predict.=Predict, TestData.=TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+  ValidationData <- Output$ValidationData; rm(Output)
 
   # Variable Importance ----
   if(DebugMode) print("Variable Importance ----")
   VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
 
-  # H2O Explain ----
-  if(DebugMode) print("H2O Explain ----")
+  # H2O Explain TrainData ----
+  if(DebugMode) print("H2O Explain TrainData ----")
+  ExplainList <- list()
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
+  }
+
+  # H2O Explain ValidationData ----
+  if(DebugMode) print("H2O Explain ValidationData ----")
   if(!TrainOnFull) {
-    Explain <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
+    ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
   # H2O Shutdown ----
+  if(DebugMode) print("H2O Shutdown ----")
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # Metrics ----
-  if(DebugMode) print("Running RegressionMetrics()")
-  EvaluationMetrics <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.=eval_metric, EvalMetric.=eval_metric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
-
-  # Plots ----
-  if(DebugMode) print("Running ML_EvalPlots()")
-  Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, LossFunction.=eval_metric, EvalMetric.=eval_metric, EvaluationMetrics.=EvaluationMetrics, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL)
-  EvaluationBoxPlot <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
-  EvaluationPlot <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-  ParDepBoxPlots <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
-  ParDepPlots <- Output$ParDepPlots; rm(Output)
+  # Generate EvaluationMetrics ----
+  if(DebugMode) print("Generate EvaluationMetrics ----")
+  EvalMetricsList <- list()
+  if("evalmetrics" %chin% tolower(OutputSelection)) {
+    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+      EvalMetricsList[["TrainData"]] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.=eval_metric, EvalMetric.=eval_metric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    }
+    EvalMetricsList[["TestData"]] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.=eval_metric, EvalMetric.=eval_metric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  }
 
   # Subset Transformation Object ----
   if(!is.null(TransformNumericColumns)) {
@@ -319,23 +338,21 @@ AutoH2oDRFRegression <- function(data,
 
   # Send output to pdf ----
   if(DebugMode) print("Running CatBoostPDF()")
-  CatBoostPDF(ModelClass="h2o", ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvaluationMetrics, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
+  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
+    CatBoostPDF(ModelClass = "h2o", ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
+  }
 
   # Return Objects ----
   if(DebugMode) print("Return Objects ----")
   if(ReturnModelObjects) {
     return(list(
       Model = base_model,
-      ValidationData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-      H2OExplain = if(exists("Explain") && !is.null(Explain)) Explain else NULL,
-      EvaluationPlot = if(exists("EvaluationPlot") && !is.null(EvaluationPlot)) EvaluationPlot else NULL,
-      EvaluationBoxPlot = if(exists("EvaluationBoxPlot") && !is.null(EvaluationBoxPlot)) EvaluationBoxPlot else NULL,
-      EvaluationMetrics = if(exists("EvaluationMetrics") && !is.null(EvaluationMetrics)) EvaluationMetrics else NULL,
-      VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
-      PartialDependencePlots = if(exists("ParDepPlots") && !is.null(ParDepPlots)) ParDepPlots else NULL,
-      PartialDependenceBoxPlots = if(exists("ParDepBoxPlots") && !is.null(ParDepBoxPlots)) ParDepBoxPlots else NULL,
-      TransformationInformation = if(exists("TransformationResults") && !is.null(TransformationResults)) TransformationResults else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
+      TrainData = if(exists("TrainData") && !is.null(TrainData)) TrainData else NULL,
+      TestData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      H2OExplain = if(exists("ExplainList")) ExplainList else NULL,
+      EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
+      VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
+      TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
+      ColNames = if(exists("Names")) Names else NULL))
   }
 }

@@ -101,6 +101,8 @@ RedYellowGreen <- function(data,
     .multicombine = TRUE,
     .packages     = packages
     ) %dopar% {
+
+      # Define functions for use inside function
       RedYellowGreenParallel <- function(data,
                                          PredictColNumber  = 1,
                                          ActualColNumber   = 767,
@@ -111,7 +113,7 @@ RedYellowGreen <- function(data,
                                          MidTierCost       = -5,
                                          new = i) {
         # Loop through all combos
-        for(k in as.integer(seq_len(nrow(new)))) {
+        for(k in seq_len(nrow(new))) {
           x <- threshOptimz(
             data = data,
             actTar = names(data)[ActualColNumber],
@@ -133,16 +135,16 @@ RedYellowGreen <- function(data,
 
       # Inner function for threshold optimizataion
       threshOptimz <- function(data,
-                              actTar   = 1,
-                              predTar  = 2,
-                              tpProfit = 1,
-                              tnProfit = 5,
-                              fpProfit = -1,
-                              fnProfit = -1,
-                              MidTierDoNothing = FALSE,
-                              MidTierCost = -100,
-                              MidTierLowThresh = 0.25,
-                              MidTierHighThresh = 0.75) {
+                               actTar   = 1,
+                               predTar  = 2,
+                               tpProfit = 1,
+                               tnProfit = 5,
+                               fpProfit = -1,
+                               fnProfit = -1,
+                               MidTierDoNothing = FALSE,
+                               MidTierCost = -100,
+                               MidTierLowThresh = 0.25,
+                               MidTierHighThresh = 0.75) {
         # Convert factor target to numeric
         data[, eval(actTar) := as.numeric(as.character(get(actTar)))]
 
@@ -214,7 +216,7 @@ RedYellowGreen <- function(data,
     z = results[["Utility"]],
     type = "p",
     color = "#401a50",
-    angle = 45L,
+    angle = 35L,
     pch = 16L,
     main = paste0("Utility Maximizer - Main Threshold at ", results[order(-Utility)][1, "MTHT"][[1L]]),
     sub = paste0("Lower Thresh = ", results[order(-Utility)][1L, "MTLT"][[1L]], " and Upper Thresh = ", results[order(-Utility)][1L, "MTHT"][[1L]]), xlab = "Mid Tier Lower Threshold", ylab = "Mid Tier Higher Threshold", zlab = "Utility")

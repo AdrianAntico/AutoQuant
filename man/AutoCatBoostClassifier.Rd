@@ -5,12 +5,15 @@
 \title{AutoCatBoostClassifier}
 \usage{
 AutoCatBoostClassifier(
-  data,
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs",
+    "Score_TrainData"),
+  data = NULL,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
   IDcols = NULL,
   TrainOnFull = FALSE,
   task_type = "GPU",
@@ -55,6 +58,8 @@ AutoCatBoostClassifier(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
@@ -66,6 +71,8 @@ AutoCatBoostClassifier(
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.}
 
 \item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
+
+\item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -89,7 +96,7 @@ AutoCatBoostClassifier(
 
 \item{EvalMetric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
 
-\item{LossFunction}{Default is NULL. Select the loss function of choice. c("MultiRMSE", 'Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')}
+\item{LossFunction}{Default is NULL. Select the loss function of choice. c('Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')}
 
 \item{grid_eval_metric}{Case sensitive. I typically choose 'Utility' or 'MCC'. Choose from 'Utility', 'MCC', 'Acc', 'F1_Score', 'F2_Score', 'F0.5_Score', 'TPR', 'TNR', 'FNR', 'FPR', 'FDR', 'FOR', 'NPV', 'PPV', 'ThreatScore'}
 
@@ -177,6 +184,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   DebugMode = FALSE,
 
   # Metadata args
+  OutputSelection = c("Score_TrainData", "Importance", "EvalPlots", "Metrics", "PDF"),
   ModelID = "Test_Model_1",
   model_path = normalizePath("./"),
   metadata_path = normalizePath("./"),
@@ -192,6 +200,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   FeatureColNames = names(data)[!names(data) \%in\%
      c("IDcol_1","IDcol_2","Adrian")],
   PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
   IDcols = c("IDcol_1","IDcol_2"),
 
   # Evaluation args

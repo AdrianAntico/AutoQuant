@@ -492,8 +492,9 @@ AutoLagRollStats <- function(data,
       # Check if timeaggs is same of TimeUnit----
       if(Counter > 1L) {
         data[, TEMPDATE := lubridate::floor_date(get(DateColumn), unit = eval(timeaggs))]
+        tempData <- tempData[, .SD, .SDcols = c(eval(DateColumn),setdiff(names(tempData),names(data)))]
         data <- merge(
-          data, tempData[, .SD, .SDcols = c(eval(DateColumn),setdiff(names(tempData),names(data)))],
+          data, tempData,
           by.x = c("TEMPDATE"),
           by.y = c(eval(DateColumn)),
           all.x = TRUE)
@@ -2545,11 +2546,11 @@ DiffLagN <- function(data = NULL,
     ArgsList$FE_AutoDiffLagN$RemoveNA[[RunNumber]] <- RemoveNAs
 
     # New columns tracking
-    ArgsList$FE_Columns$FE_AutoLagDiffN[[RunNumber]] <- setdiff(names(data), tempnames)
+    ArgsList$FE_Columns$AutoLagDiffN[[RunNumber]] <- setdiff(names(data), tempnames)
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_AutoLagDiffN_Training[[RunNumber]] <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$AutoLagDiffN_Training[[RunNumber]] <- difftime(End, Start, units = "mins")
 
   } else {
 
@@ -2578,7 +2579,7 @@ DiffLagN <- function(data = NULL,
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_AutoDiffLagN_Scoring[[RunNumber]] <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$AutoDiffLagN_Scoring[[RunNumber]] <- difftime(End, Start, units = "mins")
   }
 
   # Return
@@ -2598,13 +2599,6 @@ DiffLagN <- function(data = NULL,
 #' @param SkipCols Vector of column names to remove from data
 #' @param KeepRowsColumnName 'scoring' mode. Name of column where subset values reside
 #' @param KeepRowsGroupID id values to use for subsetting for records to be scored
-#' @param Lag_Perids see AutoLagRollStats
-#' @param RollAverage_Periods see AutoLagRollStats
-#' @param RollStandardDeviation_Periods see AutoLagRollStats
-#' @param RollSkewness_Periods see AutoLagRollStats
-#' @param RollKurtosis_Periods see AutoLagRollStats
-#' @param RollQuantiles_Perids see AutoLagRollStats
-#' @param RollQuantiles see AutoLagRollStats
 #' @param DebugMode Logical
 #'
 #' @examples
@@ -2616,13 +2610,6 @@ DiffLagN <- function(data = NULL,
 #'   KeepRowsColumnName = NULL,
 #'   KeepRowsGroupID = NULL,
 #'   SkipCols = NULL,
-#'   Lag_Periods = NULL,
-#'   RollAverage_Periods = NULL,
-#'   RollStandardDeviation_Periods = NULL,
-#'   RollSkewness_Periods = NULL,
-#'   RollKurtosis_Periods = NULL,
-#'   RollQuantiles_Perids = NULL,
-#'   RollQuantiles = NULL,
 #'   DebugMode = FALSE)
 #' data <- Output$data
 #' ArgsList <- Output$ArgsList
@@ -2636,13 +2623,6 @@ TimeSeriesFeatures <- function(data = NULL,
                                KeepRowsColumnName = NULL,
                                KeepRowsGroupID = NULL,
                                SkipCols = NULL,
-                               Lag_Periods = NULL,
-                               RollAverage_Periods = NULL,
-                               RollStandardDeviation_Periods = NULL,
-                               RollSkewness_Periods = NULL,
-                               RollKurtosis_Periods = NULL,
-                               RollQuantiles_Perids = NULL,
-                               RollQuantiles = NULL,
                                DebugMode = FALSE) {
 
   # Metadata
@@ -2662,46 +2642,46 @@ TimeSeriesFeatures <- function(data = NULL,
       DateColumn           = ArgsList$Data$DateVariables[1L],
       Targets              = ArgsList$Data$TargetVariables[1L],
       HierarchyGroups      = NULL,
-      IndependentGroups    = ArgsList$Data$TimeSeriesGroupVariables,
-      TimeUnitAgg          = ArgsList$Data$TimeGroups[1L],
-      TimeGroups           = ArgsList$Data$TimeGroups,
+      IndependentGroups    = ArgsList$FE_Args$TimeSeriesVariables$TimeSeriesGroupVariables,
+      TimeUnitAgg          = ArgsList$FE_Args$TimeSeriesVariables$TimeUnitAgg,
+      TimeGroups           = ArgsList$FE_Args$TimeSeriesVariables$TimeSeriesDateGroups,
       TimeBetween          = NULL,
-      TimeUnit             = ArgsList$Data$TimeGroups[1L],
+      TimeUnit             = ArgsList$FE_Args$TimeSeriesVariables$TimeUnitAgg,
 
       # Services
       RollOnLag1           = TRUE,
       Type                 = "Lag",
-      SimpleImpute         = TRUE,
+      SimpleImpute         = ArgsList$FE_Args$Clean$MissNum,
 
       # Calculated Columns
-      Lags                 = Lag_Periods,
-      MA_RollWindows       = RollAverage_Periods,
-      SD_RollWindows       = RollStandardDeviation_Periods,
-      Skew_RollWindows     = RollSkewness_Periods,
-      Kurt_RollWindows     = RollKurtosis_Periods,
-      Quantile_RollWindows = RollQuantiles_Perids,
-      Quantiles_Selected   = RollQuantiles,
+      Lags                 = ArgsList$FE_Args$TimeSeriesVariables$Lag_Periods,
+      MA_RollWindows       = ArgsList$FE_Args$TimeSeriesVariables$RollAverage_Periods,
+      SD_RollWindows       = ArgsList$FE_Args$TimeSeriesVariables$RollStandardDeviation_Periods,
+      Skew_RollWindows     = ArgsList$FE_Args$TimeSeriesVariables$RollSkewness_Periods,
+      Kurt_RollWindows     = ArgsList$FE_Args$TimeSeriesVariables$RollKurtosis_Periods,
+      Quantile_RollWindows = ArgsList$FE_Args$TimeSeriesVariables$RollQuantiles_Periods,
+      Quantiles_Selected   = ArgsList$FE_Args$TimeSeriesVariables$RollQuantiles,
       Debug                = DebugMode)
 
     # Args Tracking
     ArgsList$TimeSeriesFeatures$DateColumn <- ArgsList$Data$DateVariables[1L]
     ArgsList$TimeSeriesFeatures$Targets <- ArgsList$Data$TargetVariables[1L]
     ArgsList$TimeSeriesFeatures$HierarchyGroups <- NULL
-    ArgsList$TimeSeriesFeatures$IndependentGroups <- ArgsList$Data$TimeSeriesGroupVariables
-    ArgsList$TimeSeriesFeatures$TimeUnitAgg <- ArgsList$Data$TimeGroups[1L]
-    ArgsList$TimeSeriesFeatures$TimeGroups <- ArgsList$Data$TimeGroups
+    ArgsList$TimeSeriesFeatures$IndependentGroups <- ArgsList$FE_Args$TimeSeriesVariables$TimeSeriesGroupVariables
+    ArgsList$TimeSeriesFeatures$TimeUnitAgg <- ArgsList$FE_Args$TimeSeriesVariables$TimeUnitAgg
+    ArgsList$TimeSeriesFeatures$TimeGroups <- ArgsList$FE_Args$TimeSeriesVariables$TimeSeriesDateGroups
     ArgsList$TimeSeriesFeatures$TimeBetween <- NULL
-    ArgsList$TimeSeriesFeatures$TimeUnit <- ArgsList$Data$TimeGroups[1L]
+    ArgsList$TimeSeriesFeatures$TimeUnit <- ArgsList$FE_Args$TimeSeriesVariables$TimeUnitAgg
     ArgsList$TimeSeriesFeatures$RollOnLag1 <- TRUE
     ArgsList$TimeSeriesFeatures$Type <- "Lag"
-    ArgsList$TimeSeriesFeatures$SimpleImpute <- TRUE
-    ArgsList$TimeSeriesFeatures$Lags <- Lag_Periods
-    ArgsList$TimeSeriesFeatures$MA_RollWindows <- RollAverage_Periods
-    ArgsList$TimeSeriesFeatures$SD_RollWindows <- RollStandardDeviation_Periods
-    ArgsList$TimeSeriesFeatures$Skew_RollWindows <- RollSkewness_Periods
-    ArgsList$TimeSeriesFeatures$Kurt_RollWindows <- RollKurtosis_Periods
-    ArgsList$TimeSeriesFeatures$Quantile_RollWindows <- RollQuantiles_Perids
-    ArgsList$TimeSeriesFeatures$Quantiles_Selected <- RollQuantiles
+    ArgsList$TimeSeriesFeatures$SimpleImpute <- ArgsList$FE_Args$Clean$MissNum
+    ArgsList$TimeSeriesFeatures$Lags <- ArgsList$FE_Args$TimeSeriesVariables$Lag_Periods
+    ArgsList$TimeSeriesFeatures$MA_RollWindows <- ArgsList$FE_Args$TimeSeriesVariables$RollAverage_Periods
+    ArgsList$TimeSeriesFeatures$SD_RollWindows <- ArgsList$FE_Args$TimeSeriesVariables$RollStandardDeviation_Periods
+    ArgsList$TimeSeriesFeatures$Skew_RollWindows <- ArgsList$FE_Args$TimeSeriesVariables$RollSkewness_Periods
+    ArgsList$TimeSeriesFeatures$Kurt_RollWindows <- ArgsList$FE_Args$TimeSeriesVariables$RollKurtosis_Periods
+    ArgsList$TimeSeriesFeatures$Quantile_RollWindows <- ArgsList$FE_Args$TimeSeriesVariables$RollQuantiles_Periods
+    ArgsList$TimeSeriesFeatures$Quantiles_Selected <- ArgsList$FE_Args$TimeSeriesVariables$RollQuantiles
 
     # New columns tracking
     ArgsList$FE_Columns$TimeSeriesFeatures <- setdiff(names(data), tempnames)

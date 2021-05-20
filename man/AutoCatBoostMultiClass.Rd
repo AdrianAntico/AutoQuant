@@ -5,12 +5,14 @@
 \title{AutoCatBoostMultiClass}
 \usage{
 AutoCatBoostMultiClass(
-  data,
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  data = NULL,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
   IDcols = NULL,
   TrainOnFull = FALSE,
   task_type = "GPU",
@@ -22,6 +24,7 @@ AutoCatBoostMultiClass(
   model_path = NULL,
   metadata_path = NULL,
   ClassWeights = NULL,
+  NumOfParDepPlots = 3,
   eval_metric = "MultiClassOneVsAll",
   loss_function = "MultiClassOneVsAll",
   grid_eval_metric = "Accuracy",
@@ -52,6 +55,8 @@ AutoCatBoostMultiClass(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
@@ -63,6 +68,8 @@ AutoCatBoostMultiClass(
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located, but not mixed types. Also, not zero-indexed.}
 
 \item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
+
+\item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -85,6 +92,8 @@ AutoCatBoostMultiClass(
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
 \item{ClassWeights}{Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.}
+
+\item{NumOfParDepPlots}{Number of partial dependence plots to create for each target level}
 
 \item{eval_metric}{Internal bandit metric. Select from 'MultiClass', 'MultiClassOneVsAll', 'AUC', 'TotalF1', 'MCC', 'Accuracy', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa'}
 
@@ -168,6 +177,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     DebugMode = FALSE,
 
     # Metadata args
+    OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
     ModelID = "Test_Model_1",
     model_path = normalizePath("./"),
     metadata_path = normalizePath("./"),
@@ -182,6 +192,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     FeatureColNames = names(data)[!names(data) \%in\%
       c("IDcol_1", "IDcol_2","Adrian")],
     PrimaryDateColumn = NULL,
+    WeightsColumnName = NULL,
     ClassWeights = c(1L,1L,1L,1L,1L),
     IDcols = c("IDcol_1","IDcol_2"),
 
@@ -190,6 +201,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     loss_function = "MultiClassOneVsAll",
     grid_eval_metric = "Accuracy",
     MetricPeriods = 10L,
+    NumOfParDepPlots = 3,
 
     # Grid tuning args
     PassInGrid = NULL,

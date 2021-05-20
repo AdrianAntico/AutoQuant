@@ -13,6 +13,7 @@
 #' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
+#' @param TimeWeights Timeweights creation. Supply a value, such as 0.9999
 #' @param HierarchGroups Vector of hierachy categorical columns.
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
@@ -92,6 +93,7 @@
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
 #'   GroupVariables = c("Dept"),
+#'   TimeWeights = 1,
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
 #'
@@ -194,6 +196,7 @@
 #'   DateColumnName = "Date",
 #'   HierarchGroups = NULL,
 #'   GroupVariables = c("Store","Dept"),
+#'   TimeWeights = 1,
 #'   TimeUnit = "weeks",
 #'   TimeGroups = c("weeks","months"),
 #'
@@ -271,6 +274,7 @@ AutoCatBoostHurdleCARMA <- function(data,
                                     DateColumnName = "DateTime",
                                     HierarchGroups = NULL,
                                     GroupVariables = NULL,
+                                    TimeWeights = 1,
                                     FC_Periods = 30,
                                     TimeUnit = "week",
                                     TimeGroups = c("weeks","months"),
@@ -510,6 +514,10 @@ AutoCatBoostHurdleCARMA <- function(data,
     if(!is.null(GroupVariables)) data[, TimeTrend := seq_len(.N), by = "GroupVar"] else data[, TimeTrend := seq_len(.N)]
   }
 
+  # Create TimeWeights ----
+  if(DebugMode) print("Create TimeWeights ----")
+  train <- CarmaTimeWeights(train.=data, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+
   # Store Date Info ----
   FutureDateData <- unique(data[, get(DateColumnName)])
 
@@ -521,16 +529,10 @@ AutoCatBoostHurdleCARMA <- function(data,
   data <- Output$data; Output$data <- NULL
   test <- Output$test; rm(Output)
 
-  # Create TimeWeights ----
-  if(DebugMode) print("Create TimeWeights ----")
-  Output <- CarmaTimeWeights(train.=train, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
-  train <- Output$train; Output$train <- NULL
-  Weightss <- Output$Weightss; rm(Output)
-
   # Variables for CARMA function IDcols ----
   if(DebugMode) print("Variables for CARMA function:IDcols----")
-  IDcols <- which(names(data) %chin% DateColumnName)
-  IDcols <- c(IDcols, which(names(data) == TargetColumnName))
+  IDcols <- names(data)[which(names(data) %chin% DateColumnName)]
+  IDcols <- c(IDcols, names(data)[which(names(data) == TargetColumnName)])
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----")
@@ -547,6 +549,7 @@ AutoCatBoostHurdleCARMA <- function(data,
   if(!is.null(SplitRatios) || !TrainOnFull) TOF <- FALSE else TOF <- TRUE
 
   # Run AutoCatBoostHurdleModel() and return list of ml objects ----
+  if(DebugMode) print("Run AutoCatBoostHurdleModel() and return list of ml objects ----")
   TestModel <- RemixAutoML::AutoCatBoostHurdleModel(
 
     # GPU or CPU and the number of available GPUs
@@ -564,6 +567,7 @@ AutoCatBoostHurdleCARMA <- function(data,
     TargetColumnName = TargetVariable,
     FeatureColNames = ModelFeatures,
     PrimaryDateColumn = eval(DateColumnName),
+    WeightsColumnName = if("Weights" %chin% names(train)) "Weights" else NULL,
     IDcols = IDcols,
     DebugMode = DebugMode,
 
@@ -664,25 +668,23 @@ AutoCatBoostHurdleCARMA <- function(data,
           ModelClass = "catboost",
           ModelList = TestModel$ModelList,
           ArgList = TestModel$ArgsList,
-          Threshold = Threshold)
+          Threshold = Threshold,
+          CARMA = TRUE)
 
         # Modify data to match AutoCatBoostCARMA output ----
         Preds[, (names(Preds)[3:6]) := NULL]
-        data.table::set(Preds, j = eval(DateColumnName), value = NULL)
+        if(DateColumnName %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
         data.table::setnames(Preds, "FinalPredictedValue", "Predictions")
         data.table::setcolorder(Preds, c(2,1,3:ncol(Preds)))
 
         # Rounding ----
         if(RoundPreds) Preds[, Predictions := round(Predictions)]
-
       }
 
       # Data Wrangline: grab historical data and one more future record ----
       if(Difference) {
-        if(eval(TargetColumnName) %chin% names(Step1SCore)) {
-          if(eval(TargetColumnName) %chin% names(Preds)) {
-            data.table::set(Preds, j = eval(TargetColumnName), value = NULL)
-          }
+        if(eval(TargetColumnName) %chin% names(Step1SCore) && eval(TargetColumnName) %chin% names(Preds)) {
+          data.table::set(Preds, j = eval(TargetColumnName), value = NULL)
         }
         if(eval(DateColumnName) %chin% names(Step1SCore)) data.table::set(Step1SCore, j = eval(DateColumnName), value = NULL)
         if(eval(DateColumnName) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
@@ -754,7 +756,8 @@ AutoCatBoostHurdleCARMA <- function(data,
           ModelClass = "catboost",
           ModelList = TestModel$ModelList,
           ArgList = TestModel$ArgsList,
-          Threshold = Threshold)
+          Threshold = Threshold,
+          CARMA = TRUE)
 
         # Modify data ----
         Preds[, (setdiff(names(Preds),"FinalPredictedValue")) := NULL]
@@ -765,7 +768,7 @@ AutoCatBoostHurdleCARMA <- function(data,
 
         # Update data non-group case----
         if(DebugMode) print("Update data non-group case----")
-        data.table::set(UpdateData, i = N, j = as.integer(2L:3L), value = Preds[[1L]])
+        data.table::set(UpdateData, i = UpdateData[, .N], j = as.integer(3L), value = Preds[[1L]])
       }
     }
 
@@ -807,6 +810,9 @@ AutoCatBoostHurdleCARMA <- function(data,
   Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
+
+  # No Group
+  if(is.null(GroupVariables)) data.table::set(UpdateData, j = "Predictions0", value = NULL)
 
   # Return ----
   return(list(

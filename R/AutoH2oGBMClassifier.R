@@ -5,6 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -73,7 +74,8 @@
 #'     eval_metric = "auc",
 #'     NumOfParDepPlots = 3,
 #'
-#'     # Metadata arguments:
+#'     # Metadata arguments
+#'     OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
 #'     model_path = normalizePath("./"),
 #'     metadata_path = file.path(normalizePath("./")),
 #'     ModelID = "FirstModel",
@@ -117,7 +119,8 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
-AutoH2oGBMClassifier <- function(data,
+AutoH2oGBMClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+                                 data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
                                  TestData = NULL,
@@ -282,13 +285,24 @@ AutoH2oGBMClassifier <- function(data,
   if(DebugMode) print("Save Final Model ----")
   H2OSaveModel(SaveModelObjects.=SaveModelObjects, IfSaveModel.=IfSaveModel, base_model.=base_model, model_path.=model_path, ModelID.=ModelID)
 
-  # Score Final Test Data ----
+  # Score Train Data ----
   if(DebugMode) print("Score Final Test Data ----")
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = datatrain))
+  }
+
+  # Create Train Validation Data ----
+  if(DebugMode) print("Create Validation Data ----")
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    Output <- H2OValidationData(Predict.=Predict, TestData.=NULL, dataTest.=NULL, dataTrain.=dataTrain, TrainOnFull.=TRUE, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+    TrainData <- Output$ValidationData; rm(Output)
+  }
+
+  # Score Validation Data ----
   Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
   data.table::set(Predict, j = "p0", value = NULL)
 
   # Create Validation Data ----
-  if(DebugMode) print("Create Validation Data ----")
   Output <- H2OValidationData(Predict.=Predict, TestData.=TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
   ValidationData <- Output$ValidationData; rm(Output)
 
@@ -296,50 +310,53 @@ AutoH2oGBMClassifier <- function(data,
   if(DebugMode) print("Variable Importance ----")
   VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
 
-  # H2O Explain ----
-  if(DebugMode) print("H2O Explain ----")
+  # H2O Explain TrainData ----
+  if(DebugMode) print("H2O Explain TrainData ----")
+  ExplainList <- list()
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
+  }
+
+  # H2O Explain ValidationData ----
+  if(DebugMode) print("H2O Explain ValidationData ----")
   if(!TrainOnFull) {
-    Explain <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
+    ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
   # H2O Shutdown ----
   if(DebugMode) print("H2O Shutdown ----")
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # Classification evaluation plots ----
-  if(DebugMode) print("Running ML_EvalPlots()")
-  Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-  EvaluationPlot <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-  ParDepPlots <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-  GainsPlot <- Output$Gains; Output$GainsPlot <- NULL
-  LiftPlot <- Output$LiftPlot; Output$LiftPlot <- NULL
-  ROC_Plot <- Output$ROC_Plot; rm(Output)
-
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Running BinaryMetrics()")
-  EvalMetrics <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
-  EvalMetrics2 <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+  EvalMetricsList <- list()
+  EvalMetrics2List <- list()
+  if("evalmetrics" %chin% tolower(OutputSelection)) {
+    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+      EvalMetricsList[["TrainData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+      EvalMetrics2List[["TrainData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+    }
+    EvalMetricsList[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+    EvalMetrics2List[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+  }
 
   # Send output to pdf ----
   if(DebugMode) print("Running CatBoostPDF()")
-  CatBoostPDF(ModelClass="h2o", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, ROC_Plot.=ROC_Plot, Gains.=GainsPlot, Lift.=LiftPlot, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
+  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
+    CatBoostPDF(ModelClass = "h2o", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
+  }
 
   # Return Objects ----
   if(DebugMode) print("Return Objects ----")
   if(ReturnModelObjects) {
     return(list(
       Model = base_model,
-      ValidationData = if(exists("ValidationData")) ValidationData else NULL,
-      H2OExplain = if(exists("Explain")) Explain else NULL,
-      GainsPlot = if(exists("GainsPlot")) GainsPlot else NULL,
-      LiftPlot = if(exists("LiftPlot")) LiftPlot else NULL,
-      ROC_Plot = if(exists("ROC_Plot")) ROC_Plot else NULL,
-      EvaluationPlot = if(exists("EvaluationPlot")) EvaluationPlot else NULL,
-      EvaluationMetrics = if(exists("EvalMetrics")) EvalMetrics else NULL,
-      EvaluationMetrics2 = if(exists("EvalMetrics")) EvalMetrics else NULL,
+      TrainData = if(exists("TrainData") && !is.null(TrainData)) TrainData else NULL,
+      TestData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
+      H2OExplain = if(exists("ExplainList")) ExplainList else NULL,
+      EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
+      EvaluationMetrics2 = if(exists("EvalMetrics2List")) EvalMetrics2List else NULL,
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
-      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
-      PartialDependencePlots = if(exists("ParDepPlots")) ParDepPlots else NULL,
       ColNames = if(exists("Names")) Names else NULL))
   }
 }

@@ -5,18 +5,20 @@
 \title{AutoXGBoostMultiClass}
 \usage{
 AutoXGBoostMultiClass(
-  data,
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
+  WeightsColumnName = NULL,
   IDcols = NULL,
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",
-  LossFunction = "multi:softmax",
-  EncodingMethod = "binary",
+  LossFunction = "multi:softprob",
+  EncodingMethod = "credibility",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
@@ -42,6 +44,8 @@ AutoXGBoostMultiClass(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
@@ -54,6 +58,8 @@ AutoXGBoostMultiClass(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
+\item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
+
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
 \item{model_path}{A character string of your path file to where you want your output saved}
@@ -62,7 +68,7 @@ AutoXGBoostMultiClass(
 
 \item{ModelID}{A character string to name your model and output}
 
-\item{LossFunction}{'multi:softmax'}
+\item{LossFunction}{Use 'multi:sofprob', I set it up to return the class label and the individual probabilities, just like catboost. Doesn't come like that off the shelf}
 
 \item{EncodingMethod}{Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
@@ -136,6 +142,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     NThreads = parallel::detectCores(),
 
     # Metadata args
+    OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
     model_path = normalizePath("./"),
     metadata_path = normalizePath("./"),
     ModelID = "Test_Model_1",
@@ -152,11 +159,12 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) \%in\%
       c("IDcol_1", "IDcol_2","Adrian")],
+    WeightsColumnName = NULL,
     IDcols = c("IDcol_1","IDcol_2"),
 
     # Model evaluation args
     eval_metric = "merror",
-    LossFunction = 'multi:softmax',
+    LossFunction = 'multi:softprob',
     grid_eval_metric = "accuracy",
     NumOfParDepPlots = 3L,
 

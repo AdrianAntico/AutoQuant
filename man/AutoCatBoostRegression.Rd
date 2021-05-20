@@ -5,14 +5,14 @@
 \title{AutoCatBoostRegression}
 \usage{
 AutoCatBoostRegression(
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
   data,
   ValidationData = NULL,
   TestData = NULL,
-  Weights = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
-  DummifyCols = FALSE,
+  WeightsColumnName = NULL,
   IDcols = NULL,
   TransformNumericColumns = NULL,
   Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
@@ -32,13 +32,11 @@ AutoCatBoostRegression(
   loss_function_value = 1.5,
   grid_eval_metric = "r2",
   NumOfParDepPlots = 0L,
-  EvalPlots = TRUE,
   PassInGrid = NULL,
   GridTune = FALSE,
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
-  Shuffles = 1L,
   BaselineComparison = "default",
   MetricPeriods = 10L,
   Trees = 500L,
@@ -61,13 +59,13 @@ AutoCatBoostRegression(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{ValidationData}{This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
 
 \item{TestData}{This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.}
-
-\item{Weights}{Weights vector for train.pool in catboost}
 
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
@@ -75,7 +73,7 @@ AutoCatBoostRegression(
 
 \item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
 
-\item{DummifyCols}{Logical. Will coerce to TRUE if loss_function or eval_metric is set to 'MultiRMSE'.}
+\item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -115,8 +113,6 @@ AutoCatBoostRegression(
 
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
 
-\item{EvalPlots}{Defaults to TRUE. Set to FALSE to not generate and return these objects.}
-
 \item{PassInGrid}{Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)}
 
 \item{GridTune}{Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.}
@@ -126,8 +122,6 @@ AutoCatBoostRegression(
 \item{MaxRunsWithoutNewWinner}{Number of models built before calling it quits}
 
 \item{MaxRunMinutes}{Maximum number of minutes to let this run}
-
-\item{Shuffles}{Number of times to randomize grid possibilities}
 
 \item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
@@ -166,6 +160,8 @@ AutoCatBoostRegression(
 \item{score_function}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
 
 \item{min_data_in_leaf}{Default is 1. Cannot be used with SymmetricTree is GrowPolicy}
+
+\item{Weights}{Weights vector for train.pool in catboost}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
@@ -195,6 +191,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   DebugMode = FALSE,
 
   # Metadata args
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
   ModelID = "Test_Model_1",
   model_path = normalizePath("./"),
   metadata_path = normalizePath("./"),
@@ -211,7 +208,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   FeatureColNames = names(data)[!names(data) \%in\%
     c("IDcol_1", "IDcol_2","Adrian")],
   PrimaryDateColumn = NULL,
-  DummifyCols = FALSE,
+  WeightsColumnName = NULL,
   IDcols = c("IDcol_1","IDcol_2"),
   TransformNumericColumns = "Adrian",
   Methods = c("BoxCox", "Asinh", "Asin", "Log",
@@ -224,7 +221,6 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   loss_function_value = 1.5,
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
-  EvalPlots = TRUE,
 
   # Grid tuning args
   PassInGrid = NULL,
@@ -232,7 +228,6 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 60*60,
-  Shuffles = 4L,
   BaselineComparison = "default",
 
   # ML args
@@ -256,19 +251,16 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 
 # Output
 TestModel$Model
-TestModel$ValidationData
-TestModel$EvaluationPlot
-TestModel$EvaluationBoxPlot
+TestModel$TrainData
+TestModel$TestData
+TestModel$PlotList
 TestModel$EvaluationMetrics
 TestModel$VariableImportance
 TestModel$InteractionImportance
-TestModel$ShapValuesDT
-TestModel$VI_Plot
-TestModel$PartialDependencePlots
-TestModel$PartialDependenceBoxPlots
 TestModel$GridList
 TestModel$ColNames
 TestModel$TransformationResults
+TestModel$FactorLevelsList
 }
 }
 \seealso{

@@ -5,7 +5,8 @@
 \title{AutoH2oMLClassifier}
 \usage{
 AutoH2oMLClassifier(
-  data,
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -16,7 +17,7 @@ AutoH2oMLClassifier(
   CostMatrixWeights = c(1, 0, 0, 1),
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1000000)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
   MaxModelsInGrid = 2,
   model_path = NULL,
@@ -33,6 +34,8 @@ AutoH2oMLClassifier(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
@@ -98,29 +101,30 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 TestModel <- RemixAutoML::AutoH2oMLClassifier(
-   data,
-   TrainOnFull = FALSE,
-   ValidationData = NULL,
-   TestData = NULL,
-   TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
-   ExcludeAlgos = NULL,
-   eval_metric = "auc",
-   CostMatrixWeights = c(1,0,0,1),
-   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-   NThreads = max(1, parallel::detectCores()-2),
-   MaxModelsInGrid = 10,
-   model_path = normalizePath("./"),
-   metadata_path = normalizePath("./"),
-   ModelID = "FirstModel",
-   NumOfParDepPlots = 3,
-   ReturnModelObjects = TRUE,
-   SaveModelObjects = FALSE,
-   SaveInfoToPDF = TRUE,
-   IfSaveModel = "mojo",
-   H2OShutdown = TRUE,
-   H2OStartUp = TRUE,
-   DebugMode = FALSE)
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+  ExcludeAlgos = NULL,
+  eval_metric = "auc",
+  CostMatrixWeights = c(1,0,0,1),
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  MaxModelsInGrid = 10,
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  ModelID = "FirstModel",
+  NumOfParDepPlots = 3,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = TRUE,
+  IfSaveModel = "mojo",
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  DebugMode = FALSE)
 }
 }
 \seealso{

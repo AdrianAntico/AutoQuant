@@ -322,30 +322,21 @@ ModelDataPrep <- function(data,
 #' @family Feature Engineering - DataSet
 #'
 #' @param data Source data
-#' @param ArgsList ArgsList_FFE
-#' @param PartitionRatios Allocation percentages for data sets
-#' @param Method 'random' or 'time'
-#' @param ByVariables Names of variables for sampling by
+#' @param ArgsList ArgsList
 #'
 #' @examples
 #' \dontrun{
 #' Output <- RemixAutoML:::PartitionData(
 #'   data = data,
-#'   ArgsList = ArgsList_FE,
-#'   PartitionRatios = c(0.70, 0.20, 0.10),
-#'   Method = 'random',
-#'   ByVariables = NULL)
+#'   ArgsList = ArgsList)
 #' TrainData <- Output$TrainData
-#' ArgsList_FE <- Output$ArgsList
+#' ArgsList <- Output$ArgsList
 #' }
 #'
 #' @return A list containing the data and the ArgsList
 #' @noRd
 PartitionData <- function(data = NULL,
-                          ArgsList = ArgsList_FFE,
-                          PartitionRatios = c(0.70, 0.20, 0.10),
-                          Method = 'random',
-                          ByVariables = NULL) {
+                          ArgsList = ArgsList) {
 
   # Metadata
   Start <- Sys.time()
@@ -353,11 +344,11 @@ PartitionData <- function(data = NULL,
   # Run function
   DataSets <- RemixAutoML::AutoDataPartition(
     data = data,
-    NumDataSets = length(PartitionRatios),
-    Ratios = PartitionRatios,
-    PartitionType = Method,
-    StratifyColumnNames = ByVariables,
-    TimeColumnName = NULL)
+    NumDataSets = length(ArgsList$FE_Args$Partition$PartitionRatios),
+    Ratios = ArgsList$FE_Args$Partition$PartitionRatios,
+    PartitionType = ArgsList$FE_Args$Partition$PartitionMethod,
+    StratifyColumnNames = ArgsList$FE_Args$Partition$PartitionByVariables,
+    TimeColumnName = ArgsList$FE_Args$Partition$PartitionTimeColumnName)
 
   # Collect data
   TrainData <- DataSets$TrainData; DataSets$TrainData <- NULL
@@ -366,7 +357,7 @@ PartitionData <- function(data = NULL,
 
   # Run time tracking
   End <- Sys.time()
-  ArgsList$RunTime$FE_PartitionData <- difftime(End, Start, units = "mins")
+  ArgsList$RunTime$PartitionData <- difftime(End, Start, units = "mins")
 
   # Return
   return(list(TrainData = TrainData, ValidationData = ValidationData, TestData = TestData, ArgsList = ArgsList))

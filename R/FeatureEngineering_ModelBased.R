@@ -435,26 +435,18 @@ AutoWord2VecScoring <- function(data,
 #' @param ArgsList ArgsList_FFE
 #' @param RunMode 'train' or 'score'
 #' @param SkipCols Colnames to skip over
-#' @param BuildType. 'individual' or 'combined'
-#' @param NumberVectors Per text column
-#' @param Window Look back and look ahead number of words
-#' @param Iterations Number of epochs in the model training
 #'
 #' @noRd
 Word2Vec_H2O <- function(TrainData. = NULL,
                          ValidationData. = NULL,
                          TestData. = NULL,
                          ScoringData. = NULL,
-                         ArgsList = ArgsList_FFE,
-                         RunMode = "training",
-                         SkipCols = NULL,
-                         BuildType. = "individual",
-                         NumberVectors = 20,
-                         Window = 5,
-                         Iterations = 20) {
+                         ArgsList = ArgsList,
+                         RunMode = "train",
+                         SkipCols = NULL) {
 
   # Run mode
-  if(tolower(RunMode) == "training") {
+  if(tolower(RunMode) == "train") {
 
     # Remove stale model if it exists
     if(file.exists(file.path(ArgsList$MetaData$Models_Path, paste0(ArgsList$MetaData$ProjectID, "_Word2Vec")))) {
@@ -468,30 +460,30 @@ Word2Vec_H2O <- function(TrainData. = NULL,
     # Run AutoWord2VecModeler
     TrainData. <- RemixAutoML::AutoWord2VecModeler(
       data = TrainData.,
-      BuildType = BuildType.,
+      BuildType = ArgsList$FE_Args$H2O_Word2Vec$BuildType,
       stringCol = ArgsList$Data$TextVariables,
       KeepStringCol = FALSE,
       ModelID = paste0(ArgsList$MetaData$ProjectID, "_Word2Vec"),
       model_path = ArgsList$MetaData$Models_Path,
-      vects = NumberVectors,
-      MinWords = 2,
-      WindowSize = Window,
-      Epochs = Iterations,
+      vects = ArgsList$FE_Args$H2O_Word2Vec$NumberVectors,
+      MinWords = ArgsList$FE_Args$H2O_Word2Vec$MinWords,
+      WindowSize = ArgsList$FE_Args$H2O_Word2Vec$Window,
+      Epochs = ArgsList$FE_Args$H2O_Word2Vec$Iterations,
       SaveModel = "standard",
       Threads = max(1L, parallel::detectCores()-2L),
-      MaxMemory = ArgsList$MetaData$H2O_Memory)
+      MaxMemory = ArgsList$FE_Args$General$H2O_Memory)
 
     # Args tracking
-    ArgsList$FE_H2OWord2Vec$BuildType <- BuildType.
+    ArgsList$FE_H2OWord2Vec$BuildType <- ArgsList$FE_Args$H2O_Word2Vec$BuildType
     ArgsList$FE_H2OWord2Vec$stringCol <- ArgsList$Data$TextVariables
     ArgsList$FE_H2OWord2Vec$KeepStringCol <- FALSE
     ArgsList$FE_H2OWord2Vec$ModelID <- paste0(ArgsList$MetaData$ProjectID, "_Word2Vec")
     ArgsList$FE_H2OWord2Vec$model_path <- ArgsList$MetaData$Models_Path
-    ArgsList$FE_H2OWord2Vec$vects <- NumberVectors
-    ArgsList$FE_H2OWord2Vec$WindowSize <- Window
-    ArgsList$FE_H2OWord2Vec$Epochs <- Iterations
+    ArgsList$FE_H2OWord2Vec$vects <- ArgsList$FE_Args$H2O_Word2Vec$NumberVectors
+    ArgsList$FE_H2OWord2Vec$WindowSize <- ArgsList$FE_Args$H2O_Word2Vec$Window
+    ArgsList$FE_H2OWord2Vec$Epochs <- ArgsList$FE_Args$H2O_Word2Vec$Iterations
     ArgsList$FE_H2OWord2Vec$Threads <- max(1L, parallel::detectCores()-2L)
-    ArgsList$FE_H2OWord2Vec$MaxMemory <- ArgsList$MetaData$H2O_Memory
+    ArgsList$FE_H2OWord2Vec$MaxMemory <- ArgsList$FE_Args$General$H2O_Memory
 
     # Update IDVariables
     if(!ArgsList$FE_H2OWord2Vec$KeepStringCol) {
@@ -500,10 +492,10 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_H2OWord2Vec_Training <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$H2OWord2Vec_Training <- difftime(End, Start, units = "mins")
 
     # New column tracking
-    ArgsList$FE_Columns$FE_H2OWord2Vec <- setdiff(names(data.table::copy(TrainData.)), tempnames)
+    ArgsList$FE_Columns$H2OWord2Vec <- setdiff(names(data.table::copy(TrainData.)), tempnames)
 
     # Score new data
     if(!is.null(ValidationData.)) {
@@ -559,20 +551,20 @@ Word2Vec_H2O <- function(TrainData. = NULL,
     # Score new data
     data <- RemixAutoML::AutoWord2VecScoring(
       data = ScoringData.,
-      BuildType = "individual",
+      BuildType = ArgsList$FE_H2OWord2VecScoring$BuildType,
+      stringCol = ArgsList$FE_H2OWord2VecScoring$stringCol,
+      KeepStringCol = ArgsList$FE_H2OWord2VecScoring$KeepStringCol,
+      ModelID = ArgsList$FE_H2OWord2VecScoring$ModelID,
       ModelObject = NULL,
-      ModelID = "Model_1",
-      model_path = getwd(),
-      stringCol = "Comment",
-      KeepStringCol = FALSE,
+      model_path = ArgsList$FE_H2OWord2VecScoring$model_path,
       H2OStartUp = TRUE,
       H2OShutdown = TRUE,
-      Threads = max(1L, parallel::detectCores() - 2L),
-      MaxMemory = "28G")
+      Threads = ArgsList$FE_H2OWord2VecScoring$Threads,
+      MaxMemory = ArgsList$FE_H2OWord2VecScoring$MaxMemory)
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_H2OWord2Vec_Scoring <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$H2OWord2Vec_Scoring <- difftime(End, Start, units = "mins")
   }
 
   # Return
@@ -607,17 +599,7 @@ AutoEncoder_H2O <- function(ArgsList=ArgsList_FEE,
                             TrainData. = NULL,
                             ValidationData. = NULL,
                             TestData. = NULL,
-                            ScoringData. = NULL,
-                            AnomalyDetection. = TRUE,
-                            DimensionReduction. = TRUE,
-                            AD_PerFeature = FALSE,
-                            RemoveBaseFeatures = FALSE,
-                            NodeShrinkRate. = (sqrt(5) - 1) / 2,
-                            Epochs. = 20,
-                            L2. = 0.10,
-                            ElasticAveraging. = TRUE,
-                            ElasticAveragingMovingRate. = 0.90,
-                            ElasticAveragingRegularization. = 0.001) {
+                            ScoringData. = NULL) {
 
   # Give h2o some sleep time
   if(any(ArgsList$Services %chin% "H2OWord2Vec")) Sys.sleep(10L)
@@ -640,59 +622,59 @@ AutoEncoder_H2O <- function(ArgsList=ArgsList_FEE,
     TrainData. <- RemixAutoML::H2OAutoencoder(
 
       # Select the service
-      AnomalyDetection = AnomalyDetection.,
-      DimensionReduction = DimensionReduction.,
+      AnomalyDetection = ArgsList$FE_Args$H2O_Autoencoder$AnomalyDetection,
+      DimensionReduction = ArgsList$FE_Args$H2O_Autoencoder$DimensionReduction,
 
       # Data related args
       data = TrainData.,
       Features = ColsUsed,
-      per_feature = AD_PerFeature,
-      RemoveFeatures = RemoveBaseFeatures,
+      per_feature = ArgsList$FE_Args$H2O_Autoencoder$AD_PerFeature,
+      RemoveFeatures = ArgsList$FE_Args$H2O_Autoencoder$RemoveBaseFeatures,
       ModelID = paste0(ArgsList$MetaData$ProjectID, "_AutoEncoder"),
       model_path = ArgsList$MetaData$Models_Path,
 
       # H2O Environment
       NThreads = max(1L, parallel::detectCores()-2L),
-      MaxMem = ArgsList$MetaData$H2O_Memory,
+      MaxMem = ArgsList$FE_Args$General$H2O_Memory,
       H2OStart = TRUE,
       H2OShutdown = TRUE,
 
       # H2O ML Args
       LayerStructure = NULL,
-      NodeShrinkRate = NodeShrinkRate.,
+      NodeShrinkRate = ArgsList$FE_Args$H2O_Autoencoder$NodeShrinkRate,
       ReturnLayer = 4L,
       Activation = "Tanh",
-      Epochs = Epochs.,
-      L2 = L2.,
-      ElasticAveraging = ElasticAveraging.,
-      ElasticAveragingMovingRate = ElasticAveragingMovingRate.,
-      ElasticAveragingRegularization = ElasticAveragingRegularization.)
+      Epochs = ArgsList$FE_Args$H2O_Autoencoder$Epochs,
+      L2 = ArgsList$FE_Args$H2O_Autoencoder$L2,
+      ElasticAveraging = ArgsList$FE_Args$H2O_Autoencoder$ElasticAveraging,
+      ElasticAveragingMovingRate = ArgsList$FE_Args$H2O_Autoencoder$ElasticAveragingMovingRate,
+      ElasticAveragingRegularization = ArgsList$FE_Args$H2O_Autoencoder$ElasticAveragingRegularization)
 
     # Args tracking
-    ArgsList$FE_H2OAutoEncoder$AnomalyDetection <- AnomalyDetection.
-    ArgsList$FE_H2OAutoEncoder$DimensionReduction <- DimensionReduction.
+    ArgsList$FE_H2OAutoEncoder$AnomalyDetection <- ArgsList$FE_Args$H2O_Autoencoder$AnomalyDetection
+    ArgsList$FE_H2OAutoEncoder$DimensionReduction <- ArgsList$FE_Args$H2O_Autoencoder$DimensionReduction
     ArgsList$FE_H2OAutoEncoder$Features <- ColsUsed
-    ArgsList$FE_H2OAutoEncoder$per_feature <- AD_PerFeature
-    ArgsList$FE_H2OAutoEncoder$RemoveFeatures <- RemoveBaseFeatures
+    ArgsList$FE_H2OAutoEncoder$per_feature <- ArgsList$FE_Args$H2O_Autoencoder$AD_PerFeature
+    ArgsList$FE_H2OAutoEncoder$RemoveFeatures <- ArgsList$FE_Args$H2O_Autoencoder$RemoveBaseFeatures
     ArgsList$FE_H2OAutoEncoder$ModelID <- paste0(ArgsList$MetaData$ProjectID, "_AutoEncoder")
     ArgsList$FE_H2OAutoEncoder$model_path <- ArgsList$MetaData$Models_Path
     ArgsList$FE_H2OAutoEncoder$NThreads <- max(1L, parallel::detectCores()-2L)
-    ArgsList$FE_H2OAutoEncoder$MaxMem <- ArgsList$MetaData$H2O_Memory
+    ArgsList$FE_H2OAutoEncoder$MaxMem <- ArgsList$FE_Args$General$H2O_Memory
     ArgsList$FE_H2OAutoEncoder$H2OStart <- TRUE
     ArgsList$FE_H2OAutoEncoder$H2OShutdown <- TRUE
-    ArgsList$FE_H2OAutoEncoder$NodeShrinkRate <- NodeShrinkRate.
-    ArgsList$FE_H2OAutoEncoder$Epochs <- Epochs.
-    ArgsList$FE_H2OAutoEncoder$L2 <- L2.
-    ArgsList$FE_H2OAutoEncoder$ElasticAveraging <- ElasticAveraging.
-    ArgsList$FE_H2OAutoEncoder$ElasticAveragingMovingRate <- ElasticAveragingMovingRate.
-    ArgsList$FE_H2OAutoEncoder$ElasticAveragingRegularization <- ElasticAveragingRegularization.
+    ArgsList$FE_H2OAutoEncoder$NodeShrinkRate <- ArgsList$FE_Args$H2O_Autoencoder$NodeShrinkRate
+    ArgsList$FE_H2OAutoEncoder$Epochs <- ArgsList$FE_Args$H2O_Autoencoder$Epochs
+    ArgsList$FE_H2OAutoEncoder$L2 <- ArgsList$FE_Args$H2O_Autoencoder$L2
+    ArgsList$FE_H2OAutoEncoder$ElasticAveraging <- ArgsList$FE_Args$H2O_Autoencoder$ElasticAveraging
+    ArgsList$FE_H2OAutoEncoder$ElasticAveragingMovingRate <- ArgsList$FE_Args$H2O_Autoencoder$ElasticAveragingMovingRate
+    ArgsList$FE_H2OAutoEncoder$ElasticAveragingRegularization <- ArgsList$FE_Args$H2O_Autoencoder$ElasticAveragingRegularization
 
     # New columns tracking
-    ArgsList$FE_H2OAutoEncoder <- setdiff(names(data.table::copy(TrainData.), tempnames))
+    ArgsList$FE_Columns$H2OAutoEncoder <- setdiff(names(data.table::copy(TrainData.), tempnames))
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_H2OAutoEncoder_Training <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$H2OAutoEncoder_Training <- difftime(End, Start, units = "mins")
 
     # Score validation data
     if(!is.null(ValidationData.)) {
@@ -791,6 +773,10 @@ AutoEncoder_H2O <- function(ArgsList=ArgsList_FEE,
       H2OStart = ArgsList$FE_H2OAutoEncoderScoring$H2OStart,
       H2OShutdown = ArgsList$FE_H2OAutoEncoderScoring$H2OShutdown,
       ReturnLayer = 4L)
+
+    # Run time tracking
+    End <- Sys.time()
+    ArgsList$RunTime$H2OAutoEncoder_Scoring <- difftime(End, Start, units = "mins")
   }
 
   # Return
@@ -804,34 +790,18 @@ AutoEncoder_H2O <- function(ArgsList=ArgsList_FEE,
 #' @author Adrian Antico
 #' @family Feature Engineering - Model Based
 #'
-#' @param ArgsList ArgsList_FEE
+#' @param ArgsList ArgsList
 #' @param TrainData. data
 #' @param ValidationData. data
 #' @param TestData. data
 #' @param ScoringData. data
-#' @param Threshold. 0.95
-#' @param NTrees. 500
-#' @param MaxDepth. 8
-#' @param MinRows. 1
-#' @param RowSampleRate. (sqrt(5)-1)/2
-#' @param ColSampleRate. 1
-#' @param ColSampleRatePerLevel. 1
-#' @param ColSampleRatePerTree. 1
 #'
 #' @noRd
-IsolationForest_H2O <- function(ArgsList=ArgsList_FEE,
+IsolationForest_H2O <- function(ArgsList=ArgsList,
                                 TrainData. = NULL,
                                 ValidationData. = NULL,
                                 TestData. = NULL,
-                                ScoringData. = NULL,
-                                Threshold. = 0.95,
-                                NTrees. = 500,
-                                MaxDepth. = 8,
-                                MinRows. = 1,
-                                RowSampleRate. = (sqrt(5)-1)/2,
-                                ColSampleRate. = 1,
-                                ColSampleRatePerLevel. = 1,
-                                ColSampleRatePerTree. = 1) {
+                                ScoringData. = NULL) {
 
   # Give h2o some sleep time
   if(any(ArgsList$Services %chin% c("H2OWord2Vec","H2OAutoEncoder"))) Sys.sleep(10L)
@@ -858,15 +828,15 @@ IsolationForest_H2O <- function(ArgsList=ArgsList_FEE,
       ModelID = paste0(ArgsList$MetaData$ProjectID, "_IsolationForest"),
       SavePath = ArgsList$MetaData$Models_Path,
       NThreads = max(1L, parallel::detectCores()-2L),
-      MaxMem = ArgsList$MetaData$H2O_Memory,
-      Threshold = Threshold.,
-      NTrees = NTrees.,
-      MaxDepth = MaxDepth.,
-      MinRows = MinRows.,
-      RowSampleRate = RowSampleRate.,
-      ColSampleRate = ColSampleRate.,
-      ColSampleRatePerLevel = ColSampleRatePerLevel.,
-      ColSampleRatePerTree = ColSampleRatePerTree.,
+      MaxMem = ArgsList$FE_Args$General$H2O_Memory,
+      Threshold = ArgsList$FE_Args$H2O_IsolationForest$Threshold,
+      NTrees = ArgsList$FE_Args$H2O_IsolationForest$NTrees,
+      MaxDepth = ArgsList$FE_Args$H2O_IsolationForest$MaxDepth,
+      MinRows = ArgsList$FE_Args$H2O_IsolationForest$MinRows,
+      RowSampleRate = ArgsList$FE_Args$H2O_IsolationForest$RowSampleRate,
+      ColSampleRate = ArgsList$FE_Args$H2O_IsolationForest$ColSampleRate,
+      ColSampleRatePerLevel = ArgsList$FE_Args$H2O_IsolationForest$ColSampleRatePerLevel,
+      ColSampleRatePerTree = ArgsList$FE_Args$H2O_IsolationForest$ColSampleRatePerTree,
       CategoricalEncoding = c("AUTO"),
       Debug = TRUE)
 
@@ -876,22 +846,22 @@ IsolationForest_H2O <- function(ArgsList=ArgsList_FEE,
     ArgsList$FE_H2OIsolationForest$ModelID <- paste0(ArgsList$MetaData$ProjectID, "_IsolationForest")
     ArgsList$FE_H2OIsolationForest$SavePath <- ArgsList$MetaData$Models_Path
     ArgsList$FE_H2OIsolationForest$NThreads <- max(1L, parallel::detectCores()-2L)
-    ArgsList$FE_H2OIsolationForest$MaxMem <- ArgsList$MetaData$H2O_Memory
-    ArgsList$FE_H2OIsolationForest$Threshold <- Threshold.
-    ArgsList$FE_H2OIsolationForest$NTrees <- NTrees.
-    ArgsList$FE_H2OIsolationForest$MaxDepth <- MaxDepth.
-    ArgsList$FE_H2OIsolationForest$MinRows <- MinRows.
-    ArgsList$FE_H2OIsolationForest$RowSampleRate <- RowSampleRate.
-    ArgsList$FE_H2OIsolationForest$ColSampleRate <- ColSampleRate.
-    ArgsList$FE_H2OIsolationForest$ColSampleRatePerLevel <- ColSampleRatePerLevel.
-    ArgsList$FE_H2OIsolationForest$ColSampleRatePerTree <- ColSampleRatePerTree.
+    ArgsList$FE_H2OIsolationForest$MaxMem <- ArgsList$FE_Args$General$H2O_Memory
+    ArgsList$FE_H2OIsolationForest$Threshold <- ArgsList$FE_Args$H2O_IsolationForest$Threshold
+    ArgsList$FE_H2OIsolationForest$NTrees <- ArgsList$FE_Args$H2O_IsolationForest$NTrees
+    ArgsList$FE_H2OIsolationForest$MaxDepth <- ArgsList$FE_Args$H2O_IsolationForest$MaxDepth
+    ArgsList$FE_H2OIsolationForest$MinRows <- ArgsList$FE_Args$H2O_IsolationForest$MinRows
+    ArgsList$FE_H2OIsolationForest$RowSampleRate <- ArgsList$FE_Args$H2O_IsolationForest$RowSampleRate
+    ArgsList$FE_H2OIsolationForest$ColSampleRate <- ArgsList$FE_Args$H2O_IsolationForest$ColSampleRate
+    ArgsList$FE_H2OIsolationForest$ColSampleRatePerLevel <- ArgsList$FE_Args$H2O_IsolationForest$ColSampleRatePerLevel
+    ArgsList$FE_H2OIsolationForest$ColSampleRatePerTree <- ArgsList$FE_Args$H2O_IsolationForest$ColSampleRatePerTree
 
     # New columns tracking
-    ArgsList$FE_H2OIsolationForest <- setdiff(names(data.table::copy(TrainData.), tempnames))
+    ArgsList$FE_Columns$H2OIsolationForest <- setdiff(names(data.table::copy(TrainData.), tempnames))
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_H2OIsolationForest_Training <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$H2OIsolationForest_Training <- difftime(End, Start, units = "mins")
 
     # Score validation data
     if(!is.null(ValidationData.)) {
@@ -959,6 +929,10 @@ IsolationForest_H2O <- function(ArgsList=ArgsList_FEE,
       MaxMem = ArgsList$FE_H2OIsolationForestScoring$MaxMem,
       NThreads = ArgsList$FE_H2OIsolationForestScoring$NThreads,
       Debug = FALSE)
+
+    # Run time tracking
+    End <- Sys.time()
+    ArgsList$RunTime$H2OIsolationForest_Scoring <- difftime(End, Start, units = "mins")
   }
 
   # Return
@@ -977,29 +951,13 @@ IsolationForest_H2O <- function(ArgsList=ArgsList_FEE,
 #' @param ValidationData. data
 #' @param TestData. data
 #' @param ScoringData. data
-#' @param MaxClusters. 50
-#' @param ClusterMetric. "totss"
-#' @param ShrinkRate. (sqrt(5) - 1) / 2
-#' @param Epochs. 20
-#' @param L2. 0.10
-#' @param ElasticAveraging. TRUE
-#' @param ElasticAveragingMovingRate. 0.90
-#' @param ElasticAveragingRegularization. 0.001
 #'
 #' @noRd
 Clustering_H2O <- function(ArgsList=ArgsList_FEE,
                            TrainData. = NULL,
                            ValidationData. = NULL,
                            TestData. = NULL,
-                           ScoringData. = NULL,
-                           MaxClusters. = 50,
-                           ClusterMetric. = "totss",
-                           ShrinkRate. = (sqrt(5) - 1) / 2,
-                           Epochs. = 20,
-                           L2. = 0.10,
-                           ElasticAveraging. = TRUE,
-                           ElasticAveragingMovingRate. = 0.90,
-                           ElasticAveragingRegularization. = 0.001) {
+                           ScoringData. = NULL) {
 
   # Give h2o some sleep time
   if(any(ArgsList$Services %chin% c("H2OWord2Vec","H2OAutoEncoder"))) Sys.sleep(10L)
@@ -1035,16 +993,16 @@ Clustering_H2O <- function(ArgsList=ArgsList_FEE,
       IDcols = c(ArgsList$Data$TargetVariables, ArgsList$Data$PrimaryDateVariables, ArgsList$Data$IDVariables),
       SavePath = ArgsList$MetaData$Models_Path,
       NThreads = max(1L, parallel::detectCores()-2L),
-      MaxMem = ArgsList$MetaData$H2O_Memory,
-      MaxClusters = MaxClusters.,
-      ClusterMetric = ClusterMetric.,
+      MaxMem = ArgsList$FE_Args$General$H2O_Memory,
+      MaxClusters = ArgsList$FE_Args$H2O_Clustering$MaxClusters,
+      ClusterMetric = ArgsList$FE_Args$H2O_Clustering$ClusterMetric,
       RunDimReduction = RunDimReduction.,
-      ShrinkRate = ShrinkRate.,
-      Epochs = Epochs.,
-      L2_Reg = L2.,
-      ElasticAveraging = ElasticAveraging.,
-      ElasticAveragingMovingRate = ElasticAveragingMovingRate.,
-      ElasticAveragingRegularization = ElasticAveragingRegularization.)
+      ShrinkRate = ArgsList$FE_Args$H2O_Clustering$Clustering_ShrinkRate,
+      Epochs = ArgsList$FE_Args$H2O_Clustering$Clustering_Epochs,
+      L2_Reg = ArgsList$FE_Args$H2O_Clustering$Clustering_L2,
+      ElasticAveraging = ArgsList$FE_Args$H2O_Clustering$Clustering_ElasticAveraging,
+      ElasticAveragingMovingRate = ArgsList$FE_Args$H2O_Clustering$Clustering_ElasticAveragingMovingRate,
+      ElasticAveragingRegularization = ArgsList$FE_Args$H2O_Clustering$Clustering_ElasticAveragingRegularization)
 
     # Args tracking
     ArgsList$FE_H2OClustering$Features <- ColsUsed
@@ -1052,23 +1010,23 @@ Clustering_H2O <- function(ArgsList=ArgsList_FEE,
     ArgsList$FE_H2OClustering$ModelID <- paste0(ArgsList$MetaData$ProjectID, "_Clustering")
     ArgsList$FE_H2OClustering$SavePath <- ArgsList$MetaData$Models_Path
     ArgsList$FE_H2OClustering$NThreads <- max(1L, parallel::detectCores()-2L)
-    ArgsList$FE_H2OClustering$MaxMem <- ArgsList$MetaData$H2O_Memory
-    ArgsList$FE_H2OClustering$MaxClusters <- MaxClusters.
-    ArgsList$FE_H2OClustering$ClusterMetric <- ClusterMetric.
+    ArgsList$FE_H2OClustering$MaxMem <- ArgsList$FE_Args$General$H2O_Memory
+    ArgsList$FE_H2OClustering$MaxClusters <- ArgsList$FE_Args$H2O_Clustering$MaxClusters
+    ArgsList$FE_H2OClustering$ClusterMetric <- ArgsList$FE_Args$H2O_Clustering$ClusterMetric
     ArgsList$FE_H2OClustering$RunDimReduction <- RunDimReduction.
-    ArgsList$FE_H2OClustering$ShrinkRate <- ShrinkRate.
-    ArgsList$FE_H2OClustering$Epochs <- Epochs.
-    ArgsList$FE_H2OClustering$L2_Reg <- L2.
-    ArgsList$FE_H2OClustering$ElasticAveraging <- ElasticAveraging.
-    ArgsList$FE_H2OClustering$ElasticAveragingMovingRate <- ElasticAveragingMovingRate.
-    ArgsList$FE_H2OClustering$ElasticAveragingRegularization <- ElasticAveragingRegularization.
+    ArgsList$FE_H2OClustering$ShrinkRate <- ArgsList$FE_Args$H2O_Clustering$Clustering_ShrinkRate
+    ArgsList$FE_H2OClustering$Epochs <- ArgsList$FE_Args$H2O_Clustering$Clustering_Epochs
+    ArgsList$FE_H2OClustering$L2_Reg <- ArgsList$FE_Args$H2O_Clustering$Clustering_L2
+    ArgsList$FE_H2OClustering$ElasticAveraging <- ArgsList$FE_Args$H2O_Clustering$Clustering_ElasticAveraging
+    ArgsList$FE_H2OClustering$ElasticAveragingMovingRate <- ArgsList$FE_Args$H2O_Clustering$Clustering_ElasticAveragingMovingRate
+    ArgsList$FE_H2OClustering$ElasticAveragingRegularization <- ArgsList$FE_Args$H2O_Clustering$Clustering_ElasticAveragingRegularization
 
     # New columns tracking
-    ArgsList$FE_H2OIsolationForest <- setdiff(names(data.table::copy(TrainData.), tempnames))
+    ArgsList$FE_Columns$H2OClustering <- setdiff(names(data.table::copy(TrainData.), tempnames))
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_H2OIsolationForest_Training <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$H2OClustering_Training <- difftime(End, Start, units = "mins")
 
     # Score validation data
     if(!is.null(ValidationData.)) {
@@ -1123,6 +1081,10 @@ Clustering_H2O <- function(ArgsList=ArgsList_FEE,
       NThreads = ArgsList$FE_H2OClusteringScoring$NThreads,
       MaxMemory = ArgsList$FE_H2OClusteringScoring$MaxMemory,
       DimReduction = ArgsList$FE_H2OClusteringScoring$DimReduction)
+
+    # Run time tracking
+    End <- Sys.time()
+    ArgsList$RunTime$H2OClustering_Scoring <- difftime(End, Start, units = "mins")
   }
 
   # Return

@@ -385,8 +385,6 @@ CreateHolidayVariables <- function(data,
 #' @param RunMode 'train' or 'score'
 #' @param ArgsList ArgsList_FFE
 #' @param SkipCols Vector of column names to remove from data
-#' @param DateVariables Only required if you don't pass in ArgsList
-#' @param Vars Calendar variables to create
 #'
 #' @examples
 #' \dontrun{
@@ -394,8 +392,7 @@ CreateHolidayVariables <- function(data,
 #'   data = data,
 #'   RunMode = "train",
 #'   ArgsList = ArgsList_FE,
-#'   SkipCols = NULL,
-#'   Vars = c("week", "wom", "month", "quarter"))
+#'   SkipCols = NULL)
 #' data <- Output$data
 #' ArgsList_FE <- Output$ArgsList
 #' }
@@ -405,12 +402,7 @@ CreateHolidayVariables <- function(data,
 CalendarVariables <- function(data = NULL,
                               RunMode = "train",
                               ArgsList = NULL,
-                              SkipCols = NULL,
-                              DateVariables = NULL,
-                              Vars = c("wday", "mday", "yday", "week", "wom", "month", "quarter")) {
-
-  # Date variables
-  if(!is.null(ArgsList)) DateVariables <- ArgsList$Data$DateVariables
+                              SkipCols = NULL) {
 
   # Metadata
   Start <- Sys.time()
@@ -420,12 +412,12 @@ CalendarVariables <- function(data = NULL,
 
   # Run function
   if(tolower(RunMode) == "train") {
-    for(dat in DateVariables) {
+    for(dat in ArgsList$Data$DateVariables) {
       data <- RemixAutoML::CreateCalendarVariables(
         data = data,
         DateCols = dat,
         AsFactor = FALSE,
-        TimeUnits = Vars)
+        TimeUnits = ArgsList$FE_Args$Calendar$CalendarVariables)
     }
 
     # SkipCols
@@ -438,16 +430,16 @@ CalendarVariables <- function(data = NULL,
     if(!is.null(ArgsList)) {
 
       # ArgsList
-      ArgsList$FE_CalendarVariables$DateCols <- ArgsList$Data$DateVariables
-      ArgsList$FE_CalendarVariables$TimeUnits <- Vars
-      ArgsList$FE_CalendarVariables$AsFactor <- FALSE
+      ArgsList$CalendarVariables$DateCols <- ArgsList$Data$DateVariables
+      ArgsList$CalendarVariables$TimeUnits <- ArgsList$FE_Args$Calendar$CalendarVariables
+      ArgsList$CalendarVariables$AsFactor <- FALSE
 
       # Column tracking
-      ArgsList$FE_Columns$FE_CalendarVariables_Training <- setdiff(names(data), tempnames)
+      ArgsList$FE_Columns$CalendarVariables_Training <- setdiff(names(data), tempnames)
 
       # Run time tracking
       End <- Sys.time()
-      ArgsList$RunTime$FE_CalendarVariables_Training <- difftime(End, Start, units = "mins")
+      ArgsList$RunTime$CalendarVariables_Training <- difftime(End, Start, units = "mins")
     }
 
   } else {
@@ -456,9 +448,9 @@ CalendarVariables <- function(data = NULL,
     for(dat in DateVariables) {
       data <- RemixAutoML::CreateCalendarVariables(
         data = data,
-        DateCols = ArgsList$FE_CalendarVariables$DateCols,
-        AsFactor = ArgsList$FE_CalendarVariables$AsFactor,
-        TimeUnits = ArgsList$FE_CalendarVariables$TimeUnits)
+        DateCols = ArgsList$CalendarVariables$DateCols,
+        AsFactor = ArgsList$CalendarVariables$AsFactor,
+        TimeUnits = ArgsList$CalendarVariables$TimeUnits)
     }
 
     # SkipCols
@@ -470,7 +462,7 @@ CalendarVariables <- function(data = NULL,
     # Args Collection
     if(!is.null(ArgsList)) {
       End <- Sys.time()
-      ArgsList$RunTime$FE_CalendarVariables_Scoring <- difftime(End, Start, units = "mins")
+      ArgsList$RunTime$CalendarVariables_Scoring <- difftime(End, Start, units = "mins")
     }
   }
 
@@ -489,16 +481,13 @@ CalendarVariables <- function(data = NULL,
 #' @param RunMode 'train' or 'score'
 #' @param ArgsList ArgsList_FFE
 #' @param SkipCols Vector of column names to remove from data
-#' @param Vars Calendar variables to create
 #'
 #' @examples
 #' \dontrun{
 #' Output <- RemixAutoML:::HolidayVariables(
 #'   data = data,
 #'   RunMode = "train",
-#'   ArgsList = ArgsList_FE,
-#'   LookbackDays = 7,
-#'   HolidaySets = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+#'   ArgsList = ArgsList,
 #'   SkipCols = NULL)
 #' data <- Output$data
 #' ArgsList_FE <- Output$ArgsList
@@ -508,9 +497,7 @@ CalendarVariables <- function(data = NULL,
 #' @noRd
 HolidayVariables <- function(data = NULL,
                              RunMode = "train",
-                             ArgsList = ArgsList_FFE,
-                             LookbackDays = 7,
-                             HolidaySets = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+                             ArgsList = ArgsList,
                              SkipCols = NULL) {
 
   # Metadata
@@ -520,15 +507,15 @@ HolidayVariables <- function(data = NULL,
   if(tolower(RunMode) == "train") {
     tempnames <- names(data.table::copy(data))
     for(dat in ArgsList$Data$DateVariables) {
-      for(i in seq_along(HolidaySets)) {
+      for(i in seq_along(ArgsList$FE_Args$Holiday_Variables$HolidayVariables)) {
         data <- RemixAutoML::CreateHolidayVariables(
           data = data,
           DateCols = dat,
-          LookbackDays = 7,
-          HolidayGroups = HolidaySets[i],
+          LookbackDays = ArgsList$FE_Args$Holiday_Variables$LookBackDays,
+          HolidayGroups = ArgsList$FE_Args$Holiday_Variables$HolidayVariables[i],
           Holidays = NULL,
           Print = FALSE)
-        data.table::setnames(data, "HolidayCounts", paste0(dat, "_", HolidaySets[i], "_HolidayCounts"))
+        data.table::setnames(data, "HolidayCounts", paste0(dat, "_", ArgsList$FE_Args$Holiday$HolidayVariables[i], "_HolidayCounts"))
       }
     }
 
@@ -539,17 +526,17 @@ HolidayVariables <- function(data = NULL,
     }
 
     # ArgsList
-    ArgsList$FE_HolidayVariables$DateCols <- ArgsList$Data$DateVariables
-    ArgsList$FE_HolidayVariables$LookbackDays <- LookbackDays
-    ArgsList$FE_HolidayVariables$AsFactor <- FALSE
-    ArgsList$FE_HolidayVariables$HolidaySets <- HolidaySets
+    ArgsList$HolidayVariables$DateCols <- ArgsList$Data$DateVariables
+    ArgsList$HolidayVariables$LookbackDays <- ArgsList$FE_Args$Holiday_Variables$LookBackDays
+    ArgsList$HolidayVariables$AsFactor <- FALSE
+    ArgsList$HolidayVariables$HolidaySets <- ArgsList$FE_Args$Holiday_Variables$HolidayVariables
 
     # Column tracking
-    ArgsList$FE_Columns$FE_HolidayVariables_Training <- setdiff(names(data), tempnames)
+    ArgsList$FE_Columns$HolidayVariables_Training <- setdiff(names(data), tempnames)
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_HolidayVariables_Training <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$HolidayVariables_Training <- difftime(End, Start, units = "mins")
 
   } else {
 
@@ -558,12 +545,12 @@ HolidayVariables <- function(data = NULL,
       for(i in seq_along(ArgsList$FE_HolidayVariables$HolidaySets)) {
         data <- RemixAutoML::CreateHolidayVariables(
           data = data,
-          DateCols = ArgsList$FE_HolidayVariables$DateCols,
-          LookbackDays = ArgsList$FE_HolidayVariables$LookbackDays,
-          HolidayGroups = ArgsList$FE_HolidayVariables$HolidaySets[i],
+          DateCols = ArgsList$HolidayVariables$DateCols,
+          LookbackDays = ArgsList$HolidayVariables$LookbackDays,
+          HolidayGroups = ArgsList$HolidayVariables$HolidaySets[i],
           Holidays = NULL,
           Print = FALSE)
-        data.table::setnames(data, "HolidayCounts", paste0(dat, "_", ArgsList$FE_HolidayVariables$HolidaySets[i], "_HolidayCounts"))
+        data.table::setnames(data, "HolidayCounts", paste0(dat, "_", ArgsList$HolidayVariables$HolidaySets[i], "_HolidayCounts"))
       }
     }
 
@@ -575,7 +562,7 @@ HolidayVariables <- function(data = NULL,
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_HolidayVariables_Scoring <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime$HolidayVariables_Scoring <- difftime(End, Start, units = "mins")
   }
 
   # Return

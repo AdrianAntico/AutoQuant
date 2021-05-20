@@ -467,7 +467,7 @@ CategoricalEncoding <- function(data = NULL,
 
       # Encode
       if(!Scoring) {
-        if(ML_Type == "multiclass") {
+        if(tolower(ML_Type) == "multiclass") {
           GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
           GroupMean[, paste0(GroupValue, "_TargetEncode") := N / sum(N), by = eval(TargetVariable)]
           GroupMean <- data.table::dcast.data.table(data = GroupMean, formula = get(GroupValue) ~ get(TargetVariable), fun.aggregate = sum, value.var = paste0(GroupValue, "_TargetEncode"), fill = 0)
@@ -487,7 +487,7 @@ CategoricalEncoding <- function(data = NULL,
       }
 
       # Merge back to data
-      if(ML_Type == "multiclass") {
+      if(tolower(ML_Type) == "multiclass") {
         data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
       } else {
         data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
@@ -519,7 +519,7 @@ CategoricalEncoding <- function(data = NULL,
       if(!Scoring) {
 
         # Encode
-        if(ML_Type == "multiclass") {
+        if(tolower(ML_Type) == "multiclass") {
           GroupMean <- data[, list(N = .N), by = c(eval(TargetVariable), eval(GroupValue))]
           GroupMean[, N_Target := sum(N), by = c(eval(TargetVariable))]
           GroupMean[, N_All := sum(N)]
@@ -549,7 +549,7 @@ CategoricalEncoding <- function(data = NULL,
       }
 
       # Merge back to data
-      if(ML_Type == "multiclass") {
+      if(tolower(ML_Type) == "multiclass") {
         data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
       } else {
         data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
@@ -579,7 +579,7 @@ CategoricalEncoding <- function(data = NULL,
 
       # Encode
       if(!Scoring) {
-        if(ML_Type == "multiclass") {
+        if(tolower(ML_Type) == "multiclass") {
           GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
           GroupMean[, GrandSum := sum(N)]
           GroupMean[, TargetSum := sum(N), by = eval(TargetVariable)]
@@ -595,13 +595,13 @@ CategoricalEncoding <- function(data = NULL,
           data.table::setkeyv(GroupMean, cols = eval(GroupValue))
         } else {
           GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
-          if(ML_Type == "classification") {
+          if(tolower(ML_Type) %chin% c("classification","classifier")) {
             GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), N = .N, Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N), keyby = eval(GroupValue)]
             PopVar <- (GrandMean * (1 - GrandMean)) / data[, .N]
             GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
             GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
             GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
-          } else if(ML_Type == "regression") {
+          } else if(tolower(ML_Type) == "regression") {
             GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), Var_Group = var(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
             PopVar <- data[, var(get(TargetVariable), na.rm = TRUE)]
             GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
@@ -619,7 +619,7 @@ CategoricalEncoding <- function(data = NULL,
       }
 
       # Merge back to data
-      if(ML_Type == "multiclass") {
+      if(tolower(ML_Type) == "multiclass") {
         data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
       } else {
         data[GroupMean, (eval(names(GroupMean)[-1L])) := get(paste0("i.", names(GroupMean)[-1L]))]
@@ -653,7 +653,7 @@ CategoricalEncoding <- function(data = NULL,
       if(!Scoring) {
 
         # Encode
-        if(ML_Type == "multiclass") {
+        if(tolower(ML_Type) == "multiclass") {
           GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
           GroupMean[, GrandSum := sum(N)]
           GroupMean[, TargetSum := sum(N), by = eval(TargetVariable)]
@@ -680,7 +680,7 @@ CategoricalEncoding <- function(data = NULL,
       }
 
       # Merge back to data
-      if(ML_Type == "mutliclass") {
+      if(tolower(ML_Type) == "mutliclass") {
         data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
       } else {
         data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
@@ -712,7 +712,6 @@ CategoricalEncoding <- function(data = NULL,
 #' @param RunMode 'train' or 'score'
 #' @param ArgsList ArgsList_FFE
 #' @param SkipCols Vector of column names to remove from data
-#' @param NumberLevels Max number of levels per categorical variable
 #'
 #' @examples
 #' \dontrun{
@@ -720,8 +719,7 @@ CategoricalEncoding <- function(data = NULL,
 #'   data = data,
 #'   RunMode = "train",
 #'   ArgsList = ArgsList_FE,
-#'   SkipCols = NULL,
-#'   NumberLevels = 3)
+#'   SkipCols = NULL)
 #' data <- Output$data
 #' ArgsList_FE <- Output$ArgsList
 #' }
@@ -732,7 +730,6 @@ DummyVariables <- function(data,
                            RunMode = "train",
                            ArgsList = NULL,
                            SkipCols = NULL,
-                           NumberLevels = 3,
                            KeepCharCols = TRUE) {
 
   # Metadata
@@ -748,7 +745,7 @@ DummyVariables <- function(data,
     data <- RemixAutoML::DummifyDT(
       data = data,
       cols = ArgsList$Data$GroupVariables,
-      TopN = NumberLevels,
+      TopN = ArgsList$FE_Args$Partial_Dummies$NumberLevels,
       KeepFactorCols = KeepCharCols,
       OneHot = FALSE,
       SaveFactorLevels = TRUE,
@@ -760,7 +757,7 @@ DummyVariables <- function(data,
 
     # Args tracking
     ArgsList$DummyVariables$cols <- ArgsList$Data$GroupVariables
-    ArgsList$DummyVariables$TopN <- NumberLevels
+    ArgsList$DummyVariables$TopN <- ArgsList$FE_Args$Partial_Dummies$NumberLevels
     ArgsList$DummyVariables$KeepFactorCols <- KeepCharCols
     ArgsList$DummyVariables$OneHot <- FALSE
     ArgsList$DummyVariables$SaveFactorLevels <- TRUE
@@ -770,11 +767,11 @@ DummyVariables <- function(data,
     ArgsList$DummyVariables$ClustScore <- FALSE
 
     # Column tracking
-    ArgsList$FE_Columns$FE_DummyVariables <- setdiff(names(data), tempnames)
+    ArgsList$FE_Columns$PartialDummies <- setdiff(names(data), tempnames)
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$FE_DummyVariables_Training <- difftime(time1 = End, time2 = Start, units = "mins")
+    ArgsList$RunTime$PartialDummies_Training <- difftime(time1 = End, time2 = Start, units = "mins")
 
   } else {
 
@@ -794,7 +791,7 @@ DummyVariables <- function(data,
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$DummyVariables_Scoring <- difftime(time1 = End, time2 = Start, units = "mins")
+    ArgsList$RunTime$PartialDummies_Scoring <- difftime(time1 = End, time2 = Start, units = "mins")
   }
 
   # Return
@@ -803,7 +800,6 @@ DummyVariables <- function(data,
 
 #' @param RunMode 'train' or 'score'
 #' @param ModelType 'classification', 'regression', 'multiclass'
-#' @param ArgsList NULL
 #' @param TrainData Must supply data.table
 #' @param ValidationData Optional
 #' @param TestData Optional
@@ -856,7 +852,7 @@ EncodeCharacterVariables <- function(RunMode = 'train',
     temp <- temp$data
   } else if(EncodeMethod %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
     temp_train <- temp[ID_Factorizer == "TRAIN"]
-    temp1 <- CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=ReturnMetaData, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+    temp1 <- CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
     MetaData <- temp1$FactorCompenents
     temp_train <- temp1$data
     if(!is.null(ValidationData) && !is.null(TestData)) {
@@ -873,7 +869,7 @@ EncodeCharacterVariables <- function(RunMode = 'train',
       temp <- temp_train
     }
   } else {
-    temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=ReturnMetaData, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+    temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
     MetaData <- temp$FactorCompenents
     temp <- temp$data
   }
@@ -896,4 +892,92 @@ EncodeCharacterVariables <- function(RunMode = 'train',
     ValidationData = ValidationData,
     TestData = TestData,
     MetaData = if(exists("MetaData")) MetaData else NULL))
+}
+
+#' @param RunMode Passthrough
+#' @param ArgsList Passthrough
+#' @param TrainData Passthrough
+#' @param ValidationData Passthrough
+#' @param TestData Passthrough
+#' @param ScoringData Passthrough
+#'
+#' @noRd
+Encoding <- function(RunMode = 'train',
+                     ArgsList = NULL,
+                     TrainData = NULL,
+                     ValidationData = NULL,
+                     TestData = NULL,
+                     ScoringData = NULL) {
+
+  # Metadata
+  Start <- Sys.time()
+
+  # Run function
+  if(tolower(RunMode) == "train") {
+
+    # Colnames
+    tempnames <- names(data.table::copy(TrainData))
+
+    # Dummify dataTrain Categorical Features ----
+    Output <- RemixAutoML:::EncodeCharacterVariables(
+      RunMode = 'train',
+      ModelType = ArgsList$MetaData$ModelType,
+      TrainData = TrainData,
+      ValidationData = ValidationData,
+      TestData = TestData,
+      TargetVariableName = ArgsList$Data$TargetVariables,
+      CategoricalVariableNames = ArgsList$Data$GroupVariables,
+      EncodeMethod = ArgsList$FE_Args$Encoding$EncodeMethod,
+      KeepCategoricalVariables = ArgsList$FE_Args$Encoding$KeepCharColumns,
+      ReturnMetaData = FALSE,
+      MetaDataPath = ArgsList$MetaData$MetaData_Path,
+      MetaDataList = NULL,
+      ImputeMissingValue = ArgsList$FE_Args$Encoding$EncodeImpute)
+
+    # Output
+    TrainData <- Output$TrainData; Output$TrainData <- NULL
+    ValidationData <- Output$ValidationData; Output$ValidationData <- NULL
+    TestData <- Output$TestData; Output$TestData. <- NULL
+
+    # Args tracking
+    ArgsList$Encoding$ModelType <- ArgsList$MetaData$ModelType
+    ArgsList$Encoding$TargetVariableName <- ArgsList$Data$TargetVariables
+    ArgsList$Encoding$CategoricalVariableNames <- ArgsList$Data$GroupVariables
+    ArgsList$Encoding$EncodeMethod <- ArgsList$FE_Args$Encoding$EncodeMethod
+    ArgsList$Encoding$KeepCategoricalVariables <- ArgsList$FE_Args$Encoding$KeepCharColumns
+    ArgsList$Encoding$ReturnMetaData <- FALSE
+    ArgsList$Encoding$MetaDataPath <- ArgsList$MetaData$Results_Path
+    ArgsList$Encoding$MetaDataList <- NULL
+    ArgsList$Encoding$ImputeMissingValue <- ArgsList$FE_Args$Encoding$EncodeImpute
+
+    # Column tracking
+    ArgsList$FE_Columns$Encoding <- setdiff(names(TrainData), tempnames)
+
+    # Run time tracking
+    End <- Sys.time()
+    ArgsList$RunTime$Encoding_Training <- difftime(time1 = End, time2 = Start, units = "mins")
+
+  } else {
+
+    # Dummify dataTrain Categorical Features
+    ScoringData <- CategoricalEncoding(
+      data = ScoringData,
+      ML_Type = ArgsList$Encoding$ModelType,
+      GroupVariables = ArgsList$Encoding$CategoricalVariableNames,
+      TargetVariable = ArgsList$Data$TargetVariables,
+      Method = ArgsList$Encoding$EncodeMethod,
+      SavePath = ArgsList$MetaData$Results_Path,
+      Scoring = TRUE,
+      ImputeValueScoring = ArgsList$Encoding$ImputeMissingValue,
+      ReturnFactorLevelList = FALSE,
+      SupplyFactorLevelList = NULL,
+      KeepOriginalFactors = ArgsList$Encoding$KeepCategoricalVariables)
+
+    # Run time tracking
+    End <- Sys.time()
+    ArgsList$RunTime$Encoding_Scoring <- difftime(time1 = End, time2 = Start, units = "mins")
+  }
+
+  # Return
+  return(list(TrainData = TrainData, ValidationData = ValidationData, TestData = TestData, ScoringData = ScoringData, ArgsList = ArgsList))
 }

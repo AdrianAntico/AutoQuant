@@ -384,6 +384,11 @@ AutoXGBoostCARMA <- function(data,
   if(DebugMode) print("Copy data for non grouping + difference----")
   if(is.null(GroupVariables) && Difference) antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
 
+  # Variables for CARMA function IDcols ----
+  if(DebugMode) print("Variables for CARMA function:IDcols----")
+  IDcols <- names(data)[which(names(data) %chin% DateColumnName)]
+  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, names(data)[which(names(data) == TargetColumnName)], names(data)[which(names(data) == "TargetDiffMidStep")])
+
   # Feature Engineering: Add Difference Data ----
   if(DebugMode) print("Feature Engineering: Add Difference Data----")
   Output <- CarmaDifferencing(GroupVariables.=GroupVariables, Difference.=Difference, data.=data, TargetColumnName.=TargetColumnName, FC_Periods.=FC_Periods)
@@ -391,6 +396,7 @@ AutoXGBoostCARMA <- function(data,
   dataStart <- Output$dataStart; Output$dataStart <- NULL
   FC_Periods <- Output$FC_Periods; Output$FC_Periods <- NULL
   Train <- Output$Train; rm(Output)
+  if(Difference) IDcols <- c(IDcols, "TargetDiffMidStep")
 
   # Feature Engineering: Lags and Rolling Stats ----
   if(DebugMode) print("Feature Engineering: Lags and Rolling Stats ----")
@@ -429,16 +435,12 @@ AutoXGBoostCARMA <- function(data,
 
   # Data Wrangling: Partition data with AutoDataPartition ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
+  if(tolower(PartitionType) == "timeseries" && is.null(GroupVariables)) PartitionType <- "time"
   Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
   train <- Output$train; Output$train <- NULL
   valid <- Output$valid; Output$valid <- NULL
   data <- Output$data; Output$data <- NULL
   test <- Output$test; rm(Output)
-
-  # Variables for CARMA function IDcols ----
-  if(DebugMode) print("Variables for CARMA function:IDcols----")
-  IDcols <- which(names(data) %chin% DateColumnName)
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) == TargetColumnName), which(names(data) == "TargetDiffMidStep"))
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----")

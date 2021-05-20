@@ -5,7 +5,8 @@
 \title{AutoH2oGLMClassifier}
 \usage{
 AutoH2oGLMClassifier(
-  data,
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -16,7 +17,7 @@ AutoH2oGLMClassifier(
   WeightsColumn = NULL,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1000000)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
   ModelID = "FirstModel",
   ReturnModelObjects = TRUE,
@@ -52,6 +53,8 @@ AutoH2oGLMClassifier(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
@@ -170,6 +173,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
     NumOfParDepPlots = 3,
 
     # Metadata args
+    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
     model_path = NULL,
     metadata_path = NULL,
     ModelID = "FirstModel",

@@ -6,7 +6,6 @@
 #' @family Automated Panel Data Forecasting
 #'
 #' @param data Supply your full series data set here
-#' @param TimeWeights Supply a value that will be multiplied by he time trend value
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param NonNegativePred TRUE or FALSE
@@ -14,6 +13,7 @@
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param HierarchGroups Vector of hierachy categorical columns.
+#' @param TimeWeights Supply a value that will be multiplied by he time trend value
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year".
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
@@ -538,6 +538,11 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print("Copy data for non grouping + difference ----")
   if(is.null(GroupVariables) && Difference) antidiff <- data.table::copy(data[, .SD, .SDcols = c(eval(TargetColumnName),eval(DateColumnName))])
 
+  # Variables for CARMA function IDcols ----
+  if(DebugMode) print("Variables for CARMA function:IDcols----")
+  IDcols <- names(data)[which(names(data) %chin% DateColumnName)]
+  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, names(data)[which(names(data) == TargetColumnName)], names(data)[which(names(data) == "TargetDiffMidStep")])
+
   # Feature Engineering: Differencing ----
   if(DebugMode) print("Feature Engineering: Add Difference Data ----")
   Output <- CarmaDifferencing(GroupVariables.=GroupVariables, Difference.=Difference, data.=data, TargetColumnName.=TargetColumnName, FC_Periods.=FC_Periods)
@@ -546,7 +551,7 @@ AutoCatBoostCARMA <- function(data,
   FC_Periods <- Output$FC_Periods; Output$FC_Periods <- NULL
   DiffTrainOutput <- Output$DiffTrainOutput
   Train <- Output$Train; rm(Output)
-  if(Difference) IDcols <- c(IDcols, "TargetDiffMidStep")
+  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, "TargetDiffMidStep")
 
   # Feature Engineering: Lags and Rolling Stats ----
   if(DebugMode) print("Feature Engineering: Lags and Rolling Stats ----")
@@ -577,27 +582,21 @@ AutoCatBoostCARMA <- function(data,
   # Store Date Info ----
   FutureDateData <- unique(data[, get(DateColumnName)])
 
+  # Create TimeWeights ----
+  if(DebugMode) print("Create TimeWeights ----")
+  train <- CarmaTimeWeights(train.=data, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
+
   # Save data to file before Partitioning ----
   if(!is.null(SaveDataPath)) data.table::fwrite(data, file.path(SaveDataPath, "ModelData.csv"))
 
   # Data Wrangling: Partition data ----
   if(DebugMode) print("Data Wrangling: Partition data with AutoDataPartition()----")
+  if(tolower(PartitionType) == "timeseries" && is.null(GroupVariables)) PartitionType <- "time"
   Output <- CarmaPartition(data.=data, SplitRatios.=SplitRatios, TrainOnFull.=TrainOnFull, NumSets.=NumSets, PartitionType.=PartitionType, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
   train <- Output$train; Output$train <- NULL
   valid <- Output$valid; Output$valid <- NULL
   data <- Output$data; Output$data <- NULL
   test <- Output$test; rm(Output)
-
-  # Create TimeWeights ----
-  if(DebugMode) print("Create TimeWeights ----")
-  Output <- CarmaTimeWeights(train.=train, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
-  train <- Output$train; Output$train <- NULL
-  Weightss <- Output$Weightss; rm(Output)
-
-  # Variables for CARMA function IDcols ----
-  if(DebugMode) print("Variables for CARMA function:IDcols----")
-  IDcols <- which(names(data) %chin% DateColumnName)
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, which(names(data) == TargetColumnName), which(names(data) == "TargetDiffMidStep"))
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----")
@@ -619,6 +618,7 @@ AutoCatBoostCARMA <- function(data,
     # GPU or CPU and the number of available GPUs
     task_type = TaskType,
     NumGPUs = NumGPU,
+    OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
 
     # Metadata arguments
     ModelID = "CatBoost",
@@ -633,12 +633,11 @@ AutoCatBoostCARMA <- function(data,
     TrainOnFull = TOF,
     ValidationData = valid,
     TestData = test,
-    Weights = Weightss,
     TargetColumnName = TargetVariable,
     FeatureColNames = ModelFeatures,
     PrimaryDateColumn = eval(DateColumnName),
+    WeightsColumnName = if("Weights" %in% names(train)) "Weights" else NULL,
     IDcols = IDcols,
-    DummifyCols = FALSE,
     TransformNumericColumns = NULL,
     Methods = NULL,
 
@@ -649,7 +648,6 @@ AutoCatBoostCARMA <- function(data,
     loss_function_value = LossFunctionValue,
     MetricPeriods = 10L,
     NumOfParDepPlots = NumOfParDepPlots,
-    EvalPlots = TRUE,
 
     # Grid tuning arguments
     PassInGrid = PassInGrid,

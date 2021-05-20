@@ -5,7 +5,8 @@
 \title{AutoH2oGLMMultiClass}
 \usage{
 AutoH2oGLMMultiClass(
-  data,
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -16,7 +17,7 @@ AutoH2oGLMMultiClass(
   WeightsColumn = NULL,
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1000000)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
   ModelID = "FirstModel",
   ReturnModelObjects = TRUE,
@@ -51,6 +52,8 @@ AutoH2oGLMMultiClass(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
@@ -154,56 +157,57 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    H2OStartUp = TRUE,
-    IfSaveModel = "mojo",
+  # Compute management
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
 
-    # Model evaluation:
-    eval_metric = "logloss",
-    NumOfParDepPlots = 3,
+  # Model evaluation:
+  eval_metric = "logloss",
+  NumOfParDepPlots = 3,
 
-    # Metadata arguments:
-    model_path = NULL,
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-    DebugMode = FALSE,
+  # Metadata arguments:
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
 
-    # Data arguments:
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
-    RandomColNumbers = NULL,
-    InteractionColNumbers = NULL,
-    WeightsColumn = NULL,
+  # Data arguments:
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
 
-    # Model args
-    GridTune = FALSE,
-    GridStrategy = "Cartesian",
-    StoppingRounds = 10,
-    MaxRunTimeSecs = 3600 * 24 * 7,
-    MaxModelsInGrid = 10,
-    Distribution = "multinomial",
-    Link = "family_default",
-    RandomDistribution = NULL,
-    RandomLink = NULL,
-    Solver = "AUTO",
-    Alpha = 0.5,
-    Lambda = NULL,
-    LambdaSearch = FALSE,
-    NLambdas = -1,
-    Standardize = TRUE,
-    RemoveCollinearColumns = FALSE,
-    InterceptInclude = TRUE,
-    NonNegativeCoefficients = FALSE)
+  # Model args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 10,
+  Distribution = "multinomial",
+  Link = "family_default",
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = 0.5,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 }
 }
 \seealso{

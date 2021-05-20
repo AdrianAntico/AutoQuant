@@ -6,7 +6,7 @@
 #' @family Supervised Learning - Compound
 #'
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
-#' @param TimeWeights Supply a value that will be multiplied by he time trend value
+#' @param WeightsColumnName Column name for weights variable
 #' @param TrainOnFull Set to TRUE to use all data
 #' @param ValidationData Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param TestData Souce test data. Do not include a column that has the class labels for the buckets as they are created internally.
@@ -60,7 +60,7 @@
 #'
 #'   # Data related args
 #'   data = data,
-#'   TimeWeights = NULL,
+#'   WeightsColumnName = NULL,
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
@@ -115,7 +115,6 @@
 #' }
 #' @export
 AutoCatBoostHurdleModel <- function(data = NULL,
-                                    TimeWeights = NULL,
                                     TrainOnFull = FALSE,
                                     ValidationData = NULL,
                                     TestData = NULL,
@@ -123,6 +122,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     TargetColumnName = NULL,
                                     FeatureColNames = NULL,
                                     PrimaryDateColumn = NULL,
+                                    WeightsColumnName = NULL,
                                     IDcols = NULL,
                                     TransformNumericColumns = NULL,
                                     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
@@ -461,6 +461,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       NumGPUs = 1,
 
       # Metadata arguments
+      OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
       ModelID = ModelID,
       model_path = Paths,
       metadata_path = MetaDataPaths,
@@ -475,6 +476,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       TargetColumnName = "Target_Buckets",
       FeatureColNames = FeatureNames,
       PrimaryDateColumn = PrimaryDateColumn,
+      WeightsColumnName = WeightsColumnName,
       ClassWeights = ClassWeights,
       IDcols = IDcols,
 
@@ -519,6 +521,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       task_type = task_type,
 
       # Metadata arguments
+      OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
       ModelID = ModelID,
       model_path = Paths,
       metadata_path = MetaDataPaths,
@@ -533,6 +536,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       TargetColumnName = "Target_Buckets",
       FeatureColNames = FeatureNames,
       PrimaryDateColumn = PrimaryDateColumn,
+      WeightsColumnName = WeightsColumnName,
       ClassWeights = ClassWeights,
       IDcols = IDcols,
 
@@ -771,6 +775,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           DebugMode = DebugMode,
 
           # Metadata arguments
+          OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
           ModelID = ModelIDD,
           model_path = Paths,
           metadata_path = MetaDataPaths,
@@ -784,9 +789,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           TestData = data.table::copy(testBucket),
           TargetColumnName = TargetColumnName,
           FeatureColNames = FeatureNames,
+          WeightsColumnName = WeightsColumnName,
           PrimaryDateColumn = PrimaryDateColumn,
           IDcols = IDcolsModified,
-          DummifyCols = FALSE,
           TransformNumericColumns = TransformNumericColumns,
           Methods = Methods,
 
@@ -944,6 +949,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     }
 
     # Rearrange cols ----
+    if(DebugMode) print("Rearrange cols ----")
     counter <- length(Buckets)
     if(counter > 2L) {
       if(length(IDcols) != 0L) {
@@ -973,7 +979,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       }
     }
 
-    # Final Combination of Predictions----
+    # Final Combination of Predictions ----
+    if(DebugMode) print("Final Combination of Predictions ----")
     if(counter > 2L || (counter == 2L & length(Buckets) != 1L)) {
       for(i in seq_len(length(Buckets) + 1L)) {
         if(i == 1L) {
@@ -1089,7 +1096,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     j <- 0L
     ParDepBoxPlots <- list()
     k <- 0L
-    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, R_VariableImportance[[1]][,.N]))) {
+    for(i in seq_len(min(length(FeatureColNames), NumOfParDepPlots, R_VariableImportance[[1L]][[1L]][,.N]))) {
       tryCatch({
         Out <- ParDepCalPlots(
           data = TestData,

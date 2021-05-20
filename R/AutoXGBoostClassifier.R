@@ -5,12 +5,14 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param LossFunction Select from 'reg:logistic', "binary:logistic"
 #' @param CostMatrixWeights A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),
@@ -56,63 +58,68 @@
 #' # Run function
 #' TestModel <- RemixAutoML::AutoXGBoostClassifier(
 #'
-#'     # GPU or CPU
-#'     TreeMethod = "hist",
-#'     NThreads = parallel::detectCores(),
 #'
-#'     # Metadata args
-#'     model_path = normalizePath("./"),
-#'     metadata_path = NULL,
-#'     ModelID = "Test_Model_1",
-#'     EncodingMethod = "binary",
-#'     ReturnFactorLevels = TRUE,
-#'     ReturnModelObjects = TRUE,
-#'     SaveModelObjects = FALSE,
-#'     SaveInfoToPDF = FALSE,
+#'   # GPU or CPU
+#'   TreeMethod = "hist",
+#'   NThreads = parallel::detectCores(),
 #'
-#'     # Data args
-#'     data = data,
-#'     TrainOnFull = FALSE,
-#'     ValidationData = NULL,
-#'     TestData = NULL,
-#'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %in%
-#'       c("IDcol_1", "IDcol_2","Adrian")],
-#'     IDcols = c("IDcol_1","IDcol_2"),
+#'   # Metadata args
+#'   OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
+#'   model_path = normalizePath("./"),
+#'   metadata_path = NULL,
+#'   ModelID = "Test_Model_1",
+#'   EncodingMethod = "binary",
+#'   ReturnFactorLevels = TRUE,
+#'   ReturnModelObjects = TRUE,
+#'   SaveModelObjects = FALSE,
+#'   SaveInfoToPDF = FALSE,
 #'
-#'     # Model evaluation
-#'     LossFunction = 'reg:logistic',
-#'     CostMatrixWeights = c(1,0,0,1),
-#'     eval_metric = "auc",
-#'     grid_eval_metric = "MCC",
-#'     NumOfParDepPlots = 3L,
+#'   # Data args
+#'   data = data,
+#'   TrainOnFull = FALSE,
+#'   ValidationData = NULL,
+#'   TestData = NULL,
+#'   TargetColumnName = "Adrian",
+#'   FeatureColNames = names(data)[!names(data) %in%
+#'     c("IDcol_1", "IDcol_2","Adrian")],
+#'   WeightsColumnName = NULL,
+#'   IDcols = c("IDcol_1","IDcol_2"),
 #'
-#'     # Grid tuning args
-#'     PassInGrid = NULL,
-#'     GridTune = FALSE,
-#'     BaselineComparison = "default",
-#'     MaxModelsInGrid = 10L,
-#'     MaxRunsWithoutNewWinner = 20L,
-#'     MaxRunMinutes = 24L*60L,
-#'     Verbose = 1L,
+#'   # Model evaluation
+#'   LossFunction = 'reg:logistic',
+#'   CostMatrixWeights = c(1,0,0,1),
+#'   eval_metric = "auc",
+#'   grid_eval_metric = "MCC",
+#'   NumOfParDepPlots = 3L,
 #'
-#'     # ML args
-#'     Trees = 500L,
-#'     eta = 0.30,
-#'     max_depth = 9L,
-#'     min_child_weight = 1.0,
-#'     subsample = 1,
-#'     colsample_bytree = 1,
-#'     DebugMode = FALSE)
+#'   # Grid tuning args
+#'   PassInGrid = NULL,
+#'   GridTune = FALSE,
+#'   BaselineComparison = "default",
+#'   MaxModelsInGrid = 10L,
+#'   MaxRunsWithoutNewWinner = 20L,
+#'   MaxRunMinutes = 24L*60L,
+#'   Verbose = 1L,
+#'
+#'   # ML args
+#'   Trees = 500L,
+#'   eta = 0.30,
+#'   max_depth = 9L,
+#'   min_child_weight = 1.0,
+#'   subsample = 1,
+#'   colsample_bytree = 1,
+#'   DebugMode = FALSE)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
-AutoXGBoostClassifier <- function(data,
+AutoXGBoostClassifier <- function(OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+                                  data = NULL,
                                   TrainOnFull = FALSE,
                                   ValidationData = NULL,
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
+                                  WeightsColumnName = NULL,
                                   IDcols = NULL,
                                   model_path = NULL,
                                   metadata_path = NULL,
@@ -150,12 +157,14 @@ AutoXGBoostClassifier <- function(data,
 
   # Data prep ----
   if(DebugMode) print("Data prep ----")
-  Output <- XGBoostDataPrep(ModelType="classification", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
+  Output <- XGBoostDataPrep(ModelType="classification", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
+  WeightsVector <- Output$WeightsVector; Output$WeightsVector <- NULL
   datavalidate <- Output$datavalidate; Output$datavalidate <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
   TestTarget <- Output$TestTarget; Output$TestTarget <- NULL
+  TrainMerge <- Output$TrainMerge; Output$TrainMerge <- NULL
   datatrain <- Output$datatrain; Output$datatrain <- NULL
   TestMerge <- Output$TestMerge; Output$TestMerge <- NULL
   dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
@@ -185,45 +194,82 @@ AutoXGBoostClassifier <- function(data,
 
   # Build model ----
   if(DebugMode) print("Build model ----")
-  model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose)
+  if(!is.null(WeightsVector)) {
+    model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose, weight = WeightsVector)
+  } else {
+    model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose)
+  }
 
   # Save Model ----
   if(DebugMode) print("Save Model ----")
-  if(SaveModelObjects) {
-    if(getwd() == model_path) {
-      xgboost::xgb.save(model = model, fname = ModelID)
-    } else {
-      save(model, file = file.path(model_path, ModelID))
+  if(SaveModelObjects) save(model, file = file.path(model_path, ModelID))
+
+  # TrainData + ValidationData Scoring + Shap ----
+  ShapValues <- list()
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+    predict <- data.table::as.data.table(stats::predict(model, datatrain))
+    if(!is.null(datatest)) {
+      predict_validate <- data.table::as.data.table(stats::predict(model, datavalidate))
+      predict <- data.table::rbindlist(list(predict, predict_validate))
+      data.table::setnames(predict, names(predict), "p1")
+      rm(predict_validate)
     }
+    Output <- XGBoostValidationData(model.=model, TestData.=NULL, ModelType="classification", TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
+    TrainData <- Output$ValidationData; rm(Output)
+    if(!"p1" %chin% names(TrainData)) data.table::setnames(TrainData, "V1", "p1")
+  } else {
+    TrainData <- NULL
   }
 
   # Score Model ----
   if(DebugMode) print("Score Model ----")
   predict <- stats::predict(model, if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain)
 
-  # Validation, Importance, Shap data ----
-  Output <- XGBoostValidation(ModelType.="classifier", TrainOnFull.=TrainOnFull, model.=model, TargetColumnName.=TargetColumnName, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TestData.=TestData, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TestMerge.=TestMerge, dataTest.=dataTest, TrainTarget.=TrainTarget, dataTrain.=dataTrain, Final.=NULL, predict.=predict, TransformNumericColumns.=NULL, TransformationResults.=NULL, GridTune.=NULL, data.=NULL)
-  VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
+  # Validation Data (generate validation data, back transform, save to file) ----
+  if(DebugMode) print("Running ValidationData()")
+  Output <- XGBoostValidationData(model.=model, TestData.=TestData, ModelType="classification", TrainOnFull.=TrainOnFull, TestDataCheck=!is.null(TestData), FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TestMerge.=TestMerge, dataTest.=dataTest, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
   ValidationData <- Output$ValidationData; Output$ValidationData <- NULL
-  ShapValues <- Output$ShapValues; rm(Output)
-
-  # Evaluation plots ----
-  if(DebugMode) print("Evaluation plots ----")
-  Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-  EvaluationPlot <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-  ParDepPlots <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-  GainsPlot <- Output$Gains; Output$GainsPlot <- NULL
-  LiftPlot <- Output$LiftPlot; Output$LiftPlot <- NULL
-  ROC_Plot <- Output$ROC_Plot; rm(Output)
+  VariableImportance <- Output$VariableImportance; rm(Output)
 
   # Generate EvaluationMetrics ----
-  if(DebugMode) print("Generate EvaluationMetrics ----")
-  EvalMetrics <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
-  EvalMetrics2 <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+  if(DebugMode) print("Running BinaryMetrics()")
+  EvalMetricsList <- list()
+  EvalMetrics2List <- list()
+  if("evalmetrics" %chin% tolower(OutputSelection)) {
+    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+      EvalMetricsList[["TrainData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+      EvalMetrics2List[["TrainData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+    }
+    EvalMetricsList[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+    EvalMetrics2List[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+  }
+
+  # Classification evaluation plots ----
+  if(DebugMode) print("Running ML_EvalPlots()")
+  PlotList <- list()
+  if("evalplots" %chin% tolower(OutputSelection)) {
+    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+      Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+      PlotList[["Train_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
+      PlotList[["Train_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
+      PlotList[["Train_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
+      PlotList[["Train_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
+      PlotList[["Train_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
+    }
+    Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+    PlotList[["Test_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
+    PlotList[["Test_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
+    PlotList[["Test_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
+    PlotList[["Test_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
+    PlotList[["Test_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
+    PlotList[["Test_VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance))
+  }
 
   # Send output to pdf ----
-  if(DebugMode) print("Send output to pdf ----")
-  CatBoostPDF(ModelClass = "xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, EvaluationPlot.=EvaluationPlot, EvaluationBoxPlot.=NULL, ROC_Plot.=ROC_Plot, Gains.=GainsPlot, Lift.=LiftPlot, VariableImportance.=VariableImportance, ParDepPlots.=ParDepPlots, ParDepBoxPlots.=NULL, EvalMetrics.=EvalMetrics, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
+  if(DebugMode) print("Running CatBoostPDF()")
+  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
+    CatBoostPDF(ModelClass = "xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=PlotList, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
+  }
 
   # Binary Return Model Objects ----
   if(!exists("FactorLevelsList")) FactorLevelsList <- NULL
@@ -233,17 +279,12 @@ AutoXGBoostClassifier <- function(data,
   if(ReturnModelObjects) {
     return(list(
       Model = model,
-      ValidationData = if(exists("ValidationData")) ValidationData else NULL,
-      GainsPlot = if(exists("GainsPlot")) GainsPlot else NULL,
-      LiftPlot = if(exists("LiftPlot")) LiftPlot else NULL,
-      ROC_Plot = if(exists("ROC_Plot")) ROC_Plot else NULL,
-      EvaluationPlot = if(exists("EvaluationPlot")) EvaluationPlot else NULL,
-      EvaluationMetrics = if(exists("EvalMetrics")) EvalMetrics else NULL,
-      EvaluationMetrics2 = if(exists("EvalMetrics2")) EvalMetrics2 else NULL,
+      TrainData = if(exists("TrainData")) TrainData else NULL,
+      TestData = if(exists("ValidationData")) ValidationData else NULL,
+      PlotList = if(exists("PlotList")) PlotList else NULL,
+      EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
+      EvaluationMetrics2 = if(exists("EvalMetrics2List")) EvalMetrics2List else NULL,
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
-      ShapValues = if(exists("ShapValues")) ShapValues else NULL,
-      VI_Plot = if(exists("VariableImportance") && !is.null(VariableImportance)) tryCatch({if(all(c("plotly","dplyr") %chin% installed.packages())) plotly::ggplotly(VI_Plot(Type = "h2o", VariableImportance)) else VI_Plot(Type = "h2o", VariableImportance)}, error = function(x) NULL) else NULL,
-      PartialDependencePlots = if(exists("ParDepPlots")) ParDepPlots else NULL,
       GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
       ColNames = if(exists("Names")) Names else NULL,
       FactorLevels = if(exists("FactorLevelsList")) FactorLevelsList else NULL))

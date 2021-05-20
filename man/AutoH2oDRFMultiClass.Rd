@@ -5,7 +5,8 @@
 \title{AutoH2oDRFMultiClass}
 \usage{
 AutoH2oDRFMultiClass(
-  data,
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -17,7 +18,7 @@ AutoH2oDRFMultiClass(
   IfSaveModel = "mojo",
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1000000)), "G") },
   NThreads = max(1, parallel::detectCores() - 2),
   model_path = NULL,
   metadata_path = NULL,
@@ -46,6 +47,8 @@ AutoH2oDRFMultiClass(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
@@ -138,46 +141,47 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
-   data,
-   TrainOnFull = FALSE,
-   ValidationData = NULL,
-   TestData = NULL,
-   TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
-   WeightsColumn = NULL,
-   eval_metric = "logloss",
-   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-   NThreads = max(1, parallel::detectCores()-2),
-   model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./")),
-   ModelID = "FirstModel",
-   ReturnModelObjects = TRUE,
-   SaveModelObjects = FALSE,
-   IfSaveModel = "mojo",
-   H2OShutdown = FALSE,
-   H2OStartUp = TRUE,
-   DebugMode = FALSE,
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumn = NULL,
+  eval_metric = "logloss",
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  model_path = normalizePath("./"),
+  metadata_path = file.path(normalizePath("./")),
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
+  H2OShutdown = FALSE,
+  H2OStartUp = TRUE,
+  DebugMode = FALSE,
 
-   # Grid Tuning Args
-   GridStrategy = "RandomDiscrete",
-   GridTune = FALSE,
-   MaxModelsInGrid = 10,
-   MaxRunTimeSecs = 60*60*24,
-   StoppingRounds = 10,
+  # Grid Tuning Args
+  GridStrategy = "RandomDiscrete",
+  GridTune = FALSE,
+  MaxModelsInGrid = 10,
+  MaxRunTimeSecs = 60*60*24,
+  StoppingRounds = 10,
 
-   # ML args
-   Trees = 50,
-   MaxDepth = 20,
-   SampleRate = 0.632,
-   MTries = -1,
-   ColSampleRatePerTree = 1,
-   ColSampleRatePerTreeLevel = 1,
-   MinRows = 1,
-   NBins = 20,
-   NBinsCats = 1024,
-   NBinsTopLevel = 1024,
-   HistogramType = "AUTO",
-   CategoricalEncoding = "AUTO")
+  # ML args
+  Trees = 50,
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO")
 }
 }
 \seealso{

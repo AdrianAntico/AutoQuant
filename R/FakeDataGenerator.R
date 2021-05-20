@@ -25,6 +25,7 @@
 #'    ID = 2L,
 #'    FactorCount = 2L,
 #'    AddDate = TRUE,
+#'    AddWeightsColumn = FALSE,
 #'    AddComment = FALSE,
 #'    ZIP = 2L,
 #'    TimeSeries = FALSE,
@@ -39,6 +40,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
                               FactorCount = 2L,
                               AddDate = TRUE,
                               AddComment = FALSE,
+                              AddWeightsColumn = FALSE,
                               ZIP = 5L,
                               TimeSeries = FALSE,
                               TimeSeriesTimeAgg = "day",
@@ -300,6 +302,11 @@ FakeDataGenerator <- function(Correlation = 0.70,
     for(i in seq_len(data[, .N])) {
       data.table::set(data, i = i, j = "Comment", value = RandomText(N1,N11,N2,N22,N3,N33,a,b,c))
     }
+  }
+
+  # Add weights column
+  if(AddWeightsColumn) {
+    data[, Weights := runif(.N)]
   }
 
   # Return data----

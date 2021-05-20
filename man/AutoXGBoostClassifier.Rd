@@ -5,12 +5,14 @@
 \title{AutoXGBoostClassifier}
 \usage{
 AutoXGBoostClassifier(
-  data,
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
+  WeightsColumnName = NULL,
   IDcols = NULL,
   model_path = NULL,
   metadata_path = NULL,
@@ -44,6 +46,8 @@ AutoXGBoostClassifier(
 )
 }
 \arguments{
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
+
 \item{data}{This is your data set for training and testing your model}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
@@ -55,6 +59,8 @@ AutoXGBoostClassifier(
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types). Note that the target column needs to be a 0 | 1 numeric variable.}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
+
+\item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
 
@@ -137,54 +143,57 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
-    # GPU or CPU
-    TreeMethod = "hist",
-    NThreads = parallel::detectCores(),
 
-    # Metadata args
-    model_path = normalizePath("./"),
-    metadata_path = NULL,
-    ModelID = "Test_Model_1",
-    EncodingMethod = "binary",
-    ReturnFactorLevels = TRUE,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
+  # GPU or CPU
+  TreeMethod = "hist",
+  NThreads = parallel::detectCores(),
 
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    IDcols = c("IDcol_1","IDcol_2"),
+  # Metadata args
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  EncodingMethod = "binary",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
 
-    # Model evaluation
-    LossFunction = 'reg:logistic',
-    CostMatrixWeights = c(1,0,0,1),
-    eval_metric = "auc",
-    grid_eval_metric = "MCC",
-    NumOfParDepPlots = 3L,
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\%
+    c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumnName = NULL,
+  IDcols = c("IDcol_1","IDcol_2"),
 
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    BaselineComparison = "default",
-    MaxModelsInGrid = 10L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Verbose = 1L,
+  # Model evaluation
+  LossFunction = 'reg:logistic',
+  CostMatrixWeights = c(1,0,0,1),
+  eval_metric = "auc",
+  grid_eval_metric = "MCC",
+  NumOfParDepPlots = 3L,
 
-    # ML args
-    Trees = 500L,
-    eta = 0.30,
-    max_depth = 9L,
-    min_child_weight = 1.0,
-    subsample = 1,
-    colsample_bytree = 1,
-    DebugMode = FALSE)
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
+
+  # ML args
+  Trees = 500L,
+  eta = 0.30,
+  max_depth = 9L,
+  min_child_weight = 1.0,
+  subsample = 1,
+  colsample_bytree = 1,
+  DebugMode = FALSE)
 }
 }
 \seealso{

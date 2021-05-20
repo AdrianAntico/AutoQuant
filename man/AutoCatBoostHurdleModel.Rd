@@ -6,7 +6,6 @@
 \usage{
 AutoCatBoostHurdleModel(
   data = NULL,
-  TimeWeights = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
@@ -14,6 +13,7 @@ AutoCatBoostHurdleModel(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
   IDcols = NULL,
   TransformNumericColumns = NULL,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
@@ -54,8 +54,6 @@ AutoCatBoostHurdleModel(
 \arguments{
 \item{data}{Source training data. Do not include a column that has the class labels for the buckets as they are created internally.}
 
-\item{TimeWeights}{Supply a value that will be multiplied by he time trend value}
-
 \item{TrainOnFull}{Set to TRUE to use all data}
 
 \item{ValidationData}{Source validation data. Do not include a column that has the class labels for the buckets as they are created internally.}
@@ -69,6 +67,8 @@ AutoCatBoostHurdleModel(
 \item{FeatureColNames}{Supply the column names or number of the features (not included the PrimaryDateColumn)}
 
 \item{PrimaryDateColumn}{Supply a date column if the data is functionally related to it}
+
+\item{WeightsColumnName}{Column name for weights variable}
 
 \item{IDcols}{Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions}
 
@@ -152,7 +152,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
 
   # Data related args
   data = data,
-  TimeWeights = NULL,
+  WeightsColumnName = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,

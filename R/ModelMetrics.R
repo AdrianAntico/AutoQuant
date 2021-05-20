@@ -333,6 +333,11 @@ BinaryMetrics <- function(ClassWeights. = ClassWeights,
   } else {
     EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = unique(vals), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
   }
+  EvalMetrics[, P_Predicted := TP + FP]
+  data.table::setcolorder(EvalMetrics, c(1,ncol(EvalMetrics),2:(ncol(EvalMetrics)-1)))
+  data.table::setcolorder(EvalMetrics, c(1:8, ncol(EvalMetrics), 9:10, 17:19, 11:16, 20:(ncol(EvalMetrics)-1)))
+  data.table::setcolorder(EvalMetrics, c(1:14, ncol(EvalMetrics), 15:(ncol(EvalMetrics)-1)))
+  data.table::setorderv(EvalMetrics, "Utility", -1)
   return(EvalMetrics)
 }
 
@@ -387,9 +392,6 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
       data.table::set(EvaluationMetrics, i = i, j = 2L, value = round(MetricVal, 4L))
     }
 
-    # Remove Cols
-    ValidationData.[, ':=' (Metric = NULL)]
-
     # Save EvaluationMetrics to File
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if(SaveModelObjects.) {
@@ -428,9 +430,6 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
         }, error = function(x) "skip")
       }
 
-      # Remove Cols
-      ValidationData.[, ':=' (Metric = NULL)]
-
       # Save EvaluationMetrics to File
       EvaluationMetrics[[TargetColumnName.[TV]]] <- EvaluationMetrics[[TargetColumnName.[TV]]][MetricValue != 999999]
       if(SaveModelObjects.) {
@@ -442,6 +441,12 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
       }
     }
   }
+
+  # Remove Columns
+  if("Metric" %chin% names(ValidationData.)) data.table::set(ValidationData., j = "Metric", value = NULL)
+  if("Metric1" %chin% names(ValidationData.)) data.table::set(ValidationData., j = "Metric1", value = NULL)
+  if("Metric2" %chin% names(ValidationData.)) data.table::set(ValidationData., j = "Metric2", value = NULL)
+
   return(EvaluationMetrics)
 }
 
@@ -454,6 +459,7 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 #' @family Model Evaluation
 #'
 #' @param ModelClass "catboost"
+#' @param DataType "validate" or "train"
 #' @param SaveModelObjects. = SaveModelObjects
 #' @param ValidationData. = ValidationData
 #' @param PredictData. = predict
@@ -466,6 +472,7 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 #'
 #' @noRd
 MultiClassMetrics <- function(ModelClass = "catboost",
+                              DataType = "validate",
                               SaveModelObjects. = SaveModelObjects,
                               ValidationData. = ValidationData,
                               PredictData. = predict,
@@ -476,68 +483,49 @@ MultiClassMetrics <- function(ModelClass = "catboost",
                               model_path. = model_path,
                               metadata_path. = metadata_path) {
 
-  # MultiClass Metrics Accuracy ----
+  # MultiClass Metrics Accuracy
   MetricAcc <- ValidationData.[, mean(data.table::fifelse(as.character(get(TargetColumnName.)) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
 
-  # MultiClass Metrics MicroAUC ----
-  if(ModelClass != "h2o") {
-    MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = ValidationData.[[eval(TargetColumnName.)]], predictor = as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[3L:(ncol(PredictData.)+1L)])]))$auc, "\\d+\\.*\\d*"))), 4L)
-  } else {
-    MetricAUC <- round(as.numeric(noquote(stringr::str_extract(
-      pROC::multiclass.roc(
-        response = ValidationData.[[eval(TargetColumnName.)]],
-        predictor = as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[(ncol(ValidationData.) + 1 - length(TargetLevels.)):(ncol(ValidationData.))])])
-      )$auc, "\\d+\\.*\\d*"))), 4L)
+  # MultiClass Metrics MicroAUC Setup ----
+  Response <- ValidationData.[[eval(TargetColumnName.)]]
+  if(ModelClass == "catboost") {
+    Predictor <- as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[3L:(ncol(PredictData.)+1L)])])
+  } else if(ModelClass == "h2o") {
+    Predictor <- as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[(ncol(ValidationData.) + 1 - length(TargetLevels.)):(ncol(ValidationData.))])])
+  } else if(ModelClass == "xgboost") {
+    Predictor <- as.matrix(ValidationData.[, .SD, .SDcols = c(unique(as.character(TargetLevels.[["OriginalLevels"]])))])
   }
 
+  # Generate metric
+  MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = Response, predictor = Predictor)$auc, "\\d+\\.*\\d*"))), 4L)
+
   # Logloss ----
-  if(!TrainOnFull. && ModelClass == "catboost") {
-    temp <- ValidationData.[, 1L]
+  if(!data.table::is.data.table(TargetLevels.)) N <- length(TargetLevels.) else N <- TargetLevels.[, .N]
+  temp <- ValidationData.[, .SD, .SDcols = c(TargetColumnName., "Predict")]
+  temp <- DummifyDT(data=temp, cols=eval(TargetColumnName.), KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
+  if(ModelClass == "xgboost") {
+    logloss <- MLmetrics::LogLoss(
+      y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(as.character(TargetLevels.[["OriginalLevels"]]))]),
+      y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
   } else if(ModelClass == "catboost") {
-    temp <- ValidationData.[, 2L]
-  } else if(ModelClass != "catboost") {
-    temp <- ValidationData.[, .SD, .SDcols = TargetColumnName.]
-  }
-  temp[, Truth := get(TargetColumnName.)]
-  temp <- DummifyDT(
-    data = temp,
-    cols = eval(TargetColumnName.),
-    KeepFactorCols = FALSE,
-    OneHot = FALSE,
-    SaveFactorLevels = FALSE,
-    SavePath = NULL,
-    ImportFactorLevels = FALSE,
-    FactorLevelsList = NULL,
-    ClustScore = FALSE,
-    ReturnFactorLevels = FALSE)
-  if(ModelClass == "catboost") {
-    N <- TargetLevels.[, .N]
-    logloss <- MLmetrics::LogLoss(y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[c(3L:(2L+N))])]), y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
-  } else {
-    N <- length(TargetLevels.)
+    logloss <- MLmetrics::LogLoss(
+      y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[c(3L:(2L+N))])]),
+      y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
+  } else if(ModelClass == "h2o") {
     logloss <- MLmetrics::LogLoss(
       y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(unique(names(ValidationData.)[(ncol(ValidationData.) + 1 - length(TargetLevels.)):(ncol(ValidationData.))]))]),
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
   }
 
-  # MultiClass Save Validation Data to File ----
+  # MultiClass Evaluation Metrics ----
+  EvaluationMetrics <- data.table::data.table(Metric = c("AUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
   if(SaveModelObjects.) {
     if(!is.null(metadata_path.)) {
-      data.table::fwrite(ValidationData., file = file.path(metadata_path., paste0(ModelID., "_ValidationData.csv")))
+      if(DataType == "train") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
+      if(DataType == "validate") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))
     } else {
-      data.table::fwrite(ValidationData., file = file.path(model_path., paste0(ModelID., "_ValidationData.csv")))
-    }
-  }
-
-  # MultiClass Evaluation Metrics ----
-  if(!TrainOnFull.) {
-    EvaluationMetrics <- data.table::data.table(Metric = c("AUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
-    if(SaveModelObjects.) {
-      if(!is.null(metadata_path.)) {
-        data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
-      } else {
-        data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
-      }
+      if(DataType == "train") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
+      if(DataType == "validate") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))
     }
   }
   return(EvaluationMetrics)
