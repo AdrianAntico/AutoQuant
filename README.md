@@ -382,8 +382,8 @@ data <- RemixAutoML::AutoDiffLagN(
 <details><summary>Function Description</summary>
 <p>
  
-<code>AutoDiffLagN()</code> Generate differences for numeric columns, date columns, and categorical columns, by groups. You can specify NLag1 = 0 and NLag2 to generate the diffs based on a lag 1 to lag 2 differences for a column, and multiple columns.
-
+<code>AutoDiffLagN()</code> Generate differences for numeric columns, date columns, and categorical columns, by groups. You can specify NLag1 and NLag2 to generate the diffs based on any two time periods.
+ 
 </p>
 </details>
 
