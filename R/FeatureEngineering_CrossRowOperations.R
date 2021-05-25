@@ -1278,6 +1278,9 @@ DT_GDL_Feature_Engineering <- function(data,
     timeAggss <- timeAgg
   }
 
+  # Number of targets
+  tarNum <- length(targets)
+
   # Argument Checks ----
   if(is.null(lags) && WindowingLag == 1) lags <- 1
   if(!(1 %in% lags) && WindowingLag == 1) lags <- c(1, lags)
@@ -1323,8 +1326,6 @@ DT_GDL_Feature_Engineering <- function(data,
       # Define targets----
       if(WindowingLag != 0L) {
         Targets <- c(paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", Targets))
-      } else {
-        Targets <- Targets
       }
 
       # MA stats----
@@ -1341,7 +1342,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% c("sd")) && !all(SDperiods %in% c(0L,1L))) {
         tempperiods <- SDperiods[SDperiods > 1L]
         SD_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names,paste0(timeAggss, "_", groupingVars[i], "SD_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0(timeAggss, "_", groupingVars[i], "SD_", tempperiods[j], "_", t))
         data[, paste0(SD_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = sd, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
       }
 
@@ -1349,7 +1350,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% c("skew")) && !all(Skewperiods %in% c(0L,1L,2L))) {
         tempperiods <- Skewperiods[Skewperiods > 2L]
         Skew_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names,paste0(timeAggss, "_", groupingVars[i], "Skew_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0(timeAggss, "_", groupingVars[i], "Skew_", tempperiods[j], "_", t))
         data[, paste0(Skew_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::skewness, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = Targets]
       }
 
@@ -1357,7 +1358,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% c("kurt")) && !all(Kurtperiods %in% c(0L,1L,2L,3L,4L))) {
         tempperiods <- Kurtperiods[Kurtperiods > 3L]
         Kurt_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names,paste0(timeAggss, "_", groupingVars[i], "Kurt_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0(timeAggss, "_", groupingVars[i], "Kurt_", tempperiods[j], "_", t))
         data[, paste0(Kurt_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::kurtosis, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
       }
 
@@ -1367,7 +1368,7 @@ DT_GDL_Feature_Engineering <- function(data,
         for(z in c(seq(5L,95L,5L))) {
           if(any(paste0("q",z) %chin% statsFUNs)) {
             Names <- c()
-            for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names,paste0(timeAggss, "_", groupingVars[i], "Q_", z, "_", tempperiods[j], "_", t))
+            for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0(timeAggss, "_", groupingVars[i], "Q_", z, "_", tempperiods[j], "_", t))
             data[, paste0(Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = quantile, probs = z/100, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
           }
         }
