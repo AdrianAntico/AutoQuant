@@ -12,6 +12,7 @@ AutoXGBoostRegression(
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
+  PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = NULL,
   model_path = NULL,
@@ -60,6 +61,8 @@ AutoXGBoostRegression(
 \item{TargetColumnName}{Either supply the target column name OR the column number where the target is located (but not mixed types).}
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
+
+\item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
 
 \item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
@@ -171,6 +174,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
     TargetColumnName = "Adrian",
     FeatureColNames = names(data)[!names(data) \%in\%
       c("IDcol_1", "IDcol_2","Adrian")],
+    PrimaryDateColumn = NULL,
     WeightsColumnName = NULL,
     IDcols = c("IDcol_1","IDcol_2"),
     TransformNumericColumns = NULL,

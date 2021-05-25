@@ -62,6 +62,10 @@ data <- AutoWordFreq(
   StopWords = c("Bla"))
 }
 }
+\seealso{
+Other EDA: 
+\code{\link{ScatterCopula}()}
+}
 \author{
 Adrian Antico
 }

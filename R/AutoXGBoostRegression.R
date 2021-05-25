@@ -13,6 +13,7 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
+#' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param ReturnFactorLevels Set to TRUE to have the factor levels returned with the other model objects
@@ -84,6 +85,7 @@
 #'     TargetColumnName = "Adrian",
 #'     FeatureColNames = names(data)[!names(data) %in%
 #'       c("IDcol_1", "IDcol_2","Adrian")],
+#'     PrimaryDateColumn = NULL,
 #'     WeightsColumnName = NULL,
 #'     IDcols = c("IDcol_1","IDcol_2"),
 #'     TransformNumericColumns = NULL,
@@ -121,6 +123,7 @@ AutoXGBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots"
                                   TestData = NULL,
                                   TargetColumnName = NULL,
                                   FeatureColNames = NULL,
+                                  PrimaryDateColumn = NULL,
                                   WeightsColumnName = NULL,
                                   IDcols = NULL,
                                   model_path = NULL,
@@ -254,17 +257,25 @@ AutoXGBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots"
   PlotList <- list()
   if("evalplots" %chin% tolower(OutputSelection)) {
     if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.="RMSE", EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL)
+      Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.="RMSE", EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL, DateColumnName.=PrimaryDateColumn)
       PlotList[["Train_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
       PlotList[["Train_EvaluationBoxPlot"]] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
       PlotList[["Train_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-      PlotList[["Train_ParDepBoxPlots"]] <- Output$ParDepBoxPlots; rm(Output)
+      PlotList[["Train_ParDepBoxPlots"]] <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
+      PlotList[["Train_ResidualsHistogram"]] <- Output$ResidualsHistogram; Output$ResidualsHistogram <- NULL
+      PlotList[["Train_ResidualTime"]] <- Output$ResidualTime; Output$ResidualTime <- NULL
+      PlotList[["Train_ScatterPlot"]] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
+      PlotList[["Train_CopulaPlot"]] <- Output$CopulaPlot; rm(Output)
     }
-    Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.="RMSE", EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL)
+    Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.="RMSE", EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL, DateColumnName.=PrimaryDateColumn)
     PlotList[["Test_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
     PlotList[["Test_EvaluationBoxPlot"]] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
     PlotList[["Test_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-    PlotList[["Test_ParDepBoxPlots"]] <- Output$ParDepBoxPlots; rm(Output)
+    PlotList[["Test_ParDepBoxPlots"]] <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
+    PlotList[["Test_ResidualsHistogram"]] <- Output$ResidualsHistogram; Output$ResidualsHistogram <- NULL
+    PlotList[["Test_ResidualTime"]] <- Output$ResidualTime; Output$ResidualTime <- NULL
+    PlotList[["Test_ScatterPlot"]] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
+    PlotList[["Test_CopulaPlot"]] <- Output$CopulaPlot; rm(Output)
     if(!is.null(VariableImportance)) PlotList[["Test_VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance))
   }
 

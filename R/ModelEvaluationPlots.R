@@ -246,6 +246,115 @@ ParDepCalPlots <- function(data,
   return(plot)
 }
 
+#' @title ResidualPlots
+#'
+#' @description Residual plots for regression models
+#'
+#' @author Adrian Antico
+#'
+#' @family Model Evaluation and Interpretation
+#'
+#' @param TestData = NULL,
+#' @param Target = "Adrian",
+#' @param Predicted = "Independent_Variable1",
+#' @param DateColumnName "DateTime"
+#' @param Gam_Fit = TRUE
+#'
+#' @examples
+#' \dontrun{
+#' # Create fake data
+#' test_data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.80,
+#'   N = 250000,
+#'   ID = 0,
+#'   FactorCount = 0,
+#'   AddDate = TRUE,
+#'   AddComment = FALSE,
+#'   AddWeightsColumn = FALSE,
+#'   ZIP = 0)
+#'
+#' # Build Plots
+#' output <- RemixAutoML::ResidualPlots(
+#'   TestData = test_data,
+#'   Target = "Adrian",
+#'   Predicted = "Independent_Variable1",
+#'   DateColumnName = "DateTime",
+#'   Gam_Fit = TRUE)
+#' }
+#'
+#' @export
+ResidualPlots <- function(TestData = NULL,
+                          Target = "Adrian",
+                          Predicted = "Independent_Variable1",
+                          DateColumnName = NULL,
+                          Gam_Fit = FALSE) {
+
+  # Subset + Sample
+  R2_Pearson <- c()
+  R2_Spearman <- c()
+  if(TestData[,.N] < 100000L) {
+    for(zz in seq_len(30L)) {
+      temp <- TestData[order(runif(.N))][seq_len(0.50 * .N)]
+      R2_Pearson <- c(R2_Pearson, (cor(x = temp[[Target]], y = temp[[Predicted]], method = "pearson")) ^ 2)
+      R2_Spearman <- c(R2_Spearman, (cor(x = temp[[Target]], y = temp[[Predicted]], method = "spearman")) ^ 2)
+    }
+  } else {
+    for(zz in seq_len(30L)) {
+      temp <- TestData[order(runif(.N))][seq_len(min(100000L, .N))]
+      R2_Pearson <- c(R2_Pearson, (cor(x = temp[[Target]], y = temp[[Predicted]], method = "pearson")) ^ 2)
+      R2_Spearman <- c(R2_Spearman, (cor(x = temp[[Target]], y = temp[[Predicted]], method = "spearman")) ^ 2)
+    }
+  }
+
+  # Histogram of residuals
+  temp <- TestData[, .SD, .SDcols = c(Target, Predicted)]
+  temp[, Residuals := get(Target) - get(Predicted)]
+  ResidualsHistogram <- eval(ggplot2::ggplot(
+    data = temp, ggplot2::aes_string(x = "Residuals")) +
+      ggplot2::geom_histogram(ggplot2::aes(y = ..density..),bins = 30) +
+      ggplot2::geom_density(alpha = 0.2, fill = "antiquewhite3") +
+      ChartTheme() +
+      ggplot2::labs(
+        title = paste0("Residual Analsis: r-sq's based N=30 bootstrap; r-sq = sqrt(cor)"),
+        subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L))))
+
+  # Residuals over time
+  if(!is.null(DateColumnName) && DateColumnName %chin% names(TestData)) {
+    temp <- TestData[order(runif(.N))][seq_len(100000)]
+    data.table::setorderv(temp[, Residual := get(Target) - get(Predicted)], cols = DateColumnName, order = 1)
+    ResidualTime <- ggplot2::ggplot(data = temp, ggplot2::aes_string(x = DateColumnName, y = "Residual")) +
+      ggplot2::geom_point(size = 0.10) +
+      ChartTheme() +
+      ggplot2::ggtitle("Residuals Over Time")
+
+    # Gam Fit
+    if(Gam_Fit) ResidualTime <- ResidualTime + ggplot2::geom_smooth(method = "gam")
+
+  } else {
+    ResidualTime <- NULL
+  }
+
+  # ScatterCopula
+  Output <- ScatterCopula(data=TestData, x_var=Predicted, y_var=Target, GroupVariable=NULL, SampleCount=100000L, FitGam=Gam_Fit)
+  ScatterPlot <- Output[["ScatterPlot"]]
+  ScatterPlot <- ScatterPlot + ggplot2::labs(
+    title = paste0("Scatter Plot: Actual vs Predicted"),
+    subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                      "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
+  CopulaPlot <- Output[["CopulaPlot"]]
+  CopulaPlot <- CopulaPlot + ggplot2::labs(
+    title = paste0("Empirical Copula Plot: Actual vs Predicted"),
+    subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                      "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
+
+  # Return
+  return(list(ResidualsHistogram = ResidualsHistogram,
+              ResidualTime = ResidualTime,
+              ScatterPlot = ScatterPlot,
+              CopulaPlot = CopulaPlot))
+}
+
 #' @title ROCPlot
 #'
 #' @description Internal usage for classification methods. Returns an ROC plot
@@ -498,6 +607,7 @@ CumGainsChart <- function(data = NULL,
 #' @param ModelID. Passthrough
 #' @param model_path. Passthrough
 #' @param metadata_path. Passthrough
+#' @param DateColumnName. Regression Passthrough
 #'
 #' @noRd
 ML_EvalPlots <- function(ModelType = "classification",
@@ -514,7 +624,8 @@ ML_EvalPlots <- function(ModelType = "classification",
                          ModelID. = ModelID,
                          metadata_path. = metadata_path,
                          model_path. = model_path,
-                         predict. = predict) {
+                         predict. = predict,
+                         DateColumnName. = NULL) {
 
   # Variable Importance Managment
   if(!data.table::is.data.table(VariableImportance.)) {
@@ -592,39 +703,34 @@ ML_EvalPlots <- function(ModelType = "classification",
 
   # Regression
   if(ModelType %chin% c("regression", "vector")) {
+
+    # Regression
     if(!TrainOnFull. && ((!is.null(LossFunction.) && LossFunction. != "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. != "MultiRMSE"))) {
 
       # Eval Plots
-      EvaluationPlot <- EvalPlot(
-        data = ValidationData.,
-        PredictionColName = "Predict",
-        TargetColName = eval(TargetColumnName.),
-        GraphType = "calibration",
-        PercentileBucket = 0.05,
-        aggrfun = function(x) mean(x, na.rm = TRUE))
+      EvaluationPlot <- EvalPlot(data=ValidationData., PredictionColName="Predict", TargetColName=eval(TargetColumnName.), GraphType="calibration", PercentileBucket=0.05, aggrfun=function(x) mean(x, na.rm = TRUE))
 
       # Add Number of Trees to Title
       if(!TrainOnFull.) EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[1L]][Metric == "R2", MetricValue], 3L)))
 
       # Save plot to file
-      if(!TrainOnFull.) {
-        if(SaveModelObjects.) {
-          if(!is.null(metadata_path.)) {
-            ggplot2::ggsave(file.path(metadata_path., paste0(ModelID., "_EvaluationPlot.png")))
-          } else {
-            ggplot2::ggsave(file.path(model_path., paste0(ModelID., "_EvaluationPlot.png")))
-          }
+      if(!TrainOnFull. && SaveModelObjects.) {
+        if(!is.null(metadata_path.)) {
+          ggplot2::ggsave(file.path(metadata_path., paste0(ModelID., "_EvaluationPlot.png")))
+        } else {
+          ggplot2::ggsave(file.path(model_path., paste0(ModelID., "_EvaluationPlot.png")))
         }
       }
 
-      # Regression Evaluation Calibration BoxPlot----
-      EvaluationBoxPlot <- EvalPlot(
-        data = ValidationData.,
-        PredictionColName = "Predict",
-        TargetColName = eval(TargetColumnName.),
-        GraphType = "boxplot",
-        PercentileBucket = 0.05,
-        aggrfun = function(x) mean(x, na.rm = TRUE))
+      # Regression Evaluation Calibration BoxPlot
+      EvaluationBoxPlot <- EvalPlot(data=ValidationData., PredictionColName="Predict", TargetColName=eval(TargetColumnName.), GraphType="boxplot", PercentileBucket=0.05, aggrfun=function(x) mean(x, na.rm = TRUE))
+
+      # Residual Analysis
+      Output <- ResidualPlots(TestData=ValidationData., Target=TargetColumnName., Predicted="Predict", DateColumnName=DateColumnName., Gam_Fit=FALSE)
+      ResidualsHistogram <- Output$ResidualsHistogram
+      ResidualTime <- Output$ResidualTime
+      ScatterPlot <- Output$ScatterPlot
+      CopulaPlot <- Output$CopulaPlot; rm(Output)
 
       # Add Number of Trees to Title
       if(!TrainOnFull.) EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: R2 = ", round(EvaluationMetrics.[[1L]][Metric == "R2", MetricValue], 3L)))
@@ -703,9 +809,20 @@ ML_EvalPlots <- function(ModelType = "classification",
       EvaluationBoxPlot <- list()
       ParDepBoxPlots <- list()
       ParDepPlots <- list()
+      ResidualsHistogram <- list()
+      ResidualTime <- list()
+      ScatterPlot <- list()
+      CopulaPlot <- list()
 
       # Build plots
       for(TV in seq_along(TargetColumnName.)) {
+
+        # Residual Analysis
+        Output <- ResidualPlots(TestData=ValidationData., Target=TargetColumnName.[TV], Predicted=paste0("Predict.V",TV), DateColumnName=DateColumnName., Gam_Fit=FALSE)
+        ResidualsHistogram[[TargetColumnName.[TV]]] <- Output$ResidualsHistogram
+        ResidualTime[[TargetColumnName.[TV]]] <- Output$ResidualTime
+        ScatterPlot[[TargetColumnName.[TV]]] <- Output$ScatterPlot
+        CopulaPlot[[TargetColumnName.[TV]]] <- Output$CopulaPlot; rm(Output)
 
         # Eval Plots
         EvaluationPlot[[TargetColumnName.[TV]]] <- EvalPlot(
@@ -815,8 +932,22 @@ ML_EvalPlots <- function(ModelType = "classification",
       EvaluationBoxPlot <- NULL
       ParDepBoxPlots <- NULL
       ParDepPlots <- NULL
+      ResidualsHistogram <- NULL
+      ResidualTime <- NULL
+      ScatterPlot <- NULL
+      CopulaPlot <- NULL
     }
-    return(list(EvaluationPlot = EvaluationPlot, EvaluationBoxPlot = EvaluationBoxPlot, ParDepPlots = ParDepPlots, ParDepBoxPlots = ParDepBoxPlots))
+
+    # Regression Return
+    return(list(
+      EvaluationPlot = EvaluationPlot,
+      EvaluationBoxPlot = EvaluationBoxPlot,
+      ParDepPlots = ParDepPlots,
+      ParDepBoxPlots = ParDepBoxPlots,
+      ResidualsHistogram = if(exists("ResidualsHistogram")) ResidualsHistogram else NULL,
+      ResidualTime = if(exists("ResidualTime")) ResidualTime else NULL,
+      ScatterPlot = if(exists("ScatterPlot")) ScatterPlot else NULL,
+      CopulaPlot = if(exists("CopulaPlot")) CopulaPlot else NULL))
   }
 }
 

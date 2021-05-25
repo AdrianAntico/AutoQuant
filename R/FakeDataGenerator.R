@@ -51,7 +51,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
   # Error checking
   if(sum(TimeSeries, Classification, MultiClass) > 1) stop("Only one of the following can be set to TRUE: TimeSeries, Classifcation, and MultiClass")
 
-  # TimeSeries----
+  # TimeSeries
   if(TimeSeries) {
 
     # Error msg
@@ -127,7 +127,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
     return(data)
   }
 
-  # Create ChainLadderData----
+  # Create ChainLadderData
   if(ChainLadderData) {
 
     # Overwrite N
@@ -255,7 +255,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
     }
   }
 
-  # Zero Inflation Setup----
+  # Zero Inflation Setup
   if(!Classification && !MultiClass) {
     if(ZIP == 1L) {
       data[, Adrian := data.table::fifelse(Adrian < 0.5, 0, Independent_Variable8)][, Independent_Variable8 := NULL]
@@ -270,19 +270,19 @@ FakeDataGenerator <- function(Correlation = 0.70,
     }
   }
 
-  # Classification----
+  # Classification
   if(Classification) data[, Adrian := data.table::fifelse(jitter(x = Adrian, factor = 100) > 0.63, 1, 0)]
 
   # Remove----
   data[, ":=" (x1 = NULL)]
 
-  # MultiClass----
+  # MultiClass
   if(MultiClass) {
     data[, Adrian := NULL]
     data.table::setnames(data, "Factor_1", "Adrian")
   }
 
-  # Comment data ----
+  # Comment data
   if(AddComment) {
     a <- c('Hello', 'Hi', 'Howdy')
     b <- c('really like', 'absolutely adore', 'sucks ass')
@@ -309,6 +309,6 @@ FakeDataGenerator <- function(Correlation = 0.70,
     data[, Weights := runif(.N)]
   }
 
-  # Return data----
+  # Return data
   return(data)
 }

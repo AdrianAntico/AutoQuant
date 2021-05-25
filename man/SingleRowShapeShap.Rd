@@ -20,6 +20,7 @@ Other Model Evaluation and Interpretation:
 \code{\link{ParDepCalPlots}()},
 \code{\link{ROCPlot}()},
 \code{\link{RedYellowGreen}()},
+\code{\link{ResidualPlots}()},
 \code{\link{ShapPlot}()},
 \code{\link{threshOptim}()}
 }

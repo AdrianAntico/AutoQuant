@@ -167,3 +167,159 @@ BNLearnArcStrength <- function(data = NULL,
 PlotGUI <- function() {
   if('esquisse' %in% installed.packages() && "rvg" %in% installed.packages()) esquisse::esquisser() else stop("You need to install 'esquisse' and / or 'rvg' to run the gui")
 }
+
+#' @title ScatterCopula
+#'
+#' @description Dual plot. One on original scale and one using empirical copula data
+#'
+#' @author Adrian Antico
+#'
+#' @family EDA
+#'
+#' @param data Source data.table
+#' @param x_var Numeric variable
+#' @param y_var Numeric variable
+#' @param GroupVariable Color options
+#' @param SampleCount Number of randomized rows to utilize. For speedup and memory purposes
+#' @param FitGam Add gam fit to scatterplot and copula plot
+#' @param color = "darkblue"
+#' @param point_size = 0.50
+#' @param text_size = 12
+#' @param x_axis_text_angle = 35
+#' @param y_axis_text_angle = 0
+#' @param chart_color = "lightsteelblue1"
+#' @param border_color = "darkblue"
+#' @param text_color = "darkblue"
+#' @param grid_color = "white"
+#' @param background_color = "gray95"
+#' @param legend_position = "bottom
+#'
+#' @export
+ScatterCopula <- function(data = NULL,
+                          x_var = NULL,
+                          y_var = NULL,
+                          GroupVariable = NULL,
+                          SampleCount = 100000L,
+                          FitGam = TRUE,
+                          color = "darkblue",
+                          point_size = 0.50,
+                          text_size = 12,
+                          x_axis_text_angle = 35,
+                          y_axis_text_angle = 0,
+                          chart_color = "lightsteelblue1",
+                          border_color = "darkblue",
+                          text_color = "darkblue",
+                          grid_color = "white",
+                          background_color = "gray95",
+                          legend_position = "bottom") {
+
+  # Subset data
+  temp <- data[order(runif(.N))][seq_len(min(SampleCount, .N))][, .SD, .SDcols = c(y_var, x_var, GroupVariable)]
+  temp[, Var1 := data.table::frank(get(y_var)) * (1 / 0.001) / .N * 0.001]
+  temp[, Var2 := data.table::frank(get(x_var)) * (1 / 0.001) / .N * 0.001]
+
+  # Correlations
+  OS_Pearson <- cor(x = temp[[y_var]], y = temp[[x_var]], method = "pearson")
+  OS_Spearman <- cor(x = temp[[y_var]], y = temp[[x_var]], method = "spearman")
+  cop_Pearson <- cor(x = temp[["Var1"]], y = temp[["Var2"]], method = "pearson")
+  cop_Spearman <- cor(x = temp[["Var1"]], y = temp[["Var2"]], method = "spearman")
+
+  # Regular scatter plot
+  if(is.null(GroupVariable)) {
+    original_scale_plot <- suppressMessages(
+      eval(
+        ggplot2::ggplot(
+          data = temp,
+          ggplot2::aes_string(x = x_var, y = y_var)) +
+          ggplot2::geom_point(size = point_size, color = color) +
+          ggplot2::ggtitle(paste0("ScatterPlot: Pearson Corr: ", round(OS_Pearson, 3L), " :: Spearman Corr: ", round(OS_Spearman, 3L))) +
+          ChartTheme(
+            Size = text_size,
+            AngleX = x_axis_text_angle,
+            AngleY = y_axis_text_angle,
+            ChartColor = chart_color,
+            BorderColor = border_color,
+            TextColor = text_color,
+            GridColor = grid_color,
+            BackGroundColor = background_color,
+            LegendPosition = legend_position)))
+
+    # Gam fit
+    if(FitGam) original_scale_plot <- original_scale_plot + ggplot2::geom_smooth(method='gam')
+
+  } else {
+    original_scale_plot <- suppressMessages(
+      eval(
+        ggplot2::ggplot(
+          data = temp,
+          ggplot2::aes_string(x = x_var, y = y_var, color = GroupVariable)) +
+          ggplot2::geom_point(size = point_size) +
+          ggplot2::ggtitle(paste0("ScatterPlot: Pearson Corr: ", round(OS_Pearson, 3L), " :: Spearman Corr: ", round(OS_Spearman, 3L))) +
+          ChartTheme(
+            Size = text_size,
+            AngleX = x_axis_text_angle,
+            AngleY = y_axis_text_angle,
+            ChartColor = chart_color,
+            BorderColor = border_color,
+            TextColor = text_color,
+            GridColor = grid_color,
+            BackGroundColor = background_color,
+            LegendPosition = legend_position)))
+
+    # Gam fit
+    if(FitGam) original_scale_plot <- original_scale_plot + ggplot2::geom_smooth(method='gam')
+
+  }
+
+  # Empirical Copula Scatter
+  if(is.null(GroupVariable)) {
+    copula_plot <- suppressMessages(
+      eval(
+        ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1")) +
+          ggplot2::geom_point(size = point_size, color = color) +
+          ggplot2::geom_smooth(method = "lm") +
+          ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 1) +
+          ggplot2::ggtitle(paste0("Copula: Pearson Corr: ", round(cop_Pearson, 3L), " :: Spearman Corr: ", round(cop_Spearman, 3L))) +
+          ggplot2::xlab(label = x_var) + ggplot2::ylab(label = y_var) +
+          ChartTheme(
+            Size = text_size,
+            AngleX = x_axis_text_angle,
+            AngleY = y_axis_text_angle,
+            ChartColor = chart_color,
+            BorderColor = border_color,
+            TextColor = text_color,
+            GridColor = grid_color,
+            BackGroundColor = background_color,
+            LegendPosition = legend_position)))
+
+    # Gam fit
+    if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method='gam')
+
+  } else {
+    copula_plot <- suppressMessages(
+      eval(
+        ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1", color = GroupVariable)) +
+          ggplot2::geom_point(size = point_size) +
+          ggplot2::geom_smooth(method = "lm") +
+          ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 1) +
+          ggplot2::ggtitle(paste0("Copula: Pearson Corr: ", round(cop_Pearson, 3L), " :: Spearman Corr: ", round(cop_Spearman, 3L))) +
+          ggplot2::xlab(label = x_var) + ggplot2::ylab(label = y_var) +
+          ChartTheme(
+            Size = text_size,
+            AngleX = x_axis_text_angle,
+            AngleY = y_axis_text_angle,
+            ChartColor = chart_color,
+            BorderColor = border_color,
+            TextColor = text_color,
+            GridColor = grid_color,
+            BackGroundColor = background_color,
+            LegendPosition = legend_position)))
+
+    # Gam fit
+    if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method='gam')
+
+  }
+
+  # Return
+  return(list(ScatterPlot = original_scale_plot, CopulaPlot = copula_plot))
+}
