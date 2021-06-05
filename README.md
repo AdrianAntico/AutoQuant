@@ -34,7 +34,7 @@
 <details><summary>Expand to view content</summary>
 <p>
 
-#### 1. First, install R package dependencies: 
+#### Install R package dependencies: 
 XGBoost runs significantly faster with GPU (it's already pretty fast on CPU) but it can be tricky to get installed. The blog below has been shown to be reliable for getting it done.
  [Install XGBoost on Windows for R with GPU Capability](https://medium.com/@karthikdulam/installing-xgboost-gpu-for-r-on-windows-10-7927a65c0ca8)
  
@@ -73,7 +73,7 @@ devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
-### Installation Troubleshooting 
+#### Installation Troubleshooting 
 The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
 If you're still having trouble submit an issue and I'll work with you to get it installed.
 
@@ -96,14 +96,13 @@ If you're having still having trouble installing see if the issue below helps ou
 <p>
 
 ### Supervised Learning
-#### An example workflow with function references
 <details><summary>Expand to view content</summary>
 <p>
  
 1. Pull in data from your data warehouse (or from wherever) and clean it up
 2. Run all the applicable feature engineering functions (see the README Feature Engineering)
 3. Partition your data with <code>AutoDataPartition()</code> You can create any number of data sets, supply stratification variables, and you can choose between 'random' splits, 'time' splits, and 'timeseries' splits. The distinction between 'time' and 'timeseries' splits is that 'time' should be used when you aren't directly working with panel data whereas the 'timeseries' split is for panel data (meaning that the number of records for each combination of group variables are identical). 'time' will first sort you data by the date column and then sort by stratification variables, if you provide some, but there is a risk that some group levels won't make it into all of your data sets.
-4. Run one of the supervised learning algorithms (catboost, xgboost, lightgbm, or h2o)
+4. Run one of the supervised learning algorithms
 5. Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, variable importance, interaction importance, shap values, model metrics by threshold, and model metrics by decile.
 6. Pick your model of choice and kick off an extended grid tuning and figure out something else to do that week (or run it over the weekend). 
 7. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get more time so you can explore and learn new things.
@@ -112,7 +111,6 @@ If you're having still having trouble installing see if the issue below helps ou
 </details>
 
 ### Forecasting
-#### Single series and panel data using Time Series models or Machine Learning models
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -152,6 +150,7 @@ Supply a data.table to run the functions below:
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Documentation.PNG" align="center" width="550" />
 
 ## Feature Engineering <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
+
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -1226,26 +1225,37 @@ str(data)
 </p>
 </details>
 
-
 </p>
 </details>
 
+
+
+
+
+
+
+
 ## Supervised Learning <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
-<details><summary>Expand to view content</summary> 
-<p>
-  
+
+
+
+
+
 #### Regression
 
 <details><summary>click to expand</summary>
 <p>
-  
-#### **AutoCatBoostRegression()** GPU Capable
+
+
+
+
+##### **AutoCatBoostRegression()** GPU Capable
 <code>AutoCatBoostRegression()</code> utilizes the CatBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
- 
- ```
+
+```
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1278,14 +1288,12 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   TestData = NULL,
   Weights = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in%
-    c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
   PrimaryDateColumn = NULL,
   DummifyCols = FALSE,
   IDcols = c("IDcol_1","IDcol_2"),
   TransformNumericColumns = "Adrian",
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-    "LogPlus1", "Sqrt", "Logit"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 
   # Model evaluation
   eval_metric = "RMSE",
@@ -1325,8 +1333,6 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   min_data_in_leaf = 1,
   DebugMode = FALSE)
 
-    
-
  # Output
  TestModel$Model
  TestModel$ValidationData
@@ -1342,17 +1348,18 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
  TestModel$GridList
  TestModel$ColNames
  TestModel$TransformationResults
- ```
+```
  
 </p>
 </details> 
 
-#### **AutoXGBoostRegression()** GPU Capable
+##### **AutoXGBoostRegression()** GPU Capable
 <code>AutoXGBoostRegression()</code> utilizes the XGBoost algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
- 
+
+
 ```
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
@@ -1386,13 +1393,11 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in%
-                                  c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
   IDcols = c("IDcol_1","IDcol_2"),
   EncodingMethod = "binary",
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
   
   # Model evaluation args
   eval_metric = "rmse",
@@ -1417,20 +1422,15 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   subsample = 0.55,
   colsample_bytree = 0.55)
 ```
- 
-</p>
-</details> 
 
 
-</p>
-</details> 
-
-#### **AutoLightGBMRegression()** GPU Capable
+##### **AutoLightGBMRegression()** GPU Capable
 <code>AutoLightGBMRegression()</code> utilizes the LightGBM algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
- 
+
+
 ```
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
@@ -1567,12 +1567,12 @@ TestModel <- RemixAutoML::AutoLightGBMRegression(
   gpu_use_dp = TRUE,
   num_gpu = 1)
 ```
- 
+
 </p>
 </details> 
 
 
-#### **AutoH2oGBMRegression()**
+##### **AutoH2oGBMRegression()**
 <code>AutoH2oGBMRegression()</code> utilizes the H2O Gradient Boosting algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1651,7 +1651,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
 </p>
 </details> 
 
-#### **AutoH2oDRFRegression()**
+##### **AutoH2oDRFRegression()**
 <code>AutoH2oDRFRegression()</code> utilizes the H2o Distributed Random Forest algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1726,7 +1726,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
 </p>
 </details> 
 
-#### **AutoH2oGLMRegression()**
+##### **AutoH2oGLMRegression()**
 <code>AutoH2oGLMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1804,7 +1804,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
 </p>
 </details> 
 
-#### **AutoH2oMLRegression()**
+##### **AutoH2oMLRegression()**
 <code>AutoH2oMLRegression()</code> utilizes the H2o AutoML algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1860,7 +1860,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
 </p>
 </details> 
  
-#### **AutoH2oGAMRegression()**
+##### **AutoH2oGAMRegression()**
 <code>AutoH2oGAMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -1942,8 +1942,12 @@ TestModel <- RemixAutoML::AutoH2oGAMRegression(
  
 </p>
 </details> 
+
+##### **Regression Process**
+<details><summary>Description</summary>
+<p>
   
-#### The Auto_Regression() models handle a multitude of tasks. In order:
+The Auto_Regression() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
 2. Transform your target variable using the best normalization method based on the <code>AutoTransformationCreate()</code> function
 3. Create train, validation, and test data, utilizing the <code>AutoDataPartition()</code> function, if you didn't supply those directly to the function
@@ -1969,12 +1973,25 @@ TestModel <- RemixAutoML::AutoH2oGAMRegression(
 </p>
 </details>
 
+</p>
+</details>
+
+
+
+
+
+
 #### Binary Classification
 
 <details><summary>click to expand</summary>
 <p>
-  
-#### **AutoCatBoostClassifier()** GPU Capable
+
+
+
+
+
+
+##### **AutoCatBoostClassifier()** GPU Capable
 <code>AutoCatBoostClassifier()</code> utilizes the CatBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2055,7 +2072,8 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 </p>
 </details>
 
-#### **AutoXGBoostClassifier()** GPU Capable
+
+##### **AutoXGBoostClassifier()** GPU Capable
 <code>AutoXGBoostClassifier()</code> utilizes the XGBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2120,15 +2138,13 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
   subsample = 0.55,
   colsample_bytree = 0.55)
 ```
- 
-</p>
-</details> 
 
 </p>
 </details> 
 
-#### **AutoLightGBMClassifier()** GPU Capable
-<code>AutoLightGBMClassifier()</code> utilizes the LightGBM algorithm in the below steps 
+
+##### **AutoLightGBMClassifier()** GPU Capable
+<code>AutoLightGBMClassifier()</code> utilizes the LightGBM algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2264,16 +2280,16 @@ TestModel <- RemixAutoML::AutoLightGBMClassifier(
   gpu_use_dp = TRUE,
   num_gpu = 1)
 ```
- 
+
 </p>
 </details> 
 
-#### **AutoH2oGBMClassifier()**
+
+##### **AutoH2oGBMClassifier()**
 <code>AutoH2oGBMClassifier()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
-
 
 ``` 
 # Create some dummy correlated data
@@ -2344,7 +2360,8 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 </p>
 </details> 
 
-#### **AutoH2oDRFClassifier()**
+
+##### **AutoH2oDRFClassifier()**
 <code>AutoH2oDRFClassifier()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2416,7 +2433,8 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 </p>
 </details> 
 
-#### **AutoH2oGLMClassifier()**
+
+##### **AutoH2oGLMClassifier()**
 <code>AutoH2oGLMClassifier()</code> utilizes the H2O generalized linear model algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2491,7 +2509,8 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
 </p>
 </details> 
 
-#### **AutoH2oMLClassifier()**
+
+##### **AutoH2oMLClassifier()**
 <code>AutoH2oMLClassifier()</code> utilizes the H2o AutoML algorithm in the below steps 
 
 <details><summary>Code Example</summary>
@@ -2535,7 +2554,8 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
 </p>
 </details> 
 
-#### **AutoH2oGAMClassifier()**
+
+##### **AutoH2oGAMClassifier()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -2610,9 +2630,14 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
 ```
  
 </p>
-</details> 
+</details>
+
+##### **Classifier Process**
+
+<details><summary>Description</summary>
+<p>
   
-#### The Auto_Classifier() models handle a multitude of tasks. In order:
+The Auto_Classifier() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
 2. Create train, validation, and test data if you didn't supply those directly to the function
 3. Consoldate columns that are used for modeling and what is to be kept for data returned
@@ -2636,16 +2661,30 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
 </p>
 </details>
 
+</p>
+</details>
+
+
+
+
+
+
 #### Multinomial Classification
 
 <details><summary>click to expand</summary>
 <p>
-  
-#### **AutoCatBoostMultiClass()** GPU Capable
+
+
+
+
+
+##### **AutoCatBoostMultiClass()** GPU Capable
 <code>AutoCatBoostMultiClass()</code> utilizes the CatBoost algorithm in the below steps
+
 
 <details><summary>Code Example</summary>
 <p>
+
 
 ```
 # Create some dummy correlated data
@@ -2720,7 +2759,8 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 </p>
 </details>
 
-#### **AutoXGBoostMultiClass()** GPU Capable
+
+##### **AutoXGBoostMultiClass()** GPU Capable
 <code>AutoXGBoostMultiClass()</code> utilizes the XGBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -2790,15 +2830,12 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 </p>
 </details>
 
-</p>
-</details> 
-
-#### **AutoLightGBMMultiClass()** GPU Capable
-<code>AutoLightGBMMultiClass()</code> utilizes the LightGBM algorithm in the below steps 
+##### **AutoLightGBMMultiClass()** GPU Capable
+<code>AutoLightGBMMultiClass()</code> utilizes the LightGBM algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
- 
+
 ```
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
@@ -2931,11 +2968,12 @@ TestModel <- RemixAutoML::AutoLightGBMMultiClass(
   gpu_use_dp = TRUE,
   num_gpu = 1)
 ```
- 
-</p>
-</details> 
 
-#### **AutoH2oGBMMultiClass()**
+</p>
+</details>
+
+
+##### **AutoH2oGBMMultiClass()**
 <code>AutoH2oGBMMultiClass()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -3000,7 +3038,8 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
 </p>
 </details>
 
-#### **AutoH2oDRFMultiClass()**
+
+##### **AutoH2oDRFMultiClass()**
 <code>AutoH2oDRFMultiClass()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -3019,51 +3058,52 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
-   data,
-   TrainOnFull = FALSE,
-   ValidationData = NULL,
-   TestData = NULL,
-   TargetColumnName = "Adrian",
-   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-   WeightsColumn = NULL,
-   eval_metric = "logloss",
-   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-   NThreads = max(1, parallel::detectCores()-2),
-   model_path = normalizePath("./"),
-   metadata_path = file.path(normalizePath("./")),
-   ModelID = "FirstModel",
-   ReturnModelObjects = TRUE,
-   SaveModelObjects = FALSE,
-   IfSaveModel = "mojo",
-   H2OShutdown = FALSE,
-   H2OStartUp = TRUE,
+  data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumn = NULL,
+  eval_metric = "logloss",
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  model_path = normalizePath("./"),
+  metadata_path = file.path(normalizePath("./")),
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  IfSaveModel = "mojo",
+  H2OShutdown = FALSE,
+  H2OStartUp = TRUE,
 
-   # Grid Tuning Args
-   GridStrategy = "Cartesian",
-   GridTune = FALSE,
-   MaxModelsInGrid = 10,
-   MaxRuntimeSecs = 60*60*24,
-   StoppingRounds = 10,
+  # Grid Tuning Args
+  GridStrategy = "Cartesian",
+  GridTune = FALSE,
+  MaxModelsInGrid = 10,
+  MaxRuntimeSecs = 60*60*24,
+  StoppingRounds = 10,
 
-   # ML args
-   Trees = 50,
-   MaxDepth = 20,
-   SampleRate = 0.632,
-   MTries = -1,
-   ColSampleRatePerTree = 1,
-   ColSampleRatePerTreeLevel = 1,
-   MinRows = 1,
-   NBins = 20,
-   NBinsCats = 1024,
-   NBinsTopLevel = 1024,
-   HistogramType = "AUTO",
-   CategoricalEncoding = "AUTO")
+  # ML args
+  Trees = 50,
+  MaxDepth = 20,
+  SampleRate = 0.632,
+  MTries = -1,
+  ColSampleRatePerTree = 1,
+  ColSampleRatePerTreeLevel = 1,
+  MinRows = 1,
+  NBins = 20,
+  NBinsCats = 1024,
+  NBinsTopLevel = 1024,
+  HistogramType = "AUTO",
+  CategoricalEncoding = "AUTO")
 ```
 
 </p>
 </details>
 
-#### **AutoH2oGLMMultiClass()**
+
+##### **AutoH2oGLMMultiClass()**
 <code>AutoH2oGLMMultiClass()</code> utilizes the H2O generalized linear model algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -3137,7 +3177,8 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 </p>
 </details>
 
-#### **AutoH2oMLMultiClass()**
+
+##### **AutoH2oMLMultiClass()**
 <code>AutoH2oMLMultiClass()</code> utilizes the H2o AutoML algorithm in the below steps
 
 <details><summary>Code Example</summary>
@@ -3174,7 +3215,8 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
 </p>
 </details>
 
-#### **AutoH2oGAMMultiClass()**
+
+##### **AutoH2oGAMMultiClass()**
 
 <details><summary>Code Example</summary>
 <p>
@@ -3240,8 +3282,14 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 
 </p>
 </details>
+
+
+##### **MultiClass Process**
+
+<details><summary>Auto_MultiClass Description</summary>
+<p>
   
-#### The Auto_MultiClass() models handle a multitude of tasks. In order:
+The Auto_MultiClass() models handle a multitude of tasks. In order:
 1. Convert your data to data.table format for faster processing
 2. Create train, validation, and test data if you didn't supply those directly to the function
 3. Consoldate columns that are used for modeling and what is to be kept for data returned
@@ -3263,6 +3311,10 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 </p>
 </details>
 
+</p>
+</details>
+
+
 #### Generalized Hurdle Models
 
 <details><summary>click to expand</summary>
@@ -3270,24 +3322,24 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
   
 First step is to build either a binary classification model (in the case of a single bucket value, such as zero) or a multiclass model (for the case of multiple bucket values, such as zero and 10). The next step is to subset the data for the cases of: less than the first split value, in between the first and second split value, second and third split value, ..., second to last and last split value, along with greater than last split value. For each data subset, a regression model is built for predicting values in the split value ranges. The final compilation is to multiply the probabilities of being in each group times the values supplied by the regression values for each group.
 
-###### Single Partition
+###### **Single Partition**
 * E(y|x<sub>i</sub>) = Pr(X = 0) * 0 + Pr(X > 0) * E(X | X >= 0)  
 * E(y|x<sub>i</sub>) = Pr(X < x<sub>1</sub>) * E(X | X < x<sub>1</sub>) + Pr(X >= x<sub>1</sub>) * E(X | X >= x<sub>1</sub>)
 
-###### Multiple Partitions
+###### **Multiple Partitions**
 * E(y|x<sub>i</sub>) = Pr(X = 0) * 0 + Pr(X < x<sub>2</sub>) * E(X | X < x<sub>2</sub>) + ... + Pr(X < x<sub>n</sub>) * E(X | X < x<sub>n</sub>) + Pr(X >= x<sub>n</sub>) * E(X | X >= x<sub>n</sub>)
 * E(y|x<sub>i</sub>) = Pr(X < x<sub>1</sub>) * E(X | X < x<sub>1</sub>) + Pr(x<sub>1</sub> <= X < x<sub>2</sub>) * E(X | x<sub>1</sub> <= X < x<sub>2</sub>) + ... + Pr(x<sub>n-1</sub> <= X < x<sub>n</sub>) * E(X | x<sub>n-1</sub> <= X < x<sub>n</sub>) + Pr(X >= x<sub>n</sub>) * E(X | X >= x<sub>n</sub>)
   
-#### **AutoCatBoostHurdleModel()**
+##### **AutoCatBoostHurdleModel()**
 <code>AutoCatBoostHurdleModel()</code> utilizes the CatBoost algorithm on the backend. 
 
-#### **AutoXGBoostHurdleModel()**
+##### **AutoXGBoostHurdleModel()**
 <code>AutoXGBoostHurdleModel()</code> utilizes the XGBoost algorithm on the backend. 
 
-#### **AutoH2oDRFHurdleModel()**
+##### **AutoH2oDRFHurdleModel()**
 <code>AutoH2oDRFHurdleModel()</code> utilizes the H2O distributed random forest algorithm on the backend. 
 
-#### **AutoH2oGBMHurdleModel()**
+##### **AutoH2oGBMHurdleModel()**
 <code>AutoH2oGBMHurdleModel()</code> utilizes the H2O gradient boosting machine algorithm on the backend. 
 
 </p>
@@ -3296,9 +3348,15 @@ First step is to build either a binary classification model (in the case of a si
 </p>
 </details>
 
+
+
+
+
+
 ## Model Scoring <img src="Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
+
 
 <details><summary>Code Example</summary>
 <p>
@@ -3336,13 +3394,11 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   Weights = NULL,
   DummifyCols = FALSE,
   TargetColumnName = c("Adrian","Independent_Variable1"),
-  FeatureColNames = names(data)[!names(data) %in%
-    c("IDcol_1","IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian")],
   PrimaryDateColumn = NULL,
   IDcols = c("IDcol_1","IDcol_2"),
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1",
-    "Logit","YeoJohnson"),
+  Methods = c("Asinh","Asin","Log","LogPlus1","Logit"),
 
   # Model evaluation
   eval_metric = "MultiRMSE",
@@ -3395,8 +3451,7 @@ TestModel$TransformationResults
 Preds <- RemixAutoML::AutoCatBoostScoring(
   TargetType = "multiregression",
   ScoringData = data,
-  FeatureColumnNames = names(data)[!names(data) %in%
-    c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColumnNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
   FactorLevelsList = TestModel$FactorLevelsList,
   IDcols = c("IDcol_1","IDcol_2"),
   OneHot = FALSE,
@@ -4053,215 +4108,6 @@ XGBoostResults <- AutoXGBoostCARMA(
   MinChildWeight = 1.0,
   SubSample = 1.0,
   ColSampleByTree = 1.0)
-```
-
-</p>
-</details>
-
-
-
-</p>
-</details>
-
-<details><summary>Code Example: AutoXGBoostCARMA()</summary>
-<p>
-
- 
-```
-  
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# LightGBM Version ----
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-# Load data
-data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
-
-# Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- RemixAutoML::TimeSeriesFill(
-  data,
-  DateColumnName = 'Date',
-  GroupVariables = c('Store','Dept'),
-  TimeUnit = 'weeks',
-  FillType = 'maxmax',
-  MaxMissingPercent = 0.25,
-  SimpleImpute = TRUE)
-
-# Set negative numbers to 0
-data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
-
-# Remove IsHoliday column
-data[, IsHoliday := NULL]
-
-# Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
-xregs <- data[, .SD, .SDcols = c('Date', 'Store', 'Dept')]
-
-# Change data types
-data[, ':=' (Store = as.character(Store), Dept = as.character(Dept))]
-xregs[, ':=' (Store = as.character(Store), Dept = as.character(Dept))]
-
-# Build forecast
-Results <- AutoLightGBMCARMA(
-
-  # Data Artifacts
-  data = data,
-  NonNegativePred = FALSE,
-  RoundPreds = FALSE,
-  TargetColumnName = 'Weekly_Sales',
-  DateColumnName = 'Date',
-  HierarchGroups = NULL,
-  GroupVariables = c('Store','Dept'),
-  TimeUnit = 'weeks',
-  TimeGroups = c('weeks','months'),
-
-  # Data Wrangling Features
-  EncodingMethod = 'binary',
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
-  SplitRatios = c(1 - 10 / 138, 10 / 138),
-  PartitionType = 'timeseries',
-  AnomalyDetection = NULL,
-
-  # Productionize
-  FC_Periods = 0,
-  TrainOnFull = FALSE,
-  NThreads = 8,
-  Timer = TRUE,
-  DebugMode = FALSE,
-  SaveDataPath = NULL,
-  PDFOutputPath = NULL,
-
-  # Target Transformations
-  TargetTransformation = TRUE,
-  Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
-              'LogPlus1', 'Sqrt', 'Logit','YeoJohnson'),
-  Difference = FALSE,
-
-  # Features
-  Lags = list('weeks' = seq(1L, 10L, 1L),
-              'months' = seq(1L, 5L, 1L)),
-  MA_Periods = list('weeks' = seq(5L, 20L, 5L),
-                    'months' = seq(2L, 10L, 2L)),
-  SD_Periods = NULL,
-  Skew_Periods = NULL,
-  Kurt_Periods = NULL,
-  Quantile_Periods = NULL,
-  Quantiles_Selected = c('q5','q95'),
-  XREGS = xregs,
-  FourierTerms = 4,
-  CalendarVariables = c('week', 'wom', 'month', 'quarter'),
-  HolidayVariable = c('USPublicHolidays','EasterGroup',
-    'ChristmasGroup','OtherEcclesticalFeasts'),
-  HolidayLookback = NULL,
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
-  TimeTrendVariable = TRUE,
-
-  # ML eval args
-  TreeMethod = 'hist',
-  EvalMetric = 'RMSE',
-  LossFunction = 'reg:squarederror',
-
-  # Grid tuning args
-  GridTune = FALSE,
-  GridEvalMetric = 'mae',
-  ModelCount = 30L,
-  MaxRunsWithoutNewWinner = 20L,
-  MaxRunMinutes = 24L*60L,
-
-  # LightGBM Args
-  Device_Type = TaskType,
-  LossFunction = 'regression',
-  EvalMetric = 'MAE',
-  Input_Model = NULL,
-  Task = 'train',
-  Boosting = 'gbdt',
-  LinearTree = FALSE,
-  Trees = 1000,
-  ETA = 0.10,
-  Num_Leaves = 31,
-  Deterministic = TRUE,
-
-  # Learning Parameters
-  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
-  Force_Col_Wise = FALSE,
-  Force_Row_Wise = FALSE,
-  Max_Depth = 6,
-  Min_Data_In_Leaf = 20,
-  Min_Sum_Hessian_In_Leaf = 0.001,
-  Bagging_Freq = 1.0,
-  Bagging_Fraction = 1.0,
-  Feature_Fraction = 1.0,
-  Feature_Fraction_Bynode = 1.0,
-  Lambda_L1 = 0.0,
-  Lambda_L2 = 0.0,
-  Extra_Trees = FALSE,
-  Early_Stopping_Round = 10,
-  First_Metric_Only = TRUE,
-  Max_Delta_Step = 0.0,
-  Linear_Lambda = 0.0,
-  Min_Gain_To_Split = 0,
-  Drop_Rate_Dart = 0.10,
-  Max_Drop_Dart = 50,
-  Skip_Drop_Dart = 0.50,
-  Uniform_Drop_Dart = FALSE,
-  Top_Rate_Goss = FALSE,
-  Other_Rate_Goss = FALSE,
-  Monotone_Constraints = NULL,
-  Monotone_Constraints_Method = 'advanced',
-  Monotone_Penalty = 0.0,
-  Forcedsplits_Filename = NULL, # use for AutoStack option; .json file
-  Refit_Decay_Rate = 0.90,
-  Path_Smooth = 0.0,
-
-  # IO Dataset Parameters
-  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
-  Max_Bin = 255,
-  Min_Data_In_Bin = 3,
-  Data_Random_Seed = 1,
-  Is_Enable_Sparse = TRUE,
-  Enable_Bundle = TRUE,
-  Use_Missing = TRUE,
-  Zero_As_Missing = FALSE,
-  Two_Round = FALSE,
-
-  # Convert Parameters
-  Convert_Model = NULL,
-  Convert_Model_Language = 'cpp',
-
-  # Objective Parameters
-  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
-  Boost_From_Average = TRUE,
-  Alpha = 0.90,
-  Fair_C = 1.0,
-  Poisson_Max_Delta_Step = 0.70,
-  Tweedie_Variance_Power = 1.5,
-  Lambdarank_Truncation_Level = 30,
-
-  # Metric Parameters (metric is in Core)
-  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
-  Is_Provide_Training_Metric = TRUE,
-  Eval_At = c(1,2,3,4,5),
-
-  # Network Parameters
-  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
-  Num_Machines = 1,
-
-  # GPU Parameters
-  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
-  Gpu_Platform_Id = -1,
-  Gpu_Device_Id = -1,
-  Gpu_Use_Dp = TRUE,
-  Num_Gpu = 1)
-
-UpdateMetrics <- print(
-  Results$ModelInformation$EvaluationMetrics[
-    Metric == 'MSE', MetricValue := sqrt(MetricValue)])
-print(UpdateMetrics)
-Results$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
-Results$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
-Results$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
-Results$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
-
 ```
 
 </p>
