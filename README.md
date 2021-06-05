@@ -4060,7 +4060,7 @@ XGBoostResults <- AutoXGBoostCARMA(
 
 
 
-<details><summary>Code Example: AutoXGBoostCARMA()</summary>
+<details><summary>Code Example: AutoLightGBMCARMA()</summary>
 <p>
 
 ```
