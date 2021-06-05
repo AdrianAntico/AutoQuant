@@ -4434,9 +4434,10 @@ Results <- RemixAutoML::AutoH2OCARMA(
 * <code>AutoTransformationCreate()</code>
 * <code>AutoTransformationScore()</code>
 
-###### **Models:** there are four CARMA functions and each use a different algorithm for the model fitting. The models used to fit the time series data come from RemixAutoML and include: 
+###### **Models:** there are eight CARMA functions and each use a different algorithm for the model fitting. The models used to fit the time series data come from RemixAutoML and include: 
 * <code>AutoCatBoostRegression()</code>
 * <code>AutoXGBoostRegression()</code>
+* <code>AutoLightGBMRegression()</code>
 * <code>AutoH2oDRFRegression()</code>
 * <code>AutoH2oGBMRegression()</code>
 * <code>AutoH2oGLMRegression()</code>
@@ -4450,9 +4451,8 @@ Results <- RemixAutoML::AutoH2OCARMA(
 ###### **Forecasting:** Once the regression model is built, the forecast process replicates the ARIMA process. Once a single step-ahead forecast is made, the lags and moving average features are updated based on the predicted values from scoring the model. Next, the rest of the other features are updated. Then the next forecast step is made, rinse and repeat for remaining forecasting steps. This process utilizes the RemixAutoML functions:
 * <code>AutoCatBoostScoring()</code>
 * <code>AutoXGBoostScoring()</code>
+* <code>AutoLightGBMScoring()</code>
 * <code>AutoH2oMLScoring()</code>
-
-### Intermittent Demand Forecasting Functions
 
 #### **TimeSeriesFill()**
 <code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are four ways to use this function:
