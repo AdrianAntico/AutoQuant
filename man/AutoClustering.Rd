@@ -37,7 +37,7 @@ AutoClustering(
 
 \item{MaxClusters}{number of factors to test out in k-means to find the optimal number}
 
-\item{ClusterMetric}{pick the metric to identify top model in grid tune c("totss","betweenss","withinss")}
+\item{ClusterMetric}{pick the metric to identify top model in grid tune c('totss','betweenss','withinss')}
 
 \item{RunDimReduction}{If TRUE, an autoencoder will be built to reduce the feature space. Otherwise, all features in FeatureColumns will be used for clustering}
 
@@ -79,12 +79,12 @@ data <- RemixAutoML::FakeDataGenerator(
 data <- RemixAutoML::AutoClustering(
   data,
   FeatureColumns = names(data)[2:(ncol(data)-1)],
-  ModelID = "TestModel",
+  ModelID = 'TestModel',
   SavePath = getwd(),
   NThreads = 8,
-  MaxMemory = "28G",
+  MaxMemory = '28G',
   MaxClusters = 50,
-  ClusterMetric = "totss",
+  ClusterMetric = 'totss',
   RunDimReduction = TRUE,
   ShrinkRate = (sqrt(5) - 1) / 2,
   Epochs = 5L,
@@ -113,10 +113,10 @@ data <- RemixAutoML::FakeDataGenerator(
 data <- RemixAutoML::AutoClusteringScoring(
   data,
   FeatureColumns = names(data)[2:(ncol(data)-1)],
-  ModelID = "TestModel",
+  ModelID = 'TestModel',
   SavePath = getwd(),
   NThreads = 8,
-  MaxMemory = "28G",
+  MaxMemory = '28G',
   DimReduction = TRUE)
 }
 

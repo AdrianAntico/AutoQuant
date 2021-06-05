@@ -12,7 +12,7 @@
 #' @param NThreads set based on number of threads your machine has available
 #' @param MaxMemory set based on the amount of memory your machine has available
 #' @param MaxClusters number of factors to test out in k-means to find the optimal number
-#' @param ClusterMetric pick the metric to identify top model in grid tune c("totss","betweenss","withinss")
+#' @param ClusterMetric pick the metric to identify top model in grid tune c('totss','betweenss','withinss')
 #' @param RunDimReduction If TRUE, an autoencoder will be built to reduce the feature space. Otherwise, all features in FeatureColumns will be used for clustering
 #' @param ShrinkRate Node shrink rate for H2OAutoencoder. See that function for details.
 #' @param Epochs For the autoencoder
@@ -41,12 +41,12 @@
 #' data <- RemixAutoML::AutoClustering(
 #'   data,
 #'   FeatureColumns = names(data)[2:(ncol(data)-1)],
-#'   ModelID = "TestModel",
+#'   ModelID = 'TestModel',
 #'   SavePath = getwd(),
 #'   NThreads = 8,
-#'   MaxMemory = "28G",
+#'   MaxMemory = '28G',
 #'   MaxClusters = 50,
-#'   ClusterMetric = "totss",
+#'   ClusterMetric = 'totss',
 #'   RunDimReduction = TRUE,
 #'   ShrinkRate = (sqrt(5) - 1) / 2,
 #'   Epochs = 5L,
@@ -75,10 +75,10 @@
 #' data <- RemixAutoML::AutoClusteringScoring(
 #'   data,
 #'   FeatureColumns = names(data)[2:(ncol(data)-1)],
-#'   ModelID = "TestModel",
+#'   ModelID = 'TestModel',
 #'   SavePath = getwd(),
 #'   NThreads = 8,
-#'   MaxMemory = "28G",
+#'   MaxMemory = '28G',
 #'   DimReduction = TRUE)
 #' }
 #'
@@ -86,12 +86,12 @@
 #' @export
 AutoClustering <- function(data,
                            FeatureColumns = NULL,
-                           ModelID = "TestModel",
+                           ModelID = 'TestModel',
                            SavePath = NULL,
                            NThreads = 8,
-                           MaxMemory = "28G",
+                           MaxMemory = '28G',
                            MaxClusters = 50,
-                           ClusterMetric = "totss",
+                           ClusterMetric = 'totss',
                            RunDimReduction = TRUE,
                            ShrinkRate = (sqrt(5) - 1) / 2,
                            Epochs = 5L,
@@ -121,7 +121,7 @@ AutoClustering <- function(data,
       Features = FeatureColumns,
       per_feature = FALSE,
       RemoveFeatures = FALSE,
-      ModelID = paste0(ModelID,"_Cluster_H2OAutoencoder"),
+      ModelID = paste0(ModelID,'_Cluster_H2OAutoencoder'),
       model_path = SavePath,
 
       # H2O Environment
@@ -134,7 +134,7 @@ AutoClustering <- function(data,
       NodeShrinkRate = ShrinkRate,
       LayerStructure = NULL,
       ReturnLayer = 4L,
-      Activation = "Tanh",
+      Activation = 'Tanh',
       Epochs = Epochs,
       L2 = L2_Reg,
       ElasticAveraging = ElasticAveraging,
@@ -160,28 +160,28 @@ AutoClustering <- function(data,
 
   # Define grid tune search scheme in a named list ----
   search_criteria  <- list(
-    strategy = "RandomDiscrete",
+    strategy = 'RandomDiscrete',
     max_runtime_secs = 3600,
     max_models = 30,
     seed = 1234,
     stopping_rounds = 10)
 
   # Define hyperparameters----
-  HyperParams <- list(max_iterations = c(10, 20, 50, 100), init = c("Random","PlusPlus","Furthest"))
+  HyperParams <- list(max_iterations = c(10, 20, 50, 100), init = c('Random','PlusPlus','Furthest'))
 
   # Run grid tune ----
   grid <- h2o::h2o.grid(
-    "kmeans",
+    'kmeans',
     search_criteria = search_criteria,
     training_frame = H2OData,
     x = FeatureColumns,
     k = MaxClusters,
-    grid_id = paste0(ModelID,"_KMeans"),
+    grid_id = paste0(ModelID,'_KMeans'),
     estimate_k = TRUE,
     hyper_params = HyperParams)
 
   # Get best performer----
-  Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID,"_KMeans"), sort_by = ClusterMetric, decreasing = FALSE)
+  Grid_Out <- h2o::h2o.getGrid(grid_id = paste0(ModelID,'_KMeans'), sort_by = ClusterMetric, decreasing = FALSE)
   ClusterModel <- h2o::h2o.getModel(model_id = Grid_Out@model_ids[[1L]])
 
   # Save ClusterModel if requested ----
@@ -191,8 +191,8 @@ AutoClustering <- function(data,
   preds <- data.table::as.data.table(h2o::h2o.predict(ClusterModel, H2OData))
   h2o::h2o.shutdown(prompt = FALSE)
   data <- data.table::as.data.table(cbind(data, preds))
-  data.table::setnames(data, "predict", "ClusterID")
-  file.rename(from = save_model, to = file.path(SavePath, paste0(ModelID, "_KMeans")))
+  data.table::setnames(data, 'predict', 'ClusterID')
+  file.rename(from = save_model, to = file.path(SavePath, paste0(ModelID, '_KMeans')))
   return(data)
 }
 
@@ -231,12 +231,12 @@ AutoClustering <- function(data,
 #' data <- RemixAutoML::AutoClustering(
 #'   data,
 #'   FeatureColumns = names(data)[2:(ncol(data)-1)],
-#'   ModelID = "TestModel",
+#'   ModelID = 'TestModel',
 #'   SavePath = getwd(),
 #'   NThreads = 8,
-#'   MaxMemory = "28G",
+#'   MaxMemory = '28G',
 #'   MaxClusters = 50,
-#'   ClusterMetric = "totss",
+#'   ClusterMetric = 'totss',
 #'   RunDimReduction = TRUE,
 #'   ShrinkRate = (sqrt(5) - 1) / 2,
 #'   Epochs = 5L,
@@ -265,10 +265,10 @@ AutoClustering <- function(data,
 #' data <- RemixAutoML::AutoClusteringScoring(
 #'   data,
 #'   FeatureColumns = names(data)[2:(ncol(data)-1)],
-#'   ModelID = "TestModel",
+#'   ModelID = 'TestModel',
 #'   SavePath = getwd(),
 #'   NThreads = 8,
-#'   MaxMemory = "28G",
+#'   MaxMemory = '28G',
 #'   DimReduction = TRUE)
 #' }
 #'
@@ -276,10 +276,10 @@ AutoClustering <- function(data,
 #' @export
 AutoClusteringScoring <- function(data,
                                   FeatureColumns = NULL,
-                                  ModelID = "TestModel",
+                                  ModelID = 'TestModel',
                                   SavePath = NULL,
                                   NThreads = 8,
-                                  MaxMemory = "28G",
+                                  MaxMemory = '28G',
                                   DimReduction = TRUE) {
 
   # Check data.table ----
@@ -304,7 +304,7 @@ AutoClusteringScoring <- function(data,
       RemoveFeatures = FALSE,
       per_feature = FALSE,
       ModelObject = NULL,
-      ModelID = paste0(ModelID,"_Cluster_H2OAutoencoder"),
+      ModelID = paste0(ModelID,'_Cluster_H2OAutoencoder'),
       model_path = SavePath,
 
       # H2O args
@@ -332,12 +332,12 @@ AutoClusteringScoring <- function(data,
   H2OData <- h2o::as.h2o(temp)
 
   # Load model
-  ClusterModel <- h2o::h2o.loadModel(path = file.path(SavePath, paste0(ModelID, "_KMeans")))
+  ClusterModel <- h2o::h2o.loadModel(path = file.path(SavePath, paste0(ModelID, '_KMeans')))
 
   # Combine outputs ----
   preds <- data.table::as.data.table(h2o::h2o.predict(ClusterModel, H2OData))
   h2o::h2o.shutdown(prompt = FALSE)
   data <- data.table::as.data.table(cbind(data, preds))
-  data.table::setnames(data, "predict", "ClusterID")
+  data.table::setnames(data, 'predict', 'ClusterID')
   return(data)
 }

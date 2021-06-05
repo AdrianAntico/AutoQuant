@@ -103,7 +103,7 @@ If you're having still having trouble installing see if the issue below helps ou
 1. Pull in data from your data warehouse (or from wherever) and clean it up
 2. Run all the applicable feature engineering functions (see the README Feature Engineering)
 3. Partition your data with <code>AutoDataPartition()</code> You can create any number of data sets, supply stratification variables, and you can choose between 'random' splits, 'time' splits, and 'timeseries' splits. The distinction between 'time' and 'timeseries' splits is that 'time' should be used when you aren't directly working with panel data whereas the 'timeseries' split is for panel data (meaning that the number of records for each combination of group variables are identical). 'time' will first sort you data by the date column and then sort by stratification variables, if you provide some, but there is a risk that some group levels won't make it into all of your data sets.
-4. Run one of the supervised learning algorithms
+4. Run one of the supervised learning algorithms (catboost, xgboost, lightgbm, or h2o)
 5. Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, variable importance, interaction importance, shap values, model metrics by threshold, and model metrics by decile.
 6. Pick your model of choice and kick off an extended grid tuning and figure out something else to do that week (or run it over the weekend). 
 7. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get more time so you can explore and learn new things.
@@ -1421,6 +1421,157 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 </p>
 </details> 
 
+
+</p>
+</details> 
+
+#### **AutoLightGBMRegression()** GPU Capable
+<code>AutoLightGBMRegression()</code> utilizes the LightGBM algorithm in the below steps 
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run function
+TestModel <- RemixAutoML::AutoLightGBMRegression(
+
+  # Metadata args
+  OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+  model_path = normalizePath('./'),
+  metadata_path = NULL,
+  ModelID = 'Test_Model_1',
+  NumOfParDepPlots = 3L,
+  EncodingMethod = 'credibility',
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
+
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
+  IDcols = c('IDcol_1','IDcol_2'),
+  TransformNumericColumns = NULL,
+  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
+
+  # Grid parameters
+  GridTune = FALSE,
+  grid_eval_metric = 'r2',
+  BaselineComparison = 'default',
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  PassInGrid = NULL,
+
+  # Core parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+  input_model = NULL, # continue training a model that is stored to file
+  task = 'train',
+  device_type = 'CPU',
+  NThreads = parallel::detectCores() / 2,
+  objective = 'regression',
+  metric = 'rmse',
+  boosting = 'gbdt',
+  LinearTree = FALSE,
+  Trees = 50L,
+  eta = NULL,
+  num_leaves = 31,
+  deterministic = TRUE,
+
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  force_col_wise = FALSE,
+  force_row_wise = FALSE,
+  max_depth = NULL,
+  min_data_in_leaf = 20,
+  min_sum_hessian_in_leaf = 0.001,
+  bagging_freq = 0,
+  bagging_fraction = 1.0,
+  feature_fraction = 1.0,
+  feature_fraction_bynode = 1.0,
+  extra_trees = FALSE,
+  early_stopping_round = 10,
+  first_metric_only = TRUE,
+  max_delta_step = 0.0,
+  lambda_l1 = 0.0,
+  lambda_l2 = 0.0,
+  linear_lambda = 0.0,
+  min_gain_to_split = 0,
+  drop_rate_dart = 0.10,
+  max_drop_dart = 50,
+  skip_drop_dart = 0.50,
+  uniform_drop_dart = FALSE,
+  top_rate_goss = FALSE,
+  other_rate_goss = FALSE,
+  monotone_constraints = NULL,
+  monotone_constraints_method = 'advanced',
+  monotone_penalty = 0.0,
+  forcedsplits_filename = NULL, # use for AutoStack option; .json file
+  refit_decay_rate = 0.90,
+  path_smooth = 0.0,
+
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  max_bin = 255,
+  min_data_in_bin = 3,
+  data_random_seed = 1,
+  is_enable_sparse = TRUE,
+  enable_bundle = TRUE,
+  use_missing = TRUE,
+  zero_as_missing = FALSE,
+  two_round = FALSE,
+
+  # Convert Parameters
+  convert_model = NULL,
+  convert_model_language = 'cpp',
+
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  boost_from_average = TRUE,
+  alpha = 0.90,
+  fair_c = 1.0,
+  poisson_max_delta_step = 0.70,
+  tweedie_variance_power = 1.5,
+  lambdarank_truncation_level = 30,
+
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  is_provide_training_metric = TRUE,
+  eval_at = c(1,2,3,4,5),
+
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  num_machines = 1,
+
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  gpu_platform_id = -1,
+  gpu_device_id = -1,
+  gpu_use_dp = TRUE,
+  num_gpu = 1)
+```
+ 
+</p>
+</details> 
+
+
 #### **AutoH2oGBMRegression()**
 <code>AutoH2oGBMRegression()</code> utilizes the H2O Gradient Boosting algorithm in the below steps 
 
@@ -1973,6 +2124,150 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 </p>
 </details> 
 
+</p>
+</details> 
+
+#### **AutoLightGBMClassifier()** GPU Capable
+<code>AutoLightGBMClassifier()</code> utilizes the LightGBM algorithm in the below steps 
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run function
+TestModel <- RemixAutoML::AutoLightGBMClassifier(
+
+  # Metadata args
+  OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  NumOfParDepPlots = 3L,
+  EncodingMethod = "credibility",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
+
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
+  IDcols = c("IDcol_1","IDcol_2"),
+
+  # Grid parameters
+  GridTune = FALSE,
+  grid_eval_metric = 'Utility',
+  BaselineComparison = 'default',
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  PassInGrid = NULL,
+
+  # Core parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+  input_model = NULL, # continue training a model that is stored to file
+  task = "train",
+  device_type = 'CPU',
+  NThreads = parallel::detectCores() / 2,
+  objective = 'binary',
+  metric = 'binary_logloss',
+  boosting = 'gbdt',
+  LinearTree = FALSE,
+  Trees = 50L,
+  eta = NULL,
+  num_leaves = 31,
+  deterministic = TRUE,
+
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  force_col_wise = FALSE,
+  force_row_wise = FALSE,
+  max_depth = NULL,
+  min_data_in_leaf = 20,
+  min_sum_hessian_in_leaf = 0.001,
+  bagging_freq = 0,
+  bagging_fraction = 1.0,
+  feature_fraction = 1.0,
+  feature_fraction_bynode = 1.0,
+  extra_trees = FALSE,
+  early_stopping_round = 10,
+  first_metric_only = TRUE,
+  max_delta_step = 0.0,
+  lambda_l1 = 0.0,
+  lambda_l2 = 0.0,
+  linear_lambda = 0.0,
+  min_gain_to_split = 0,
+  drop_rate_dart = 0.10,
+  max_drop_dart = 50,
+  skip_drop_dart = 0.50,
+  uniform_drop_dart = FALSE,
+  top_rate_goss = FALSE,
+  other_rate_goss = FALSE,
+  monotone_constraints = NULL,
+  monotone_constraints_method = "advanced",
+  monotone_penalty = 0.0,
+  forcedsplits_filename = NULL, # use for AutoStack option; .json file
+  refit_decay_rate = 0.90,
+  path_smooth = 0.0,
+
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  max_bin = 255,
+  min_data_in_bin = 3,
+  data_random_seed = 1,
+  is_enable_sparse = TRUE,
+  enable_bundle = TRUE,
+  use_missing = TRUE,
+  zero_as_missing = FALSE,
+  two_round = FALSE,
+
+  # Convert Parameters
+  convert_model = NULL,
+  convert_model_language = "cpp",
+
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  boost_from_average = TRUE,
+  is_unbalance = FALSE,
+  scale_pos_weight = 1.0,
+
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  is_provide_training_metric = TRUE,
+  eval_at = c(1,2,3,4,5),
+
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  num_machines = 1,
+
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  gpu_platform_id = -1,
+  gpu_device_id = -1,
+  gpu_use_dp = TRUE,
+  num_gpu = 1)
+```
+ 
+</p>
+</details> 
+
 #### **AutoH2oGBMClassifier()**
 <code>AutoH2oGBMClassifier()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
 
@@ -2494,6 +2789,151 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 
 </p>
 </details>
+
+</p>
+</details> 
+
+#### **AutoLightGBMMultiClass()** GPU Capable
+<code>AutoLightGBMMultiClass()</code> utilizes the LightGBM algorithm in the below steps 
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 1000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Run function
+TestModel <- RemixAutoML::AutoLightGBMMultiClass(
+
+  # Metadata args
+  OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  NumOfParDepPlots = 3L,
+  EncodingMethod = "credibility",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
+
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
+  IDcols = c("IDcol_1","IDcol_2"),
+
+  # Grid parameters
+  GridTune = FALSE,
+  grid_eval_metric = 'microauc',
+  BaselineComparison = 'default',
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  PassInGrid = NULL,
+
+  # Core parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+  input_model = NULL, # continue training a model that is stored to file
+  task = "train",
+  device_type = 'CPU',
+  NThreads = parallel::detectCores() / 2,
+  objective = 'multiclass',
+  multi_error_top_k = 1,
+  metric = 'multi_logloss',
+  boosting = 'gbdt',
+  LinearTree = FALSE,
+  Trees = 50L,
+  eta = NULL,
+  num_leaves = 31,
+  deterministic = TRUE,
+
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  force_col_wise = FALSE,
+  force_row_wise = FALSE,
+  max_depth = NULL,
+  min_data_in_leaf = 20,
+  min_sum_hessian_in_leaf = 0.001,
+  bagging_freq = 0,
+  bagging_fraction = 1.0,
+  feature_fraction = 1.0,
+  feature_fraction_bynode = 1.0,
+  extra_trees = FALSE,
+  early_stopping_round = 10,
+  first_metric_only = TRUE,
+  max_delta_step = 0.0,
+  lambda_l1 = 0.0,
+  lambda_l2 = 0.0,
+  linear_lambda = 0.0,
+  min_gain_to_split = 0,
+  drop_rate_dart = 0.10,
+  max_drop_dart = 50,
+  skip_drop_dart = 0.50,
+  uniform_drop_dart = FALSE,
+  top_rate_goss = FALSE,
+  other_rate_goss = FALSE,
+  monotone_constraints = NULL,
+  monotone_constraints_method = "advanced",
+  monotone_penalty = 0.0,
+  forcedsplits_filename = NULL, # use for AutoStack option; .json file
+  refit_decay_rate = 0.90,
+  path_smooth = 0.0,
+
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  max_bin = 255,
+  min_data_in_bin = 3,
+  data_random_seed = 1,
+  is_enable_sparse = TRUE,
+  enable_bundle = TRUE,
+  use_missing = TRUE,
+  zero_as_missing = FALSE,
+  two_round = FALSE,
+
+  # Convert Parameters
+  convert_model = NULL,
+  convert_model_language = "cpp",
+
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  boost_from_average = TRUE,
+  is_unbalance = FALSE,
+  scale_pos_weight = 1.0,
+
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  is_provide_training_metric = TRUE,
+  eval_at = c(1,2,3,4,5),
+
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  num_machines = 1,
+
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  gpu_platform_id = -1,
+  gpu_device_id = -1,
+  gpu_use_dp = TRUE,
+  num_gpu = 1)
+```
+ 
+</p>
+</details> 
 
 #### **AutoH2oGBMMultiClass()**
 <code>AutoH2oGBMMultiClass()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
@@ -3613,6 +4053,215 @@ XGBoostResults <- AutoXGBoostCARMA(
   MinChildWeight = 1.0,
   SubSample = 1.0,
   ColSampleByTree = 1.0)
+```
+
+</p>
+</details>
+
+
+
+</p>
+</details>
+
+<details><summary>Code Example: AutoXGBoostCARMA()</summary>
+<p>
+
+ 
+```
+  
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# LightGBM Version ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Load data
+data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
+
+# Ensure series have no missing dates (also remove series with more than 25% missing values)
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = 'Date',
+  GroupVariables = c('Store','Dept'),
+  TimeUnit = 'weeks',
+  FillType = 'maxmax',
+  MaxMissingPercent = 0.25,
+  SimpleImpute = TRUE)
+
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Remove IsHoliday column
+data[, IsHoliday := NULL]
+
+# Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
+xregs <- data[, .SD, .SDcols = c('Date', 'Store', 'Dept')]
+
+# Change data types
+data[, ':=' (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ':=' (Store = as.character(Store), Dept = as.character(Dept))]
+
+# Build forecast
+Results <- AutoLightGBMCARMA(
+
+  # Data Artifacts
+  data = data,
+  NonNegativePred = FALSE,
+  RoundPreds = FALSE,
+  TargetColumnName = 'Weekly_Sales',
+  DateColumnName = 'Date',
+  HierarchGroups = NULL,
+  GroupVariables = c('Store','Dept'),
+  TimeUnit = 'weeks',
+  TimeGroups = c('weeks','months'),
+
+  # Data Wrangling Features
+  EncodingMethod = 'binary',
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = 'timeseries',
+  AnomalyDetection = NULL,
+
+  # Productionize
+  FC_Periods = 0,
+  TrainOnFull = FALSE,
+  NThreads = 8,
+  Timer = TRUE,
+  DebugMode = FALSE,
+  SaveDataPath = NULL,
+  PDFOutputPath = NULL,
+
+  # Target Transformations
+  TargetTransformation = TRUE,
+  Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
+              'LogPlus1', 'Sqrt', 'Logit','YeoJohnson'),
+  Difference = FALSE,
+
+  # Features
+  Lags = list('weeks' = seq(1L, 10L, 1L),
+              'months' = seq(1L, 5L, 1L)),
+  MA_Periods = list('weeks' = seq(5L, 20L, 5L),
+                    'months' = seq(2L, 10L, 2L)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = c('q5','q95'),
+  XREGS = xregs,
+  FourierTerms = 4,
+  CalendarVariables = c('week', 'wom', 'month', 'quarter'),
+  HolidayVariable = c('USPublicHolidays','EasterGroup',
+    'ChristmasGroup','OtherEcclesticalFeasts'),
+  HolidayLookback = NULL,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+  TimeTrendVariable = TRUE,
+
+  # ML eval args
+  TreeMethod = 'hist',
+  EvalMetric = 'RMSE',
+  LossFunction = 'reg:squarederror',
+
+  # Grid tuning args
+  GridTune = FALSE,
+  GridEvalMetric = 'mae',
+  ModelCount = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+
+  # LightGBM Args
+  Device_Type = TaskType,
+  LossFunction = 'regression',
+  EvalMetric = 'MAE',
+  Input_Model = NULL,
+  Task = 'train',
+  Boosting = 'gbdt',
+  LinearTree = FALSE,
+  Trees = 1000,
+  ETA = 0.10,
+  Num_Leaves = 31,
+  Deterministic = TRUE,
+
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  Force_Col_Wise = FALSE,
+  Force_Row_Wise = FALSE,
+  Max_Depth = 6,
+  Min_Data_In_Leaf = 20,
+  Min_Sum_Hessian_In_Leaf = 0.001,
+  Bagging_Freq = 1.0,
+  Bagging_Fraction = 1.0,
+  Feature_Fraction = 1.0,
+  Feature_Fraction_Bynode = 1.0,
+  Lambda_L1 = 0.0,
+  Lambda_L2 = 0.0,
+  Extra_Trees = FALSE,
+  Early_Stopping_Round = 10,
+  First_Metric_Only = TRUE,
+  Max_Delta_Step = 0.0,
+  Linear_Lambda = 0.0,
+  Min_Gain_To_Split = 0,
+  Drop_Rate_Dart = 0.10,
+  Max_Drop_Dart = 50,
+  Skip_Drop_Dart = 0.50,
+  Uniform_Drop_Dart = FALSE,
+  Top_Rate_Goss = FALSE,
+  Other_Rate_Goss = FALSE,
+  Monotone_Constraints = NULL,
+  Monotone_Constraints_Method = 'advanced',
+  Monotone_Penalty = 0.0,
+  Forcedsplits_Filename = NULL, # use for AutoStack option; .json file
+  Refit_Decay_Rate = 0.90,
+  Path_Smooth = 0.0,
+
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  Max_Bin = 255,
+  Min_Data_In_Bin = 3,
+  Data_Random_Seed = 1,
+  Is_Enable_Sparse = TRUE,
+  Enable_Bundle = TRUE,
+  Use_Missing = TRUE,
+  Zero_As_Missing = FALSE,
+  Two_Round = FALSE,
+
+  # Convert Parameters
+  Convert_Model = NULL,
+  Convert_Model_Language = 'cpp',
+
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  Boost_From_Average = TRUE,
+  Alpha = 0.90,
+  Fair_C = 1.0,
+  Poisson_Max_Delta_Step = 0.70,
+  Tweedie_Variance_Power = 1.5,
+  Lambdarank_Truncation_Level = 30,
+
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  Is_Provide_Training_Metric = TRUE,
+  Eval_At = c(1,2,3,4,5),
+
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  Num_Machines = 1,
+
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  Gpu_Platform_Id = -1,
+  Gpu_Device_Id = -1,
+  Gpu_Use_Dp = TRUE,
+  Num_Gpu = 1)
+
+UpdateMetrics <- print(
+  Results$ModelInformation$EvaluationMetrics[
+    Metric == 'MSE', MetricValue := sqrt(MetricValue)])
+print(UpdateMetrics)
+Results$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
+Results$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
+Results$ModelInformation$EvaluationMetricsByGroup[order(MSE_Metric)]
+Results$ModelInformation$EvaluationMetricsByGroup[order(MAPE_Metric)]
+
 ```
 
 </p>

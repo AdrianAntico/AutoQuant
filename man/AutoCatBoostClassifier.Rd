@@ -58,7 +58,7 @@ AutoCatBoostClassifier(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData')}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -78,7 +78,7 @@ AutoCatBoostClassifier(
 
 \item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
-\item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
+\item{task_type}{Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.}
 
 \item{NumGPUs}{Numeric. If you have 4 GPUs supply 4 as a value.}
 
@@ -94,7 +94,7 @@ AutoCatBoostClassifier(
 
 \item{metadata_path}{A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.}
 
-\item{EvalMetric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. "AUC" is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
+\item{EvalMetric}{This is the metric used inside catboost to measure performance on validation data during a grid-tune. 'AUC' is the default. 'Logloss', 'CrossEntropy', 'Precision', 'Recall', 'F1', 'BalancedAccuracy', 'BalancedErrorRate', 'MCC', 'Accuracy', 'CtrFactor', 'AUC', 'BrierScore', 'HingeLoss', 'HammingLoss', 'ZeroOneLoss', 'Kappa', 'WKappa', 'LogLikelihoodOfPrediction', 'TotalF1', 'PairLogit', 'PairLogitPairwise', 'PairAccuracy', 'QueryCrossEntropy', 'QuerySoftMax', 'PFound', 'NDCG', 'AverageGain', 'PrecisionAt', 'RecallAt', 'MAP'}
 
 \item{LossFunction}{Default is NULL. Select the loss function of choice. c('Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')}
 
@@ -116,7 +116,7 @@ AutoCatBoostClassifier(
 
 \item{MaxRunMinutes}{In minutes}
 
-\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
+\item{BaselineComparison}{Set to either 'default' or 'best'. Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
 
@@ -134,9 +134,9 @@ AutoCatBoostClassifier(
 
 \item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
-\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
+\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No')}
 
-\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
+\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c('SymmetricTree', 'Depthwise', 'Lossguide')}
 
 \item{langevin}{TRUE or FALSE. TRUE enables}
 
@@ -144,7 +144,7 @@ AutoCatBoostClassifier(
 
 \item{model_size_reg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
 
-\item{feature_border_type}{Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
+\item{feature_border_type}{Defaults to 'GreedyLogSum'. Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
 
 \item{sampling_unit}{Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the LossFunction is YetiRankPairWise}
 
@@ -178,16 +178,16 @@ data <- RemixAutoML::FakeDataGenerator(
 TestModel <- RemixAutoML::AutoCatBoostClassifier(
 
   # GPU or CPU and the number of available GPUs
-  task_type = "GPU",
+  task_type = 'GPU',
   NumGPUs = 1,
   TrainOnFull = FALSE,
   DebugMode = FALSE,
 
   # Metadata args
-  OutputSelection = c("Score_TrainData", "Importance", "EvalPlots", "Metrics", "PDF"),
-  ModelID = "Test_Model_1",
-  model_path = normalizePath("./"),
-  metadata_path = normalizePath("./"),
+  OutputSelection = c('Score_TrainData', 'Importance', 'EvalPlots', 'Metrics', 'PDF'),
+  ModelID = 'Test_Model_1',
+  model_path = normalizePath('./'),
+  metadata_path = normalizePath('./'),
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
   SaveInfoToPDF = FALSE,
@@ -196,19 +196,19 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   data = data,
   ValidationData = NULL,
   TestData = NULL,
-  TargetColumnName = "Adrian",
+  TargetColumnName = 'Adrian',
   FeatureColNames = names(data)[!names(data) \%in\%
-     c("IDcol_1","IDcol_2","Adrian")],
+     c('IDcol_1','IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
-  IDcols = c("IDcol_1","IDcol_2"),
+  IDcols = c('IDcol_1','IDcol_2'),
 
   # Evaluation args
   ClassWeights = c(1L,1L),
   CostMatrixWeights = c(1,0,0,1),
-  EvalMetric = "AUC",
-  grid_eval_metric = "MCC",
-  LossFunction = "Logloss",
+  EvalMetric = 'AUC',
+  grid_eval_metric = 'MCC',
+  LossFunction = 'Logloss',
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
 
@@ -218,7 +218,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L*60L,
-  BaselineComparison = "default",
+  BaselineComparison = 'default',
 
   # ML args
   Trees = 1000,
@@ -231,12 +231,12 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   RandomStrength = 1,
   BorderCount = 128,
   RSM = 1,
-  BootStrapType = "Bayesian",
-  GrowPolicy = "SymmetricTree",
-  feature_border_type = "GreedyLogSum",
-  sampling_unit = "Object",
+  BootStrapType = 'Bayesian',
+  GrowPolicy = 'SymmetricTree',
+  feature_border_type = 'GreedyLogSum',
+  sampling_unit = 'Object',
   subsample = NULL,
-  score_function = "Cosine",
+  score_function = 'Cosine',
   min_data_in_leaf = 1)
 
 # Output
@@ -261,6 +261,7 @@ Other Automated Supervised Learning - Binary Classification:
 \code{\link{AutoH2oGBMClassifier}()},
 \code{\link{AutoH2oGLMClassifier}()},
 \code{\link{AutoH2oMLClassifier}()},
+\code{\link{AutoLightGBMClassifier}()},
 \code{\link{AutoXGBoostClassifier}()}
 }
 \author{

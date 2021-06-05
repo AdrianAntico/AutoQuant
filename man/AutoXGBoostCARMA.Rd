@@ -5,7 +5,8 @@
 \title{AutoXGBoostCARMA}
 \usage{
 AutoXGBoostCARMA(
-  data,
+  data = NULL,
+  XREGS = NULL,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
   TrainOnFull = FALSE,
@@ -19,11 +20,9 @@ AutoXGBoostCARMA(
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   TargetTransformation = FALSE,
-  Methods = c("YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin",
-    "Logit"),
+  Methods = c("Asinh", "Log", "LogPlus1", "Sqrt"),
   EncodingMethod = "binary",
   AnomalyDetection = NULL,
-  XREGS = NULL,
   Lags = c(1:5),
   MA_Periods = c(1:5),
   SD_Periods = NULL,
@@ -32,7 +31,7 @@ AutoXGBoostCARMA(
   Quantile_Periods = NULL,
   Quantiles_Selected = NULL,
   Difference = TRUE,
-  FourierTerms = 6,
+  FourierTerms = 0,
   CalendarVariables = c("second", "minute", "hour", "wday", "mday", "yday", "week",
     "wom", "isoweek", "month", "quarter", "year"),
   HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
@@ -67,15 +66,17 @@ AutoXGBoostCARMA(
 \arguments{
 \item{data}{Supply your full series data set here}
 
+\item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
+
 \item{NonNegativePred}{TRUE or FALSE}
 
 \item{RoundPreds}{Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE}
 
 \item{TrainOnFull}{Set to TRUE to train on full data}
 
-\item{TargetColumnName}{List the column name of your target variables column. E.g. "Target"}
+\item{TargetColumnName}{List the column name of your target variables column. E.g. 'Target'}
 
-\item{DateColumnName}{List the column name of your date column. E.g. "DateTime"}
+\item{DateColumnName}{List the column name of your date column. E.g. 'DateTime'}
 
 \item{HierarchGroups}{= NULL Character vector or NULL with names of the columns that form the interaction hierarchy}
 
@@ -87,41 +88,39 @@ AutoXGBoostCARMA(
 
 \item{PDFOutputPath}{Supply a path to save model insights to PDF}
 
-\item{TimeUnit}{List the time unit your data is aggregated by. E.g. "1min", "5min", "10min", "15min", "30min", "hour", "day", "week", "month", "quarter", "year"}
+\item{TimeUnit}{List the time unit your data is aggregated by. E.g. '1min', '5min', '10min', '15min', '30min', 'hour', 'day', 'week', 'month', 'quarter', 'year'}
 
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
+\item{Methods}{Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{EncodingMethod}{Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
-\item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list("tstat_high" = 4, tstat_low = -4)}
+\item{AnomalyDetection}{NULL for not using the service. Other, provide a list, e.g. AnomalyDetection = list('tstat_high' = 4, tstat_low = -4)}
 
-\item{XREGS}{Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.}
+\item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52) or list('day' = c(1:10), 'weeks' = c(1:4))}
 
-\item{Lags}{Select the periods for all lag variables you want to create. E.g. c(1:5,52) or list("day" = c(1:10), "weeks" = c(1:4))}
+\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52) or list('day' = c(2:10), 'weeks' = c(2:4))}
 
-\item{MA_Periods}{Select the periods for all moving average variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
+\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52) or list('day' = c(2:10), 'weeks' = c(2:4))}
 
-\item{SD_Periods}{Select the periods for all moving standard deviation variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
+\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52) or list('day' = c(2:10), 'weeks' = c(2:4))}
 
-\item{Skew_Periods}{Select the periods for all moving skewness variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
+\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52) or list('day' = c(2:10), 'weeks' = c(2:4))}
 
-\item{Kurt_Periods}{Select the periods for all moving kurtosis variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
+\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52) or list('day' = c(2:10), 'weeks' = c(2:4))}
 
-\item{Quantile_Periods}{Select the periods for all moving quantiles variables you want to create. E.g. c(1:5,52) or list("day" = c(2:10), "weeks" = c(2:4))}
-
-\item{Quantiles_Selected}{Select from the following c("q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")}
+\item{Quantiles_Selected}{Select from the following c('q5','q10','q15','q20','q25','q30','q35','q40','q45','q50','q55','q60','q65','q70','q75','q80','q85','q90','q95')}
 
 \item{Difference}{Set to TRUE to put the I in ARIMA}
 
 \item{FourierTerms}{Set to the max number of pairs}
 
-\item{CalendarVariables}{NULL, or select from "second", "minute", "hour", "wday", "mday", "yday", "week", "wom", "isoweek", "month", "quarter", "year"}
+\item{CalendarVariables}{NULL, or select from 'second', 'minute', 'hour', 'wday', 'mday', 'yday', 'week', 'wom', 'isoweek', 'month', 'quarter', 'year'}
 
-\item{HolidayVariable}{NULL, or select from "USPublicHolidays", "EasterGroup", "ChristmasGroup", "OtherEcclesticalFeasts"}
+\item{HolidayVariable}{NULL, or select from 'USPublicHolidays', 'EasterGroup', 'ChristmasGroup', 'OtherEcclesticalFeasts'}
 
 \item{HolidayLookback}{Number of days in range to compute number of holidays from a given date in the data. If NULL, the number of days are computed for you.}
 
@@ -133,21 +132,21 @@ AutoXGBoostCARMA(
 
 \item{DataTruncate}{Set to TRUE to remove records with missing values from the lags and moving average features created}
 
-\item{ZeroPadSeries}{NULL to do nothing. Otherwise, set to "maxmax", "minmax", "maxmin", "minmin". See \code{\link{TimeSeriesFill}} for explanations of each type}
+\item{ZeroPadSeries}{NULL to do nothing. Otherwise, set to 'maxmax', 'minmax', 'maxmin', 'minmin'. See \code{\link{TimeSeriesFill}} for explanations of each type}
 
 \item{SplitRatios}{E.g c(0.7,0.2,0.1) for train, validation, and test sets}
 
-\item{TreeMethod}{Choose from "hist", "gpu_hist"}
+\item{TreeMethod}{Choose from 'hist', 'gpu_hist'}
 
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
 
-\item{PartitionType}{Select "random" for random data partitioning "time" for partitioning by time frames}
+\item{PartitionType}{Select 'random' for random data partitioning 'time' for partitioning by time frames}
 
 \item{Timer}{Setting to TRUE prints out the forecast number while it is building}
 
 \item{DebugMode}{Setting to TRUE generates printout of all header code comments during run time of function}
 
-\item{EvalMetric}{Select from "r2", "RMSE", "MSE", "MAE"}
+\item{EvalMetric}{Select from 'r2', 'RMSE', 'MSE', 'MAE'}
 
 \item{LossFunction}{Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'}
 
@@ -183,15 +182,15 @@ AutoXGBoostCARMA Mutlivariate Forecasting with calendar variables, Holiday count
 \dontrun{
 
 # Load data
-data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
 
 # Ensure series have no missing dates (also remove series with more than 25\% missing values)
 data <- RemixAutoML::TimeSeriesFill(
   data,
-  DateColumnName = "Date",
-  GroupVariables = c("Store","Dept"),
-  TimeUnit = "weeks",
-  FillType = "maxmax",
+  DateColumnName = 'Date',
+  GroupVariables = c('Store','Dept'),
+  TimeUnit = 'weeks',
+  FillType = 'maxmax',
   MaxMissingPercent = 0.25,
   SimpleImpute = TRUE)
 
@@ -202,11 +201,11 @@ data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_S
 data[, IsHoliday := NULL]
 
 # Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
-xregs <- data[, .SD, .SDcols = c("Date", "Store", "Dept")]
+xregs <- data[, .SD, .SDcols = c('Date', 'Store', 'Dept')]
 
 # Change data types
-data[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
-xregs[, ":=" (Store = as.character(Store), Dept = as.character(Dept))]
+data[, ':=' (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ':=' (Store = as.character(Store), Dept = as.character(Dept))]
 
  # Build forecast
 XGBoostResults <- AutoXGBoostCARMA(
@@ -215,19 +214,19 @@ XGBoostResults <- AutoXGBoostCARMA(
   data = data,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
-  TargetColumnName = "Weekly_Sales",
-  DateColumnName = "Date",
+  TargetColumnName = 'Weekly_Sales',
+  DateColumnName = 'Date',
   HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"),
-  TimeUnit = "weeks",
-  TimeGroups = c("weeks","months"),
+  GroupVariables = c('Store','Dept'),
+  TimeUnit = 'weeks',
+  TimeGroups = c('weeks','months'),
 
   # Data Wrangling Features
-  EncodingMethod = "binary",
+  EncodingMethod = 'binary',
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(1 - 10 / 138, 10 / 138),
-  PartitionType = "timeseries",
+  PartitionType = 'timeseries',
   AnomalyDetection = NULL,
 
   # Productionize
@@ -241,33 +240,33 @@ XGBoostResults <- AutoXGBoostCARMA(
 
   # Target Transformations
   TargetTransformation = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
+  Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
+              'LogPlus1', 'Sqrt', 'Logit','YeoJohnson'),
   Difference = FALSE,
 
   # Features
-  Lags = list("weeks" = seq(1L, 10L, 1L),
-              "months" = seq(1L, 5L, 1L)),
-  MA_Periods = list("weeks" = seq(5L, 20L, 5L),
-                    "months" = seq(2L, 10L, 2L)),
+  Lags = list('weeks' = seq(1L, 10L, 1L),
+              'months' = seq(1L, 5L, 1L)),
+  MA_Periods = list('weeks' = seq(5L, 20L, 5L),
+                    'months' = seq(2L, 10L, 2L)),
   SD_Periods = NULL,
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
-  Quantiles_Selected = c("q5","q95"),
+  Quantiles_Selected = c('q5','q95'),
   XREGS = xregs,
   FourierTerms = 4,
-  CalendarVariables = c("week", "wom", "month", "quarter"),
-  HolidayVariable = c("USPublicHolidays","EasterGroup",
-    "ChristmasGroup","OtherEcclesticalFeasts"),
+  CalendarVariables = c('week', 'wom', 'month', 'quarter'),
+  HolidayVariable = c('USPublicHolidays','EasterGroup',
+    'ChristmasGroup','OtherEcclesticalFeasts'),
   HolidayLookback = NULL,
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
   TimeTrendVariable = TRUE,
 
   # ML eval args
-  TreeMethod = "hist",
-  EvalMetric = "RMSE",
+  TreeMethod = 'hist',
+  EvalMetric = 'RMSE',
   LossFunction = 'reg:squarederror',
 
   # ML grid tuning
@@ -286,7 +285,7 @@ XGBoostResults <- AutoXGBoostCARMA(
 
 UpdateMetrics <- print(
   XGBoostResults$ModelInformation$EvaluationMetrics[
-    Metric == "MSE", MetricValue := sqrt(MetricValue)])
+    Metric == 'MSE', MetricValue := sqrt(MetricValue)])
 print(UpdateMetrics)
 XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(-R2_Metric)]
 XGBoostResults$ModelInformation$EvaluationMetricsByGroup[order(MAE_Metric)]
@@ -299,7 +298,8 @@ Other Automated Panel Data Forecasting:
 \code{\link{AutoCatBoostCARMA}()},
 \code{\link{AutoCatBoostHurdleCARMA}()},
 \code{\link{AutoCatBoostVectorCARMA}()},
-\code{\link{AutoH2OCARMA}()}
+\code{\link{AutoH2OCARMA}()},
+\code{\link{AutoLightGBMCARMA}()}
 }
 \author{
 Adrian Antico

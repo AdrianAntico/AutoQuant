@@ -32,7 +32,7 @@ AutoCatBoostScoring(
 )
 }
 \arguments{
-\item{TargetType}{Set this value to "regression", "classification", "multiclass", or "multiregression" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
+\item{TargetType}{Set this value to 'regression', 'classification', 'multiclass', or 'multiregression' to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
 
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
 
@@ -103,12 +103,12 @@ data <- RemixAutoML::FakeDataGenerator(
 TestModel <- RemixAutoML::AutoCatBoostRegression(
 
   # GPU or CPU and the number of available GPUs
-  task_type = "GPU",
+  task_type = 'GPU',
   NumGPUs = 1,
 
   # Metadata arguments
-  ModelID = "Test_Model_1",
-  model_path = normalizePath("./"),
+  ModelID = 'Test_Model_1',
+  model_path = normalizePath('./'),
   metadata_path = NULL,
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
@@ -120,19 +120,19 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   TestData = NULL,
   Weights = NULL,
   DummifyCols = FALSE,
-  TargetColumnName = c("Adrian","Independent_Variable1"),
+  TargetColumnName = c('Adrian','Independent_Variable1'),
   FeatureColNames = names(data)[!names(data) \%in\%
-    c("IDcol_1","IDcol_2","Adrian")],
+    c('IDcol_1','IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
-  IDcols = c("IDcol_1","IDcol_2"),
+  IDcols = c('IDcol_1','IDcol_2'),
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1",
-    "Logit","YeoJohnson"),
+  Methods = c('BoxCox','Asinh','Asin','Log','LogPlus1',
+    'Logit','YeoJohnson'),
 
   # Model evaluation
-  eval_metric = "MultiRMSE",
+  eval_metric = 'MultiRMSE',
   eval_metric_value = 1.5,
-  loss_function = "MultiRMSE",
+  loss_function = 'MultiRMSE',
   loss_function_value = 1.5,
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
@@ -144,7 +144,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   MaxModelsInGrid = 100L,
   MaxRunsWithoutNewWinner = 100L,
   MaxRunMinutes = 60*60,
-  BaselineComparison = "default",
+  BaselineComparison = 'default',
 
   # ML Args
   langevin = TRUE,
@@ -156,8 +156,8 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   BorderCount = 128,
   LearningRate = seq(0.01,0.10,0.01),
   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-  BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"),
-  GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+  BootStrapType = c('Bayesian','Bernoulli','Poisson','MVS','No'),
+  GrowPolicy = c('SymmetricTree', 'Depthwise', 'Lossguide'))
 
 # Output
 TestModel$Model
@@ -177,17 +177,17 @@ TestModel$TransformationResults
 
 # Score a multiple regression model
 Preds <- RemixAutoML::AutoCatBoostScoring(
-  TargetType = "multiregression",
+  TargetType = 'multiregression',
   ScoringData = data,
   FeatureColumnNames = names(data)[!names(data) \%in\%
-    c("IDcol_1", "IDcol_2","Adrian")],
+    c('IDcol_1', 'IDcol_2','Adrian')],
   FactorLevelsList = TestModel$FactorLevelsList,
-  IDcols = c("IDcol_1","IDcol_2"),
+  IDcols = c('IDcol_1','IDcol_2'),
   OneHot = FALSE,
   ReturnShapValues = TRUE,
   ModelObject = TestModel$Model,
-  ModelPath = NULL, #normalizePath("./"),
-  ModelID = "Test_Model_1",
+  ModelPath = NULL, #normalizePath('./'),
+  ModelID = 'Test_Model_1',
   ReturnFeatures = TRUE,
   MultiClassTargetLevels = NULL,
   TransformNumeric = FALSE,
@@ -199,7 +199,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
   MDP_Impute = TRUE,
   MDP_CharToFactor = TRUE,
   MDP_RemoveDates = TRUE,
-  MDP_MissFactor = "0",
+  MDP_MissFactor = '0',
   MDP_MissNum = -1,
   RemoveModel = FALSE)
 }
@@ -208,6 +208,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 Other Automated Model Scoring: 
 \code{\link{AutoH2OMLScoring}()},
 \code{\link{AutoHurdleScoring}()},
+\code{\link{AutoLightGBMScoring}()},
 \code{\link{AutoXGBoostScoring}()}
 }
 \author{

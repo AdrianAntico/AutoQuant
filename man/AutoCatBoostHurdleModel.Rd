@@ -80,7 +80,7 @@ AutoCatBoostHurdleModel(
 
 \item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
 
-\item{task_type}{Set to "GPU" or "CPU"}
+\item{task_type}{Set to 'GPU' or 'CPU'}
 
 \item{ModelID}{Define a character name for your models}
 
@@ -100,7 +100,7 @@ AutoCatBoostHurdleModel(
 
 \item{GridTune}{Set to TRUE if you want to grid tune the models}
 
-\item{BaselineComparison}{= "default",}
+\item{BaselineComparison}{= 'default',}
 
 \item{MaxModelsInGrid}{= 1L,}
 
@@ -114,7 +114,7 @@ AutoCatBoostHurdleModel(
 
 \item{DiffusionTemperature}{Default 10000}
 
-\item{Trees}{Provide a named list to have different number of trees for each model. Trees = list("classifier" = seq(1000,2000,100), "regression" = seq(1000,2000,100))}
+\item{Trees}{Provide a named list to have different number of trees for each model. Trees = list('classifier' = seq(1000,2000,100), 'regression' = seq(1000,2000,100))}
 
 \item{Depth}{= seq(4L, 8L, 1L),}
 
@@ -128,9 +128,9 @@ AutoCatBoostHurdleModel(
 
 \item{RSM}{= c(0.80, 0.85, 0.90, 0.95, 1.0),}
 
-\item{BootStrapType}{= c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),}
+\item{BootStrapType}{= c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'),}
 
-\item{GrowPolicy}{= c("SymmetricTree", "Depthwise", "Lossguide")}
+\item{GrowPolicy}{= c('SymmetricTree', 'Depthwise', 'Lossguide')}
 
 \item{Shuffles}{= 2L,}
 }
@@ -145,8 +145,8 @@ AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd
 Output <- RemixAutoML::AutoCatBoostHurdleModel(
 
   # Operationalization
-  task_type = "GPU",
-  ModelID = "ModelTest",
+  task_type = 'GPU',
+  ModelID = 'ModelTest',
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
 
@@ -164,12 +164,12 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   DebugMode = FALSE,
 
   # Metadata args
-  Paths = normalizePath("./"),
+  Paths = normalizePath('./'),
   MetaDataPaths = NULL,
   TransformNumericColumns = NULL,
   Methods =
-     c("BoxCox", "Asinh", "Asin", "Log",
-       "LogPlus1", "Logit", "YeoJohnson"),
+     c('BoxCox', 'Asinh', 'Asin', 'Log',
+       'LogPlus1', 'Logit', 'YeoJohnson'),
   ClassWeights = NULL,
   SplitRatios = c(0.70, 0.20, 0.10),
   NumOfParDepPlots = 10L,
@@ -177,7 +177,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   # Grid tuning setup
   PassInGrid = NULL,
   GridTune = FALSE,
-  BaselineComparison = "default",
+  BaselineComparison = 'default',
   MaxModelsInGrid = 1L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 60L*60L,
@@ -186,24 +186,24 @@ Output <- RemixAutoML::AutoCatBoostHurdleModel(
   # Bandit grid args
   Langevin = FALSE,
   DiffusionTemperature = 10000,
-  Trees = list("classifier" = seq(1000,2000,100),
-               "regression" = seq(1000,2000,100)),
-  Depth = list("classifier" = seq(6,10,1),
-               "regression" = seq(6,10,1)),
-  RandomStrength = list("classifier" = seq(1,10,1),
-                       "regression" = seq(1,10,1)),
-  BorderCount = list("classifier" = seq(32,256,16),
-                     "regression" = seq(32,256,16)),
-  LearningRate = list("classifier" = seq(0.01,0.25,0.01),
-                     "regression" = seq(0.01,0.25,0.01)),
-  L2_Leaf_Reg = list("classifier" = seq(3.0,10.0,1.0),
-                  "regression" = seq(1.0,10.0,1.0)),
-  RSM = list("classifier" = c(0.80, 0.85, 0.90, 0.95, 1.0),
-             "regression" = c(0.80, 0.85, 0.90, 0.95, 1.0)),
-  BootStrapType = list("classifier" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-                       "regression" = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")),
-  GrowPolicy = list("classifier" = c("SymmetricTree", "Depthwise", "Lossguide"),
-                    "regression" = c("SymmetricTree", "Depthwise", "Lossguide")))
+  Trees = list('classifier' = seq(1000,2000,100),
+               'regression' = seq(1000,2000,100)),
+  Depth = list('classifier' = seq(6,10,1),
+               'regression' = seq(6,10,1)),
+  RandomStrength = list('classifier' = seq(1,10,1),
+                       'regression' = seq(1,10,1)),
+  BorderCount = list('classifier' = seq(32,256,16),
+                     'regression' = seq(32,256,16)),
+  LearningRate = list('classifier' = seq(0.01,0.25,0.01),
+                     'regression' = seq(0.01,0.25,0.01)),
+  L2_Leaf_Reg = list('classifier' = seq(3.0,10.0,1.0),
+                  'regression' = seq(1.0,10.0,1.0)),
+  RSM = list('classifier' = c(0.80, 0.85, 0.90, 0.95, 1.0),
+             'regression' = c(0.80, 0.85, 0.90, 0.95, 1.0)),
+  BootStrapType = list('classifier' = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'),
+                       'regression' = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No')),
+  GrowPolicy = list('classifier' = c('SymmetricTree', 'Depthwise', 'Lossguide'),
+                    'regression' = c('SymmetricTree', 'Depthwise', 'Lossguide')))
 }
 }
 \seealso{

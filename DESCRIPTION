@@ -1,7 +1,7 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
-Version: 0.5.3
-Date: 2021-05-20
+Version: 0.5.4
+Date: 2021-06-4
 Authors@R: 
     c(person(given = "Adrian",
              family = "Antico",
@@ -17,7 +17,7 @@ URL: https://github.com/AdrianAntico/RemixAutoML
 BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
 Depends: R (>= 3.5.0)
 Imports: arules, bit64, catboost, combinat, data.table, doParallel, e1071, fBasics, 
-        foreach, forecast, ggplot2, grid, h2o, itertools, lubridate, methods, 
+        foreach, forecast, ggplot2, grid, h2o, itertools, lightgbm, lubridate, methods, 
         MLmetrics, nortest, parallel, pROC, RColorBrewer, recommenderlab,
         Rfast, scatterplot3d, stats, stringr, timeDate, tsoutliers, xgboost
 Suggests: knitr, rmarkdown, fpp, gridExtra
@@ -29,7 +29,7 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 NeedsCompilation: no
-Packaged: 2021-05-20 14:00:00 UTC
+Packaged: 2021-06-04 14:00:00 UTC
 RoxygenNote: 7.1.1
 SystemRequirements: Java (>= 7.0)
 Author: Adrian Antico [aut, cre], Douglas Pestana [ctb]

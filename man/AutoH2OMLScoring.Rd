@@ -113,6 +113,7 @@ Preds <- AutoH2OMLScoring(
 Other Automated Model Scoring: 
 \code{\link{AutoCatBoostScoring}()},
 \code{\link{AutoHurdleScoring}()},
+\code{\link{AutoLightGBMScoring}()},
 \code{\link{AutoXGBoostScoring}()}
 }
 \author{

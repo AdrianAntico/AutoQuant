@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData')
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
@@ -17,14 +17,14 @@
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
-#' @param Methods Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
-#' @param task_type Set to "GPU" to utilize your GPU for training. Default is "CPU".
+#' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
+#' @param task_type Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.
 #' @param NumGPUs Set to 1, 2, 3, etc.
 #' @param eval_metric Select from 'RMSE', 'MAE', 'MAPE', 'R2', 'Poisson', 'MedianAbsoluteError', 'SMAPE', 'MSLE', 'NumErrors', 'FairLoss', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile', 'MultiRMSE'
 #' @param eval_metric_value Used with the specified eval_metric. See https://catboost.ai/docs/concepts/loss-functions-regression.html
 #' @param loss_function Used in model training for model fitting. 'MAPE', 'MAE', 'RMSE', 'Poisson', 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile', 'Lq', 'Expectile', 'MultiRMSE'
 #' @param loss_function_value Used with the specified loss function if an associated value is required. 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile' 'Lq', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html
-#' @param grid_eval_metric Choose from "mae", "mape", "rmse", "r2". Case sensitive
+#' @param grid_eval_metric Choose from 'mae', 'mape', 'rmse', 'r2'. Case sensitive
 #' @param model_path A character string of your path file to where you want your output saved
 #' @param metadata_path A character string of your path file to where you want your model evaluation output saved. If left NULL, all output will be saved to model_path.
 #' @param SaveInfoToPDF Set to TRUE to save modeling information to PDF. If model_path or metadata_path aren't defined then output will be saved to the working directory
@@ -34,7 +34,7 @@
 #' @param SaveModelObjects Set to TRUE to return all modeling objects to your environment
 #' @param PassInGrid Defaults to NULL. Pass in a single row of grid from a previous output as a data.table (they are collected as data.tables)
 #' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
-#' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
+#' @param BaselineComparison Set to either 'default' or 'best'. Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param MaxModelsInGrid Number of models to test from grid options
 #' @param MaxRunMinutes Maximum number of minutes to let this run
 #' @param MaxRunsWithoutNewWinner Number of models built before calling it quits
@@ -48,10 +48,10 @@
 #' @param BorderCount Standard + Grid Tuning. Number of splits for numerical features. Catboost defaults to 254 for CPU and 128 for GPU
 #' @param LearningRate Standard + Grid Tuning. Default varies if RMSE, MultiClass, or Logloss is utilized. Otherwise default is 0.03. Bandit grid partitioned. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the LearningRate values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.01,0.02,0.03,0.04)
 #' @param RSM CPU only. Standard + Grid Tuning. If GPU is set, this is turned off. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)
-#' @param BootStrapType Standard + Grid Tuning. NULL value to default to catboost default (Bayesian for GPU and MVS for CPU). Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")
-#' @param GrowPolicy Standard + Grid Tuning. Catboost default of SymmetricTree. Random testing. Default "SymmetricTree", character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")
+#' @param BootStrapType Standard + Grid Tuning. NULL value to default to catboost default (Bayesian for GPU and MVS for CPU). Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No')
+#' @param GrowPolicy Standard + Grid Tuning. Catboost default of SymmetricTree. Random testing. Default 'SymmetricTree', character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c('SymmetricTree', 'Depthwise', 'Lossguide')
 #' @param model_size_reg Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.
-#' @param feature_border_type Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy
+#' @param feature_border_type Defaults to 'GreedyLogSum'. Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy
 #' @param sampling_unit Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the loss_function is YetiRankPairWise
 #' @param subsample Default is NULL. Catboost will turn this into 0.66 for BootStrapTypes Poisson and Bernoulli. 0.80 for MVS. Doesn't apply to others.
 #' @param score_function Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)
@@ -74,15 +74,15 @@
 #'
 #'   # GPU or CPU and the number of available GPUs
 #'   TrainOnFull = FALSE,
-#'   task_type = "GPU",
+#'   task_type = 'GPU',
 #'   NumGPUs = 1,
 #'   DebugMode = FALSE,
 #'
 #'   # Metadata args
-#'   OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
-#'   ModelID = "Test_Model_1",
-#'   model_path = normalizePath("./"),
-#'   metadata_path = normalizePath("./"),
+#'   OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+#'   ModelID = 'Test_Model_1',
+#'   model_path = normalizePath('./'),
+#'   metadata_path = normalizePath('./'),
 #'   SaveModelObjects = FALSE,
 #'   SaveInfoToPDF = FALSE,
 #'   ReturnModelObjects = TRUE,
@@ -92,20 +92,20 @@
 #'   ValidationData = NULL,
 #'   TestData = NULL,
 #'   Weights = NULL,
-#'   TargetColumnName = "Adrian",
+#'   TargetColumnName = 'Adrian',
 #'   FeatureColNames = names(data)[!names(data) %in%
-#'     c("IDcol_1", "IDcol_2","Adrian")],
+#'     c('IDcol_1', 'IDcol_2','Adrian')],
 #'   PrimaryDateColumn = NULL,
 #'   WeightsColumnName = NULL,
-#'   IDcols = c("IDcol_1","IDcol_2"),
-#'   TransformNumericColumns = "Adrian",
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'     "LogPlus1", "Sqrt", "Logit"),
+#'   IDcols = c('IDcol_1','IDcol_2'),
+#'   TransformNumericColumns = 'Adrian',
+#'   Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
+#'     'LogPlus1', 'Sqrt', 'Logit'),
 #'
 #'   # Model evaluation
-#'   eval_metric = "RMSE",
+#'   eval_metric = 'RMSE',
 #'   eval_metric_value = 1.5,
-#'   loss_function = "RMSE",
+#'   loss_function = 'RMSE',
 #'   loss_function_value = 1.5,
 #'   MetricPeriods = 10L,
 #'   NumOfParDepPlots = ncol(data)-1L-2L,
@@ -116,7 +116,7 @@
 #'   MaxModelsInGrid = 30L,
 #'   MaxRunsWithoutNewWinner = 20L,
 #'   MaxRunMinutes = 60*60,
-#'   BaselineComparison = "default",
+#'   BaselineComparison = 'default',
 #'
 #'   # ML args
 #'   langevin = FALSE,
@@ -129,12 +129,12 @@
 #'   LearningRate = NULL,
 #'   RSM = 1,
 #'   BootStrapType = NULL,
-#'   GrowPolicy = "SymmetricTree",
+#'   GrowPolicy = 'SymmetricTree',
 #'   model_size_reg = 0.5,
-#'   feature_border_type = "GreedyLogSum",
-#'   sampling_unit = "Object",
+#'   feature_border_type = 'GreedyLogSum',
+#'   sampling_unit = 'Object',
 #'   subsample = NULL,
-#'   score_function = "Cosine",
+#'   score_function = 'Cosine',
 #'   min_data_in_leaf = 1)
 #'
 #' # Output
@@ -152,7 +152,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
 #' @export
-AutoCatBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
                                    data,
                                    ValidationData = NULL,
                                    TestData = NULL,
@@ -162,29 +162,29 @@ AutoCatBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots
                                    WeightsColumnName = NULL,
                                    IDcols = NULL,
                                    TransformNumericColumns = NULL,
-                                   Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                                   Methods = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'),
                                    TrainOnFull = FALSE,
-                                   task_type = "GPU",
+                                   task_type = 'GPU',
                                    NumGPUs = 1,
                                    DebugMode = FALSE,
                                    ReturnModelObjects = TRUE,
                                    SaveModelObjects = FALSE,
-                                   ModelID = "FirstModel",
+                                   ModelID = 'FirstModel',
                                    model_path = NULL,
                                    metadata_path = NULL,
                                    SaveInfoToPDF = FALSE,
-                                   eval_metric = "RMSE",
+                                   eval_metric = 'RMSE',
                                    eval_metric_value = 1.5,
-                                   loss_function = "RMSE",
+                                   loss_function = 'RMSE',
                                    loss_function_value = 1.5,
-                                   grid_eval_metric = "r2",
+                                   grid_eval_metric = 'r2',
                                    NumOfParDepPlots = 0L,
                                    PassInGrid = NULL,
                                    GridTune = FALSE,
                                    MaxModelsInGrid = 30L,
                                    MaxRunsWithoutNewWinner = 20L,
                                    MaxRunMinutes = 24L*60L,
-                                   BaselineComparison = "default",
+                                   BaselineComparison = 'default',
                                    MetricPeriods = 10L,
                                    Trees = 500L,
                                    Depth = 9,
@@ -194,21 +194,21 @@ AutoCatBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots
                                    LearningRate = NULL,
                                    RSM = 1,
                                    BootStrapType = NULL,
-                                   GrowPolicy = "SymmetricTree",
+                                   GrowPolicy = 'SymmetricTree',
                                    langevin = FALSE,
                                    diffusion_temperature = 10000,
                                    model_size_reg = 0.5,
-                                   feature_border_type = "GreedyLogSum",
-                                   sampling_unit = "Object",
+                                   feature_border_type = 'GreedyLogSum',
+                                   sampling_unit = 'Object',
                                    subsample = NULL,
-                                   score_function = "Cosine",
+                                   score_function = 'Cosine',
                                    min_data_in_leaf = 1) {
   # Load catboost ----
-  loadNamespace(package = "catboost")
+  loadNamespace(package = 'catboost')
 
   # Args Checking (ensure args are set consistently) ----
-  if(DebugMode) print("Running CatBoostArgsCheck()")
-  Output <- CatBoostArgsCheck(ModelType=if(loss_function == "MultiRMSE") "vector" else "regression", data.=data, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, GridTune.=GridTune, model_path.=model_path, metadata_path.=metadata_path, ClassWeights.=NULL, LossFunction.=NULL, loss_function.=loss_function, loss_function_value.=loss_function_value, eval_metric.=eval_metric, eval_metric_value.=eval_metric_value, task_type.=task_type, NumGPUs.=NumGPUs, MaxModelsInGrid.=MaxModelsInGrid, NumOfParDepPlots.=NumOfParDepPlots,ReturnModelObjects.=ReturnModelObjects, SaveModelObjects.=SaveModelObjects, PassInGrid.=PassInGrid, MetricPeriods.=MetricPeriods, langevin.=langevin, diffusion_temperature.=diffusion_temperature, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg,RandomStrength.=RandomStrength, BorderCount.=BorderCount, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, model_size_reg.=model_size_reg, feature_border_type.=feature_border_type, sampling_unit.=sampling_unit, subsample.=subsample, score_function.=score_function, min_data_in_leaf.=min_data_in_leaf)
+  if(DebugMode) print('Running CatBoostArgsCheck()')
+  Output <- CatBoostArgsCheck(ModelType=if(loss_function == 'MultiRMSE') 'vector' else 'regression', data.=data, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, GridTune.=GridTune, model_path.=model_path, metadata_path.=metadata_path, ClassWeights.=NULL, LossFunction.=NULL, loss_function.=loss_function, loss_function_value.=loss_function_value, eval_metric.=eval_metric, eval_metric_value.=eval_metric_value, task_type.=task_type, NumGPUs.=NumGPUs, MaxModelsInGrid.=MaxModelsInGrid, NumOfParDepPlots.=NumOfParDepPlots,ReturnModelObjects.=ReturnModelObjects, SaveModelObjects.=SaveModelObjects, PassInGrid.=PassInGrid, MetricPeriods.=MetricPeriods, langevin.=langevin, diffusion_temperature.=diffusion_temperature, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg,RandomStrength.=RandomStrength, BorderCount.=BorderCount, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, model_size_reg.=model_size_reg, feature_border_type.=feature_border_type, sampling_unit.=sampling_unit, subsample.=subsample, score_function.=score_function, min_data_in_leaf.=min_data_in_leaf)
   score_function <- Output$score_function
   BootStrapType <- Output$BootStrapType
   sampling_unit <- Output$sampling_unit
@@ -223,8 +223,8 @@ AutoCatBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots
   RSM <- Output$RSM; rm(Output)
 
   # Data Prep (model data prep, dummify, create sets) ----
-  if(DebugMode) print("Running CatBoostDataPrep()")
-  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, ModelType="regression", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, EvalMetric.=EvalMetric)
+  if(DebugMode) print('Running CatBoostDataPrep()')
+  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, EvalMetric.=EvalMetric)
   TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
@@ -240,7 +240,7 @@ AutoCatBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots
   Names <- Output$Names; Output$Names <- NULL; rm(Output)
 
   # Create catboost data objects ----
-  if(DebugMode) print("Running CatBoostDataConversion()")
+  if(DebugMode) print('Running CatBoostDataConversion()')
   Output <- CatBoostDataConversion(CatFeatures.=CatFeatures, dataTrain.=dataTrain, dataTest.=dataTest, TestData.=TestData, TrainTarget.=TrainTarget, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TrainOnFull.=TrainOnFull, Weights.=WeightsColumnName)
   FinalTestPool <- Output$FinalTestPool; Output$FinalTestPool <- NULL
   TrainPool <- Output$TrainPool; Output$TrainPool <- NULL
@@ -251,17 +251,17 @@ AutoCatBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots
 
   # Grid tuning ----
   if(GridTune) {
-    Output <- CatBoostGridTuner(ModelType="regression", TrainOnFull.=TrainOnFull, HasTime=HasTime, BaselineComparison.=BaselineComparison, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=NULL, CostMatrixWeights=NULL, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=NULL, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
+    Output <- CatBoostGridTuner(ModelType='regression', TrainOnFull.=TrainOnFull, HasTime=HasTime, BaselineComparison.=BaselineComparison, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, task_type.=task_type, Trees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, BorderCount.=BorderCount, RandomStrength.=RandomStrength, RSM.=RSM, BootStrapType.=BootStrapType, GrowPolicy.=GrowPolicy, NumGPUs=NumGPUs, LossFunction=LossFunction, EvalMetric=EvalMetric, MetricPeriods=MetricPeriods, ClassWeights=NULL, CostMatrixWeights=NULL, data=data, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, FinalTestPool.=FinalTestPool, TestData.=TestData, TestMerge.=TestMerge, TargetLevels.=NULL, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, grid_eval_metric.=grid_eval_metric)
     ExperimentalGrid <- Output$ExperimentalGrid
     BestGrid <- Output$BestGrid
   }
 
   # Final Parameters (put parameters in list to pass into catboost) ----
-  if(DebugMode) print("Running CatBoostFinalParams()")
-  base_params <- CatBoostFinalParams(ModelType="regression", UseBestModel.=UseBestModel, ClassWeights.=NULL, PassInGrid. = PassInGrid, BestGrid.=BestGrid, ExperimentalGrid. = ExperimentalGrid, GridTune.=GridTune, TrainOnFull.=TrainOnFull, MetricPeriods.=MetricPeriods, LossFunction.=LossFunction, EvalMetric.=EvalMetric, score_function.=score_function, HasTime.=HasTime, task_type.=task_type, NumGPUs.=NumGPUs, NTrees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, langevin.=langevin, diffusion_temperature.=diffusion_temperature, sampling_unit.=sampling_unit, RandomStrength.=RandomStrength, BorderCount.=BorderCount, RSM.=RSM, GrowPolicy.=GrowPolicy, BootStrapType.=BootStrapType, model_size_reg.=model_size_reg, feature_border_type.=feature_border_type, subsample.=subsample, min_data_in_leaf.=min_data_in_leaf)
+  if(DebugMode) print('Running CatBoostFinalParams()')
+  base_params <- CatBoostFinalParams(ModelType='regression', UseBestModel.=UseBestModel, ClassWeights.=NULL, PassInGrid. = PassInGrid, BestGrid.=BestGrid, ExperimentalGrid. = ExperimentalGrid, GridTune.=GridTune, TrainOnFull.=TrainOnFull, MetricPeriods.=MetricPeriods, LossFunction.=LossFunction, EvalMetric.=EvalMetric, score_function.=score_function, HasTime.=HasTime, task_type.=task_type, NumGPUs.=NumGPUs, NTrees.=Trees, Depth.=Depth, LearningRate.=LearningRate, L2_Leaf_Reg.=L2_Leaf_Reg, langevin.=langevin, diffusion_temperature.=diffusion_temperature, sampling_unit.=sampling_unit, RandomStrength.=RandomStrength, BorderCount.=BorderCount, RSM.=RSM, GrowPolicy.=GrowPolicy, BootStrapType.=BootStrapType, model_size_reg.=model_size_reg, feature_border_type.=feature_border_type, subsample.=subsample, min_data_in_leaf.=min_data_in_leaf)
 
   # Regression Train Final Model ----
-  if(DebugMode) print("Running catboost.train")
+  if(DebugMode) print('Running catboost.train')
   if(!TrainOnFull) {
     model <- catboost::catboost.train(learn_pool = TrainPool, test_pool = TestPool, params = base_params)
   } else {
@@ -269,124 +269,124 @@ AutoCatBoostRegression <- function(OutputSelection = c("Importances", "EvalPlots
   }
 
   # Regression Save Model ----
-  if(DebugMode) print("Running catboost.save_model")
+  if(DebugMode) print('Running catboost.save_model')
   if(SaveModelObjects) catboost::catboost.save_model(model = model, model_path = file.path(model_path, ModelID))
 
   # TrainData + ValidationData Scoring + Shap
-  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-    predict <- data.table::as.data.table(catboost::catboost.predict(model = model, pool = TrainPool, prediction_type = "RawFormulaVal", thread_count = parallel::detectCores()))
+  if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
+    predict <- data.table::as.data.table(catboost::catboost.predict(model = model, pool = TrainPool, prediction_type = 'RawFormulaVal', thread_count = parallel::detectCores()))
     if(!is.null(TestPool)) {
-      predict_validate <- data.table::as.data.table(catboost::catboost.predict(model = model, pool = TestPool, prediction_type = "RawFormulaVal", thread_count = parallel::detectCores()))
+      predict_validate <- data.table::as.data.table(catboost::catboost.predict(model = model, pool = TestPool, prediction_type = 'RawFormulaVal', thread_count = parallel::detectCores()))
       predict <- data.table::rbindlist(list(predict, predict_validate))
       if(ncol(predict) > 1L) {
-        data.table::setnames(predict, names(predict), paste0("Predict.", names(predict)))
+        data.table::setnames(predict, names(predict), paste0('Predict.', names(predict)))
       } else {
-        data.table::setnames(predict, names(predict), "Predict")
+        data.table::setnames(predict, names(predict), 'Predict')
       }
       rm(predict_validate)
     }
-    TrainData <- CatBoostValidationData(ModelType="regression", TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=NULL, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
+    TrainData <- CatBoostValidationData(ModelType='regression', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=NULL, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=NULL)
     if(ncol(predict) > 1L) {
-      if(!"Predict.V1" %chin% names(TrainData)) data.table::setnames(TrainData, c("V1","V2"), paste0("Predict", c("V1","V2")))
+      if(!'Predict.V1' %chin% names(TrainData)) data.table::setnames(TrainData, c('V1','V2'), paste0('Predict', c('V1','V2')))
     } else {
-      if(!"Predict" %chin% names(TrainData)) data.table::setnames(TrainData, "V1", "Predict")
+      if(!'Predict' %chin% names(TrainData)) data.table::setnames(TrainData, 'V1', 'Predict')
     }
   } else {
     TrainData <- NULL
   }
 
   # Regression Score Final Test Data ----
-  if(DebugMode) print("Running catboost.predict")
-  predict <- catboost::catboost.predict(model = model, pool = if(!is.null(TestData)) FinalTestPool else if(TrainOnFull) TrainPool else TestPool, prediction_type = "RawFormulaVal", thread_count = parallel::detectCores())
+  if(DebugMode) print('Running catboost.predict')
+  predict <- catboost::catboost.predict(model = model, pool = if(!is.null(TestData)) FinalTestPool else if(TrainOnFull) TrainPool else TestPool, prediction_type = 'RawFormulaVal', thread_count = parallel::detectCores())
 
   # Regression Validation Data (generate validation data, back transform, save to file) ----
-  if(DebugMode) print("Running CatBoostValidationData()")
-  ValidationData <- CatBoostValidationData(ModelType="regression", TrainOnFull.=TrainOnFull, TestDataCheck=!is.null(TestData), FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TestMerge.=TestMerge, dataTest.=dataTest, data.=data, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, TransformNumericColumns. = TransformNumericColumns, GridTune. = GridTune, TransformationResults. = TransformationResults, TargetLevels.=NULL)
+  if(DebugMode) print('Running CatBoostValidationData()')
+  ValidationData <- CatBoostValidationData(ModelType='regression', TrainOnFull.=TrainOnFull, TestDataCheck=!is.null(TestData), FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TestMerge.=TestMerge, dataTest.=dataTest, data.=data, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, TransformNumericColumns. = TransformNumericColumns, GridTune. = GridTune, TransformationResults. = TransformationResults, TargetLevels.=NULL)
 
   # Gather importance and shap values ----
-  if(DebugMode) print("Running CatBoostImportances()")
-  if("importances" %chin% tolower(OutputSelection)) {
-    Output <- CatBoostImportances(ModelType="regression", TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TrainData.=TrainData, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)
+  if(DebugMode) print('Running CatBoostImportances()')
+  if('importances' %chin% tolower(OutputSelection)) {
+    Output <- CatBoostImportances(ModelType='regression', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TrainData.=TrainData, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)
     Interaction <- Output$Interaction; Output$Interaction <- NULL
     VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
     ShapValues <- Output$ShapValues; Output$ShapValues <- NULL; rm(Output)
   }
 
   # Regression Metrics ----
-  if(DebugMode) print("Running RegressionMetrics()")
+  if(DebugMode) print('Running RegressionMetrics()')
   EvalMetricsList <- list()
-  if("evalmetrics" %chin% tolower(OutputSelection)) {
-    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      EvalMetricsList[["TrainData"]] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  if('evalmetrics' %chin% tolower(OutputSelection)) {
+    if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
+      EvalMetricsList[['TrainData']] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
     }
-    EvalMetricsList[["TestData"]] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    EvalMetricsList[['TestData']] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Regression Plots ----
-  if(DebugMode) print("Running ML_EvalPlots()")
+  if(DebugMode) print('Running ML_EvalPlots()')
   PlotList <- list()
-  if("evalplots" %chin% tolower(OutputSelection)) {
-    if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
-      PlotList[["Train_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-      PlotList[["Train_EvaluationBoxPlot"]] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
-      PlotList[["Train_ParDepPlots"]] <- Output$ParDepPlots;  Output$ParDepPlots <- NULL
-      PlotList[["Train_ParDepBoxPlots"]] <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
-      PlotList[["Train_ResidualsHistogram"]] <- Output$ResidualsHistogram; Output$ResidualsHistogram <- NULL
-      PlotList[["Train_ResidualTime"]] <- Output$ResidualTime; Output$ResidualTime <- NULL
-      PlotList[["Train_ScatterPlot"]] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
-      PlotList[["Train_CopulaPlot"]] <- Output$CopulaPlot; rm(Output)
-      if(!is.null(VariableImportance$Train_Importance)) PlotList[["Train_VariableImportance"]] <- VI_Plot(Type = "catboost", VariableImportance$Train_Importance)
-      if(!is.null(VariableImportance$Validation_Importance)) PlotList[["Validation_VariableImportance"]] <- VI_Plot(Type = "catboost", VariableImportance$Validation_Importance)
+  if('evalplots' %chin% tolower(OutputSelection)) {
+    if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
+      Output <- ML_EvalPlots(ModelType='regression', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
+      PlotList[['Train_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
+      PlotList[['Train_EvaluationBoxPlot']] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
+      PlotList[['Train_ParDepPlots']] <- Output$ParDepPlots;  Output$ParDepPlots <- NULL
+      PlotList[['Train_ParDepBoxPlots']] <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
+      PlotList[['Train_ResidualsHistogram']] <- Output$ResidualsHistogram; Output$ResidualsHistogram <- NULL
+      PlotList[['Train_ResidualTime']] <- Output$ResidualTime; Output$ResidualTime <- NULL
+      PlotList[['Train_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
+      PlotList[['Train_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
+      if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
+      if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
     }
-    Output <- ML_EvalPlots(ModelType="regression", TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
-    PlotList[["Test_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-    PlotList[["Test_EvaluationBoxPlot"]] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
-    PlotList[["Test_ParDepPlots"]] <- Output$ParDepPlots;  Output$ParDepPlots <- NULL
-    PlotList[["Test_ParDepBoxPlots"]] <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
-    PlotList[["Test_ResidualsHistogram"]] <- Output$ResidualsHistogram; Output$ResidualsHistogram <- NULL
-    PlotList[["Test_ResidualTime"]] <- Output$ResidualTime; Output$ResidualTime <- NULL
-    PlotList[["Test_ScatterPlot"]] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
-    PlotList[["Test_CopulaPlot"]] <- Output$CopulaPlot; rm(Output)
-    if(!is.null(VariableImportance[["Test_Importance"]])) PlotList[["Test_VariableImportance"]] <- VI_Plot(Type = "catboost", VariableImportance[["Test_Importance"]]) else PlotList[["Train_VariableImportance"]] <- VI_Plot(Type = "catboost", VariableImportance[["Train_Importance"]])
+    Output <- ML_EvalPlots(ModelType='regression', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
+    PlotList[['Test_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
+    PlotList[['Test_EvaluationBoxPlot']] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
+    PlotList[['Test_ParDepPlots']] <- Output$ParDepPlots;  Output$ParDepPlots <- NULL
+    PlotList[['Test_ParDepBoxPlots']] <- Output$ParDepBoxPlots; Output$ParDepBoxPlots <- NULL
+    PlotList[['Test_ResidualsHistogram']] <- Output$ResidualsHistogram; Output$ResidualsHistogram <- NULL
+    PlotList[['Test_ResidualTime']] <- Output$ResidualTime; Output$ResidualTime <- NULL
+    PlotList[['Test_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
+    PlotList[['Test_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
+    if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']]) else PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Train_Importance']])
   }
 
   # Subset Transformation Object ----
-  if(!is.null(TransformNumericColumns) && !((!is.null(LossFunction) && LossFunction == "MultiRMSE") || (!is.null(EvalMetric) && EvalMetric == "MultiRMSE"))) {
-    if(TargetColumnName == "Target") {
-      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict"))]
+  if(!is.null(TransformNumericColumns) && !((!is.null(LossFunction) && LossFunction == 'MultiRMSE') || (!is.null(EvalMetric) && EvalMetric == 'MultiRMSE'))) {
+    if(TargetColumnName == 'Target') {
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c('Predict'))]
     } else {
-      TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
+      TransformationResults <- TransformationResults[!(ColumnName %chin% c('Predict', 'Target'))]
     }
   }
 
   # Remove extenal files if GridTune is TRUE ----
-  if(DebugMode) print("Running CatBoostRemoveFiles()")
+  if(DebugMode) print('Running CatBoostRemoveFiles()')
   CatBoostRemoveFiles(GridTune. = GridTune, model_path. = model_path)
 
   # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "catboost", ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=PlotList, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
+  if(DebugMode) print('Running CatBoostPDF()')
+  if('pdfs' %chin% tolower(OutputSelection) && SaveModelObjects) {
+    CatBoostPDF(ModelClass = 'catboost', ModelType='regression', TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=PlotList, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Final Garbage Collection ----
-  if(tolower(task_type) == "gpu") gc()
+  if(tolower(task_type) == 'gpu') gc()
 
   # Regression Return Model Objects ----
-  if(DebugMode) print("Return Model Objects")
+  if(DebugMode) print('Return Model Objects')
   if(ReturnModelObjects) {
     return(list(
       Model = model,
-      TrainData = if(exists("ShapValues") && !is.null(ShapValues[["Train_Shap"]])) ShapValues[["Train_Shap"]] else if(exists("TrainData")) TrainData else NULL,
-      TestData = if(exists("ShapValues") && !is.null(ShapValues[["Test_Shap"]])) ShapValues[["Test_Shap"]] else if(exists("ValidationData")) ValidationData else NULL,
-      PlotList = if(exists("PlotList")) PlotList else NULL,
-      EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
-      VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
-      InteractionImportance = if(exists("Interaction")) Interaction else NULL,
-      GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
-      ColNames = if(exists("Names")) Names else NULL,
-      TransformationResults = if(exists("TransformationResults")) TransformationResults else NULL,
-      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL))
+      TrainData = if(exists('ShapValues') && !is.null(ShapValues[['Train_Shap']])) ShapValues[['Train_Shap']] else if(exists('TrainData')) TrainData else NULL,
+      TestData = if(exists('ShapValues') && !is.null(ShapValues[['Test_Shap']])) ShapValues[['Test_Shap']] else if(exists('ValidationData')) ValidationData else NULL,
+      PlotList = if(exists('PlotList')) PlotList else NULL,
+      EvaluationMetrics = if(exists('EvalMetricsList')) EvalMetricsList else NULL,
+      VariableImportance = if(exists('VariableImportance')) VariableImportance else NULL,
+      InteractionImportance = if(exists('Interaction')) Interaction else NULL,
+      GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
+      ColNames = if(exists('Names')) Names else NULL,
+      TransformationResults = if(exists('TransformationResults')) TransformationResults else NULL,
+      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL))
   }
 }

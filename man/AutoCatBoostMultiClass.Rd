@@ -55,7 +55,7 @@ AutoCatBoostMultiClass(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData')}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -75,7 +75,7 @@ AutoCatBoostMultiClass(
 
 \item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
-\item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
+\item{task_type}{Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.}
 
 \item{NumGPUs}{Set to 1, 2, 3, etc.}
 
@@ -99,9 +99,9 @@ AutoCatBoostMultiClass(
 
 \item{loss_function}{Select from 'MultiClass' or 'MultiClassOneVsAll'}
 
-\item{grid_eval_metric}{For evaluating models within grid tuning. Choices include, "accuracy", "microauc", "logloss"}
+\item{grid_eval_metric}{For evaluating models within grid tuning. Choices include, 'accuracy', 'microauc', 'logloss'}
 
-\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
+\item{BaselineComparison}{Set to either 'default' or 'best'. Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of trees to build before evaluating intermediate metrics. Default is 10L}
 
@@ -129,9 +129,9 @@ AutoCatBoostMultiClass(
 
 \item{RSM}{CPU only. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
-\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
+\item{BootStrapType}{Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No')}
 
-\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
+\item{GrowPolicy}{Random testing. NULL, character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c('SymmetricTree', 'Depthwise', 'Lossguide')}
 
 \item{langevin}{TRUE or FALSE. Enable stochastic gradient langevin boosting}
 
@@ -139,7 +139,7 @@ AutoCatBoostMultiClass(
 
 \item{model_size_reg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
 
-\item{feature_border_type}{Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
+\item{feature_border_type}{Defaults to 'GreedyLogSum'. Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
 
 \item{sampling_unit}{Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the loss_function is YetiRankPairWise}
 
@@ -171,16 +171,16 @@ data <- RemixAutoML::FakeDataGenerator(
 TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 
     # GPU or CPU and the number of available GPUs
-    task_type = "GPU",
+    task_type = 'GPU',
     NumGPUs = 1,
     TrainOnFull = FALSE,
     DebugMode = FALSE,
 
     # Metadata args
-    OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
-    ModelID = "Test_Model_1",
-    model_path = normalizePath("./"),
-    metadata_path = normalizePath("./"),
+    OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+    ModelID = 'Test_Model_1',
+    model_path = normalizePath('./'),
+    metadata_path = normalizePath('./'),
     SaveModelObjects = FALSE,
     ReturnModelObjects = TRUE,
 
@@ -188,18 +188,18 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     data = data,
     ValidationData = NULL,
     TestData = NULL,
-    TargetColumnName = "Adrian",
+    TargetColumnName = 'Adrian',
     FeatureColNames = names(data)[!names(data) \%in\%
-      c("IDcol_1", "IDcol_2","Adrian")],
+      c('IDcol_1', 'IDcol_2','Adrian')],
     PrimaryDateColumn = NULL,
     WeightsColumnName = NULL,
     ClassWeights = c(1L,1L,1L,1L,1L),
-    IDcols = c("IDcol_1","IDcol_2"),
+    IDcols = c('IDcol_1','IDcol_2'),
 
     # Model evaluation
-    eval_metric = "MCC",
-    loss_function = "MultiClassOneVsAll",
-    grid_eval_metric = "Accuracy",
+    eval_metric = 'MCC',
+    loss_function = 'MultiClassOneVsAll',
+    grid_eval_metric = 'Accuracy',
     MetricPeriods = 10L,
     NumOfParDepPlots = 3,
 
@@ -209,7 +209,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     MaxModelsInGrid = 30L,
     MaxRunsWithoutNewWinner = 20L,
     MaxRunMinutes = 24L*60L,
-    BaselineComparison = "default",
+    BaselineComparison = 'default',
 
     # ML args
     langevin = FALSE,
@@ -221,13 +221,13 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     RandomStrength = 1,
     BorderCount = 254,
     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-    BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-    GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+    BootStrapType = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'),
+    GrowPolicy = c('SymmetricTree', 'Depthwise', 'Lossguide'),
     model_size_reg = 0.5,
-    feature_border_type = "GreedyLogSum",
-    sampling_unit = "Object",
+    feature_border_type = 'GreedyLogSum',
+    sampling_unit = 'Object',
     subsample = NULL,
-    score_function = "Cosine",
+    score_function = 'Cosine',
     min_data_in_leaf = 1)
 
 # Output

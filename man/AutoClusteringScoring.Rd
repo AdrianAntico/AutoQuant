@@ -55,12 +55,12 @@ data <- RemixAutoML::FakeDataGenerator(
 data <- RemixAutoML::AutoClustering(
   data,
   FeatureColumns = names(data)[2:(ncol(data)-1)],
-  ModelID = "TestModel",
+  ModelID = 'TestModel',
   SavePath = getwd(),
   NThreads = 8,
-  MaxMemory = "28G",
+  MaxMemory = '28G',
   MaxClusters = 50,
-  ClusterMetric = "totss",
+  ClusterMetric = 'totss',
   RunDimReduction = TRUE,
   ShrinkRate = (sqrt(5) - 1) / 2,
   Epochs = 5L,
@@ -89,10 +89,10 @@ data <- RemixAutoML::FakeDataGenerator(
 data <- RemixAutoML::AutoClusteringScoring(
   data,
   FeatureColumns = names(data)[2:(ncol(data)-1)],
-  ModelID = "TestModel",
+  ModelID = 'TestModel',
   SavePath = getwd(),
   NThreads = 8,
-  MaxMemory = "28G",
+  MaxMemory = '28G',
   DimReduction = TRUE)
 }
 

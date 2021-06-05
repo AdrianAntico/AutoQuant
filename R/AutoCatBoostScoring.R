@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Model Scoring
 #'
-#' @param TargetType Set this value to "regression", "classification", "multiclass", or "multiregression" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
+#' @param TargetType Set this value to 'regression', 'classification', 'multiclass', or 'multiregression' to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
 #' @param FactorLevelsList List of factors levels to DummifyDT()
@@ -46,12 +46,12 @@
 #' TestModel <- RemixAutoML::AutoCatBoostRegression(
 #'
 #'   # GPU or CPU and the number of available GPUs
-#'   task_type = "GPU",
+#'   task_type = 'GPU',
 #'   NumGPUs = 1,
 #'
 #'   # Metadata arguments
-#'   ModelID = "Test_Model_1",
-#'   model_path = normalizePath("./"),
+#'   ModelID = 'Test_Model_1',
+#'   model_path = normalizePath('./'),
 #'   metadata_path = NULL,
 #'   SaveModelObjects = FALSE,
 #'   ReturnModelObjects = TRUE,
@@ -63,19 +63,19 @@
 #'   TestData = NULL,
 #'   Weights = NULL,
 #'   DummifyCols = FALSE,
-#'   TargetColumnName = c("Adrian","Independent_Variable1"),
+#'   TargetColumnName = c('Adrian','Independent_Variable1'),
 #'   FeatureColNames = names(data)[!names(data) %in%
-#'     c("IDcol_1","IDcol_2","Adrian")],
+#'     c('IDcol_1','IDcol_2','Adrian')],
 #'   PrimaryDateColumn = NULL,
-#'   IDcols = c("IDcol_1","IDcol_2"),
+#'   IDcols = c('IDcol_1','IDcol_2'),
 #'   TransformNumericColumns = NULL,
-#'   Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1",
-#'     "Logit","YeoJohnson"),
+#'   Methods = c('BoxCox','Asinh','Asin','Log','LogPlus1',
+#'     'Logit','YeoJohnson'),
 #'
 #'   # Model evaluation
-#'   eval_metric = "MultiRMSE",
+#'   eval_metric = 'MultiRMSE',
 #'   eval_metric_value = 1.5,
-#'   loss_function = "MultiRMSE",
+#'   loss_function = 'MultiRMSE',
 #'   loss_function_value = 1.5,
 #'   MetricPeriods = 10L,
 #'   NumOfParDepPlots = ncol(data)-1L-2L,
@@ -87,7 +87,7 @@
 #'   MaxModelsInGrid = 100L,
 #'   MaxRunsWithoutNewWinner = 100L,
 #'   MaxRunMinutes = 60*60,
-#'   BaselineComparison = "default",
+#'   BaselineComparison = 'default',
 #'
 #'   # ML Args
 #'   langevin = TRUE,
@@ -99,8 +99,8 @@
 #'   BorderCount = 128,
 #'   LearningRate = seq(0.01,0.10,0.01),
 #'   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-#'   BootStrapType = c("Bayesian","Bernoulli","Poisson","MVS","No"),
-#'   GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"))
+#'   BootStrapType = c('Bayesian','Bernoulli','Poisson','MVS','No'),
+#'   GrowPolicy = c('SymmetricTree', 'Depthwise', 'Lossguide'))
 #'
 #' # Output
 #' TestModel$Model
@@ -120,17 +120,17 @@
 #'
 #' # Score a multiple regression model
 #' Preds <- RemixAutoML::AutoCatBoostScoring(
-#'   TargetType = "multiregression",
+#'   TargetType = 'multiregression',
 #'   ScoringData = data,
 #'   FeatureColumnNames = names(data)[!names(data) %in%
-#'     c("IDcol_1", "IDcol_2","Adrian")],
+#'     c('IDcol_1', 'IDcol_2','Adrian')],
 #'   FactorLevelsList = TestModel$FactorLevelsList,
-#'   IDcols = c("IDcol_1","IDcol_2"),
+#'   IDcols = c('IDcol_1','IDcol_2'),
 #'   OneHot = FALSE,
 #'   ReturnShapValues = TRUE,
 #'   ModelObject = TestModel$Model,
-#'   ModelPath = NULL, #normalizePath("./"),
-#'   ModelID = "Test_Model_1",
+#'   ModelPath = NULL, #normalizePath('./'),
+#'   ModelID = 'Test_Model_1',
 #'   ReturnFeatures = TRUE,
 #'   MultiClassTargetLevels = NULL,
 #'   TransformNumeric = FALSE,
@@ -142,7 +142,7 @@
 #'   MDP_Impute = TRUE,
 #'   MDP_CharToFactor = TRUE,
 #'   MDP_RemoveDates = TRUE,
-#'   MDP_MissFactor = "0",
+#'   MDP_MissFactor = '0',
 #'   MDP_MissNum = -1,
 #'   RemoveModel = FALSE)
 #' }
@@ -169,26 +169,26 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 MDP_Impute = FALSE,
                                 MDP_CharToFactor = FALSE,
                                 MDP_RemoveDates = FALSE,
-                                MDP_MissFactor = "0",
+                                MDP_MissFactor = '0',
                                 MDP_MissNum = -1,
                                 RemoveModel = FALSE) {
 
   # Load catboost ----
-  loadNamespace(package = "catboost")
+  loadNamespace(package = 'catboost')
 
   # tolower(TargetType)
   TargetType <- tolower(TargetType)
-  check1 <- ReturnShapValues && !TargetType %chin% c("multiregression", "multiclass")
+  check1 <- ReturnShapValues && !TargetType %chin% c('multiregression', 'multiclass')
 
   # Check arguments ----
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
 
   # Pull in ColNames ----
-  if(is.null(FeatureColumnNames) && !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID, "_ColNames.csv")))
+  if(is.null(FeatureColumnNames) && !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID, '_ColNames.csv')))
 
   # Pull In Transformation Object ----
   if(is.null(TransformationObject) && (TransformNumeric || BackTransNumeric)) {
-    TransformationObject <- data.table::fread(file.path(TransPath, paste0(TransID, "_transformation.csv")))
+    TransformationObject <- data.table::fread(file.path(TransPath, paste0(TransID, '_transformation.csv')))
   }
 
   # Identify column numbers for factor variables ----
@@ -196,7 +196,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
 
   # DummifyDT categorical columns ----
-  if(!is.null(CatFeatures) && TargetType == "multiregression") {
+  if(!is.null(CatFeatures) && TargetType == 'multiregression') {
     if(!is.null(FactorLevelsList)) {
       ScoringData <- DummifyDT(
         data = ScoringData,
@@ -252,7 +252,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     ScoringData <- AutoTransformationScore(
       ScoringData = ScoringData,
       FinalResults = tempTrans,
-      Type = "Apply",
+      Type = 'Apply',
       TransID = TransID,
       Path = TransPath)
   }
@@ -270,17 +270,17 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Subset Columns Needed ----
-  if(ReturnFeatures && TargetType != "multiclass") ScoringMerge <- data.table::copy(ScoringData)
-  if(!is.null(IDcols) && TargetType != "multiregression") {
+  if(ReturnFeatures && TargetType != 'multiclass') ScoringMerge <- data.table::copy(ScoringData)
+  if(!is.null(IDcols) && TargetType != 'multiregression') {
     FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% c(IDcols)]
-  } else if(TargetType == "multiregression") {
+  } else if(TargetType == 'multiregression') {
     temp <- setdiff(names(ScoringData), c(TargetColumnName, FeatureColumnNames))
     FeatureColumnNames <- c(FeatureColumnNames, temp)
-    FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% "GroupVar"]
+    FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% 'GroupVar']
   }
-  if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != "multiregression") {
+  if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != 'multiregression') {
     data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
-  } else if(TargetType == "multiregression") {
+  } else if(TargetType == 'multiregression') {
     data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
   }
 
@@ -295,38 +295,38 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(is.null(ModelObject)) ModelObject <- catboost::catboost.load_model(file.path(ModelPath, ModelID))
 
   # Score model ----
-  if(TargetType == "regression" || TargetType == "multiregression") {
+  if(TargetType == 'regression' || TargetType == 'multiregression') {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
-        prediction_type = "RawFormulaVal",
+        prediction_type = 'RawFormulaVal',
         thread_count = -1L))
-  } else if(TargetType == "classification") {
+  } else if(TargetType == 'classification') {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
-        prediction_type = "Probability",
+        prediction_type = 'Probability',
         thread_count = -1L))
-  } else if(TargetType == "multiclass") {
+  } else if(TargetType == 'multiclass') {
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
-        prediction_type = "Class",
+        prediction_type = 'Class',
         thread_count = -1L),
       catboost::catboost.predict(
         model = ModelObject,
         pool = ScoringPool,
-        prediction_type = "Probability",
+        prediction_type = 'Probability',
         thread_count = -1L)))
   }
 
   # Create ShapValues ----
   if(check1) {
-    ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(ModelObject, pool = ScoringPool, type = "ShapValues"))
-    data.table::setnames(ShapValues, names(ShapValues), c(paste0("Shap_",FeatureColumnNames), "Predictions"))
+    ShapValues <- data.table::as.data.table(catboost::catboost.get_feature_importance(ModelObject, pool = ScoringPool, type = 'ShapValues'))
+    data.table::setnames(ShapValues, names(ShapValues), c(paste0('Shap_',FeatureColumnNames), 'Predictions'))
     ShapValues[, Predictions := NULL]
   }
 
@@ -334,55 +334,55 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(RemoveModel) rm(ModelObject)
 
   # Score model -----
-  if(TargetType == "multiclass") {
-    data.table::setnames(predict, "V1", "Predictions")
-    if(is.null(MultiClassTargetLevels)) MultiClassTargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, "_TargetLevels.csv")))
+  if(TargetType == 'multiclass') {
+    data.table::setnames(predict, 'V1', 'Predictions')
+    if(is.null(MultiClassTargetLevels)) MultiClassTargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, '_TargetLevels.csv')))
     g <- as.character(MultiClassTargetLevels[[1L]])
-    data.table::setnames(predict, paste0("V", seq_along(g)), g)
+    data.table::setnames(predict, paste0('V', seq_along(g)), g)
     predict <- merge(
       predict,
       MultiClassTargetLevels,
-      by.x = "Predictions",
-      by.y = "NewLevels",
+      by.x = 'Predictions',
+      by.y = 'NewLevels',
       all = FALSE)
     predict[, Predictions := OriginalLevels][, OriginalLevels := NULL]
   }
 
   # Rename predicted value ----
-  if(TargetType == "regression") {
-    data.table::setnames(predict, "V1", "Predictions")
-  } else if(TargetType == "multiregression") {
-    data.table::setnames(predict, paste0("V",seq_along(predict)), paste0("Predictions.V", seq_along(predict)))
-  } else if(TargetType == "classification") {
-    data.table::setnames(predict, "V1", "p1")
+  if(TargetType == 'regression') {
+    data.table::setnames(predict, 'V1', 'Predictions')
+  } else if(TargetType == 'multiregression') {
+    data.table::setnames(predict, paste0('V',seq_along(predict)), paste0('Predictions.V', seq_along(predict)))
+  } else if(TargetType == 'classification') {
+    data.table::setnames(predict, 'V1', 'p1')
   }
 
   # Merge features back on ----
-  if(ReturnFeatures && TargetType != "multiclass") predict <- cbind(predict, ScoringMerge)
+  if(ReturnFeatures && TargetType != 'multiclass') predict <- cbind(predict, ScoringMerge)
 
   # Back Transform Numeric Variables ----
-  if(BackTransNumeric && TargetType != "multiregression") {
+  if(BackTransNumeric && TargetType != 'multiregression') {
     grid_trans_results <- data.table::copy(TransformationObject)
-    data.table::set(grid_trans_results, i = which(grid_trans_results[["ColumnName"]] == eval(TargetColumnName)), j = "ColumnName", value = "Predictions")
+    data.table::set(grid_trans_results, i = which(grid_trans_results[['ColumnName']] == eval(TargetColumnName)), j = 'ColumnName', value = 'Predictions')
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
 
     # Run Back-Transform ----
     predict <- AutoTransformationScore(
       ScoringData = predict,
-      Type = "Inverse",
+      Type = 'Inverse',
       FinalResults = grid_trans_results,
       TransID = NULL,
       Path = NULL)
-  } else if(BackTransNumeric && TargetType == "multiregression") {
+  } else if(BackTransNumeric && TargetType == 'multiregression') {
 
     # Prepare transformation object
     TransformationObject <- data.table::rbindlist(list(TransformationObject, TransformationObject))
-    for(z in seq_along(TransformationObject)) TransformationObject[length(TargetColumnName.) + z, ColumnName := paste0("Predict.V",z)]
+    for(z in seq_along(TransformationObject)) TransformationObject[length(TargetColumnName.) + z, ColumnName := paste0('Predict.V',z)]
 
     # Back transform
     predict <- AutoTransformationScore(
       ScoringData = predict,
-      Type = "Inverse",
+      Type = 'Inverse',
       FinalResults = TransformationObject,
       TransID = NULL,
       Path = NULL)

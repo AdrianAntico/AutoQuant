@@ -59,7 +59,7 @@ AutoCatBoostRegression(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData')}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -79,11 +79,11 @@ AutoCatBoostRegression(
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
-\item{Methods}{Choose from "YeoJohnson", "BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", or "Logit". If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
+\item{Methods}{Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.}
 
 \item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
-\item{task_type}{Set to "GPU" to utilize your GPU for training. Default is "CPU".}
+\item{task_type}{Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.}
 
 \item{NumGPUs}{Set to 1, 2, 3, etc.}
 
@@ -109,7 +109,7 @@ AutoCatBoostRegression(
 
 \item{loss_function_value}{Used with the specified loss function if an associated value is required. 'Tweedie', 'Huber', 'LogLinQuantile', 'Quantile' 'Lq', 'Expectile'. See https://catboost.ai/docs/concepts/loss-functions-regression.html}
 
-\item{grid_eval_metric}{Choose from "mae", "mape", "rmse", "r2". Case sensitive}
+\item{grid_eval_metric}{Choose from 'mae', 'mape', 'rmse', 'r2'. Case sensitive}
 
 \item{NumOfParDepPlots}{Tell the function the number of partial dependence calibration plots you want to create. Calibration boxplots will only be created for numerical features (not dummy variables)}
 
@@ -123,7 +123,7 @@ AutoCatBoostRegression(
 
 \item{MaxRunMinutes}{Maximum number of minutes to let this run}
 
-\item{BaselineComparison}{Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
+\item{BaselineComparison}{Set to either 'default' or 'best'. Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.}
 
 \item{MetricPeriods}{Number of periods to use between Catboost evaluations}
 
@@ -141,9 +141,9 @@ AutoCatBoostRegression(
 
 \item{RSM}{CPU only. Standard + Grid Tuning. If GPU is set, this is turned off. Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the RSM values to test. For running grid tuning, a NULL value supplied will mean these values are tested c(0.80, 0.85, 0.90, 0.95, 1.0)}
 
-\item{BootStrapType}{Standard + Grid Tuning. NULL value to default to catboost default (Bayesian for GPU and MVS for CPU). Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c("Bayesian", "Bernoulli", "Poisson", "MVS", "No")}
+\item{BootStrapType}{Standard + Grid Tuning. NULL value to default to catboost default (Bayesian for GPU and MVS for CPU). Random testing. Supply a single value for non-grid tuning cases. Otherwise, supply a vector for the BootStrapType values to test. For running grid tuning, a NULL value supplied will mean these values are tested c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No')}
 
-\item{GrowPolicy}{Standard + Grid Tuning. Catboost default of SymmetricTree. Random testing. Default "SymmetricTree", character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c("SymmetricTree", "Depthwise", "Lossguide")}
+\item{GrowPolicy}{Standard + Grid Tuning. Catboost default of SymmetricTree. Random testing. Default 'SymmetricTree', character, or vector for GrowPolicy to test. For grid tuning, supply a vector of values. For running grid tuning, a NULL value supplied will mean these values are tested c('SymmetricTree', 'Depthwise', 'Lossguide')}
 
 \item{langevin}{Set to TRUE to enable}
 
@@ -151,7 +151,7 @@ AutoCatBoostRegression(
 
 \item{model_size_reg}{Defaults to 0.5. Set to 0 to allow for bigger models. This is for models with high cardinality categorical features. Valuues greater than 0 will shrink the model and quality will decline but models won't be huge.}
 
-\item{feature_border_type}{Defaults to "GreedyLogSum". Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
+\item{feature_border_type}{Defaults to 'GreedyLogSum'. Other options include: Median, Uniform, UniformAndQuantiles, MaxLogSum, MinEntropy}
 
 \item{sampling_unit}{Default is Group. Other option is Object. if GPU is selected, this will be turned off unless the loss_function is YetiRankPairWise}
 
@@ -186,15 +186,15 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 
   # GPU or CPU and the number of available GPUs
   TrainOnFull = FALSE,
-  task_type = "GPU",
+  task_type = 'GPU',
   NumGPUs = 1,
   DebugMode = FALSE,
 
   # Metadata args
-  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
-  ModelID = "Test_Model_1",
-  model_path = normalizePath("./"),
-  metadata_path = normalizePath("./"),
+  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+  ModelID = 'Test_Model_1',
+  model_path = normalizePath('./'),
+  metadata_path = normalizePath('./'),
   SaveModelObjects = FALSE,
   SaveInfoToPDF = FALSE,
   ReturnModelObjects = TRUE,
@@ -204,20 +204,20 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   ValidationData = NULL,
   TestData = NULL,
   Weights = NULL,
-  TargetColumnName = "Adrian",
+  TargetColumnName = 'Adrian',
   FeatureColNames = names(data)[!names(data) \%in\%
-    c("IDcol_1", "IDcol_2","Adrian")],
+    c('IDcol_1', 'IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
-  IDcols = c("IDcol_1","IDcol_2"),
-  TransformNumericColumns = "Adrian",
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-    "LogPlus1", "Sqrt", "Logit"),
+  IDcols = c('IDcol_1','IDcol_2'),
+  TransformNumericColumns = 'Adrian',
+  Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
+    'LogPlus1', 'Sqrt', 'Logit'),
 
   # Model evaluation
-  eval_metric = "RMSE",
+  eval_metric = 'RMSE',
   eval_metric_value = 1.5,
-  loss_function = "RMSE",
+  loss_function = 'RMSE',
   loss_function_value = 1.5,
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
@@ -228,7 +228,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 60*60,
-  BaselineComparison = "default",
+  BaselineComparison = 'default',
 
   # ML args
   langevin = FALSE,
@@ -241,12 +241,12 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   LearningRate = NULL,
   RSM = 1,
   BootStrapType = NULL,
-  GrowPolicy = "SymmetricTree",
+  GrowPolicy = 'SymmetricTree',
   model_size_reg = 0.5,
-  feature_border_type = "GreedyLogSum",
-  sampling_unit = "Object",
+  feature_border_type = 'GreedyLogSum',
+  sampling_unit = 'Object',
   subsample = NULL,
-  score_function = "Cosine",
+  score_function = 'Cosine',
   min_data_in_leaf = 1)
 
 # Output
@@ -270,6 +270,7 @@ Other Automated Supervised Learning - Regression:
 \code{\link{AutoH2oGBMRegression}()},
 \code{\link{AutoH2oGLMRegression}()},
 \code{\link{AutoH2oMLRegression}()},
+\code{\link{AutoLightGBMRegression}()},
 \code{\link{AutoNLS}()},
 \code{\link{AutoXGBoostRegression}()}
 }

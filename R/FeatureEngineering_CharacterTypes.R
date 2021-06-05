@@ -608,8 +608,8 @@ CategoricalEncoding <- function(data = NULL,
             GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
             GroupMean[, ":=" (Mean = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
           }
-          if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
         }
+        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
         GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
         data.table::setkeyv(GroupMean, cols = eval(GroupValue))
@@ -847,7 +847,7 @@ EncodeCharacterVariables <- function(RunMode = 'train',
 
   # Encode
   if(EncodeMethod == "binary") {
-    temp <- DummifyDT(data=temp, cols=CategoricalVariableNames, KeepFactorCols=KeepCategoricalVariables, OneHot=FALSE, SaveFactorLevels=SaveModelObjects., ReturnFactorLevels=ReturnMetaData, SavePath=MetaDataPath, ImportFactorLevels=FALSE, FactorLevelsList=MetaDataList)
+    temp <- DummifyDT(data=temp, cols=CategoricalVariableNames, KeepFactorCols=KeepCategoricalVariables, OneHot=FALSE, SaveFactorLevels=if(!is.null(MetaDataPath)) MetaDataPath else NULL, ReturnFactorLevels=ReturnMetaData, SavePath=MetaDataPath, ImportFactorLevels=FALSE, FactorLevelsList=MetaDataList)
     MetaData <- temp$FactorLevelsList
     temp <- temp$data
   } else if(EncodeMethod %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {

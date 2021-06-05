@@ -18,7 +18,7 @@ AutoXGBoostClassifier(
   metadata_path = NULL,
   SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
-  EncodingMethod = "binary",
+  EncodingMethod = "credibility",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
@@ -27,8 +27,8 @@ AutoXGBoostClassifier(
   NThreads = max(1L, parallel::detectCores() - 2L),
   LossFunction = "reg:logistic",
   CostMatrixWeights = c(1, 0, 0, 1),
-  eval_metric = "auc",
   grid_eval_metric = "MCC",
+  eval_metric = "auc",
   TreeMethod = "hist",
   GridTune = FALSE,
   BaselineComparison = "default",
@@ -90,9 +90,9 @@ AutoXGBoostClassifier(
 
 \item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),}
 
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
-
 \item{grid_eval_metric}{Case sensitive. I typically choose 'Utility' or 'MCC'. Choose from 'Utility', 'MCC', 'Acc', 'F1_Score', 'F2_Score', 'F0.5_Score', 'TPR', 'TNR', 'FNR', 'FPR', 'FDR', 'FOR', 'NPV', 'PPV', 'ThreatScore'}
+
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
 
 \item{TreeMethod}{Choose from "hist", "gpu_hist"}
 
@@ -203,7 +203,8 @@ Other Automated Supervised Learning - Binary Classification:
 \code{\link{AutoH2oGAMClassifier}()},
 \code{\link{AutoH2oGBMClassifier}()},
 \code{\link{AutoH2oGLMClassifier}()},
-\code{\link{AutoH2oMLClassifier}()}
+\code{\link{AutoH2oMLClassifier}()},
+\code{\link{AutoLightGBMClassifier}()}
 }
 \author{
 Adrian Antico

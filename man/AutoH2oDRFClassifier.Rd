@@ -208,6 +208,7 @@ Other Automated Supervised Learning - Binary Classification:
 \code{\link{AutoH2oGBMClassifier}()},
 \code{\link{AutoH2oGLMClassifier}()},
 \code{\link{AutoH2oMLClassifier}()},
+\code{\link{AutoLightGBMClassifier}()},
 \code{\link{AutoXGBoostClassifier}()}
 }
 \author{

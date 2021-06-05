@@ -1,11 +1,11 @@
 #' @title AutoXGBoostScoring
 #'
-#' @description AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
+#' @description AutoXGBoostScoring is an automated scoring function that compliments the AutoXGBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
 #'
 #' @author Adrian Antico
 #' @family Automated Model Scoring
 #'
-#' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().
+#' @param TargetType Set this value to "regression", "classification", or "multiclass" to score models built using AutoXGBoostRegression(), AutoXGBoostClassify() or AutoXGBoostMultiClass()
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param ReturnShapValues Set to TRUE to return shap values for the predicted values
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoXGBoost__() function
@@ -142,7 +142,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
       CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
       CatFeatures <- names(ScoringData)[CatFeatures]
       if(!identical(CatFeatures, character(0)) && !is.null(CatFeatures)) {
-        ScoringData <- CategoricalEncoding(data=ScoringData, ML_Type=TargetType, GroupVariables=CatFeatures, TargetVariable=NULL, Method=EncodingMethod, SavePath=model_path., Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
+        ScoringData <- CategoricalEncoding(data=ScoringData, ML_Type=TargetType, GroupVariables=CatFeatures, TargetVariable=NULL, Method=EncodingMethod, SavePath=ModelPath, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
       }
     }
   }

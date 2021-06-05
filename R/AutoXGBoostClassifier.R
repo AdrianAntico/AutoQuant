@@ -125,7 +125,7 @@ AutoXGBoostClassifier <- function(OutputSelection = c("Importances", "EvalPlots"
                                   metadata_path = NULL,
                                   SaveInfoToPDF = FALSE,
                                   ModelID = "FirstModel",
-                                  EncodingMethod = "binary",
+                                  EncodingMethod = "credibility",
                                   ReturnFactorLevels = TRUE,
                                   ReturnModelObjects = TRUE,
                                   SaveModelObjects = FALSE,
@@ -134,8 +134,8 @@ AutoXGBoostClassifier <- function(OutputSelection = c("Importances", "EvalPlots"
                                   NThreads = max(1L, parallel::detectCores()-2L),
                                   LossFunction = 'reg:logistic',
                                   CostMatrixWeights = c(1,0,0,1),
-                                  eval_metric = "auc",
                                   grid_eval_metric = "MCC",
+                                  eval_metric = "auc",
                                   TreeMethod = "hist",
                                   GridTune = FALSE,
                                   BaselineComparison = "default",
@@ -157,7 +157,7 @@ AutoXGBoostClassifier <- function(OutputSelection = c("Importances", "EvalPlots"
 
   # Data prep ----
   if(DebugMode) print("Data prep ----")
-  Output <- XGBoostDataPrep(ModelType="classification", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
+  Output <- XGBoostDataPrep(Algo="xgboost", ModelType="classification", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
   WeightsVector <- Output$WeightsVector; Output$WeightsVector <- NULL
@@ -287,6 +287,6 @@ AutoXGBoostClassifier <- function(OutputSelection = c("Importances", "EvalPlots"
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
       GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
       ColNames = if(exists("Names")) Names else NULL,
-      FactorLevels = if(exists("FactorLevelsList")) FactorLevelsList else NULL))
+      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL))
   }
 }

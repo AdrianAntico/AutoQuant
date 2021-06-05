@@ -518,7 +518,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   }
 
   # MultiClass Evaluation Metrics ----
-  EvaluationMetrics <- data.table::data.table(Metric = c("AUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
+  EvaluationMetrics <- data.table::data.table(Metric = c("MicroAUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
   if(SaveModelObjects.) {
     if(!is.null(metadata_path.)) {
       if(DataType == "train") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))

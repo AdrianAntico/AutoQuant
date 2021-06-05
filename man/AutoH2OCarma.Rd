@@ -412,6 +412,7 @@ Other Automated Panel Data Forecasting:
 \code{\link{AutoCatBoostCARMA}()},
 \code{\link{AutoCatBoostHurdleCARMA}()},
 \code{\link{AutoCatBoostVectorCARMA}()},
+\code{\link{AutoLightGBMCARMA}()},
 \code{\link{AutoXGBoostCARMA}()}
 }
 \author{

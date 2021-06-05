@@ -124,6 +124,7 @@ HurdleScores <- RemixAutoML::AutoHurdleScoring(
 Other Automated Model Scoring: 
 \code{\link{AutoCatBoostScoring}()},
 \code{\link{AutoH2OMLScoring}()},
+\code{\link{AutoLightGBMScoring}()},
 \code{\link{AutoXGBoostScoring}()}
 }
 \author{

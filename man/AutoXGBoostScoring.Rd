@@ -32,7 +32,7 @@ AutoXGBoostScoring(
 )
 }
 \arguments{
-\item{TargetType}{Set this value to "regression", "classification", or "multiclass" to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().}
+\item{TargetType}{Set this value to "regression", "classification", or "multiclass" to score models built using AutoXGBoostRegression(), AutoXGBoostClassify() or AutoXGBoostMultiClass()}
 
 \item{ScoringData}{This is your data.table of features for scoring. Can be a single row or batch.}
 
@@ -82,7 +82,7 @@ AutoXGBoostScoring(
 A data.table of predicted values with the option to return model features as well.
 }
 \description{
-AutoXGBoostScoring is an automated scoring function that compliments the AutoCatBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
+AutoXGBoostScoring is an automated scoring function that compliments the AutoXGBoost model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() function to prepare your features for xgboost data conversion and scoring.
 }
 \examples{
 \dontrun{
@@ -116,7 +116,8 @@ Preds <- AutoXGBoostScoring(
 Other Automated Model Scoring: 
 \code{\link{AutoCatBoostScoring}()},
 \code{\link{AutoH2OMLScoring}()},
-\code{\link{AutoHurdleScoring}()}
+\code{\link{AutoHurdleScoring}()},
+\code{\link{AutoLightGBMScoring}()}
 }
 \author{
 Adrian Antico

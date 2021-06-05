@@ -151,7 +151,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   # Data prep ----
   if(DebugMode) print("Data prep ----")
   if(EncodingMethod %chin% c("target_encode", "credibility", "m_estimator", "woe")) EncodingMethod <- "poly_encode"
-  Output <- XGBoostDataPrep(ModelType="multiclass", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
+  Output <- XGBoostDataPrep(Algo="xgboost", ModelType="multiclass", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
   FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
   WeightsVector <- Output$WeightsVector; Output$WeightsVector <- NULL
@@ -201,11 +201,11 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   # Grid Score Model ----
   if(DebugMode) print("Grid Score Model ----")
   if(!is.null(datatest)) {
-    predict <- XGBoostMultiClassPredict(model, datatest, TargetLevels, NumLevels, NumberRows = nrow(datatest))
+    predict <- XGBoostMultiClassPredict(model=model, datatest=datatest, TargetLevels=TargetLevels, NumLevels=NumLevels, NumberRows=nrow(datatest))
   } else if(!is.null(datavalidate)) {
-    predict <- XGBoostMultiClassPredict(model, datavalidate, TargetLevels, NumLevels, NumberRows = nrow(datavalidate))
+    predict <- XGBoostMultiClassPredict(model=model, datatest=datavalidate, TargetLevels=TargetLevels, NumLevels=NumLevels, NumberRows=nrow(datavalidate))
   } else {
-    predict <- XGBoostMultiClassPredict(model, datatrain, TargetLevels, NumLevels, NumberRows = nrow(datatrain))
+    predict <- XGBoostMultiClassPredict(model=model, datatest=datatrain, TargetLevels=TargetLevels, NumLevels=NumLevels, NumberRows=nrow(datatrain))
   }
 
   # Validation, Importance, Shap data ----
@@ -215,11 +215,11 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   ValidationData <- Output$ValidationData; rm(Output)
 
   # TrainData + ValidationData Scoring + Shap ----
-  ShapValues <- list()
+  if(DebugMode) print("TrainData + ValidationData Scoring + Shap ----")
   if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-    predict <- XGBoostMultiClassPredict(model, datatrain, TargetLevels, NumLevels, NumberRows = nrow(datatrain))
+    predict <- XGBoostMultiClassPredict(model=model, datatest=datatrain, TargetLevels=TargetLevels, NumLevels=NumLevels, NumberRows=nrow(datatrain))
     if(!is.null(datatest)) {
-      predict_validate <- XGBoostMultiClassPredict(model, datavalidate, TargetLevels, NumLevels, NumberRows = nrow(datavalidate))
+      predict_validate <- XGBoostMultiClassPredict(model=model, datatest=datavalidate, TargetLevels=TargetLevels, NumLevels=NumLevels, NumberRows=nrow(datavalidate))
       predict <- data.table::rbindlist(list(predict, predict_validate))
       rm(predict_validate)
     }
@@ -322,6 +322,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
       GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL,
       TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL))
   }
 }
