@@ -3317,7 +3317,7 @@ The Auto_MultiClass() models handle a multitude of tasks. In order:
 </details>
 
 
-#### Generalized Hurdle Models
+### Generalized Hurdle Models
 
 <details><summary>click to expand</summary>
 <p>
