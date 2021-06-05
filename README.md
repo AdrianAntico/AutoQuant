@@ -1242,7 +1242,7 @@ str(data)
 <p>
 
 
-#### Regression
+### Regression
 
 <details><summary>click to expand</summary>
 <p>
@@ -1986,7 +1986,7 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 
 
 
-#### Binary Classification
+### Binary Classification
 
 <details><summary>click to expand</summary>
 <p>
@@ -2671,7 +2671,7 @@ The Auto_Classifier() models handle a multitude of tasks. In order:
 
 
 
-#### Multinomial Classification
+### Multinomial Classification
 
 <details><summary>click to expand</summary>
 <p>
