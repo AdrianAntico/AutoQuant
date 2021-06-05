@@ -1974,8 +1974,7 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 </p>
 </details>
 
-</p>
-</details>
+
 
 
 
