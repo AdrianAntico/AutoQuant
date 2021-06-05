@@ -1247,9 +1247,7 @@ str(data)
 <details><summary>click to expand</summary>
 <p>
 
-
-##### **AutoCatBoostRegression()** GPU Capable
-<code>AutoCatBoostRegression()</code> utilizes the CatBoost algorithm in the below steps
+<code>AutoCatBoostRegression()</code> GPU Capable. Utilizes the CatBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -1352,9 +1350,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 </p>
 </details>
 
-
-##### **AutoXGBoostRegression()** GPU Capable
-<code>AutoXGBoostRegression()</code> utilizes the XGBoost algorithm in the below steps 
+<code>AutoXGBoostRegression()</code> GPU Capable. Utilizes the XGBoost algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -1425,9 +1421,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 </p>
 </details>
 
-
-##### **AutoLightGBMRegression()** GPU Capable
-<code>AutoLightGBMRegression()</code> utilizes the LightGBM algorithm in the below steps 
+<code>AutoLightGBMRegression()</code> GPU Capable. Utilizes the LightGBM algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -1573,9 +1567,7 @@ TestModel <- RemixAutoML::AutoLightGBMRegression(
 </p>
 </details> 
 
-
-##### **AutoH2oGBMRegression()**
-<code>AutoH2oGBMRegression()</code> utilizes the H2O Gradient Boosting algorithm in the below steps 
+<code>AutoH2oGBMRegression()</code> Utilizes the H2O Gradient Boosting algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -1653,9 +1645,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
 </p>
 </details>
 
-
-##### **AutoH2oDRFRegression()**
-<code>AutoH2oDRFRegression()</code> utilizes the H2o Distributed Random Forest algorithm in the below steps 
+<code>AutoH2oDRFRegression()</code> Utilizes the H2o Distributed Random Forest algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -1729,9 +1719,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
 </p>
 </details>
 
-
-##### **AutoH2oGLMRegression()**
-<code>AutoH2oGLMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
+<code>AutoH2oGLMRegression()</code> Utilizes the H2o generalized linear model algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -1808,9 +1796,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
 </p>
 </details>
 
-
-##### **AutoH2oMLRegression()**
-<code>AutoH2oMLRegression()</code> utilizes the H2o AutoML algorithm in the below steps 
+<code>AutoH2oMLRegression()</code> Utilizes the H2o AutoML algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -1864,9 +1850,8 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
 
 </p>
 </details> 
- 
-##### **AutoH2oGAMRegression()**
-<code>AutoH2oGAMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
+
+<code>AutoH2oGAMRegression()</code> Utilizes the H2o generalized linear model algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -1978,10 +1963,8 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 </p>
 </details>
 
-
 </p>
 </details>
-
 
 
 
@@ -1991,9 +1974,7 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 <details><summary>click to expand</summary>
 <p>
 
-
-##### **AutoCatBoostClassifier()** GPU Capable
-<code>AutoCatBoostClassifier()</code> utilizes the CatBoost algorithm in the below steps
+<code>AutoCatBoostClassifier()</code> GPU Capable. Utilizes the CatBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2073,9 +2054,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 </p>
 </details>
 
-
-##### **AutoXGBoostClassifier()** GPU Capable
-<code>AutoXGBoostClassifier()</code> utilizes the XGBoost algorithm in the below steps
+<code>AutoXGBoostClassifier()</code> GPU Capable. Utilizes the XGBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2143,9 +2122,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 </p>
 </details> 
 
-
-##### **AutoLightGBMClassifier()** GPU Capable
-<code>AutoLightGBMClassifier()</code> utilizes the LightGBM algorithm in the below steps
+<code>AutoLightGBMClassifier()</code> GPU Capable. Utilizes the LightGBM algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2285,9 +2262,7 @@ TestModel <- RemixAutoML::AutoLightGBMClassifier(
 </p>
 </details> 
 
-
-##### **AutoH2oGBMClassifier()**
-<code>AutoH2oGBMClassifier()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
+<code>AutoH2oGBMClassifier()</code> Utilizes the H2O Gradient Boosting algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2361,9 +2336,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 </p>
 </details> 
 
-
-##### **AutoH2oDRFClassifier()**
-<code>AutoH2oDRFClassifier()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
+<code>AutoH2oDRFClassifier()</code> Utilizes the H2O Distributed Random Forest algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2434,9 +2407,7 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 </p>
 </details> 
 
-
-##### **AutoH2oGLMClassifier()**
-<code>AutoH2oGLMClassifier()</code> utilizes the H2O generalized linear model algorithm in the below steps
+<code>AutoH2oGLMClassifier()</code> Utilizes the H2O generalized linear model algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2510,9 +2481,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
 </p>
 </details> 
 
-
-##### **AutoH2oMLClassifier()**
-<code>AutoH2oMLClassifier()</code> utilizes the H2o AutoML algorithm in the below steps 
+<code>AutoH2oMLClassifier()</code> Utilizes the H2o AutoML algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -2555,8 +2524,7 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
 </p>
 </details> 
 
-
-##### **AutoH2oGAMClassifier()**
+<code>AutoH2oGAMClassifier()</code> Utilizes the H2o GAM algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
@@ -2669,20 +2637,12 @@ The Auto_Classifier() models handle a multitude of tasks. In order:
 
 
 
-
-
 ### Multinomial Classification
 
 <details><summary>click to expand</summary>
 <p>
 
-
-
-
-
-##### **AutoCatBoostMultiClass()** GPU Capable
-<code>AutoCatBoostMultiClass()</code> utilizes the CatBoost algorithm in the below steps
-
+<code>AutoCatBoostMultiClass()</code> GPU Capable. Utilizes the CatBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2761,9 +2721,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 </p>
 </details>
 
-
-##### **AutoXGBoostMultiClass()** GPU Capable
-<code>AutoXGBoostMultiClass()</code> utilizes the XGBoost algorithm in the below steps
+<code>AutoXGBoostMultiClass()</code> GPU Capable. Utilizes the XGBoost algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2832,8 +2790,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 </p>
 </details>
 
-##### **AutoLightGBMMultiClass()** GPU Capable
-<code>AutoLightGBMMultiClass()</code> utilizes the LightGBM algorithm in the below steps
+<code>AutoLightGBMMultiClass()</code> GPU Capable. Utilizes the LightGBM algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -2974,9 +2931,7 @@ TestModel <- RemixAutoML::AutoLightGBMMultiClass(
 </p>
 </details>
 
-
-##### **AutoH2oGBMMultiClass()**
-<code>AutoH2oGBMMultiClass()</code> utilizes the H2O Gradient Boosting algorithm in the below steps
+<code>AutoH2oGBMMultiClass()</code> Utilizes the H2O Gradient Boosting algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -3040,9 +2995,7 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
 </p>
 </details>
 
-
-##### **AutoH2oDRFMultiClass()**
-<code>AutoH2oDRFMultiClass()</code> utilizes the H2O Distributed Random Forest algorithm in the below steps
+<code>AutoH2oDRFMultiClass()</code> Utilizes the H2O Distributed Random Forest algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -3104,9 +3057,7 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
 </p>
 </details>
 
-
-##### **AutoH2oGLMMultiClass()**
-<code>AutoH2oGLMMultiClass()</code> utilizes the H2O generalized linear model algorithm in the below steps
+<code>AutoH2oGLMMultiClass()</code> Utilizes the H2O generalized linear model algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -3179,9 +3130,7 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 </p>
 </details>
 
-
-##### **AutoH2oMLMultiClass()**
-<code>AutoH2oMLMultiClass()</code> utilizes the H2o AutoML algorithm in the below steps
+<code>AutoH2oMLMultiClass()</code> Utilizes the H2o AutoML algorithm in the below steps
 
 <details><summary>Code Example</summary>
 <p>
@@ -3217,9 +3166,7 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
 </p>
 </details>
 
-
-##### **AutoH2oGAMMultiClass()**
-
+<code>AutoGAMMultiClass()</code> Utilizes the H2o GAM algorithm in the below steps
 <details><summary>Code Example</summary>
 <p>
 
@@ -3347,10 +3294,10 @@ First step is to build either a binary classification model (in the case of a si
 </p>
 </details>
 
-
-
 </p>
 </details>
+
+
 
 
 
@@ -3358,6 +3305,8 @@ First step is to build either a binary classification model (in the case of a si
 ## Model Scoring <img src="Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
+
+
 
 
 <details><summary>Code Example</summary>
@@ -3480,49 +3429,43 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 </p>
 </details>
 
+<code>AutoCatBoostScoring()</code> is an automated scoring function that compliments the AutoCatBoost__() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
 
-#### **AutoCatBoostScoring()**
-<code>AutoCatBoostScoring()</code> is an automated scoring function that compliments the AutoCatBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() to prepare your features for catboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
+<code>AutoXGBoostScoring()</code> is an automated scoring function that compliments the AutoXGBoost__() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the CategoricalEncoding() functions to prepare your features for xgboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
 
-#### **AutoXGBoostScoring()**
-<code>AutoXGBoostScoring()</code> is an automated scoring function that compliments the AutoXGBoost() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the DummifyDT() functions to prepare your features for xgboost data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
+<code>AutoLightGBMScoring()</code> is an automated scoring function that compliments the AutoLightGBM__() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep() and the CategoricalEncoding() functions to prepare your features for lightgbm data conversion and scoring. It will also handle and transformations and back-transformations if you utilized that feature in the regression training case.
 
-#### **AutoH2OMLScoring()**
 <code>AutoH2OMLScoring()</code> is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring. It will also handle transformations and back-transformations if you utilized that feature in the regression training case and didn't do it yourself before hand.
 
-#### **AutoHurdleScoring()**
 <code>AutoHurdleScoring()</code> will score the AutoCatBoostHurdleModel() function currently. Functionality for XGBoost hurdle models will be next, followed by the H2O version.
-
 
 </p>
 </details>
+
+
+
 
 ## Model Evaluation <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
-#### **AutoShapeShap()**
+
 <code>AutoShapeShap()</code> will take your CatBoost or XGBoost TestData or TrainData returned from one of the supervised learning functions and build out a table. The table will have columns, 'Date', 'EntityID', 'Variable', 'AbsShapValue', 'ShapValue', 'CurrentValue', 'DiffValue', 'PreviousValue' which can be used to analyze variable importance for any slice of the data. A few interesting areas to investigate include varible importance by records associated with a classifier label of 1 vs 0, for different grouping levels, and for different time slices. Further, if you analyze the ShapeValue column you will get a directional variable importance instead of a magnitute importance. You can further analyze the data by looking at standard deviation of ShapValues or any other aggregations method of interest. The function runs row by row so I set it up to run in parallel. You can specify the number of cores to utilize in case you have other processes running on your computer. The function calls the SingleRowShapeShap() function repeatedly. If you want to return information from the Shap Table for a single record you can run SingleRowShapeShap().
   
-#### **RemixClassificationMetrics()**
 <code>RemixClassificationMetrics()</code> will return all confusion matrix metrics across all possible thresholds (seq(0.01,0.99,0.01) for any Remix Auto_Classification() model. Cost sensitive thresholds are also returned.
 
-#### **ParDepCalPlots()**
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
 <img src="Images/AutoCatBoostRegressionParDepMultiPlot.png" align="center" width="400" />
 
 ![ParDepCalPlots Blog](https://www.remixinstitute.com/blog/companies-are-demanding-model-interpretability-heres-how-to-do-it-right/#.XUIN1HtlCDM)
 
-#### **EvalPlot()**
 <code>EvalPlot()</code> Has two plot versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
 
 <img src="Images/AutoCatBoostRegressionEvaluationMultiPlot.png" align="center" width="400" />
 
-#### **threshOptim()**
 <code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
-#### **RedYellowGreen()**
 <code>RedYellowGreen()</code> computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
 
 <img src="Images/RedYellowGreenPic.png" align="center" width="400" />
@@ -4115,6 +4058,200 @@ XGBoostResults <- AutoXGBoostCARMA(
 </p>
 </details>
 
+
+
+<details><summary>Code Example: AutoXGBoostCARMA()</summary>
+<p>
+
+```
+  
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# LightGBM Version ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+# Load data
+data <- data.table::fread('https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1')
+
+# Ensure series have no missing dates (also remove series with more than 25% missing values)
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = 'Date',
+  GroupVariables = c('Store','Dept'),
+  TimeUnit = 'weeks',
+  FillType = 'maxmax',
+  MaxMissingPercent = 0.25,
+  SimpleImpute = TRUE)
+
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Remove IsHoliday column
+data[, IsHoliday := NULL]
+
+# Create xregs (this is the include the categorical variables instead of utilizing only the interaction of them)
+xregs <- data[, .SD, .SDcols = c('Date', 'Store', 'Dept')]
+
+# Change data types
+data[, ':=' (Store = as.character(Store), Dept = as.character(Dept))]
+xregs[, ':=' (Store = as.character(Store), Dept = as.character(Dept))]
+
+# Build forecast
+Results <- AutoLightGBMCARMA(
+
+  # Data Artifacts
+  data = data,
+  NonNegativePred = FALSE,
+  RoundPreds = FALSE,
+  TargetColumnName = 'Weekly_Sales',
+  DateColumnName = 'Date',
+  HierarchGroups = NULL,
+  GroupVariables = c('Store','Dept'),
+  TimeUnit = 'weeks',
+  TimeGroups = c('weeks','months'),
+
+  # Data Wrangling Features
+  EncodingMethod = 'binary',
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = 'timeseries',
+  AnomalyDetection = NULL,
+
+  # Productionize
+  FC_Periods = 0,
+  TrainOnFull = FALSE,
+  NThreads = 8,
+  Timer = TRUE,
+  DebugMode = FALSE,
+  SaveDataPath = NULL,
+  PDFOutputPath = NULL,
+
+  # Target Transformations
+  TargetTransformation = TRUE,
+  Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit'),
+  Difference = FALSE,
+
+  # Features
+  Lags = list('weeks' = seq(1L, 10L, 1L), 'months' = seq(1L, 5L, 1L)),
+  MA_Periods = list('weeks' = seq(5L, 20L, 5L), 'months' = seq(2L, 10L, 2L)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = c('q5','q95'),
+  XREGS = xregs,
+  FourierTerms = 4,
+  CalendarVariables = c('week', 'wom', 'month', 'quarter'),
+  HolidayVariable = c('USPublicHolidays','EasterGroup','ChristmasGroup','OtherEcclesticalFeasts'),
+  HolidayLookback = NULL,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+  TimeTrendVariable = TRUE,
+
+  # ML eval args
+  TreeMethod = 'hist',
+  EvalMetric = 'RMSE',
+  LossFunction = 'reg:squarederror',
+
+  # Grid tuning args
+  GridTune = FALSE,
+  GridEvalMetric = 'mae',
+  ModelCount = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+
+  # LightGBM Args
+  Device_Type = TaskType,
+  LossFunction = 'regression',
+  EvalMetric = 'MAE',
+  Input_Model = NULL,
+  Task = 'train',
+  Boosting = 'gbdt',
+  LinearTree = FALSE,
+  Trees = 1000,
+  ETA = 0.10,
+  Num_Leaves = 31,
+  Deterministic = TRUE,
+
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  Force_Col_Wise = FALSE,
+  Force_Row_Wise = FALSE,
+  Max_Depth = 6,
+  Min_Data_In_Leaf = 20,
+  Min_Sum_Hessian_In_Leaf = 0.001,
+  Bagging_Freq = 1.0,
+  Bagging_Fraction = 1.0,
+  Feature_Fraction = 1.0,
+  Feature_Fraction_Bynode = 1.0,
+  Lambda_L1 = 0.0,
+  Lambda_L2 = 0.0,
+  Extra_Trees = FALSE,
+  Early_Stopping_Round = 10,
+  First_Metric_Only = TRUE,
+  Max_Delta_Step = 0.0,
+  Linear_Lambda = 0.0,
+  Min_Gain_To_Split = 0,
+  Drop_Rate_Dart = 0.10,
+  Max_Drop_Dart = 50,
+  Skip_Drop_Dart = 0.50,
+  Uniform_Drop_Dart = FALSE,
+  Top_Rate_Goss = FALSE,
+  Other_Rate_Goss = FALSE,
+  Monotone_Constraints = NULL,
+  Monotone_Constraints_Method = 'advanced',
+  Monotone_Penalty = 0.0,
+  Forcedsplits_Filename = NULL, # use for AutoStack option; .json file
+  Refit_Decay_Rate = 0.90,
+  Path_Smooth = 0.0,
+
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  Max_Bin = 255,
+  Min_Data_In_Bin = 3,
+  Data_Random_Seed = 1,
+  Is_Enable_Sparse = TRUE,
+  Enable_Bundle = TRUE,
+  Use_Missing = TRUE,
+  Zero_As_Missing = FALSE,
+  Two_Round = FALSE,
+
+  # Convert Parameters
+  Convert_Model = NULL,
+  Convert_Model_Language = 'cpp',
+
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  Boost_From_Average = TRUE,
+  Alpha = 0.90,
+  Fair_C = 1.0,
+  Poisson_Max_Delta_Step = 0.70,
+  Tweedie_Variance_Power = 1.5,
+  Lambdarank_Truncation_Level = 30,
+
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  Is_Provide_Training_Metric = TRUE,
+  Eval_At = c(1,2,3,4,5),
+
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  Num_Machines = 1,
+
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  Gpu_Platform_Id = -1,
+  Gpu_Device_Id = -1,
+  Gpu_Use_Dp = TRUE,
+  Num_Gpu = 1)
+```
+
+</p>
+</details>
+
+
+
+
 <details><summary>Code Example: AutoH2OCARMA()</summary>
 <p>
 
@@ -4258,6 +4395,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 
 </p>
 </details>
+
 
 <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/TimeSeriesMethods2.png" align="center" width="725" />
 
