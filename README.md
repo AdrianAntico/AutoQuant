@@ -1248,8 +1248,6 @@ str(data)
 <p>
 
 
-
-
 ##### **AutoCatBoostRegression()** GPU Capable
 <code>AutoCatBoostRegression()</code> utilizes the CatBoost algorithm in the below steps
 
@@ -1352,14 +1350,14 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 ```
  
 </p>
-</details> 
+</details>
+
 
 ##### **AutoXGBoostRegression()** GPU Capable
 <code>AutoXGBoostRegression()</code> utilizes the XGBoost algorithm in the below steps 
 
 <details><summary>Code Example</summary>
 <p>
-
 
 ```
 # Create some dummy correlated data
@@ -1423,6 +1421,9 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   subsample = 0.55,
   colsample_bytree = 0.55)
 ```
+
+</p>
+</details>
 
 
 ##### **AutoLightGBMRegression()** GPU Capable
@@ -1650,7 +1651,8 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
 ```
  
 </p>
-</details> 
+</details>
+
 
 ##### **AutoH2oDRFRegression()**
 <code>AutoH2oDRFRegression()</code> utilizes the H2o Distributed Random Forest algorithm in the below steps 
@@ -1725,7 +1727,8 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
 ```
  
 </p>
-</details> 
+</details>
+
 
 ##### **AutoH2oGLMRegression()**
 <code>AutoH2oGLMRegression()</code> utilizes the H2o generalized linear model algorithm in the below steps 
@@ -1803,7 +1806,8 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
 ```
  
 </p>
-</details> 
+</details>
+
 
 ##### **AutoH2oMLRegression()**
 <code>AutoH2oMLRegression()</code> utilizes the H2o AutoML algorithm in the below steps 
@@ -1975,7 +1979,8 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 </details>
 
 
-
+</p>
+</details>
 
 
 
@@ -1985,10 +1990,6 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 
 <details><summary>click to expand</summary>
 <p>
-
-
-
-
 
 
 ##### **AutoCatBoostClassifier()** GPU Capable
@@ -2631,6 +2632,7 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
  
 </p>
 </details>
+
 
 ##### **Classifier Process**
 
@@ -3345,8 +3347,7 @@ First step is to build either a binary classification model (in the case of a si
 </p>
 </details>
 
-</p>
-</details>
+
 
 </p>
 </details>
