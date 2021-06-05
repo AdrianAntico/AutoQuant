@@ -1238,7 +1238,8 @@ str(data)
 ## Supervised Learning <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
 
 
-
+<details><summary>Click to Expand</summary>
+<p>
 
 
 #### Regression
