@@ -67,6 +67,7 @@ if(!("stringr" %in% rownames(installed.packages()))) install.packages("stringr")
 if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate"); print("timeDate")
 if(!("tsoutliers" %in% rownames(installed.packages()))) install.packages("tsoutliers"); print("tsoutliers")
 if(!("xgboost" %in% rownames(installed.packages()))) install.packages("xgboost"); print("xgboost")
+ if(!("lightgbm" %in% rownames(installed.packages()))) install.packages("lightgbm"); print("lightgbm")
 for (pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
 install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))
 devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
