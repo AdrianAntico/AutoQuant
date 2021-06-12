@@ -805,7 +805,7 @@ AutoLagRollStatsScoring <- function(data,
   if(!is.null(SD_RollWindows)) RollFunctions <- c(RollFunctions,"sd")
   if(!is.null(Skew_RollWindows)) RollFunctions <- c(RollFunctions,"skew")
   if(!is.null(Kurt_RollWindows)) RollFunctions <- c(RollFunctions,"kurt")
-  if(!is.null(Quantiles_Selected)) RollFunctions <- c(RollFunctions,Quantiles_Selected)
+  if(!is.null(Quantile_RollWindows)) RollFunctions <- c(RollFunctions,Quantiles_Selected)
   if(is.null(TimeBetween)) TimeBetween <- NULL else TimeBetween <- "TimeBetweenRecords" # Cant remember why I put the NULL there
   if(RollOnLag1) RollOnLag1 <- 1L else RollOnLag1 <- 0L
   TimeGroupPlaceHolder <- c()
@@ -886,16 +886,16 @@ AutoLagRollStatsScoring <- function(data,
   # No Categoricals ----
   if(is.null(HierarchyGroups) && is.null(IndependentGroups)) {
 
-    # Initialize counter----
+    # Initialize counter ----
     Counter <- 0L
 
-    # Loop through the time aggs----
+    # Loop through the time aggs ----
     for(timeaggs in TimeGroups) {
 
       # Increment----
       Counter <- Counter + 1L
 
-      # Check if timeaggs is same of TimeUnitAgg----
+      # Check if timeaggs is same of TimeUnitAgg ----
       if(Counter > 1L) {
 
         # Copy data ----
@@ -1784,7 +1784,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       data.table::setorderv(data, colVar, order = -1L)
     }
 
-    # Subset data for the rows needed to compute MaxCols----
+    # Subset data for the rows needed to compute MaxCols ----
     rows <- data[, .I[get(AscRowByGroup) %in% c(RecordsKeep)]]
     Rows <- c()
     for(x in seq_along(rows)) {

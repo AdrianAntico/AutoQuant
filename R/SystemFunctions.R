@@ -105,17 +105,17 @@ DownloadCSVFromStorageExplorer <- function(UploadCSVObjectName = 'data.csv',
                                            UploadLocation = 'Analytics Sandbox/Machine Learning',
                                            DataStoreName = NULL) {
 
-  # Check if azuremlsdk is installed----
+  # Check if azuremlsdk is installed
   if(!"azuremlsdk" %chin% installed.packages()) stop("You need to run install.packages('azuremlsdk')")
 
-  # Options----
+  # Options
   options(warn = -1)
 
-  # Azure stuff----
+  # Azure stuff
   ws <- azuremlsdk::load_workspace_from_config()
   ds <- azuremlsdk::get_datastore(ws, DataStoreName)
 
-  # transfer files----
+  # transfer files
   dset <- azuremlsdk::create_tabular_dataset_from_delimited_files(
     path = ds$path(file.path(UploadLocation, UploadCSVObjectName)),
     validate = TRUE,
@@ -126,13 +126,13 @@ DownloadCSVFromStorageExplorer <- function(UploadCSVObjectName = 'data.csv',
     header = TRUE,
     partition_format = NULL)
 
-  # Pull in data, convert it to data.table----
+  # Pull in data, convert it to data.table
   data <- dset$to_pandas_dataframe()
   data <- data.table::as.data.table(data)
 
-  # Write data to file----
+  # Write data to file
   data.table::fwrite(data, file = file.path(SaveCSVFilePath, SaveCSVName))
 
-  # Turn warnings back on----
+  # Turn warnings back on
   options(warn = 0)
 }

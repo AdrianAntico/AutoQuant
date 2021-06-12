@@ -1,4 +1,4 @@
-![Version: 0.5.4](https://img.shields.io/static/v1?label=Version&message=0.5.4&color=blue&?style=plastic)
+![Version: 0.5.5](https://img.shields.io/static/v1?label=Version&message=0.5.5&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -4469,6 +4469,479 @@ Choose from:
 
 </p>
 </details>
+
+
+## Funnel Forecasting <img src="Images/SalesFunnelImage.png" align="right" width="80" />
+<details><summary>Expand to view content</summary>
+<p>
+
+
+
+<details><summary>Funnel Forecasting Description</summary>
+<p>
+
+**Background**
+The term funnel forecasting is the process of forecasting the periods out from cohort start dates and across calendar time. The functions in RemixAutoML allow you to forecast these types of processes for single series and grouped series. The available functions utilize CatBoost, LightGBM, and XGBoost. Typically these forecasting projects are centered around the sales funnel but could be applied to any cohort style data structure. There are two primiary reasons to utilize the functions in this package over some alternatives out there. One, they utilize machine learning algorithms whereas the alternative methods only utilize glm's at best, and simple averaging more commonly. Second, there are tons of feature engineering opportunities with this kind of data structure that are altogether ignored with other methods. 
+
+**Feature engineering**
+The feature engineering that go into these functions include calendar and cohort date features (e.g. day of week, week of month, month of year, etc.), holiday features for both calendar and cohort dates, and time series features that cover both calendar and cohort dates (lags and rollings stats). The lags and rolling stats across cohort dates is what makes these functions really unique. In the Panel CARMA functions in RemixAutoML, lags and rolling stats are generated for calendar time. Here, I also take advantage of cohort time. There are also automatic categorical encoding methods for LightGBM and XGBoost for categorical variables. CatBoost handles categorical variables internally. There are also automatic transformations that can be utilized and the functions manage the conversion and backtransform for you automatically. XREGS (exogenous variables) are also permitted and they must be attached to the base funnel data. The XREGS need to span the entire forecast horizon.
+
+**Data structure**
+Typical data sets begin with some sort of base funnel measure, such as leads. The conversion measures of interest typically include sales or intermiate steps between leads and sales. What the functions do internally is predict the **conversion rates** across cohort time and calendar time. Once all periods are forecasted, the conversion measure is also computed. Model insights are saved to file so you can inspect the driving factors to the cohort process and the model performance measure.
+
+The data structure the functions expect will have columns such as, 'CalendarDateColumn', 'CohortDateColumn', 'CohortPeriodsOut', 'Leads', 'Appointments'. If you have group variables, they would also be columns. The data should be in long format - this means that for every 'CalendarDateColumn' there will be a bunch of corresponding 'CohortDateColumn' dates values. This makes sense since for each cohort there will be many periods out where conversion measures are generated. The CohortPeriodsVariable are values that represent the number of numeric units from the cohort date base value. Exmaple - if a single cohort is for the calendar date '2020-01-01' and the corresponding cohort date is '2020-01-10' then the CohortPeriodsVariable will have a value of 10 (numeric or integer). 
+
+**API**
+For this forecasting use case I split out training and forecasting process into two separate functions for each ML method. Auto__FunnelCARMA() (for model training) and Auto__FunnelCARMAScoring() (forecasting) are the two methods to be aware of.
+
+**ML parameters**
+Similarly to the other ML functions, most ML args are exposed with the functions so you can tune them in a ton of ways. You can also run them with a GPU if you've installed the GPU versions of the packages (relevant for XGBoost and LightGBM).
+
+**Usage for business**
+There are several additional benefits of forecasting using the Funnel models vs converting the data to standard panel data strucutres. Business groups are often interesting in individual cohorts and they utilize that information for not only planning but also to adjust strategies and identify issues with existing strategies. Anomaly detection can also be conducted by comparing forecasts to actuals when new data is made available, which is another way to help the business get ahead of issues before they because significant. 
+
+
+</p>
+</details>
+
+
+<details><summary>CatBoost Funnel Example</summary>
+<p>
+
+<code>AutoCatBoostFunnelCARMA()</code> and <code>AutoCatBoostFunnelCARMAScoring()</code>
+
+
+```
+# Create Fake Data
+data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+
+# Subset data for training
+ModelDataBase <- data[CalendarDateColumn < '2020-01-01' & CohortDateColumn < '2020-01-01']
+ModelData <- data.table::copy(ModelDataBase)
+
+# Build model
+TestModel <- RemixAutoML::AutoCatBoostFunnelCARMA(
+  
+  # Data Arguments
+  data = ModelData,
+  GroupVariables = NULL,
+  BaseFunnelMeasure = "Leads", # if you have XREGS, supply of vector such as c("Leads", "XREGS1", "XREGS2")
+  ConversionMeasure = "Appointments",
+  ConversionRateMeasure = NULL,
+  CohortPeriodsVariable = "CohortDays",
+  WeightsColumnName = NULL,
+  CalendarDate = "CalendarDateColumn",
+  CohortDate = "CohortDateColumn",
+  PartitionRatios = c(0.70,0.20,0.10),
+  TruncateDate = NULL,
+  TimeUnit = "days",
+  TransformTargetVariable = QA_Results[run, Trans],
+  TransformMethods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
+  AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
+  
+  # MetaData Arguments
+  Jobs = c("eval","train"),
+  SaveModelObjects = FALSE,
+  ModelID = "ModelTest",
+  ModelPath = getwd(),
+  MetaDataPath = NULL,
+  DebugMode = TRUE,
+  NumOfParDepPlots = 1L,
+  EncodingMethod = "credibility",
+  NThreads = parallel::detectCores(),
+  
+  # Feature Engineering Arguments
+  CalendarTimeGroups = c("days","weeks","months"),
+  CohortTimeGroups = c("days", "weeks"),
+  CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
+  HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  CohortHolidayLags = c(1L,2L,7L),
+  CohortHolidayMovingAverages = c(3L,7L),
+  CalendarHolidayLags = c(1L,2L,7L),
+  CalendarHolidayMovingAverages = c(3L,7L),
+  
+  # Time Series Features
+  ImputeRollStats = -0.001,
+  CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
+  CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+  CalendarStandardDeviations = NULL,
+  CalendarSkews = NULL,
+  CalendarKurts = NULL,
+  CalendarQuantiles = NULL,
+  CalendarQuantilesSelected = "q50",
+  CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
+  CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+  CohortStandardDeviations = NULL,
+  CohortSkews = NULL,
+  CohortKurts = NULL,
+  CohortQuantiles = NULL,
+  CohortQuantilesSelected = "q50",
+  
+  # ML Grid Tuning
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 25L,
+  MaxRunMinutes = 180L,
+  MaxRunsWithoutNewWinner = 10L,
+  
+  # ML Setup Parameters
+  MetricPeriods = 10,
+  LossFunction = 'MAE',
+  EvaluationMetric = 'mae',
+  GridEvalMetric = 'mae',
+  TaskType = "CPU", 
+  NumGPUs = 1,
+  
+  # ML Parameters
+  Trees = 3000L,
+  Depth = 8L,
+  L2_Leaf_Reg = NULL,
+  LearningRate = NULL,
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
+  RandomStrength = 1,
+  BorderCount = 254,
+  RSM = NULL,
+  GrowPolicy = "SymmetricTree",
+  BootStrapType = "Bayesian",
+  ModelSizeReg = 0.5,
+  FeatureBorderType = "GreedyLogSum",
+  SamplingUnit = "Group",
+  SubSample = NULL,
+  ScoreFunction = "Cosine",
+  MinDataInLeaf = 1)
+
+# Separate out the Base Funnel Measures Data
+LeadsData <- data[, lapply(.SD, data.table::first), .SDcols = c("Leads"), by = c("CalendarDateColumn")]
+ModelData <- ModelDataBase[, Leads := NULL]
+
+# Scoring
+Test <- RemixAutoML::AutoCatBoostFunnelCARMAScoring(
+  TrainData = ModelData,
+  ForwardLookingData = LeadsData,
+  TrainEndDate = ModelData[, max(CalendarDateColumn)],
+  ForecastEndDate = LeadsData[, max(CalendarDateColumn)],
+  TrainOutput = TestModel$ModelOutput,
+  ArgsList = TestModel$ArgsList,
+  ModelPath = NULL,
+  MaxCohortPeriod = 15,
+  DebugMode = TRUE)
+```
+
+</p>
+</details>
+
+
+<details><summary>LightGBM Funnel Example</summary>
+<p>
+
+<code>AutoLightGBMFunnelCARMA()</code> and <code>AutoLightGBMFunnelCARMAScoring()</code>
+
+
+```
+# Create Fake Data
+data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+
+# Subset data for training
+ModelDataBase <- data[CalendarDateColumn < '2020-01-01' & CohortDateColumn < '2020-01-01']
+ModelData <- data.table::copy(ModelDataBase)
+
+# Build model
+TestModel <- RemixAutoML::AutoLightGBMFunnelCARMA(
+  
+  # Data Arguments
+  data = ModelData,
+  GroupVariables = NULL,
+  BaseFunnelMeasure = "Leads", # if you have XREGS, supply of vector such as c("Leads", "XREGS1", "XREGS2")
+  ConversionMeasure = "Appointments",
+  ConversionRateMeasure = NULL,
+  CohortPeriodsVariable = "CohortDays",
+  WeightsColumnName = NULL,
+  CalendarDate = "CalendarDateColumn",
+  CohortDate = "CohortDateColumn",
+  PartitionRatios = c(0.70,0.20,0.10),
+  TruncateDate = NULL,
+  TimeUnit = "days",
+  TransformTargetVariable = QA_Results[run, Trans],
+  TransformMethods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
+  AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
+  
+  # MetaData Arguments
+  Jobs = c("eval","train"),
+  SaveModelObjects = FALSE,
+  ModelID = "ModelTest",
+  ModelPath = getwd(),
+  MetaDataPath = NULL,
+  DebugMode = TRUE,
+  NumOfParDepPlots = 1L,
+  EncodingMethod = "credibility",
+  NThreads = parallel::detectCores(),
+  
+  # Feature Engineering Arguments
+  CalendarTimeGroups = c("days","weeks","months"),
+  CohortTimeGroups = c("days", "weeks"),
+  CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
+  HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  CohortHolidayLags = c(1L,2L,7L),
+  CohortHolidayMovingAverages = c(3L,7L),
+  CalendarHolidayLags = c(1L,2L,7L),
+  CalendarHolidayMovingAverages = c(3L,7L),
+  
+  # Time Series Features
+  ImputeRollStats = -0.001,
+  CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
+  CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+  CalendarStandardDeviations = NULL,
+  CalendarSkews = NULL,
+  CalendarKurts = NULL,
+  CalendarQuantiles = NULL,
+  CalendarQuantilesSelected = "q50",
+  CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
+  CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+  CohortStandardDeviations = NULL,
+  CohortSkews = NULL,
+  CohortKurts = NULL,
+  CohortQuantiles = NULL,
+  CohortQuantilesSelected = "q50",
+  
+  # ML Grid Tuning
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 25L,
+  MaxRunMinutes = 180L,
+  MaxRunsWithoutNewWinner = 10L,
+  
+  # ML Setup Parameters
+  LossFunction = 'regression',
+  EvalMetric = 'mae',
+  GridEvalMetric = 'mae',
+  
+  # LightGBM Args
+  Device_Type = 'CPU',
+  Input_Model = NULL,
+  Task = 'train',
+  Boosting = 'gbdt',
+  LinearTree = FALSE,
+  Trees = 50,
+  ETA = 0.10,
+  Num_Leaves = 31,
+  Deterministic = TRUE,
+  
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  Force_Col_Wise = FALSE,
+  Force_Row_Wise = FALSE,
+  Max_Depth = 6,
+  Min_Data_In_Leaf = 20,
+  Min_Sum_Hessian_In_Leaf = 0.001,
+  Bagging_Freq = 1.0,
+  Bagging_Fraction = 1.0,
+  Feature_Fraction = 1.0,
+  Feature_Fraction_Bynode = 1.0,
+  Lambda_L1 = 0.0,
+  Lambda_L2 = 0.0,
+  Extra_Trees = FALSE,
+  Early_Stopping_Round = 10,
+  First_Metric_Only = TRUE,
+  Max_Delta_Step = 0.0,
+  Linear_Lambda = 0.0,
+  Min_Gain_To_Split = 0,
+  Drop_Rate_Dart = 0.10,
+  Max_Drop_Dart = 50,
+  Skip_Drop_Dart = 0.50,
+  Uniform_Drop_Dart = FALSE,
+  Top_Rate_Goss = FALSE,
+  Other_Rate_Goss = FALSE,
+  Monotone_Constraints = NULL,
+  Monotone_Constraints_method = 'advanced',
+  Monotone_Penalty = 0.0,
+  Forcedsplits_Filename = NULL, # use for AutoStack option; .json file
+  Refit_Decay_Rate = 0.90,
+  Path_Smooth = 0.0,
+  
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  Max_Bin = 255,
+  Min_Data_In_Bin = 3,
+  Data_Random_Seed = 1,
+  Is_Enable_Sparse = TRUE,
+  Enable_Bundle = TRUE,
+  Use_Missing = TRUE,
+  Zero_As_Missing = FALSE,
+  Two_Round = FALSE,
+  
+  # Convert Parameters
+  Convert_Model = NULL,
+  Convert_Model_Language = 'cpp',
+  
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  Boost_From_Average = TRUE,
+  Alpha = 0.90,
+  Fair_C = 1.0,
+  Poisson_Max_Delta_Step = 0.70,
+  Tweedie_Variance_Power = 1.5,
+  Lambdarank_Truncation_Level = 30,
+  
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  Is_Provide_Training_Metric = TRUE,
+  Eval_At = c(1,2,3,4,5),
+  
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  Num_Machines = 1,
+  
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  Gpu_Platform_Id = -1,
+  Gpu_Device_Id = -1,
+  Gpu_Use_Dp = TRUE,
+  Num_Gpu = 1)
+
+# Separate out the Base Funnel Measures Data
+LeadsData <- data[, lapply(.SD, data.table::first), .SDcols = c("Leads"), by = c("CalendarDateColumn")]
+ModelData <- ModelDataBase[, Leads := NULL]
+
+# Scoring
+Test <- RemixAutoML::AutoLightGBMFunnelCARMAScoring(
+  TrainData = ModelData,
+  ForwardLookingData = LeadsData,
+  TrainEndDate = ModelData[, max(CalendarDateColumn)],
+  ForecastEndDate = LeadsData[, max(CalendarDateColumn)],
+  TrainOutput = TestModel$ModelOutput,
+  ArgsList = TestModel$ArgsList,
+  ModelPath = NULL,
+  MaxCohortPeriod = 15,
+  DebugMode = TRUE)
+```
+
+</p>
+</details>
+
+
+<details><summary>XGBoost Funnel Example</summary>
+<p>
+
+<code>AutoXGBoostFunnelCARMA()</code> and <code>AutoXGBoostFunnelCARMAScoring()</code>
+
+
+```
+# Create Fake Data
+data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
+
+# Subset data for training
+ModelDataBase <- data[CalendarDateColumn < '2020-01-01' & CohortDateColumn < '2020-01-01']
+ModelData <- data.table::copy(ModelDataBase)
+
+# Build model
+TestModel <- RemixAutoML::AutoXGBoostFunnelCARMA(
+  
+  # Data Arguments
+  data = ModelData,
+  GroupVariables = NULL,
+  BaseFunnelMeasure = "Leads", # if you have XREGS, supply of vector such as c("Leads", "XREGS1", "XREGS2")
+  ConversionMeasure = "Appointments",
+  ConversionRateMeasure = NULL,
+  CohortPeriodsVariable = "CohortDays",
+  WeightsColumnName = NULL,
+  CalendarDate = "CalendarDateColumn",
+  CohortDate = "CohortDateColumn",
+  PartitionRatios = c(0.70,0.20,0.10),
+  TruncateDate = NULL,
+  TimeUnit = "days",
+  TransformTargetVariable = QA_Results[run, Trans],
+  TransformMethods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
+  AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
+  
+  # MetaData Arguments
+  Jobs = c("eval","train"),
+  SaveModelObjects = FALSE,
+  ModelID = "ModelTest",
+  ModelPath = getwd(),
+  MetaDataPath = NULL,
+  DebugMode = TRUE,
+  NumOfParDepPlots = 1L,
+  EncodingMethod = "credibility",
+  NThreads = parallel::detectCores(),
+  
+  # Feature Engineering Arguments
+  CalendarTimeGroups = c("days","weeks","months"),
+  CohortTimeGroups = c("days", "weeks"),
+  CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
+  HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  CohortHolidayLags = c(1L,2L,7L),
+  CohortHolidayMovingAverages = c(3L,7L),
+  CalendarHolidayLags = c(1L,2L,7L),
+  CalendarHolidayMovingAverages = c(3L,7L),
+  
+  # Time Series Features
+  ImputeRollStats = -0.001,
+  CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
+  CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+  CalendarStandardDeviations = NULL,
+  CalendarSkews = NULL,
+  CalendarKurts = NULL,
+  CalendarQuantiles = NULL,
+  CalendarQuantilesSelected = "q50",
+  CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
+  CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+  CohortStandardDeviations = NULL,
+  CohortSkews = NULL,
+  CohortKurts = NULL,
+  CohortQuantiles = NULL,
+  CohortQuantilesSelected = "q50",
+  
+  # ML Grid Tuning
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 25L,
+  MaxRunMinutes = 180L,
+  MaxRunsWithoutNewWinner = 10L,
+  
+  # ML Setup Parameters
+  GridEvalMetric = 'mae',
+  
+  # XGBoost arguments
+  TreeMethod = 'hist',
+  EvalMetric = 'MAE',
+  LossFunction = 'reg:squarederror',
+  Trees = 50L,
+  LearningRate = 0.3,
+  MaxDepth = 9L,
+  MinChildWeight = 1.0,
+  SubSample = 1.0,
+  ColSampleByTree = 1.0)
+
+# Separate out the Base Funnel Measures Data
+LeadsData <- data[, lapply(.SD, data.table::first), .SDcols = c("Leads"), by = c("CalendarDateColumn")]
+ModelData <- ModelDataBase[, Leads := NULL]
+
+# Scoring
+Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
+  TrainData = ModelData,
+  ForwardLookingData = LeadsData,
+  TrainEndDate = ModelData[, max(CalendarDateColumn)],
+  ForecastEndDate = LeadsData[, max(CalendarDateColumn)],
+  TrainOutput = TestModel$ModelOutput,
+  ArgsList = TestModel$ArgsList,
+  ModelPath = NULL,
+  MaxCohortPeriod = 15,
+  DebugMode = TRUE)
+```
+
+</p>
+</details>
+
+</p>
+</details>
+
 
 
 ## Time Series Forecasting <img src="Images/AutoTS.png" align="right" width="80" />

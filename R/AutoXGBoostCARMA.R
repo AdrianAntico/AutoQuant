@@ -44,15 +44,15 @@
 #' @param PartitionType Select 'random' for random data partitioning 'time' for partitioning by time frames
 #' @param Timer Setting to TRUE prints out the forecast number while it is building
 #' @param DebugMode Setting to TRUE generates printout of all header code comments during run time of function
-#' @param TreeMethod Choose from 'hist', 'gpu_hist'
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
-#' @param EvalMetric Select from 'r2', 'RMSE', 'MSE', 'MAE'
-#' @param LossFunction Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'
 #' @param GridTune Set to TRUE to run a grid tune
 #' @param GridEvalMetric This is the metric used to find the threshold 'poisson', 'mae', 'mape', 'mse', 'msle', 'kl', 'cs', 'r2'
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Number of consecutive runs without a new winner in order to terminate procedure
 #' @param MaxRunMinutes Default 24L*60L
+#' @param TreeMethod Choose from 'hist', 'gpu_hist'
+#' @param EvalMetric Select from 'r2', 'RMSE', 'MSE', 'MAE'
+#' @param LossFunction Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'
 #' @param NTrees Select the number of trees you want to have built to train the model
 #' @param LearningRate Learning Rate
 #' @param MaxDepth Depth

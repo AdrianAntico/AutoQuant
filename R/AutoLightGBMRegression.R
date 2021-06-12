@@ -515,7 +515,7 @@ AutoLightGBMRegression <- function(# data parameters
   # FactorLevelsList ----
   if(!exists('FactorLevelsList')) FactorLevelsList <- NULL
 
-  # turn back to normal
+  # Turn back to normal
   options(warn = 1)
 
   # Return Model Objects ----

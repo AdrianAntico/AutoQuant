@@ -53,7 +53,7 @@ AutoLightGBMCARMA(
   ModelCount = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L * 60L,
-  Device_Type = "CPU",
+  Device_Type = "cpu",
   LossFunction = "regression",
   EvalMetric = "mae",
   Input_Model = NULL,
@@ -209,7 +209,9 @@ AutoLightGBMCARMA(
 
 \item{MaxRunsWithoutNewWinner}{Number of consecutive runs without a new winner in order to terminate procedure}
 
-\item{MaxRunMinutes}{Default 24L*60L}
+\item{MaxRunMinutes}{Default 24L*60L
+
+# ML Args begin}
 
 \item{Device_Type}{= 'CPU'}
 

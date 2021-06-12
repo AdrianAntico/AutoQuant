@@ -54,6 +54,8 @@
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Number of consecutive runs without a new winner in order to terminate procedure
 #' @param MaxRunMinutes Default 24L*60L
+#'
+#' # ML Args begin
 #' @param Device_Type = 'CPU'
 #' @param LossFunction = 'regression'
 #' @param EvalMetric = 'mae'
@@ -382,7 +384,7 @@ AutoLightGBMCARMA <- function(data = NULL,
                               MaxRunMinutes = 24L*60L,
 
                               # LightGBM Args
-                              Device_Type = 'CPU',
+                              Device_Type = 'cpu',
                               LossFunction = 'regression',
                               EvalMetric = 'mae',
                               Input_Model = NULL,

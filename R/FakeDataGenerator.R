@@ -137,7 +137,7 @@ FakeDataGenerator <- function(Correlation = 0.70,
     MaxCohortDays <- 15L
 
     # Start date
-    CalendarDateData <- data.table::data.table(CalendarDateColumn = rep(as.Date("2017-01-01"), N), key = "CalendarDateColumn")
+    CalendarDateData <- data.table::data.table(CalendarDateColumn = rep(as.Date("2018-01-01"), N), key = "CalendarDateColumn")
 
     # Increment date column so it is sequential
     CalendarDateData[, temp := seq_len(N)]
