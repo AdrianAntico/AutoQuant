@@ -4471,7 +4471,7 @@ Choose from:
 </details>
 
 
-## Funnel Forecasting <img src="Images/SalesFunnelImage.png" align="right" width="80" />
+## Funnel Forecasting <img src="Images/SalesFunnelImage.PNG" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
