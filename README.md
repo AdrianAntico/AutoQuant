@@ -120,7 +120,7 @@ Supply a data.table to run the functions below:
 1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, 
 <code>AutoETS()</code>, <code>AutoArfima()</code>, or <code>AutoTS()</code> (older function; no longer developing)
 2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2OCARMA()</code>,<code>AutoCatBoostHurdleCARMA</code> or <code>AutoCatBoostVectorCARMA</code> or build a loop and run functions from (1)
-3. If you have to do any funnel forecasting, check out AutoCatBoostChainLadder(). First you need to structure you data like the help example. When you think you have found a good configuration, set the parameter SaveModelObjects = TRUE. Then you can run the AutoMLChainLadderForecasting(). 
+3. If you have to do any funnel forecasting, check out AutoCatBoostFunnelCARMA(), AutoLightGBMFunnelCARMA(), or AutoXGBoostFunnelCARMA() for training and then you can run the corresponding Auto__FunnelCARMAScoring() function.
 
 </p>
 </details>
@@ -4525,7 +4525,7 @@ TestModel <- RemixAutoML::AutoCatBoostFunnelCARMA(
   # Data Arguments
   data = ModelData,
   GroupVariables = NULL,
-  BaseFunnelMeasure = "Leads", # if you have XREGS, supply of vector such as c("Leads", "XREGS1", "XREGS2")
+  BaseFunnelMeasure = "Leads", # if you have XREGS, supply vector such as c("Leads", "XREGS1", "XREGS2")
   ConversionMeasure = "Appointments",
   ConversionRateMeasure = NULL,
   CohortPeriodsVariable = "CohortDays",
@@ -4547,7 +4547,6 @@ TestModel <- RemixAutoML::AutoCatBoostFunnelCARMA(
   MetaDataPath = NULL,
   DebugMode = TRUE,
   NumOfParDepPlots = 1L,
-  EncodingMethod = "credibility",
   NThreads = parallel::detectCores(),
   
   # Feature Engineering Arguments
@@ -4654,7 +4653,7 @@ TestModel <- RemixAutoML::AutoLightGBMFunnelCARMA(
   # Data Arguments
   data = ModelData,
   GroupVariables = NULL,
-  BaseFunnelMeasure = "Leads", # if you have XREGS, supply of vector such as c("Leads", "XREGS1", "XREGS2")
+  BaseFunnelMeasure = "Leads", # if you have XREGS, supply vector such as c("Leads", "XREGS1", "XREGS2")
   ConversionMeasure = "Appointments",
   ConversionRateMeasure = NULL,
   CohortPeriodsVariable = "CohortDays",
@@ -4844,7 +4843,7 @@ TestModel <- RemixAutoML::AutoXGBoostFunnelCARMA(
   # Data Arguments
   data = ModelData,
   GroupVariables = NULL,
-  BaseFunnelMeasure = "Leads", # if you have XREGS, supply of vector such as c("Leads", "XREGS1", "XREGS2")
+  BaseFunnelMeasure = "Leads", # if you have XREGS, supply vector such as c("Leads", "XREGS1", "XREGS2")
   ConversionMeasure = "Appointments",
   ConversionRateMeasure = NULL,
   CohortPeriodsVariable = "CohortDays",
