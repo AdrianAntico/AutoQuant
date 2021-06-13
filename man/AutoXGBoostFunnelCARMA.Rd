@@ -212,97 +212,109 @@ AutoXGBoostFunnelCARMA is a forecasting model for cohort funnel forecasting for 
 }
 \examples{
 \dontrun{
-# Create simulated data
-data <- RemixAutoML::FakeDataGenerator(
-  ChainLadderData = TRUE)
+# Create fake data
+data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 
-# Build model
-RemixAutoML::AutoXGBoostFunnelCARMA(
+# Subset data for training
+ModelDataBase <- data[CalendarDateColumn < '2020-01-01' & CohortDateColumn < '2020-01-01']
+ModelData <- data.table::copy(ModelDataBase)
 
-   # Data Arguments----
-   data = data,
-   GroupVariables = NULL,
-   PartitionRatios = c(0.70,0.20,0.10),
-   BaseFunnelMeasure = "Leads",
-   ConversionMeasure = "Appointments",
-   ConversionRateMeasure = NULL,
-   CohortPeriodsVariable = "CohortDays",
-   CalendarDate = "CalendarDateColumn",
-   CohortDate = "CohortDateColumn",
+# Train Funne Model
+TestModel <- RemixAutoML::AutoXGBoostFunnelCARMA(
 
-   # Additional Services
-   EncodingMethod = "credibility",
-   OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
-   WeightsColumnName = NULL,
-   TruncateDate = NULL,
-   PartitionRatios = c(0.70,0.20,0.10),
-   TimeUnit = c("day"),
-   CalendarTimeGroups = c("day","week","month"),
-   CohortTimeGroups = c("day","week","month"),
-   TransformTargetVariable = TRUE,
-   TransformMethods = c("Identity","YeoJohnson"),
-   AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
+  # Data Arguments
+  data = ModelData,
+  GroupVariables = NULL,
+  BaseFunnelMeasure = "Leads", # if you have XREGS, supply vector such as c("Leads", "XREGS1", "XREGS2")
+  ConversionMeasure = "Appointments",
+  ConversionRateMeasure = NULL,
+  CohortPeriodsVariable = "CohortDays",
+  WeightsColumnName = NULL,
+  CalendarDate = "CalendarDateColumn",
+  CohortDate = "CohortDateColumn",
+  PartitionRatios = c(0.70,0.20,0.10),
+  TruncateDate = NULL,
+  TimeUnit = "days",
+  TransformTargetVariable = TRUE,
+  TransformMethods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
+  AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
 
-   # Production
-   Jobs = c("Evaluate","Train"),
-   SaveModelObjects = TRUE,
-   ModelID = "Segment_ID",
-   ModelPath = NULL,
-   MetaDataPath = NULL,
-   DebugMode = FALSE,
+  # MetaData Arguments
+  Jobs = c("eval","train"),
+  SaveModelObjects = FALSE,
+  ModelID = "ModelTest",
+  ModelPath = getwd(),
+  MetaDataPath = NULL,
+  DebugMode = TRUE,
+  NumOfParDepPlots = 1L,
+  EncodingMethod = "credibility",
+  NThreads = parallel::detectCores(),
 
-   # Date Features
-   CalendarVariables = c("wday","mday","yday","week","isoweek","month","quarter","year"),
-   HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-   HolidayLookback = NULL,
+  # Feature Engineering Arguments
+  CalendarTimeGroups = c("days","weeks","months"),
+  CohortTimeGroups = c("days", "weeks"),
+  CalendarVariables = c("wday","mday","yday","week","month","quarter","year"),
+  HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  CohortHolidayLags = c(1L,2L,7L),
+  CohortHolidayMovingAverages = c(3L,7L),
+  CalendarHolidayLags = c(1L,2L,7L),
+  CalendarHolidayMovingAverages = c(3L,7L),
 
-   # Time Series Holiday Features
-   CohortHolidayLags = c(1L, 2L, 7L),
-   CohortHolidayMovingAverages = c(3L, 7L),
-   CalendarHolidayLags = c(1L, 2L, 7L),
-   CalendarHolidayMovingAverages = c(3L, 7L),
+  # Time Series Features
+  ImputeRollStats = -0.001,
+  CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
+  CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+  CalendarStandardDeviations = NULL,
+  CalendarSkews = NULL,
+  CalendarKurts = NULL,
+  CalendarQuantiles = NULL,
+  CalendarQuantilesSelected = "q50",
+  CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
+  CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+  CohortStandardDeviations = NULL,
+  CohortSkews = NULL,
+  CohortKurts = NULL,
+  CohortQuantiles = NULL,
+  CohortQuantilesSelected = "q50",
 
-   # Time Series Features
-   ImputeRollStats = -0.001,
-   CalendarLags = list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L)),
-   CalendarMovingAverages = list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L)),
-   CalendarStandardDeviations = NULL,
-   CalendarSkews = NULL,
-   CalendarKurts = NULL,
-   CalendarQuantiles = NULL,
-   CalendarQuantilesSelected = "q50",
-   CohortLags = list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L)),
-   CohortMovingAverages = list("day" = c(1L, 7L, 21L), "week" = c(1L, 4L, 52L), "month" = c(1L, 6L, 12L)),
-   CohortStandardDeviations = NULL,
-   CohortSkews = NULL,
-   CohortKurts = NULL,
-   CohortQuantiles = NULL,
-   CohortQuantilesSelected = "q50",
+  # ML Grid Tuning
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 25L,
+  MaxRunMinutes = 180L,
+  MaxRunsWithoutNewWinner = 10L,
 
-   # Grid Tuning
-   PassInGrid = NULL,
-   GridTune = FALSE,
-   BaselineComparison = "default",
-   MaxModelsInGrid = 25L,
-   MaxRunMinutes = 180L,
-   MaxRunsWithoutNewWinner = 10L,
+  # ML Setup Parameters
+  GridEvalMetric = 'mae',
 
-   # ML Setup Parameters
-   LossFunction = 'regression',
-   EvalMetric = 'mae',
-   MetricPeriods = 50L,
-   NumOfParDepPlots = 1L,
-   NThreads = parallel::detectCores() / 2,
+  # XGBoost arguments
+  TreeMethod = 'hist',
+  EvalMetric = 'MAE',
+  LossFunction = 'reg:squarederror',
+  Trees = 50L,
+  LearningRate = 0.3,
+  MaxDepth = 9L,
+  MinChildWeight = 1.0,
+  SubSample = 1.0,
+  ColSampleByTree = 1.0)
 
-   TreeMethod = 'hist',
-   EvalMetric = 'MAE',
-   LossFunction = 'reg:squarederror',
-   Trees = 1000L,
-   LearningRate = 0.3,
-   MaxDepth = 9L,
-   MinChildWeight = 1.0,
-   SubSample = 1.0,
-   ColSampleByTree = 1.0)
+# Separate out the Base Funnel Measures Data
+LeadsData <- data[, lapply(.SD, data.table::first), .SDcols = c("Leads"), by = c("CalendarDateColumn")]
+ModelData <- ModelDataBase[, Leads := NULL]
+
+# Forecast Funnel Model
+Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
+  TrainData = ModelData,
+  ForwardLookingData = LeadsData,
+  TrainEndDate = ModelData[, max(CalendarDateColumn)],
+  ForecastEndDate = LeadsData[, max(CalendarDateColumn)],
+  TrainOutput = TestModel$ModelOutput,
+  ArgsList = TestModel$ArgsList,
+  ModelPath = NULL,
+  MaxCohortPeriod = 15,
+  DebugMode = TRUE)
 }
 }
 \seealso{
