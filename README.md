@@ -4529,13 +4529,12 @@ TestModel <- RemixAutoML::AutoCatBoostFunnelCARMA(
   ConversionMeasure = "Appointments",
   ConversionRateMeasure = NULL,
   CohortPeriodsVariable = "CohortDays",
-  WeightsColumnName = NULL,
   CalendarDate = "CalendarDateColumn",
   CohortDate = "CohortDateColumn",
   PartitionRatios = c(0.70,0.20,0.10),
   TruncateDate = NULL,
   TimeUnit = "days",
-  TransformTargetVariable = QA_Results[run, Trans],
+  TransformTargetVariable = TRUE,
   TransformMethods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
   AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
   
@@ -4547,7 +4546,6 @@ TestModel <- RemixAutoML::AutoCatBoostFunnelCARMA(
   MetaDataPath = NULL,
   DebugMode = TRUE,
   NumOfParDepPlots = 1L,
-  NThreads = parallel::detectCores(),
   
   # Feature Engineering Arguments
   CalendarTimeGroups = c("days","weeks","months"),
@@ -4588,8 +4586,7 @@ TestModel <- RemixAutoML::AutoCatBoostFunnelCARMA(
   # ML Setup Parameters
   MetricPeriods = 10,
   LossFunction = 'MAE',
-  EvaluationMetric = 'mae',
-  GridEvalMetric = 'mae',
+  EvaluationMetric = 'MAE',
   TaskType = "CPU", 
   NumGPUs = 1,
   
@@ -4663,7 +4660,7 @@ TestModel <- RemixAutoML::AutoLightGBMFunnelCARMA(
   PartitionRatios = c(0.70,0.20,0.10),
   TruncateDate = NULL,
   TimeUnit = "days",
-  TransformTargetVariable = QA_Results[run, Trans],
+  TransformTargetVariable = TRUE,
   TransformMethods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
   AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
   
@@ -4853,7 +4850,7 @@ TestModel <- RemixAutoML::AutoXGBoostFunnelCARMA(
   PartitionRatios = c(0.70,0.20,0.10),
   TruncateDate = NULL,
   TimeUnit = "days",
-  TransformTargetVariable = QA_Results[run, Trans],
+  TransformTargetVariable = TRUE,
   TransformMethods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
   AnomalyDetection = list(tstat_high = 3, tstat_low = -2),
   

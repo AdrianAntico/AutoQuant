@@ -617,7 +617,7 @@ AutoCatBoostFunnelCARMA <- function(data,
       SaveTimers(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID)
     }
 
-    # FE: AutoLagRollStats() CohortDate HolidayCounts OVER CohortDate ----
+    # FE: AutoLagRollStats() HolidayCounts OVER CohortDate ----
     if(DebugMode) print("FE: AutoLagRollStats() CohortDate HolidayCounts with CalendarDate as a Grouping Variable ----")
     if(proc %in% c("evaluate","evaluation","eval","train","training") && !is.null(CohortHolidayLags)) {
       x <- system.time(gcFirst = FALSE, data <- RemixAutoML::AutoLagRollStats(
