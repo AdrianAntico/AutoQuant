@@ -132,6 +132,8 @@ Supply a data.table to run the functions below:
 
 <details><summary>Expand to view content</summary>
 <p>
+
+[Sales Funnel Forecasting with ML using RemixAutoML](https://adrianantico.medium.com/sales-funnel-forecasting-using-ml-with-remixautoml-86361ce281b3)
  
 [The Most Feature Rich ML Forecasting Methods Available](https://adrianantico.medium.com/the-most-feature-rich-ml-forecasting-methods-available-compliments-of-remixautoml-61b53daf42e6)
 
