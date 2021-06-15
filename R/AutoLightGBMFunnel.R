@@ -1,14 +1,3 @@
-#' @noRd
-SaveTimers <- function(SaveModelObjectss = SaveModelObjects, procs = proc, TimerDataEvals = TimerDataEval, TimerDataTrains = TimerDataTrain, MetaDataPaths = MetaDataPath, ModelIDs = ModelID) {
-  if(SaveModelObjectss) {
-    if(procs %chin% c("evaluate","eval")) {
-      data.table::fwrite(TimerDataEvals[Process != "a"], file = file.path(MetaDataPaths, paste0(ModelIDs, "_Eval_Timer.csv")))
-    } else if(procs %chin% c("training","train")) {
-      data.table::fwrite(TimerDataTrains[Process != "a"], file = file.path(MetaDataPaths, paste0(ModelIDs, "_Train_Timer.csv")))
-    }
-  }
-}
-
 #' @title AutoLightGBMFunnelCARMA
 #'
 #' @description AutoLightGBMFunnelCARMA is a forecasting model for cohort funnel forecasting for grouped data or non-grouped data

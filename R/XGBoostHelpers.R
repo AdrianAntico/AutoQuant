@@ -309,11 +309,15 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Dummify dataTrain Categorical Features ----
-    Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
-    dataTrain <- Output$TrainData; Output$TrainData <- NULL
-    dataTest <- Output$ValidationData; Output$ValidationData <- NULL
-    TestData. <- Output$TestData; Output$TestData. <- NULL
-    FactorLevelsList <- Output$MetaData; rm(Output)
+    if(!is.null(CatFeatures)) {
+      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+      dataTrain <- Output$TrainData; Output$TrainData <- NULL
+      dataTest <- Output$ValidationData; Output$ValidationData <- NULL
+      TestData. <- Output$TestData; Output$TestData. <- NULL
+      FactorLevelsList <- Output$MetaData; rm(Output)
+    } else {
+      FactorLevelsList <- NULL
+    }
 
     # Regression Subset Target Variables
     TrainTarget <- dataTrain[, get(TargetColumnName.)]
