@@ -847,7 +847,7 @@ EncodeCharacterVariables <- function(RunMode = 'train',
 
   # Encode
   if(EncodeMethod == "binary") {
-    temp <- DummifyDT(data=temp, cols=CategoricalVariableNames, KeepFactorCols=KeepCategoricalVariables, OneHot=FALSE, SaveFactorLevels=if(!is.null(MetaDataPath)) MetaDataPath else NULL, ReturnFactorLevels=ReturnMetaData, SavePath=MetaDataPath, ImportFactorLevels=FALSE, FactorLevelsList=MetaDataList)
+    temp <- DummifyDT(data=temp, cols=CategoricalVariableNames, KeepFactorCols=KeepCategoricalVariables, OneHot=FALSE, SaveFactorLevels=if(!is.null(MetaDataPath)) TRUE else FALSE, ReturnFactorLevels=ReturnMetaData, SavePath=MetaDataPath, ImportFactorLevels=FALSE, FactorLevelsList=MetaDataList)
     MetaData <- temp$FactorLevelsList
     temp <- temp$data
   } else if(EncodeMethod %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
