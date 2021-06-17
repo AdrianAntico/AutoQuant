@@ -651,16 +651,17 @@ CatBoostDataConversion <- function(CatFeatures. = CatFeatures,
     TestWeightVector <- NULL
   }
   if(!is.null(CatFeatures.) || length(CatFeatures.) > 0) {
+    cats <- unique(c(as.numeric(which(unlist(lapply(dataTrain., is.factor)))) - 1L, as.numeric(which(unlist(lapply(dataTrain., is.character)))) - 1L))
     if(!is.null(TestData.)) {
-      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = CatFeatures., weight = TrainWeightVector)
+      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = cats, weight = TrainWeightVector)
       if(!TrainOnFull.) {
-        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = CatFeatures., weight = ValidationWeightVector)
-        FinalTestPool <- catboost::catboost.load_pool(TestData., label = FinalTestTarget., cat_features = CatFeatures., weight = TestWeightVector)
+        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = cats, weight = ValidationWeightVector)
+        FinalTestPool <- catboost::catboost.load_pool(TestData., label = FinalTestTarget., cat_features = cats, weight = TestWeightVector)
       }
     } else {
-      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = CatFeatures., weight = TrainWeightVector)
+      TrainPool <- catboost::catboost.load_pool(dataTrain., label = TrainTarget., cat_features = cats, weight = TrainWeightVector)
       if(!TrainOnFull.) {
-        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = CatFeatures., weight = ValidationWeightVector)
+        TestPool <- catboost::catboost.load_pool(dataTest., label = TestTarget., cat_features = cats, weight = ValidationWeightVector)
       }
     }
   } else {
