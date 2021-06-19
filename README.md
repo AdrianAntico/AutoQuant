@@ -67,7 +67,7 @@ if(!("stringr" %in% rownames(installed.packages()))) install.packages("stringr")
 if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate"); print("timeDate")
 if(!("tsoutliers" %in% rownames(installed.packages()))) install.packages("tsoutliers"); print("tsoutliers")
 if(!("xgboost" %in% rownames(installed.packages()))) install.packages("xgboost"); print("xgboost")
- if(!("lightgbm" %in% rownames(installed.packages()))) install.packages("lightgbm"); print("lightgbm")
+if(!("lightgbm" %in% rownames(installed.packages()))) install.packages("lightgbm"); print("lightgbm")
 for (pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
 install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))
 devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
@@ -81,7 +81,7 @@ If you're still having trouble submit an issue and I'll work with you to get it 
 ```
 # Be sure to use the version you want versus what is listed below
 options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
-install.packages("https://github.com/catboost/catboost/releases/download/v0.25.1/catboost-R-Windows-0.25.1.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+install.packages("https://github.com/catboost/catboost/releases/download/v0.26/catboost-R-Windows-0.26.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
 ```
  
 If you're having still having trouble installing see if the issue below helps out:
