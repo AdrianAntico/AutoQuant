@@ -18,7 +18,7 @@
 ### Package Details
 > Supervised Learning - Currently, I'm utilizing CatBoost, LightGBM, XGBoost, and H2O for all of the automated Machine Learning related functions. GPU's can be utilized with CatBoost, LightGBM, and XGBoost, while those and the H2O models can all utilize 100% of CPU. Multi-armed bandit grid tuning is available for CatBoost, LightGBM, and XGBoost models, which utilize the concept of randomized probability matching, which is detailed in the R pacakge "bandit". My choice of included ML algorithms in the package is based on previous success when compared against other algorithms on real world use cases, the additional utilities these packages offer aside from accurate predictions, their ability to work on big data, and the fact that they're available in both R and Python which makes managing multiple languages a little more seamless in a professional setting.
 
-> Time series forecasting - Automated functions for single series, panel data, vector autoregression, intermittent demand, and funnel panel data. The panel data models utilize the machine learning algos from above and the feature engineering functions below. They are extremely feature rich and the combination of all possible feature settings is huge. The models for individual series are fully optimized versions from the R package "forecast". I utilize the multi-armed bandit grid tuning algo used in the supervised learning models and apply it to the SARIMA and NNETAR models from the forecast package. I also measure performance on hold out data (and training data, or a blend of the two).
+> Forecasting - Automated functions for single series, panel data, vector autoregression, intermittent demand, and funnel panel data. The panel data models utilize the machine learning algos from above and the feature engineering functions below. They are extremely feature rich and the combination of all possible feature settings is huge. The models for individual series are fully optimized versions from the R package "forecast". I utilize the multi-armed bandit grid tuning algo used in the supervised learning models and apply it to the SARIMA and NNETAR models from the forecast package. I also measure performance on hold out data (and training data, or a blend of the two).
 
 > Feature Engineering - Some of the feature engineering functions can only be found in this package. I believe feature engineering is your best bet for improving model performance. I have functions that cover all feature types except image data. There are feature engineering functions for numeric data, categorical data, text data, and date data. They are all designed to generate features for training and scoring pipelines and they run extremely fast with low memory utilization. The package takes advantage of data.table for all feature engineering and data wrangling related functions which means I only have to go to big data tools if absolutely necessary.
 
@@ -1233,16 +1233,11 @@ str(data)
 
 
 
-
-
-
-
-
 ## Supervised Learning <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
-
 
 <details><summary>Click to Expand</summary>
 <p>
+
 
 
 ### Regression
@@ -1250,9 +1245,36 @@ str(data)
 <details><summary>click to expand</summary>
 <p>
 
-<code>AutoCatBoostRegression()</code> GPU Capable. Utilizes the CatBoost algorithm in the below steps
+<details><summary>Regression Description</summary>
+<p>
+  
+The Auto_Regression() models handle a multitude of tasks. In order:
+1. Convert your data to data.table format for faster processing
+2. Transform your target variable using the best normalization method based on the <code>AutoTransformationCreate()</code> function
+3. Create train, validation, and test data, utilizing the <code>AutoDataPartition()</code> function, if you didn't supply those directly to the function
+4. Consoldate columns that are used for modeling and what metadata you want returned in your test data with predictions
+5. Dichotomize categorical variables (for <code>AutoXGBoostRegression()</code>) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets, utilizing the <code>DummifyDT()</code> function
+6. Save the final modeling column names for reference
+7. Handles the data conversion to the appropriate modeling type, such as CatBoost, H2O, and XGBoost
+8. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
+9. Loop through the grid-tuning process, building N models
+10. Collect the evaluation metrics for each grid tune run
+11. Identify the best model of the set of models built in the grid tuning search
+12. Save the hyperparameters from the winning grid tuned model
+13. Build the final model based on the best model from the grid tuning model search (I remove each model after evaluation metrics are generated in the grid tune to avoid memory overflow)
+14. Back-transform your predictions based on the best transformation used earlier in the process
+15. Collect evaluation metrics based on performance on test data (based on back-transformed data)
+16. Store the final predictions with the associated test data and other columns you want included in that set
+17. Save your transformation metadata for recreating them in a scoring process
+18. Build out and save an Evaluation Calibration Line Plot and Evaluation Calibration Box-Plot, using the <code>EvalPlot()</code> function
+19. Generate and save Variable Importance
+20. Generate and save Partital Dependence Calibration Line Plots and Partital Dependence Calibration Box-Plots, using the <code>ParDepPlots()</code> function
+21. Return all the objects generated in a named list for immediate use and evaluation
+ 
+</p>
+</details>
 
-<details><summary>Code Example</summary>
+<details><summary>CatBoost Example</summary>
 <p>
 
 ```
@@ -1353,9 +1375,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 </p>
 </details>
 
-<code>AutoXGBoostRegression()</code> GPU Capable. Utilizes the XGBoost algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>XGBoost Example</summary>
 <p>
 
 ```
@@ -1424,11 +1444,8 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 </p>
 </details>
 
-<code>AutoLightGBMRegression()</code> GPU Capable. Utilizes the LightGBM algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>LightGBM Example</summary>
 <p>
-
 
 ```
 # Create some dummy correlated data
@@ -1570,9 +1587,7 @@ TestModel <- RemixAutoML::AutoLightGBMRegression(
 </p>
 </details> 
 
-<code>AutoH2oGBMRegression()</code> Utilizes the H2O Gradient Boosting algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-GBM Example</summary>
 <p>
 
 ```
@@ -1648,9 +1663,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
 </p>
 </details>
 
-<code>AutoH2oDRFRegression()</code> Utilizes the H2o Distributed Random Forest algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-DRF Example</summary>
 <p>
  
 ```
@@ -1722,9 +1735,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
 </p>
 </details>
 
-<code>AutoH2oGLMRegression()</code> Utilizes the H2o generalized linear model algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-GLM Example</summary>
 <p>
  
 ```
@@ -1799,9 +1810,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
 </p>
 </details>
 
-<code>AutoH2oMLRegression()</code> Utilizes the H2o AutoML algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-AutoML Example</summary>
 <p>
  
 ```
@@ -1854,9 +1863,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
 </p>
 </details> 
 
-<code>AutoH2oGAMRegression()</code> Utilizes the H2o generalized linear model algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-GAM Example</summary>
 <p>
  
 ```
@@ -1936,50 +1943,42 @@ TestModel <- RemixAutoML::AutoH2oGAMRegression(
 </p>
 </details> 
 
-##### **Regression Process**
-<details><summary>Description</summary>
-<p>
-  
-The Auto_Regression() models handle a multitude of tasks. In order:
-1. Convert your data to data.table format for faster processing
-2. Transform your target variable using the best normalization method based on the <code>AutoTransformationCreate()</code> function
-3. Create train, validation, and test data, utilizing the <code>AutoDataPartition()</code> function, if you didn't supply those directly to the function
-4. Consoldate columns that are used for modeling and what metadata you want returned in your test data with predictions
-5. Dichotomize categorical variables (for <code>AutoXGBoostRegression()</code>) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets, utilizing the <code>DummifyDT()</code> function
-6. Save the final modeling column names for reference
-7. Handles the data conversion to the appropriate modeling type, such as CatBoost, H2O, and XGBoost
-8. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
-9. Loop through the grid-tuning process, building N models
-10. Collect the evaluation metrics for each grid tune run
-11. Identify the best model of the set of models built in the grid tuning search
-12. Save the hyperparameters from the winning grid tuned model
-13. Build the final model based on the best model from the grid tuning model search (I remove each model after evaluation metrics are generated in the grid tune to avoid memory overflow)
-14. Back-transform your predictions based on the best transformation used earlier in the process
-15. Collect evaluation metrics based on performance on test data (based on back-transformed data)
-16. Store the final predictions with the associated test data and other columns you want included in that set
-17. Save your transformation metadata for recreating them in a scoring process
-18. Build out and save an Evaluation Calibration Line Plot and Evaluation Calibration Box-Plot, using the <code>EvalPlot()</code> function
-19. Generate and save Variable Importance
-20. Generate and save Partital Dependence Calibration Line Plots and Partital Dependence Calibration Box-Plots, using the <code>ParDepPlots()</code> function
-21. Return all the objects generated in a named list for immediate use and evaluation
- 
 </p>
 </details>
-
-</p>
-</details>
-
-
-
 
 ### Binary Classification
 
 <details><summary>click to expand</summary>
 <p>
 
-<code>AutoCatBoostClassifier()</code> GPU Capable. Utilizes the CatBoost algorithm in the below steps
+<details><summary>Description</summary>
+<p>
+  
+The Auto_Classifier() models handle a multitude of tasks. In order:
+1. Convert your data to data.table format for faster processing
+2. Create train, validation, and test data if you didn't supply those directly to the function
+3. Consoldate columns that are used for modeling and what is to be kept for data returned
+4. Dichotomize categorical variables (for AutoXGBoostRegression) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets
+5. Saves the final column names for modeling to a csv for later reference
+6. Handles the data conversion to the appropriate type, based on model type (CatBoost, H2O, and XGBoost)
+7. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
+8. Build the grid tuned models
+9. Collect the evaluation metrics for each grid tune run
+10. Identify the best model of the set of models built in the grid tuning setup
+11. Save the hyperparameters from the winning grid tuned model
+12. Build the final model based on the best model from the grid tuning model search
+13. Collect evaluation metrics based on performance on test data
+14. Store the final predictions with the associated test data and other columns you want included in that set
+15. Build out and save an Evaluation Calibration Line Plot
+16. Build out and save an ROC plot with the top 5 models used in grid-tuning (includes the winning model)
+17. Generate and save Variable Importance data
+18. Generate and save Partital Dependence Calibration Line Plots
+19. Return all the objects generated in a named list for immediate use
 
-<details><summary>Code Example</summary>
+</p>
+</details>
+
+<details><summary>CatBoost Example</summary>
 <p>
 
 ```
@@ -2057,9 +2056,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 </p>
 </details>
 
-<code>AutoXGBoostClassifier()</code> GPU Capable. Utilizes the XGBoost algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>XGBoost Example</summary>
 <p>
  
 ```
@@ -2125,9 +2122,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 </p>
 </details> 
 
-<code>AutoLightGBMClassifier()</code> GPU Capable. Utilizes the LightGBM algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>LightGBM Example</summary>
 <p>
  
 ```
@@ -2265,9 +2260,7 @@ TestModel <- RemixAutoML::AutoLightGBMClassifier(
 </p>
 </details> 
 
-<code>AutoH2oGBMClassifier()</code> Utilizes the H2O Gradient Boosting algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-GBM Example</summary>
 <p>
 
 ``` 
@@ -2339,9 +2332,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 </p>
 </details> 
 
-<code>AutoH2oDRFClassifier()</code> Utilizes the H2O Distributed Random Forest algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-DRF Example</summary>
 <p>
  
 ```
@@ -2410,9 +2401,7 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 </p>
 </details> 
 
-<code>AutoH2oGLMClassifier()</code> Utilizes the H2O generalized linear model algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-GLM Example</summary>
 <p>
  
 ```
@@ -2484,9 +2473,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
 </p>
 </details> 
 
-<code>AutoH2oMLClassifier()</code> Utilizes the H2o AutoML algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-AutoML Example</summary>
 <p>
  
 ```
@@ -2527,9 +2514,7 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
 </p>
 </details> 
 
-<code>AutoH2oGAMClassifier()</code> Utilizes the H2o GAM algorithm in the below steps 
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-GAM Example</summary>
 <p>
  
 ```
@@ -2604,52 +2589,41 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
 </p>
 </details>
 
-
-##### **Classifier Process**
-
-<details><summary>Description</summary>
-<p>
-  
-The Auto_Classifier() models handle a multitude of tasks. In order:
-1. Convert your data to data.table format for faster processing
-2. Create train, validation, and test data if you didn't supply those directly to the function
-3. Consoldate columns that are used for modeling and what is to be kept for data returned
-4. Dichotomize categorical variables (for AutoXGBoostRegression) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets
-5. Saves the final column names for modeling to a csv for later reference
-6. Handles the data conversion to the appropriate type, based on model type (CatBoost, H2O, and XGBoost)
-7. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
-8. Build the grid tuned models
-9. Collect the evaluation metrics for each grid tune run
-10. Identify the best model of the set of models built in the grid tuning setup
-11. Save the hyperparameters from the winning grid tuned model
-12. Build the final model based on the best model from the grid tuning model search
-13. Collect evaluation metrics based on performance on test data
-14. Store the final predictions with the associated test data and other columns you want included in that set
-15. Build out and save an Evaluation Calibration Line Plot
-16. Build out and save an ROC plot with the top 5 models used in grid-tuning (includes the winning model)
-17. Generate and save Variable Importance data
-18. Generate and save Partital Dependence Calibration Line Plots
-19. Return all the objects generated in a named list for immediate use
-
 </p>
 </details>
-
-</p>
-</details>
-
-
-
 
 ### Multinomial Classification
 
 <details><summary>click to expand</summary>
 <p>
 
-<code>AutoCatBoostMultiClass()</code> GPU Capable. Utilizes the CatBoost algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>MultiClass Description</summary>
 <p>
+  
+The Auto_MultiClass() models handle a multitude of tasks. In order:
+1. Convert your data to data.table format for faster processing
+2. Create train, validation, and test data if you didn't supply those directly to the function
+3. Consoldate columns that are used for modeling and what is to be kept for data returned
+4. Dichotomize categorical variables (for AutoXGBoostRegression) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets
+5. Saves the final column names for modeling to a csv for later reference
+6. Ensures the target levels are consistent across train, validate, and test sets and save the levels to file
+7. Handles the data conversion to the appropriate type, based on model type (CatBoost, H2O, and XGBoost)
+8. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
+9. Build the grid tuned models
+10. Collect the evaluation metrics for each grid tune run
+11. Identify the best model of the set of models built in the grid tuning setup
+12. Save the hyperparameters from the winning grid tuned model
+13. Build the final model based on the best model from the grid tuning model search
+14. Collect evaluation metrics based on performance on test data
+15. Store the final predictions with the associated test data and other columns you want included in that set
+16. Generate and save Variable Importance data
+17. Return all the objects generated in a named list for immediate use
 
+</p>
+</details>
+
+<details><summary>CatBoost Example</summary>
+<p>
 
 ```
 # Create some dummy correlated data
@@ -2724,9 +2698,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 </p>
 </details>
 
-<code>AutoXGBoostMultiClass()</code> GPU Capable. Utilizes the XGBoost algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>XGBoost Example</summary>
 <p>
 
 ```
@@ -2793,9 +2765,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 </p>
 </details>
 
-<code>AutoLightGBMMultiClass()</code> GPU Capable. Utilizes the LightGBM algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>LightGBM Example</summary>
 <p>
 
 ```
@@ -2934,9 +2904,7 @@ TestModel <- RemixAutoML::AutoLightGBMMultiClass(
 </p>
 </details>
 
-<code>AutoH2oGBMMultiClass()</code> Utilizes the H2O Gradient Boosting algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-GBM Example</summary>
 <p>
 
 ```
@@ -2998,9 +2966,7 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
 </p>
 </details>
 
-<code>AutoH2oDRFMultiClass()</code> Utilizes the H2O Distributed Random Forest algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-DRF Example</summary>
 <p>
 
 ```
@@ -3060,9 +3026,7 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
 </p>
 </details>
 
-<code>AutoH2oGLMMultiClass()</code> Utilizes the H2O generalized linear model algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-GLM Example</summary>
 <p>
 
 ```
@@ -3133,9 +3097,7 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 </p>
 </details>
 
-<code>AutoH2oMLMultiClass()</code> Utilizes the H2o AutoML algorithm in the below steps
-
-<details><summary>Code Example</summary>
+<details><summary>H2O-AutoML Example</summary>
 <p>
 
 ```
@@ -3169,8 +3131,7 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
 </p>
 </details>
 
-<code>AutoGAMMultiClass()</code> Utilizes the H2o GAM algorithm in the below steps
-<details><summary>Code Example</summary>
+<details><summary>H2O-GAM Example</summary>
 <p>
 
 ```
@@ -3235,37 +3196,8 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 </p>
 </details>
 
-
-##### **MultiClass Process**
-
-<details><summary>Auto_MultiClass Description</summary>
-<p>
-  
-The Auto_MultiClass() models handle a multitude of tasks. In order:
-1. Convert your data to data.table format for faster processing
-2. Create train, validation, and test data if you didn't supply those directly to the function
-3. Consoldate columns that are used for modeling and what is to be kept for data returned
-4. Dichotomize categorical variables (for AutoXGBoostRegression) and save the factor levels for scoring in a way that guarentees consistency across training, validation, and test data sets
-5. Saves the final column names for modeling to a csv for later reference
-6. Ensures the target levels are consistent across train, validate, and test sets and save the levels to file
-7. Handles the data conversion to the appropriate type, based on model type (CatBoost, H2O, and XGBoost)
-8. Multi-armed bandit hyperparameter tuning using randomized probability matching, if you choose to grid tune
-9. Build the grid tuned models
-10. Collect the evaluation metrics for each grid tune run
-11. Identify the best model of the set of models built in the grid tuning setup
-12. Save the hyperparameters from the winning grid tuned model
-13. Build the final model based on the best model from the grid tuning model search
-14. Collect evaluation metrics based on performance on test data
-15. Store the final predictions with the associated test data and other columns you want included in that set
-16. Generate and save Variable Importance data
-17. Return all the objects generated in a named list for immediate use
-
 </p>
 </details>
-
-</p>
-</details>
-
 
 ### Generalized Hurdle Models
 
@@ -3274,41 +3206,33 @@ The Auto_MultiClass() models handle a multitude of tasks. In order:
   
 First step is to build either a binary classification model (in the case of a single bucket value, such as zero) or a multiclass model (for the case of multiple bucket values, such as zero and 10). The next step is to subset the data for the cases of: less than the first split value, in between the first and second split value, second and third split value, ..., second to last and last split value, along with greater than last split value. For each data subset, a regression model is built for predicting values in the split value ranges. The final compilation is to multiply the probabilities of being in each group times the values supplied by the regression values for each group.
 
-###### **Single Partition**
+**Single Partition**
 * E(y|x<sub>i</sub>) = Pr(X = 0) * 0 + Pr(X > 0) * E(X | X >= 0)  
 * E(y|x<sub>i</sub>) = Pr(X < x<sub>1</sub>) * E(X | X < x<sub>1</sub>) + Pr(X >= x<sub>1</sub>) * E(X | X >= x<sub>1</sub>)
 
-###### **Multiple Partitions**
+**Multiple Partitions**
 * E(y|x<sub>i</sub>) = Pr(X = 0) * 0 + Pr(X < x<sub>2</sub>) * E(X | X < x<sub>2</sub>) + ... + Pr(X < x<sub>n</sub>) * E(X | X < x<sub>n</sub>) + Pr(X >= x<sub>n</sub>) * E(X | X >= x<sub>n</sub>)
 * E(y|x<sub>i</sub>) = Pr(X < x<sub>1</sub>) * E(X | X < x<sub>1</sub>) + Pr(x<sub>1</sub> <= X < x<sub>2</sub>) * E(X | x<sub>1</sub> <= X < x<sub>2</sub>) + ... + Pr(x<sub>n-1</sub> <= X < x<sub>n</sub>) * E(X | x<sub>n-1</sub> <= X < x<sub>n</sub>) + Pr(X >= x<sub>n</sub>) * E(X | X >= x<sub>n</sub>)
   
-##### **AutoCatBoostHurdleModel()**
 <code>AutoCatBoostHurdleModel()</code> utilizes the CatBoost algorithm on the backend. 
 
-##### **AutoXGBoostHurdleModel()**
 <code>AutoXGBoostHurdleModel()</code> utilizes the XGBoost algorithm on the backend. 
 
-##### **AutoH2oDRFHurdleModel()**
-<code>AutoH2oDRFHurdleModel()</code> utilizes the H2O distributed random forest algorithm on the backend. 
-
-##### **AutoH2oGBMHurdleModel()**
-<code>AutoH2oGBMHurdleModel()</code> utilizes the H2O gradient boosting machine algorithm on the backend. 
-
-</p>
-</details>
+<code>AutoLightGBMHurdleModel()</code> utilizes the H2O distributed random forest algorithm on the backend. 
 
 </p>
 </details>
 
 
 
+</p>
+</details>
 
 
 
 ## Model Scoring <img src="Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
-
 
 
 
@@ -3440,17 +3364,23 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 
 <code>AutoH2OMLScoring()</code> is an automated scoring function that compliments the AutoH2oGBM__() and AutoH2oDRF__() model training functions. This function requires you to supply features for scoring. It will run ModelDataPrep()to prepare your features for H2O data conversion and scoring. It will also handle transformations and back-transformations if you utilized that feature in the regression training case and didn't do it yourself before hand.
 
-<code>AutoHurdleScoring()</code> will score the AutoCatBoostHurdleModel() function currently. Functionality for XGBoost hurdle models will be next, followed by the H2O version.
+<code>AutoCatBoostHurdleModelScoring()</code> for scoring models developed with AutoCatBoostHurdleModel()
+
+<code>AutoLightGBMHurdleModelScoring()</code> for scoring models developed with AutoLightGBMHurdleModel()
+
+<code>AutoXGBoostHurdleModelScoring()</code> for scoring models developed with AutoXGBoostHurdleModel()
+
+
 
 </p>
 </details>
 
 
 
-
 ## Model Evaluation <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
+
 
 
 <code>AutoShapeShap()</code> will take your CatBoost or XGBoost TestData or TrainData returned from one of the supervised learning functions and build out a table. The table will have columns, 'Date', 'EntityID', 'Variable', 'AbsShapValue', 'ShapValue', 'CurrentValue', 'DiffValue', 'PreviousValue' which can be used to analyze variable importance for any slice of the data. A few interesting areas to investigate include varible importance by records associated with a classifier label of 1 vs 0, for different grouping levels, and for different time slices. Further, if you analyze the ShapeValue column you will get a directional variable importance instead of a magnitute importance. You can further analyze the data by looking at standard deviation of ShapValues or any other aggregations method of interest. The function runs row by row so I set it up to run in parallel. You can specify the number of cores to utilize in case you have other processes running on your computer. The function calls the SingleRowShapeShap() function repeatedly. If you want to return information from the Shap Table for a single record you can run SingleRowShapeShap().
@@ -3460,8 +3390,6 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
 <img src="Images/AutoCatBoostRegressionParDepMultiPlot.png" align="center" width="400" />
-
-![ParDepCalPlots Blog](https://www.remixinstitute.com/blog/companies-are-demanding-model-interpretability-heres-how-to-do-it-right/#.XUIN1HtlCDM)
 
 <code>EvalPlot()</code> Has two plot versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
 
@@ -3478,16 +3406,18 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 </p>
 </details>
 
+
+
 ## Panel Data Forecasting <img src="Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
- 
+
+
 
 <details><summary>Code Example: AutoCatBoostCARMA()</summary>
 <p>
  
 ```
-
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Out-of-Sample Feature + Grid Tuning of RemixAutoML::AutoCatBoostCARMA()
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -3732,7 +3662,6 @@ for(Run in seq_len(TotalRuns)) {
 <details><summary>Code Example: AutoCatBoostVectorCARMA()</summary>
 <p>
 
- 
 ```
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # ML-Based Vector AutoRegression CARMA ----
@@ -3845,13 +3774,10 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
 </p>
 </details>
 
-
 <details><summary>Code Example: AutoXGBoostCARMA()</summary>
 <p>
 
- 
 ```
-  
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # XGBoost Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -3958,12 +3884,10 @@ XGBoostResults <- AutoXGBoostCARMA(
 </p>
 </details>
 
-
 <details><summary>Code Example: AutoLightGBMCARMA()</summary>
 <p>
 
 ```
-  
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # LightGBM Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -4148,12 +4072,9 @@ Results <- AutoLightGBMCARMA(
 </p>
 </details>
 
-
-
 <details><summary>Code Example: AutoH2OCARMA()</summary>
 <p>
 
- 
 ```
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # H2O Version ----
@@ -4294,8 +4215,6 @@ Results <- RemixAutoML::AutoH2OCARMA(
 </p>
 </details>
 
-<code>AutoCatBoostVectorCARMA</code> For Panel Data with multiple series to forecast. An example would be, predicting revenue and transactions across a large number of stores over time.
-
 <code>AutoCatBoostCARMA()</code> utilizes the CatBoost alorithm
 
 <code>AutoXGBoostCARMA()</code> utilizes the XGBoost alorithm
@@ -4305,9 +4224,9 @@ Results <- RemixAutoML::AutoH2OCARMA(
 <details><summary>Model Highlights</summary>
 <p>
  
-###### The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
+The CARMA suite utilizes several features to ensure proper models are built to generate the best possible out-of-sample forecasts.
 
-###### **Feature engineering:** I use a time trend, calendar variables, holiday counts, differencing, along with fourier pairs and lags / rolling statistics (mean, sd, skewness, kurtosis, quantiles) and they can be generated by categorical variables and their interactions plus for various time-based aggregations. Internally, the CARMA functions utilize several RemixAutoML functions, all written using data.table for fast and memory efficient processing: 
+**Feature engineering:** I use a time trend, calendar variables, holiday counts, differencing, along with fourier pairs and lags / rolling statistics (mean, sd, skewness, kurtosis, quantiles) and they can be generated by categorical variables and their interactions plus for various time-based aggregations. Internally, the CARMA functions utilize several RemixAutoML functions, all written using data.table for fast and memory efficient processing: 
   * <code>AutoLagRollStats()</code> - creates lags and moving average features (also creates lags and moving averages off of time between records)
   * <code>AutoLagRollStatsScoring()</code> - creates lags and moving average features for a single record (along with the time between vars)
   * <code>CreateCalendarVariables()</code> - creates numeric features identifying various time units based on date columns
@@ -4315,7 +4234,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
   * <code>AutoHierarchicalFourier()</code> - creates fourier pairs, by group, in paralell, for group variables and their interactions
   * <code>DifferenceData()</code> - differencing of the target variable for single series and panel data
 
-###### **Optimal transformations:** the target variable along with the associated lags and moving average features were transformed. This is really useful for regression models with categorical features that have associated target values that significantly differ from each other. The transformation options that are tested (using a Pearson test for normality) include: 
+**Optimal transformations:** the target variable along with the associated lags and moving average features were transformed. This is really useful for regression models with categorical features that have associated target values that significantly differ from each other. The transformation options that are tested (using a Pearson test for normality) include: 
   * YeoJohnson
   * BoxCox
   * Log
@@ -4326,11 +4245,11 @@ Results <- RemixAutoML::AutoH2OCARMA(
   * arcsin(sqrt(x)): proportion data only
   * logit(x): proportion data only
 
-###### The functions used to create these and generate them for scoring models come from RemixAutoML:
+The functions used to create these and generate them for scoring models come from RemixAutoML:
 * <code>AutoTransformationCreate()</code>
 * <code>AutoTransformationScore()</code>
 
-###### **Models:** there are eight CARMA functions and each use a different algorithm for the model fitting. The models used to fit the time series data come from RemixAutoML and include: 
+**Models:** there are eight CARMA functions and each use a different algorithm for the model fitting. The models used to fit the time series data come from RemixAutoML and include: 
 * <code>AutoCatBoostRegression()</code>
 * <code>AutoXGBoostRegression()</code>
 * <code>AutoLightGBMRegression()</code>
@@ -4340,17 +4259,17 @@ Results <- RemixAutoML::AutoH2OCARMA(
 * <code>AutoH2oGAMRegression()</code>
 * <code>AutoH2oAutoMLRegression()</code>
 
-###### **GPU:** With the CatBoost and XGBoost functions, you can build the models utilizing GPU (I run them with a GeForce 1080ti) which results in an average 10x speedup in model training time (compared to running on CPU with 8 threads).
+**GPU:** With the CatBoost and XGBoost functions, you can build the models utilizing GPU (I run them with a GeForce 1080ti) which results in an average 10x speedup in model training time (compared to running on CPU with 8 threads).
 
-###### **Data partitioning:** for creating the training, validation, and test data, the CARMA functions utilize the <code>AutoDataPartition()</code> function and utilizes the "timeseries" option for the PartitionType argument which ensures that the train data reflects the furthest points back in time, followed by the validation data, and then the test data which is the most recent in time.
+**Data partitioning:** for creating the training, validation, and test data, the CARMA functions utilize the <code>AutoDataPartition()</code> function and utilizes the "timeseries" option for the PartitionType argument which ensures that the train data reflects the furthest points back in time, followed by the validation data, and then the test data which is the most recent in time.
 
-###### **Forecasting:** Once the regression model is built, the forecast process replicates the ARIMA process. Once a single step-ahead forecast is made, the lags and moving average features are updated based on the predicted values from scoring the model. Next, the rest of the other features are updated. Then the next forecast step is made, rinse and repeat for remaining forecasting steps. This process utilizes the RemixAutoML functions:
+**Forecasting:** Once the regression model is built, the forecast process replicates the ARIMA process. Once a single step-ahead forecast is made, the lags and moving average features are updated based on the predicted values from scoring the model. Next, the rest of the other features are updated. Then the next forecast step is made, rinse and repeat for remaining forecasting steps. This process utilizes the RemixAutoML functions:
 * <code>AutoCatBoostScoring()</code>
 * <code>AutoXGBoostScoring()</code>
 * <code>AutoLightGBMScoring()</code>
 * <code>AutoH2oMLScoring()</code>
 
-#### **TimeSeriesFill()**
+**TimeSeriesFill()**
 <code>TimeSeriesFill()</code> is a function that will zero pad (currently only zero pad) a time series data set (not transactional data). There are four ways to use this function:
 Choose from:
   * maxmax - Fill from the absolute min date to the absolute max date (single series and panel data)
@@ -4358,17 +4277,20 @@ Choose from:
   * maxmin - Fill from the absolute min date to the min of the max dates (panel data)
   * minmin - Fill from the max date of the min dates to the min date of the max dates (panel data)
 
+</p>
+</details>
+
+
 
 </p>
 </details>
 
-</p>
-</details>
 
 
 ## Intermittent Demand Forecasting <img src="Images/IntermittentDemandForecasting.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
+
 
 
 <details><summary>Funnel Forecasting Description</summary>
@@ -4395,12 +4317,9 @@ Most intermittend demand forecasting I've done professionally were for supply ch
 </p>
 </details>
 
-
-
 <details><summary>Code Example: AutoCatBoostHurdleCARMA()</summary>
 <p>
 
- 
 ```
 # Load Walmart Data from Dropbox----
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
@@ -4500,11 +4419,9 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
 </p>
 </details>
 
-
 <details><summary>Code Example: AutoXGBoostHurdleCARMA()</summary>
 <p>
 
- 
 ```
 # Load Walmart Data from Dropbox----
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
@@ -4601,11 +4518,9 @@ Output <- RemixAutoML::AutoXGBoostHurdleCARMA(
 </p>
 </details>
 
-
 <details><summary>Code Example: AutoLightGBMHurdleCARMA()</summary>
 <p>
 
- 
 ```
 # Load Walmart Data from Dropbox----
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
@@ -4770,13 +4685,16 @@ Output <- RemixAutoML::AutoLightGBMHurdleCARMA(
 </details>
 
 
+
 </p>
 </details>
+
 
 
 ## Funnel Forecasting <img src="Images/SalesFunnelImage.PNG" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
+
 
 
 <details><summary>Funnel Forecasting Description</summary>
@@ -4806,12 +4724,10 @@ There are several additional benefits of forecasting using the Funnel models vs 
 </p>
 </details>
 
-
 <details><summary>CatBoost Funnel Example</summary>
 <p>
 
 <code>AutoCatBoostFunnelCARMA()</code> and <code>AutoCatBoostFunnelCARMAScoring()</code>
-
 
 ```
 # Create Fake Data
@@ -4931,12 +4847,10 @@ Test <- RemixAutoML::AutoCatBoostFunnelCARMAScoring(
 </p>
 </details>
 
-
 <details><summary>LightGBM Funnel Example</summary>
 <p>
 
 <code>AutoLightGBMFunnelCARMA()</code> and <code>AutoLightGBMFunnelCARMAScoring()</code>
-
 
 ```
 # Create Fake Data
@@ -5121,12 +5035,10 @@ Test <- RemixAutoML::AutoLightGBMFunnelCARMAScoring(
 </p>
 </details>
 
-
 <details><summary>XGBoost Funnel Example</summary>
 <p>
 
 <code>AutoXGBoostFunnelCARMA()</code> and <code>AutoXGBoostFunnelCARMAScoring()</code>
-
 
 ```
 # Create Fake Data
@@ -5237,6 +5149,8 @@ Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
 </p>
 </details>
 
+
+
 </p>
 </details>
 
@@ -5245,8 +5159,15 @@ Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
 ## Time Series Forecasting <img src="Images/AutoTS.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
-  
-### **AutoBanditSarima()**
+
+
+<details><summary>Time Series Forecasting Description</summary>
+<p>
+
+There are three sets of functions for single series traditional time series model forecasting. The first set includes the AutoBanditSarima() and AutoBanditNNet() functions. These two offer the most robust fitting strategies. The utilize a multi-armed-bandit to help narrow the search space of available parameter settings. The next batch includes the AutoTBATS(), AutoETS(), and the AutoArfima() functions. These don't utilze the bandit framework. Rather, they run through a near exhaustive search through all their possible settings. Both the bandit set and the non-bandit set utilize parallelism to burn through as many models as possible for a fixed amount of time. The third set includes the AutoTS() function. This function will run through ARIMA, ARFIMA, NNet, ETS, TBATS, TSLM, and DSHW models with a few variation of parameter settings. The best possible model of the set will likely come from the AutoBanditSarima() function but it's never a bad idea to start with a model search using AutoTS() and then running through the others. This way you can speak to different algorithm performance and the benefits of the selected model.
+
+</p>
+</details>
 
 <details><summary>Code Example</summary>
 <p>
@@ -5288,72 +5209,17 @@ Output$PerformanceGrid
 </p>
 </details>
 
-<code>AutoBanditSarima()</code> is the newest weapon in the time series arsenal. This is the highest performing single series time series model in the package. The entire arima parameter space is divided up into blocks that are increasing in complexity of parameter settings. The multi-armed bandit will determine which parameter block to sample from more frequently based on which one is performing better than the others. The underlying bandit algorithm is the randomized probability matching algorithm found in the **bandit** package. I had to write a slight variation of it to allow for tweaking the number of intervals used in computing the integrals that result in the probabilities used for sampling. The evaluation is different from what exists today - you need to specify a weighting to use so that both the training metrics and validation metrics are used in calculating the best model. The user can specify 0% or 100% to go with just the one measure of their choice as well. The function returns a list with data.table of the forecasts and prediction inverals and the other item in the list is the Performance Grid results so you can see how every model tested performed.
-
-### **AutoBanditNNet()**
-Same as AutoBanditArima except it uses the forecast::nnetar model behind the scenes.
-
-### **AutoTBATS()**
-AutoTBATS uses forecast::tbats behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
-
-### **AutoETS()**
-AutoETS uses forecast::ets behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
-
-### **AutoArfima()**
-AutoArfima uses forecast::arfima behind the scenes. It just runs through all the parameter settings and builds each model and returns the same list as the other two above.
-
-### **AutoTS()**
-<code>AutoTS()</code> 
-
-<details><summary>Model Highlights</summary>
-<p>
-
-* Save model and xregs to file if a path is supplied
-* Returns a list containing 
-  * A data.table object with a date column and the forecasted values
-  * The model evaluation results
-  * The champion model for later use if desired
-  * The name of the champion model
-  * A time series ggplot with historical values and forecasted values with optional 80% and 95% prediction intervals
-* The models tested internally include:
-  * DSHW: Double Seasonal Holt-Winters
-  * ARFIMA: Auto Regressive Fractional Integrated Moving Average
-  * ARIMA: Auto Regressive Integrated Moving Average with specified max lags, seasonal lags, moving averages, and seasonal moving averages
-  * ETS: Additive and Multiplicative Exponential Smoothing and Holt-Winters
-  * NNetar: Auto Regressive Neural Network models automatically compares models with 1 lag or 1 seasonal lag compared to models with up to N lags and N seasonal lags
-  * TBATS: Exponential smoothing state space model with Box-Cox transformation, ARMA errors, Trend and Seasonal components
-  * TSLM: Time Series Linear Model - builds a linear model with trend and season components extracted from the data
-
-For each of the models tested internally, several aspects should be noted:
-* Optimal Box-Cox transformations are used in every run where data is strictly positive. The optimal transformation could also be "no transformation". 
-* Four different treatments are tested for each model:
-  * user-specified time frequency + no historical series smoothing & imputation
-  * model-based time frequency + no historical smoothing and imputation
-  * user-specified time frequency + historical series smoothing & imputation
-  * model-based time frequency + historical smoothing & imputation
-
-* You can specify MaxFourierPairs to test out if adding Fourier term regressors can increase forecast accuracy. The Fourier terms will be applied to the ARIMA and NNetar models only.
-* For the ARIMA, ARFIMA, and TBATS, any number of lags and moving averages along with up to 1 seasonal lags and seasonal moving averages can be used (selection based on a stepwise procedure)
-* For the Double Seasonal Holt-Winters model, alpha, beta, gamma, omega, and phi are determined using least-squares and the forecasts are adjusted using an AR(1) model for the errors
-* The Exponential Smoothing State-Space model runs through an automatic selection of the error type, trend type, and season type, with the options being "none", "additive", and "multiplicative", along with testing of damped vs. non-damped trend (either additive or multiplicative), and alpha, beta, and phi are estimated
-* The neural network is setup to test out every combination of lags and seasonal lags and the model with the best holdout score is selected
-* The TBATS model utilizes any number of lags and moving averages for the errors, damped trend vs. non-damped trend are tested, trend vs. non-trend are also tested, and the model utilizes parallel processing for efficient run times
-* The TSLM model utilizes a simple time trend and season depending on the frequency of the data
 
 </p>
 </details>
 
-</p>
-</details>
 
 ## Recommender Systems <img src="Images/RecommenderSystemImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
   
-#### **AutoRecomDataCreate()**
 <code>AutoRecomDataCreate()</code> automatically creates your binary ratings matix from transaction data
 
-#### **AutoRecommender()**
 <code>AutoRecommender()</code> automated collaborative filtering modeling where each model below competes against one another for top performance
   * RandomItems
   * PopularItems
@@ -5361,53 +5227,45 @@ For each of the models tested internally, several aspects should be noted:
   * ItemBasedCF
   * AssociationRules
   
-#### **AutoRecommenderScoring()**
 <code>AutoRecommenderScoring()</code> automatically score a recommender model from AutoRecommender()
 
-#### **AutoMarketBasketModel()**
 <code>AutoMarketBasketModel()</code> is a function that runs a market basket analysis automatically. It will convert your data, run the algorithm, and generate the recommended items. On top of that, it includes additional significance values not provided by the source pacakge. 
   
 </p>
 </details>
 
+
 ## Unsupervised Learning <img src="Images/UnsupervisedLearningImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
  
-#### **ResidualOutliers()**
 <code>ResidualOutliers()</code> Generate residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
 
-#### **GenTSAnomVars()**
 <code>GenTSAnomVars()</code> generates time series anomaly variables. (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
 
 <img src="Images/ResidualOutliers_MultiplotImage.png" align="center" width="400" />
 
+
 </p>
 </details>
+
 
 ## Database Management <img src="Images/DataBase.PNG" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
-#### **AutoDataDictionary()**
 <code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R. There are several data dictionary types that can be returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
 
-#### **SQL_Server_DBConnection()**
 <code>SQL_Server_DBConnection()</code> Create a connect with sql server
 
-#### **SQL_Query_Push()**
 <code>SQL_Query_Push()</code> Push data to a sql server warehouse
 
-#### **SQL_Query()**
 <code>SQL_Query()</code> Query a sql server table
 
-#### **SQL_ClearTable()**
 <code>SQL_ClearTable()</code> Deletes all rows of a sql server table
 
-#### **SQL_DropTable()**
 <code>SQL_DropTable()</code> Removes a sql server table
 
-#### **SQL_SaveTable()**
 <code>SQL_SaveTable()</code> Write a sql server table
 
 
@@ -5419,21 +5277,16 @@ For each of the models tested internally, several aspects should be noted:
 <details><summary>Expand to view content</summary>
 <p>
  
-#### **AutoWordFreq()** 
 <code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
 <img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
 
-#### **RemixTheme()** 
 <code>RemixTheme()</code> is a specific font, set of colors, and style for plots.
 
-#### **ChartTheme()** 
 <code>ChartTheme()</code> is a specific font, set of colors, and style for plots.
 
-#### **multiplot()** 
 <code>multiplot()</code> is useful for displaying multiple plots in a single pane. I've never had luck using grid so I just use this instead.
 
-#### **FakeDataGenerator()**
 <code>FakeDataGenerator()</code> I use this to create fake data for the examples in the function help files
 
 </p>
