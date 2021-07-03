@@ -4748,12 +4748,6 @@ Results <- RemixAutoML::AutoH2OCARMA(
 </p>
 </details>
 
-<code>AutoCatBoostCARMA()</code> utilizes the CatBoost alorithm
-
-<code>AutoXGBoostCARMA()</code> utilizes the XGBoost alorithm
-
-<code>AutoH2OCARMA()</code> utilizes H2O Algorithms: RandomForest, GBM, GLM, AutoML, and GAM
-
 <details><summary>Model Highlights</summary>
 <p>
  
