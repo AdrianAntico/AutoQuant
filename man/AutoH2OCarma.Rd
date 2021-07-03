@@ -12,7 +12,7 @@ AutoH2OCARMA(
   TargetColumnName = "Target",
   PDFOutputPath = NULL,
   SaveDataPath = NULL,
-  WeightsColumn = NULL,
+  TimeWeights = NULL,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
   DateColumnName = "DateTime",
@@ -107,7 +107,7 @@ AutoH2OCARMA(
 
 \item{SaveDataPath}{NULL Or supply a path. Data saved will be called 'ModelID'_data.csv}
 
-\item{WeightsColumn}{NULL}
+\item{TimeWeights}{1 or a value between zero and 1. Data will be weighted less and less the more historic it gets, by group}
 
 \item{NonNegativePred}{TRUE or FALSE}
 
@@ -413,7 +413,9 @@ Other Automated Panel Data Forecasting:
 \code{\link{AutoCatBoostHurdleCARMA}()},
 \code{\link{AutoCatBoostVectorCARMA}()},
 \code{\link{AutoLightGBMCARMA}()},
-\code{\link{AutoXGBoostCARMA}()}
+\code{\link{AutoLightGBMHurdleCARMA}()},
+\code{\link{AutoXGBoostCARMA}()},
+\code{\link{AutoXGBoostHurdleCARMA}()}
 }
 \author{
 Adrian Antico

@@ -1293,7 +1293,7 @@ UpdateFeatures <- function(UpdateData. = UpdateData,
   if(TimeTrendVariable.) CalendarFeatures.[, TimeTrend := eval(N.) + 1]
 
   # Prepare data for scoring
-  for(zz in seq_len(length(TargetColumnName.))) {
+  for(zz in seq_along(TargetColumnName.)) {
     if(zz == 1) temp <- cbind(CalendarFeatures., 1) else temp <- cbind(temp, 1)
     data.table::setnames(temp, 'V2', c(eval(TargetColumnName.[zz])))
   }

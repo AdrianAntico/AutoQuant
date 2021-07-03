@@ -2,7 +2,7 @@
 #'
 #' @description AutoH2oDRFHurdleModel for hurdle modeling
 #'
-#' @family Supervised Learning - Compound
+#' @family Supervised Learning - Hurdle Modeling
 #' @author Adrian Antico
 #'
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.

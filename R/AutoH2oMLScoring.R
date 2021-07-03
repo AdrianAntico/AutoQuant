@@ -78,29 +78,24 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
                              MDP_MissFactor = "0",
                              MDP_MissNum = -1) {
 
-  # data.table optimize ----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
   # Check arguments ----
-  if(is.null(ScoringData)) return("ScoringData cannot be NULL")
+  if(is.null(ScoringData)) stop("ScoringData cannot be NULL")
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
-  if(!is.logical(MDP_Impute)) return("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
-  if(!is.logical(MDP_CharToFactor)) return("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
-  if(!is.logical(MDP_RemoveDates)) return("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
-  if(!is.character(MDP_MissFactor) & !is.factor(MDP_MissFactor)) return("MDP_MissFactor should be a character or factor value")
-  if(!is.numeric(MDP_MissNum)) return("MDP_MissNum should be a numeric or integer value")
+  if(!is.logical(MDP_Impute)) stop("MDP_Impute (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_CharToFactor)) stop("MDP_CharToFactor (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.logical(MDP_RemoveDates)) stop("MDP_RemoveDates (ModelDataPrep) should be TRUE or FALSE")
+  if(!is.character(MDP_MissFactor) && !is.factor(MDP_MissFactor)) stop("MDP_MissFactor should be a character or factor value")
+  if(!is.numeric(MDP_MissNum)) stop("MDP_MissNum should be a numeric or integer value")
 
   # Pull In Transformation Object ----
-  if(is.null(TransformationObject)) {
-    if(TransformNumeric | BackTransNumeric) {
-      if(is.null(TargetColumnName)) return("TargetColumnName needs to be supplied")
-      TransformationObject <- data.table::fread(file.path(normalizePath(TransPath), paste0(TransID, "_transformation.csv")))
-    }
+  if(is.null(TransformationObject) && (TransformNumeric || BackTransNumeric)) {
+    if(is.null(TargetColumnName)) stop("TargetColumnName needs to be supplied")
+    TransformationObject <- data.table::fread(file.path(normalizePath(TransPath), paste0(TransID, "_transformation.csv")))
   }
 
   # Apply Transform Numeric Variables ----
   if(!is.null(TransformationObject)) {
-    if(TransformNumeric | BackTransNumeric) {
+    if(TransformNumeric || BackTransNumeric) {
       tempTrans <- data.table::copy(TransformationObject)
       tempTrans <- tempTrans[ColumnName != eval(TargetColumnName)]
       ScoringData <- AutoTransformationScore(
@@ -120,7 +115,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 
   # Initialize H2O Data Conversion ----
   if(!is.null(ModelType)) {
-    if(tolower(ModelType) != "mojo" | !is.null(ModelObject)) {
+    if(!is.null(ModelObject) || tolower(ModelType) != "mojo") {
       ScoreData <- h2o::as.h2o(ScoringData)
     } else {
       ScoreData <- ScoringData
@@ -129,7 +124,7 @@ AutoH2OMLScoring <- function(ScoringData = NULL,
 
   # Make Predictions ----
   if(!is.null(ModelObject)) {
-    predict <- data.table::as.data.table(h2o::h2o.predict(ModelObject, newdata = ScoreData))
+    predict <- data.table::as.data.table(h2o::h2o.predict(object = ModelObject, newdata = ScoreData))
   } else {
     if(tolower(ModelType) == "mojo") {
       predict <- data.table::as.data.table(

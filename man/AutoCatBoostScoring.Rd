@@ -207,7 +207,6 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 \seealso{
 Other Automated Model Scoring: 
 \code{\link{AutoH2OMLScoring}()},
-\code{\link{AutoHurdleScoring}()},
 \code{\link{AutoLightGBMScoring}()},
 \code{\link{AutoXGBoostScoring}()}
 }

@@ -12,7 +12,7 @@
 #' @param TargetColumnName List the column name of your target variables column. E.g. "Target"
 #' @param PDFOutputPath NULL or a path file to output PDFs to a specified folder
 #' @param SaveDataPath NULL Or supply a path. Data saved will be called 'ModelID'_data.csv
-#' @param WeightsColumn NULL
+#' @param TimeWeights 1 or a value between zero and 1. Data will be weighted less and less the more historic it gets, by group
 #' @param NonNegativePred TRUE or FALSE
 #' @param RoundPreds Rounding predictions to an integer value. TRUE or FALSE. Defaults to FALSE
 #' @param DateColumnName List the column name of your date column. E.g. "DateTime"
@@ -241,7 +241,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          TargetColumnName = "Target",
                          PDFOutputPath = NULL,
                          SaveDataPath = NULL,
-                         WeightsColumn = NULL,
+                         TimeWeights = NULL,
                          NonNegativePred = FALSE,
                          RoundPreds = FALSE,
                          DateColumnName = "DateTime",
@@ -314,9 +314,6 @@ AutoH2OCARMA <- function(AlgoType = "drf",
                          NonNegativeCoefficients = FALSE,
                          RandomColNumbers = NULL,
                          InteractionColNumbers = NULL) {
-
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
 
   # Purified args: see CARMA HELPER FUNCTIONS----
   if(DebugMode) print("# Purified args: see CARMA HELPER FUNCTIONS----")
@@ -428,7 +425,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
   # Data Wrangling: Convert DateColumnName to Date or POSIXct ----
   if(DebugMode) print("Data Wrangling: Convert DateColumnName to Date or POSIXct ----")
-  Output <- CarmaDateStandardize(data.=data, XREGS.=NULL, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
+  Output <- CarmaDateStandardize(data.=data, XREGS.=XREGS, DateColumnName.=DateColumnName, TimeUnit.=TimeUnit)
   data <- Output$data; Output$data <- NULL
   XREGS <- Output$XREGS; rm(Output)
 
@@ -448,12 +445,12 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   if(DebugMode) print("Data Wrangling: Sort data by GroupVar then DateColumnName ----")
   if(!is.null(GroupVariables)) data <- data[order(GroupVar, get(DateColumnName))] else data <- data[order(get(DateColumnName))]
 
-  # Feature Engineering: Fourier Features ----
-  if(DebugMode) print("Feature Engineering: Fourier Features ----")
+  # Feature Engineering: Create Fourier Features ----
+  if(DebugMode) print('Feature Engineering: Fourier Features ----')
   Output <- CarmaFourier(data.=data, XREGS.=XREGS, FourierTerms.=FourierTerms, TimeUnit.=TimeUnit, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, HierarchGroups.=HierarchGroups)
-  FourierTerms <- Output$FourierTerms; rm(Output)
-  FourierFC <- Output$FourierFC
-  data <- Output$data; Output$data <- NULL
+  FourierTerms <- Output$FourierTerms; Output$FourierTerms <- NULL
+  FourierFC <- Output$FourierFC; Output$FourierFC <- NULL
+  data <- Output$data; rm(Output)
 
   # Feature Engineering: Add Create Calendar Variables ----
   if(DebugMode) print("Feature Engineering: Add Create Calendar Variables ----")
@@ -471,47 +468,16 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   }
 
   # Anomaly detection by Group and Calendar Vars ----
-  if(DebugMode) print("Anomaly detection by Group and Calendar Vars ----")
+  if(DebugMode) print('Anomaly detection by Group and Calendar Vars ----')
   if(!is.null(AnomalyDetection)) {
-    if(!is.null(CalendarVariables) & !is.null(GroupVariables)) {
-      if(length(GroupVariables) > 1) {
-        groupvars <- c(GroupVariables, paste0(DateColumnName, "_", CalendarVariables[1]))
-      } else {
-        groupvars <- c("GroupVar", paste0(DateColumnName, "_", CalendarVariables[1]))
-      }
-      data <- RemixAutoML::GenTSAnomVars(
-        data = data, ValueCol = eval(TargetColumnName),
-        GroupVars = ,
-        DateVar = eval(DateColumnName),
-        HighThreshold = AnomalyDetection$tstat_high,
-        LowThreshold = AnomalyDetection$tstat_low,
-        KeepAllCols = TRUE,
-        IsDataScaled = FALSE)
-      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
-      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
-    } else if(!is.null(GroupVariables)) {
-      data <- RemixAutoML::GenTSAnomVars(
-        data = data, ValueCol = eval(TargetColumnName),
-        GroupVars = c("GroupVar"),
-        DateVar = eval(DateColumnName),
-        HighThreshold = AnomalyDetection$tstat_high,
-        LowThreshold = AnomalyDetection$tstat_low,
-        KeepAllCols = TRUE,
-        IsDataScaled = FALSE)
-      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
-      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
-    } else {
-      data <- RemixAutoML::GenTSAnomVars(
-        data = data, ValueCol = eval(TargetColumnName),
-        GroupVars = NULL,
-        DateVar = eval(DateColumnName),
-        HighThreshold = AnomalyDetection$tstat_high,
-        LowThreshold = AnomalyDetection$tstat_low,
-        KeepAllCols = TRUE,
-        IsDataScaled = FALSE)
-      data[, paste0(eval(TargetColumnName), "_zScaled") := NULL]
-      data[, ":=" (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
-    }
+    data <- GenTSAnomVars(
+      data = data, ValueCol = eval(TargetColumnName),
+      GroupVars = if(!is.null(CalendarVariables) && !is.null(GroupVariables)) c('GroupVar', paste0(DateColumnName, '_', CalendarVariables[1])) else if(!is.null(GroupVariables)) 'GroupVar' else NULL,
+      DateVar = eval(DateColumnName), KeepAllCols = TRUE, IsDataScaled = FALSE,
+      HighThreshold = AnomalyDetection$tstat_high,
+      LowThreshold = AnomalyDetection$tstat_low)
+    data[, paste0(eval(TargetColumnName), '_zScaled') := NULL]
+    data[, ':=' (RowNumAsc = NULL, CumAnomHigh = NULL, CumAnomLow = NULL, AnomHighRate = NULL, AnomLowRate = NULL)]
   }
 
   # Feature Engineering: Add Target Transformation----
@@ -550,25 +516,15 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   # Create GroupVar----
   if(!is.null(GroupVariables)) {
     if(length(GroupVariables) > 1) {
-      if(!"GroupVar" %chin% names(data)) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      }
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     } else {
-      if(!"GroupVar" %chin% names(data)) {
-        data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
-      }
+      if(!"GroupVar" %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = GroupVariables]
     }
   }
 
   # Data Wrangling: ModelDataPrep() to prepare data----
   if(DebugMode) print("Data Wrangling: ModelDataPrep() to prepare data----")
-  data <- ModelDataPrep(
-    data,
-    Impute = TRUE,
-    CharToFactor = TRUE,
-    RemoveDates = FALSE,
-    MissFactor = "0",
-    MissNum    = -1)
+  data <- ModelDataPrep(data, Impute=TRUE, CharToFactor=TRUE, RemoveDates=FALSE, MissFactor="0", MissNum=-1)
 
   # Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----
   if(DebugMode) print("Data Wrangling: Remove dates with imputed data from the DT_GDL_Feature_Engineering() features ----")
@@ -583,6 +539,10 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   # Store Date Info----
   if(DebugMode) print("Store Date Info----")
   FutureDateData <- unique(data[, get(DateColumnName)])
+
+  # Create TimeWeights ----
+  if(DebugMode) print('Create TimeWeights ----')
+  train <- CarmaTimeWeights(train.=data, TimeWeights.=TimeWeights, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
 
   # Return engineered data before Partitioning ----
   if(!is.null(SaveDataPath)) {
@@ -600,7 +560,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print("Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----")
   if(!is.null(GroupVariables)) {
-    data.table::setorderv(x = data, cols = c("GroupVar",eval(DateColumnName)), order = c(1,1))
+    data.table::setorderv(x = data, cols = c("GroupVar", eval(DateColumnName)), order = c(1,1))
     Step1SCore <- data.table::copy(data)
   } else {
     data.table::setorderv(x = data, cols = c(eval(DateColumnName)), order = c(1))
@@ -622,24 +582,26 @@ AutoH2OCARMA <- function(AlgoType = "drf",
     # Distributed Random Forecast ----
     TestModel <- RemixAutoML::AutoH2oDRFRegression(
 
+      OutputSelection = NULL,
+
       # Compute management
       MaxMem = MaxMem,
-      NThreads = NThreads,
-      H2OShutdown = TRUE,
+      NThreads = NThreads - 4,
+      H2OShutdown = FALSE,
       H2OStartUp = TRUE,
-      IfSaveModel = "mojo",
+      IfSaveModel = "standard",
 
       # Model evaluation
       eval_metric = EvalMetric,
       NumOfParDepPlots = NumOfParDepPlots,
 
       # Metadata arguments
-      model_path = ModelPath,
+      model_path = getwd(),
       metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
       SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = TRUE,
+      SaveModelObjects = FALSE,
       DebugMode = DebugMode,
 
       # Data arguments
@@ -649,7 +611,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       TestData = test,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
-      WeightsColumn = NULL,
+      WeightsColumn = if(!is.null(TimeWeights)) "Weights" else NULL,
       TransformNumericColumns = NULL,
       Methods = NULL,
 
@@ -682,7 +644,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Compute management
       MaxMem = MaxMem,
       NThreads = NThreads,
-      H2OShutdown = TRUE,
+      H2OShutdown = FALSE,
       H2OStartUp = TRUE,
       IfSaveModel = "mojo",
       Alpha = NULL,
@@ -693,12 +655,12 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       NumOfParDepPlots = NumOfParDepPlots,
 
       # Metadata arguments
-      model_path = ModelPath,
+      model_path = getwd(),
       metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
       SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = TRUE,
+      SaveModelObjects = FALSE,
       DebugMode = DebugMode,
 
       # Data arguments
@@ -708,7 +670,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       TestData = test,
       TargetColumnName = TargetVariable,
       FeatureColNames = ModelFeatures,
-      WeightsColumn = NULL,
+      WeightsColumn = if(!is.null(TimeWeights)) "Weights" else NULL,
       TransformNumericColumns = NULL,
       Methods = NULL,
 
@@ -743,7 +705,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Compute management
       MaxMem = MaxMem,
       NThreads = NThreads,
-      H2OShutdown = TRUE,
+      H2OShutdown = FALSE,
       H2OStartUp = TRUE,
       IfSaveModel = "mojo",
 
@@ -752,12 +714,12 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       NumOfParDepPlots = NumOfParDepPlots,
 
       # Metadata arguments
-      model_path = ModelPath,
+      model_path = getwd(),
       metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
       SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = TRUE,
+      SaveModelObjects = FALSE,
       DebugMode = DebugMode,
 
       # Data arguments
@@ -769,7 +731,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       FeatureColNames = ModelFeatures,
       RandomColNumbers = RandomColNumbers,
       InteractionColNumbers = InteractionColNumbers,
-      WeightsColumn = WeightsColumn,
+      WeightsColumn = if(!is.null(TimeWeights)) "Weights" else NULL,
       TransformNumericColumns = NULL,
       Methods = NULL,
 
@@ -798,7 +760,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Compute management
       MaxMem = MaxMem,
       NThreads = NThreads,
-      H2OShutdown = TRUE,
+      H2OShutdown = FALSE,
       H2OStartUp = TRUE,
       IfSaveModel = "mojo",
 
@@ -807,11 +769,11 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       NumOfParDepPlots = NumOfParDepPlots,
 
       # Metadata arguments
-      model_path = ModelPath,
+      model_path = getwd(),
       metadata_path = getwd(),
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = TRUE,
+      SaveModelObjects = FALSE,
       DebugMode = DebugMode,
 
       # Data arguments
@@ -841,7 +803,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Compute management
       MaxMem = MaxMem,
       NThreads = NThreads,
-      H2OShutdown = TRUE,
+      H2OShutdown = FALSE,
       H2OStartUp = TRUE,
       IfSaveModel = "mojo",
       Distribution = "gaussian",
@@ -851,12 +813,12 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       NumOfParDepPlots = NumOfParDepPlots,
 
       # Metadata arguments
-      model_path = ModelPath,
+      model_path = getwd(),
       metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
       SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
       ModelID = paste0(AlgoType, "_Carma"),
       ReturnModelObjects = TRUE,
-      SaveModelObjects = TRUE,
+      SaveModelObjects = FALSE,
       DebugMode = DebugMode,
 
       # Data arguments
@@ -876,7 +838,10 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   }
 
   # Return model object for when TrainOnFull is FALSE ----
-  if(!TrainOnFull) return(TestModel)
+  if(!TrainOnFull) {
+    h2o::h2o.shutdown(prompt = FALSE)
+    return(TestModel)
+  }
 
   # Turn warnings into errors back on
   if(DebugMode) options(warn = 0)
@@ -903,7 +868,7 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
     # Row counts----
     if(DebugMode) print("Row counts----")
-    if (i != 1) N <- N + 1L
+    if(i != 1) N <- N + 1L
 
     ###############
     # ML Scoring
@@ -917,12 +882,13 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       if(DebugMode) print("# i = 1 Score Model With Group Variables ----")
       Preds <- AutoH2OMLScoring(
         ScoringData = Step1SCore,
-        ModelObject = NULL,
+        ModelObject = Model,
         ModelType = "mojo",
-        H2OShutdown = TRUE,
+        H2OShutdown = FALSE,
+        H2OStartUp = FALSE,
         MaxMem = MaxMem,
         JavaOptions = NULL,
-        ModelPath = ModelPath,
+        ModelPath = NULL,
         ModelID = paste0(AlgoType, "_Carma"),
         ReturnFeatures = TRUE,
         TransformNumeric = FALSE,
@@ -968,9 +934,10 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         # Score model----
         Preds <- AutoH2OMLScoring(
           ScoringData = temp,
-          ModelObject = NULL,
+          ModelObject = Model,
           ModelType = "mojo",
-          H2OShutdown = TRUE,
+          H2OShutdown = FALSE,
+          H2OStartUp = FALSE,
           MaxMem = MaxMem,
           JavaOptions = NULL,
           ModelPath = ModelPath,
@@ -991,13 +958,13 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         # Update data group case----
         if(DebugMode) print("Update data group case----")
         data.table::setnames(Preds, "Predictions", "Preds")
-        if(NonNegativePred & !Difference) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
+        if(NonNegativePred && !Difference) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
         Preds <- cbind(UpdateData[ID == N], Preds)
         if(Difference) Preds[, ModTarget := Preds][, eval(TargetColumnName) := Preds] else Preds[, eval(TargetColumnName) := Preds]
         Preds[, Predictions := Preds][, Preds := NULL]
         if(RoundPreds) Preds[, Predictions := round(Predictions)]
         UpdateData <- UpdateData[ID != N]
-        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) & any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
+        if(any(class(UpdateData$Date) %chin% c("POSIXct","POSIXt")) && any(class(Preds$Date) == "Date")) UpdateData[, eval(DateColumnName) := as.Date(get(DateColumnName))]
         UpdateData <- data.table::rbindlist(list(UpdateData, Preds))
         if(Difference) UpdateData[ID %in% c(N-1L,N), eval(TargetColumnName) := cumsum(get(TargetColumnName)), by = "GroupVar"]
         UpdateData[, ID := NULL]
@@ -1007,12 +974,13 @@ AutoH2OCARMA <- function(AlgoType = "drf",
         # Score Model----
         Preds <- AutoH2OMLScoring(
           ScoringData = UpdateData[.N],
-          ModelObject = NULL,
+          ModelObject = Model,
           ModelType = "mojo",
-          H2OShutdown = TRUE,
+          H2OShutdown = FALSE,
+          H2OStartUp = FALSE,
           MaxMem = MaxMem,
           JavaOptions = NULL,
-          ModelPath = ModelPath,
+          ModelPath = getwd(),
           ModelID = paste0(AlgoType, "_Carma"),
           ReturnFeatures = TRUE,
           TransformNumeric = FALSE,
@@ -1029,8 +997,9 @@ AutoH2OCARMA <- function(AlgoType = "drf",
 
         # Update data non-group case----
         if(DebugMode) print("Update data non-group case----")
+        if(i > 1L) data.table::set(Preds, j = 2L, value = NULL)
         if(RoundPreds) Preds[, eval(names(Preds)[1L]) := round(Preds[[1L]])]
-        data.table::set(UpdateData, i = N, j = 2L:3L, value = Preds[[1L]])
+        data.table::set(UpdateData, i = N, j = c(1L,3L), value = Preds[[1L]])
       }
     }
 
@@ -1053,9 +1022,6 @@ AutoH2OCARMA <- function(AlgoType = "drf",
       # Update feature engineering ----
       if(DebugMode) print("Update feature engineering ----")
       UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i)
-
-      # Update Lags and MA's----
-      if(DebugMode) print("Update Lags and MA's----")
 
       # Update Lags and MA's ----
       if(DebugMode) print("Update Lags and MA's----")

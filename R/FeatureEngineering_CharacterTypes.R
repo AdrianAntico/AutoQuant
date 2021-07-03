@@ -308,6 +308,9 @@ CategoricalEncoding <- function(data = NULL,
   # Convert to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
+  # GroupVariables must exist in data ----
+  GroupVariables <- GroupVariables[GroupVariables %chin% names(data)]
+
   # Helmert Encoding ----
   if(tolower(Method) == "helmert") {
     if(!Scoring) ComponentList <- list()
@@ -488,9 +491,9 @@ CategoricalEncoding <- function(data = NULL,
 
       # Merge back to data
       if(tolower(ML_Type) == "multiclass") {
-        data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
+        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := mget(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       } else {
-        data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
+        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       }
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
@@ -550,9 +553,9 @@ CategoricalEncoding <- function(data = NULL,
 
       # Merge back to data
       if(tolower(ML_Type) == "multiclass") {
-        data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
+        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := mget(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       } else {
-        data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
+        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       }
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
@@ -620,9 +623,9 @@ CategoricalEncoding <- function(data = NULL,
 
       # Merge back to data
       if(tolower(ML_Type) == "multiclass") {
-        data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
+        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := mget(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       } else {
-        data[GroupMean, (eval(names(GroupMean)[-1L])) := get(paste0("i.", names(GroupMean)[-1L]))]
+        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       }
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
@@ -681,9 +684,9 @@ CategoricalEncoding <- function(data = NULL,
 
       # Merge back to data
       if(tolower(ML_Type) == "mutliclass") {
-        data[GroupMean, eval(names(GroupMean)[-1L]) := mget(paste0("i.", names(GroupMean)[-1L]))]
+        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := mget(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       } else {
-        data[GroupMean, eval(names(GroupMean)[-1L]) := get(paste0("i.", names(GroupMean)[-1L]))]
+        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       }
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean

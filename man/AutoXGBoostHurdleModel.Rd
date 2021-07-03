@@ -18,26 +18,30 @@ AutoXGBoostHurdleModel(
   Buckets = 0L,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
+  ClassWeights = c(1, 1),
   IDcols = NULL,
-  EncodingMethod = "binary",
+  DebugMode = FALSE,
+  EncodingMethod = "credibility",
   TransformNumericColumns = NULL,
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
   SplitRatios = c(0.7, 0.2, 0.1),
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
-  NumOfParDepPlots = 10L,
+  NumOfParDepPlots = 1L,
   GridTune = FALSE,
   grid_eval_metric = "accuracy",
   MaxModelsInGrid = 1L,
   BaselineComparison = "default",
   MaxRunsWithoutNewWinner = 10L,
   MaxRunMinutes = 60L,
-  Trees = list(classifier = seq(1000, 2000, 100), regression = seq(1000, 2000, 100)),
-  eta = list(classifier = seq(0.05, 0.4, 0.05), regression = seq(0.05, 0.4, 0.05)),
-  max_depth = list(classifier = seq(4L, 16L, 2L), regression = seq(4L, 16L, 2L)),
-  min_child_weight = list(classifier = seq(1, 10, 1), regression = seq(1, 10, 1)),
-  subsample = list(classifier = seq(0.55, 1, 0.05), regression = seq(0.55, 1, 0.05)),
-  colsample_bytree = list(classifier = seq(0.55, 1, 0.05), regression = seq(0.55, 1,
-    0.05))
+  Trees = list(classifier = 1000, regression = 1000),
+  eta = list(classifier = 0.05, regression = 0.05),
+  max_depth = list(classifier = 4L, regression = 4L),
+  min_child_weight = list(classifier = 1, regression = 1),
+  subsample = list(classifier = 0.55, regression = 0.55),
+  colsample_bytree = list(classifier = 0.55, regression = 0.55)
 )
 }
 \arguments{
@@ -67,13 +71,23 @@ AutoXGBoostHurdleModel(
 
 \item{FeatureColNames}{Supply the column names or number of the features (not included the PrimaryDateColumn)}
 
+\item{PrimaryDateColumn}{Date column for sorting}
+
+\item{WeightsColumnName}{Weighs column name}
+
+\item{ClassWeights}{Look up the classifier model help file}
+
 \item{IDcols}{Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions}
+
+\item{DebugMode}{For debugging}
 
 \item{EncodingMethod}{Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert' for multiclass cases and additionally 'm_estimator', 'credibility', 'woe', 'target_encoding' for classification use cases.}
 
 \item{TransformNumericColumns}{Transform numeric column inside the AutoCatBoostRegression() function}
 
-\item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10).}
+\item{Methods}{Choose from 'Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit'}
+
+\item{SplitRatios}{Supply vector of partition ratios. For example, c(0.70,0.20,0,10)}
 
 \item{SaveModelObjects}{Set to TRUE to save the model objects to file in the folders listed in Paths}
 
@@ -105,9 +119,6 @@ AutoXGBoostHurdleModel(
 
 \item{colsample_bytree}{Provide a named list to have different number of colsample_bytree for each model.}
 }
-\value{
-Returns AutoXGBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and the grid used
-}
 \description{
 AutoXGBoostHurdleModel is generalized hurdle modeling framework
 }
@@ -116,7 +127,6 @@ AutoXGBoostHurdleModel is generalized hurdle modeling framework
 Output <- RemixAutoML::AutoXGBoostHurdleModel(
 
    # Operationalization args
-   TreeMethod = "hist",
    TrainOnFull = FALSE,
    PassInGrid = NULL,
 
@@ -133,11 +143,16 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
    Buckets = 0L,
    TargetColumnName = NULL,
    FeatureColNames = NULL,
+   PrimaryDateColumn = NULL,
+   WeightsColumnName = NULL,
    IDcols = NULL,
+   ClassWeights = c(1,1),
+   DebugMode = FALSE,
 
    # options
-   EncodingMethod = "binary",
+   EncodingMethod = "credibility",
    TransformNumericColumns = NULL,
+   Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
    SplitRatios = c(0.70, 0.20, 0.10),
    ReturnModelObjects = TRUE,
    SaveModelObjects = FALSE,
@@ -151,30 +166,24 @@ Output <- RemixAutoML::AutoXGBoostHurdleModel(
    MaxRunsWithoutNewWinner = 10L,
    MaxRunMinutes = 60L,
 
-   # bandit hyperparameters
-   Trees = list("classifier" = seq(1000,2000,100),
-                "regression" = seq(1000,2000,100)),
-   eta = list("classifier" = seq(0.05,0.40,0.05),
-              "regression" = seq(0.05,0.40,0.05)),
-   max_depth = list("classifier" = seq(4L,16L,2L),
-                    "regression" = seq(4L,16L,2L)),
-
-   # random hyperparameters
-   min_child_weight = list("classifier" = seq(1.0,10.0,1.0),
-                           "regression" = seq(1.0,10.0,1.0)),
-   subsample = list("classifier" = seq(0.55,1.0,0.05),
-                    "regression" = seq(0.55,1.0,0.05)),
-   colsample_bytree = list("classifier" = seq(0.55,1.0,0.05),
-                           "regression" = seq(0.55,1.0,0.05)))
+   # XGBoost parameters
+   TreeMethod = "hist",
+   Trees = list("classifier" = 1000, "regression" = 1000),
+   eta = list("classifier" = 0.05, "regression" = 0.05),
+   max_depth = list("classifier" = 4L, "regression" = 4L),
+   min_child_weight = list("classifier" = 1.0, "regression" = 1.0),
+   subsample = list("classifier" = 0.55, "regression" = 0.55),
+   colsample_bytree = list("classifier" = 0.55, "regression" = 0.55))
 }
 }
 \seealso{
-Other Supervised Learning - Compound: 
+Other Supervised Learning - Hurdle Modeling: 
 \code{\link{AutoCatBoostHurdleModel}()},
 \code{\link{AutoH2oDRFHurdleModel}()},
-\code{\link{AutoH2oGBMHurdleModel}()}
+\code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoLightGBMHurdleModel}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Supervised Learning - Compound}
+\concept{Supervised Learning - Hurdle Modeling}

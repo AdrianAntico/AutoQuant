@@ -3,7 +3,7 @@
 #' @description AutoCatBoostHurdleModel for generalized hurdle modeling. Check out the Readme.Rd on github for more background.
 #'
 #' @author Adrian Antico
-#' @family Supervised Learning - Compound
+#' @family Supervised Learning - Hurdle Modeling
 #'
 #' @param data Source training data. Do not include a column that has the class labels for the buckets as they are created internally.
 #' @param WeightsColumnName Column name for weights variable
@@ -50,68 +50,154 @@
 #' @return Returns AutoCatBoostRegression() model objects: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, and catboostgrid
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML::AutoCatBoostHurdleModel(
+#' # Test data.table
+#' CatBoost_QA <- data.table::CJ(
+#'   TOF = c(TRUE,FALSE),
+#'   Classification = c(TRUE,FALSE),
+#'   TaskType = c("CPU","GPU"),
+#'   Success = "Failure",
+#'   PartitionInFunction = c(TRUE,FALSE), sorted = FALSE
+#' )
 #'
-#'   # Operationalization
-#'   task_type = 'GPU',
-#'   ModelID = 'ModelTest',
-#'   SaveModelObjects = FALSE,
-#'   ReturnModelObjects = TRUE,
+#' # Remove impossible combinations
+#' CatBoost_QA <- CatBoost_QA[!(PartitionInFunction & TOF)]
+#' CatBoost_QA[, RunNumber := seq_len(.N)]
 #'
-#'   # Data related args
-#'   data = data,
-#'   WeightsColumnName = NULL,
-#'   TrainOnFull = FALSE,
-#'   ValidationData = NULL,
-#'   TestData = NULL,
-#'   Buckets = 0L,
-#'   TargetColumnName = NULL,
-#'   FeatureColNames = NULL,
-#'   PrimaryDateColumn = NULL,
-#'   IDcols = NULL,
-#'   DebugMode = FALSE,
 #'
-#'   # Metadata args
-#'   Paths = normalizePath('./'),
-#'   MetaDataPaths = NULL,
-#'   TransformNumericColumns = NULL,
-#'   Methods =
-#'      c('BoxCox', 'Asinh', 'Asin', 'Log',
-#'        'LogPlus1', 'Logit', 'YeoJohnson'),
-#'   ClassWeights = NULL,
-#'   SplitRatios = c(0.70, 0.20, 0.10),
-#'   NumOfParDepPlots = 10L,
+#' # Path File
+#' Path <- "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV"
 #'
-#'   # Grid tuning setup
-#'   PassInGrid = NULL,
-#'   GridTune = FALSE,
-#'   BaselineComparison = 'default',
-#'   MaxModelsInGrid = 1L,
-#'   MaxRunsWithoutNewWinner = 20L,
-#'   MaxRunMinutes = 60L*60L,
-#'   MetricPeriods = 25L,
+#' #       TOF Classification TaskType Success PartitionInFunction RunNumber
+#' # 1:   TRUE           TRUE      CPU Failure               FALSE         1  success
+#' # 2:   TRUE           TRUE      GPU Failure               FALSE         2  success
+#' # 3:   TRUE          FALSE      CPU Failure               FALSE         3  success
+#' # 4:   TRUE          FALSE      GPU Failure               FALSE         4  success
+#' # 5:  FALSE           TRUE      CPU Failure                TRUE         5  fail
+#' # 6:  FALSE           TRUE      CPU Failure               FALSE         6  fail
+#' # 7:  FALSE           TRUE      GPU Failure                TRUE         7  fail
+#' # 8:  FALSE           TRUE      GPU Failure               FALSE         8  fail
+#' # 9:  FALSE          FALSE      CPU Failure                TRUE         9  fail
+#' # 10: FALSE          FALSE      CPU Failure               FALSE        10  fail
+#' # 11: FALSE          FALSE      GPU Failure                TRUE        11  fail
+#' # 12: FALSE          FALSE      GPU Failure               FALSE        12  fail
 #'
-#'   # Bandit grid args
-#'   Langevin = FALSE,
-#'   DiffusionTemperature = 10000,
-#'   Trees = list('classifier' = seq(1000,2000,100),
-#'                'regression' = seq(1000,2000,100)),
-#'   Depth = list('classifier' = seq(6,10,1),
-#'                'regression' = seq(6,10,1)),
-#'   RandomStrength = list('classifier' = seq(1,10,1),
-#'                        'regression' = seq(1,10,1)),
-#'   BorderCount = list('classifier' = seq(32,256,16),
-#'                      'regression' = seq(32,256,16)),
-#'   LearningRate = list('classifier' = seq(0.01,0.25,0.01),
-#'                      'regression' = seq(0.01,0.25,0.01)),
-#'   L2_Leaf_Reg = list('classifier' = seq(3.0,10.0,1.0),
-#'                   'regression' = seq(1.0,10.0,1.0)),
-#'   RSM = list('classifier' = c(0.80, 0.85, 0.90, 0.95, 1.0),
-#'              'regression' = c(0.80, 0.85, 0.90, 0.95, 1.0)),
-#'   BootStrapType = list('classifier' = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'),
-#'                        'regression' = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No')),
-#'   GrowPolicy = list('classifier' = c('SymmetricTree', 'Depthwise', 'Lossguide'),
-#'                     'regression' = c('SymmetricTree', 'Depthwise', 'Lossguide')))
+#' # AutoCatBoostHurdleModel
+#' # run = 1
+#' # run = 2
+#' for(run in seq_len(CatBoost_QA[,.N])) {
+#'
+#'   # Define values
+#'   tasktypemode <- CatBoost_QA[run, TaskType]
+#'   tof <- CatBoost_QA[run, TOF]
+#'   PartitionInFunction <- CatBoost_QA[run, PartitionInFunction]
+#'   Classify <- CatBoost_QA[run, Classification]
+#'   Tar <- "Adrian"
+#'
+#'   # Get data
+#'   if(Classify) {
+#'     data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+#'   } else {
+#'     data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 2)
+#'   }
+#'
+#'   # Partition Data
+#'   if(!tof && !PartitionInFunction) {
+#'     Sets <- RemixAutoML::AutoDataPartition(
+#'       data = data,
+#'       NumDataSets = 3,
+#'       Ratios = c(0.7,0.2,0.1),
+#'       PartitionType = "random",
+#'       StratifyColumnNames = "Adrian",
+#'       TimeColumnName = NULL)
+#'     TTrainData <- Sets$TrainData
+#'     VValidationData <- Sets$ValidationData
+#'     TTestData <- Sets$TestData
+#'     rm(Sets)
+#'   } else {
+#'     TTrainData <- data.table::copy(data)
+#'     VValidationData <- NULL
+#'     TTestData <- NULL
+#'   }
+#'
+#'   # Run function
+#'   TestModel <- tryCatch({RemixAutoML::AutoCatBoostHurdleModel(
+#'
+#'     # Operationalization
+#'     task_type = 'GPU',
+#'     ModelID = 'ModelTest',
+#'     SaveModelObjects = FALSE,
+#'     ReturnModelObjects = TRUE,
+#'
+#'     # Data related args
+#'     data = TTrainData,
+#'     ValidationData = VValidationData,
+#'     TestData = TTestData,
+#'     WeightsColumnName = NULL,
+#'     TrainOnFull = tof,
+#'     Buckets = if(Classify) 0L else c(0,2,3),
+#'     TargetColumnName = "Adrian",
+#'     FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
+#'     PrimaryDateColumn = "DateTime",
+#'     IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
+#'     DebugMode = TRUE,
+#'
+#'     # Metadata args
+#'     Paths = Path,
+#'     MetaDataPaths = Path,
+#'     TransformNumericColumns = NULL,
+#'     Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit'),
+#'     ClassWeights = NULL,
+#'     SplitRatios = if(PartitionInFunction) c(0.70, 0.20, 0.10) else NULL,
+#'     NumOfParDepPlots = 10L,
+#'
+#'     # Grid tuning setup
+#'     PassInGrid = NULL,
+#'     GridTune = FALSE,
+#'     BaselineComparison = 'default',
+#'     MaxModelsInGrid = 1L,
+#'     MaxRunsWithoutNewWinner = 20L,
+#'     MaxRunMinutes = 60L*60L,
+#'     MetricPeriods = 25L,
+#'
+#'     # Bandit grid args
+#'     Langevin = FALSE,
+#'     DiffusionTemperature = 10000,
+#'     Trees = list('classifier' = 50, 'regression' = 50),
+#'     Depth = list('classifier' = 4, 'regression' = 4),
+#'     RandomStrength = list('classifier' = 1, 'regression' = 1),
+#'     BorderCount = list('classifier' = 32, 'regression' = 32),
+#'     LearningRate = list('classifier' = 0.01, 'regression' = 0.01),
+#'     L2_Leaf_Reg = list('classifier' = 3.0, 'regression' = 1.0),
+#'     RSM = list('classifier' = 0.80, 'regression' = 0.80),
+#'     BootStrapType = list('classifier' = 'Bayesian', 'regression' = 'Bayesian'),
+#'     GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree'))}, error = function(x) NULL)
+#'
+#'   # Outcome
+#'   if(!is.null(TestModel)) CatBoost_QA[run, Success := "Success"]
+#'   TestModel <- NULL
+#'   gc(); Sys.sleep(5)
+#'   data.table::fwrite(CatBoost_QA, file = file.path(Path, "AutoCatBoostHurdleModel_QA.csv"))
+#'
+#'   # Outcome
+#'   if(!is.null(TestModel)) CatBoost_QA[run, Success := "Success"]
+#'   data.table::fwrite(CatBoost_QA, file = file.path(Path, "AutoCatBoostHurdleModel_QA.csv"))
+#'
+#'   # Score CatBoost Hurdle Model
+#'   Output <- tryCatch({RemixAutoML::AutoCatBoostHurdleModelScoring(
+#'     TestData = TTrainData,
+#'     Path = Path,
+#'     ModelID = "ModelTest",
+#'     ModelList = TestModel$ModelList,
+#'     ArgsList = TestModel$ArgsList,
+#'     Threshold = NULL)}, error = function(x) NULL)
+#'
+#'   # Outcome
+#'   if(!is.null(Output)) CatBoost_QA[run, ScoreSuccess := "Success"]
+#'   TestModel <- NULL
+#'   Output <- NULL
+#'   gc(); Sys.sleep(5)
+#'   data.table::fwrite(CatBoost_QA, file = file.path(Path, "AutoCatBoostHurdleModel_QA.csv"))
+#' }
 #' }
 #' @export
 AutoCatBoostHurdleModel <- function(data = NULL,
@@ -125,7 +211,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     WeightsColumnName = NULL,
                                     IDcols = NULL,
                                     TransformNumericColumns = NULL,
-                                    Methods = c('BoxCox', 'Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit', 'YeoJohnson'),
+                                    Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit'),
                                     ClassWeights = NULL,
                                     SplitRatios = c(0.70, 0.20, 0.10),
                                     task_type = 'GPU',
@@ -145,15 +231,15 @@ AutoCatBoostHurdleModel <- function(data = NULL,
                                     MetricPeriods = 25L,
                                     Langevin = FALSE,
                                     DiffusionTemperature = 10000,
-                                    Trees = list('classifier' = seq(1000,2000,100), 'regression' = seq(1000,2000,100)),
-                                    Depth = list('classifier' = seq(6,10,1), 'regression' = seq(6,10,1)),
-                                    RandomStrength = list('classifier' = seq(1,10,1), 'regression' = seq(1,10,1)),
-                                    BorderCount = list('classifier' = seq(32,256,16), 'regression' = seq(32,256,16)),
-                                    LearningRate = list('classifier' = seq(0.01,0.25,0.01), 'regression' = seq(0.01,0.25,0.01)),
-                                    L2_Leaf_Reg = list('classifier' = seq(3.0,10.0,1.0), 'regression' = seq(1.0,10.0,1.0)),
-                                    RSM = list('classifier' = c(0.80, 0.85, 0.90, 0.95, 1.0), 'regression' = c(0.80, 0.85, 0.90, 0.95, 1.0)),
-                                    BootStrapType = list('classifier' = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'), 'regression' = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No')),
-                                    GrowPolicy = list('classifier' = c('SymmetricTree', 'Depthwise', 'Lossguide'), 'regression' = c('SymmetricTree', 'Depthwise', 'Lossguide'))) {
+                                    Trees = list('classifier' = 500, 'regression' = 500),
+                                    Depth = list('classifier' = 8, 'regression' = 8),
+                                    RandomStrength = list('classifier' = 1, 'regression' = 1),
+                                    BorderCount = list('classifier' = 254, 'regression' = 254),
+                                    LearningRate = list('classifier' = NULL, 'regression' = NULL),
+                                    L2_Leaf_Reg = list('classifier' = NULL, 'regression' = NULL),
+                                    RSM = list('classifier' = 1.0, 'regression' = 1.0),
+                                    BootStrapType = list('classifier' = 'Bayesian', 'regression' = 'Bayesian'),
+                                    GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree')) {
 
   # Store args ----
   ArgsList <- list()
@@ -387,6 +473,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(is.numeric(FeatureColNames) || is.integer(FeatureColNames)) FeatureNames <- names(data)[FeatureColNames] else FeatureNames <- FeatureColNames
 
   # Add target bucket column ----
+  looper <- rev(seq_len(length(Buckets) + 1L))
   if(length(Buckets) == 1L) {
     data[, Target_Buckets := data.table::fifelse(get(TargetColumnName) <= eval(Buckets[1L]), 0, 1)]
   } else {
@@ -394,12 +481,20 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       if(i == 1L) {
         data[which(data[[eval(TargetColumnName)]] <= Buckets[i]), Target_Buckets  := as.factor(Buckets[i])]
       } else if(i == length(Buckets) + 1L) {
-        data[which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1], '+'))]
+        if(data[which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), .N] != 0) {
+          data[which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1], '+'))]
+        } else {
+          Buckets <- Buckets[!Buckets %in% Buckets[i]]
+          looper <- looper[-1L]
+        }
       } else {
         data[which(data[[eval(TargetColumnName)]] <= Buckets[i] & data[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(Buckets[i])]
       }
     }
   }
+
+  # Store looper -----
+  ArgsList[["looper"]] <- looper
 
   # Add target bucket column----
   if(!is.null(ValidationData)) {
@@ -412,7 +507,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         } else if(i == length(Buckets) + 1L) {
           ValidationData[which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1], '+'))]
         } else {
-          ValidationData[which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(Buckets[i])]
+          if(data[which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), .N] != 0) {
+            ValidationData[which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(Buckets[i])]
+          }
         }
       }
     }
@@ -429,7 +526,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         } else if(i == length(Buckets) + 1L) {
           TestData[which(TestData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1L], '+'))]
         } else {
-          TestData[which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), Target_Buckets := as.factor(Buckets[i])]
+          if(data[which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), .N] != 0) {
+            TestData[which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), Target_Buckets := as.factor(Buckets[i])]
+          }
         }
       }
     }
@@ -448,11 +547,49 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     ValidationData <- DataSets$ValidationData
     TestData <- DataSets$TestData
     rm(DataSets)
+
+    # Add target bucket column----
+    if(!is.null(ValidationData)) {
+      if(length(Buckets) == 1L) {
+        ValidationData[, Target_Buckets := data.table::fifelse(get(TargetColumnName) <= eval(Buckets[1L]), 0, 1)]
+      } else {
+        for(i in seq_len(length(Buckets) + 1L)) {
+          if(i == 1) {
+            ValidationData[which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i]), Target_Buckets := as.factor(Buckets[i])]
+          } else if(i == length(Buckets) + 1L) {
+            ValidationData[which(ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1], '+'))]
+          } else {
+            if(data[which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), .N] != 0) {
+              ValidationData[which(ValidationData[[eval(TargetColumnName)]] <= Buckets[i] & ValidationData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(Buckets[i])]
+            }
+          }
+        }
+      }
+    }
+
+    # Add target bucket column----
+    if(!is.null(TestData)) {
+      if(length(Buckets) == 1L) {
+        TestData[, Target_Buckets := data.table::fifelse(get(TargetColumnName) <= eval(Buckets[1L]), 0, 1)]
+      } else {
+        for(i in seq_len(length(Buckets) + 1L)) {
+          if(i == 1) {
+            TestData[which(TestData[[eval(TargetColumnName)]] <= Buckets[i]), Target_Buckets := as.factor(Buckets[i])]
+          } else if(i == length(Buckets) + 1L) {
+            TestData[which(TestData[[eval(TargetColumnName)]] > Buckets[i - 1]), Target_Buckets := as.factor(paste0(Buckets[i - 1L], '+'))]
+          } else {
+            if(data[which(data[[eval(TargetColumnName)]] > Buckets[i - 1]), .N] != 0) {
+              TestData[which(TestData[[eval(TargetColumnName)]] <= Buckets[i] & TestData[[eval(TargetColumnName)]] > Buckets[i - 1L]), Target_Buckets := as.factor(Buckets[i])]
+            }
+          }
+        }
+      }
+    }
   } else if(TrainOnFull) {
     TestData <- NULL
   }
 
-  # Begin classification model building----
+  # Begin classification model building ----
   if(length(Buckets) == 1L) {
     ClassifierModel <- AutoCatBoostClassifier(
 
@@ -461,7 +598,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       NumGPUs = 1,
 
       # Metadata arguments
-      OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData'),
+      OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
       ModelID = ModelID,
       model_path = Paths,
       metadata_path = MetaDataPaths,
@@ -514,14 +651,13 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       min_data_in_leaf = 1)
 
   } else {
-
     ClassifierModel <- AutoCatBoostMultiClass(
 
       # GPU or CPU
       task_type = task_type,
 
       # Metadata arguments
-      OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData'),
+      OutputSelection = c('Importances','EvalMetrics','Score_TrainData'),
       ModelID = ModelID,
       model_path = Paths,
       metadata_path = MetaDataPaths,
@@ -590,23 +726,20 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Store model----
   if(ReturnModelObjects || SaveModelObjects) ModelList[['Classifier']] <- ClassModel
 
-  # Add Target to IDcols----
-  IDcols <- c(IDcols, TargetColumnName)
-
   # Score Classification Model----
   if(length(Buckets) == 1L) TargetType <- 'Classification' else TargetType <- 'Multiclass'
 
   # Model Scoring ----
   if(!TrainOnFull || !is.null(ValidationData)) {
     if(is.null(TestData)) ValTrue <<- TRUE else ValTrue <<- FALSE
-    TestData <- AutoCatBoostScoring(
+    temp <- AutoCatBoostScoring(
       RemoveModel = TRUE,
       TargetType = TargetType,
-      ScoringData = if(!is.null(TestData)) TestData else if(!is.null(ValidationData)) data.table::copy(ValidationData) else data,
+      ScoringData = if(!is.null(TestData)) data.table::copy(TestData) else if(!is.null(ValidationData)) data.table::copy(ValidationData) else data.table::copy(data),
       FeatureColumnNames = FeatureNames,
       IDcols = IDcols,
       ModelObject = ClassModel,
-      ModelPath = Paths,
+      ModelPath = if(!is.null(ClassModel)) NULL else Paths,
       ModelID = ModelID,
       ReturnFeatures = TRUE,
       MultiClassTargetLevels = TargetLevels,
@@ -623,6 +756,14 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       MDP_MissFactor = '0',
       MDP_MissNum = -1)
 
+    # Nuance
+    if(TargetType != "Classification") {
+      TestData <- cbind(temp, TestData)
+    } else {
+      TestData <- temp
+      rm(temp)
+    }
+
     # Rename data output
     if(ValTrue) {
       ValidationData <- TestData
@@ -631,7 +772,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
     # Change name for classification----
     if(DebugMode) print('Change name for classification----')
-    if(TargetType == 'Classification') {
+    if(tolower(TargetType) == 'classification') {
       if(!is.null(TestData)) {
         data.table::setnames(TestData, 'p1', 'Predictions_C1')
         TestData[, Predictions_C0 := 1 - Predictions_C1]
@@ -645,7 +786,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
     # Change Name of Predicted MultiClass Column----
     if(DebugMode) print('Change Name of Predicted MultiClass Column----')
-    if(TargetType != 'classification') {
+    if(tolower(TargetType) != 'classification') {
       if(!is.null(TestData)) {
         if(length(Buckets) != 1L) data.table::setnames(TestData, 'Predictions', 'Predictions_MultiClass')
         data.table::set(ValidationData, j = 'Target_Buckets', value = NULL)
@@ -657,6 +798,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
 
   } else {
     TestData <- NULL
+    ValTrue <<- TRUE
   }
 
   # Remove Model Object----
@@ -669,17 +811,17 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   # Prepare for regression runs ----
   if(DebugMode) print('Prepare for regression runs ----')
   IDcols <- IDcols[!(IDcols %chin% TargetColumnName)]
-  counter <- max(rev(seq_len(length(Buckets) + 1L)))
+  counter <- max(looper)
   Degenerate <- 0L
   R_VariableImportance <- list()
   R_ParDepPlots <- list()
 
   # Begin regression model building----
   if(DebugMode) print('Begin regression model building----')
-  for(bucket in rev(seq_len(length(Buckets) + 1L))) {
+  for(bucket in looper) {
 
     # Define data sets ----
-    if(bucket == max(seq_len(length(Buckets) + 1L))) {
+    if(bucket == max(looper)) {
       if(!is.null(TestData)) {
         trainBucket <- data[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
         validBucket <- ValidationData[get(TargetColumnName) > eval(Buckets[bucket - 1L])]
@@ -745,28 +887,27 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     } else if(!is.null(ValidationData)) {
       IDcolsModified <- c(IDcols, setdiff(names(ValidationData), names(trainBucket)))
       IDcolsModified <- IDcolsModified[!IDcolsModified %chin% TargetColumnName]
+    } else {
+      IDcolsModified <- c(IDcols, setdiff(names(data), names(trainBucket)))
+      IDcolsModified <- IDcolsModified[!IDcolsModified %chin% TargetColumnName]
     }
 
-    # AutoCatBoostRegression()----
+    # AutoCatBoostRegression() ----
     if(DebugMode) print('AutoCatBoostRegression()----')
     if(trainBucket[, .N] != 0L) {
 
       # If there is some variance then build model
       if(var(trainBucket[[eval(TargetColumnName)]]) > 0L) {
 
-        # Increment----
+        # Increment ----
         counter <- counter - 1L
 
-        # Modify filepath and file name----
-        if(bucket == max(seq_len(length(Buckets) + 1L))) ModelIDD <- paste0(ModelID,'_',bucket,'+') else ModelIDD <- paste0(ModelID, '_', bucket)
+        # Modify filepath and file name ----
+        if(bucket == max(looper)) ModelIDD <- paste0(ModelID,'_',bucket,'+') else ModelIDD <- paste0(ModelID, '_', bucket)
 
-        # Build model----
+        # Build model ----
         if(DebugMode) print('Build model----')
-        if(DebugMode) {
-          print(str(trainBucket))
-          print(str(validBucket))
-          print(str(testBucket))
-        }
+        #if(DebugMode) {print(str(trainBucket)); if(exists("validBucket")) print(str(validBucket)); if(exists("testBucket")) print(str(testBucket))}
         RegModel <- AutoCatBoostRegression(
 
           # GPU or CPU
@@ -775,7 +916,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           DebugMode = DebugMode,
 
           # Metadata arguments
-          OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData'),
+          OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
           ModelID = ModelIDD,
           model_path = Paths,
           metadata_path = MetaDataPaths,
@@ -828,7 +969,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           score_function = 'Cosine',
           min_data_in_leaf = 1)
 
-        # Store Model----
+        # Store Model ----
         if(DebugMode) print('Store Model----')
         RegressionModel <- RegModel$Model
         if(ReturnModelObjects || SaveModelObjects) ModelList[[ModelIDD]] <- RegressionModel
@@ -840,7 +981,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         R_VariableImportance[[paste0(ModelIDD)]] <- RegModel$VariableImportance
         R_ParDepPlots[[paste0(ModelIDD)]] <- RegModel$PartialDependencePlots
 
-        # Score models----
+        # Score models ----
         if(DebugMode) print('Score models----')
         if(!is.null(TestData) || !is.null(ValidationData)) {
           TestData <- AutoCatBoostScoring(
@@ -870,13 +1011,13 @@ AutoCatBoostHurdleModel <- function(data = NULL,
             TestData <- NULL
           }
 
-          # Clear TestModel From Memory----
+          # Clear TestModel From Memory ----
           rm(RegModel)
           gc()
 
-          # Change prediction name to prevent duplicates----
+          # Change prediction name to prevent duplicates ----
           if(DebugMode) print('Change prediction name to prevent duplicates----')
-          if(bucket == max(seq_len(length(Buckets) + 1L))) Val <- paste0('Predictions_', bucket - 1L, '+') else Val <- paste0('Predictions_', bucket)
+          if(bucket == max(looper)) Val <- paste0('Predictions_', bucket - 1L, '+') else Val <- paste0('Predictions_', bucket)
           if(ValTrue) {
             data.table::setnames(ValidationData, 'Predictions', Val)
           } else {
@@ -892,12 +1033,12 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         # Check for TrainOnFull ----
         if(!is.null(TestData) || !is.null(ValidationData)) {
 
-          # Account for degenerate distributions----
-          ArgsList[['constant']] <- c(ArgsList[['constant']], bucket)
+          # Account for degenerate distributions ----
+          ArgsList[['degenerate']] <- c(ArgsList[['degenerate']], bucket)
 
-          # Use single value for predictions in the case of zero variance----
+          # Use single value for predictions in the case of zero variance ----
           if(!is.null(TestData)) {
-            if(bucket == max(seq_len(length(Buckets) + 1L))) {
+            if(bucket == max(looper)) {
               Degenerate <- Degenerate + 1L
               data.table::set(TestData, j = paste0('Predictions', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
               data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
@@ -907,7 +1048,7 @@ AutoCatBoostHurdleModel <- function(data = NULL,
               data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
             }
           } else if(!is.null(ValidationData)) {
-            if(bucket == max(seq_len(length(Buckets) + 1L))) {
+            if(bucket == max(looper)) {
               Degenerate <- Degenerate + 1L
               data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
               data.table::setcolorder(ValidationData, c(ncol(ValidationData), 1L:(ncol(ValidationData) - 1L)))
@@ -919,12 +1060,8 @@ AutoCatBoostHurdleModel <- function(data = NULL,
           }
 
         } else {
-
-          # Account for degenerate distributions----
-          ArgsList[['constant']] <- c(ArgsList[['constant']], bucket)
-
-          # Use single value for predictions in the case of zero variance----
-          if(bucket == max(seq_len(length(Buckets) + 1L))) {
+          ArgsList[['degenerate']] <- c(ArgsList[['degenerate']], bucket)
+          if(bucket == max(looper)) {
             Degenerate <- Degenerate + 1L
           } else {
             Degenerate <- Degenerate + 1L
@@ -932,8 +1069,6 @@ AutoCatBoostHurdleModel <- function(data = NULL,
         }
       }
     } else {
-
-      # Account for degenerate distributions----
       ArgsList[['degenerate']] <- c(ArgsList[['degenerate']], bucket)
     }
   }
@@ -943,54 +1078,28 @@ AutoCatBoostHurdleModel <- function(data = NULL,
   if(!TrainOnFull || !is.null(ValidationData)) {
 
     # Change object names
-    if(ValTrue) {
+    if(exists("ValTrue") && ValTrue) {
       TestData <- ValidationData
       ValidationData <- NULL
     }
 
     # Rearrange cols ----
     if(DebugMode) print('Rearrange cols ----')
-    counter <- length(Buckets)
-    if(counter > 2L) {
-      if(length(IDcols) != 0L) {
-        if(Degenerate == 0L) {
-          data.table::setcolorder(TestData, c(2L:(1L + length(IDcols)), 1L, (2L + length(IDcols)):ncol(TestData)))
-          data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L), (length(IDcols) + counter + 1L + counter +1L):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter), (length(IDcols) + counter + 2L):(length(IDcols)+counter + 1L + counter)))
-        } else {
-          data.table::setcolorder(TestData, c(3L:(2L + length(IDcols)), 1L:2L, (3L + length(IDcols)):ncol(TestData)))
-          data.table::setcolorder(TestData, c(1L:length(IDcols), (length(IDcols) + counter + 1L + Degenerate), (length(IDcols) + counter + 3L + counter + Degenerate):ncol(TestData), (length(IDcols) + 1L):(length(IDcols) + counter + Degenerate), (length(IDcols) + counter + 2L + Degenerate):(length(IDcols)+counter+counter+Degenerate + 2L)))
-        }
-      } else {
-        data.table::setcolorder(TestData, c(1L:(counter + Degenerate), (2L + counter + Degenerate):(1L + 2L * (counter + Degenerate)), (1L + counter + Degenerate), (2L + 2L * (counter + Degenerate)):ncol(TestData)))
-        data.table::setcolorder(TestData, c((2L * (counter + Degenerate) + 1L):ncol(TestData), 1L:(2L * (counter + Degenerate))))
-      }
-    } else if(counter == 2L & length(Buckets) == 1L) {
-      if(length(IDcols) != 0L) data.table::setcolorder(TestData, c(1L,2L, (2L + length(IDcols) + 1L):ncol(TestData), 3L:(2L + length(IDcols))))
-    } else if(counter == 2L & length(Buckets) != 1L) {
-      if(length(IDcols) != 0L) {
-        data.table::setcolorder(TestData, c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L), which(names(TestData) %in% c(setdiff(names(TestData), names(TestData)[c(1L:counter, (counter + length(IDcols) + 1L):(counter + length(IDcols) + 2L + length(Buckets) + 1L))])))))
-        data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter), which(names(TestData) %in% setdiff(names(TestData), names(TestData)[c(1L:(counter + 1L), (counter + 1L + 2L):(counter + 1L + 2L + counter))]))))
-      } else {
-        data.table::setcolorder(TestData, c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L), which(!names(TestData) %in% names(TestData)[c(1L:(counter + 1L), (counter + 3L):(3L + 2 * counter), (counter + 2L))])))
-      }
-    } else {
-      if(length(IDcols) != 0L) {
-        if(!ValTrue) data.table::setcolorder(TestData, c(1L:2L, (3L + length(IDcols)):((3L + length(IDcols)) + 1L), 3L:(2L + length(IDcols)), (((3L + length(IDcols)) + 2L):ncol(TestData))))
-      }
-    }
+    counter <- length(looper)
+    data.table::setcolorder(TestData, c(which(names(TestData) %like% "Predictions"), setdiff(seq_along(TestData), which(names(TestData) %like% "Predictions"))))
 
     # Final Combination of Predictions ----
     if(DebugMode) print('Final Combination of Predictions ----')
-    if(counter > 2L || (counter == 2L & length(Buckets) != 1L)) {
-      for(i in seq_len(length(Buckets) + 1L)) {
+    if(counter > 2L || (counter == 2L && length(Buckets) != 1L)) {
+      for(i in rev(looper)) {
         if(i == 1L) {
-          TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
+          TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + (length(looper))]]]
         } else {
-          TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + (length(Buckets) + 1L)]]]
+          TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + length(looper)]]]
         }
       }
     } else {
-      if(Buckets != 0) {
+      if(Buckets[1L] != 0) {
         TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
       } else {
         TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]]]
@@ -1003,9 +1112,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     # Regression Save Validation Data to File----
     if(SaveModelObjects) {
       if(!is.null(MetaDataPaths)) {
-        data.table::fwrite(TestData, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID,'_ValidationData.csv')))
+        data.table::fwrite(TestData, file = file.path(MetaDataPaths, paste0(ModelID,'_ValidationData.csv')))
       } else {
-        data.table::fwrite(TestData, file = file.path(normalizePath(Paths), paste0(ModelID,'_ValidationData.csv')))
+        data.table::fwrite(TestData, file = file.path(Paths, paste0(ModelID,'_ValidationData.csv')))
       }
     }
 
@@ -1024,9 +1133,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     # Save plot to file----
     if(SaveModelObjects) {
       if(!is.null(MetaDataPaths)) {
-        ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID, '_EvaluationPlot.png')))
+        ggplot2::ggsave(file.path(MetaDataPaths, paste0(ModelID, '_EvaluationPlot.png')))
       } else {
-        ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID, '_EvaluationPlot.png')))
+        ggplot2::ggsave(file.path(Paths, paste0(ModelID, '_EvaluationPlot.png')))
       }
     }
 
@@ -1045,9 +1154,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     # Save plot to file----
     if(SaveModelObjects) {
       if(!is.null(MetaDataPaths)) {
-        ggplot2::ggsave(file.path(normalizePath(MetaDataPaths), paste0(ModelID,'_EvaluationBoxPlot.png')))
+        ggplot2::ggsave(file.path(MetaDataPaths, paste0(ModelID,'_EvaluationBoxPlot.png')))
       } else {
-        ggplot2::ggsave(file.path(normalizePath(Paths), paste0(ModelID,'_EvaluationBoxPlot.png')))
+        ggplot2::ggsave(file.path(Paths, paste0(ModelID,'_EvaluationBoxPlot.png')))
       }
     }
 
@@ -1085,9 +1194,9 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
     if(SaveModelObjects) {
       if(!is.null(MetaDataPaths)) {
-        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, '_EvaluationMetrics.csv')))
+        data.table::fwrite(EvaluationMetrics, file = file.path(MetaDataPaths, paste0(ModelID, '_EvaluationMetrics.csv')))
       } else {
-        data.table::fwrite(EvaluationMetrics, file = file.path(normalizePath(Paths), paste0(ModelID, '_EvaluationMetrics.csv')))
+        data.table::fwrite(EvaluationMetrics, file = file.path(Paths, paste0(ModelID, '_EvaluationMetrics.csv')))
       }
     }
 
@@ -1128,38 +1237,38 @@ AutoCatBoostHurdleModel <- function(data = NULL,
     # Regression Save ParDepBoxPlots to file----
     if(SaveModelObjects) {
       if(!is.null(MetaDataPaths)) {
-        save(ParDepBoxPlots, file = file.path(normalizePath(MetaDataPaths), paste0(ModelID, '_ParDepBoxPlots.R')))
+        save(ParDepBoxPlots, file = file.path(MetaDataPaths, paste0(ModelID, '_ParDepBoxPlots.R')))
       } else {
-        save(ParDepBoxPlots, file = file.path(normalizePath(Paths), paste0(ModelID, '_ParDepBoxPlots.R')))
+        save(ParDepBoxPlots, file = file.path(Paths, paste0(ModelID, '_ParDepBoxPlots.R')))
       }
     }
   }
 
   # Save args list to file----
-  if(SaveModelObjects) save(ArgsList, file = file.path(normalizePath(Paths), paste0(ModelID, '_HurdleArgList.Rdata')))
+  if(SaveModelObjects) save(ArgsList, file = file.path(Paths, paste0(ModelID, '_HurdleArgList.Rdata')))
   rm(ValTrue, envir = .GlobalEnv)
 
   # Return Output ----
   if(!TrainOnFull) {
     return(list(
-      ArgsList = ArgsList,
-      ModelList = ModelList,
-      ClassifierModel = ClassifierModel,
-      ClassificationMetrics = ClassEvaluationMetrics,
-      FinalTestData = TestData,
-      EvaluationPlot = EvaluationPlot,
-      EvaluationBoxPlot = EvaluationBoxPlot,
-      EvaluationMetrics = EvaluationMetrics,
-      ClassifierVariableImportance = C_VariableImportance,
-      RegressionVariableImportance = R_VariableImportance,
-      ClassifierParDepPlots = C_ParDepPlots,
-      RegressionParDepPlots = R_ParDepPlots,
-      PartialDependencePlots = ParDepPlots,
-      PartialDependenceBoxPlots = ParDepBoxPlots))
+      ArgsList = if(exists("ArgsList")) ArgsList else NULL,
+      ModelList = if(exists("ModelList")) ModelList else NULL,
+      ClassifierModel = if(exists("ClassifierModel")) ClassifierModel else NULL,
+      ClassificationMetrics = if(exists("ClassEvaluationMetrics")) ClassEvaluationMetrics else NULL,
+      FinalTestData = if(exists("TestData")) TestData else NULL,
+      EvaluationPlot = if(exists("EvaluationPlot")) EvaluationPlot else NULL,
+      EvaluationBoxPlot = if(exists("EvaluationBoxPlot")) EvaluationBoxPlot else NULL,
+      EvaluationMetrics = if(exists("EvaluationMetrics")) EvaluationMetrics else NULL,
+      ClassifierVariableImportance = if(exists("C_VariableImportance")) C_VariableImportance else NULL,
+      RegressionVariableImportance = if(exists("R_VariableImportance")) R_VariableImportance else NULL,
+      ClassifierParDepPlots = if(exists("C_ParDepPlots")) C_ParDepPlots else NULL,
+      RegressionParDepPlots = if(exists("R_ParDepPlots")) R_ParDepPlots else NULL,
+      PartialDependencePlots = if(exists("ParDepPlots")) ParDepPlots else NULL,
+      PartialDependenceBoxPlots = if(exists("ParDepBoxPlots")) ParDepBoxPlots else NULL))
   } else {
     return(list(
-      ArgsList = ArgsList,
-      ModelList = ModelList,
-      ClassifierModel = ClassifierModel))
+      ArgsList = if(exists("ArgsList")) ArgsList else NULL,
+      ModelList = if(exists("ModelList")) ModelList else NULL,
+      ClassifierModel = if(exists("ClassifierModel")) ClassifierModel else NULL))
   }
 }

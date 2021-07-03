@@ -338,7 +338,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     data.table::setnames(predict, 'V1', 'Predictions')
     if(is.null(MultiClassTargetLevels)) MultiClassTargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, '_TargetLevels.csv')))
     g <- as.character(MultiClassTargetLevels[[1L]])
-    data.table::setnames(predict, paste0('V', seq_along(g)), g)
+    data.table::setnames(predict, names(predict)[names(predict) %like% "V"], g)
     predict <- merge(
       predict,
       MultiClassTargetLevels,

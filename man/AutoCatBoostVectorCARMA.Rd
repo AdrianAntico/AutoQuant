@@ -342,7 +342,9 @@ Other Automated Panel Data Forecasting:
 \code{\link{AutoCatBoostHurdleCARMA}()},
 \code{\link{AutoH2OCARMA}()},
 \code{\link{AutoLightGBMCARMA}()},
-\code{\link{AutoXGBoostCARMA}()}
+\code{\link{AutoLightGBMHurdleCARMA}()},
+\code{\link{AutoXGBoostCARMA}()},
+\code{\link{AutoXGBoostHurdleCARMA}()}
 }
 \author{
 Adrian Antico

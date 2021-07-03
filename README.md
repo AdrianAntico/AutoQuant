@@ -1,4 +1,4 @@
-![Version: 0.5.5](https://img.shields.io/static/v1?label=Version&message=0.5.5&color=blue&?style=plastic)
+![Version: 0.5.6](https://img.shields.io/static/v1?label=Version&message=0.5.6&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -18,7 +18,7 @@
 ### Package Details
 > Supervised Learning - Currently, I'm utilizing CatBoost, LightGBM, XGBoost, and H2O for all of the automated Machine Learning related functions. GPU's can be utilized with CatBoost, LightGBM, and XGBoost, while those and the H2O models can all utilize 100% of CPU. Multi-armed bandit grid tuning is available for CatBoost, LightGBM, and XGBoost models, which utilize the concept of randomized probability matching, which is detailed in the R pacakge "bandit". My choice of included ML algorithms in the package is based on previous success when compared against other algorithms on real world use cases, the additional utilities these packages offer aside from accurate predictions, their ability to work on big data, and the fact that they're available in both R and Python which makes managing multiple languages a little more seamless in a professional setting.
 
-> Time series forecasting - Automated functions for single series, panel data, vector autoregression, intermittent demand, and cohort panel data. The panel data models utilize the machine learning algos from above and the feature engineering functions below. They are extremely feature rich and the combination of all possible feature settings is huge. The models for individual series are fully optimized versions from the R package "forecast". I utilize the multi-armed bandit grid tuning algo used in the supervised learning models and apply it to the SARIMA and NNETAR models from the forecast package. I also measure performance on hold out data (and training data, or a blend of the two).
+> Time series forecasting - Automated functions for single series, panel data, vector autoregression, intermittent demand, and funnel panel data. The panel data models utilize the machine learning algos from above and the feature engineering functions below. They are extremely feature rich and the combination of all possible feature settings is huge. The models for individual series are fully optimized versions from the R package "forecast". I utilize the multi-armed bandit grid tuning algo used in the supervised learning models and apply it to the SARIMA and NNETAR models from the forecast package. I also measure performance on hold out data (and training data, or a blend of the two).
 
 > Feature Engineering - Some of the feature engineering functions can only be found in this package. I believe feature engineering is your best bet for improving model performance. I have functions that cover all feature types except image data. There are feature engineering functions for numeric data, categorical data, text data, and date data. They are all designed to generate features for training and scoring pipelines and they run extremely fast with low memory utilization. The package takes advantage of data.table for all feature engineering and data wrangling related functions which means I only have to go to big data tools if absolutely necessary.
 
@@ -3845,109 +3845,6 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
 </p>
 </details>
 
-<details><summary>Code Example: AutoCatBoostHurdleCARMA()</summary>
-<p>
-
- 
-```
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# Intermittent Demand CARMA ----
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-# Load Walmart Data from Dropbox----
-data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
-
- # Subset for Stores / Departments With Full Series
-data <- data[, Counts := .N, by = c("Store","Dept")][
-  Counts == 143][
-    , Counts := NULL]
-
-# Subset Columns (remove IsHoliday column)----
-keep <- c("Store","Dept","Date","Weekly_Sales")
-data <- data[, ..keep]
-data <- data[Store %in% c(1,2)]
-xregs <- data.table::copy(data)
-xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
-xregs[, c("Store","Dept") := NULL]
-data.table::setnames(xregs, "Weekly_Sales", "Other")
-xregs[, Other := jitter(Other, factor = 25)]
-data <- data[as.Date(Date) < as.Date('2012-09-28')]
-
-# Add some zeros for testing
-data[runif(.N) < 0.25, Weekly_Sales := 0]
-
-# Build Forecast ----
-Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
-
-  # data args
-  AlgoType = "catboost",
-  data = data,
-  TargetColumnName = "Weekly_Sales",
-  DateColumnName = "Date",
-  HierarchGroups = NULL,
-  GroupVariables = c("Store","Dept"),
-  TimeUnit = "weeks",
-  TimeGroups = c("weeks","months"),
-
-  # Production args
-  TrainOnFull = TRUE,
-  SplitRatios = c(1 - 10 / 138, 10 / 138),
-  PartitionType = "random",
-  FC_Periods = 4,
-  Timer = TRUE,
-  DebugMode = TRUE,
-
-  # Target transformations
-  TargetTransformation = FALSE,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
-  Difference = FALSE,
-  NonNegativePred = FALSE,
-  RoundPreds = FALSE,  
-
-  # Date features
-  CalendarVariables = c("week","month","quarter"),
-  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
-  HolidayLookback = NULL,
-  HolidayLags = 1,
-  HolidayMovingAverages = 1:2,
-
-  # Time series features
-  Lags = list("weeks" = seq(2L,10L,2L), "months" = c(1:3)),
-  MA_Periods = list("weeks" = seq(2L,10L,2L), "months" = c(2,3)),
-  SD_Periods = NULL,
-  Skew_Periods = NULL,
-  Kurt_Periods = NULL,
-  Quantile_Periods = NULL,
-  Quantiles_Selected = NULL,
-
-  # Bonus features
-  AnomalyDetection = NULL,
-  XREGS = xregs,
-  FourierTerms = 1,
-  TimeTrendVariable = TRUE,
-  ZeroPadSeries = NULL,
-  DataTruncate = FALSE,
-
-  # ML Args
-  NumOfParDepPlots = 100L,
-  EvalMetric = "RMSE",
-  GridTune = FALSE,
-  PassInGrid = NULL,
-  ModelCount = 5,
-  TaskType = "GPU",
-  NumGPU = 1,
-  MaxRunsWithoutNewWinner = 50,
-  MaxRunMinutes = 60*60,
-  NTrees = 1000,
-  L2_Leaf_Reg = 3.0,
-  RandomStrength = 1,
-  BorderCount = 254,
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  Depth = 6)
-```
-
-</p>
-</details>
 
 <details><summary>Code Example: AutoXGBoostCARMA()</summary>
 <p>
@@ -4060,7 +3957,6 @@ XGBoostResults <- AutoXGBoostCARMA(
 
 </p>
 </details>
-
 
 
 <details><summary>Code Example: AutoLightGBMCARMA()</summary>
@@ -4254,7 +4150,6 @@ Results <- AutoLightGBMCARMA(
 
 
 
-
 <details><summary>Code Example: AutoH2OCARMA()</summary>
 <p>
 
@@ -4401,8 +4296,6 @@ Results <- RemixAutoML::AutoH2OCARMA(
 
 <code>AutoCatBoostVectorCARMA</code> For Panel Data with multiple series to forecast. An example would be, predicting revenue and transactions across a large number of stores over time.
 
-<code>AutoHurdleCARMA()</code> utilizes the AutoCatBoostHurdleModel() function internally in order to model zeros that naturally show up in intermittent demand data sets.
-
 <code>AutoCatBoostCARMA()</code> utilizes the CatBoost alorithm
 
 <code>AutoXGBoostCARMA()</code> utilizes the XGBoost alorithm
@@ -4473,10 +4366,417 @@ Choose from:
 </details>
 
 
-## Funnel Forecasting <img src="Images/SalesFunnelImage.PNG" align="right" width="80" />
+## Intermittent Demand Forecasting <img src="Images/IntermittentDemandForecasting.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
+
+<details><summary>Funnel Forecasting Description</summary>
+<p>
+
+**Background**
+The term intermittend demand forecasting is the process of forecasting entities that do not always have positive demand for each period in your data. This is a pretty broad field. Some entities could simply be missing demand for a few periods out of thousands while others could only have a few demand instances over a three year window. The functions in RemixAutoML allow you to forecast these types of processes for single series and grouped series. The available functions utilize CatBoost, LightGBM, and XGBoost. I don't think the functions here can handle every possible case of intermittend demand forecasting but I always have them available to test out for these types of projects. What's unique about these functions are that they deploy two machine learning models in an autoregressive forecasting style process. Under the hood both models are encapsulated by the Auto__HurdleModel() and Auto__HurdleModelScoring() functions. They deploy a classifier and a regression model. Both are combined to generate predictions that are hurdle in nature (opposed to zero inflated). They are appropriate because the classifier will determine if a period has zero demand and the regression is used to determine the size of the demand instance assuming one occurs.   
+
+**Feature engineering**
+Feature engineering matches that of the CARMA suite (more detail in that section of the README).
+
+**Data structure**
+Data structure matches that of the CARMA suite. Both the regular Panel CARMA and Hurdle CARMA models will zero-fill in any periods that are missing due to zero demand but I expect there to be many more missing periods for Hurdle CARMA. The Panel CARMA models can also handle periods with no demand and you should feel free to also test out those models for your intermittent demand forecasting project.
+
+**API**
+The API is near identical to the Panel CARMA models except that ML Args require a list() to be supplied that holds both the argument for the classifier and the regression model. E.g. list('classifier' = 100, 'regression' = 100). The list does need to be named and it is case sensitive. Both 'classifier' and 'regression' are lower case.
+
+**ML parameters**
+Similarly to the other ML functions, most ML args are exposed with the functions so you can tune them in a ton of ways. You can also run them with a GPU if you've installed the GPU versions of the packages (relevant for XGBoost and LightGBM).
+
+**Usage for business**
+Most intermittend demand forecasting I've done professionally were for supply chain use cases. These use cases typically involved some sort of optimization engine to tell procurement specialists when to buy and how much to buy when they do buy. In order to build a robust optimization engine, you will have to generate prediction intervals for the forecast. The CARMA suite does not provide those off the shelf but they are actually pretty easy to obtain. When you run the function with TrainOnFull = FALSE, you will have test data returned with predictions and you can use that data to understand the variability in predictions and proceed from there in generating your prediction intervals.
+
+</p>
+</details>
+
+
+
+<details><summary>Code Example: AutoCatBoostHurdleCARMA()</summary>
+<p>
+
+ 
+```
+# Load Walmart Data from Dropbox----
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+ # Subset for Stores / Departments With Full Series
+data <- data[, Counts := .N, by = c("Store","Dept")][
+  Counts == 143][
+    , Counts := NULL]
+
+# Subset Columns (remove IsHoliday column)----
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store %in% c(1,2)]
+xregs <- data.table::copy(data)
+xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+xregs[, c("Store","Dept") := NULL]
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+xregs[, Other := jitter(Other, factor = 25)]
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
+
+# Add some zeros for testing
+data[runif(.N) < 0.25, Weekly_Sales := 0]
+
+# Build Forecast ----
+Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
+
+  # data args
+  AlgoType = "catboost",
+  data = data,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks","months"),
+
+  # Production args
+  TrainOnFull = TRUE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
+  FC_Periods = 4,
+  Timer = TRUE,
+  DebugMode = TRUE,
+
+  # Target transformations
+  TargetTransformation = FALSE,
+  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Difference = FALSE,
+  NonNegativePred = FALSE,
+  RoundPreds = FALSE,  
+
+  # Date features
+  CalendarVariables = c("week","month","quarter"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+
+  # Time series features
+  Lags = list("weeks" = seq(2L,10L,2L), "months" = c(1:3)),
+  MA_Periods = list("weeks" = seq(2L,10L,2L), "months" = c(2,3)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
+
+  # Bonus features
+  AnomalyDetection = NULL,
+  XREGS = xregs,
+  FourierTerms = 1,
+  TimeTrendVariable = TRUE,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+
+  # ML Args
+  NumOfParDepPlots = 100L,
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  PassInGrid = NULL,
+  ModelCount = 5,
+  MaxRunsWithoutNewWinner = 50,
+  MaxRunMinutes = 60*60,
+  
+  # CatBoost Args
+  TaskType = "GPU",
+  NumGPU = 1,
+  NTrees = list('classifier' = 1000, 'regression' = 1000),
+  Depth = list('classifier' = 9, 'regression' = 9),
+  LearningRate = list('classifier' = NULL, 'regression' = NULL),
+  L2_Leaf_Reg = list('classifier' = NULL, 'regression' = NULL),
+  RandomStrength = list('classifier' = 1, 'regression' = 1),
+  BorderCount = list('classifier' = 254, 'regression' = 254),
+  BootStrapType = list('classifier' = 'Bayesian', 'regression' = 'Bayesian'))
+```
+
+</p>
+</details>
+
+
+<details><summary>Code Example: AutoXGBoostHurdleCARMA()</summary>
+<p>
+
+ 
+```
+# Load Walmart Data from Dropbox----
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+ # Subset for Stores / Departments With Full Series
+data <- data[, Counts := .N, by = c("Store","Dept")][
+  Counts == 143][
+    , Counts := NULL]
+
+# Subset Columns (remove IsHoliday column)----
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store %in% c(1,2)]
+xregs <- data.table::copy(data)
+xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+xregs[, c("Store","Dept") := NULL]
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+xregs[, Other := jitter(Other, factor = 25)]
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
+
+# Add some zeros for testing
+data[runif(.N) < 0.25, Weekly_Sales := 0]
+
+# Build Forecast ----
+Output <- RemixAutoML::AutoXGBoostHurdleCARMA(
+
+  # data args
+  data = data,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks","months"),
+
+  # Production args
+  TrainOnFull = TRUE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
+  FC_Periods = 4,
+  Timer = TRUE,
+  DebugMode = TRUE,
+
+  # Target transformations
+  TargetTransformation = FALSE,
+  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Difference = FALSE,
+  NonNegativePred = FALSE,
+  RoundPreds = FALSE,  
+
+  # Date features
+  CalendarVariables = c("week","month","quarter"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+
+  # Time series features
+  Lags = list("weeks" = seq(2L,10L,2L), "months" = c(1:3)),
+  MA_Periods = list("weeks" = seq(2L,10L,2L), "months" = c(2,3)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
+
+  # Bonus features
+  AnomalyDetection = NULL,
+  XREGS = xregs,
+  FourierTerms = 1,
+  TimeTrendVariable = TRUE,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+
+  # ML Args
+  NumOfParDepPlots = 100L,
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  PassInGrid = NULL,
+  ModelCount = 5,
+  MaxRunsWithoutNewWinner = 50,
+  MaxRunMinutes = 60*60,
+  
+  # XGBoost Args
+  TreeMethod = "hist",
+  Trees = list("classifier" = 1000, "regression" = 1000),
+  eta = list("classifier" = 0.05, "regression" = 0.05),
+  max_depth = list("classifier" = 4L, "regression" = 4L),
+  min_child_weight = list("classifier" = 1.0, "regression" = 1.0),
+  subsample = list("classifier" = 0.55, "regression" = 0.55),
+  colsample_bytree = list("classifier" = 0.55, "regression" = 0.55))
+```
+
+</p>
+</details>
+
+
+<details><summary>Code Example: AutoLightGBMHurdleCARMA()</summary>
+<p>
+
+ 
+```
+# Load Walmart Data from Dropbox----
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+
+ # Subset for Stores / Departments With Full Series
+data <- data[, Counts := .N, by = c("Store","Dept")][
+  Counts == 143][
+    , Counts := NULL]
+
+# Subset Columns (remove IsHoliday column)----
+keep <- c("Store","Dept","Date","Weekly_Sales")
+data <- data[, ..keep]
+data <- data[Store %in% c(1,2)]
+xregs <- data.table::copy(data)
+xregs[, GroupVar := do.call(paste, c(.SD, sep = " ")), .SDcols = c("Store","Dept")]
+xregs[, c("Store","Dept") := NULL]
+data.table::setnames(xregs, "Weekly_Sales", "Other")
+xregs[, Other := jitter(Other, factor = 25)]
+data <- data[as.Date(Date) < as.Date('2012-09-28')]
+
+# Add some zeros for testing
+data[runif(.N) < 0.25, Weekly_Sales := 0]
+
+# Build Forecast ----
+Output <- RemixAutoML::AutoLightGBMHurdleCARMA(
+
+  # data args
+  data = data,
+  TargetColumnName = "Weekly_Sales",
+  DateColumnName = "Date",
+  HierarchGroups = NULL,
+  GroupVariables = c("Store","Dept"),
+  TimeUnit = "weeks",
+  TimeGroups = c("weeks","months"),
+
+  # Production args
+  TrainOnFull = TRUE,
+  SplitRatios = c(1 - 10 / 138, 10 / 138),
+  PartitionType = "random",
+  FC_Periods = 4,
+  Timer = TRUE,
+  DebugMode = TRUE,
+
+  # Target transformations
+  TargetTransformation = FALSE,
+  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Difference = FALSE,
+  NonNegativePred = FALSE,
+  RoundPreds = FALSE,  
+
+  # Date features
+  CalendarVariables = c("week","month","quarter"),
+  HolidayVariable = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayLookback = NULL,
+  HolidayLags = 1,
+  HolidayMovingAverages = 1:2,
+
+  # Time series features
+  Lags = list("weeks" = seq(2L,10L,2L), "months" = c(1:3)),
+  MA_Periods = list("weeks" = seq(2L,10L,2L), "months" = c(2,3)),
+  SD_Periods = NULL,
+  Skew_Periods = NULL,
+  Kurt_Periods = NULL,
+  Quantile_Periods = NULL,
+  Quantiles_Selected = NULL,
+
+  # Bonus features
+  AnomalyDetection = NULL,
+  XREGS = xregs,
+  FourierTerms = 1,
+  TimeTrendVariable = TRUE,
+  ZeroPadSeries = NULL,
+  DataTruncate = FALSE,
+
+  # ML Args
+  NumOfParDepPlots = 100L,
+  EvalMetric = "RMSE",
+  GridTune = FALSE,
+  PassInGrid = NULL,
+  ModelCount = 5,
+  MaxRunsWithoutNewWinner = 50,
+  MaxRunMinutes = 60*60,
+  
+  # Core parameters https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+  input_model = list('classifier' = NULL, 'regression' = NULL),
+  task = list('classifier' = 'train', 'regression' = 'train'),
+  device_type = list('classifier' = 'CPU', 'regression' = 'CPU'),
+  objective = list('classifier' = 'binary', 'regression' = 'regression'),
+  metric = list('classifier' = 'binary_logloss', 'regression' = 'rmse'),
+  boosting = list('classifier' = 'gbdt', 'regression' = 'gbdt'),
+  LinearTree = list('classifier' = FALSE, 'regression' = FALSE),
+  Trees = list('classifier' = 1000L, 'regression' = 1000L),
+  eta = list('classifier' = NULL, 'regression' = NULL),
+  num_leaves = list('classifier' = 31, 'regression' = 31),
+  deterministic = list('classifier' = TRUE, 'regression' = TRUE),
+
+  # Learning Parameters https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  force_col_wise = list('classifier' = FALSE, 'regression' = FALSE),
+  force_row_wise = list('classifier' = FALSE, 'regression' = FALSE),
+  max_depth = list('classifier' = NULL, 'regression' = NULL),
+  min_data_in_leaf = list('classifier' = 20, 'regression' = 20),
+  min_sum_hessian_in_leaf = list('classifier' = 0.001, 'regression' = 0.001),
+  bagging_freq = list('classifier' = 0, 'regression' = 0),
+  bagging_fraction = list('classifier' = 1.0, 'regression' = 1.0),
+  feature_fraction = list('classifier' = 1.0, 'regression' = 1.0),
+  feature_fraction_bynode = list('classifier' = 1.0, 'regression' = 1.0),
+  extra_trees = list('classifier' = FALSE, 'regression' = FALSE),
+  early_stopping_round = list('classifier' = 10, 'regression' = 10),
+  first_metric_only = list('classifier' = TRUE, 'regression' = TRUE),
+  max_delta_step = list('classifier' = 0.0, 'regression' = 0.0),
+  lambda_l1 = list('classifier' = 0.0, 'regression' = 0.0),
+  lambda_l2 = list('classifier' = 0.0, 'regression' = 0.0),
+  linear_lambda = list('classifier' = 0.0, 'regression' = 0.0),
+  min_gain_to_split = list('classifier' = 0, 'regression' = 0),
+  drop_rate_dart = list('classifier' = 0.10, 'regression' = 0.10),
+  max_drop_dart = list('classifier' = 50, 'regression' = 50),
+  skip_drop_dart = list('classifier' = 0.50, 'regression' = 0.50),
+  uniform_drop_dart = list('classifier' = FALSE, 'regression' = FALSE),
+  top_rate_goss = list('classifier' = FALSE, 'regression' = FALSE),
+  other_rate_goss = list('classifier' = FALSE, 'regression' = FALSE),
+  monotone_constraints = list('classifier' = NULL, 'regression' = NULL),
+  monotone_constraints_method = list('classifier' = 'advanced', 'regression' = 'advanced'),
+  monotone_penalty = list('classifier' = 0.0, 'regression' = 0.0),
+  forcedsplits_filename = list('classifier' = NULL, 'regression' = NULL),
+  refit_decay_rate = list('classifier' = 0.90, 'regression' = 0.90),
+  path_smooth = list('classifier' = 0.0, 'regression' = 0.0),
+
+  # IO Dataset Parameters
+  max_bin = list('classifier' = 255, 'regression' = 255),
+  min_data_in_bin = list('classifier' = 3, 'regression' = 3),
+  data_random_seed = list('classifier' = 1, 'regression' = 1),
+  is_enable_sparse = list('classifier' = TRUE, 'regression' = TRUE),
+  enable_bundle = list('classifier' = TRUE, 'regression' = TRUE),
+  use_missing = list('classifier' = TRUE, 'regression' = TRUE),
+  zero_as_missing = list('classifier' = FALSE, 'regression' = FALSE),
+  two_round = list('classifier' = FALSE, 'regression' = FALSE),
+
+  # Convert Parameters
+  convert_model = list('classifier' = NULL, 'regression' = NULL),
+  convert_model_language = list('classifier' = "cpp", 'regression' = "cpp"),
+
+  # Objective Parameters
+  boost_from_average = list('classifier' = TRUE, 'regression' = TRUE),
+  is_unbalance = list('classifier' = FALSE, 'regression' = FALSE),
+  scale_pos_weight = list('classifier' = 1.0, 'regression' = 1.0),
+
+  # Metric Parameters (metric is in Core)
+  is_provide_training_metric = list('classifier' = TRUE, 'regression' = TRUE),
+  eval_at = list('classifier' = c(1,2,3,4,5), 'regression' = c(1,2,3,4,5)),
+
+  # Network Parameters
+  num_machines = list('classifier' = 1, 'regression' = 1),
+
+  # GPU Parameters
+  gpu_platform_id = list('classifier' = -1, 'regression' = -1),
+  gpu_device_id = list('classifier' = -1, 'regression' = -1),
+  gpu_use_dp = list('classifier' = TRUE, 'regression' = TRUE),
+  num_gpu = list('classifier' = 1, 'regression' = 1))
+```
+
+</p>
+</details>
+
+
+</p>
+</details>
+
+
+## Funnel Forecasting <img src="Images/SalesFunnelImage.PNG" align="right" width="80" />
+<details><summary>Expand to view content</summary>
+<p>
 
 
 <details><summary>Funnel Forecasting Description</summary>

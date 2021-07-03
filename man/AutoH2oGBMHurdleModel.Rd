@@ -106,12 +106,13 @@ Output <- RemixAutoML::AutoH2oGBMHurdleModel(
 }
 }
 \seealso{
-Other Supervised Learning - Compound: 
+Other Supervised Learning - Hurdle Modeling: 
 \code{\link{AutoCatBoostHurdleModel}()},
 \code{\link{AutoH2oDRFHurdleModel}()},
+\code{\link{AutoLightGBMHurdleModel}()},
 \code{\link{AutoXGBoostHurdleModel}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Supervised Learning - Compound}
+\concept{Supervised Learning - Hurdle Modeling}

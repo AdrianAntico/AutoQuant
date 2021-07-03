@@ -66,6 +66,7 @@ XGBoostArgsCheck <- function(GridTune.=GridTune,
 #' @param SaveModelObjects. Passthrough
 #' @param ReturnFactorLevels. Passthrough
 #' @param EncodingMethod. Passthrough
+#' @param DebugMode. Passthrough
 #'
 #' @noRd
 XGBoostDataPrep <- function(Algo = 'xgboost',
@@ -85,19 +86,23 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
                             TrainOnFull. = TrainOnFull,
                             SaveModelObjects. = SaveModelObjects,
                             ReturnFactorLevels.=ReturnFactorLevels,
-                            EncodingMethod. = EncodingMethod) {
+                            EncodingMethod. = EncodingMethod,
+                            DebugMode. = FALSE) {
 
   # Ensure data. is a data.table
+  if(DebugMode.) print("Ensure data. is a data.table")
   if(!data.table::is.data.table(data.)) data.table::setDT(data.)
   if(!is.null(ValidationData.) && !data.table::is.data.table(ValidationData.)) data.table::setDT(ValidationData.)
   if(!is.null(TestData.) && !data.table::is.data.table(TestData.)) data.table::setDT(TestData.)
 
   # Target Name Storage
+  if(DebugMode.) print("Target Name Storage")
   if(!is.character(TargetColumnName.)) TargetColumnName. <- names(data.)[TargetColumnName.]
   if(!is.character(FeatureColNames.)) FeatureColNames. <- names(data.)[FeatureColNames.]
   if(!is.null(IDcols.) && !is.character(IDcols.)) IDcols. <- names(data.)[IDcols.]
 
   # Identify column numbers for factor variables
+  if(DebugMode.) print("Identify column numbers for factor variables")
   CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
   if(!identical(numeric(0), CatFeatures)) {
     CatFeatures <- names(data.)[CatFeatures]
@@ -107,6 +112,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   }
 
   # Remove WeightsVector
+  if(DebugMode.) print("Remove WeightsVector")
   if(!is.null(WeightsColumnName.)) {
     if(Algo == 'xgboost') {
       WeightsVector <- data.[[eval(WeightsColumnName.)]]
@@ -120,12 +126,17 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   }
 
   # Target var management
-  if(ModelType == 'multiclass') CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
+  if(DebugMode.) print("Target var management")
+  if(ModelType == 'multiclass' && !is.null(CatFeatures)) CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
 
   # Classification
   if(ModelType == 'classification') {
 
+    # Debug
+    if(DebugMode.) print("Classification")
+
     # Data Partition
+    if(DebugMode.) print("Data Partition")
     if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
       dataSets <- AutoDataPartition(
         data = data.,
@@ -140,8 +151,13 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Classification data. Subset Columns Needed
+    if(DebugMode.) print("Classification data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
-      TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      if(ncol(data.) == ncol(ValidationData.)) {
+        TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      } else {
+        TrainMerge <- NULL
+      }
       dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
       dataTest <- ValidationData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
       if(!is.null(TestData.)) {
@@ -157,6 +173,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Save Names of data
+    if(DebugMode.) print("Save Names of data")
     Names <- data.table::as.data.table(names(dataTrain))
     if(!'V1' %chin% names(Names)) {
       data.table::setnames(Names, 'FeatureColNames.', 'ColNames')
@@ -165,23 +182,27 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Dummify dataTrain Categorical Features ----
+    if(DebugMode.) print("Dummify dataTrain Categorical Features")
     Output <- RemixAutoML:::EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
     dataTrain <- Output$TrainData; Output$TrainData <- NULL
     dataTest <- Output$ValidationData; Output$ValidationData <- NULL
     TestData. <- Output$TestData; Output$TestData. <- NULL
     FactorLevelsList <- Output$MetaData; rm(Output)
 
-    # Subset TargetColumnName. Variables----
+    # Subset TargetColumnName. Variables ----
+    if(DebugMode.) print("Subset TargetColumnName. Variables")
     TrainTarget <- dataTrain[, get(TargetColumnName.)]
     if(!TrainOnFull.) TestTarget <- dataTest[, get(TargetColumnName.)]
     if(!is.null(TestData.)) FinalTestTarget <- TestData.[, get(TargetColumnName.)]
 
     # Remove TargetColumnName. Variable from Feature Data
+    if(DebugMode.) print("Remove TargetColumnName. Variable from Feature Data")
     data.table::set(dataTrain, j = TargetColumnName., value = NULL)
     if(!TrainOnFull.) data.table::set(dataTest, j = TargetColumnName., value = NULL)
     if(!is.null(TestData.)) data.table::set(TestData., j = TargetColumnName., value = NULL)
 
     # Save feature names
+    if(DebugMode.) print("Save feature names")
     Names <- Names[ColNames != eval(TargetColumnName.)]
     if(SaveModelObjects.) data.table::fwrite(Names, file = file.path(model_path., paste0(ModelID., '_ColNames.csv')))
   }
@@ -189,7 +210,11 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   # Regression
   if(ModelType == 'regression') {
 
+    # Debug
+    if(DebugMode.) print("Regression")
+
     # Transform data., ValidationData., and TestData.
+    if(DebugMode.) print("Transform data., ValidationData., and TestData.")
     if((TrainOnFull. || !is.null(ValidationData.)) && !is.null(TransformNumericColumns.)) {
       MeanTrainTarget <- data.[, mean(get(TargetColumnName.))]
       Output <- AutoTransformationCreate(
@@ -203,6 +228,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       TransformationResults <- Output$FinalResults
 
       # Transform ValidationData.
+      if(DebugMode.) print("Transform ValidationData.")
       if(!is.null(ValidationData.)) {
         ValidationData. <- AutoTransformationScore(
           ScoringData = ValidationData.,
@@ -213,6 +239,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       }
 
       # Transform TestData.
+      if(DebugMode.) print("Transform TestData.")
       if(!is.null(TestData.)) {
         TestData. <- AutoTransformationScore(
           ScoringData = TestData.,
@@ -223,7 +250,8 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       }
     }
 
-    # Regression Data Partition----
+    # Regression Data Partition ----
+    if(DebugMode.) print("Regression Data Partition")
     if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
       if(!is.null(TransformNumericColumns.)) {
         dataSets <- AutoDataPartition(
@@ -238,9 +266,11 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
         TestData. <- dataSets$TestData
 
         # Mean of data.
+        if(DebugMode.) print("Mean of data.")
         MeanTrainTarget <- data.[, mean(get(TargetColumnName.))]
 
         # Transform data. sets
+        if(DebugMode.) print("Transform data. sets")
         Output <- AutoTransformationCreate(
           data.,
           ColumnNames = TransformNumericColumns.,
@@ -252,6 +282,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
         TransformationResults <- Output$FinalResults
 
         # Transform ValidationData.
+        if(DebugMode.) print("Transform ValidationData.")
         ValidationData. <- AutoTransformationScore(
           ScoringData = ValidationData.,
           Type = 'Apply',
@@ -260,6 +291,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
           Path = NULL)
 
         # Transform TestData.
+        if(DebugMode.) print("Transform TestData.")
         if(!is.null(TestData.)) {
           TestData. <- AutoTransformationScore(
             ScoringData = TestData.,
@@ -269,6 +301,9 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
             Path = NULL)
         }
       } else {
+
+        # Partition Data
+        if(DebugMode.) print("Partition Data")
         dataSets <- AutoDataPartition(
           data.,
           NumDataSets = 3L,
@@ -284,8 +319,13 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Regression data. Subset Columns Needed
+    if(DebugMode.) print("Regression data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
-      TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      if(ncol(data.) == ncol(ValidationData.)) {
+        TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      } else {
+        TrainMerge <- NULL
+      }
       dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
       dataTest <- ValidationData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
       if(!is.null(TestData.)) {
@@ -301,6 +341,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Save Names of data
+    if(DebugMode.) print("Save Names of data")
     Names <- data.table::as.data.table(names(dataTrain))
     if(!'V1' %chin% names(Names)) {
       data.table::setnames(Names, 'FeatureColNames.', 'ColNames')
@@ -309,6 +350,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Dummify dataTrain Categorical Features ----
+    if(DebugMode.) print("Dummify dataTrain Categorical Features")
     if(!is.null(CatFeatures)) {
       Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
       dataTrain <- Output$TrainData; Output$TrainData <- NULL
@@ -320,6 +362,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Regression Subset Target Variables
+    if(DebugMode.) print("Regression Subset Target Variables")
     TrainTarget <- dataTrain[, get(TargetColumnName.)]
     if(!is.null(dataTest)) {
       TestTarget <- dataTest[, get(TargetColumnName.)]
@@ -327,11 +370,13 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Regression Remove Target Variable from Feature Data
+    if(DebugMode.) print("Regression Remove Target Variable from Feature Data")
     data.table::set(dataTrain, j = TargetColumnName., value = NULL)
     if(!is.null(dataTest)) data.table::set(dataTest, j = TargetColumnName., value = NULL)
     if(!is.null(TestData.)) data.table::set(TestData., j = TargetColumnName., value = NULL)
 
     # Save feature names
+    if(DebugMode.) print("Save feature names")
     if(Algo == "xgboost") {
       Names <- Names[!ColNames %chin% c(eval(TargetColumnName.), eval(IDcols.), eval(WeightsColumnName.))]
     } else if(Algo == "lightgbm") {
@@ -344,6 +389,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   if(ModelType == 'multiclass') {
 
     # MultiClass Data Partition
+    if(DebugMode.) print("MultiClass Data Partition")
     if(is.null(ValidationData.) && is.null(TestData.) && !TrainOnFull.) {
       dataSets <- AutoDataPartition(
         data = data.,
@@ -358,8 +404,13 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Regression data. Subset Columns Needed
+    if(DebugMode.) print("Regression data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
-      TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      if(ncol(data.) == ncol(ValidationData.)) {
+        TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+      } else {
+        TrainMerge <- NULL
+      }
       dataTrain <- data.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
       dataTest <- ValidationData.[, .SD, .SDcols = c(FeatureColNames., TargetColumnName.)]
       if(!is.null(TestData.)) {
@@ -375,6 +426,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Save Names of data
+    if(DebugMode.) print("Save Names of data")
     Names <- data.table::as.data.table(names(dataTrain))
     if(!'V1' %chin% names(Names)) {
       data.table::setnames(Names, 'FeatureColNames.', 'ColNames')
@@ -383,6 +435,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     }
 
     # Dummify dataTrain Categorical Features ----
+    if(DebugMode.) print("Dummify dataTrain Categorical Features")
     Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
     dataTrain <- Output$TrainData; Output$TrainData <- NULL
     dataTest <- Output$ValidationData; Output$ValidationData <- NULL
@@ -390,6 +443,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     FactorLevelsList <- Output$MetaData; rm(Output)
 
     # MultiClass Obtain Unique Target Levels
+    if(DebugMode.) print("MultiClass Obtain Unique Target Levels")
     if(!is.null(dataTest) && !is.null(TestData.)) {
       temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
     } else if(!is.null(dataTest)) {
@@ -403,9 +457,11 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., '_TargetLevels.csv')))
 
     # Number of levels
+    if(DebugMode.) print("Number of levels")
     NumLevels <- TargetLevels[, .N]
 
     # MultiClass Convert Target to Numeric Factor
+    if(DebugMode.) print("MultiClass Convert Target to Numeric Factor")
     dataTrain <- merge(dataTrain, TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
     dataTrain[, paste0(TargetColumnName.) := NewLevels]
     dataTrain[, NewLevels := NULL]
@@ -420,22 +476,26 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       }
     }
 
-    # MultiClass Subset Target Variables----
+    # MultiClass Subset Target Variables ----
+    if(DebugMode.) print("MultiClass Subset Target Variables")
     TrainTarget <- dataTrain[, get(TargetColumnName.)]
     if(!is.null(dataTest)) TestTarget <- dataTest[, get(TargetColumnName.)]
     if(!is.null(TestData.)) FinalTestTarget <- TestData.[, get(TargetColumnName.)]
 
     # MultiClass Remove Target Variable from Feature Data
+    if(DebugMode.) print("MultiClass Remove Target Variable from Feature Data")
     dataTrain[, eval(TargetColumnName.) := NULL]
     if(!is.null(dataTest)) dataTest[, eval(TargetColumnName.) := NULL]
     if(!is.null(TestData.)) TestData.[, eval(TargetColumnName.) := NULL]
 
     # Save feature names
+    if(DebugMode.) print("Save feature names")
     Names <- Names[ColNames != eval(TargetColumnName.)]
     if(SaveModelObjects.) data.table::fwrite(Names, file = file.path(model_path., paste0(ModelID., '_ColNames.csv')))
   }
 
   # Convert data to model object data
+  if(DebugMode.) print("Convert data to model object data")
   if('GroupVar' %chin% names(dataTrain)) data.table::set(dataTrain, j = 'GroupVar', value = NULL)
   if(tolower(Algo) == 'xgboost') {
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
@@ -443,6 +503,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     datatrain <- lightgbm::lgb.Dataset(data=as.matrix(dataTrain), label=TrainTarget)
   }
   if(!TrainOnFull.) {
+    if(DebugMode.) print("Convert data to model object dataTest")
     if('GroupVar' %chin% names(dataTest)) data.table::set(dataTest, j = 'GroupVar', value = NULL)
     if(tolower(Algo) == 'xgboost') {
       datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
@@ -450,6 +511,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       datavalidate <- lightgbm::lgb.Dataset(data=as.matrix(dataTest), label=TestTarget)
     }
     if(!is.null(TestData.)) {
+      if(DebugMode.) print("Convert data to model object TestData.")
       if('GroupVar' %chin% names(TestData.)) data.table::set(TestData., j = 'GroupVar', value = NULL)
       if(tolower(Algo) == 'xgboost') {
         datatest <- xgboost::xgb.DMatrix(as.matrix(TestData.), label = FinalTestTarget)
@@ -470,6 +532,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   }
 
   # Return objects
+  if(DebugMode.) print("Return objects")
   return(list(
     WeightsVector = if(exists('WeightsVector')) WeightsVector else NULL,
     datatrain = datatrain,

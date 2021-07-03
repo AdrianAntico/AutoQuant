@@ -107,12 +107,13 @@ Output <- AutoH2oDRFHurdleModel(
 }
 }
 \seealso{
-Other Supervised Learning - Compound: 
+Other Supervised Learning - Hurdle Modeling: 
 \code{\link{AutoCatBoostHurdleModel}()},
 \code{\link{AutoH2oGBMHurdleModel}()},
+\code{\link{AutoLightGBMHurdleModel}()},
 \code{\link{AutoXGBoostHurdleModel}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Supervised Learning - Compound}
+\concept{Supervised Learning - Hurdle Modeling}

@@ -62,7 +62,7 @@ AutoXGBoostRegression(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
-\item{PrimaryDateColumn}{Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling}
+\item{PrimaryDateColumn}{Supply a date or datetime column for model evaluation plots}
 
 \item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
