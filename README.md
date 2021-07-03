@@ -3201,6 +3201,9 @@ TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
 
 ### Generalized Hurdle Models
 
+<details><summary>click to expand</summary>
+<p>
+
 <details><summary>Hurdle Model Description</summary>
 <p>
   
@@ -3734,6 +3737,9 @@ for(run in seq_len(LightGBM_QA[,.N])) {
   data.table::fwrite(LightGBM_QA, file = file.path(Path, "AutoLightGBMHurdleModel_QA.csv"))
 }
 ```
+
+</p>
+</details>
 
 </p>
 </details>
