@@ -44,56 +44,142 @@
 #' @param colsample_bytree Provide a named list to have different number of colsample_bytree for each model.
 #' @examples
 #' \dontrun{
-#' Output <- RemixAutoML::AutoXGBoostHurdleModel(
+#' # Test data.table
+#' XGBoost_QA <- data.table::CJ(
+#'   TOF = c(TRUE,FALSE),
+#'   Classification = c(TRUE,FALSE),
+#'   Success = "Failure",
+#'   ScoreSuccess = "Failure",
+#'   PartitionInFunction = c(TRUE,FALSE), sorted = FALSE
+#' )
 #'
-#'    # Operationalization args
-#'    TrainOnFull = FALSE,
-#'    PassInGrid = NULL,
+#' # Remove impossible combinations
+#' XGBoost_QA <- XGBoost_QA[!(PartitionInFunction & TOF)]
+#' XGBoost_QA[, RunNumber := seq_len(.N)]
 #'
-#'    # Metadata args
-#'    NThreads = max(1L, parallel::detectCores()-2L),
-#'    ModelID = "ModelTest",
-#'    Paths = normalizePath("./"),
-#'    MetaDataPaths = NULL,
+#' # Path File
+#' Path <- getwd()
 #'
-#'    # data args
-#'    data,
-#'    ValidationData = NULL,
-#'    TestData = NULL,
-#'    Buckets = 0L,
-#'    TargetColumnName = NULL,
-#'    FeatureColNames = NULL,
-#'    PrimaryDateColumn = NULL,
-#'    WeightsColumnName = NULL,
-#'    IDcols = NULL,
-#'    ClassWeights = c(1,1),
-#'    DebugMode = FALSE,
+#' #      TOF Classification Success PartitionInFunction RunNumber
+#' # 1:  TRUE           TRUE Failure               FALSE         1
+#' # 2:  TRUE          FALSE Failure               FALSE         2
+#' # 3: FALSE           TRUE Failure                TRUE         3
+#' # 4: FALSE           TRUE Failure               FALSE         4
+#' # 5: FALSE          FALSE Failure                TRUE         5
+#' # 6: FALSE          FALSE Failure               FALSE         6
 #'
-#'    # options
-#'    EncodingMethod = "credibility",
-#'    TransformNumericColumns = NULL,
-#'    Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
-#'    SplitRatios = c(0.70, 0.20, 0.10),
-#'    ReturnModelObjects = TRUE,
-#'    SaveModelObjects = FALSE,
-#'    NumOfParDepPlots = 10L,
+#' # AutoCatBoostHurdleModel
+#' # run = 5
+#' # run = 6
+#' for(run in seq_len(XGBoost_QA[,.N])) {
 #'
-#'    # grid tuning args
-#'    GridTune = FALSE,
-#'    grid_eval_metric = "accuracy",
-#'    MaxModelsInGrid = 1L,
-#'    BaselineComparison = "default",
-#'    MaxRunsWithoutNewWinner = 10L,
-#'    MaxRunMinutes = 60L,
+#'   # Define values
+#'   tof <- XGBoost_QA[run, TOF]
+#'   PartitionInFunction <- XGBoost_QA[run, PartitionInFunction]
+#'   Classify <- XGBoost_QA[run, Classification]
+#'   Tar <- "Adrian"
 #'
-#'    # XGBoost parameters
-#'    TreeMethod = "hist",
-#'    Trees = list("classifier" = 1000, "regression" = 1000),
-#'    eta = list("classifier" = 0.05, "regression" = 0.05),
-#'    max_depth = list("classifier" = 4L, "regression" = 4L),
-#'    min_child_weight = list("classifier" = 1.0, "regression" = 1.0),
-#'    subsample = list("classifier" = 0.55, "regression" = 0.55),
-#'    colsample_bytree = list("classifier" = 0.55, "regression" = 0.55))
+#'   # Get data
+#'   if(Classify) {
+#'     data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+#'   } else {
+#'     data <- RemixAutoML::FakeDataGenerator(N = 100000, ZIP = 2)
+#'   }
+#'
+#'   # Partition Data
+#'   if(!tof && !PartitionInFunction) {
+#'     Sets <- RemixAutoML::AutoDataPartition(
+#'       data = data,
+#'       NumDataSets = 3,
+#'       Ratios = c(0.7,0.2,0.1),
+#'       PartitionType = "random",
+#'       StratifyColumnNames = "Adrian",
+#'       TimeColumnName = NULL)
+#'     TTrainData <- Sets$TrainData
+#'     VValidationData <- Sets$ValidationData
+#'     TTestData <- Sets$TestData
+#'     rm(Sets)
+#'   } else {
+#'     TTrainData <- data.table::copy(data)
+#'     VValidationData <- NULL
+#'     TTestData <- NULL
+#'   }
+#'
+#'   # Run function
+#'   TestModel <- tryCatch({RemixAutoML::AutoXGBoostHurdleModel(
+#'
+#'     # Operationalization
+#'     ModelID = 'ModelTest',
+#'     SaveModelObjects = FALSE,
+#'     ReturnModelObjects = TRUE,
+#'     NThreads = parallel::detectCores(),
+#'
+#'     # Data related args
+#'     data = TTrainData,
+#'     ValidationData = VValidationData,
+#'     PrimaryDateColumn = "DateTime",
+#'     TestData = TTestData,
+#'     WeightsColumnName = NULL,
+#'     TrainOnFull = tof,
+#'     Buckets = if(Classify) 0L else c(0,2,3),
+#'     TargetColumnName = "Adrian",
+#'     FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
+#'     IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
+#'     DebugMode = TRUE,
+#'
+#'     # Metadata args
+#'     EncodingMethod = "credibility",
+#'     Paths = normalizePath('./'),
+#'     MetaDataPaths = NULL,
+#'     TransformNumericColumns = NULL,
+#'     Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit'),
+#'     ClassWeights = c(1,1),
+#'     SplitRatios = if(PartitionInFunction) c(0.70, 0.20, 0.10) else NULL,
+#'     NumOfParDepPlots = 10L,
+#'
+#'     # Grid tuning setup
+#'     PassInGrid = NULL,
+#'     GridTune = FALSE,
+#'     BaselineComparison = 'default',
+#'     MaxModelsInGrid = 1L,
+#'     MaxRunsWithoutNewWinner = 20L,
+#'     MaxRunMinutes = 60L*60L,
+#'
+#'     # XGBoost parameters
+#'     TreeMethod = "hist",
+#'     Trees = list("classifier" = 50, "regression" = 50),
+#'     eta = list("classifier" = 0.05, "regression" = 0.05),
+#'     max_depth = list("classifier" = 4L, "regression" = 4L),
+#'     min_child_weight = list("classifier" = 1.0, "regression" = 1.0),
+#'     subsample = list("classifier" = 0.55, "regression" = 0.55),
+#'     colsample_bytree = list("classifier" = 0.55, "regression" = 0.55))}, error = function(x) NULL)
+#'
+#'   # Outcome
+#'   if(!is.null(TestModel)) XGBoost_QA[run, Success := "Success"]
+#'   data.table::fwrite(XGBoost_QA, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoXGBoostHurdleModel_QA.csv")
+#'
+#'   # Remove Target Variable
+#'   TTrainData[, c("Target_Buckets", "Adrian") := NULL]
+#'
+#'   # Score XGBoost Hurdle Model
+#'   Output <- tryCatch({RemixAutoML::AutoXGBoostHurdleModelScoring(
+#'     TestData = TTrainData,
+#'     Path = Path,
+#'     ModelID = "ModelTest",
+#'     ModelList = TestModel$ModelList,
+#'     ArgsList = TestModel$ArgsList,
+#'     Threshold = NULL)}, error = function(x) NULL)
+#'
+#'   # Outcome
+#'   if(!is.null(Output)) XGBoost_QA[run, Score := "Success"]
+#'   TestModel <- NULL
+#'   Output <- NULL
+#'   TTrainData <- NULL
+#'   VValidationData <- NULL
+#'   TTestData <- NULL
+#'   gc(); Sys.sleep(5)
+#'   data.table::fwrite(XGBoost_QA, file = file.path(Path, "AutoXGBoostHurdleModel_QA.csv"))
+#' }
 #' }
 #' @export
 AutoXGBoostHurdleModel <- function(TreeMethod = "hist",

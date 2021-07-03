@@ -65,7 +65,7 @@
 #'
 #'
 #' # Path File
-#' Path <- "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV"
+#' Path <- getwd()
 #'
 #' #       TOF Classification TaskType Success PartitionInFunction RunNumber
 #' # 1:   TRUE           TRUE      CPU Failure               FALSE         1  success
