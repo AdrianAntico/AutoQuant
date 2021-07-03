@@ -2592,7 +2592,7 @@ TestModel <- RemixAutoML::AutoH2oGAMClassifier(
 </p>
 </details>
 
-### Multinomial Classification
+### MultiClass Classification
 
 <details><summary>click to expand</summary>
 <p>
