@@ -507,7 +507,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName.)]])))
     data.table::setnames(TargetLevels, "V1", "OriginalLevels")
     TargetLevels[, NewLevels := seq_len(.N)]
-    if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., ModelID., "_TargetLevels.csv"))
+    if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., "_TargetLevels.csv")))
 
     # MultiClass Convert Target to Numeric Factor
     data. <- merge(
