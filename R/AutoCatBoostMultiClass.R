@@ -347,6 +347,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
         TrainData[, p1 := get(tarlevel)]
         TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+        if(length(unique(TrainData[[paste0('Temp_',tarlevel)]])) == 1) next
         Output <- ML_EvalPlots(ModelType='classification', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=FALSE, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
         PlotList[[paste0('Train_EvaluationPlot_',tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
         PlotList[[paste0('Train_ParDepPlots_',tarlevel)]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
@@ -360,6 +361,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
     for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
       ValidationData[, p1 := get(tarlevel)]
       ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+      if(length(unique(ValidationData[[paste0('Temp_',tarlevel)]])) == 1) next
       Output <- ML_EvalPlots(ModelType='classification', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
       PlotList[[paste0('Test_EvaluationPlot_',tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
       PlotList[[paste0('Test_ParDepPlots_',tarlevel)]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
