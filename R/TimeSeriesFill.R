@@ -167,7 +167,7 @@ TimeSeriesFill <- function(data = data,
   if(!is.null(GroupVariables)) {
     temp <- unique(data[, mget(GroupVariables)])
     FillData <- merge(FillData, temp, by = GroupVariables, all = FALSE)
-    FillData[, Check := sum(!is.na(names(FillData)[!names(FillData) %chin% c(eval(GroupVariables),eval(DateColumnName))][1L])), by = eval(GroupVariables)]
+    FillData[, Check := sum(!is.na(get(names(FillData)[!names(FillData) %chin% c(eval(GroupVariables),eval(DateColumnName))][1L]))), by = eval(GroupVariables)]
     CompareVal <- FillData[, quantile(Check, 0.95)[[1L]]]
     FillData <- FillData[Check > (1 - eval(MaxMissingPercent)) * eval(CompareVal)][, Check := NULL]
   }
