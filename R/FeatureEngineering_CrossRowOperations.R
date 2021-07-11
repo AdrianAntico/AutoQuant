@@ -2109,7 +2109,7 @@ TimeSeriesFeatures <- function(data = NULL,
       # Services
       RollOnLag1           = TRUE,
       Type                 = "Lag",
-      SimpleImpute         = ArgsList$FE_Args$Clean$MissNum,
+      SimpleImpute         = ArgsList$FE_Args$Clean$Impute,
 
       # Calculated Columns
       Lags                 = ArgsList$FE_Args$TimeSeriesVariables$Lag_Periods,
