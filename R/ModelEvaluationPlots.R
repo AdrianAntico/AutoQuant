@@ -1137,11 +1137,18 @@ AutoShapeShap <- function(ScoringData = NULL,
   # Add more columns
   if(any(names(ShapValues) %like% "Diff")) {
     options(warn = -1)
-    ShapValues[, PreviousValue := data.table::fcase(
-      DiffValue %like% "New=", gsub('.*Old=', '', DiffValue),
-      DiffValue == "No_Change", CurrentValue,
-      DiffValue == CurrentValue, CurrentValue,
-      DiffValue != CurrentValue, as.character(as.numeric(CurrentValue) - as.numeric(DiffValue)))]
+    if(class(ShapValues[["DiffValue"]]) %chin% c("numeric","integer")) {
+      ShapValues[, PreviousValue := data.table::fcase(
+        DiffValue == CurrentValue, "0",
+        DiffValue != CurrentValue, as.character(as.numeric(CurrentValue) - as.numeric(DiffValue)))]
+    } else {
+      ShapValues[, PreviousValue := data.table::fcase(
+        DiffValue %like% "New=", gsub('.*Old=', '', DiffValue),
+        DiffValue == "No_Change", CurrentValue,
+        DiffValue == CurrentValue, "0",
+        DiffValue != CurrentValue, as.character(as.numeric(CurrentValue) - as.numeric(DiffValue)))]
+    }
+
     ShapValues[, SumShapValue := data.table::fifelse(is.na(DiffValue), ShapValue, ShapValue + ShapDiffValue)]
     ShapValues[, AbsSumShapValue := abs(SumShapValue)]
     data.table::setcolorder(ShapValues, c(4,3,1,10,9,2,5:8))
