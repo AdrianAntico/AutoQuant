@@ -130,20 +130,6 @@
 #'   subsample = NULL,
 #'   score_function = 'Cosine',
 #'   min_data_in_leaf = 1)
-#'
-#' # Output
-#' TestModel$Model
-#' TestModel$ValidationData
-#' TestModel$ROC_Plot
-#' TestModel$EvaluationPlot
-#' TestModel$EvaluationMetrics
-#' TestModel$VariableImportance
-#' TestModel$InteractionImportance
-#' TestModel$ShapValuesDT
-#' TestModel$VI_Plot
-#' TestModel$PartialDependencePlots
-#' TestModel$GridMetrics
-#' TestModel$ColNames
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export

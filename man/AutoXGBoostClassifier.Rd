@@ -143,7 +143,6 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
-
   # GPU or CPU
   TreeMethod = "hist",
   NThreads = parallel::detectCores(),

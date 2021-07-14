@@ -127,18 +127,6 @@
 #'     subsample = NULL,
 #'     score_function = 'Cosine',
 #'     min_data_in_leaf = 1)
-#'
-#' # Output
-#' TestModel$Model
-#' TestModel$ValidationData
-#' TestModel$EvaluationMetrics
-#' TestModel$Evaluation
-#' TestModel$VI_Plot
-#' TestModel$VariableImportance
-#' TestModel$InteractionImportance
-#' TestModel$GridMetrics
-#' TestModel$ColNames = Names
-#' TestModel$TargetLevels
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export

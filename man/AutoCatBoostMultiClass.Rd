@@ -229,18 +229,6 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
     subsample = NULL,
     score_function = 'Cosine',
     min_data_in_leaf = 1)
-
-# Output
-TestModel$Model
-TestModel$ValidationData
-TestModel$EvaluationMetrics
-TestModel$Evaluation
-TestModel$VI_Plot
-TestModel$VariableImportance
-TestModel$InteractionImportance
-TestModel$GridMetrics
-TestModel$ColNames = Names
-TestModel$TargetLevels
 }
 }
 \seealso{

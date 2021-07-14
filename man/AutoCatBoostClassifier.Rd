@@ -238,20 +238,6 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   subsample = NULL,
   score_function = 'Cosine',
   min_data_in_leaf = 1)
-
-# Output
-TestModel$Model
-TestModel$ValidationData
-TestModel$ROC_Plot
-TestModel$EvaluationPlot
-TestModel$EvaluationMetrics
-TestModel$VariableImportance
-TestModel$InteractionImportance
-TestModel$ShapValuesDT
-TestModel$VI_Plot
-TestModel$PartialDependencePlots
-TestModel$GridMetrics
-TestModel$ColNames
 }
 }
 \seealso{

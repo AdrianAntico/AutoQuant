@@ -136,19 +136,6 @@
 #'   subsample = NULL,
 #'   score_function = 'Cosine',
 #'   min_data_in_leaf = 1)
-#'
-#' # Output
-#' TestModel$Model
-#' TestModel$TrainData
-#' TestModel$TestData
-#' TestModel$PlotList
-#' TestModel$EvaluationMetrics
-#' TestModel$VariableImportance
-#' TestModel$InteractionImportance
-#' TestModel$GridList
-#' TestModel$ColNames
-#' TestModel$TransformationResults
-#' TestModel$FactorLevelsList
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
 #' @export

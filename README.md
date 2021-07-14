@@ -1292,40 +1292,42 @@ data <- RemixAutoML::FakeDataGenerator(
 TestModel <- RemixAutoML::AutoCatBoostRegression(
 
   # GPU or CPU and the number of available GPUs
-  task_type = "GPU",
+  TrainOnFull = FALSE,
+  task_type = 'GPU',
   NumGPUs = 1,
+  DebugMode = FALSE,
 
   # Metadata args
-  ModelID = "Test_Model_1",
-  model_path = normalizePath("./"),
-  metadata_path = normalizePath("./"),
+  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+  ModelID = 'Test_Model_1',
+  model_path = normalizePath('./'),
+  metadata_path = normalizePath('./'),
   SaveModelObjects = FALSE,
   SaveInfoToPDF = FALSE,
   ReturnModelObjects = TRUE,
 
   # Data args
   data = data,
-  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   Weights = NULL,
-  TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data)[!names(data) %in%
+    c('IDcol_1', 'IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
-  DummifyCols = FALSE,
-  IDcols = c("IDcol_1","IDcol_2"),
-  TransformNumericColumns = "Adrian",
-  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
+  WeightsColumnName = NULL,
+  IDcols = c('IDcol_1','IDcol_2'),
+  TransformNumericColumns = 'Adrian',
+  Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
+    'LogPlus1', 'Sqrt', 'Logit'),
 
   # Model evaluation
-  eval_metric = "RMSE",
+  eval_metric = 'RMSE',
   eval_metric_value = 1.5,
-  loss_function = "RMSE",
+  loss_function = 'RMSE',
   loss_function_value = 1.5,
-  grid_eval_metric = "r2",
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
-  EvalPlots = TRUE,
 
   # Grid tuning args
   PassInGrid = NULL,
@@ -1333,43 +1335,26 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 60*60,
-  BaselineComparison = "default",
+  BaselineComparison = 'default',
 
   # ML args
   langevin = FALSE,
   diffusion_temperature = 10000,
   Trees = 1000,
-  Depth = 6,
-  L2_Leaf_Reg = 3.0,
+  Depth = 9,
+  L2_Leaf_Reg = NULL,
   RandomStrength = 1,
   BorderCount = 128,
   LearningRate = NULL,
   RSM = 1,
   BootStrapType = NULL,
-  GrowPolicy = "SymmetricTree",
+  GrowPolicy = 'SymmetricTree',
   model_size_reg = 0.5,
-  feature_border_type = "GreedyLogSum",
-  sampling_unit = "Object",
+  feature_border_type = 'GreedyLogSum',
+  sampling_unit = 'Object',
   subsample = NULL,
-  score_function = "Cosine",
-  min_data_in_leaf = 1,
-  DebugMode = FALSE)
-
- # Output
- TestModel$Model
- TestModel$ValidationData
- TestModel$EvaluationPlot
- TestModel$EvaluationBoxPlot
- TestModel$EvaluationMetrics
- TestModel$VariableImportance
- TestModel$InteractionImportance
- TestModel$ShapValuesDT
- TestModel$VI_Plot
- TestModel$PartialDependencePlots
- TestModel$PartialDependenceBoxPlots
- TestModel$GridList
- TestModel$ColNames
- TestModel$TransformationResults
+  score_function = 'Cosine',
+  min_data_in_leaf = 1)
 ```
  
 </p>
@@ -1391,19 +1376,23 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostRegression(
-
+  
   # GPU or CPU
   TreeMethod = "hist",
   NThreads = parallel::detectCores(),
   LossFunction = 'reg:squarederror',
   
   # Metadata args
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
   model_path = normalizePath("./"),
   metadata_path = NULL,
   ModelID = "Test_Model_1",
+  EncodingMethod = "binary",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
   
   # Data args
   data = data,
@@ -1411,11 +1400,14 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in%
+                                  c("IDcol_1", "IDcol_2","Adrian")],
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
   IDcols = c("IDcol_1","IDcol_2"),
-  EncodingMethod = "binary",
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  Methods = c("BoxCox", "Asinh", "Asin", "Log",
+              "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
   
   # Model evaluation args
   eval_metric = "rmse",
@@ -1424,7 +1416,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   # Grid tuning args
   PassInGrid = NULL,
   GridTune = FALSE,
-  grid_eval_metric = "mse",
+  grid_eval_metric = "r2",
   BaselineComparison = "default",
   MaxModelsInGrid = 10L,
   MaxRunsWithoutNewWinner = 20L,
@@ -1432,7 +1424,6 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   Verbose = 1L,
   
   # ML args
-  Shuffles = 1L,
   Trees = 50L,
   eta = 0.05,
   max_depth = 4L,
@@ -1994,62 +1985,67 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostClassifier(
-  
+
   # GPU or CPU and the number of available GPUs
-  task_type = "GPU",
+  task_type = 'GPU',
   NumGPUs = 1,
-  
+  TrainOnFull = FALSE,
+  DebugMode = FALSE,
+
   # Metadata args
-  ModelID = "Test_Model_1",
-  model_path = normalizePath("./"),
-  metadata_path = normalizePath("./"),
+  OutputSelection = c('Score_TrainData', 'Importance', 'EvalPlots', 'Metrics', 'PDF'),
+  ModelID = 'Test_Model_1',
+  model_path = normalizePath('./'),
+  metadata_path = normalizePath('./'),
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
   SaveInfoToPDF = FALSE,
-  
+
   # Data args
   data = data,
-  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
-  TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian")],
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data)[!names(data) %in%
+     c('IDcol_1','IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
-  ClassWeights = c(1L,1L),
-  IDcols = c("IDcol_1","IDcol_2"),
-  
+  WeightsColumnName = NULL,
+  IDcols = c('IDcol_1','IDcol_2'),
+
   # Evaluation args
-  eval_metric = "AUC",
-  loss_function = "Logloss",
-  grid_eval_metric = "MCC",
+  ClassWeights = c(1L,1L),
+  CostMatrixWeights = c(1,0,0,1),
+  EvalMetric = 'AUC',
+  grid_eval_metric = 'MCC',
+  LossFunction = 'Logloss',
   MetricPeriods = 10L,
   NumOfParDepPlots = ncol(data)-1L-2L,
-  
+
   # Grid tuning args
   PassInGrid = NULL,
-  GridTune = TRUE,
+  GridTune = FALSE,
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L*60L,
-  BaselineComparison = "default",
-  
+  BaselineComparison = 'default',
+
   # ML args
-  Trees = seq(100L, 500L, 50L),
-  Depth = seq(4L, 8L, 1L),
-  LearningRate = seq(0.01,0.10,0.01),
-  L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
-  RandomStrength = 1,
-  BorderCount = 128,
-  RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
+  Trees = 1000,
+  Depth = 9,
+  LearningRate = NULL,
+  L2_Leaf_Reg = NULL,
+  model_size_reg = 0.5,
   langevin = FALSE,
   diffusion_temperature = 10000,
-  model_size_reg = 0.5,
-  feature_border_type = "GreedyLogSum",
-  sampling_unit = "Group",
+  RandomStrength = 1,
+  BorderCount = 128,
+  RSM = 1,
+  BootStrapType = 'Bayesian',
+  GrowPolicy = 'SymmetricTree',
+  feature_border_type = 'GreedyLogSum',
+  sampling_unit = 'Object',
   subsample = NULL,
-  score_function = "Cosine",
+  score_function = 'Cosine',
   min_data_in_leaf = 1)
 ```
 
@@ -2072,34 +2068,40 @@ data <- RemixAutoML::FakeDataGenerator(
 
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostClassifier(
-  
+
   # GPU or CPU
   TreeMethod = "hist",
   NThreads = parallel::detectCores(),
-  
+
   # Metadata args
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
   model_path = normalizePath("./"),
   metadata_path = NULL,
   ModelID = "Test_Model_1",
+  EncodingMethod = "binary",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
-  
+  SaveInfoToPDF = FALSE,
+
   # Data args
   data = data,
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in%
+    c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumnName = NULL,
   IDcols = c("IDcol_1","IDcol_2"),
-  EncodingMethod = "binary",
-  
+
   # Model evaluation
   LossFunction = 'reg:logistic',
+  CostMatrixWeights = c(1,0,0,1),
   eval_metric = "auc",
+  grid_eval_metric = "MCC",
   NumOfParDepPlots = 3L,
-  
+
   # Grid tuning args
   PassInGrid = NULL,
   GridTune = FALSE,
@@ -2108,15 +2110,15 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L*60L,
   Verbose = 1L,
-  
+
   # ML args
-  Shuffles = 1L,
-  Trees = 50L,
-  eta = 0.05,
-  max_depth = 4L,
+  Trees = 500L,
+  eta = 0.30,
+  max_depth = 9L,
   min_child_weight = 1.0,
-  subsample = 0.55,
-  colsample_bytree = 0.55)
+  subsample = 1,
+  colsample_bytree = 1,
+  DebugMode = FALSE)
 ```
 
 </p>
@@ -2640,32 +2642,37 @@ data <- RemixAutoML::FakeDataGenerator(
 TestModel <- RemixAutoML::AutoCatBoostMultiClass(
   
   # GPU or CPU and the number of available GPUs
-  task_type = "GPU",
+  task_type = 'GPU',
   NumGPUs = 1,
+  TrainOnFull = FALSE,
+  DebugMode = FALSE,
   
   # Metadata args
-  ModelID = "Test_Model_1",
-  model_path = normalizePath("./"),
-  metadata_path = normalizePath("./"),
+  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+  ModelID = 'Test_Model_1',
+  model_path = normalizePath('./'),
+  metadata_path = normalizePath('./'),
   SaveModelObjects = FALSE,
   ReturnModelObjects = TRUE,
   
   # Data args
   data = data,
-  TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
-  TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data)[!names(data) %in%
+                                  c('IDcol_1', 'IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
   ClassWeights = c(1L,1L,1L,1L,1L),
-  IDcols = c("IDcol_1","IDcol_2"),
+  IDcols = c('IDcol_1','IDcol_2'),
   
   # Model evaluation
-  eval_metric = "MCC",
-  loss_function = "MultiClassOneVsAll",
-  grid_eval_metric = "Accuracy",
+  eval_metric = 'MCC',
+  loss_function = 'MultiClassOneVsAll',
+  grid_eval_metric = 'Accuracy',
   MetricPeriods = 10L,
+  NumOfParDepPlots = 3,
   
   # Grid tuning args
   PassInGrid = NULL,
@@ -2673,25 +2680,25 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
   MaxModelsInGrid = 30L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L*60L,
-  BaselineComparison = "default",
+  BaselineComparison = 'default',
   
   # ML args
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  Trees = seq(100L, 500L, 50L),
   Depth = seq(4L, 8L, 1L),
   LearningRate = seq(0.01,0.10,0.01),
   L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
   RandomStrength = 1,
   BorderCount = 254,
   RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-  BootStrapType = c("Bayesian", "Bernoulli", "Poisson", "MVS", "No"),
-  GrowPolicy = c("SymmetricTree", "Depthwise", "Lossguide"),
-  langevin = FALSE,
-  diffusion_temperature = 10000,
-  Trees = seq(100L, 500L, 50L),
+  BootStrapType = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'),
+  GrowPolicy = c('SymmetricTree', 'Depthwise', 'Lossguide'),
   model_size_reg = 0.5,
-  feature_border_type = "GreedyLogSum",
-  sampling_unit = "Group",
+  feature_border_type = 'GreedyLogSum',
+  sampling_unit = 'Object',
   subsample = NULL,
-  score_function = "Cosine",
+  score_function = 'Cosine',
   min_data_in_leaf = 1)
 ```
 
@@ -2720,9 +2727,11 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
   NThreads = parallel::detectCores(),
   
   # Metadata args
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
   model_path = normalizePath("./"),
   metadata_path = normalizePath("./"),
   ModelID = "Test_Model_1",
+  EncodingMethod = "binary",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
@@ -2733,13 +2742,14 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in%
+                                  c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumnName = NULL,
   IDcols = c("IDcol_1","IDcol_2"),
-  EncodingMethod = "binary",
   
   # Model evaluation args
   eval_metric = "merror",
-  LossFunction = 'multi:softmax',
+  LossFunction = 'multi:softprob',
   grid_eval_metric = "accuracy",
   NumOfParDepPlots = 3L,
   
@@ -2751,9 +2761,9 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L*60L,
   Verbose = 1L,
+  DebugMode = FALSE,
   
   # ML args
-  Shuffles = 1L,
   Trees = 50L,
   eta = 0.05,
   max_depth = 4L,

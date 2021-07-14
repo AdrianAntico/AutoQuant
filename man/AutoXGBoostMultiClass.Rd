@@ -124,7 +124,6 @@ AutoXGBoostMultiClass is an automated XGBoost modeling framework with grid-tunin
 }
 \examples{
 \dontrun{
-# Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
   N = 1000L,
@@ -137,54 +136,54 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 
-    # GPU or CPU
-    TreeMethod = "hist",
-    NThreads = parallel::detectCores(),
+  # GPU or CPU
+  TreeMethod = "hist",
+  NThreads = parallel::detectCores(),
 
-    # Metadata args
-    OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
-    model_path = normalizePath("./"),
-    metadata_path = normalizePath("./"),
-    ModelID = "Test_Model_1",
-    EncodingMethod = "binary",
-    ReturnFactorLevels = TRUE,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
+  # Metadata args
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  ModelID = "Test_Model_1",
+  EncodingMethod = "binary",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
 
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    WeightsColumnName = NULL,
-    IDcols = c("IDcol_1","IDcol_2"),
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\%
+                                  c("IDcol_1", "IDcol_2","Adrian")],
+  WeightsColumnName = NULL,
+  IDcols = c("IDcol_1","IDcol_2"),
 
-    # Model evaluation args
-    eval_metric = "merror",
-    LossFunction = 'multi:softprob',
-    grid_eval_metric = "accuracy",
-    NumOfParDepPlots = 3L,
+  # Model evaluation args
+  eval_metric = "merror",
+  LossFunction = 'multi:softprob',
+  grid_eval_metric = "accuracy",
+  NumOfParDepPlots = 3L,
 
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    BaselineComparison = "default",
-    MaxModelsInGrid = 10L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Verbose = 1L,
-    DebugMode = FALSE,
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
+  DebugMode = FALSE,
 
-    # ML args
-    Trees = 50L,
-    eta = 0.05,
-    max_depth = 4L,
-    min_child_weight = 1.0,
-    subsample = 0.55,
-    colsample_bytree = 0.55)
+  # ML args
+  Trees = 50L,
+  eta = 0.05,
+  max_depth = 4L,
+  min_child_weight = 1.0,
+  subsample = 0.55,
+  colsample_bytree = 0.55)
 }
 }
 \seealso{
