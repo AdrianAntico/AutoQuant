@@ -91,7 +91,6 @@
 #'   data = data,
 #'   ValidationData = NULL,
 #'   TestData = NULL,
-#'   Weights = NULL,
 #'   TargetColumnName = 'Adrian',
 #'   FeatureColNames = names(data)[!names(data) %in%
 #'     c('IDcol_1', 'IDcol_2','Adrian')],
