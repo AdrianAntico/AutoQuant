@@ -160,8 +160,6 @@ AutoCatBoostRegression(
 \item{score_function}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
 
 \item{min_data_in_leaf}{Default is 1. Cannot be used with SymmetricTree is GrowPolicy}
-
-\item{Weights}{Weights vector for train.pool in catboost}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
