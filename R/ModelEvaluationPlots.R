@@ -136,30 +136,25 @@ ParDepCalPlots <- function(data,
                            FactLevels = 10,
                            Function = function(x) mean(x, na.rm = TRUE)) {
 
-  # Turn off ggplot2 warnings----
+  # Turn off ggplot2 warnings ----
   options(warn = -1L)
 
-  # Cap number of records----
+  # Cap number of records ----
   if(data[,.N] > 1000000) data <- data[order(runif(.N))][seq_len(1000000)]
 
-  # Build buckets by independent variable of choice----
-  preds2 <- data.table::as.data.table(data)
-
-  # Subset columns----
-  cols <- c(PredictionColName, TargetColName, IndepVar)
-  preds2 <- preds2[, ..cols]
+  # Build buckets by independent variable of choice ----
+  data <- preds2 <- data[, .SD, .SDcols = c(PredictionColName, TargetColName, IndepVar)]
 
   # Structure data----
-  data <- data[, ..cols]
   data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
 
-  # If actual is in factor form, convert to numeric----
+  # If actual is in factor form, convert to numeric ----
   if(!is.numeric(preds2[[TargetColName]])) {
     preds2[, eval(TargetColName) := as.numeric(as.character(get(TargetColName)))]
     GraphType <- "calibration"
   }
 
-  # Prepare for both calibration and boxplot----
+  # Prepare for both calibration and boxplot ----
   if(is.numeric(preds2[[IndepVar]]) || is.integer(preds2[[IndepVar]])) {
     preds2[, rank := round(data.table::frank(preds2[[IndepVar]]) * (1/PercentileBucket) /.N) * PercentileBucket]
   } else {
@@ -184,10 +179,10 @@ ParDepCalPlots <- function(data,
     preds3 <- preds3[order(-get(PredictionColName))]
   }
 
-  # Build plots----
+  # Build plots ----
   if(GraphType == "calibration") {
-    preds3 <- preds2[, lapply(.SD, noquote(Function)), by = rank][order(rank)]
-    preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
+    preds3 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
+    if(class(preds3[[eval(IndepVar)]])[1L] != "numeric") preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
 
     # Partial dependence calibration plot----
     plot <- eval(
