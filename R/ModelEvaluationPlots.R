@@ -143,7 +143,7 @@ ParDepCalPlots <- function(data,
   if(data[,.N] > 1000000) data <- data[order(runif(.N))][seq_len(1000000)]
 
   # Build buckets by independent variable of choice ----
-  data <- preds2 <- data[, .SD, .SDcols = c(PredictionColName, TargetColName, IndepVar)]
+  preds2 <- data[, .SD, .SDcols = c(PredictionColName, TargetColName, IndepVar)]
 
   # Structure data----
   data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
@@ -159,82 +159,89 @@ ParDepCalPlots <- function(data,
     preds2[, rank := round(data.table::frank(preds2[[IndepVar]]) * (1/PercentileBucket) /.N) * PercentileBucket]
   } else {
     GraphType <- "FactorVar"
-    preds2[, id := seq_len(.N), by = get(IndepVar)]
-    preds2 <- preds2[, .(Function(get(TargetColName)), Function(get(PredictionColName)), max(id)), by = get(IndepVar)][order(-V3)]
+    preds2 <- preds2[, .(Function(get(TargetColName)), Function(get(PredictionColName)), .N), by = get(IndepVar)][order(-N)]
     if(nrow(preds2) > FactLevels) {
-      temp1 <- preds2[1:FactLevels][, V3 := NULL]
+      temp1 <- preds2[1:min(.N,FactLevels)]
       temp2 <- preds2[(FactLevels + 1):nrow(preds2)]
       temp2[, ':=' (V1 = V1 * V3 / sum(V3), V2 = V2 * V3 / sum(V3))]
       temp3 <- temp2[, list(sum(V1), sum(V2))]
       temp3[, get := "Other"]
       data.table::setcolorder(temp3, c(3L, 1L, 2L))
-    }
-    preds2[, V3 := NULL]
-    if(nrow(preds2) > FactLevels) {
       preds3 <- data.table::rbindlist(list(temp1, temp3))
-    } else {
-      preds3 <- preds2
     }
+    if(nrow(preds2) <= FactLevels) preds3 <- preds2
     data.table::setnames(preds3, old = c("get", "V1", "V2"), new = c(IndepVar, TargetColName, PredictionColName))
-    preds3 <- preds3[order(-get(PredictionColName))]
+    preds3 <- preds3[order(-N)]
   }
 
   # Build plots ----
   if(GraphType == "calibration") {
-    preds3 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
-    if(class(preds3[[eval(IndepVar)]])[1L] != "numeric") preds3[, eval(IndepVar) := as.numeric(get(IndepVar))]
-
-    # Partial dependence calibration plot----
+    preds2 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
+    if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
     plot <- eval(
-      ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
-        ggplot2::geom_line(ggplot2::aes(y = preds3[[PredictionColName]], color = "Predicted")) +
-        ggplot2::geom_line(ggplot2::aes(y = preds3[[TargetColName]], color = "Actuals")) +
-        ggplot2::ylab("Actual | Predicted") +
+      ggplot2::ggplot(preds2, ggplot2::aes(x = preds2[[IndepVar]])) +
+        ggplot2::geom_line(ggplot2::aes(y = preds2[[PredictionColName]], color = "Predicted")) +
+        ggplot2::geom_line(ggplot2::aes(y = preds2[[TargetColName]], color = "Actuals")) +
+        ggplot2::ylab(eval(TargetColName)) +
         ggplot2::xlab(IndepVar) +
         ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
-        ChartTheme(Size = 15) +
-        ggplot2::ggtitle("Partial Dependence Calibration Plot"))
+        ChartTheme(Size = 13) +
+        ggplot2::labs(
+          title = "Partial Dependence Calibration Plot",
+          subtitle = paste0("black line -> mean(", TargetColName,"); purple lines -> 10th-%tile, mean, 90th-%tile")) +
+        ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
+        ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "purple") +
+        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple") +
+        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple"))
+
   } else if(GraphType == "boxplot") {
     keep <- c("rank", TargetColName, IndepVar)
     actual <- preds2[, ..keep]
     actual[, Type := "actual"]
     data.table::setnames(actual, TargetColName, "Output")
     keep <- c("rank", PredictionColName, IndepVar)
-    predicted <- preds2[, ..keep]
-    predicted[, Type := "predicted"]
-    data.table::setnames(predicted, PredictionColName, "Output")
-    data <- data.table::rbindlist(list(actual, predicted))[order(rank)]
-    data[, rank := as.factor(rank)]
-    data <- data[, eval(IndepVar) := as.numeric(get(IndepVar))]
-    data <- data[, eval(IndepVar) := round(Function(get(IndepVar)), 3L), by = rank]
-    data[, eval(IndepVar) := as.factor(get(IndepVar))]
-    data[, rank := NULL]
+    preds2 <- preds2[, ..keep]
+    preds2[, Type := "predicted"]
+    data.table::setnames(preds2, PredictionColName, "Output")
+    preds2 <- data.table::rbindlist(list(actual, preds2))[order(rank)]
+    preds2[, rank := as.factor(rank)]
+    preds2 <- preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
+    preds2 <- preds2[, eval(IndepVar) := round(Function(get(IndepVar)), 3L), by = rank]
+    preds2[, eval(IndepVar) := as.factor(get(IndepVar))]
+    preds2[, rank := NULL]
     plot <- eval(
-      ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
+      ggplot2::ggplot(preds2, ggplot2::aes(x = preds2[[IndepVar]], y = Output)) +
         ggplot2::geom_boxplot(ggplot2::aes(fill = Type)) +
         ggplot2::scale_fill_manual(values = c("red", "blue")) +
-        ggplot2::ggtitle("Partial Dependence Calibration Boxplot") +
+        ggplot2::labs(
+          title = "Partial Dependence Calibration Plot",
+          subtitle = paste0("black line -> mean(", TargetColName,")")) +
         ggplot2::xlab(eval(IndepVar)) +
-        ggplot2::ylab("Actual | Predicted") +
-        ChartTheme(Size = 15))
+        ggplot2::ylab(eval(TargetColName)) +
+        ChartTheme(Size = 13) +
+        ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black"))
   } else if(GraphType == "FactorVar") {
-    keep <- c(IndepVar, TargetColName)
+    keep <- c(IndepVar, TargetColName, "N")
     actual <- preds3[, ..keep]
     actual[, Type := "actual"]
     data.table::setnames(actual, TargetColName, "Output")
     keep <- c(IndepVar, PredictionColName)
-    predicted <- preds3[, ..keep]
-    predicted[, Type := "predicted"]
-    data.table::setnames(predicted, PredictionColName, "Output")
-    data <- data.table::rbindlist(list(actual, predicted))[order(-Output)]
+    preds3 <- preds3[, ..keep]
+    preds3[, Type := "predicted"]
+    data.table::setnames(preds3, PredictionColName, "Output")
+    preds3 <- data.table::rbindlist(list(actual, preds3), fill = TRUE)[order(-Output)]
     plot <- eval(
-      ggplot2::ggplot(data, ggplot2::aes(x = data[[IndepVar]], y = Output)) +
+      ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]], y = Output)) +
        ggplot2::geom_bar(stat = "identity", position = "dodge", ggplot2::aes(fill = Type)) +
         ggplot2::scale_fill_manual(values = c("red", "blue")) +
-        ggplot2::ggtitle("Partial Dependence Calibration Barplot") +
+        ggplot2::labs(
+          title = "Partial Dependence Calibration Plot",
+          subtitle = paste0("Black line -> mean(", TargetColName,"); Labels -> counts per bucket")) +
         ggplot2::xlab(eval(IndepVar)) +
-        ggplot2::ylab("Actual | Predicted") +
-        RemixAutoML::ChartTheme(Size = 15))
+        ggplot2::ylab(eval(TargetColName)) +
+        RemixAutoML::ChartTheme(Size = 13) +
+        ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
+        ggplot2::geom_text(ggplot2::aes(label= N), vjust=-1.25, hjust = 1.5, color = "black"))
   }
 
   # Return plot----
