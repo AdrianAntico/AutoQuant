@@ -161,13 +161,13 @@ ParDepCalPlots <- function(data,
     GraphType <- "FactorVar"
     preds2 <- preds2[, .(Function(get(TargetColName)), Function(get(PredictionColName)), .N), by = get(IndepVar)][order(-N)]
     if(nrow(preds2) > FactLevels) {
-      temp1 <- preds2[1:min(.N,FactLevels)]
+      temp1 <- preds2[seq_len(min(.N,FactLevels))]
       temp2 <- preds2[(FactLevels + 1):nrow(preds2)]
-      temp2[, ':=' (V1 = V1 * V3 / sum(V3), V2 = V2 * V3 / sum(V3))]
-      temp3 <- temp2[, list(sum(V1), sum(V2))]
+      temp2[, ':=' (V1 = V1 * N / sum(N), V2 = V2 * N / sum(N))]
+      temp3 <- temp2[, list(sum(V1), sum(V2), N = sum(N))]
       temp3[, get := "Other"]
       data.table::setcolorder(temp3, c(3L, 1L, 2L))
-      preds3 <- data.table::rbindlist(list(temp1, temp3))
+      preds3 <- data.table::rbindlist(list(temp1, temp3), use.names = TRUE)
     }
     if(nrow(preds2) <= FactLevels) preds3 <- preds2
     data.table::setnames(preds3, old = c("get", "V1", "V2"), new = c(IndepVar, TargetColName, PredictionColName))
