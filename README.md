@@ -3929,17 +3929,12 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <code>ROCPlot()</code> For classification evaluation
  
 <code>CumGainsChart()</code> Create cumulative gains and lift plots
- 
+
 <code>VI_Plot()</code> For creating variable importance plots
  
 <code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
 <code>RedYellowGreen()</code> computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
-
-<img src="Images/RedYellowGreenPic.png" align="center" width="400" />
-
-![RedYellowGreen Blog](https://www.remixinstitute.com/blog/the-easiest-way-to-create-thresholds-and-improve-your-classification-model/#.XUINVntlCDM)
-
 
 </p>
 </details>
