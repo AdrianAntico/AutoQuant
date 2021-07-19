@@ -3929,6 +3929,8 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <code>ROCPlot()</code> For classification evaluation
  
 <code>CumGainsChart()</code> Create cumulative gains and lift plots
+ 
+<code>ResidualPlots()</code> Plots to evaluate regression residuals
 
 <code>VI_Plot()</code> For creating variable importance plots
  
