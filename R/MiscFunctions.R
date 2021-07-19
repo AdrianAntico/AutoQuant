@@ -49,7 +49,7 @@ PrintToPDF <- function(Path,
                      bg = BackgroundColor,
                      fg = ForegroundColor,
                      compress = TRUE)
-      for(i in seq_along(ObjectList)) for(j in seq_along(ObjectList[[i]])) multiplot(plotlist = list(ObjectList[[i]][[j]]), cols = 1)
+      for(i in seq_along(ObjectList)) for(j in seq_along(ObjectList[[i]])) multiplot(plotlist = list(ObjectList[[i]][[j]]))
       while(grDevices::dev.cur() > 1) grDevices::dev.off()
     } else {
       for(i in seq_along(ObjectList)) {

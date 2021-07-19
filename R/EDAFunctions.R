@@ -323,3 +323,176 @@ ScatterCopula <- function(data = NULL,
   # Return
   return(list(ScatterPlot = original_scale_plot, CopulaPlot = copula_plot))
 }
+
+#' @title NameTypeDistinct
+#'
+#' @description Generates a data.table containing the column names, types, and distinct values from a source data.table
+#'
+#' @author Adrian Antico
+#' @family EDA
+#'
+#' @param data Source data.table
+#'
+#' @noRd
+NameTypeDistinct <- function(data) {
+  x <- length(names(data))
+  MetaData <- data.table::data.table(
+    Variable = rep(NA_character_, x),
+    Type = rep(NA_character_, x),
+    Distinct = rep(NA_real_, x))
+  x <- names(data)
+  for(xx in seq_along(x)) {
+    data.table::set(MetaData, i = xx, j = "Variable", value = x[xx])
+    data.table::set(MetaData, i = xx, j = "Type", value = class(data[1L, get(x[xx])])[1L])
+    data.table::set(MetaData, i = xx, j = "Distinct", value = length(unique(data[[x[xx]]])))
+  }
+  return(MetaData)
+}
+
+#' @title EDA_Histograms
+#'
+#' @description Creates histograms
+#'
+#' @author Adrian Antico
+#' @family EDA
+#'
+#' @param data Input data.table
+#' @param PlotColumns Default NULL. If NULL, all columns will be plotted (except date cols). Otherwise, supply a character vector of columns names to plot
+#' @param SampleCount Number of random samples to use from data. data is first shuffled and then random samples taken
+#' @param SavePath Output file path to where you can optionally save pdf
+#' @param FactorCountPerPlot Default 10
+#' @param PrintOutput Default FALSE. TRUE will print results upon running function
+#' @param Size Default 12
+#' @param AngleX Default 35
+#' @param AngleY Default 0
+#' @param ChartColor Default "lightsteelblue1"
+#' @param BorderColor Default "darkblue"
+#' @param TextColor Default "darkblue"
+#' @param GridColor Default "white"
+#' @param BackGroundColor Default "gray95"
+#' @param LegendPosition Default "bottom"
+#'
+#' @export
+EDA_Histograms <- function(data = NULL,
+                           PlotColumns = NULL,
+                           SampleCount = 100000,
+                           SavePath = NULL,
+                           FactorCountPerPlot = 10,
+                           PrintOutput = FALSE,
+                           Size = 12,
+                           AngleX = 35,
+                           AngleY = 0,
+                           ChartColor = "lightsteelblue1",
+                           BorderColor = "darkblue",
+                           TextColor = "darkblue",
+                           GridColor = "white",
+                           BackGroundColor = "gray95",
+                           LegendPosition = "bottom") {
+
+  # Convert to dt
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(data[,.N] > SampleCount) data <- data.table::copy(data[order(runif(.N))][seq_len(eval(SampleCount))])
+  varMetadata <- NameTypeDistinct(data)
+  if(!is.null(PlotColumns)) varMetadata[Variable %chin% eval(PlotColumns)]
+  pb <- txtProgressBar(0, nrow(varMetadata))
+  resVars <- c()
+  results <- list()
+
+  # Create plots
+  for(i in seq_len(varMetadata[, .N])) {
+    var <- varMetadata[i,]
+    varName <- as.character(var$Variable)
+    setTxtProgressBar(pb, i)
+    if(var$Type %in% c("integer", "logical", "numeric", "factor", "character")) {
+      resVars = unique(c(resVars, as.character(varName)))
+      if(var$Type %in% c("integer", "numeric")) {
+        varAnalyze = data.table::data.table(dat = as.double(data[[varName]]))
+        range <- varAnalyze[, max(dat, na.rm = T) - min(varAnalyze$dat, na.rm = T)]
+        if(var$Distinct > 10) {
+          if(nrow(varAnalyze) > 1000 && var$Distinct > 50) {
+            bins <- 20
+          } else if(nrow(varAnalyze) > 5000 && var$Distinct > 30) {
+            bins <- 15
+          } else {
+            bins <- 10
+          }
+          results[[varName]] <- eval(
+            ggplot2::ggplot(
+              varAnalyze, ggplot2::aes(dat)) +
+              ggplot2::geom_histogram(ggplot2::aes(y = ..density..), bins = bins, show.legend = FALSE, col = "grey", fill = "#5555ee") +
+              ggplot2::scale_fill_discrete(h = c(180, 250), l = 50) +
+              ggplot2::stat_function(fun = dnorm, args = list(mean = mean(varAnalyze$dat, na.rm = TRUE), sd = sd(varAnalyze$dat, na.rm = TRUE)), col = "red") +
+              RemixAutoML::ChartTheme(
+                Size = Size,
+                AngleX = AngleX,
+                AngleY = AngleY,
+                ChartColor = ChartColor,
+                BorderColor = BorderColor,
+                TextColor = TextColor,
+                GridColor = GridColor,
+                BackGroundColor = BackGroundColor,
+                LegendPosition = LegendPosition) +
+              ggplot2::labs(x = varName, y = "Rows") +
+              ggplot2::ggtitle(paste("Histogram of", varName)))
+        } else {
+          varAnalyze = data.table::data.table(dat = as.character(data[[varName]]))
+          results[[varName]] <- eval(
+            ggplot2::ggplot(
+              varAnalyze, ggplot2::aes(dat, fill = dat)) +
+              ggplot2::geom_bar(show.legend = FALSE) +
+              ggplot2::scale_fill_discrete(h = c(180, 250), l = 50) +
+              RemixAutoML::ChartTheme(
+                Size = Size,
+                AngleX = AngleX,
+                AngleY = AngleY,
+                ChartColor = ChartColor,
+                BorderColor = BorderColor,
+                TextColor = TextColor,
+                GridColor = GridColor,
+                BackGroundColor = BackGroundColor,
+                LegendPosition = LegendPosition) +
+              ggplot2::labs(x = varName, y = "Rows") +
+              ggplot2::ggtitle(paste("Bar Chart of", varName)))
+        }
+      } else {
+        varAnalyze <- data.table::data.table(dat = as.character(data[[varName]]))
+        grouped <- varAnalyze[, .N, by = "dat"][order(-N)]
+        if(nrow(grouped) > FactorCountPerPlot) {
+          top <- grouped[seq_len(min(.N, FactorCountPerPlot))]
+          others <- data.table::fsetdiff(x = grouped, y = top)
+          others <- data.table::data.table(dat = "other", N = others[, sum(N)])
+        }
+        if(nrow(grouped) > 10) grouped <- data.table::rbindlist(list(grouped, others))
+        results[[varName]] <- eval(
+          ggplot2::ggplot(data = grouped, ggplot2::aes(x = dat, y = N, fill = dat)) +
+            ggplot2::geom_bar(stat = "identity", show.legend = FALSE) +
+            ggplot2::coord_flip() +
+            ggplot2::scale_fill_discrete(h = c(180, 250), l = 50) +
+            RemixAutoML::ChartTheme(
+              Size = Size,
+              AngleX = AngleX,
+              AngleY = AngleY,
+              ChartColor = ChartColor,
+              BorderColor = BorderColor,
+              TextColor = TextColor,
+              GridColor = GridColor,
+              BackGroundColor = BackGroundColor,
+              LegendPosition = LegendPosition) +
+            ggplot2::labs(x = varName, y = "Counts") +
+            ggplot2::ggtitle(paste0("Bar Chart of ", varName)))
+      }
+    }
+  }
+
+  # Combine plots
+  close(pb)
+  if(PrintOutput) multiplot(plotlist = results)
+
+  # Save plots
+  if(!is.null(SavePath)) {
+    for(i in seq_along(results)) {
+      ggplot2::ggsave(filename = file.path(SavePath, paste0(gsub("[^a-z0-9 ]", "_", tolower(resVars[[i]])), ".png")), plot = results[[i]])
+    }
+  }
+  return(results)
+}

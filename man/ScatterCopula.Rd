@@ -64,7 +64,8 @@ Dual plot. One on original scale and one using empirical copula data
 }
 \seealso{
 Other EDA: 
-\code{\link{AutoWordFreq}()}
+\code{\link{AutoWordFreq}()},
+\code{\link{EDA_Histograms}()}
 }
 \author{
 Adrian Antico

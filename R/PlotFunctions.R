@@ -6,9 +6,6 @@
 #' @family Graphics
 #'
 #' @param plotlist This is the list of your charts
-#' @param cols This is the number of columns in your multiplot
-#' @param layout Leave NULL
-#' @param ... Passthrough arguments
 #' @examples
 #' \dontrun{
 #' Correl <- 0.85
@@ -37,27 +34,32 @@
 #'   PercentileBucket = 0.20,
 #'   FactLevels = 10,
 #'   Function = function(x) mean(x, na.rm = TRUE))
-#' RemixAutoML::multiplot(plotlist = list(p1,p2), cols = 2)
+#' RemixAutoML::multiplot(plotlist = list(p1,p2))
 #' }
 #' @return Multiple ggplots on a single image
 #' @export
-multiplot <- function(...,
-                      plotlist = NULL,
-                      cols     = 2,
-                      layout   = NULL) {
-  plots <- c(list(...), plotlist)
-  numPlots <- length(plots)
-  if(is.null(layout)) {
-    layout <- matrix(seq(1, cols * ceiling(numPlots / cols)), ncol = cols, nrow = ceiling(numPlots / cols))
-  }
-  if(numPlots == 1) {
-    print(plots[[1]])
-  } else {
-    grid::grid.newpage()
-    grid::pushViewport(grid::viewport(layout = grid::grid.layout(nrow(layout), ncol(layout))))
-    for(i in 1:numPlots) {
-      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-      print(plots[[i]], vp = grid::viewport(layout.pos.row = matchidx$row, layout.pos.col = matchidx$col))
+multiplot <- function(plotlist = NULL) {
+  plotlist[vapply(plotlist, is.null, logical(1))] <- NULL
+  batches <- ceiling(length(plotlist) / 4L)
+  for(i in seq_len(batches)) {
+    firstPlot <- ((i - 1L) * 4L) + 1L
+    lastPlot <- min(firstPlot + 3L, length(plotlist), na.rm = TRUE)
+    if(lastPlot == firstPlot) {
+      plot(plotlist[[firstPlot]])
+    } else {
+      grid::grid.newpage()
+      grid::pushViewport(grid::viewport(layout = grid::grid.layout(2L, 2L)))
+      row <- 1L
+      col <- 1L
+      for(j in firstPlot:lastPlot) {
+        print(plotlist[[j]], vp = grid::viewport(layout.pos.row = row, layout.pos.col = col))
+        if(row == 2L) {
+          row <- 1L
+          col <- col + 1L
+        } else {
+          row = row + 1L
+        }
+      }
     }
   }
 }

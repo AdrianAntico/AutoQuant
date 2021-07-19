@@ -4,16 +4,10 @@
 \alias{multiplot}
 \title{multiplot}
 \usage{
-multiplot(..., plotlist = NULL, cols = 2, layout = NULL)
+multiplot(plotlist = NULL)
 }
 \arguments{
-\item{...}{Passthrough arguments}
-
 \item{plotlist}{This is the list of your charts}
-
-\item{cols}{This is the number of columns in your multiplot}
-
-\item{layout}{Leave NULL}
 }
 \value{
 Multiple ggplots on a single image
@@ -49,7 +43,7 @@ p2 <- RemixAutoML::ParDepCalPlots(
   PercentileBucket = 0.20,
   FactLevels = 10,
   Function = function(x) mean(x, na.rm = TRUE))
-RemixAutoML::multiplot(plotlist = list(p1,p2), cols = 2)
+RemixAutoML::multiplot(plotlist = list(p1,p2))
 }
 }
 \seealso{
