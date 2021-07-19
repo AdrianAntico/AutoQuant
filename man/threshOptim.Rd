@@ -74,7 +74,6 @@ Other Model Evaluation and Interpretation:
 \code{\link{ROCPlot}()},
 \code{\link{RedYellowGreen}()},
 \code{\link{ResidualPlots}()},
-\code{\link{ShapPlot}()},
 \code{\link{SingleRowShapeShap}()}
 }
 \author{

@@ -40,7 +40,6 @@ Other Model Evaluation and Interpretation:
 \code{\link{ParDepCalPlots}()},
 \code{\link{RedYellowGreen}()},
 \code{\link{ResidualPlots}()},
-\code{\link{ShapPlot}()},
 \code{\link{SingleRowShapeShap}()},
 \code{\link{threshOptim}()}
 }
