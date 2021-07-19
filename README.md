@@ -5814,9 +5814,13 @@ Output$PerformanceGrid
 <details><summary>Expand to view content</summary>
 <p>
  
-<code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
+<code>EDA_Histograms()</code> Create histograms and bar plots for all columns from a data.table, or a subset provided by the user to the PlotColumns arg.
 
-<img src="Images/AutoWordFreq_WordCloudImage.png" align="center" width="400" />
+<code>ScatterCopula()</code> Creates a copula-based scatterplot between two numeric variables. Additionally, a gam fit is added to the plot.
+ 
+<code>PlotGUI()</code> Spins up the esquisse shiny app for generating quick plots. You need to have that package installed to utilize it. I did not include it as a dependency for the package.
+ 
+<code>AutoWordFreq()</code> creates a word frequency data.table and a word cloud
 
 <code>RemixTheme()</code> is a specific font, set of colors, and style for plots.
 
@@ -5825,6 +5829,10 @@ Output$PerformanceGrid
 <code>multiplot()</code> is useful for displaying multiple plots in a single pane. I've never had luck using grid so I just use this instead.
 
 <code>FakeDataGenerator()</code> I use this to create fake data for the examples in the function help files
+ 
+<code>DeleteFile()</code> If you are on a windows machine, you can use this functio to delete a file such that you don't have to delete it again from the recycle bin.
+ 
+<code>PrintToPDF()</code> You can have plots or tables printed to pdf with this function. It will manage the grDevices for you.
 
 </p>
 </details>
