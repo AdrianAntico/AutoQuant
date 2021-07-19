@@ -151,7 +151,7 @@ Supply a data.table to run the functions below:
 </p>
 </details>
 
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Documentation.PNG" align="center" width="450" />
+<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Documentation.PNG" align="center" width="425" />
 
 ## Feature Engineering <img src="Images/FeatureEngineeringImage2.png" align="right" width="80" />
 
