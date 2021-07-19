@@ -3918,23 +3918,23 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <details><summary>Expand to view content</summary>
 <p>
 
-
-
 <details><summary>Evaluation Description</summary>
 <p>
 
 <code>AutoShapeShap()</code> will take your CatBoost or XGBoost TestData or TrainData returned from one of the supervised learning functions and build out a table. The table will have columns, 'Date', 'EntityID', 'Variable', 'AbsShapValue', 'ShapValue', 'CurrentValue', 'DiffValue', 'PreviousValue' which can be used to analyze variable importance for any slice of the data. A few interesting areas to investigate include varible importance by records associated with a classifier label of 1 vs 0, for different grouping levels, and for different time slices. Further, if you analyze the ShapeValue column you will get a directional variable importance instead of a magnitute importance. You can further analyze the data by looking at standard deviation of ShapValues or any other aggregations method of interest. The function runs row by row so I set it up to run in parallel. You can specify the number of cores to utilize in case you have other processes running on your computer. The function calls the SingleRowShapeShap() function repeatedly. If you want to return information from the Shap Table for a single record you can run SingleRowShapeShap().
-  
+ 
 <code>RemixClassificationMetrics()</code> will return all confusion matrix metrics across all possible thresholds (seq(0.01,0.99,0.01) for any Remix Auto_Classification() model. Cost sensitive thresholds are also returned.
 
 <code>ParDepCalPlots()</code> is for visualizing the relationships of features and the reliability of the model in predicting those effects. Build a partial dependence calibration line plot, box plot or bar plot for the case of categorical variables.
 
-<img src="Images/AutoCatBoostRegressionParDepMultiPlot.png" align="center" width="400" />
-
 <code>EvalPlot()</code> Has two plot versions: calibration line plot of predicted values and actual values across range of predicted value, and calibration boxplot for seeing the accuracy and variability of predictions against actuals. 
 
-<img src="Images/AutoCatBoostRegressionEvaluationMultiPlot.png" align="center" width="400" />
-
+<code>ROCPlot()</code> For classification evaluation
+ 
+<code>CumGainsChart()</code> Create cumulative gains and lift plots
+ 
+<code>VI_Plot()</code> For creating variable importance plots
+ 
 <code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
 <code>RedYellowGreen()</code> computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
