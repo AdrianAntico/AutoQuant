@@ -229,7 +229,7 @@ ParDepCalPlots <- function(data,
     preds3 <- preds3[, ..keep]
     preds3[, Type := "predicted"]
     data.table::setnames(preds3, PredictionColName, "Output")
-    preds3 <- data.table::rbindlist(list(actual, preds3), fill = TRUE)[order(-Output)]
+    preds3 <- data.table::rbindlist(list(actual, preds3), fill = TRUE)[order(-N)]
     plot <- eval(
       ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]], y = Output)) +
        ggplot2::geom_bar(stat = "identity", position = "dodge", ggplot2::aes(fill = Type)) +
