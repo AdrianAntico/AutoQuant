@@ -3893,7 +3893,7 @@ TestModel$PlotList$Test_ResidualsHistogram
 TestModel$PlotList$Train_ScatterPlot
 TestModel$PlotList$Test_ScatterPlot
 
-# Preds vs Actuals Copula Plot
+# Preds vs Actuals Copula Plots
 TestModel$PlotList$Train_CopulaPlot
 TestModel$PlotList$Test_CopulaPlot
 
@@ -3911,7 +3911,7 @@ TestModel$VariableImportance$Train_Importance
 TestModel$VariableImportance$Validation_Importance
 TestModel$VariableImportance$Test_Importance
 
-# Interaction Importance
+# Interaction Importance Tables
 TestModel$InteractionImportance$Train_Interaction
 TestModel$InteractionImportance$Validation_Interaction
 TestModel$InteractionImportance$Test_Interaction
