@@ -1,4 +1,4 @@
-![Version: 0.5.6](https://img.shields.io/static/v1?label=Version&message=0.5.6&color=blue&?style=plastic)
+![Version: 0.5.7](https://img.shields.io/static/v1?label=Version&message=0.5.7&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)

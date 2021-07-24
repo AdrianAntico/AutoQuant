@@ -1,7 +1,7 @@
 Package: RemixAutoML
 Title: Remix Automated Machine Learning
-Version: 0.5.6
-Date: 2021-07-02
+Version: 0.5.7
+Date: 2021-07-24
 Authors@R: 
     c(person(given = "Adrian",
              family = "Antico",
@@ -19,14 +19,12 @@ Depends: R (>= 3.5.0)
 Imports: arules, bit64, data.table, doParallel, foreach, lubridate, timeDate
 Suggests: knitr, rmarkdown, gridExtra
 VignetteBuilder: knitr
-Additional_repositories:
-        https://github.com/catboost/catboost/tree/master/catboost/R-package
 Contact: Adrian Antico
 Encoding: UTF-8
 Language: en-US
 LazyData: true
 NeedsCompilation: no
-Packaged: 2021-07-02 14:00:00 UTC
+Packaged: 2021-07-24 14:00:00 UTC
 RoxygenNote: 7.1.1
 SystemRequirements: Java (>= 7.0)
 Author: Adrian Antico [aut, cre], Douglas Pestana [ctb]
