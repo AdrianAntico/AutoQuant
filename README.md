@@ -46,7 +46,7 @@ The minimal set of packages that need to be installed are below. The full list c
 <details><summary>Expand to view content</summary>
 <p>
 
-#### Install R package dependencies: 
+#### Install ALL R package dependencies for all functions: 
 XGBoost and LightGBM can be used with GPU. However, their installation is much more involved than CatBoost, which comes with GPU capabilities simply by installing their package. The installation instructions for them below is for the CPU version only. Refer to each's home page for instructions for installing for GPU. 
  
 ```
