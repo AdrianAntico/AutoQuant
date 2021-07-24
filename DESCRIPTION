@@ -16,11 +16,8 @@ License: MPL-2.0 | file LICENSE
 URL: https://github.com/AdrianAntico/RemixAutoML
 BugReports: https://github.com/AdrianAntico/RemixAutoML/issues
 Depends: R (>= 3.5.0)
-Imports: arules, bit64, catboost, combinat, data.table, doParallel, e1071, fBasics, 
-        foreach, forecast, ggplot2, h2o, itertools, lightgbm, lubridate, methods, 
-        MLmetrics, nortest, parallel, pROC, RColorBrewer, recommenderlab,
-        Rfast, scatterplot3d, stats, stringr, timeDate, tsoutliers, xgboost
-Suggests: knitr, rmarkdown, fpp, gridExtra
+Imports: arules, bit64, data.table, doParallel, foreach, lubridate, timeDate
+Suggests: knitr, rmarkdown, gridExtra
 VignetteBuilder: knitr
 Additional_repositories:
         https://github.com/catboost/catboost/tree/master/catboost/R-package
