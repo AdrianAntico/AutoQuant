@@ -99,94 +99,136 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = FALSE,
   MultiClass = FALSE)
 
-# Train a Multiple Regression Model (two target variables)
+# Copy data
+data1 <- data.table::copy(data)
+
+# Run function
 TestModel <- RemixAutoML::AutoCatBoostRegression(
 
   # GPU or CPU and the number of available GPUs
-  task_type = 'GPU',
+  TrainOnFull = FALSE,
+  task_type = 'CPU',
   NumGPUs = 1,
+  DebugMode = FALSE,
 
-  # Metadata arguments
+  # Metadata args
+  OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
   ModelID = 'Test_Model_1',
-  model_path = normalizePath('./'),
-  metadata_path = NULL,
+  model_path = getwd(),
+  metadata_path = getwd(),
   SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
   ReturnModelObjects = TRUE,
 
-  # Data arguments
-  data = data,
-  TrainOnFull = FALSE,
+  # Data args
+  data = data1,
   ValidationData = NULL,
   TestData = NULL,
-  Weights = NULL,
-  DummifyCols = FALSE,
-  TargetColumnName = c('Adrian','Independent_Variable1'),
-  FeatureColNames = names(data)[!names(data) \%in\%
-    c('IDcol_1','IDcol_2','Adrian')],
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data1)[!names(data1) \%in\% c('IDcol_1', 'IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
   IDcols = c('IDcol_1','IDcol_2'),
-  TransformNumericColumns = NULL,
-  Methods = c('BoxCox','Asinh','Asin','Log','LogPlus1',
-    'Logit','YeoJohnson'),
+  TransformNumericColumns = 'Adrian',
+  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
 
   # Model evaluation
-  eval_metric = 'MultiRMSE',
+  eval_metric = 'RMSE',
   eval_metric_value = 1.5,
-  loss_function = 'MultiRMSE',
+  loss_function = 'RMSE',
   loss_function_value = 1.5,
   MetricPeriods = 10L,
-  NumOfParDepPlots = ncol(data)-1L-2L,
-  EvalPlots = TRUE,
+  NumOfParDepPlots = ncol(data1)-1L-2L,
 
-  # Grid tuning
+  # Grid tuning args
   PassInGrid = NULL,
   GridTune = FALSE,
-  MaxModelsInGrid = 100L,
-  MaxRunsWithoutNewWinner = 100L,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 60*60,
   BaselineComparison = 'default',
 
-  # ML Args
-  langevin = TRUE,
+  # ML args
+  langevin = FALSE,
   diffusion_temperature = 10000,
-  Trees = 250,
-  Depth = 6,
-  L2_Leaf_Reg = 3.0,
+  Trees = 1000,
+  Depth = 9,
+  L2_Leaf_Reg = NULL,
   RandomStrength = 1,
   BorderCount = 128,
-  LearningRate = seq(0.01,0.10,0.01),
-  RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-  BootStrapType = c('Bayesian','Bernoulli','Poisson','MVS','No'),
-  GrowPolicy = c('SymmetricTree', 'Depthwise', 'Lossguide'))
+  LearningRate = NULL,
+  RSM = 1,
+  BootStrapType = NULL,
+  GrowPolicy = 'SymmetricTree',
+  model_size_reg = 0.5,
+  feature_border_type = 'GreedyLogSum',
+  sampling_unit = 'Object',
+  subsample = NULL,
+  score_function = 'Cosine',
+  min_data_in_leaf = 1)
 
-# Output
+# Trained Model Object
 TestModel$Model
-TestModel$ValidationData
-TestModel$EvaluationPlot
-TestModel$EvaluationBoxPlot
-TestModel$EvaluationMetrics
-TestModel$VariableImportance
-TestModel$InteractionImportance
-TestModel$ShapValuesDT
-TestModel$VI_Plot
-TestModel$PartialDependencePlots
-TestModel$PartialDependenceBoxPlots
-TestModel$GridList
+
+# Train Data (includes validation data) and Test Data with predictions and shap values
+TestModel$TrainData
+TestModel$TestData
+
+# Calibration Plots
+TestModel$PlotList$Train_EvaluationPlot
+TestModel$PlotList$Test_EvaluationPlot
+
+# Calibration Box Plots
+TestModel$PlotList$Train_EvaluationBoxPlot
+TestModel$PlotList$Test_EvaluationBoxPlot
+
+# Residual Analysis Plots
+TestModel$PlotList$Train_ResidualsHistogram
+TestModel$PlotList$Test_ResidualsHistogram
+
+# Preds vs Actuals Scatterplots
+TestModel$PlotList$Train_ScatterPlot
+TestModel$PlotList$Test_ScatterPlot
+
+# Preds vs Actuals Copula Plot
+TestModel$PlotList$Train_CopulaPlot
+TestModel$PlotList$Test_CopulaPlot
+
+# Variable Importance Plots
+TestModel$PlotList$Train_VariableImportance
+TestModel$PlotList$Validation_VariableImportance
+TestModel$PlotList$Test_VariableImportance
+
+# Evaluation Metrics
+TestModel$EvaluationMetrics$TrainData
+TestModel$EvaluationMetrics$TestData
+
+# Variable Importance Tables
+TestModel$VariableImportance$Train_Importance
+TestModel$VariableImportance$Validation_Importance
+TestModel$VariableImportance$Test_Importance
+
+# Interaction Importance
+TestModel$InteractionImportance$Train_Interaction
+TestModel$InteractionImportance$Validation_Interaction
+TestModel$InteractionImportance$Test_Interaction
+
+# Meta Data
 TestModel$ColNames
 TestModel$TransformationResults
+TestModel$GridList
 
-# Score a multiple regression model
+# Score data
 Preds <- RemixAutoML::AutoCatBoostScoring(
-  TargetType = 'multiregression',
+  TargetType = 'regression',
   ScoringData = data,
-  FeatureColumnNames = names(data)[!names(data) \%in\%
-    c('IDcol_1', 'IDcol_2','Adrian')],
+  FeatureColumnNames = names(data)[!names(data) \%in\% c('IDcol_1', 'IDcol_2','Adrian')],
   FactorLevelsList = TestModel$FactorLevelsList,
   IDcols = c('IDcol_1','IDcol_2'),
   OneHot = FALSE,
   ReturnShapValues = TRUE,
   ModelObject = TestModel$Model,
-  ModelPath = NULL, #normalizePath('./'),
+  ModelPath = NULL,
   ModelID = 'Test_Model_1',
   ReturnFeatures = TRUE,
   MultiClassTargetLevels = NULL,
