@@ -305,8 +305,8 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots
       PlotList[['Train_GainsPlot']] <- Output$GainsPlot; Output$GainsPlot <- NULL
       PlotList[['Train_LiftPlot']] <- Output$LiftPlot; Output$LiftPlot <- NULL
       PlotList[['Train_ROC_Plot']] <- Output$ROC_Plot; rm(Output)
-      if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
-      if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
+      if(!is.null(VariableImportance$Train_Importance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)) else if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
+      if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
     }
     Output <- ML_EvalPlots(ModelType='classification', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
     PlotList[['Test_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
@@ -314,7 +314,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots
     PlotList[['Test_GainsPlot']] <- Output$GainsPlot; Output$GainsPlot <- NULL
     PlotList[['Test_LiftPlot']] <- Output$LiftPlot; Output$LiftPlot <- NULL
     PlotList[['Test_ROC_Plot']] <- Output$ROC_Plot; rm(Output)
-    if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])) else PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Train_Importance']])
+    if(!is.null(VariableImportance[['Test_Importance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])) else if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_Importance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])
   }
 
   # Remove extenal files if GridTune is TRUE ----

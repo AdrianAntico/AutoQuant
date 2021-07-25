@@ -475,7 +475,7 @@ AutoLightGBMClassifier <- function(# Data Args
     PlotList[["Test_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
     PlotList[["Test_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
     PlotList[["Test_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
-    PlotList[["Test_VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance))
+    if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[["VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[["VariableImportance"]] <- VI_Plot(Type = "xgboost", VariableImportance)
   }
 
   # Save PDF of model information ----

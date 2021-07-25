@@ -493,7 +493,7 @@ AutoLightGBMRegression <- function(# data parameters
     PlotList[['Test_ResidualTime']] <- Output$ResidualTime; Output$ResidualTime <- NULL
     PlotList[['Test_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
     PlotList[['Test_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
-    if(!is.null(VariableImportance)) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'xgboost', VariableImportance))
+    if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[["VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[["VariableImportance"]] <- VI_Plot(Type = "xgboost", VariableImportance)
   }
 
   # Subset Transformation Object ----

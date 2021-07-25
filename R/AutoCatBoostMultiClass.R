@@ -330,8 +330,8 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   options(warn = -1)
   if('evalplots' %chin% tolower(OutputSelection)) {
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
-      if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
+      if(!is.null(VariableImportance$Train_Importance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)) else if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
+      if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
       for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
         TrainData[, p1 := get(tarlevel)]
         TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
@@ -345,7 +345,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
         data.table::set(TrainData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
       }
     }
-    if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])) else PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Train_Importance']])
+    if(!is.null(VariableImportance[['Test_Importance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])) else if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_Importance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])
     for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
       ValidationData[, p1 := get(tarlevel)]
       ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]

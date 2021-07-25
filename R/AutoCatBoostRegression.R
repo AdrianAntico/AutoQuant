@@ -321,8 +321,8 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
       PlotList[['Train_ResidualTime']] <- Output$ResidualTime; Output$ResidualTime <- NULL
       PlotList[['Train_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
       PlotList[['Train_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
-      if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
-      if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
+      if(!is.null(VariableImportance$Train_Importance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)) else if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
+      if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
     }
     Output <- ML_EvalPlots(ModelType='regression', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
     PlotList[['Test_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
@@ -333,7 +333,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
     PlotList[['Test_ResidualTime']] <- Output$ResidualTime; Output$ResidualTime <- NULL
     PlotList[['Test_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
     PlotList[['Test_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
-    if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']]) else PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Train_Importance']])
+    if(!is.null(VariableImportance[['Test_Importance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])) else if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_Importance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])
   }
 
   # Subset Transformation Object ----

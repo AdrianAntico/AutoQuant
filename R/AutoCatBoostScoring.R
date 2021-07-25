@@ -32,6 +32,8 @@
 #' @examples
 #' \dontrun{
 #'
+#' # CatBoost Regression Example
+#'
 #' # Create some dummy correlated data
 #' data <- RemixAutoML::FakeDataGenerator(
 #'   Correlation = 0.85,

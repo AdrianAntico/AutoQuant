@@ -501,7 +501,7 @@ AutoLightGBMMultiClass <- function(data = NULL,
         data.table::set(TrainData, j = c("p1",paste0("Temp_",tarlevel)), value = NULL)
       }
     }
-    if(!is.null(VariableImportance)) PlotList[["VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "catboost", VariableImportance))
+    if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[["VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[["VariableImportance"]] <- VI_Plot(Type = "xgboost", VariableImportance)
     for(tarlevel in as.character(unique(TargetLevels[["OriginalLevels"]]))) {
       ValidationData[, p1 := get(tarlevel)]
       ValidationData[, paste0("Temp_",tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
