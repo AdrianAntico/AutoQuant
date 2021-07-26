@@ -76,7 +76,7 @@
 #'   DebugMode = FALSE,
 #'
 #'   # Metadata args
-#'   OutputSelection = c('Score_TrainData', 'Importance', 'EvalPlots', 'Metrics', 'PDF'),
+#'   OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'Metrics', 'PDF'),
 #'   ModelID = 'Test_Model_1',
 #'   model_path = normalizePath('./'),
 #'   metadata_path = normalizePath('./'),
@@ -274,7 +274,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots
 
   # Gather importance and shap values ----
   if(DebugMode) print('Running CatBoostImportances()')
-  if('importances' %chin% tolower(OutputSelection)) {
+  if(any(c('importances','importance') %chin% tolower(OutputSelection))) {
     Output <- CatBoostImportances(ModelType='classification', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TrainData.=TrainData, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)
     VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
     Interaction <- Output$Interaction; Output$Interaction <- NULL

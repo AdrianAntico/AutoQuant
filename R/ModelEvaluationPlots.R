@@ -20,12 +20,13 @@
 #' data.table::setnames(data, "IDcol_1", "Predict")
 #'
 #' # Run function
-#' EvalPlot(data,
-#'          PredictionColName = "Predict",
-#'          TargetColName = "Adrian",
-#'          GraphType = "calibration",
-#'          PercentileBucket = 0.05,
-#'          aggrfun = function(x) mean(x, na.rm = TRUE))
+#' RemixAutoML::EvalPlot(
+#'   data,
+#'   PredictionColName = "Predict",
+#'   TargetColName = "Adrian",
+#'   GraphType = "calibration",
+#'   PercentileBucket = 0.05,
+#'   aggrfun = function(x) mean(x, na.rm = TRUE))
 #' }
 #' @export
 EvalPlot <- function(data,
@@ -540,7 +541,7 @@ CumGainsChart <- function(data = NULL,
         vjust = -0.5,
         label.padding = ggplot2::unit(0.2, "lines")) +
       ggplot2::ylim(0,110) +
-      ggplot2::guides(fill = FALSE) +
+      ggplot2::guides(fill = "none") +
       ggplot2::scale_colour_continuous(breaks = c(0, seq(10, 100, 10))) +
       ChartTheme() + ggplot2::theme(legend.position = "none"))
 
@@ -568,7 +569,7 @@ CumGainsChart <- function(data = NULL,
         vjust = -0.5,
         label.padding = ggplot2::unit(0.2, "lines")) +
       ggplot2::ylim(min(LiftRes_T[["Lift"]]), max(LiftRes_T[["Lift"]] * 1.1)) +
-      ggplot2::guides(fill = FALSE) +
+      ggplot2::guides(fill = "none") +
       ggplot2::scale_colour_continuous(guide = FALSE) +
       ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10))) +
       ChartTheme() + ggplot2::theme(legend.position = "none"))

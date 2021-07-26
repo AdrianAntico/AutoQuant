@@ -290,7 +290,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
 
   # Gather importance and shap values ----
   if(DebugMode) print('Running CatBoostImportances()')
-  if('importances' %chin% tolower(OutputSelection)) {
+  if(any(c('importances','importance') %chin% tolower(OutputSelection))) {
     Output <- CatBoostImportances(ModelType='regression', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TrainData.=TrainData, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)
     Interaction <- Output$Interaction; Output$Interaction <- NULL
     VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL

@@ -289,9 +289,11 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
 
   # Gather importance and shap values ----
   if(DebugMode) print('Running CatBoostImportances()')
-  Output <- CatBoostImportances(ModelType='multiclass', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)
-  VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
-  Interaction <- Output$Interaction; Output$Interaction <- NULL
+  if(any(c('importances','importance') %chin% tolower(OutputSelection))) {
+    Output <- CatBoostImportances(ModelType='multiclass', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)
+    VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
+    Interaction <- Output$Interaction; Output$Interaction <- NULL
+  }
 
   # Generate EvaluationMetrics ----
   if(DebugMode) print('Running MultiClassMetrics()')

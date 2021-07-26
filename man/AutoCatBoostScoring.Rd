@@ -89,6 +89,8 @@ AutoCatBoostScoring is an automated scoring function that compliments the AutoCa
 \examples{
 \dontrun{
 
+# CatBoost Regression Example
+
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
