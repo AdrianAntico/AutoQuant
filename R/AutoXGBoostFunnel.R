@@ -1394,7 +1394,7 @@ AutoXGBoostFunnelCARMAScoring <- function(TrainData,
     # DE: Update forecast TrainData ----
     if(DebugMode) print("DE: Update forecast TrainData ----")
     temp1[ScoreRecords == 1, eval(ArgsList$ConversionRateMeasure) := temp[which(Predictions < 0), Predictions := 0][[1L]]]
-    temp1[ScoreRecords == 1, eval(ArgsList$ConversionMeasure) := get(ArgsList$ConversionRateMeasure) * get(ArgsList$BaseFunnelMeasure)]
+    temp1[ScoreRecords == 1, eval(ArgsList$ConversionMeasure) := get(ArgsList$ConversionRateMeasure) * get(ArgsList$BaseFunnelMeasure[1L])]
     if(!is.null(ArgsList$GroupVariables)) {
       temp1 <- temp1[ScoreRecords == 1, .SD, .SDcols = c("GroupVar", eval(ArgsList$GroupVariables), eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),eval(ArgsList$BaseFunnelMeasure),eval(ArgsList$ConversionMeasure),eval(ArgsList$ConversionRateMeasure))]
       TrainData <- data.table::rbindlist(list(TrainData[ScoreRecords != 1, .SD, .SDcols = c("GroupVar", eval(ArgsList$GroupVariables), eval(ArgsList$CalendarDate),eval(ArgsList$CohortDate),eval(ArgsList$CohortPeriodsVariable),eval(ArgsList$BaseFunnelMeasure),eval(ArgsList$ConversionMeasure),eval(ArgsList$ConversionRateMeasure))], temp1), fill = TRUE, use.names = TRUE)

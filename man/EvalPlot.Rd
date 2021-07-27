@@ -40,12 +40,13 @@ data <- RemixAutoML::FakeDataGenerator(
 data.table::setnames(data, "IDcol_1", "Predict")
 
 # Run function
-EvalPlot(data,
-         PredictionColName = "Predict",
-         TargetColName = "Adrian",
-         GraphType = "calibration",
-         PercentileBucket = 0.05,
-         aggrfun = function(x) mean(x, na.rm = TRUE))
+RemixAutoML::EvalPlot(
+  data,
+  PredictionColName = "Predict",
+  TargetColName = "Adrian",
+  GraphType = "calibration",
+  PercentileBucket = 0.05,
+  aggrfun = function(x) mean(x, na.rm = TRUE))
 }
 }
 \seealso{

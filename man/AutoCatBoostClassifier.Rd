@@ -184,7 +184,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   DebugMode = FALSE,
 
   # Metadata args
-  OutputSelection = c('Score_TrainData', 'Importance', 'EvalPlots', 'Metrics', 'PDF'),
+  OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'Metrics', 'PDF'),
   ModelID = 'Test_Model_1',
   model_path = normalizePath('./'),
   metadata_path = normalizePath('./'),
