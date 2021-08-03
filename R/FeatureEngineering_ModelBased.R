@@ -286,7 +286,7 @@ AutoWord2VecModeler <- function(data,
 #' data <- RemixAutoML::FakeDataGenerator(
 #'   Correlation = 0.70,
 #'   N = 1000L,
-#'   ID = 2L,
+#'   ID = 2L,H2
 #'   FactorCount = 2L,
 #'   AddDate = TRUE,
 #'   AddComment = TRUE,

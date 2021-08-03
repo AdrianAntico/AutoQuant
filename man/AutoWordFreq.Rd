@@ -65,6 +65,7 @@ data <- AutoWordFreq(
 \seealso{
 Other EDA: 
 \code{\link{EDA_Histograms}()},
+\code{\link{Mode}()},
 \code{\link{ScatterCopula}()}
 }
 \author{

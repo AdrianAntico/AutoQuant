@@ -158,6 +158,7 @@ Other Feature Engineering:
 \code{\link{AutoDiffLagN}()},
 \code{\link{AutoHierarchicalFourier}()},
 \code{\link{AutoInteraction}()},
+\code{\link{AutoLagRollMode}()},
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationCreate}()},
 \code{\link{AutoTransformationScore}()},

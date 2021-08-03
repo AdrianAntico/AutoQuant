@@ -127,6 +127,7 @@ Other Feature Engineering:
 \code{\link{AutoDataPartition}()},
 \code{\link{AutoDiffLagN}()},
 \code{\link{AutoHierarchicalFourier}()},
+\code{\link{AutoLagRollMode}()},
 \code{\link{AutoLagRollStatsScoring}()},
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationCreate}()},

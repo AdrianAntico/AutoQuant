@@ -66,6 +66,7 @@ Other Feature Engineering:
 \code{\link{AutoDiffLagN}()},
 \code{\link{AutoHierarchicalFourier}()},
 \code{\link{AutoInteraction}()},
+\code{\link{AutoLagRollMode}()},
 \code{\link{AutoLagRollStatsScoring}()},
 \code{\link{AutoLagRollStats}()},
 \code{\link{AutoTransformationScore}()},

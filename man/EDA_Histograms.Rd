@@ -59,6 +59,7 @@ Creates histograms
 \seealso{
 Other EDA: 
 \code{\link{AutoWordFreq}()},
+\code{\link{Mode}()},
 \code{\link{ScatterCopula}()}
 }
 \author{

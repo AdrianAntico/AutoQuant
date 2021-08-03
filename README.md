@@ -1,4 +1,4 @@
-![Version: 0.5.7](https://img.shields.io/static/v1?label=Version&message=0.5.7&color=blue&?style=plastic)
+![Version: 0.5.8](https://img.shields.io/static/v1?label=Version&message=0.5.8&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -301,6 +301,96 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 
 </p>
 </details>
+
+
+
+#### **AutoLagRollMode()**
+
+<details><summary>Code Example</summary>
+<p>
+ 
+```
+# NO GROUPING CASE: Create fake Panel Data----
+Count <- 1L
+for(Level in LETTERS) {
+  datatemp <- RemixAutoML::FakeDataGenerator(
+    Correlation = 0.75,
+    N = 25000L,
+    ID = 0L,
+    ZIP = 0L,
+    FactorCount = 2L,
+    AddDate = TRUE,
+    Classification = FALSE,
+    MultiClass = FALSE)
+  datatemp[, Factor1 := eval(Level)]
+  if(Count == 1L) {
+    data <- data.table::copy(datatemp)
+  } else {
+    data <- data.table::rbindlist(
+      list(data, data.table::copy(datatemp)))
+  }
+  Count <- Count + 1L
+}
+
+# NO GROUPING CASE: Create rolling modes for categorical features
+data <- RemixAutoML::AutoLagRollMode(
+  data,
+  Lags           = seq(1,5,1),
+  ModePeriods    = seq(2,5,1),
+  Targets        = c("Factor_1"),
+  GroupingVars   = NULL,
+  SortDateName   = "DateTime",
+  WindowingLag   = 1,
+  Type           = "Lag",
+  SimpleImpute   = TRUE)
+
+# GROUPING CASE: Create fake Panel Data----
+Count <- 1L
+for(Level in LETTERS) {
+  datatemp <- RemixAutoML::FakeDataGenerator(
+    Correlation = 0.75,
+    N = 25000L,
+    ID = 0L,
+    ZIP = 0L,
+    FactorCount = 2L,
+    AddDate = TRUE,
+    Classification = FALSE,
+    MultiClass = FALSE)
+  datatemp[, Factor1 := eval(Level)]
+  if(Count == 1L) {
+    data <- data.table::copy(datatemp)
+  } else {
+    data <- data.table::rbindlist(
+      list(data, data.table::copy(datatemp)))
+  }
+  Count <- Count + 1L
+}
+
+# GROUPING CASE: Create rolling modes for categorical features
+data <- RemixAutoML::AutoLagRollMode(
+  data,
+  Lags           = seq(1,5,1),
+  ModePeriods    = seq(2,5,1),
+  Targets        = c("Factor_1"),
+  GroupingVars   = "Factor_2",
+  SortDateName   = "DateTime",
+  WindowingLag   = 1,
+  Type           = "Lag",
+  SimpleImpute   = TRUE)
+```
+
+</p>
+</details>
+
+<details><summary>Function Description</summary>
+<p>
+ 
+<code>AutoLagRollMode()</code> Generate lags and rolling modes for categorical variables
+ 
+</p>
+</details>
+
+
 
 #### **AutoDiffLagN()**
 
