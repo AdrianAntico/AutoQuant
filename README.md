@@ -3638,7 +3638,7 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 </p>
 </details>
 
-<details><summary>XGBoost Example</summary>
+<details><summary>LightGBM Example</summary>
 <p>
 
 ```
