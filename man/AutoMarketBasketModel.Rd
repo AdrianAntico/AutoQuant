@@ -56,9 +56,9 @@ rules_data <- AutoMarketBasketModel(
 Chi-sq statistics and p-values based on this paper: http://www.cs.bc.edu/~alvarez/ChiSquare/chi2tr.pdf
 
 Other Recommenders: 
-\code{\link{AutoRecomDataCreate}()},
-\code{\link{AutoRecommenderScoring}()},
-\code{\link{AutoRecommender}()}
+\code{\link{AutoRecommenderDataCreate}()},
+\code{\link{AutoRecommenderScore}()},
+\code{\link{AutoRecommenderTrain}()}
 }
 \author{
 Adrian Antico and Douglas Pestana
