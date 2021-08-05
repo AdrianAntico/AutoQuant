@@ -5892,9 +5892,9 @@ Output$PerformanceGrid
 <details><summary>Expand to view content</summary>
 <p>
   
-<code>AutoRecomDataCreate()</code> automatically creates your binary ratings matix from transaction data
+<code>AutoRecommenderDataCreate()</code> automatically creates your binary ratings matix from transaction data
 
-<code>AutoRecommender()</code> automated collaborative filtering modeling where each model below competes against one another for top performance
+<code>AutoRecommenderTrain()</code> automated collaborative filtering modeling where each model below competes against one another for top performance
   * RandomItems
   * PopularItems
   * UserBasedCF  
