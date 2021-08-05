@@ -5840,10 +5840,17 @@ Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
 
 There are three sets of functions for single series traditional time series model forecasting. The first set includes the AutoBanditSarima() and AutoBanditNNet() functions. These two offer the most robust fitting strategies. The utilize a multi-armed-bandit to help narrow the search space of available parameter settings. The next batch includes the AutoTBATS(), AutoETS(), and the AutoArfima() functions. These don't utilze the bandit framework. Rather, they run through a near exhaustive search through all their possible settings. Both the bandit set and the non-bandit set utilize parallelism to burn through as many models as possible for a fixed amount of time. The third set includes the AutoTS() function. This function will run through ARIMA, ARFIMA, NNet, ETS, TBATS, TSLM, and DSHW models with a few variation of parameter settings. The best possible model of the set will likely come from the AutoBanditSarima() function but it's never a bad idea to start with a model search using AutoTS() and then running through the others. This way you can speak to different algorithm performance and the benefits of the selected model.
 
+* Bandit: AutoBanditSarima
+* Bandit: AutoBanditNNet
+* Exhaustive: AutoTBATS
+* Exhaustive: AutoETS
+* Exhaustive: AutoArfima
+* Best of forecast package: AutoTS
+
 </p>
 </details>
 
-<details><summary>Code Example</summary>
+<details><summary>AutoBanditSarima() Example</summary>
 <p>
  
 ```
@@ -5882,6 +5889,180 @@ Output$PerformanceGrid
 
 </p>
 </details>
+
+<details><summary>AutoBanditNNet() Example</summary>
+<p>
+ 
+```
+# Build model
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+
+# Run system
+Output <- RemixAutoML::AutoBanditNNet(
+  data = data,
+  TargetVariableName = "Weekly_Sales",
+  DateColumnName = "Date",
+  TimeAggLevel = "1min",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 12L,
+  NumFCPeriods = 16L,
+  MaxLags = 10L,
+  MaxSeasonalLags = 0L,
+  MaxFourierPairs = 2L,
+  TrainWeighting = 0.50,
+  MaxConsecutiveFails = 50L,
+  MaxNumberModels = 100L,
+  MaxRunTimeMinutes = 10L,
+  NumberCores = 12)
+  
+# View output
+Output$Forecast
+Output$PerformanceGrid
+```
+
+</p>
+</details>
+
+
+<details><summary>AutoTBATS() Example</summary>
+<p>
+ 
+```
+# Build model
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+
+# Run system
+Output <- RemixAutoML::AutoTBATS(
+  data = data,
+  FilePath = getwd(),
+  TargetVariableName = "Weekly_Sales",
+  DateColumnName = "Date",
+  TimeAggLevel = "1min",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 12L,
+  NumFCPeriods = 16L,
+  MaxLags = 10L,
+  MaxMovingAverages = 5,
+  MaxSeasonalPeriods = 1,
+  TrainWeighting = 0.50,
+  MaxConsecutiveFails = 50L,
+  MaxNumberModels = 100L,
+  MaxRunTimeMinutes = 10L,
+  NumberCores = 12)
+
+# View output
+Output$Forecast
+Output$PerformanceGrid
+```
+
+</p>
+</details>
+
+
+<details><summary>AutoETS() Example</summary>
+<p>
+ 
+```
+# Build model
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+
+# Run system
+Output <- RemixAutoML::AutoETS(
+  data = data,
+  FilePath = getwd(),
+  TargetVariableName = "Weekly_Sales",
+  DateColumnName = "Date",
+  TimeAggLevel = "1min",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 12L,
+  NumFCPeriods = 16L,
+  TrainWeighting = 0.50,
+  MaxConsecutiveFails = 50L,
+  MaxNumberModels = 100L,
+  MaxRunTimeMinutes = 10L,
+  NumberCores = 12)
+
+# View output
+Output$Forecast
+Output$PerformanceGrid
+```
+
+</p>
+</details>
+
+
+<details><summary>AutoArfima() Example</summary>
+<p>
+ 
+```
+# Build model
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+
+# Run system
+Output <- RemixAutoML::AutoArfima(
+  data = data,
+  FilePath = getwd(),
+  TargetVariableName = "Weekly_Sales",
+  DateColumnName = "Date",
+  TimeAggLevel = "1min",
+  EvaluationMetric = "MAE",
+  NumHoldOutPeriods = 12L,
+  NumFCPeriods = 16L,
+  TrainWeighting = 0.50,
+  MaxLags = 5, 
+  MaxMovingAverages = 5,
+  MaxConsecutiveFails = 50L,
+  MaxNumberModels = 100L,
+  MaxRunTimeMinutes = 10L,
+  NumberCores = 12)
+
+# View output
+Output$Forecast
+Output$PerformanceGrid
+```
+
+</p>
+</details>
+
+
+<details><summary>AutoTS() Example</summary>
+<p>
+ 
+```
+# Build model
+data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
+
+# Run system
+Output <- RemixAutoML::AutoTS(
+  data,
+  TargetName = "Weekly_Sales",
+  DateName = "Date",
+  FCPeriods = 16L,
+  HoldOutPeriods = 12L,
+  EvaluationMetric = "MAPE",
+  InnerEval = "AICc",
+  TimeUnit = "day",
+  Lags = 25,
+  SLags = 2,
+  MaxFourierPairs = 0,
+  NumCores = 4,
+  SkipModels = NULL,
+  StepWise = TRUE,
+  TSClean = TRUE,
+  ModelFreq = TRUE,
+  PrintUpdates = FALSE,
+  PlotPredictionIntervals = TRUE)
+
+# View output
+Output$Forecast
+Output$EvaluationMetrics
+Output$ChampionModel
+Output$TimeSeriesPlot
+```
+
+</p>
+</details>
+
 
 
 </p>
