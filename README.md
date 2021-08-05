@@ -168,6 +168,8 @@ Supply a data.table to run the functions below:
 <details><summary>Expand to view content</summary>
 <p>
 
+<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/FeatureEngineeringMenu.PNG" align="center" width="800" />
+
 #### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 
 <details><summary>Code Example</summary>
