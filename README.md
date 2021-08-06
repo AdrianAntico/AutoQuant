@@ -6077,6 +6077,11 @@ Output$TimeSeriesPlot
 <details><summary>Expand to view content</summary>
 <p>
 
+
+
+<details><summary>Functions Description</summary>
+<p>
+
 <code>AutoRecommenderDataCreate()</code> automatically creates your binary ratings matix from transaction data
 
 <code>AutoRecommenderTrain()</code> automated collaborative filtering modeling where each model below competes against one another for top performance
@@ -6089,10 +6094,6 @@ Output$TimeSeriesPlot
 <code>AutoRecommenderScore()</code> automatically score a recommender model from AutoRecommenderTrain()
 
 <code>AutoMarketBasketModel()</code> is a function that runs a market basket analysis automatically. It will convert your data, run the algorithm, and generate the recommended items. On top of that, it includes additional significance values not provided by the source pacakge. 
-
-<details><summary>Functions Description</summary>
-<p>
-
 
 </p>
 </details>
@@ -6146,6 +6147,25 @@ Results <- RemixAutoML::AutoRecommenderScore(
   WinningModel = WinningModel,
   EntityColName = "CustomerID",
   ProductColName = "StockCode")
+```
+
+</p>
+</details>
+
+<details><summary>AutoMarketBasketModel() Example</summary>
+<p>
+ 
+```
+RulesData <- RemixAutoML::AutoMarketBasketModel(
+  data,
+  OrderIDColumnName = "OrderNumber",
+  ItemIDColumnName = "ItemNumber",
+  LHS_Delimeter = ",",
+  Support = 0.001,
+  Confidence = 0.1,
+  MaxLength = 2,
+  MinLength = 2,
+  MaxTime = 5)
 ```
 
 </p>
