@@ -6104,7 +6104,6 @@ Output$TimeSeriesPlot
  
 ```
 # data comes in transactional form as a data.table
-
 RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
   data,
   EntityColName = "CustomerID",
@@ -6121,6 +6120,7 @@ RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
 <p>
  
 ```
+# Build Model
 WinningModel <- RemixAutoML::AutoRecommender(
   RatingsMatrix,
   Partition = "Split",
@@ -6156,6 +6156,7 @@ Results <- RemixAutoML::AutoRecommenderScore(
 <p>
  
 ```
+# Build rules set
 RulesData <- RemixAutoML::AutoMarketBasketModel(
   data,
   OrderIDColumnName = "OrderNumber",
