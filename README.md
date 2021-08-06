@@ -6076,7 +6076,7 @@ Output$TimeSeriesPlot
 ## Recommender Systems <img src="Images/RecommenderSystemImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
-  
+
 <code>AutoRecommenderDataCreate()</code> automatically creates your binary ratings matix from transaction data
 
 <code>AutoRecommenderTrain()</code> automated collaborative filtering modeling where each model below competes against one another for top performance
@@ -6089,6 +6089,68 @@ Output$TimeSeriesPlot
 <code>AutoRecommenderScore()</code> automatically score a recommender model from AutoRecommenderTrain()
 
 <code>AutoMarketBasketModel()</code> is a function that runs a market basket analysis automatically. It will convert your data, run the algorithm, and generate the recommended items. On top of that, it includes additional significance values not provided by the source pacakge. 
+
+<details><summary>Functions Description</summary>
+<p>
+
+
+</p>
+</details>
+
+
+<details><summary>AutoRecommenderDataCreate() Example</summary>
+<p>
+ 
+```
+# data comes in transactional form as a data.table
+
+RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
+  data,
+  EntityColName = "CustomerID",
+  ProductColName = "StockCode",
+  MetricColName = "TotalSales",
+  ReturnMatrix = TRUE)
+}
+```
+
+</p>
+</details>
+
+<details><summary>AutoRecommenderTrain() Example</summary>
+<p>
+ 
+```
+WinningModel <- RemixAutoML::AutoRecommender(
+  RatingsMatrix,
+  Partition = "Split",
+  KFolds = 1,
+  Ratio = 0.75,
+  Given = 1,
+  RatingType = "TopN",
+  RatingsKeep = 20,
+  SkipModels = "AssociationRules",
+  ModelMetric = "TPR")
+}
+```
+
+</p>
+</details>
+
+<details><summary>AutoRecommenderScore() Example</summary>
+<p>
+ 
+```
+# Score new data
+Results <- RemixAutoML::AutoRecommenderScore(
+  data = data,
+  WinningModel = WinningModel,
+  EntityColName = "CustomerID",
+  ProductColName = "StockCode")
+```
+
+</p>
+</details>
+
   
 </p>
 </details>
@@ -6113,7 +6175,7 @@ Output$TimeSeriesPlot
 <details><summary>Expand to view content</summary>
 <p>
 
-<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse and run queries to pull in data to R. There are several data dictionary types that can be returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
+<code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse. There are several data dictionary types that can be returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
 
 <code>SQL_Server_DBConnection()</code> Create a connect with sql server
 
