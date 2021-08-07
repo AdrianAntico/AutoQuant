@@ -1,0 +1,6 @@
+TOF,GridTune,Success,PartitionInFunction,RunNumber
+FALSE,FALSE,Success,FALSE,1
+FALSE,FALSE,Success,TRUE,2
+FALSE,TRUE,Success,FALSE,3
+FALSE,TRUE,Success,TRUE,4
+TRUE,FALSE,Success,FALSE,5

@@ -1,0 +1,16 @@
+Class,Method,Success,Outcome
+DRF,TrainOnFull,Failure,Success
+DRF,Not,Failure,Success
+DRF,Not,Failure,Success
+GAM,TrainOnFull,Failure,
+GAM,Not,Failure,
+GAM,Not,Failure,
+GBM,TrainOnFull,Failure,
+GBM,Not,Failure,
+GBM,Not,Failure,
+GLM,TrainOnFull,Failure,
+GLM,Not,Failure,
+GLM,Not,Failure,
+AutoML,TrainOnFull,Failure,
+AutoML,Not,Failure,
+AutoML,Not,Failure,

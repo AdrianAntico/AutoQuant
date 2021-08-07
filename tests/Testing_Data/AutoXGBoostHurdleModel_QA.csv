@@ -1,0 +1,7 @@
+TOF,Classification,Success,ScoreSuccess,PartitionInFunction,RunNumber,Score
+TRUE,TRUE,Success,Failure,FALSE,1,Success
+TRUE,FALSE,Success,Failure,FALSE,2,Success
+FALSE,TRUE,Success,Failure,TRUE,3,Success
+FALSE,TRUE,Success,Failure,FALSE,4,Success
+FALSE,FALSE,Success,Failure,TRUE,5,Success
+FALSE,FALSE,Success,Failure,FALSE,6,Success

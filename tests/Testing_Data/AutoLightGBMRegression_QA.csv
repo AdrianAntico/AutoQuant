@@ -1,0 +1,11 @@
+TOF,Transformation,GridTune,Success,PartitionInFunction,RunNumber,Score
+FALSE,FALSE,FALSE,Success,FALSE,1,Success
+FALSE,FALSE,FALSE,Success,TRUE,2,Success
+FALSE,FALSE,TRUE,Success,FALSE,3,Success
+FALSE,FALSE,TRUE,Success,TRUE,4,Success
+FALSE,TRUE,FALSE,Success,FALSE,5,Success
+FALSE,TRUE,FALSE,Success,TRUE,6,Success
+FALSE,TRUE,TRUE,Success,FALSE,7,Success
+FALSE,TRUE,TRUE,Success,TRUE,8,Success
+TRUE,FALSE,FALSE,Success,FALSE,9,Success
+TRUE,TRUE,FALSE,Success,FALSE,10,Success
