@@ -3854,7 +3854,11 @@ for(run in seq_len(LightGBM_QA[,.N])) {
 </p>
 </details>
 
-<details><summary>Code Example</summary>
+
+
+<details><summary>AutoCatBoost__() Examples</summary>
+
+<details><summary>AutoCatBoostRegression() Scoring Example</summary>
 <p>
 
 ```
@@ -4019,6 +4023,1552 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 
 </p>
 </details>
+
+<details><summary>AutoCatBoostClassifier() Scoring Example</summary>
+<p>
+
+```
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = TRUE,
+  MultiClass = FALSE)
+
+# Copy data (used for scoring below``)
+data1 <- data.table::copy(data)
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# AutoCatBoostClassifier
+TestModel <- RemixAutoML::AutoCatBoostClassifier(
+  
+  # GPU or CPU and the number of available GPUs
+  task_type = tasktypemode,
+  NumGPUs = 1,
+  
+  # Metadata arguments
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  ModelID = "Test_Model_1",
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  SaveModelObjects = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveInfoToPDF = TRUE,
+  
+  # Data arguments
+  data = TTrainData,
+  TrainOnFull = tof,
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  PrimaryDateColumn = "DateTime",
+  WeightsColumnName = "Weights",
+  ClassWeights = c(1L,1L),
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  
+  # Model evaluation
+  CostMatrixWeights = c(2,0,0,1),
+  EvalMetric = "MCC",
+  LossFunction = "Logloss",
+  grid_eval_metric = "Utility",
+  MetricPeriods = 10L,
+  NumOfParDepPlots = 3,
+  
+  # Grid tuning arguments
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  BaselineComparison = "default",
+  
+  # ML args
+  Trees = 100L,
+  Depth = 4L,
+  LearningRate = NULL,
+  L2_Leaf_Reg = NULL,
+  RandomStrength = 1,
+  BorderCount = 128,
+  RSM = 0.80,
+  BootStrapType = "Bayesian",
+  GrowPolicy = "SymmetricTree",
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  model_size_reg = 0.5,
+  feature_border_type = "GreedyLogSum",
+  sampling_unit = "Object",
+  subsample = NULL,
+  score_function = "Cosine",
+  min_data_in_leaf = 1,
+  DebugMode = TRUE)
+
+## Model Evaluation ##
+
+# Evaluation Metrics 
+TestModel$EvaluationMetrics$TrainData
+TestModel$EvaluationMetrics$TestData
+
+# By decile
+TestModel$EvaluationMetrics2$TrainData
+TestModel$EvaluationMetrics2$TestData
+
+# Model Calibration Plot
+TestModel$PlotList$Train_EvaluationPlot
+TestModel$PlotList$Test_EvaluationPlot
+
+# Gains Plots
+TestModel$PlotList$Train_GainsPlot
+TestModel$PlotList$Test_GainsPlot
+
+# Lift Plots
+TestModel$PlotList$Train_LiftPlot
+TestModel$PlotList$Test_LiftPlot
+
+# ROC Plots
+TestModel$PlotList$Train_ROC_Plot
+TestModel$PlotList$Test_ROC_Plot
+
+# Variable Importance Plots
+TestModel$PlotList$Train_VariableImportance
+TestModel$PlotList$Validation_VariableImportance
+TestModel$PlotList$Test_VariableImportance
+
+# Partial Dependence Calibration Plots
+TestModel$PlotList$Train_ParDepPlots
+TestModel$PlotList$Test_ParDepPlots
+
+# Score data
+Preds <- RemixAutoML::AutoCatBoostScoring(
+  TargetType = 'classifier',
+  ScoringData = data,
+  FeatureColumnNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  FactorLevelsList = TestModel$FactorLevelsList,
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  OneHot = FALSE,
+  ReturnShapValues = TRUE,
+  ModelObject = TestModel$Model,
+  ModelPath = NULL,
+  ModelID = 'Test_Model_1',
+  ReturnFeatures = TRUE,
+  MultiClassTargetLevels = NULL,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = '0',
+  MDP_MissNum = -1,
+  RemoveModel = FALSE)
+```
+
+</p>
+</details>
+
+<details><summary>AutoCatBoostMultiClasss() Scoring Example</summary>
+<p>
+
+```
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = TRUE)
+
+# Copy data (used for scoring below``)
+data1 <- data.table::copy(data)
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoCatBoostMultiClass(
+  
+  # GPU or CPU and the number of available GPUs
+  task_type = "GPU",
+  NumGPUs = 1,
+  
+  # Metadata arguments
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  ModelID = "Test_Model_1",
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  
+  # Data arguments
+  data = TTrainData,
+  TrainOnFull = FALSE,
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Adrian","DateTime")],
+  PrimaryDateColumn = "DateTime",
+  WeightsColumnName = "Weights",
+  ClassWeights = c(1L,1L,1L,1L,1L),
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  
+  # Model evaluation
+  eval_metric = "MCC",
+  loss_function = "MultiClassOneVsAll",
+  grid_eval_metric = "Accuracy",
+  MetricPeriods = 10L,
+  
+  # Grid tuning arguments
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  BaselineComparison = "default",
+  
+  # ML args
+  Trees = 100L,
+  Depth = 4L,
+  LearningRate = 0.01,
+  L2_Leaf_Reg = 1.0,
+  RandomStrength = 1,
+  BorderCount = 128,
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  RSM = 0.80,
+  BootStrapType = "Bayesian",
+  GrowPolicy = "SymmetricTree",
+  model_size_reg = 0.5,
+  feature_border_type = "GreedyLogSum",
+  sampling_unit = "Group",
+  subsample = NULL,
+  score_function = "Cosine",
+  min_data_in_leaf = 1,
+  DebugMode = TRUE)
+
+## Model Evaluation ##
+
+# Evaluation Metrics (individual output per target level for both train and test)
+TestModel$EvaluationMetrics # list
+
+# Evaluation Metrics by Decile (individual output per target level for both train and test)
+TestModel$EvaluationMetrics2 # list
+
+# Model Plots (by train and test data and by each target level)
+TestModel$PlotList
+
+# Score data
+Preds <- RemixAutoML::AutoCatBoostScoring(
+  TargetType = 'multiclass',
+  ScoringData = data,
+  FeatureColumnNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  FactorLevelsList = TestModel$FactorLevelsList,
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  OneHot = FALSE,
+  ReturnShapValues = FALSE,
+  ModelObject = TestModel$Model,
+  ModelPath = NULL,
+  ModelID = 'Test_Model_1',
+  ReturnFeatures = TRUE,
+  MultiClassTargetLevels = TestModel$TargetLevels,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = '0',
+  MDP_MissNum = -1,
+  RemoveModel = FALSE)
+```
+
+</p>
+</details>
+
+<details><summary>AutoCatBoostHurdleModel() Scoring Example</summary>
+<p>
+
+```
+# Classify or Multiclass example
+Classify <- TRUE
+
+# Create data
+if(Classify) {
+  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+} else {
+  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 2)
+}
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoCatBoostHurdleModel(
+  
+  # Operationalization
+  task_type = 'GPU',
+  ModelID = 'ModelTest',
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  
+  # Data related args
+  data = data.table::copy(TTrainData),
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  WeightsColumnName = NULL,
+  TrainOnFull = FALSE,
+  Buckets = if(Classify) 0L else c(0,2,3),
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
+  PrimaryDateColumn = "DateTime",
+  IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
+  DebugMode = TRUE,
+  
+  # Metadata args
+  Paths = normalizePath('./'),
+  MetaDataPaths = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit'),
+  ClassWeights = NULL,
+  SplitRatios = NULL,
+  NumOfParDepPlots = 10L,
+  
+  # Grid tuning setup
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = 'default',
+  MaxModelsInGrid = 1L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 60L*60L,
+  MetricPeriods = 25L,
+  
+  # Bandit grid args
+  Langevin = FALSE,
+  DiffusionTemperature = 10000,
+  Trees = list('classifier' = 50, 'regression' = 50),
+  Depth = list('classifier' = 4, 'regression' = 4),
+  RandomStrength = list('classifier' = 1, 'regression' = 1),
+  BorderCount = list('classifier' = 32, 'regression' = 32),
+  LearningRate = list('classifier' = 0.01, 'regression' = 0.01),
+  L2_Leaf_Reg = list('classifier' = 3.0, 'regression' = 1.0),
+  RSM = list('classifier' = 0.80, 'regression' = 0.80),
+  BootStrapType = list('classifier' = 'Bayesian', 'regression' = 'Bayesian'),
+  GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree'))
+
+# Remove Target Variable
+TTrainData[, c("Target_Buckets", "Adrian") := NULL]
+
+# Score CatBoost Hurdle Model
+Output <- RemixAutoML::AutoCatBoostHurdleModelScoring(
+  TestData = TTrainData,
+  Path = NULL,
+  ModelID = "ModelTest",
+  ModelList = TestModel$ModelList,
+  ArgsList = TestModel$ArgsList,
+  Threshold = NULL)
+```
+
+</p>
+</details>
+
+</p>
+</details>
+
+
+
+<details><summary>AutoLightGBM__() Examples</summary>
+
+<details><summary>AutoLightGBMRegression() Scoring Example</summary>
+<p>
+
+```
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoLightGBMRegression(
+  
+  # GPU or CPU
+  NThreads = parallel::detectCores(),
+  
+  # Metadata args
+  OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
+  model_path = getwd(),
+  metadata_path = getwd(),
+  ModelID = "Test_Model_1",
+  NumOfParDepPlots = 3L,
+  EncodingMethod = "credibility",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = TRUE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = TRUE,
+  
+  # Data args
+  data = TTrainData,
+  TrainOnFull = FALSE,
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  PrimaryDateColumn = "DateTime",
+  WeightsColumnName = "Weights",
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  TransformNumericColumns = NULL,
+  Methods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
+  
+  # Grid parameters
+  GridTune = FALSE,
+  grid_eval_metric = "r2",
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  PassInGrid = NULL,
+  
+  # Core parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+  input_model = NULL, # continue training a model that is stored to file
+  task = "train",
+  device_type = "CPU",
+  objective = 'regression',
+  metric = "rmse",
+  boosting = "gbdt",
+  LinearTree = FALSE,
+  Trees = 50L,
+  eta = NULL,
+  num_leaves = 31,
+  deterministic = TRUE,
+  
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  force_col_wise = FALSE,
+  force_row_wise = FALSE,
+  max_depth = 6,
+  min_data_in_leaf = 20,
+  min_sum_hessian_in_leaf = 0.001,
+  bagging_freq = 1.0,
+  bagging_fraction = 1.0,
+  feature_fraction = 1.0,
+  feature_fraction_bynode = 1.0,
+  lambda_l1 = 0.0,
+  lambda_l2 = 0.0,
+  extra_trees = FALSE,
+  early_stopping_round = 10,
+  first_metric_only = TRUE,
+  max_delta_step = 0.0,
+  linear_lambda = 0.0,
+  min_gain_to_split = 0,
+  drop_rate_dart = 0.10,
+  max_drop_dart = 50,
+  skip_drop_dart = 0.50,
+  uniform_drop_dart = FALSE,
+  top_rate_goss = FALSE,
+  other_rate_goss = FALSE,
+  monotone_constraints = NULL,
+  monotone_constraints_method = "advanced",
+  monotone_penalty = 0.0,
+  forcedsplits_filename = NULL, # use for AutoStack option; .json file
+  refit_decay_rate = 0.90,
+  path_smooth = 0.0,
+  
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  max_bin = 255,
+  min_data_in_bin = 3,
+  data_random_seed = 1,
+  is_enable_sparse = TRUE,
+  enable_bundle = TRUE,
+  use_missing = TRUE,
+  zero_as_missing = FALSE,
+  two_round = FALSE,
+  
+  # Convert Parameters
+  convert_model = NULL,
+  convert_model_language = "cpp",
+  
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  boost_from_average = TRUE,
+  alpha = 0.90,
+  fair_c = 1.0,
+  poisson_max_delta_step = 0.70,
+  tweedie_variance_power = 1.5,
+  lambdarank_truncation_level = 30,
+  
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  is_provide_training_metric = TRUE,
+  eval_at = c(1,2,3,4,5),
+  
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  num_machines = 1,
+  
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  gpu_platform_id = -1,
+  gpu_device_id = -1,
+  gpu_use_dp = TRUE,
+  num_gpu = 1)
+
+# Outcome
+ModelID = "Test_Model_1"
+colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
+Preds <- RemixAutoML::AutoLightGBMScoring(
+  TargetType = "regression",
+  ScoringData = TTestData,
+  ReturnShapValues = FALSE,
+  FeatureColumnNames = colnames[[1L]],
+  IDcols = c("IDcol_1","IDcol_2"),
+  EncodingMethod = "credibility",
+  FactorLevelsList = NULL,
+  TargetLevels = NULL,
+  ModelObject = NULL,
+  ModelPath = getwd(),
+  ModelID = "Test_Model_1",
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1)
+```
+
+</p>
+</details>
+
+<details><summary>AutoLightGBMClassifier() Scoring Example</summary>
+<p>
+
+```
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = TRUE,
+  MultiClass = FALSE)
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoLightGBMClassifier(
+  
+  # Multithreading
+  NThreads = parallel::detectCores(),
+  
+  # Metadata args
+  OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  NumOfParDepPlots = 3L,
+  EncodingMethod = "credibility",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = TRUE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = TRUE,
+  
+  # Data args
+  data = TTrainData,
+  TrainOnFull = FALSE,
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = "Weights",
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  CostMatrixWeights = c(1,0,0,1),
+  
+  # Grid parameters
+  GridTune = FALSE,
+  grid_eval_metric = "Utility",
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  PassInGrid = NULL,
+  
+  # Core parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+  input_model = NULL, # continue training a model that is stored to file
+  task = "train",
+  device_type = "CPU",
+  objective = 'binary',
+  metric = 'binary_logloss',
+  boosting = "gbdt",
+  LinearTree = FALSE,
+  Trees = 50L,
+  eta = NULL,
+  num_leaves = 31,
+  deterministic = TRUE,
+  
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  force_col_wise = FALSE,
+  force_row_wise = FALSE,
+  max_depth = 6,
+  min_data_in_leaf = 20,
+  min_sum_hessian_in_leaf = 0.001,
+  bagging_freq = 1.0,
+  bagging_fraction = 1.0,
+  feature_fraction = 1.0,
+  feature_fraction_bynode = 1.0,
+  lambda_l1 = 0.0,
+  lambda_l2 = 0.0,
+  extra_trees = FALSE,
+  early_stopping_round = 10,
+  first_metric_only = TRUE,
+  max_delta_step = 0.0,
+  linear_lambda = 0.0,
+  min_gain_to_split = 0,
+  drop_rate_dart = 0.10,
+  max_drop_dart = 50,
+  skip_drop_dart = 0.50,
+  uniform_drop_dart = FALSE,
+  top_rate_goss = FALSE,
+  other_rate_goss = FALSE,
+  monotone_constraints = NULL,
+  monotone_constraints_method = 'advanced',
+  monotone_penalty = 0.0,
+  forcedsplits_filename = NULL, # use for AutoStack option; .json file
+  refit_decay_rate = 0.90,
+  path_smooth = 0.0,
+  
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  max_bin = 255,
+  min_data_in_bin = 3,
+  data_random_seed = 1,
+  is_enable_sparse = TRUE,
+  enable_bundle = TRUE,
+  use_missing = TRUE,
+  zero_as_missing = FALSE,
+  two_round = FALSE,
+  
+  # Convert Parameters
+  convert_model = NULL,
+  convert_model_language = "cpp",
+  
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  boost_from_average = TRUE,
+  is_unbalance = FALSE,
+  scale_pos_weight = 1.0,
+  
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  is_provide_training_metric = TRUE,
+  eval_at = c(1,2,3,4,5),
+  
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  num_machines = 1,
+  
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  gpu_platform_id = -1,
+  gpu_device_id = -1,
+  gpu_use_dp = TRUE,
+  num_gpu = 1)
+
+# Outcome
+ModelID = "Test_Model_1"
+colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
+Preds <- RemixAutoML::AutoLightGBMScoring(
+  TargetType = "classification",
+  ScoringData = TTestData,
+  ReturnShapValues = FALSE,
+  FeatureColumnNames = colnames[[1L]],
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  EncodingMethod = "credibility",
+  FactorLevelsList = NULL,
+  TargetLevels = NULL,
+  ModelObject = NULL,
+  ModelPath = getwd(),
+  ModelID = "Test_Model_1",
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1)
+```
+
+</p>
+</details>
+
+<details><summary>AutoLightGBMMultiClasss() Scoring Example</summary>
+<p>
+
+```
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = TRUE)
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoLightGBMMultiClass(
+  
+  # GPU or CPU
+  NThreads = parallel::detectCores(),
+  
+  # Metadata args
+  OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  NumOfParDepPlots = 3L,
+  EncodingMethod = "credibility",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = TRUE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = TRUE,
+  
+  # Data args
+  data = TTrainData,
+  TrainOnFull = FALSE,
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1","IDcol_2","DateTime","Adrian")],
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = "Weights",
+  IDcols = c("IDcol_1","IDcol_2",'DateTime'),
+  CostMatrixWeights = c(1,0,0,1),
+  
+  # Grid parameters
+  GridTune = FALSE,
+  grid_eval_metric = "microauc",
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  PassInGrid = NULL,
+  
+  # Core parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+  input_model = NULL, # continue training a model that is stored to file
+  task = "train",
+  device_type = "CPU",
+  objective = 'multiclass',
+  multi_error_top_k = 1,
+  metric = 'multiclass_logloss',
+  boosting = "gbdt",
+  LinearTree = FALSE,
+  Trees = 50L,
+  eta = NULL,
+  num_leaves = 31,
+  deterministic = TRUE,
+  
+  # Learning Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+  force_col_wise = FALSE,
+  force_row_wise = FALSE,
+  max_depth = 6,
+  min_data_in_leaf = 20,
+  min_sum_hessian_in_leaf = 0.001,
+  bagging_freq = 1.0,
+  bagging_fraction = 1.0,
+  feature_fraction = 1.0,
+  feature_fraction_bynode = 1.0,
+  lambda_l1 = 0.0,
+  lambda_l2 = 0.0,
+  extra_trees = FALSE,
+  early_stopping_round = 10,
+  first_metric_only = TRUE,
+  max_delta_step = 0.0,
+  linear_lambda = 0.0,
+  min_gain_to_split = 0,
+  drop_rate_dart = 0.10,
+  max_drop_dart = 50,
+  skip_drop_dart = 0.50,
+  uniform_drop_dart = FALSE,
+  top_rate_goss = FALSE,
+  other_rate_goss = FALSE,
+  monotone_constraints = NULL,
+  monotone_constraints_method = 'advanced',
+  monotone_penalty = 0.0,
+  forcedsplits_filename = NULL, # use for AutoStack option; .json file
+  refit_decay_rate = 0.90,
+  path_smooth = 0.0,
+  
+  # IO Dataset Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+  max_bin = 255,
+  min_data_in_bin = 3,
+  data_random_seed = 1,
+  is_enable_sparse = TRUE,
+  enable_bundle = TRUE,
+  use_missing = TRUE,
+  zero_as_missing = FALSE,
+  two_round = FALSE,
+  
+  # Convert Parameters
+  convert_model = NULL,
+  convert_model_language = "cpp",
+  
+  # Objective Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+  boost_from_average = TRUE,
+  is_unbalance = FALSE,
+  scale_pos_weight = 1.0,
+  
+  # Metric Parameters (metric is in Core)
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+  is_provide_training_metric = TRUE,
+  eval_at = c(1,2,3,4,5),
+  
+  # Network Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+  num_machines = 1,
+  
+  # GPU Parameters
+  # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+  gpu_platform_id = -1,
+  gpu_device_id = -1,
+  gpu_use_dp = TRUE,
+  num_gpu = 1)
+
+# Outcome
+ModelID = "Test_Model_1"
+colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
+Preds <- RemixAutoML::AutoLightGBMScoring(
+  TargetType = "multiclass",
+  ScoringData = TTestData,
+  ReturnShapValues = FALSE,
+  FeatureColumnNames = colnames[[1L]],
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  EncodingMethod = "credibility",
+  FactorLevelsList = NULL,
+  TargetLevels = NULL,
+  ModelObject = NULL,
+  ModelPath = getwd(),
+  ModelID = "Test_Model_1",
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1)
+```
+
+</p>
+</details>
+
+<details><summary>AutoLightGBMHurdleModel() Scoring Example</summary>
+<p>
+
+```
+# Classify
+Classify <- TRUE
+
+# Get data
+if(Classify) {
+  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+} else {
+  data <- RemixAutoML::FakeDataGenerator(N = 100000, ZIP = 2)
+}
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoLightGBMHurdleModel(
+  
+  # Operationalization
+  ModelID = 'ModelTest',
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  NThreads = parallel::detectCores(),
+  
+  # Data related args
+  data = TTrainData,
+  ValidationData = VValidationData,
+  PrimaryDateColumn = "DateTime",
+  TestData = TTestData,
+  WeightsColumnName = NULL,
+  TrainOnFull = FALSE,
+  Buckets = if(Classify) 0L else c(0,2,3),
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
+  IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
+  DebugMode = TRUE,
+  
+  # Metadata args
+  EncodingMethod = "credibility",
+  Paths = getwd(),
+  MetaDataPaths = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit'),
+  ClassWeights = c(1,1),
+  SplitRatios = NULL,
+  NumOfParDepPlots = 10L,
+  
+  # Grid tuning setup
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = 'default',
+  MaxModelsInGrid = 1L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 60L*60L,
+  
+  # LightGBM parameters
+  task = list('classifier' = 'train', 'regression' = 'train'),
+  device_type = list('classifier' = 'CPU', 'regression' = 'CPU'),
+  objective = if(Classify) list('classifier' = 'binary', 'regression' = 'regression') else list('classifier' = 'multiclass', 'regression' = 'regression'),
+  metric = if(Classify) list('classifier' = 'binary_logloss', 'regression' = 'rmse') else list('classifier' = 'multi_logloss', 'regression' = 'rmse'),
+  boosting = list('classifier' = 'gbdt', 'regression' = 'gbdt'),
+  LinearTree = list('classifier' = FALSE, 'regression' = FALSE),
+  Trees = list('classifier' = 50L, 'regression' = 50L),
+  eta = list('classifier' = NULL, 'regression' = NULL),
+  num_leaves = list('classifier' = 31, 'regression' = 31),
+  deterministic = list('classifier' = TRUE, 'regression' = TRUE),
+  
+  # Learning Parameters
+  force_col_wise = list('classifier' = FALSE, 'regression' = FALSE),
+  force_row_wise = list('classifier' = FALSE, 'regression' = FALSE),
+  max_depth = list('classifier' = NULL, 'regression' = NULL),
+  min_data_in_leaf = list('classifier' = 20, 'regression' = 20),
+  min_sum_hessian_in_leaf = list('classifier' = 0.001, 'regression' = 0.001),
+  bagging_freq = list('classifier' = 0, 'regression' = 0),
+  bagging_fraction = list('classifier' = 1.0, 'regression' = 1.0),
+  feature_fraction = list('classifier' = 1.0, 'regression' = 1.0),
+  feature_fraction_bynode = list('classifier' = 1.0, 'regression' = 1.0),
+  extra_trees = list('classifier' = FALSE, 'regression' = FALSE),
+  early_stopping_round = list('classifier' = 10, 'regression' = 10),
+  first_metric_only = list('classifier' = TRUE, 'regression' = TRUE),
+  max_delta_step = list('classifier' = 0.0, 'regression' = 0.0),
+  lambda_l1 = list('classifier' = 0.0, 'regression' = 0.0),
+  lambda_l2 = list('classifier' = 0.0, 'regression' = 0.0),
+  linear_lambda = list('classifier' = 0.0, 'regression' = 0.0),
+  min_gain_to_split = list('classifier' = 0, 'regression' = 0),
+  drop_rate_dart = list('classifier' = 0.10, 'regression' = 0.10),
+  max_drop_dart = list('classifier' = 50, 'regression' = 50),
+  skip_drop_dart = list('classifier' = 0.50, 'regression' = 0.50),
+  uniform_drop_dart = list('classifier' = FALSE, 'regression' = FALSE),
+  top_rate_goss = list('classifier' = FALSE, 'regression' = FALSE),
+  other_rate_goss = list('classifier' = FALSE, 'regression' = FALSE),
+  monotone_constraints = list('classifier' = NULL, 'regression' = NULL),
+  monotone_constraints_method = list('classifier' = 'advanced', 'regression' = 'advanced'),
+  monotone_penalty = list('classifier' = 0.0, 'regression' = 0.0),
+  forcedsplits_filename = list('classifier' = NULL, 'regression' = NULL),
+  refit_decay_rate = list('classifier' = 0.90, 'regression' = 0.90),
+  path_smooth = list('classifier' = 0.0, 'regression' = 0.0),
+  
+  # IO Dataset Parameters
+  max_bin = list('classifier' = 255, 'regression' = 255),
+  min_data_in_bin = list('classifier' = 3, 'regression' = 3),
+  data_random_seed = list('classifier' = 1, 'regression' = 1),
+  is_enable_sparse = list('classifier' = TRUE, 'regression' = TRUE),
+  enable_bundle = list('classifier' = TRUE, 'regression' = TRUE),
+  use_missing = list('classifier' = TRUE, 'regression' = TRUE),
+  zero_as_missing = list('classifier' = FALSE, 'regression' = FALSE),
+  two_round = list('classifier' = FALSE, 'regression' = FALSE),
+  
+  # Convert Parameters
+  convert_model = list('classifier' = NULL, 'regression' = NULL),
+  convert_model_language = list('classifier' = "cpp", 'regression' = "cpp"),
+  
+  # Objective Parameters
+  boost_from_average = list('classifier' = TRUE, 'regression' = TRUE),
+  is_unbalance = list('classifier' = FALSE, 'regression' = FALSE),
+  scale_pos_weight = list('classifier' = 1.0, 'regression' = 1.0),
+  
+  # Metric Parameters (metric is in Core)
+  is_provide_training_metric = list('classifier' = TRUE, 'regression' = TRUE),
+  eval_at = list('classifier' = c(1,2,3,4,5), 'regression' = c(1,2,3,4,5)),
+  
+  # Network Parameters
+  num_machines = list('classifier' = 1, 'regression' = 1),
+  
+  # GPU Parameters
+  gpu_platform_id = list('classifier' = -1, 'regression' = -1),
+  gpu_device_id = list('classifier' = -1, 'regression' = -1),
+  gpu_use_dp = list('classifier' = TRUE, 'regression' = TRUE),
+  num_gpu = list('classifier' = 1, 'regression' = 1))
+
+# Remove Target Variable
+TTrainData[, c("Target_Buckets", "Adrian") := NULL]
+
+# Score LightGBM Hurdle Model
+Output <- RemixAutoML::AutoLightGBMHurdleModelScoring(
+  TestData = TTrainData,
+  Path = NULL,
+  ModelID = "ModelTest",
+  ModelList = TestModel$ModelList,
+  ArgsList = TestModel$ArgsList,
+  Threshold = NULL)
+```
+
+</p>
+</details>
+
+</p>
+</details>
+
+
+<details><summary>AutoXGBoost__() Examples</summary>
+
+<details><summary>AutoXGBoostRegression() Scoring Example</summary>
+<p>
+
+```
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  FactorCount = 3,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Copy data
+data1 <- data.table::copy(data)
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data1,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoXGBoostRegression(
+  
+  # GPU or CPU
+  TreeMethod = "hist",
+  NThreads = parallel::detectCores(),
+  LossFunction = 'reg:squarederror',
+  
+  # Metadata arguments
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  EncodingMethod = "credibility",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = TRUE,
+  DebugMode = TRUE,
+  
+  # Data arguments
+  data = TTrainData,
+  TrainOnFull = FALSE,
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  WeightsColumnName = "Weights",
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  TransformNumericColumns = NULL,
+  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  
+  # Model evaluation
+  eval_metric = "rmse",
+  NumOfParDepPlots = 3L,
+  
+  # Grid tuning arguments
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  grid_eval_metric = "r2",
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
+  SaveInfoToPDF = TRUE,
+  
+  # ML args
+  Trees = 50L,
+  eta = 0.05,
+  max_depth = 4L,
+  min_child_weight = 1.0,
+  subsample = 0.55,
+  colsample_bytree = 0.55)
+
+# Score model
+Preds <- RemixAutoML::AutoXGBoostScoring(
+  TargetType = "regression",
+  ScoringData = data,
+  ReturnShapValues = FALSE,
+  FeatureColumnNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  EncodingMethod = "credibility",
+  FactorLevelsList = TestModel$FactorLevelsList,
+  TargetLevels = NULL,
+  ModelObject = TestModel$Model,
+  ModelPath = "home",
+  ModelID = "ModelTest",
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1)
+```
+
+</p>
+</details>
+
+<details><summary>AutoXGBoostClassifier() Scoring Example</summary>
+<p>
+
+```
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = TRUE,
+  MultiClass = FALSE)
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoXGBoostClassifier(
+  
+  # GPU or CPU
+  TreeMethod = "hist",
+  NThreads = parallel::detectCores(),
+  
+  # Metadata arguments
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  EncodingMethod = "credibility",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = TRUE,
+  SaveInfoToPDF = TRUE,
+  DebugMode = TRUE,
+  
+  # Data arguments
+  data = TTrainData,
+  TrainOnFull = FALSE,
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  WeightsColumnName = "Weights",
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  
+  # Model evaluation
+  LossFunction = 'reg:logistic',
+  eval_metric = "auc",
+  grid_eval_metric = "MCC",
+  CostMatrixWeights = c(1,0,0,1),
+  NumOfParDepPlots = 3L,
+  
+  # Grid tuning arguments
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
+  
+  # ML Args
+  Trees = 50L,
+  eta = 0.05,
+  max_depth = 4L,
+  min_child_weight = 1.0,
+  subsample = 0.55,
+  colsample_bytree = 0.55)
+
+# Score model
+Preds <- RemixAutoML::AutoXGBoostScoring(
+  TargetType = "classifier",
+  ScoringData = data,
+  ReturnShapValues = FALSE,
+  FeatureColumnNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  EncodingMethod = "credibility",
+  FactorLevelsList = TestModel$FactorLevelsList,
+  TargetLevels = NULL,
+  ModelObject = TestModel$Model,
+  ModelPath = "home",
+  ModelID = "ModelTest",
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1)
+```
+
+</p>
+</details>
+
+<details><summary>AutoXGBoostMultiClasss() Scoring Example</summary>
+<p>
+
+```
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = FALSE,
+  MultiClass = TRUE)
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoXGBoostMultiClass(
+  
+  # GPU or CPU
+  TreeMethod = "hist",
+  NThreads = parallel::detectCores(),
+  
+  # Metadata arguments
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  model_path = normalizePath("./"),
+  metadata_path = normalizePath("./"),
+  ModelID = "Test_Model_1",
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  EncodingMethod = "credibility",
+  DebugMode = TRUE,
+  
+  # Data arguments
+  data = TTrainData,
+  TrainOnFull = FALSE,
+  ValidationData = VValidationData,
+  TestData = TTestData,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  
+  # Model evaluation
+  eval_metric = "merror",
+  LossFunction = 'multi:softprob',
+  grid_eval_metric = "accuracy",
+  NumOfParDepPlots = 3L,
+  
+  # Grid tuning arguments
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = "default",
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
+  
+  # ML Args
+  Trees = 50L,
+  eta = 0.05,
+  max_depth = 4L,
+  min_child_weight = 1.0,
+  subsample = 0.55,
+  colsample_bytree = 0.55)
+
+# Score model
+Preds <- RemixAutoML::AutoXGBoostScoring(
+  TargetType = "multiclass",
+  ScoringData = data,
+  ReturnShapValues = FALSE,
+  FeatureColumnNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  IDcols = c("IDcol_1","IDcol_2","DateTime"),
+  EncodingMethod = "credibility",
+  FactorLevelsList = TestModel$FactorLevelsList,
+  TargetLevels = TestModel$TargetLevels,
+  ModelObject = TestModel$Model,
+  ModelPath = NULL,
+  ModelID = "ModelTest",
+  ReturnFeatures = TRUE,
+  TransformNumeric = FALSE,
+  BackTransNumeric = FALSE,
+  TargetColumnName = NULL,
+  TransformationObject = NULL,
+  TransID = NULL,
+  TransPath = NULL,
+  MDP_Impute = TRUE,
+  MDP_CharToFactor = TRUE,
+  MDP_RemoveDates = TRUE,
+  MDP_MissFactor = "0",
+  MDP_MissNum = -1)
+```
+
+</p>
+</details>
+
+<details><summary>AutoXGBoostHurdleModel() Scoring Example</summary>
+<p>
+
+```
+# Classify
+Classify <- TRUE
+
+# Get data
+if(Classify) {
+  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+} else {
+  data <- RemixAutoML::FakeDataGenerator(N = 100000, ZIP = 2)
+}
+
+# Partition Data
+Sets <- RemixAutoML::AutoDataPartition(
+  data = data,
+  NumDataSets = 3,
+  Ratios = c(0.7,0.2,0.1),
+  PartitionType = "random",
+  StratifyColumnNames = "Adrian",
+  TimeColumnName = NULL)
+TTrainData <- Sets$TrainData
+VValidationData <- Sets$ValidationData
+TTestData <- Sets$TestData
+rm(Sets)
+
+# Run function
+TestModel <- RemixAutoML::AutoXGBoostHurdleModel(
+  
+  # Operationalization
+  ModelID = 'ModelTest',
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  NThreads = parallel::detectCores(),
+  
+  # Data related args
+  data = TTrainData,
+  ValidationData = VValidationData,
+  PrimaryDateColumn = "DateTime",
+  TestData = TTestData,
+  WeightsColumnName = NULL,
+  TrainOnFull = FALSE,
+  Buckets = if(Classify) 0L else c(0,2,3),
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
+  IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
+  DebugMode = FALSE,
+  
+  # Metadata args
+  EncodingMethod = "credibility",
+  Paths = normalizePath('./'),
+  MetaDataPaths = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit'),
+  ClassWeights = c(1,1),
+  SplitRatios = NULL,
+  NumOfParDepPlots = 10L,
+  
+  # Grid tuning setup
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  BaselineComparison = 'default',
+  MaxModelsInGrid = 1L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 60L*60L,
+  
+  # XGBoost parameters
+  TreeMethod = "hist",
+  Trees = list("classifier" = 50, "regression" = 50),
+  eta = list("classifier" = 0.05, "regression" = 0.05),
+  max_depth = list("classifier" = 4L, "regression" = 4L),
+  min_child_weight = list("classifier" = 1.0, "regression" = 1.0),
+  subsample = list("classifier" = 0.55, "regression" = 0.55),
+  colsample_bytree = list("classifier" = 0.55, "regression" = 0.55))
+
+# Remove Target Variable
+TTrainData[, c("Target_Buckets", "Adrian") := NULL]
+
+# Score XGBoost Hurdle Model
+Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
+  TestData = TTrainData,
+  Path = NULL,
+  ModelID = "ModelTest",
+  ModelList = TestModel$ModelList,
+  ArgsList = TestModel$ArgsList,
+  Threshold = NULL)
+```
+
+</p>
+</details>
+
+</p>
+</details>
+
 
 
 </p>

@@ -103,9 +103,7 @@ for(run in seq_len(LightGBM_QA[,.N])) {
     task = list('classifier' = 'train', 'regression' = 'train'),
     device_type = list('classifier' = 'CPU', 'regression' = 'CPU'),
     objective = if(Classify) list('classifier' = 'binary', 'regression' = 'regression') else list('classifier' = 'multiclass', 'regression' = 'regression'),
-    metric = if(Classify
-
-                ) list('classifier' = 'binary_logloss', 'regression' = 'rmse') else list('classifier' = 'multi_logloss', 'regression' = 'rmse'),
+    metric = if(Classify) list('classifier' = 'binary_logloss', 'regression' = 'rmse') else list('classifier' = 'multi_logloss', 'regression' = 'rmse'),
     boosting = list('classifier' = 'gbdt', 'regression' = 'gbdt'),
     LinearTree = list('classifier' = FALSE, 'regression' = FALSE),
     Trees = list('classifier' = 50L, 'regression' = 50L),
