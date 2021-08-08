@@ -126,7 +126,7 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Documentation.PNG" align="center" width="425" />
+<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Documentation.PNG" align="center" width="725" />
 
 ## Feature Engineering <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/FeatureEngineeringMenu.PNG" align="right" width="80" />
 
