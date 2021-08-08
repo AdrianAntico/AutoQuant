@@ -7731,21 +7731,6 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 </details>
 
 
-## Unsupervised Learning <img src="Images/UnsupervisedLearningImage.png" align="right" width="80" />
-<details><summary>Expand to view content</summary>
-<p>
- 
-<code>ResidualOutliers()</code> Generate residual outliers from time series modeling. (Cross with Feature Engineering) Utilize tsoutliers to indicate outliers within a time series data set
-
-<code>GenTSAnomVars()</code> generates time series anomaly variables. (Cross with Feature Engineering) Create indicator variables (high, low) along with cumulative anomaly rates (high, low) based on control limits methodology over a max of two grouping variables and a date variable (effectively a rolling GLM).
-
-<img src="Images/ResidualOutliers_MultiplotImage.png" align="center" width="400" />
-
-
-</p>
-</details>
-
-
 ## Database Management <img src="Images/DataBase.PNG" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
