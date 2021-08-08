@@ -3857,6 +3857,7 @@ for(run in seq_len(LightGBM_QA[,.N])) {
 
 
 <details><summary>AutoCatBoost__() Examples</summary>
+<p>
 
 <details><summary>AutoCatBoostRegression() Scoring Example</summary>
 <p>
@@ -4421,6 +4422,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModelScoring(
 
 
 <details><summary>AutoLightGBM__() Examples</summary>
+<p>
 
 <details><summary>AutoLightGBMRegression() Scoring Example</summary>
 <p>
@@ -5139,6 +5141,7 @@ Output <- RemixAutoML::AutoLightGBMHurdleModelScoring(
 
 
 <details><summary>AutoXGBoost__() Examples</summary>
+<p>
 
 <details><summary>AutoXGBoostRegression() Scoring Example</summary>
 <p>
