@@ -104,43 +104,6 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-## Common Workflows
-
-<details><summary>Expand to view content</summary>
-<p>
-
-### Supervised Learning
-<details><summary>Expand to view content</summary>
-<p>
- 
-1. Pull in data from your data warehouse (or from wherever) and clean it up
-2. Run all the applicable feature engineering functions (see the README Feature Engineering)
-3. Partition your data with <code>AutoDataPartition()</code> You can create any number of data sets, supply stratification variables, and you can choose between 'random' splits, 'time' splits, and 'timeseries' splits. The distinction between 'time' and 'timeseries' splits is that 'time' should be used when you aren't directly working with panel data whereas the 'timeseries' split is for panel data (meaning that the number of records for each combination of group variables are identical). 'time' will first sort you data by the date column and then sort by stratification variables, if you provide some, but there is a risk that some group levels won't make it into all of your data sets.
-4. Run one of the supervised learning algorithms
-5. Investigate model performance contained in the output object returned by those functions. You will be able to look at model calibration plots or box plots, ROC plots, partial depence calibration plots or boxplots, variable importance, interaction importance, shap values, model metrics by threshold, and model metrics by decile.
-6. Pick your model of choice and kick off an extended grid tuning and figure out something else to do that week (or run it over the weekend). 
-7. Compare your results with your coworkers results and see what's working and what isn't. Then you can either move on or continue exploring. Bargain with your boss to get more time so you can explore and learn new things.
-
-</p>
-</details>
-
-### Forecasting
-
-<details><summary>Expand to view content</summary>
-<p>
- 
-Supply a data.table to run the functions below:
-1. For single series check out <code>AutoBanditSarima()</code>, <code>AutoBanditNNet()</code>, <code>AutoTBATS()</code>, 
-<code>AutoETS()</code>, <code>AutoArfima()</code>, or <code>AutoTS()</code> (older function; no longer developing)
-2. For panel data OR single series check out <code>AutoCatBoostCARMA()</code>, <code>AutoXGBoostCARMA()</code>, <code>AutoH2OCARMA()</code>,<code>AutoCatBoostHurdleCARMA</code> or <code>AutoCatBoostVectorCARMA</code> or build a loop and run functions from (1)
-3. If you have to do any funnel forecasting, check out AutoCatBoostFunnelCARMA(), AutoLightGBMFunnelCARMA(), or AutoXGBoostFunnelCARMA() for training and then you can run the corresponding Auto__FunnelCARMAScoring() function.
-
-</p>
-</details>
-
-</p>
-</details>
-
 ## RemixAutoML Blogs
 
 <details><summary>Expand to view content</summary>
