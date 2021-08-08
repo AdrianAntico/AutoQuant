@@ -5583,7 +5583,42 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 <details><summary>Expand to view content</summary>
 <p>
 
+<details><summary>AutoShapeShap() Example</summary>
+<p>
+
+```
+ShapTable <- AutoShapeShap(
+  ScoringData = TestData,
+  Threads = max(1L, parallel::detectCores()-2L),
+  DateColumnName = "Date",
+  ByVariableName = "GroupVariable")
+```
+
+</p>
+</details>
+
+<details><summary>SingleRowShapeShap() Example</summary>
+<p>
+
+```
+ShapTable <- SingleRowShapeShap(
+  ShapData = SinglePrediction, 
+  EntityID = "UserID", 
+  DateColumnName = "DateTime")
+```
+
+</p>
+</details>
+
+
+SingleRowShapeShap <- function(ShapData = NULL, EntityID = NULL, DateColumnName = NULL)
+
+<details><summary>Functions Description</summary>
+<p>
+
 <code>AutoShapeShap()</code> will take your CatBoost or XGBoost TestData or TrainData returned from one of the supervised learning functions and build out a table. The table will have columns, 'Date', 'EntityID', 'Variable', 'AbsShapValue', 'ShapValue', 'CurrentValue', 'DiffValue', 'PreviousValue' which can be used to analyze variable importance for any slice of the data. A few interesting areas to investigate include varible importance by records associated with a classifier label of 1 vs 0, for different grouping levels, and for different time slices. Further, if you analyze the ShapeValue column you will get a directional variable importance instead of a magnitute importance. You can further analyze the data by looking at standard deviation of ShapValues or any other aggregations method of interest. The function runs row by row so I set it up to run in parallel. You can specify the number of cores to utilize in case you have other processes running on your computer. The function calls the SingleRowShapeShap() function repeatedly. If you want to return information from the Shap Table for a single record you can run SingleRowShapeShap().
+
+<code>SingleRowShapeShap()</code> Generate a table of shap values, current value, and diff values if diff variables are present, for a single predicted value.
  
 <code>RemixClassificationMetrics()</code> will return all confusion matrix metrics across all possible thresholds (seq(0.01,0.99,0.01) for any Remix Auto_Classification() model. Cost sensitive thresholds are also returned.
 
@@ -5602,6 +5637,11 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 <code>threshOptim()</code> is great for situations with asymmetric costs across the confusion matrix. Generate a cost-sensitive optimized threshold for classification models. Just supply the costs for false positives and false negatives (can supply costs for all four outcomes too) and the function will return the optimal threshold for maximizing "utility". 
 
 <code>RedYellowGreen()</code> computes optimal thresholds for binary classification models where "don't classify" is an option. Consider a health care binary classification model that predicts whether or not a disease is present. This is certainly a case for threshOptim since the costs of false positives and false negatives can vary by a large margin. However, there is always the potential to run further analysis. The RedYellowGreen() function can compute two thresholds if you can supply a cost of "further analysis". Predicted values < the lower threshold are confidently classified as a negative case and predicted values > the upper threshold are confidently classified as a postive case. Predicted values in between the lower and upper thresholds are cases that should require further analysis.
+
+</p>
+</details>
+
+
 
 </p>
 </details>
