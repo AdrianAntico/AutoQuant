@@ -5611,8 +5611,6 @@ ShapTable <- SingleRowShapeShap(
 </details>
 
 
-SingleRowShapeShap <- function(ShapData = NULL, EntityID = NULL, DateColumnName = NULL)
-
 <details><summary>Functions Description</summary>
 <p>
 
