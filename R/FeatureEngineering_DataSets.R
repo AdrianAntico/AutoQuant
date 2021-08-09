@@ -274,30 +274,31 @@ ModelDataPrep <- function(data,
     for(col in x) if(any(class(data[[col]]) %chin% "IDate")) data.table::set(data, j = col, value = as.Date(data[[col]]))
   }
 
-  # Turn factor columns into character----
+  # Turn factor columns into character ----
   if(FactorToChar) for(col in x) if(is.factor(data[[col]])) data.table::set(data, j = col, value = as.character(data[[col]]))
 
-  # Turn integers columns into numeric----
+  # Turn integers columns into numeric ----
   if(IntToNumeric) for(col in x) if(is.integer(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
 
-  # Turn logical columns into numeric----
-  if(IntToNumeric & !LogicalToBinary) LogicalToBinary <- TRUE # backwards compatability
+  # Turn logical columns into numeric ----
+  if(IntToNumeric && !LogicalToBinary) LogicalToBinary <- TRUE # backwards compatability
   if(LogicalToBinary) for(col in x) if(is.logical(data[[col]])) data.table::set(data, j = col, value = as.numeric(data[[col]]))
 
-  # Impute missing values----
+  # Impute missing values ----
   if(Impute) {
-    for(col in x) {
+    numcols <- names(data)[which(sapply(data, is.numeric))]
+    xx <- setdiff(names(data), numcols)
+    for(col in xx) {
       if(is.factor(data[[col]])) {
         data.table::set(data, which(!(data[[col]] %in% levels(data[[col]]))), col, MissFactor)
       } else if(is.character(data[[col]])) {
         data.table::set(data, which(is.na(data[[col]])), col, MissFactor)
-      } else if(is.numeric(data[[col]]) | is.integer(data[[col]])) {
-        data.table::set(data, which(is.na(data[[col]])), col, MissNum)
       }
     }
+    if(!identical(character(0), numcols)) data.table::setnafill(x = data, cols = numcols, type = "const", fill = MissNum)
   }
 
-  # Remove Dates----
+  # Remove Dates ----
   if(RemoveDates || DateToChar) {
     for(col in rev(x)) {
       if(!is.character(data[[col]]) && !is.factor(data[[col]]) && !is.numeric(data[[col]]) && !is.integer(data[[col]]) && !is.logical(data[[col]]) && !is.complex(data[[col]])) {
@@ -310,7 +311,7 @@ ModelDataPrep <- function(data,
     }
   }
 
-  # Return data----
+  # Return data ----
   return(data)
 }
 
