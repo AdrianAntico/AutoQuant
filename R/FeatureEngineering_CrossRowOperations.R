@@ -514,15 +514,15 @@ AutoDiffLagN <- function(data,
         data <- data[!is.na(get(paste0("Diff_", NLag2, "_", DiffVariables[[1L]])))]
       } else if(!is.null(DiffDateVariables)) {
         data <- data[!is.na(get(paste0("Diff_", NLag2, "_", DiffDateVariables[[1L]])))]
-      } else {
+      } else if(!is.null(DiffGroupVariables)) {
         data <- data[!is.na(get(paste0("Diff_", NLag2, "_", DiffGroupVariables[[1L]])))]
       }
     } else {
       if(!is.null(DiffVariables)) {
         data <- data[!is.na(get(paste0("Diff_", NLag1,"-", NLag2, "_", DiffVariables[[1L]])))]
       } else if(!is.null(DiffDateVariables)) {
-        data <- data[!is.na(get(paste0("Diff_", NLag1,"-", NLag2, "_", DiffDateVariables[[1L]])))]
-      } else {
+        if(!is.null(DiffDateVariables)) data <- data[!is.na(get(paste0("Diff_", NLag1,"-", NLag2, "_", DiffDateVariables[[1L]])))]
+      } else if(!is.null(DiffGroupVariables)) {
         data <- data[!is.na(get(paste0("Diff_", NLag1,"-", NLag2, "_", DiffGroupVariables[[1L]])))]
       }
     }
