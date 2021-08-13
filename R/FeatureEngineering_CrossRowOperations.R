@@ -165,8 +165,8 @@ AutoLagRollMode <- function(data,
       if(!all(ModePeriods %in% c(0,1))) {
         tempperiods <- ModePeriods[ModePeriods > 1L]
         Mode_Names <- c()
-        g <- names(data)[which(sapply(data, is.factor))]
-        if(!identical(integer(0), g)) {
+        g <- unique(c(names(data)[which(sapply(data, is.factor))], names(data)[which(sapply(data, is.character))]))
+        if(!identical(character(0), g)) {
           cats <- g[which(g %chin% Targets)]
           counter <- 1L
           temp_targets <- c()
@@ -183,7 +183,7 @@ AutoLagRollMode <- function(data,
         data[, paste0(Mode_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = Mode), by = c(GroupingVars[i]), .SDcols = c(temp_targets)]
 
         # Convert back to catgegorical ----
-        if(!identical(integer(0), g)) {
+        if(!identical(character(0), g)) {
           for(t in seq_along(Targets)) {
             for(j in seq_along(tempperiods)) {
               temp <- data[, .N, by = c(Targets[t], temp_targets[t])][, N := NULL]
