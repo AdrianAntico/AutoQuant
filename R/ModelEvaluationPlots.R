@@ -208,7 +208,9 @@ ParDepCalPlots <- function(data,
       preds2[, Time := lubridate::floor_date(get(DateColumn), unit = DateAgg_3D)]
       temp <- preds2[, rank := round(data.table::frank(get(IndepVar)) * (1/PercentileBucket) /.N) * PercentileBucket]
       temp <- temp[, lapply(.SD, noquote(Function)), by = c("rank", "Time")][order(rank, Time)]
+      scene = list(camera = list(eye = list(x = -1, y = -2, z = 0.25)))
       plot <- plotly::plot_ly(x = temp$Time, y = temp$Predict, z = temp$Independent_Variable1, type = "scatter3d", mode = "markers")
+      plot <- plotly::layout(p = plot, title = "3D Scatter plot", scene = scene)
     }
   } else if(GraphType == "boxplot") {
     keep <- c("rank", TargetColName, IndepVar)
