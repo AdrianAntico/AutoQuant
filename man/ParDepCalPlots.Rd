@@ -12,7 +12,9 @@ ParDepCalPlots(
   GraphType = c("calibration"),
   PercentileBucket = 0.05,
   FactLevels = 10,
-  Function = function(x) mean(x, na.rm = TRUE)
+  Function = function(x) mean(x, na.rm = TRUE),
+  DateColumn = NULL,
+  DateAgg_3D = NULL
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ ParDepCalPlots(
 \item{FactLevels}{The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")}
 
 \item{Function}{Supply the function you wish to use for aggregation.}
+
+\item{DateColumn}{Add date column for 3D scatterplot}
+
+\item{DateAgg_3D}{Aggregate date column by 'day', 'week', 'month', 'quarter', 'year'}
 }
 \value{
 Partial dependence calibration plot or boxplot
@@ -54,7 +60,9 @@ Plot <- RemixAutoML::ParDepCalPlots(
   GraphType = "calibration",
   PercentileBucket = 0.20,
   FactLevels = 10,
-  Function = function(x) mean(x, na.rm = TRUE))
+  Function = function(x) mean(x, na.rm = TRUE),
+  DateColumn = NULL,
+  DateAgg_3D = NULL)
 }
 }
 \seealso{

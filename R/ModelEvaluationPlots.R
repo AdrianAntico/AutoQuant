@@ -108,6 +108,8 @@ EvalPlot <- function(data,
 #' @param PercentileBucket Number of buckets to partition the space on (0,1) for evaluation
 #' @param FactLevels The number of levels to show on the chart (1. Levels are chosen based on frequency; 2. all other levels grouped and labeled as "Other")
 #' @param Function Supply the function you wish to use for aggregation.
+#' @param DateColumn Add date column for 3D scatterplot
+#' @param DateAgg_3D Aggregate date column by 'day', 'week', 'month', 'quarter', 'year'
 #' @return Partial dependence calibration plot or boxplot
 #' @examples
 #' \dontrun{
@@ -125,7 +127,9 @@ EvalPlot <- function(data,
 #'   GraphType = "calibration",
 #'   PercentileBucket = 0.20,
 #'   FactLevels = 10,
-#'   Function = function(x) mean(x, na.rm = TRUE))
+#'   Function = function(x) mean(x, na.rm = TRUE),
+#'   DateColumn = NULL,
+#'   DateAgg_3D = NULL)
 #' }
 #' @export
 ParDepCalPlots <- function(data,
@@ -135,7 +139,9 @@ ParDepCalPlots <- function(data,
                            GraphType = c("calibration"),
                            PercentileBucket = 0.05,
                            FactLevels = 10,
-                           Function = function(x) mean(x, na.rm = TRUE)) {
+                           Function = function(x) mean(x, na.rm = TRUE),
+                           DateColumn = NULL,
+                           DateAgg_3D = NULL) {
 
   # Turn off ggplot2 warnings ----
   options(warn = -1L)
@@ -144,10 +150,13 @@ ParDepCalPlots <- function(data,
   if(data[,.N] > 1000000) data <- data[order(runif(.N))][seq_len(1000000)]
 
   # Build buckets by independent variable of choice ----
-  preds2 <- data[, .SD, .SDcols = c(PredictionColName, TargetColName, IndepVar)]
-
-  # Structure data----
-  data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
+  if(is.null(DateAgg_3D) || is.null(DateColumn)) {
+    preds2 <- data[, .SD, .SDcols = c(PredictionColName, TargetColName, IndepVar)]
+    data.table::setcolorder(data, c(PredictionColName, TargetColName, IndepVar))
+  } else {
+    preds2 <- data[, .SD, .SDcols = c(PredictionColName, TargetColName, IndepVar, DateColumn)]
+    data.table::setcolorder(data, c(DateColumn, PredictionColName, TargetColName, IndepVar))
+  }
 
   # If actual is in factor form, convert to numeric ----
   if(!is.numeric(preds2[[TargetColName]])) {
@@ -177,24 +186,30 @@ ParDepCalPlots <- function(data,
 
   # Build plots ----
   if(GraphType == "calibration") {
-    preds2 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
-    if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
-    plot <- eval(
-      ggplot2::ggplot(preds2, ggplot2::aes(x = preds2[[IndepVar]])) +
-        ggplot2::geom_line(ggplot2::aes(y = preds2[[PredictionColName]], color = "Predicted")) +
-        ggplot2::geom_line(ggplot2::aes(y = preds2[[TargetColName]], color = "Actuals")) +
-        ggplot2::ylab(eval(TargetColName)) +
-        ggplot2::xlab(IndepVar) +
-        ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
-        ChartTheme(Size = 13) +
-        ggplot2::labs(
-          title = "Partial Dependence Calibration Plot",
-          subtitle = paste0("black line -> mean(", TargetColName,"); purple lines -> 10th-%tile, mean, 90th-%tile")) +
-        ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
-        ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "purple") +
-        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple") +
-        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple"))
-
+    if(is.null(DateColumn) || is.null(DateAgg_3D)) {
+      if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
+      preds2 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
+      plot <- eval(
+        ggplot2::ggplot(preds2, ggplot2::aes(x = preds2[[IndepVar]])) +
+          ggplot2::geom_line(ggplot2::aes(y = preds2[[PredictionColName]], color = "Predicted")) +
+          ggplot2::geom_line(ggplot2::aes(y = preds2[[TargetColName]], color = "Actuals")) +
+          ggplot2::ylab(eval(TargetColName)) +
+          ggplot2::xlab(IndepVar) +
+          ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
+          ChartTheme(Size = 13) +
+          ggplot2::labs(
+            title = "Partial Dependence Calibration Plot",
+            subtitle = paste0("black line -> mean(", TargetColName,"); purple lines -> 10th-%tile, mean, 90th-%tile")) +
+          ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
+          ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "purple") +
+          ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple") +
+          ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple"))
+    } else {
+      preds2[, Time := lubridate::floor_date(get(DateColumn), unit = DateAgg_3D)]
+      temp <- preds2[, rank := round(data.table::frank(get(IndepVar)) * (1/PercentileBucket) /.N) * PercentileBucket]
+      temp <- temp[, lapply(.SD, noquote(Function)), by = c("rank", "Time")][order(rank, Time)]
+      plot <- plotly::plot_ly(x = temp$Time, y = temp$Predict, z = temp$Independent_Variable1, type = "scatter3d", mode = "markers")
+    }
   } else if(GraphType == "boxplot") {
     keep <- c("rank", TargetColName, IndepVar)
     actual <- preds2[, ..keep]
