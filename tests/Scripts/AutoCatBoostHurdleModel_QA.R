@@ -13,7 +13,7 @@ CatBoost_QA <- CatBoost_QA[!(PartitionInFunction & TOF)]
 CatBoost_QA[, RunNumber := seq_len(.N)]
 
 # Path File
-Path <- "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV"
+Path <- "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data"
 
 #       TOF Classification TaskType Success PartitionInFunction RunNumber
 # 1:   TRUE           TRUE      CPU Failure               FALSE         1  success

@@ -148,7 +148,7 @@ for(run in seq_len(CatBoost_QA_Results_Classifier[,.N])) {
   if(!is.null(TestModel)) CatBoost_QA_Results_Classifier[run, Success := "Success"]
   TestModel <- NULL
   gc(); Sys.sleep(5)
-  data.table::fwrite(CatBoost_QA_Results_Classifier, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoCatBoostClassifier_QA.csv")
+  data.table::fwrite(CatBoost_QA_Results_Classifier, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Date/AutoCatBoostClassifier_QA.csv")
 }
 
 # Defaults ----
@@ -339,15 +339,15 @@ for(run in seq_len(CatBoost_QA_Results_Classifier[,.N])) {
 # EvalMetric.=NULL
 
 # Data Conversion ----
-CatFeatures.=CatFeatures
-dataTrain.=dataTrain
-dataTest.=dataTest
-TestData.=TestData
-TrainTarget.=TrainTarget
-TestTarget.=TestTarget
-FinalTestTarget.=FinalTestTarget
-TrainOnFull.=TrainOnFull
-Weights. = WeightsColumnName
+# CatFeatures.=CatFeatures
+# dataTrain.=dataTrain
+# dataTest.=dataTest
+# TestData.=TestData
+# TrainTarget.=TrainTarget
+# TestTarget.=TestTarget
+# FinalTestTarget.=FinalTestTarget
+# TrainOnFull.=TrainOnFull
+# Weights. = WeightsColumnName
 
 # Catboost final args ----
 # ModelType="classification"

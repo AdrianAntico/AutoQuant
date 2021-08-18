@@ -110,7 +110,7 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 
   # Outcome
   if(!is.null(TestModel)) XGBoost_QA[run, Success := "Success"]
-  data.table::fwrite(XGBoost_QA, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoXGBoostHurdleModel_QA.csv")
+  data.table::fwrite(XGBoost_QA, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoXGBoostHurdleModel_QA.csv")
 
   # Remove Target Variable
   TTrainData[, c("Target_Buckets", "Adrian") := NULL]

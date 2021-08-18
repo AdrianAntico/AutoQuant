@@ -230,7 +230,7 @@ for(run in seq_len(LightGBM_QA_Results_Classifier[,.N])) {
   }
   TestModel <- NULL
   Sys.sleep(5)
-  data.table::fwrite(LightGBM_QA_Results_Classifier, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoLightGBMClassifier_QA.csv")
+  data.table::fwrite(LightGBM_QA_Results_Classifier, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoLightGBMClassifier_QA.csv")
 }
 
 # Main Code ----

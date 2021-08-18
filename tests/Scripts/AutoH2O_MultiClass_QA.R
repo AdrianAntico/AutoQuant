@@ -74,7 +74,7 @@ for(run in 1L:3L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoH2OMultiClass_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/QA_CSV/AutoH2OMultiClass_QA.csv")
   Sys.sleep(5)
 }
 
@@ -244,81 +244,81 @@ for(run in 4L:6L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/AutoH2OMultiClass_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OMultiClass_QA.csv")
   Sys.sleep(5)
 }
 
 
 # Defaults ----
 
-library(RemixAutoML)
-library(data.table)
-source("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/H2OHelpers.R")
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
-
-run = 4
-
-# Create some dummy correlated data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.85,
-  N = 1000L,
-  ID = 2L,
-  ZIP = 0L,
-  AddDate = FALSE,
-  Classification = FALSE,
-  MultiClass = TRUE)
-
-# Set training mode
-if(run %in% c(8,9)) TOF <- FALSE else TOF <- TRUE
-
-# grid tune
-if(run == 9) gridtune <- TRUE else gridtune <- FALSE
-
-# Create copy
-data1 <- data.table::copy(data)
-
-OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData")
-data = data1
-TrainOnFull = TOF
-ValidationData = NULL
-TestData = NULL
-TargetColumnName = "Adrian"
-FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")]
-WeightsColumn = NULL
-GamColNames = GamCols
-eval_metric = "logloss"
-MaxMem = "28G"
-NThreads = max(1, parallel::detectCores()-2)
-model_path = normalizePath("./")
-metadata_path = NULL
-ModelID = "FirstModel"
-ReturnModelObjects = TRUE
-SaveModelObjects = FALSE
-IfSaveModel = "mojo"
-H2OShutdown = TRUE
-H2OStartUp = TRUE
-DebugMode = TRUE
-num_knots = NULL
-keep_gam_cols = TRUE
-GridTune = gridtune
-GridStrategy = "RandomDiscrete"
-StoppingRounds = 10
-MaxRunTimeSecs = 3600 * 24 * 7
-MaxModelsInGrid = 10
-Distribution = "multinomial"
-Link = "Family_Default"
-Solver = "AUTO"
-Alpha = if(!gridtune) NULL else c(0.10,0.50,0.90)
-Lambda = if(!gridtune) NULL else c(0.10,0.50,0.90)
-LambdaSearch = FALSE
-NLambdas = -1
-Standardize = TRUE
-RemoveCollinearColumns = FALSE
-InterceptInclude = TRUE
-NonNegativeCoefficients = FALSE
+# library(RemixAutoML)
+# library(data.table)
+# source("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/H2OHelpers.R")
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
+#
+# run = 4
+#
+# # Create some dummy correlated data
+# data <- RemixAutoML::FakeDataGenerator(
+#   Correlation = 0.85,
+#   N = 1000L,
+#   ID = 2L,
+#   ZIP = 0L,
+#   AddDate = FALSE,
+#   Classification = FALSE,
+#   MultiClass = TRUE)
+#
+# # Set training mode
+# if(run %in% c(8,9)) TOF <- FALSE else TOF <- TRUE
+#
+# # grid tune
+# if(run == 9) gridtune <- TRUE else gridtune <- FALSE
+#
+# # Create copy
+# data1 <- data.table::copy(data)
+#
+# OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData")
+# data = data1
+# TrainOnFull = TOF
+# ValidationData = NULL
+# TestData = NULL
+# TargetColumnName = "Adrian"
+# FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")]
+# WeightsColumn = NULL
+# GamColNames = GamCols
+# eval_metric = "logloss"
+# MaxMem = "28G"
+# NThreads = max(1, parallel::detectCores()-2)
+# model_path = normalizePath("./")
+# metadata_path = NULL
+# ModelID = "FirstModel"
+# ReturnModelObjects = TRUE
+# SaveModelObjects = FALSE
+# IfSaveModel = "mojo"
+# H2OShutdown = TRUE
+# H2OStartUp = TRUE
+# DebugMode = TRUE
+# num_knots = NULL
+# keep_gam_cols = TRUE
+# GridTune = gridtune
+# GridStrategy = "RandomDiscrete"
+# StoppingRounds = 10
+# MaxRunTimeSecs = 3600 * 24 * 7
+# MaxModelsInGrid = 10
+# Distribution = "multinomial"
+# Link = "Family_Default"
+# Solver = "AUTO"
+# Alpha = if(!gridtune) NULL else c(0.10,0.50,0.90)
+# Lambda = if(!gridtune) NULL else c(0.10,0.50,0.90)
+# LambdaSearch = FALSE
+# NLambdas = -1
+# Standardize = TRUE
+# RemoveCollinearColumns = FALSE
+# InterceptInclude = TRUE
+# NonNegativeCoefficients = FALSE
 
 # AutoH2oGBMMultiClass ----
 data <- RemixAutoML::FakeDataGenerator(
@@ -390,7 +390,7 @@ for(run in 7L:9L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/AutoH2OMultiClass_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OMultiClass_QA.csv")
   Sys.sleep(5)
 }
 
@@ -524,6 +524,6 @@ for(run in 13L:14L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/AutoH2OMultiClass_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OMultiClass_QA.csv")
   Sys.sleep(5)
 }

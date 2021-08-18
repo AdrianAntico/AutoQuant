@@ -125,7 +125,7 @@ for(run in seq_len(XGBoost_QA_Results_MultiClass[,.N])) {
   if(!is.null(TestModel)) XGBoost_QA_Results_MultiClass[run, Success := "Success"]
   TestModel <- NULL
   Sys.sleep(5)
-  data.table::fwrite(XGBoost_QA_Results_MultiClass, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoXGBoostMultiClass_QA.csv")
+  data.table::fwrite(XGBoost_QA_Results_MultiClass, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoXGBoostMultiClass_QA.csv")
 }
 
 # Remove all else

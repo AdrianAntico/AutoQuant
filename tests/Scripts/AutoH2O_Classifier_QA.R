@@ -86,7 +86,7 @@ for(run in 1L:3L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Outcome := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoH2OClassifier_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OClassifier_QA.csv")
   Sys.sleep(5)
 }
 
@@ -267,7 +267,7 @@ for(run in 4L:6L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Outcome := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/AutoH2OClassifier_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OClassifier_QA.csv")
   Sys.sleep(5)
 }
 
@@ -429,7 +429,7 @@ for(run in 7L:9L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Outcome := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/AutoH2OClassifier_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OClassifier_QA.csv")
   Sys.sleep(5)
 }
 
@@ -512,7 +512,7 @@ for(run in 10L:12L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Outcome := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/AutoH2OClassifier_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OClassifier_QA.csv")
   Sys.sleep(5)
 }
 
@@ -621,7 +621,7 @@ for(run in 13L:14L) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Outcome := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/AutoH2OClassifier_QA.csv")
+  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OClassifier_QA.csv")
   Sys.sleep(5)
 }
 

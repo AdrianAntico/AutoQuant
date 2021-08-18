@@ -11,8 +11,6 @@ LightGBM_QA <- data.table::CJ(
 LightGBM_QA <- LightGBM_QA[!(PartitionInFunction & TOF)]
 LightGBM_QA[, RunNumber := seq_len(.N)]
 
-# Path File
-Path <- "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV"
 
 #      TOF Classification Success PartitionInFunction RunNumber
 # 1:  TRUE           TRUE Failure               FALSE         1
@@ -176,7 +174,7 @@ for(run in seq_len(LightGBM_QA[,.N])) {
 
   # Outcome
   if(!is.null(TestModel)) LightGBM_QA[run, Success := "Success"]
-  data.table::fwrite(LightGBM_QA, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoLightGBMHurdleModel_QA.csv")
+  data.table::fwrite(LightGBM_QA, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoLightGBMHurdleModel_QA.csv")
 
   # Remove Target Variable
   TTrainData[, c("Target_Buckets", "Adrian") := NULL]

@@ -201,146 +201,146 @@ for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
   if(!is.null(TestModel)) CatBoost_QA_Results_Regression[run, Success := "Success"]
   TestModel <- NULL
   gc(); Sys.sleep(5)
-  data.table::fwrite(CatBoost_QA_Results_Regression, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoCatBoostRegression_QA.csv")
+  data.table::fwrite(CatBoost_QA_Results_Regression, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoCatBoostRegression_QA.csv")
 }
 
 # Defaults ----
-library(RemixAutoML)
-library(data.table)
-
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
-
-run = 7
-
-# Iteration number
-for(zzz in 1:10) print(run)
-
-# Define values
-if(CatBoost_QA_Results_Regression[run, Transformation]) {
-  if(CatBoost_QA_Results_Regression[run, LossFunction == "MultiRMSE"]) trans <- c("Adrian","Adrian2")
-  if(CatBoost_QA_Results_Regression[run, LossFunction != "MultiRMSE"]) trans <- c("Adrian")
-} else {
-  trans <- NULL
-}
-tasktypemode <- CatBoost_QA_Results_Regression[run, TaskType]
-tof <- CatBoost_QA_Results_Regression[run, TOF]
-PartitionInFunction <- CatBoost_QA_Results_Regression[run, PartitionInFunction]
-gridtune <- CatBoost_QA_Results_Regression[run, GridTune]
-lossfunction <- CatBoost_QA_Results_Regression[run, LossFunction]
-if(lossfunction == "MultiRMSE") {
-  Tar <- c("Adrian","Adrian2")
-} else {
-  Tar <- "Adrian"
-}
-
-# Refresh data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.85,
-  N = 20000L,
-  ID = 2L,
-  AddWeightsColumn = TRUE,
-  ZIP = 0L,
-  AddDate = TRUE,
-  Classification = FALSE,
-  MultiClass = FALSE)
-
-# Add Diff data
-data <- RemixAutoML::AutoDiffLagN(
-  data = data,
-  DateVariable = "DateTime",
-  GroupVariables = c("Factor_1", "Factor_2"),
-  DiffVariables = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian","DateTime","Factor_1","Factor_2")],
-  DiffDateVariables = NULL,
-  DiffGroupVariables = NULL,
-  NLag1 = 0,
-  NLag2 = 1,
-  Sort = TRUE,
-  RemoveNA = TRUE)
-
-# Partition Data
-if(!tof && !PartitionInFunction) {
-  Sets <- RemixAutoML::AutoDataPartition(
-    data = data,
-    NumDataSets = 3,
-    Ratios = c(0.7,0.2,0.1),
-    PartitionType = "random",
-    StratifyColumnNames = "Adrian",
-    TimeColumnName = NULL)
-  TTrainData <- Sets$TrainData
-  VValidationData <- Sets$ValidationData
-  TTestData <- Sets$TestData
-  rm(Sets)
-} else {
-  TTrainData <- data.table::copy(data)
-  VValidationData <- NULL
-  TTestData <- NULL
-}
-
-# Vector
-if(lossfunction == "MultiRMSE") {
-  TTrainData[, Adrian2 := jitter(Adrian, factor = 1000)]
-  if(!is.null(VValidationData)) VValidationData[, Adrian2 := jitter(Adrian, factor = 1000)]
-  if(!is.null(TTestData)) TTestData[, Adrian2 := jitter(Adrian, factor = 1000)]
-}
-
-# # AutoCatBoostRegression
-OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")
-task_type = "GPU"
-NumGPUs = 1
-ModelID = "Test_Model_1"
-model_path = normalizePath("./")
-metadata_path = NULL
-SaveModelObjects = FALSE
-SaveInfoToPDF = FALSE
-ReturnModelObjects = TRUE
-data = TTrainData
-TrainOnFull = tof
-ValidationData = VValidationData
-TestData = TTestData
-WeightsColumnName = "Weights"
-TargetColumnName = Tar
-FeatureColNames = if(lossfunction == "RMSE") names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Adrian")] else names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Adrian","Adrian2")]
-PrimaryDateColumn = NULL
-IDcols = c("IDcol_1","IDcol_2")
-TransformNumericColumns = trans
-Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit")
-eval_metric = lossfunction
-eval_metric_value = 1.5
-loss_function = lossfunction
-loss_function_value = 1.5
-grid_eval_metric = "r2"
-MetricPeriods = 10L
-NumOfParDepPlots = 3
-EvalPlots = TRUE
-PassInGrid = NULL
-GridTune = gridtune
-MaxModelsInGrid = 20L
-MaxRunsWithoutNewWinner = 10L
-MaxRunMinutes = 60*60
-Shuffles = 4L
-BaselineComparison = "default"
-Trees = if(!gridtune) 100L else c(50,60,70,80,90,100)
-Depth = if(!gridtune) 4L else c(4,5,6,7,8)
-LearningRate = if(!gridtune) 0.01 else c(0.01,0.02,0.03,0.04,0.05)
-L2_Leaf_Reg = if(!gridtune) 1.0 else c(1,2,3,4,5)
-RandomStrength = if(!gridtune) 1 else c(0.8,0.9,1)
-BorderCount = if(!gridtune) 128 else c(32,56,96,128,256)
-RSM = 1
-BootStrapType = NULL
-GrowPolicy = "SymmetricTree"
-langevin = FALSE
-diffusion_temperature = 10000
-model_size_reg = 0.5
-feature_border_type = "GreedyLogSum"
-sampling_unit = "Group"
-subsample = NULL
-score_function = "Cosine"
-min_data_in_leaf = 1
-DebugMode = TRUE
+# library(RemixAutoML)
+# library(data.table)
+#
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
+#
+# run = 7
+#
+# # Iteration number
+# for(zzz in 1:10) print(run)
+#
+# # Define values
+# if(CatBoost_QA_Results_Regression[run, Transformation]) {
+#   if(CatBoost_QA_Results_Regression[run, LossFunction == "MultiRMSE"]) trans <- c("Adrian","Adrian2")
+#   if(CatBoost_QA_Results_Regression[run, LossFunction != "MultiRMSE"]) trans <- c("Adrian")
+# } else {
+#   trans <- NULL
+# }
+# tasktypemode <- CatBoost_QA_Results_Regression[run, TaskType]
+# tof <- CatBoost_QA_Results_Regression[run, TOF]
+# PartitionInFunction <- CatBoost_QA_Results_Regression[run, PartitionInFunction]
+# gridtune <- CatBoost_QA_Results_Regression[run, GridTune]
+# lossfunction <- CatBoost_QA_Results_Regression[run, LossFunction]
+# if(lossfunction == "MultiRMSE") {
+#   Tar <- c("Adrian","Adrian2")
+# } else {
+#   Tar <- "Adrian"
+# }
+#
+# # Refresh data
+# data <- RemixAutoML::FakeDataGenerator(
+#   Correlation = 0.85,
+#   N = 20000L,
+#   ID = 2L,
+#   AddWeightsColumn = TRUE,
+#   ZIP = 0L,
+#   AddDate = TRUE,
+#   Classification = FALSE,
+#   MultiClass = FALSE)
+#
+# # Add Diff data
+# data <- RemixAutoML::AutoDiffLagN(
+#   data = data,
+#   DateVariable = "DateTime",
+#   GroupVariables = c("Factor_1", "Factor_2"),
+#   DiffVariables = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian","DateTime","Factor_1","Factor_2")],
+#   DiffDateVariables = NULL,
+#   DiffGroupVariables = NULL,
+#   NLag1 = 0,
+#   NLag2 = 1,
+#   Sort = TRUE,
+#   RemoveNA = TRUE)
+#
+# # Partition Data
+# if(!tof && !PartitionInFunction) {
+#   Sets <- RemixAutoML::AutoDataPartition(
+#     data = data,
+#     NumDataSets = 3,
+#     Ratios = c(0.7,0.2,0.1),
+#     PartitionType = "random",
+#     StratifyColumnNames = "Adrian",
+#     TimeColumnName = NULL)
+#   TTrainData <- Sets$TrainData
+#   VValidationData <- Sets$ValidationData
+#   TTestData <- Sets$TestData
+#   rm(Sets)
+# } else {
+#   TTrainData <- data.table::copy(data)
+#   VValidationData <- NULL
+#   TTestData <- NULL
+# }
+#
+# # Vector
+# if(lossfunction == "MultiRMSE") {
+#   TTrainData[, Adrian2 := jitter(Adrian, factor = 1000)]
+#   if(!is.null(VValidationData)) VValidationData[, Adrian2 := jitter(Adrian, factor = 1000)]
+#   if(!is.null(TTestData)) TTestData[, Adrian2 := jitter(Adrian, factor = 1000)]
+# }
+#
+# # # AutoCatBoostRegression
+# OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")
+# task_type = "GPU"
+# NumGPUs = 1
+# ModelID = "Test_Model_1"
+# model_path = normalizePath("./")
+# metadata_path = NULL
+# SaveModelObjects = FALSE
+# SaveInfoToPDF = FALSE
+# ReturnModelObjects = TRUE
+# data = TTrainData
+# TrainOnFull = tof
+# ValidationData = VValidationData
+# TestData = TTestData
+# WeightsColumnName = "Weights"
+# TargetColumnName = Tar
+# FeatureColNames = if(lossfunction == "RMSE") names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Adrian")] else names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Adrian","Adrian2")]
+# PrimaryDateColumn = NULL
+# IDcols = c("IDcol_1","IDcol_2")
+# TransformNumericColumns = trans
+# Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit")
+# eval_metric = lossfunction
+# eval_metric_value = 1.5
+# loss_function = lossfunction
+# loss_function_value = 1.5
+# grid_eval_metric = "r2"
+# MetricPeriods = 10L
+# NumOfParDepPlots = 3
+# EvalPlots = TRUE
+# PassInGrid = NULL
+# GridTune = gridtune
+# MaxModelsInGrid = 20L
+# MaxRunsWithoutNewWinner = 10L
+# MaxRunMinutes = 60*60
+# Shuffles = 4L
+# BaselineComparison = "default"
+# Trees = if(!gridtune) 100L else c(50,60,70,80,90,100)
+# Depth = if(!gridtune) 4L else c(4,5,6,7,8)
+# LearningRate = if(!gridtune) 0.01 else c(0.01,0.02,0.03,0.04,0.05)
+# L2_Leaf_Reg = if(!gridtune) 1.0 else c(1,2,3,4,5)
+# RandomStrength = if(!gridtune) 1 else c(0.8,0.9,1)
+# BorderCount = if(!gridtune) 128 else c(32,56,96,128,256)
+# RSM = 1
+# BootStrapType = NULL
+# GrowPolicy = "SymmetricTree"
+# langevin = FALSE
+# diffusion_temperature = 10000
+# model_size_reg = 0.5
+# feature_border_type = "GreedyLogSum"
+# sampling_unit = "Group"
+# subsample = NULL
+# score_function = "Cosine"
+# min_data_in_leaf = 1
+# DebugMode = TRUE
 
 # DataPrep ----
 # OutputSelection.=OutputSelection

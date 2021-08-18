@@ -15,33 +15,33 @@ for(run in seq_len(QA_Results[,.N])) {
 
   # Data
   if(QA_Results[run, Group] == 0L) {
-    data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-Eval-Walmart.csv')
+    data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/NoGroup-Eval-Walmart.csv')
   } else if(QA_Results[run, Group] == 1L) {
-    data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-Eval-Walmart.csv')
+    data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/OneGroup-Eval-Walmart.csv')
   } else if(QA_Results[run, Group] == 2L) {
-    data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-Eval-Walmart.csv')
+    data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/TwoGroup-Eval-Walmart.csv')
   } else if(QA_Results[run, Group] == 3L) {
-    data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-Eval-Walmart.csv')
+    data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ThreeGroup-Eval-Walmart.csv')
   }
 
   # xregs
   if(QA_Results[run, xregs] == 0L) {
     xregs <- NULL
   } else if(QA_Results[run, xregs] == 1L) {
-    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG1.csv')
-    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG1.csv')
-    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG1.csv')
-    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG1.csv')
+    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/NoGroup-FC-Walmart-XREG1.csv')
+    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/OneGroup-FC-Walmart-XREG1.csv')
+    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/TwoGroup-FC-Walmart-XREG1.csv')
+    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG1.csv')
   } else if(QA_Results[run, xregs] == 2L) {
-    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG2.csv')
-    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG2.csv')
-    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG2.csv')
-    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG2.csv')
+    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/NoGroup-FC-Walmart-XREG2.csv')
+    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/OneGroup-FC-Walmart-XREG2.csv')
+    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/TwoGroup-FC-Walmart-XREG2.csv')
+    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG2.csv')
   } else if(QA_Results[run, xregs] == 3L) {
-    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG3.csv')
-    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG3.csv')
-    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG3.csv')
-    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv')
+    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/NoGroup-FC-Walmart-XREG3.csv')
+    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/OneGroup-FC-Walmart-XREG3.csv')
+    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/TwoGroup-FC-Walmart-XREG3.csv')
+    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv')
   }
 
   # Testing params
@@ -163,158 +163,158 @@ for(run in seq_len(QA_Results[,.N])) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := 'Success']
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = 'C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoXGBoostCARMA_QA.csv')
+  data.table::fwrite(QA_Results, file = 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoXGBoostCARMA_QA.csv')
   Sys.sleep(5)
 }
 
 # Defaults ----
-library(RemixAutoML)
-library(data.table)
-library(lubridate)
-
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_NumericTypes.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_DataSets.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_ModelBased.R'))
-source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R'))
-
-run = 125
-
-# Data
-if(QA_Results[run, Group] == 0L) {
-  data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-Eval-Walmart.csv')
-} else if(QA_Results[run, Group] == 1L) {
-  data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-Eval-Walmart.csv')
-} else if(QA_Results[run, Group] == 2L) {
-  data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-Eval-Walmart.csv')
-} else if(QA_Results[run, Group] == 3L) {
-  data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-Eval-Walmart.csv')
-}
-
-# xregs
-if(QA_Results[run, xregs] == 0L) {
-  xregs <- NULL
-} else if(QA_Results[run, xregs] == 1L) {
-  if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG1.csv')
-  if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG1.csv')
-  if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG1.csv')
-  if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG1.csv')
-} else if(QA_Results[run, xregs] == 2L) {
-  if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG2.csv')
-  if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG2.csv')
-  if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG2.csv')
-  if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG2.csv')
-} else if(QA_Results[run, xregs] == 3L) {
-  if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG3.csv')
-  if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG3.csv')
-  if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG3.csv')
-  if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv')
-}
-
-# Testing params
-TOF <- QA_Results[run, TOF]
-Trans <- QA_Results[run, Trans]
-Diff <- QA_Results[run, Diff]
-if(QA_Results[run, Group] == 0L) {
-  groupvariables <- NULL
-} else if(QA_Results[run, Group] == 1L) {
-  groupvariables <- 'Dept'
-} else if(QA_Results[run, Group] == 2L) {
-  groupvariables <- c('Store','Dept')
-} else if(QA_Results[run, Group] == 3L) {
-  groupvariables <- c('Region','Store','Dept')
-}
-
-# Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- RemixAutoML::TimeSeriesFill(
-  data,
-  DateColumnName = 'Date',
-  GroupVariables = groupvariables,
-  TimeUnit = 'weeks',
-  FillType = 'maxmax',
-  MaxMissingPercent = 0.25,
-  SimpleImpute = TRUE)
-
-# Set negative numbers to 0
-data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
-
-# Ensure series have no missing dates (also remove series with more than 25% missing values)
-if(QA_Results[run, xregs] != 0L) {
-  xregs <- RemixAutoML::TimeSeriesFill(
-    xregs,
-    DateColumnName = 'Date',
-    GroupVariables = groupvariables,
-    TimeUnit = 'weeks',
-    FillType = 'maxmax',
-    MaxMissingPercent = 0.25,
-    SimpleImpute = TRUE)
-}
-
-# Copy data
-data1 <- data.table::copy(data)
-if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
-
-# Copy data
-data1 <- data1
-XREGS <- xregs1
-NonNegativePred = FALSE
-RoundPreds = FALSE
-TargetColumnName = 'Weekly_Sales'
-DateColumnName = 'Date'
-HierarchGroups = NULL
-GroupVariables = groupvariables
-TimeUnit = 'weeks'
-TimeGroups = c('weeks','months')
-EncodingMethod = 'binary'
-ZeroPadSeries = NULL
-DataTruncate = FALSE
-SplitRatios = c(1 - 10 / 110, 10 / 110)
-PartitionType = 'timeseries'
-AnomalyDetection = NULL
-FC_Periods = 4
-TrainOnFull = TOF
-NThreads = 8
-Timer = TRUE
-DebugMode = TRUE
-SaveDataPath = getwd()
-PDFOutputPath = getwd()
-TargetTransformation = Trans
-Methods = c('BoxCox', 'Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit')
-Difference = Diff
-Lags = list('weeks' = c(1:5), 'months' = c(1:3))
-MA_Periods = list('weeks' = c(2:5), 'months' = c(2,3))
-SD_Periods = NULL
-Skew_Periods = NULL
-Kurt_Periods = NULL
-Quantile_Periods = NULL
-HolidayLags = 1
-HolidayMovingAverages = 1:2
-Quantiles_Selected = NULL
-FourierTerms = 0
-CalendarVariables = c('week', 'wom', 'month', 'quarter')
-HolidayVariable = c('USPublicHolidays','EasterGroup', 'ChristmasGroup','OtherEcclesticalFeasts')
-HolidayLookback <- 7
-TimeTrendVariable = TRUE
-TreeMethod = 'hist'
-EvalMetric = 'RMSE'
-LossFunction = 'reg:squarederror'
-MaxRunsWithoutNewWinner = 30L
-MaxRunMinutes = 30
-GridTune = FALSE
-ModelCount = 5
-GridEvalMetric = 'mse'
-NTrees = 50
-LearningRate = 0.03
-MaxDepth = 9L
-MinChildWeight = 1.0
-SubSample = 1.0
-ColSampleByTree = 1.0
+# library(RemixAutoML)
+# library(data.table)
+# library(lubridate)
+#
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_NumericTypes.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_DataSets.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_ModelBased.R'))
+# source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R'))
+#
+# run = 125
+#
+# # Data
+# if(QA_Results[run, Group] == 0L) {
+#   data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-Eval-Walmart.csv')
+# } else if(QA_Results[run, Group] == 1L) {
+#   data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-Eval-Walmart.csv')
+# } else if(QA_Results[run, Group] == 2L) {
+#   data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-Eval-Walmart.csv')
+# } else if(QA_Results[run, Group] == 3L) {
+#   data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-Eval-Walmart.csv')
+# }
+#
+# # xregs
+# if(QA_Results[run, xregs] == 0L) {
+#   xregs <- NULL
+# } else if(QA_Results[run, xregs] == 1L) {
+#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG1.csv')
+#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG1.csv')
+#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG1.csv')
+#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG1.csv')
+# } else if(QA_Results[run, xregs] == 2L) {
+#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG2.csv')
+#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG2.csv')
+#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG2.csv')
+#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG2.csv')
+# } else if(QA_Results[run, xregs] == 3L) {
+#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG3.csv')
+#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG3.csv')
+#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG3.csv')
+#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv')
+# }
+#
+# # Testing params
+# TOF <- QA_Results[run, TOF]
+# Trans <- QA_Results[run, Trans]
+# Diff <- QA_Results[run, Diff]
+# if(QA_Results[run, Group] == 0L) {
+#   groupvariables <- NULL
+# } else if(QA_Results[run, Group] == 1L) {
+#   groupvariables <- 'Dept'
+# } else if(QA_Results[run, Group] == 2L) {
+#   groupvariables <- c('Store','Dept')
+# } else if(QA_Results[run, Group] == 3L) {
+#   groupvariables <- c('Region','Store','Dept')
+# }
+#
+# # Ensure series have no missing dates (also remove series with more than 25% missing values)
+# data <- RemixAutoML::TimeSeriesFill(
+#   data,
+#   DateColumnName = 'Date',
+#   GroupVariables = groupvariables,
+#   TimeUnit = 'weeks',
+#   FillType = 'maxmax',
+#   MaxMissingPercent = 0.25,
+#   SimpleImpute = TRUE)
+#
+# # Set negative numbers to 0
+# data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+#
+# # Ensure series have no missing dates (also remove series with more than 25% missing values)
+# if(QA_Results[run, xregs] != 0L) {
+#   xregs <- RemixAutoML::TimeSeriesFill(
+#     xregs,
+#     DateColumnName = 'Date',
+#     GroupVariables = groupvariables,
+#     TimeUnit = 'weeks',
+#     FillType = 'maxmax',
+#     MaxMissingPercent = 0.25,
+#     SimpleImpute = TRUE)
+# }
+#
+# # Copy data
+# data1 <- data.table::copy(data)
+# if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
+#
+# # Copy data
+# data1 <- data1
+# XREGS <- xregs1
+# NonNegativePred = FALSE
+# RoundPreds = FALSE
+# TargetColumnName = 'Weekly_Sales'
+# DateColumnName = 'Date'
+# HierarchGroups = NULL
+# GroupVariables = groupvariables
+# TimeUnit = 'weeks'
+# TimeGroups = c('weeks','months')
+# EncodingMethod = 'binary'
+# ZeroPadSeries = NULL
+# DataTruncate = FALSE
+# SplitRatios = c(1 - 10 / 110, 10 / 110)
+# PartitionType = 'timeseries'
+# AnomalyDetection = NULL
+# FC_Periods = 4
+# TrainOnFull = TOF
+# NThreads = 8
+# Timer = TRUE
+# DebugMode = TRUE
+# SaveDataPath = getwd()
+# PDFOutputPath = getwd()
+# TargetTransformation = Trans
+# Methods = c('BoxCox', 'Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit')
+# Difference = Diff
+# Lags = list('weeks' = c(1:5), 'months' = c(1:3))
+# MA_Periods = list('weeks' = c(2:5), 'months' = c(2,3))
+# SD_Periods = NULL
+# Skew_Periods = NULL
+# Kurt_Periods = NULL
+# Quantile_Periods = NULL
+# HolidayLags = 1
+# HolidayMovingAverages = 1:2
+# Quantiles_Selected = NULL
+# FourierTerms = 0
+# CalendarVariables = c('week', 'wom', 'month', 'quarter')
+# HolidayVariable = c('USPublicHolidays','EasterGroup', 'ChristmasGroup','OtherEcclesticalFeasts')
+# HolidayLookback <- 7
+# TimeTrendVariable = TRUE
+# TreeMethod = 'hist'
+# EvalMetric = 'RMSE'
+# LossFunction = 'reg:squarederror'
+# MaxRunsWithoutNewWinner = 30L
+# MaxRunMinutes = 30
+# GridTune = FALSE
+# ModelCount = 5
+# GridEvalMetric = 'mse'
+# NTrees = 50
+# LearningRate = 0.03
+# MaxDepth = 9L
+# MinChildWeight = 1.0
+# SubSample = 1.0
+# ColSampleByTree = 1.0
 
 # Differencing ----
 # GroupVariables.=GroupVariables

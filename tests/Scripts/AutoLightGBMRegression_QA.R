@@ -245,230 +245,230 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
   }
   TestModel <- NULL
   Sys.sleep(5)
-  data.table::fwrite(LightGBM_QA_Results_Regression, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoLightGBMRegression_QA.csv")
+  data.table::fwrite(LightGBM_QA_Results_Regression, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoLightGBMRegression_QA.csv")
 }
 
 # Scoring ----
-TargetType = "regression"
-ScoringData = if(!tof && !PartitionInFunction) TTestData else TTrainData
-ReturnShapValues = FALSE
-FeatureColumnNames = colnames[[1L]]
-IDcols = c("IDcol_1","IDcol_2")
-EncodingMethod = "credibility"
-FactorLevelsList = NULL
-TargetLevels = NULL
-ModelObject = NULL
-ModelPath = getwd()
-ModelID = "Test_Model_1"
-ReturnFeatures = TRUE
-TransformNumeric = FALSE
-BackTransNumeric = FALSE
-TargetColumnName = NULL
-TransformationObject = NULL
-TransID = NULL
-TransPath = NULL
-MDP_Impute = TRUE
-MDP_CharToFactor = TRUE
-MDP_RemoveDates = TRUE
-MDP_MissFactor = "0"
-MDP_MissNum = -1
-
-# Main Code ----
-library(RemixAutoML)
-library(data.table)
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/GridTuning.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/LightGBMHelpers.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
-source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
-
-options(scipen = 9999)
-
-run = 1
-
-# Define values
-if(LightGBM_QA_Results_Regression[run, Transformation]) {
-  trans <- c("Adrian")
-} else {
-  trans <- NULL
-}
-PartitionInFunction <- LightGBM_QA_Results_Regression[run, PartitionInFunction]
-tof <- LightGBM_QA_Results_Regression[run, TOF]
-gridtune <- LightGBM_QA_Results_Regression[run, GridTune]
-Tar <- "Adrian"
-
-# Refresh data
-data <- RemixAutoML::FakeDataGenerator(
-  Correlation = 0.85,
-  N = 25000L,
-  ID = 2L,
-  AddWeightsColumn = TRUE,
-  ZIP = 0L,
-  AddDate = TRUE,
-  Classification = FALSE,
-  MultiClass = FALSE)
-
-# Add Diff data
-data <- RemixAutoML::AutoDiffLagN(
-  data = data,
-  DateVariable = "DateTime",
-  GroupVariables = c("Factor_1", "Factor_2"),
-  DiffVariables = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian","DateTime","Factor_1","Factor_2")],
-  DiffDateVariables = NULL,
-  DiffGroupVariables = NULL,
-  NLag1 = 0,
-  NLag2 = 1,
-  Sort = TRUE,
-  RemoveNA = TRUE)
-
-# Partition Data
-if(!tof && !PartitionInFunction) {
-  Sets <- RemixAutoML::AutoDataPartition(
-    data = data,
-    NumDataSets = 3,
-    Ratios = c(0.7,0.2,0.1),
-    PartitionType = "random",
-    StratifyColumnNames = "Adrian",
-    TimeColumnName = NULL)
-  TTrainData <- Sets$TrainData
-  VValidationData <- Sets$ValidationData
-  TTestData <- Sets$TestData
-  rm(Sets)
-} else {
-  TTrainData <- data.table::copy(data)
-  VValidationData <- NULL
-  TTestData <- NULL
-}
-
-# Main Function Defaults
-TrainOnFull = tof
-data = TTrainData
-ValidationData = VValidationData
-TestData = TTestData
-TargetColumnName = Tar
-FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime",Tar)]
-PrimaryDateColumn = "DateTime"
-WeightsColumnName = "Weights"
-IDcols = c("IDcol_1","IDcol_2","DateTime")
-TransformNumericColumns = trans
-# Metadata parameters
-OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
-model_path = getwd()
-metadata_path = getwd()
-DebugMode = TRUE
-SaveInfoToPDF = FALSE
-ModelID = "FirstModel"
-ReturnFactorLevels = TRUE
-ReturnModelObjects = TRUE
-SaveModelObjects = TRUE
-EncodingMethod = "credibility"
-TransformNumericColumns = NULL
-Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit")
-Verbose = 0L
-NumOfParDepPlots = 3L
-# Grid parameters
-GridTune = gridtune
-grid_eval_metric = "r2"
-BaselineComparison = "default"
-MaxModelsInGrid = 10L
-MaxRunsWithoutNewWinner = 20L
-MaxRunMinutes = 24L*60L
-PassInGrid = NULL
-# High Level Parameters
-input_model = NULL # continue training a model that is stored to file
-# Core parameters https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
-task = "train"
-device_type = "CPU"
-NThreads = parallel::detectCores() / 2
-objective = 'regression'
-metric = "rmse"
-boosting = "gbdt"
-LinearTree = FALSE
-Trees = if(!gridtune) 50L else c(50L,60L,70L)
-eta = if(!gridtune) NULL else c(.1, .2, .3)
-num_leaves = if(!gridtune) 31 else c(21,31,41)
-deterministic = TRUE
-# Learning Parameters https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
-force_col_wise = FALSE
-force_row_wise = FALSE
-max_depth = if(!gridtune) 6 else c(6,7,8)
-min_data_in_leaf = if(!gridtune) 20 else c(10,20,30)
-min_sum_hessian_in_leaf = 0.001
-bagging_freq = if(!gridtune) 1.0 else c(1,2,3)
-bagging_fraction = if(!gridtune) 1.0 else c(1,0.9,0.8)
-feature_fraction = if(!gridtune) 1.0 else c(1,0.9,0.8)
-feature_fraction_bynode = if(!gridtune) 1.0 else c(1,0.9,0.8)
-extra_trees = FALSE
-early_stopping_round = 10
-first_metric_only = TRUE
-max_delta_step = 0.0
-lambda_l1 = if(!gridtune) 0.0 else c(0,1,2)
-lambda_l2 = if(!gridtune) 0.0 else c(0,1,2)
-linear_lambda = 0.0
-min_gain_to_split = 0
-drop_rate_dart = 0.10
-max_drop_dart = 50
-skip_drop_dart = 0.50
-uniform_drop_dart = FALSE
-top_rate_goss = FALSE
-other_rate_goss = FALSE
-monotone_constraints = NULL
-monotone_constraints_method = "advanced"
-monotone_penalty = 0.0
-forcedsplits_filename = NULL # use for AutoStack option; .json file
-refit_decay_rate = 0.90
-path_smooth = 0.0
-# IO Dataset Parameters
-max_bin = 255
-min_data_in_bin = 3
-data_random_seed = 1
-is_enable_sparse = TRUE
-enable_bundle = TRUE
-use_missing = TRUE
-zero_as_missing = FALSE
-two_round = FALSE
-# Convert Parameters
-convert_model = NULL #"gbdt_prediction.cpp"
-convert_model_language = "cpp"
-# Objective Parameters
-boost_from_average = TRUE
-alpha = 0.90
-fair_c = 1.0
-poisson_max_delta_step = 0.70
-tweedie_variance_power = 1.5
-lambdarank_truncation_level = 30
-# Metric Parameters (metric is in Core)
-is_provide_training_metric = TRUE
-eval_at = c(1,2,3,4,5)
-# Network Parameters
-num_machines = 1
-# GPU Parameters
-gpu_platform_id = -1
-gpu_device_id = -1
-gpu_use_dp = TRUE
-num_gpu = 1
-
-# Data Prep ----
-Algo = "lightgbm"
-ModelType="regression"
-data.=data
-ValidationData.=ValidationData
-TestData.=TestData
-TargetColumnName.=TargetColumnName
-FeatureColNames.=FeatureColNames
-WeightsColumnName.=WeightsColumnName
-IDcols.=IDcols
-TransformNumericColumns.=TransformNumericColumns
-Methods.=Methods
-ModelID.=ModelID
-model_path.=model_path
-TrainOnFull.=TrainOnFull
-SaveModelObjects.=SaveModelObjects
-ReturnFactorLevels.=ReturnFactorLevels
-EncodingMethod.=EncodingMethod
+# TargetType = "regression"
+# ScoringData = if(!tof && !PartitionInFunction) TTestData else TTrainData
+# ReturnShapValues = FALSE
+# FeatureColumnNames = colnames[[1L]]
+# IDcols = c("IDcol_1","IDcol_2")
+# EncodingMethod = "credibility"
+# FactorLevelsList = NULL
+# TargetLevels = NULL
+# ModelObject = NULL
+# ModelPath = getwd()
+# ModelID = "Test_Model_1"
+# ReturnFeatures = TRUE
+# TransformNumeric = FALSE
+# BackTransNumeric = FALSE
+# TargetColumnName = NULL
+# TransformationObject = NULL
+# TransID = NULL
+# TransPath = NULL
+# MDP_Impute = TRUE
+# MDP_CharToFactor = TRUE
+# MDP_RemoveDates = TRUE
+# MDP_MissFactor = "0"
+# MDP_MissNum = -1
+#
+# # Main Code ----
+# library(RemixAutoML)
+# library(data.table)
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/GridTuning.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/LightGBMHelpers.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
+#
+# options(scipen = 9999)
+#
+# run = 1
+#
+# # Define values
+# if(LightGBM_QA_Results_Regression[run, Transformation]) {
+#   trans <- c("Adrian")
+# } else {
+#   trans <- NULL
+# }
+# PartitionInFunction <- LightGBM_QA_Results_Regression[run, PartitionInFunction]
+# tof <- LightGBM_QA_Results_Regression[run, TOF]
+# gridtune <- LightGBM_QA_Results_Regression[run, GridTune]
+# Tar <- "Adrian"
+#
+# # Refresh data
+# data <- RemixAutoML::FakeDataGenerator(
+#   Correlation = 0.85,
+#   N = 25000L,
+#   ID = 2L,
+#   AddWeightsColumn = TRUE,
+#   ZIP = 0L,
+#   AddDate = TRUE,
+#   Classification = FALSE,
+#   MultiClass = FALSE)
+#
+# # Add Diff data
+# data <- RemixAutoML::AutoDiffLagN(
+#   data = data,
+#   DateVariable = "DateTime",
+#   GroupVariables = c("Factor_1", "Factor_2"),
+#   DiffVariables = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian","DateTime","Factor_1","Factor_2")],
+#   DiffDateVariables = NULL,
+#   DiffGroupVariables = NULL,
+#   NLag1 = 0,
+#   NLag2 = 1,
+#   Sort = TRUE,
+#   RemoveNA = TRUE)
+#
+# # Partition Data
+# if(!tof && !PartitionInFunction) {
+#   Sets <- RemixAutoML::AutoDataPartition(
+#     data = data,
+#     NumDataSets = 3,
+#     Ratios = c(0.7,0.2,0.1),
+#     PartitionType = "random",
+#     StratifyColumnNames = "Adrian",
+#     TimeColumnName = NULL)
+#   TTrainData <- Sets$TrainData
+#   VValidationData <- Sets$ValidationData
+#   TTestData <- Sets$TestData
+#   rm(Sets)
+# } else {
+#   TTrainData <- data.table::copy(data)
+#   VValidationData <- NULL
+#   TTestData <- NULL
+# }
+#
+# # Main Function Defaults
+# TrainOnFull = tof
+# data = TTrainData
+# ValidationData = VValidationData
+# TestData = TTestData
+# TargetColumnName = Tar
+# FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime",Tar)]
+# PrimaryDateColumn = "DateTime"
+# WeightsColumnName = "Weights"
+# IDcols = c("IDcol_1","IDcol_2","DateTime")
+# TransformNumericColumns = trans
+# # Metadata parameters
+# OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
+# model_path = getwd()
+# metadata_path = getwd()
+# DebugMode = TRUE
+# SaveInfoToPDF = FALSE
+# ModelID = "FirstModel"
+# ReturnFactorLevels = TRUE
+# ReturnModelObjects = TRUE
+# SaveModelObjects = TRUE
+# EncodingMethod = "credibility"
+# TransformNumericColumns = NULL
+# Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit")
+# Verbose = 0L
+# NumOfParDepPlots = 3L
+# # Grid parameters
+# GridTune = gridtune
+# grid_eval_metric = "r2"
+# BaselineComparison = "default"
+# MaxModelsInGrid = 10L
+# MaxRunsWithoutNewWinner = 20L
+# MaxRunMinutes = 24L*60L
+# PassInGrid = NULL
+# # High Level Parameters
+# input_model = NULL # continue training a model that is stored to file
+# # Core parameters https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+# task = "train"
+# device_type = "CPU"
+# NThreads = parallel::detectCores() / 2
+# objective = 'regression'
+# metric = "rmse"
+# boosting = "gbdt"
+# LinearTree = FALSE
+# Trees = if(!gridtune) 50L else c(50L,60L,70L)
+# eta = if(!gridtune) NULL else c(.1, .2, .3)
+# num_leaves = if(!gridtune) 31 else c(21,31,41)
+# deterministic = TRUE
+# # Learning Parameters https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+# force_col_wise = FALSE
+# force_row_wise = FALSE
+# max_depth = if(!gridtune) 6 else c(6,7,8)
+# min_data_in_leaf = if(!gridtune) 20 else c(10,20,30)
+# min_sum_hessian_in_leaf = 0.001
+# bagging_freq = if(!gridtune) 1.0 else c(1,2,3)
+# bagging_fraction = if(!gridtune) 1.0 else c(1,0.9,0.8)
+# feature_fraction = if(!gridtune) 1.0 else c(1,0.9,0.8)
+# feature_fraction_bynode = if(!gridtune) 1.0 else c(1,0.9,0.8)
+# extra_trees = FALSE
+# early_stopping_round = 10
+# first_metric_only = TRUE
+# max_delta_step = 0.0
+# lambda_l1 = if(!gridtune) 0.0 else c(0,1,2)
+# lambda_l2 = if(!gridtune) 0.0 else c(0,1,2)
+# linear_lambda = 0.0
+# min_gain_to_split = 0
+# drop_rate_dart = 0.10
+# max_drop_dart = 50
+# skip_drop_dart = 0.50
+# uniform_drop_dart = FALSE
+# top_rate_goss = FALSE
+# other_rate_goss = FALSE
+# monotone_constraints = NULL
+# monotone_constraints_method = "advanced"
+# monotone_penalty = 0.0
+# forcedsplits_filename = NULL # use for AutoStack option; .json file
+# refit_decay_rate = 0.90
+# path_smooth = 0.0
+# # IO Dataset Parameters
+# max_bin = 255
+# min_data_in_bin = 3
+# data_random_seed = 1
+# is_enable_sparse = TRUE
+# enable_bundle = TRUE
+# use_missing = TRUE
+# zero_as_missing = FALSE
+# two_round = FALSE
+# # Convert Parameters
+# convert_model = NULL #"gbdt_prediction.cpp"
+# convert_model_language = "cpp"
+# # Objective Parameters
+# boost_from_average = TRUE
+# alpha = 0.90
+# fair_c = 1.0
+# poisson_max_delta_step = 0.70
+# tweedie_variance_power = 1.5
+# lambdarank_truncation_level = 30
+# # Metric Parameters (metric is in Core)
+# is_provide_training_metric = TRUE
+# eval_at = c(1,2,3,4,5)
+# # Network Parameters
+# num_machines = 1
+# # GPU Parameters
+# gpu_platform_id = -1
+# gpu_device_id = -1
+# gpu_use_dp = TRUE
+# num_gpu = 1
+#
+# # Data Prep ----
+# Algo = "lightgbm"
+# ModelType="regression"
+# data.=data
+# ValidationData.=ValidationData
+# TestData.=TestData
+# TargetColumnName.=TargetColumnName
+# FeatureColNames.=FeatureColNames
+# WeightsColumnName.=WeightsColumnName
+# IDcols.=IDcols
+# TransformNumericColumns.=TransformNumericColumns
+# Methods.=Methods
+# ModelID.=ModelID
+# model_path.=model_path
+# TrainOnFull.=TrainOnFull
+# SaveModelObjects.=SaveModelObjects
+# ReturnFactorLevels.=ReturnFactorLevels
+# EncodingMethod.=EncodingMethod
 
 # Train Validation Data ----
 # model.=model

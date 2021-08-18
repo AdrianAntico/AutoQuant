@@ -143,7 +143,7 @@ for(run in seq_len(CatBoost_QA_Results_MultiClass[,.N])) {
   if(!is.null(TestModel)) CatBoost_QA_Results_MultiClass[run, Success := "Success"]
   TestModel <- NULL
   gc(); Sys.sleep(5)
-  data.table::fwrite(CatBoost_QA_Results_MultiClass, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV/AutoCatBoostMultiClass_QA.csv")
+  data.table::fwrite(CatBoost_QA_Results_MultiClass, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoCatBoostMultiClass_QA.csv")
 }
 
 # Defaults ----
