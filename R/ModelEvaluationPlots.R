@@ -267,7 +267,7 @@ ParDepCalPlots <- function(data,
 
   # Return plot----
   if(!is.null(DateColumn) && !is.null(DateAgg_3D)) {
-    return(list(plot, plot2))
+    return(list(CrossSection = plot, HeatMap = plot2))
   } else {
     return(plot)
   }
