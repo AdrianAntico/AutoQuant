@@ -213,7 +213,8 @@ ParDepCalPlots <- function(data,
       data.table::setnames(preds4, eval(TargetColName), "Target_Variable")
       plot2 <- ggplot2::ggplot(data = preds4, ggplot2::aes(x = Time, y = rank, fill = Target_Variable)) +
         ggplot2::geom_tile() +
-        ChartTheme()
+        ChartTheme() +
+        ggplot2::xlab(DateColumn) + ggplot2::ylab(paste0(IndepVar, "_Percentile"))
     }
   } else if(GraphType == "boxplot") {
     keep <- c("rank", TargetColName, IndepVar)
