@@ -186,31 +186,34 @@ ParDepCalPlots <- function(data,
 
   # Build plots ----
   if(GraphType == "calibration") {
-    if(is.null(DateColumn) || is.null(DateAgg_3D)) {
-      if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
-      preds2 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
-      plot <- eval(
-        ggplot2::ggplot(preds2, ggplot2::aes(x = preds2[[IndepVar]])) +
-          ggplot2::geom_line(ggplot2::aes(y = preds2[[PredictionColName]], color = "Predicted")) +
-          ggplot2::geom_line(ggplot2::aes(y = preds2[[TargetColName]], color = "Actuals")) +
-          ggplot2::ylab(eval(TargetColName)) +
-          ggplot2::xlab(IndepVar) +
-          ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
-          ChartTheme(Size = 13) +
-          ggplot2::labs(
-            title = "Partial Dependence Calibration Plot",
-            subtitle = paste0("black line -> mean(", TargetColName,"); purple lines -> 10th-%tile, mean, 90th-%tile")) +
-          ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
-          ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "purple") +
-          ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple") +
-          ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple"))
-    } else {
+    if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
+    preds3 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
+
+    # Cross section plot
+    plot <- eval(
+      ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
+        ggplot2::geom_line(ggplot2::aes(y = preds3[[PredictionColName]], color = "Predicted")) +
+        ggplot2::geom_line(ggplot2::aes(y = preds3[[TargetColName]], color = "Actuals")) +
+        ggplot2::ylab(eval(TargetColName)) +
+        ggplot2::xlab(IndepVar) +
+        ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
+        ChartTheme(Size = 13) +
+        ggplot2::labs(
+          title = "Partial Dependence Calibration Plot",
+          subtitle = paste0("black line -> mean(", TargetColName,"); purple lines -> 10th-%tile, mean, 90th-%tile")) +
+        ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
+        ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "purple") +
+        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple") +
+        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple"))
+
+    # Heatmap
+    if(!is.null(DateColumn) && !is.null(DateAgg_3D)) {
       preds2[, Time := lubridate::floor_date(get(DateColumn), unit = DateAgg_3D)]
-      temp <- preds2[, rank := round(data.table::frank(get(IndepVar)) * (1/PercentileBucket) /.N) * PercentileBucket]
-      temp <- temp[, lapply(.SD, noquote(Function)), by = c("rank", "Time")][order(rank, Time)]
-      scene = list(camera = list(eye = list(x = -1, y = -2, z = 0.25)))
-      plot <- plotly::plot_ly(x = temp$Time, y = temp$Predict, z = temp$Independent_Variable1, type = "scatter3d", mode = "markers")
-      plot <- plotly::layout(p = plot, title = "3D Scatter plot", scene = scene)
+      preds4 <- preds2[, lapply(.SD, noquote(Function)), by = c("rank", "Time")][order(rank, Time)]
+      data.table::setnames(preds4, eval(TargetColName), "Target_Variable")
+      plot2 <- ggplot2::ggplot(data = preds4, ggplot2::aes(x = Time, y = rank, fill = Target_Variable)) +
+        ggplot2::geom_tile() +
+        ChartTheme()
     }
   } else if(GraphType == "boxplot") {
     keep <- c("rank", TargetColName, IndepVar)
@@ -263,7 +266,11 @@ ParDepCalPlots <- function(data,
   }
 
   # Return plot----
-  return(plot)
+  if(!is.null(DateColumn) && !is.null(DateAgg_3D)) {
+    return(list(plot, plot2))
+  } else {
+    return(plot)
+  }
 }
 
 #' @title ResidualPlots
