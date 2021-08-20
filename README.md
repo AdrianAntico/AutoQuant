@@ -5,13 +5,13 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=default)](http://makeapullrequest.com)
 [![GitHub Stars](https://img.shields.io/github/stars/AdrianAntico/RemixAutoML.svg?style=social)](https://github.com/AdrianAntico/RemixAutoML)
 
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/NewPackageLogo.png" align="center" width="1000" />
+<img src="Images/NewPackageLogo.png" align="center" width="1000" />
 
 ## Background
 
 ![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
 
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
+<img src="Images/ML_Models_Menu.PNG" align="center" width="800" />
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -126,14 +126,14 @@ If you're having still having trouble installing see if the issue below helps ou
 </p>
 </details>
 
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Documentation.PNG" align="center" width="725" />
+<img src="Images/Documentation.PNG" align="center" width="725" />
 
-## Feature Engineering <img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/FeatureEngineeringMenu.PNG" align="right" width="80" />
+## Feature Engineering <img src="Images/FeatureEngineeringMenu.PNG" align="right" width="80" />
 
 <details><summary>Expand to view content</summary>
 <p>
 
-<img src="https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/FeatureEngineeringMenu.PNG" align="center" width="800" />
+<img src="Images/FeatureEngineeringMenu.PNG" align="center" width="800" />
 
 #### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 
