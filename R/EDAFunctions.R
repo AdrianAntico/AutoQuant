@@ -501,24 +501,25 @@ EDA_Histograms <- function(data = NULL,
 #' @noRd
 UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAgg = NULL, ChurnPeriods = 1) {
 
-  # Range
-  LoopRange <- data[, unique(YearMonth)]
-
   # Set up TimeAgg column
   if(tolower(TimeAgg) == 'month') {
-    data[, YearMonth := data.table::month(get(DateColumnName))]
-    data[, YearMonth := data.table::fifelse(YearMonth < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, YearMonth)), as.numeric(data.table::year(get(DateColumnName)), YearMonth))]
+    data[, paste0("Year", TimeAgg) := data.table::month(get(DateColumnName))]
+    data[, paste0("Year", TimeAgg) := data.table::fifelse(get(paste0("Year", TimeAgg)) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, paste0("Year", TimeAgg))), as.numeric(data.table::year(get(DateColumnName)), get(paste0("Year", TimeAgg))))]
   } else if(tolower(TimeAgg) == 'week') {
-    data[, YearWeek := data.table::week(get(DateColumnName))]
-    data[, YearWeek := data.table::fifelse(YearWeek < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, YearWeek)), as.numeric(data.table::year(get(DateColumnName)), YearWeek))]
+    data[, paste0("Year", TimeAgg) := data.table::week(get(DateColumnName))]
+    data[, paste0("Year", TimeAgg) := data.table::fifelse(paste0("Year", TimeAgg) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, paste0("Year", TimeAgg))), as.numeric(data.table::year(get(DateColumnName)), paste0("Year", TimeAgg)))]
   } else if(tolower(Time) == 'day') {
-    data[, YearDay := data.table::yday(get(DateColumnName))]
-    data[, YearWeek := data.table::fcase(
-      YearWeek < 100, as.numeric(paste0(data.table::year(get(DateColumnName)), 00, YearWeek)),
-      YearWeek < 10, as.numeric(data.table::year(get(DateColumnName)), 0, YearWeek),
-      YearWeek > 0, as.numeric(data.table::year(get(DateColumnName)), YearDay))]
+    data[, paste0("Year", TimeAgg) := data.table::yday(get(DateColumnName))]
+    data[, paste0("Year", TimeAgg) := data.table::fcase(
+      get(paste0("Year", TimeAgg)) < 100, as.numeric(paste0(data.table::year(get(DateColumnName)), 00, get(paste0("Year", TimeAgg)))),
+      get(paste0("Year", TimeAgg)) < 10, as.numeric(data.table::year(get(DateColumnName)), 0, get(paste0("Year", TimeAgg))),
+      get(paste0("Year", TimeAgg)) > 0, as.numeric(data.table::year(get(DateColumnName)), get(paste0("Year", TimeAgg))))]
   }
 
+  # Range
+  LoopRange <- data[, unique(get(paste0("Year", TimeAgg)))]
+
+  # Set up Entity lists
   EntityList <- list()
   for(i in seq_along(LoopRange)) {
     EntityList[[paste0("Entities", i)]] <- data[get(DateColumnName) == eval(LoopRange[i])]
