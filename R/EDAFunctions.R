@@ -570,8 +570,8 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
       value =
         length(
           setdiff(
-            unique(length(EntityList[[paste0("Entities", i)]])),
-            unique(length(EntityList[[paste0("Accumulated_", i-1)]])))))
+            unique(EntityList[[paste0("Entities", i)]]),
+            unique(EntityList[[paste0("Accumulated_", i-1)]]))))
 
   }
 
@@ -583,8 +583,8 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
       j = "Retained_Entities",
       value = length(
         intersect(
-          unique(length(EntityList[[paste0("Entities", i-1)]])),
-          unique(length(EntityList[[paste0("Entities", i)]])))))
+          unique(EntityList[[paste0("Entities", i-1)]]),
+          unique(EntityList[[paste0("Entities", i)]]))))
   }
 
   # Churned Entities
@@ -595,8 +595,8 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
       j = "Churned_Entities",
       value = length(
         setdiff(
-          unique(length(EntityList[[paste0("Entities", i-ChurnPeriods)]])),
-          unique(length(EntityList[[paste0("Entities", i)]])))))
+          unique(EntityList[[paste0("Entities", i-ChurnPeriods)]]),
+          unique(EntityList[[paste0("Entities", i)]]))))
   }
 
   # Reactivated Entities
