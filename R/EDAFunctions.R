@@ -543,7 +543,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   data.table::setnames(Collection, "temp", paste0("Year_", TimeAgg))
 
   # Accumulated Entities
-  for(in in seq_along(LoopRange)) {
+  for(i in seq_along(LoopRange)) {
     data.table::set(
       Collection,
       i = i,
@@ -552,7 +552,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # Active Entities
-  for(in in seq_along(LoopRange)) {
+  for(i in seq_along(LoopRange)) {
     data.table::set(
       Collection,
       i = i,
@@ -561,7 +561,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # New Entities
-  for(in in seq_along(LoopRange)) {
+  for(i in seq_along(LoopRange)) {
     data.table::set(
       Collection,
       i = i,
@@ -575,7 +575,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # Retained Entities
-  for(in in seq_along(LoopRange)) {
+  for(i in seq_along(LoopRange)) {
     data.table::set(
       Collection,
       i = i,
@@ -587,7 +587,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # Churned Entities
-  for(in in seq_along(LoopRange)[-(seq_len(ChurnPeriods))]) {
+  for(i in seq_along(LoopRange)[-(seq_len(ChurnPeriods))]) {
     data.table::set(
       Collection,
       i = i,
