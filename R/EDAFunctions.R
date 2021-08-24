@@ -538,7 +538,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
     New_Entities = 0,
     Retained_Entities = 0,
     Churned_Entities = 0,
-    Reactivated_Entites = 0)
+    Reactivated_Entities = 0)
 
   # Update name
   data.table::setnames(Collection, "temp", paste0("Year_", TimeAgg))
@@ -609,7 +609,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
     data.table::set(
       Collection,
       i = i,
-      j = "Churned_Entities",
+      j = "Reactivated_Entities",
       value = length(
         setdiff(
           setdiff(
