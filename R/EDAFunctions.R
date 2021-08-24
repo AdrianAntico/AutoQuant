@@ -599,5 +599,8 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # Reactivated Entities
-  Collection[, Reactivated]
+  Collection[, Reactivated_Entites := Active_Entities - New_Entities - Retained_Entities]
+
+  # Return
+  return(Collection)
 }
