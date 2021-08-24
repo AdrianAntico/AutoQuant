@@ -504,10 +504,10 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   # Set up TimeAgg column
   if(tolower(TimeAgg) == 'month') {
     data[, paste0("Year", TimeAgg) := data.table::month(get(DateColumnName))]
-    data[, paste0("Year", TimeAgg) := data.table::fifelse(get(paste0("Year", TimeAgg)) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, paste0("Year", TimeAgg))), as.numeric(data.table::year(get(DateColumnName)), get(paste0("Year", TimeAgg))))]
+    data[, paste0("Year", TimeAgg) := data.table::fifelse(get(paste0("Year", TimeAgg)) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, get(paste0("Year", TimeAgg)))), as.numeric(data.table::year(get(DateColumnName)), get(paste0("Year", TimeAgg))))]
   } else if(tolower(TimeAgg) == 'week') {
     data[, paste0("Year", TimeAgg) := data.table::week(get(DateColumnName))]
-    data[, paste0("Year", TimeAgg) := data.table::fifelse(paste0("Year", TimeAgg) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, paste0("Year", TimeAgg))), as.numeric(data.table::year(get(DateColumnName)), paste0("Year", TimeAgg)))]
+    data[, paste0("Year", TimeAgg) := data.table::fifelse(get(paste0("Year", TimeAgg)) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, get(paste0("Year", TimeAgg)))), as.numeric(data.table::year(get(DateColumnName)), get(paste0("Year", TimeAgg))))]
   } else if(tolower(Time) == 'day') {
     data[, paste0("Year", TimeAgg) := data.table::yday(get(DateColumnName))]
     data[, paste0("Year", TimeAgg) := data.table::fcase(
