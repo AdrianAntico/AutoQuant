@@ -613,7 +613,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
       value = length(
         setdiff(
           setdiff(
-            unique(EntityList[[paste0("Entities", i-ChurnPeriods)]]),
+            unique(EntityList[[paste0("Entities", i-ChurnPeriods-1)]]),
             unique(EntityList[[paste0("Entities", i-1)]])),
           unique(EntityList[[paste0("Entities", i)]]))))
   }
