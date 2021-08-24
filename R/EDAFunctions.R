@@ -537,7 +537,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
     Active_Entities = 0,
     New_Entities = 0,
     Retained_Entities = 0,
-    Churn_Entities = 0,
+    Churned_Entities = 0,
     Reactivated_Entites = 0)
 
   # Update name
