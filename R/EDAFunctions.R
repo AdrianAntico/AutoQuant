@@ -517,7 +517,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # Range
-  LoopRange <- data[, unique(get(paste0("Year", TimeAgg)))]
+  LoopRange <- sort(data[, unique(get(paste0("Year", TimeAgg)))])
 
   # Set up Entity lists
   EntityList <- list()
