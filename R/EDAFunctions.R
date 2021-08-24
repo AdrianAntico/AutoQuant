@@ -576,6 +576,11 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # Retained Entities
+  if(ChurnPeriods == 1) {
+    lrange <- seq_along(LoopRange)
+  } else {
+    lrange <- seq_along(LoopRange)[-(seq_len(ChurnPeriods-1L))]
+  }
   for(i in seq_along(LoopRange)) {
     data.table::set(
       Collection,
@@ -600,7 +605,18 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # Reactivated Entities
-  Collection[, Reactivated_Entites := Active_Entities - New_Entities - Retained_Entities]
+  for(i in seq_along(LoopRange)[-(seq_len(ChurnPeriods))]) {
+    data.table::set(
+      Collection,
+      i = i,
+      j = "Churned_Entities",
+      value = length(
+        setdiff(
+          setdiff(
+            unique(EntityList[[paste0("Entities", i-ChurnPeriods)]]),
+            unique(EntityList[[paste0("Entities", i)]])),
+          unique(EntityList[[paste0("Entities", i)]]))))
+  }
 
   # Return
   return(Collection)
