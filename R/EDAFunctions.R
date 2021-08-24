@@ -605,7 +605,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   }
 
   # Reactivated Entities
-  for(i in seq_along(LoopRange)[-(seq_len(ChurnPeriods))]) {
+  for(i in seq_along(LoopRange)[-(seq_len(ChurnPeriods+1L))]) {
     data.table::set(
       Collection,
       i = i,
@@ -614,7 +614,7 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
         setdiff(
           setdiff(
             unique(EntityList[[paste0("Entities", i-ChurnPeriods)]]),
-            unique(EntityList[[paste0("Entities", i)]])),
+            unique(EntityList[[paste0("Entities", i-1)]])),
           unique(EntityList[[paste0("Entities", i)]]))))
   }
 
