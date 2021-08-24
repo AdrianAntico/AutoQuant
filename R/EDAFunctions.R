@@ -522,11 +522,11 @@ UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAg
   # Set up Entity lists
   EntityList <- list()
   for(i in seq_along(LoopRange)) {
-    EntityList[[paste0("Entities", i)]] <- data[get(DateColumnName) == eval(LoopRange[i])]
+    EntityList[[paste0("Entities", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i])]
     if(i != 1) {
       EntityList[[paste0("Accumulated_", i)]] <- unique(c(EntityList[[paste0("Accumulated_", i-1)]], EntityList[[paste0("Entities", i)]]))
     } else {
-      EntityList[[paste0("Accumulated_", i)]] <- data[get(DateColumnName) == eval(LoopRange[i]), unique(get(Entity))]
+      EntityList[[paste0("Accumulated_", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
     }
   }
 
