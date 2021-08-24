@@ -496,3 +496,108 @@ EDA_Histograms <- function(data = NULL,
   }
   return(results)
 }
+
+
+#' @noRd
+UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAgg = NULL, ChurnPeriods = 1) {
+
+  # Range
+  LoopRange <- data[, unique(YearMonth)]
+
+  # Set up TimeAgg column
+  if(tolower(TimeAgg) == 'month') {
+    data[, YearMonth := data.table::month(get(DateColumnName))]
+    data[, YearMonth := data.table::fifelse(YearMonth < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, YearMonth)), as.numeric(data.table::year(get(DateColumnName)), YearMonth))]
+  } else if(tolower(TimeAgg) == 'week') {
+    data[, YearWeek := data.table::week(get(DateColumnName))]
+    data[, YearWeek := data.table::fifelse(YearWeek < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, YearWeek)), as.numeric(data.table::year(get(DateColumnName)), YearWeek))]
+  } else if(tolower(Time) == 'day') {
+    data[, YearDay := data.table::yday(get(DateColumnName))]
+    data[, YearWeek := data.table::fcase(
+      YearWeek < 100, as.numeric(paste0(data.table::year(get(DateColumnName)), 00, YearWeek)),
+      YearWeek < 10, as.numeric(data.table::year(get(DateColumnName)), 0, YearWeek),
+      YearWeek > 0, as.numeric(data.table::year(get(DateColumnName)), YearDay))]
+  }
+
+  EntityList <- list()
+  for(i in seq_along(LoopRange)) {
+    EntityList[[paste0("Entities", i)]] <- data[get(DateColumnName) == eval(LoopRange[i])]
+    if(i != 1) {
+      EntityList[[paste0("Accumulated_", i)]] <- unique(c(EntityList[[paste0("Accumulated_", i-1)]], EntityList[[paste0("Entities", i)]]))
+    } else {
+      EntityList[[paste0("Accumulated_", i)]] <- data[get(DateColumnName) == eval(LoopRange[i]), unique(get(Entity))]
+    }
+  }
+
+  # Create collection table
+  Collection <- data.table::data.table(
+    temp = LoopRange,
+    Accumulated_Entities = 0,
+    Active_Entities = 0,
+    New_Entities = 0,
+    Retained_Entities = 0,
+    Churn_Entities = 0,
+    Reactivated_Entites = 0)
+
+  # Update name
+  data.table::setnames(Collection, "temp", paste0("Year_", TimeAgg))
+
+  # Accumulated Entities
+  for(in in seq_along(LoopRange)) {
+    data.table::set(
+      Collection,
+      i = i,
+      j = "Accumulated_Entities",
+      value = unique(length(EntityList[[paste0("Accumulated_", i)]])))
+  }
+
+  # Active Entities
+  for(in in seq_along(LoopRange)) {
+    data.table::set(
+      Collection,
+      i = i,
+      j = "Active_Entities",
+      value = unique(length(EntityList[[paste0("Entities", i)]])))
+  }
+
+  # New Entities
+  for(in in seq_along(LoopRange)) {
+    data.table::set(
+      Collection,
+      i = i,
+      j = "New_Entities",
+      value =
+        length(
+          setdiff(
+            unique(length(EntityList[[paste0("Entities", i)]])),
+            unique(length(EntityList[[paste0("Accumulated_", i-1)]])))))
+
+  }
+
+  # Retained Entities
+  for(in in seq_along(LoopRange)) {
+    data.table::set(
+      Collection,
+      i = i,
+      j = "Retained_Entities",
+      value = length(
+        intersect(
+          unique(length(EntityList[[paste0("Entities", i-1)]])),
+          unique(length(EntityList[[paste0("Entities", i)]])))))
+  }
+
+  # Churned Entities
+  for(in in seq_along(LoopRange)[-(seq_len(ChurnPeriods))]) {
+    data.table::set(
+      Collection,
+      i = i,
+      j = "Churned_Entities",
+      value = length(
+        setdiff(
+          unique(length(EntityList[[paste0("Entities", i-ChurnPeriods)]])),
+          unique(length(EntityList[[paste0("Entities", i)]])))))
+  }
+
+  # Reactivated Entities
+  Collection[, Reactivated]
+}
