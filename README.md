@@ -7757,7 +7757,9 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 ## Utilities, EDA, and Misc. <img src="Images/MiscImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
- 
+
+<code>UserBaseEvolution()</code> Create an output table of accumulated unique user counts, active unique user counts, new unique user counts, retained unique user counts, churned unique user counts, and reactivated unique user counts. You can specify the aggregation window (Month, Week, and Day) and you can specify the Churn Window.
+
 <code>EDA_Histograms()</code> Create histograms and bar plots for all columns from a data.table, or a subset provided by the user to the PlotColumns arg.
 
 <code>ScatterCopula()</code> Creates a copula-based scatterplot between two numeric variables. Additionally, a gam fit is added to the plot.
