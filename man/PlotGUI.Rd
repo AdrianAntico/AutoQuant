@@ -9,3 +9,12 @@ PlotGUI()
 \description{
 Spin up the esquisse plotting gui
 }
+\seealso{
+Other EDA: 
+\code{\link{AutoWordFreq}()},
+\code{\link{EDA_Histograms}()},
+\code{\link{Mode}()},
+\code{\link{ScatterCopula}()},
+\code{\link{UserBaseEvolution}()}
+}
+\concept{EDA}

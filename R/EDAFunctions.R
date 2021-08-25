@@ -163,6 +163,8 @@ BNLearnArcStrength <- function(data = NULL,
 #'
 #' @description Spin up the esquisse plotting gui
 #'
+#' @family EDA
+#'
 #' @export
 PlotGUI <- function() {
   if('esquisse' %in% installed.packages() && "rvg" %in% installed.packages()) esquisse::esquisser() else stop("You need to install 'esquisse' and / or 'rvg' to run the gui")
@@ -498,7 +500,20 @@ EDA_Histograms <- function(data = NULL,
 }
 
 
-#' @noRd
+#' @title UserBaseEvolution
+#'
+#' @description This function creates a table of user counts over time for accumulated unique users, active unique users, new unique users, retained unique users, churned unique users, and reactivated unique users. You can run this with several specifications. You can request monthly, weekly, or daily counts and you can specify a churn window for the computations.
+#'
+#' @author Adrian Antico
+#' @family EDA
+#'
+#' @param data Source data.table
+#' @param Entity Column name of the entity / user
+#' @param DateColumnName Name of the date column used for inclusion of users in time periods
+#' @param TimeAgg Choose from 'Month', 'Week', or 'Day'
+#' @param ChurnPeriods Defaults to 1. This means for TimeAgg = 'Month' a one month churn period is used. For TimeAgg = 'Week' you will have a one week churn period. If you set ChurnPeriods to 2 then it will be a 2 month churn or a 2 week churn. Same logic applies for daily.
+#'
+#' @export
 UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAgg = NULL, ChurnPeriods = 1) {
 
   # Set up TimeAgg column

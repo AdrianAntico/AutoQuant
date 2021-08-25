@@ -60,7 +60,9 @@ Creates histograms
 Other EDA: 
 \code{\link{AutoWordFreq}()},
 \code{\link{Mode}()},
-\code{\link{ScatterCopula}()}
+\code{\link{PlotGUI}()},
+\code{\link{ScatterCopula}()},
+\code{\link{UserBaseEvolution}()}
 }
 \author{
 Adrian Antico

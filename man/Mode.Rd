@@ -16,7 +16,9 @@ Statistical mode. Only returns the first mode if there are many
 Other EDA: 
 \code{\link{AutoWordFreq}()},
 \code{\link{EDA_Histograms}()},
-\code{\link{ScatterCopula}()}
+\code{\link{PlotGUI}()},
+\code{\link{ScatterCopula}()},
+\code{\link{UserBaseEvolution}()}
 }
 \author{
 Adrian Antico
