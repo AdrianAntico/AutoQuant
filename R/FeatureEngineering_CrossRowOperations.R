@@ -433,12 +433,7 @@ AutoDiffLagN <- function(data,
   if(!is.null(DiffVariables)) {
     if(NLag1 == 0L) {
       ModDiffVariables <- paste0("Diff_", NLag2, "_", DiffVariables)
-      if(!is.null(GroupVariables)) {
-        data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables), by = eval(GroupVariables)]
-      } else {
-        data <- data[, (ModDiffVariables) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables)]
-      }
-      data <- data[, (ModDiffVariables) := {g <- list(); for(x in DiffVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "numeric"); g}]
+      data[, (ModDiffVariables) := lapply(.SD, collapse::fdiff, n = NLag2), .SDcols = c(DiffVariables)]
     } else {
       ModDiffVariables1 <- paste0("Diff_", NLag1, "_", DiffVariables)
       ModDiffVariables2 <- paste0("Diff_", NLag1,"-", NLag2, "_", DiffVariables)
@@ -449,7 +444,7 @@ AutoDiffLagN <- function(data,
         data <- data[, (ModDiffVariables1) := data.table::shift(x = .SD, n = NLag1, fill = NA, type = "lag"), .SDcols = c(DiffVariables)]
         data <- data[, (ModDiffVariables2) := data.table::shift(x = .SD, n = NLag2, fill = NA, type = "lag"), .SDcols = c(DiffVariables)]
       }
-      data <- data[, (ModDiffVariables2) := {g <- list(); for(x in DiffVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "numeric"); g}]
+      data[, (ModDiffVariables2) := {g <- list(); for(x in DiffVariables) g[[x]] <- DiffDT(data, x, NLag1, NLag2, Type = "numeric"); g}]
       data.table::set(data, j = ModDiffVariables1, value = NULL)
     }
   }
@@ -2233,6 +2228,369 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     } else {
       return(data)
     }
+  }
+}
+
+#' @title Partial_DT_GDL_Feature_Engineering2
+#'
+#' @description For scoring models in production that have > 1 grouping variables and for when you need > 1 record (or records per grouping variables) returned. This function is for generating lags and moving averages (along with lags and moving averages off of time between records), for a partial set of records in your data set, typical new records that become available for model scoring. Column names and ordering will be identical to the output from the corresponding DT_GDL_Feature_Engineering() function, which most likely was used to create features for model training.
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#'
+#' @param data A data.table you want to run the function on
+#' @param lags A numeric vector of the specific lags you want to have generated. You must include 1 if WindowingLag = 1.
+#' @param periods A numeric vector of the specific rolling statistics window sizes you want to utilize in the calculations.
+#' @param SDperiods  A numeric vector of Standard Deviation rolling statistics window sizes you want to utilize in the calculations.
+#' @param Skewperiods  A numeric vector of Skewness rolling statistics window sizes you want to utilize in the calculations.
+#' @param Kurtperiods  A numeric vector of Kurtosis rolling statistics window sizes you want to utilize in the calculations.
+#' @param Quantileperiods A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.
+#' @param statsFUNs Select from the following c("mean","sd","skew","kurt","q5","q10","q15","q20","q25","q30","q35","q40","q45","q50","q55","q60","q65","q70","q75","q80","q85","q90","q95")
+#' @param targets A character vector of the column names for the reference column in which you will build your lags and rolling stats
+#' @param groupingVars A character vector of categorical variable names you will build your lags and rolling stats by
+#' @param sortDateName The column name of your date column used to sort events over time
+#' @param timeDiffTarget Specify a desired name for features created for time between events. Set to NULL if you don't want time between events features created.
+#' @param timeAgg List the time aggregation level for the time between events features, such as "hour", "day", "week", "month", "quarter", or "year"
+#' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
+#' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
+#' @param Timer Set to TRUE if you percentage complete tracker printout
+#' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
+#' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with the smallest numbers being the records for scoring (typically the most current in time).
+#' @param RecordsKeep List the row number of AscRowByGroup and those data points will be returned
+#' @param AscRowRemove Set to TRUE to remove the AscRowByGroup column upon returning data.
+#' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
+#' @examples
+#' \dontrun{
+#' N = 25116
+#' data <- data.table::data.table(
+#'   DateTime = as.Date(Sys.time()),
+#'   Target = stats::filter(
+#'     rnorm(N, mean = 50, sd = 20),
+#'   filter=rep(1,10),
+#'   circular=TRUE))
+#' data[, temp := seq(1:N)][, DateTime := DateTime - temp]
+#' data <- data[order(DateTime)]
+#' data <- Partial_DT_GDL_Feature_Engineering2(
+#'   data,
+#'   lags           = c(1:5),
+#'   periods        = c(seq(10,50,10)),
+#'   SDperiods       = c(seq(5, 95, 5)),
+#'   Skewperiods     = c(seq(5, 95, 5)),
+#'   Kurtperiods     = c(seq(5, 95, 5)),
+#'   Quantileperiods = c(seq(5, 95, 5)),
+#'   statsFUNs      = c("mean","sd", "skew",
+#'     "kurt","q5","q95"),
+#'   targets        = c("Target"),
+#'   groupingVars   = NULL,
+#'   sortDateName   = "DateTime",
+#'   timeDiffTarget = NULL, # deprecated
+#'   timeAgg        = "days",
+#'   WindowingLag   = 1,
+#'   Type           = "Lag",
+#'   Timer          = TRUE,
+#'   SimpleImpute   = TRUE,
+#'   AscRowByGroup  = "temp",
+#'   RecordsKeep    = c(1,5,100,2500),
+#'   AscRowRemove   = TRUE)
+#' }
+#' @noRd
+Partial_DT_GDL_Feature_Engineering2 <- function(data,
+                                                lags            = 1,
+                                                periods         = 0,
+                                                SDperiods       = 0,
+                                                Skewperiods     = 0,
+                                                Kurtperiods     = 0,
+                                                Quantileperiods = 0,
+                                                statsFUNs       = c("mean"),
+                                                targets         = c("Target"),
+                                                groupingVars    = NULL,
+                                                sortDateName    = NULL,
+                                                timeDiffTarget  = NULL,
+                                                timeAgg         = NULL,
+                                                WindowingLag    = 1,
+                                                Type            = "Lag",
+                                                Timer           = TRUE,
+                                                SimpleImpute    = TRUE,
+                                                AscRowByGroup   = "temp",
+                                                RecordsKeep     = 1,
+                                                AscRowRemove    = TRUE) {
+
+  # timeAgg----
+  if(is.null(timeAgg)) {
+    timeAgg <- "TimeUnitNULL"
+  } else if(tolower(timeAgg) == "raw") {
+    timeAggss <- "transactional"
+    timeAgg <- "day"
+  } else {
+    timeAggss <- timeAgg
+  }
+
+  # Number of targets
+  tarNum <- length(targets)
+
+  # Argument Checks ----
+  if(is.null(lags) && WindowingLag == 1) lags <- 1
+  if(!(1 %in% lags) && WindowingLag == 1) lags <- c(1, lags)
+  if(any(lags < 0)) stop("lags need to be positive integers")
+  if(!is.null(groupingVars)) if(!is.character(groupingVars)) stop("groupingVars needs to be a character scalar or vector")
+  if(!is.character(targets)) stop("targets needs to be a character scalar or vector")
+  if(!is.character(sortDateName)) stop("sortDateName needs to be a character scalar or vector")
+  if(!is.null(timeAgg)) if(!is.character(timeAgg)) stop("timeAgg needs to be a character scalar or vector")
+  if(!(WindowingLag %in% c(0, 1))) stop("WindowingLag needs to be either 0 or 1")
+  if(!(tolower(Type) %chin% c("lag", "lead"))) stop("Type needs to be either Lag or Lead")
+  if(!is.logical(SimpleImpute)) stop("SimpleImpute needs to be TRUE or FALSE")
+
+  # Ensure enough columns are allocated beforehand----
+  if(!is.null(groupingVars)) {
+    if(ncol(data) + (length(lags) + length(periods)) * tarNum * length(groupingVars) * length(statsFUNs) > data.table::truelength(data)) {
+      data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * length(groupingVars) * length(statsFUNs))
+    }
+  } else {
+    if(ncol(data) + (length(lags) + length(periods)) * tarNum * length(statsFUNs) > data.table::truelength(data)) {
+      data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * length(statsFUNs))
+    }
+  }
+
+  # Rows to keep for max periods (used to be columns)
+  MaxCols <- max(lags,periods,SDperiods,Skewperiods,Kurtperiods,Quantileperiods)
+
+  # Colnames
+  Cols <- names(data.table::copy(data))
+
+  # Begin feature engineering----
+  if(!is.null(groupingVars)) {
+    for(i in seq_along(groupingVars)) {
+      Targets <- targets
+
+      # Subset data ----
+      data1 <- data[get(groupingVars[i]) %in% data[get(AscRowByGroup) %in% c(RecordsKeep)][[eval(groupingVars[i])]]]
+
+      # Sort data----
+      colVar <- c(groupingVars[i], sortDateName[1L])
+      if(tolower(Type) == "lag") {
+        data.table::setorderv(data1, colVar, order = 1L)
+      } else {
+        data.table::setorderv(data1, colVar, order = -1L)
+      }
+
+      # Rows needed
+      rows <- data1[, .I[get(AscRowByGroup) %in% c(RecordsKeep)]]
+      Rows <- c()
+      for(x in seq_along(rows)) {
+        if(x == 1L) {
+          Rows <- rows[x]:(max(rows[x]-MaxCols,1))
+        } else {
+          Rows <- c(Rows, rows[x]:(max(rows[x]-MaxCols,1)))
+        }
+      }
+      data1 <- data1[unique(Rows)]
+
+      # Sort data----
+      if(tolower(Type) == "lag") {
+        colVar <- c(groupingVars[i], sortDateName[1L])
+        data.table::setorderv(data1, colVar, order = 1L)
+      } else {
+        colVar <- c(groupingVars[i], sortDateName[1L])
+        data.table::setorderv(data1, colVar, order = -1L)
+      }
+
+      # Lags ----
+      LAG_Names <- c()
+      for(t in Targets) LAG_Names <- c(LAG_Names, paste0(timeAggss, "_", groupingVars[i], "_LAG_", lags, "_", t))
+      data1[, paste0(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"), by = c(groupingVars[i]), .SDcols = Targets]
+
+      # Define targets----
+      if(WindowingLag != 0L) {
+        Targets <- c(paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", Targets))
+      }
+
+      # MA stats ----
+      if(any(tolower(statsFUNs) %chin% "mean") && !all(periods %in% c(0L, 1L))) {
+        periods <- periods[periods > 1L]
+        MA_Names <- c()
+        for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0(timeAggss, "_", groupingVars[i],"Mean","_", periods[j],"_", t))
+        data1[, paste0(MA_Names) := data.table::frollmean(
+          x = .SD, n = periods, fill = NA, algo = "fast", align = "right", na.rm = TRUE, hasNA = TRUE, adaptive = FALSE),
+          by = c(groupingVars[i]), .SDcols = c(Targets)]
+      }
+
+      # SD stats ----
+      if(any(tolower(statsFUNs) %chin% c("sd")) && !all(SDperiods %in% c(0L,1L))) {
+        tempperiods <- SDperiods[SDperiods > 1L]
+        SD_Names <- c()
+        for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0(timeAggss, "_", groupingVars[i], "SD_", tempperiods[j], "_", t))
+        data1[, paste0(SD_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = sd, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
+      }
+
+      # Skewness stats ----
+      if(any(tolower(statsFUNs) %chin% c("skew")) && !all(Skewperiods %in% c(0L,1L,2L))) {
+        tempperiods <- Skewperiods[Skewperiods > 2L]
+        Skew_Names <- c()
+        for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0(timeAggss, "_", groupingVars[i], "Skew_", tempperiods[j], "_", t))
+        data1[, paste0(Skew_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::skewness, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = Targets]
+      }
+
+      # Kurtosis stats ----
+      if(any(tolower(statsFUNs) %chin% c("kurt")) && !all(Kurtperiods %in% c(0L,1L,2L,3L,4L))) {
+        tempperiods <- Kurtperiods[Kurtperiods > 3L]
+        Kurt_Names <- c()
+        for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0(timeAggss, "_", groupingVars[i], "Kurt_", tempperiods[j], "_", t))
+        data1[, paste0(Kurt_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::kurtosis, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
+      }
+
+      # Quantiles ----
+      if(!all(Quantileperiods %in% c(0L,1L,2L,3L,4L))) {
+        tempperiods <- Quantileperiods[Quantileperiods > 4L]
+        for(z in c(seq(5L,95L,5L))) {
+          if(any(paste0("q",z) %chin% statsFUNs)) {
+            Names <- c()
+            for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0(timeAggss, "_", groupingVars[i], "Q_", z, "_", tempperiods[j], "_", t))
+            data1[, paste0(Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = quantile, probs = z/100, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
+          }
+        }
+      }
+
+      # Only keep requested columns----
+      if(i == 1) {
+        FinalData <- data.table::copy(data1)
+      } else {
+        keep <- c("TEMPDATE",AscRowByGroup, setdiff(names(data1), names(data)))
+        FinalData <- merge(FinalData, data1[, ..keep], by = "TEMPDATE", all = FALSE)
+      }
+    }
+
+    # Subset data
+    FinalData <- FinalData[get(AscRowByGroup) %in% RecordsKeep][, eval(AscRowByGroup) := NULL]
+
+    # Impute missing values ----
+    if(SimpleImpute) {
+      for(j in which(names(FinalData) %chin% setdiff(names(FinalData), names(data)))) {
+        if(is.factor(FinalData[[j]])) {
+          data.table::set(FinalData, which(!(FinalData[[j]] %in% levels(FinalData[[j]]))), j, "0")
+        } else {
+          data.table::set(FinalData, which(is.na(FinalData[[j]])), j, -1)
+        }
+      }
+    }
+
+    # Done!! ----
+    return(FinalData)
+
+  } else {
+
+    TargetS <- targets
+
+    # Sort data----
+    if(tolower(Type) == "lag") {
+      colVar <- c(sortDateName[1L])
+      data.table::setorderv(data, colVar, order = 1L)
+    } else {
+      colVar <- c(sortDateName[1L])
+      data.table::setorderv(data, colVar, order = -1L)
+    }
+
+    # Subset data for the rows needed to compute MaxCols ----
+    MaxCols <- max(lags, periods, SDperiods, Skewperiods, Kurtperiods, Quantileperiods)
+    rows <- data[, .I[get(AscRowByGroup) %in% c(RecordsKeep)]]
+    Rows <- c()
+    for(x in seq_along(rows)) {
+      if(x == 1L) {
+        Rows <- rows[x]:(max(rows[x]-MaxCols, 0L))
+      } else {
+        Rows <- c(Rows, rows[x]:(max(rows[x]-MaxCols, 0L)))
+      }
+    }
+    data <- data[unique(Rows)]
+
+    # Sort data----
+    if(tolower(Type) == "lag") {
+      colVar <- c(sortDateName[1])
+      data.table::setorderv(data, colVar, order = 1L)
+    } else {
+      colVar <- c(sortDateName[1])
+      data.table::setorderv(data, colVar, order = -1L)
+    }
+
+    # Lags ----
+    LAG_Names <- c()
+    for(t in TargetS) LAG_Names <- c(LAG_Names, paste0(timeAggss, "_", "LAG_", lags, "_", t))
+
+    # Build features ----
+    data[, paste0(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"), .SDcols = c(TargetS)]
+
+    # Define TargetS ----
+    if(WindowingLag != 0L) {
+      Targets <- TargetS
+    } else {
+      Targets <- Targets
+    }
+
+    # MA stats ----
+    if(any(tolower(statsFUNs) %chin% "mean") & !all(periods %in% c(0L, 1L))) {
+      periods <- periods[periods > 1L]
+      MA_Names <- c()
+      for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0(timeAggss, "_", "Mean_", periods[j], "_", t))
+      data[, paste0(MA_Names) := data.table::frollmean(x = .SD, n = periods, fill = NA, algo = "fast", align = "right", na.rm = TRUE, hasNA = TRUE, adaptive = FALSE), .SDcols = c(Targets)]
+    }
+
+    # SD stats ----
+    if(any(tolower(statsFUNs) %chin% c("sd")) & !all(SDperiods %in% c(0L,1L))) {
+      tempperiods <- SDperiods[SDperiods > 1L]
+      SD_Names <- c()
+      for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0(timeAggss, "_", "SD_", tempperiods[j], "_", t))
+      data[get(AscRowByGroup) %in% RecordsKeep, paste0(SD_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = sd, na.rm = TRUE), .SDcols = c(Targets)]
+    }
+
+    # Skewness stats ----
+    if(any(tolower(statsFUNs) %chin% c("skew")) & !all(Skewperiods %in% c(0L,1L,2L))) {
+      tempperiods <- Skewperiods[Skewperiods > 2L]
+      Skew_Names <- c()
+      for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0(timeAggss, "_", "Skew_", tempperiods[j], "_", t))
+      data[get(AscRowByGroup) %in% RecordsKeep, paste0(Skew_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::skewness, na.rm = TRUE), .SDcols = c(Targets)]
+    }
+
+    # Kurtosis stats ----
+    if(any(tolower(statsFUNs) %chin% c("kurt")) & !all(Kurtperiods %in% c(0L,1L,2L,3L))) {
+      tempperiods <- Kurtperiods[Kurtperiods > 3L]
+      Kurt_Names <- c()
+      for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0(timeAggss, "_", "Kurt_", tempperiods[j], "_", t))
+      data[get(AscRowByGroup) %in% RecordsKeep, paste0(Kurt_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::kurtosis, na.rm = TRUE), .SDcols = c(Targets)]
+    }
+
+    # Quantiles ----
+    if(!all(Quantileperiods %in% c(0L,1L,2L,3L,4L))) {
+      tempperiods <- Quantileperiods[Quantileperiods > 4L]
+      for(z in c(seq(5L,95L,5L))) {
+        if(any(paste0("q",z) %chin% statsFUNs)) {
+          Names <- c()
+          for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0(timeAggss, "_", "Q_", z, "_", tempperiods[j], "_", t))
+          data[get(AscRowByGroup) %in% RecordsKeep, paste0(Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = quantile, probs = z/100, na.rm = TRUE), .SDcols = c(Targets)]
+        }
+      }
+    }
+
+    # Only keep requested columns----
+    # Subset data
+    FinalData <- FinalData[get(AscRowByGroup) %in% RecordsKeep][, temp := NULL]
+    keep <- c(ColKeep, unlist(LagKeeps), PeriodKeep)
+    data <- data[, ..keep]
+
+    # Impute missing values ----
+    if(SimpleImpute) {
+      for(j in which(setdiff(names(data), Cols) %chin% names(data))) {
+        if(is.factor(data[[j]])) {
+          data.table::set(data, which(!(data[[j]] %in% levels(data[[j]]))), j, "0")
+        } else {
+          data.table::set(data, which(is.na(data[[j]])), j, -1)
+        }
+      }
+    }
+
+    # Subset data
+    data <- data[get(AscRowByGroup) %in% RecordsKeep][, temp := NULL]
+
+    # Done!! ----
+    return(data)
   }
 }
 
