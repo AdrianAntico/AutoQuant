@@ -11,7 +11,8 @@
 
 ![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/ML_Models_Menu.PNG" align="center" width="800" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
+
 
 <details><summary>Expand to view content</summary>
 <p>
