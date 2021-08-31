@@ -11,7 +11,7 @@
 
 ![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
 
-<img src="Images/ML_Models_Menu.PNG" align="center" width="800" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images//ML_Models_Menu.PNG" align="center" width="800" />
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -133,7 +133,7 @@ If you're having still having trouble installing see if the issue below helps ou
 <details><summary>Expand to view content</summary>
 <p>
 
-<img src="Images/FeatureEngineeringMenu.PNG" align="center" width="800" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/FeatureEngineeringMenu.PNG" align="center" width="800" />
 
 #### **AutoLagRollStats()** and **AutoLagRollStatsScoring()**
 
@@ -1301,7 +1301,7 @@ str(data)
 
 
 
-## Supervised Learning <img src="Images/SupervisedLearningImage.png" align="right" width="80" />
+## Supervised Learning <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/SupervisedLearningImage.png" align="right" width="80" />
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -3828,7 +3828,7 @@ for(run in seq_len(LightGBM_QA[,.N])) {
 
 
 
-## Model Scoring <img src="Images/ModelScoringImage.png" align="right" width="80" />
+## Model Scoring <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/ModelScoringImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -5579,7 +5579,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 
 
 
-## Model Evaluation <img src="Images/ModelEvaluationImage.png" align="right" width="80" />
+## Model Evaluation <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -5646,7 +5646,7 @@ ShapTable <- SingleRowShapeShap(
 
 
 
-## Panel Data Forecasting <img src="Images/AutoCARMA2.png" align="right" width="80" />
+## Panel Data Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/AutoCARMA2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -6519,7 +6519,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 
 
 
-## Intermittent Demand Forecasting <img src="Images/IntermittentDemandForecasting.png" align="right" width="80" />
+## Intermittent Demand Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/IntermittentDemandForecasting.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -6923,7 +6923,7 @@ Output <- RemixAutoML::AutoLightGBMHurdleCARMA(
 
 
 
-## Funnel Forecasting <img src="Images/SalesFunnelImage.PNG" align="right" width="80" />
+## Funnel Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/SalesFunnelImage.PNG" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -7388,7 +7388,7 @@ Test <- RemixAutoML::AutoXGBoostFunnelCARMAScoring(
 
 
 
-## Time Series Forecasting <img src="Images/AutoTS.png" align="right" width="80" />
+## Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/AutoTS.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -7627,7 +7627,7 @@ Output$TimeSeriesPlot
 </details>
 
 
-## Recommender Systems <img src="Images/RecommenderSystemImage2.png" align="right" width="80" />
+## Recommender Systems <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/RecommenderSystemImage2.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -7731,7 +7731,7 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 </details>
 
 
-## Database Management <img src="Images/DataBase.PNG" align="right" width="80" />
+## Database Management <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/main/Images/DataBase.PNG" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
 
