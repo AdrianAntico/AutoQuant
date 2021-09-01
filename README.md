@@ -73,7 +73,6 @@ if(!("MLmetrics" %in% rownames(installed.packages()))) install.packages("MLmetri
 if(!("nortest" %in% rownames(installed.packages()))) install.packages("nortest"); print("nortest")
 if(!("RColorBrewer" %in% rownames(installed.packages()))) install.packages("RColorBrewer"); print("RColorBrewer")
 if(!("recommenderlab" %in% rownames(installed.packages()))) install.packages("recommenderlab"); print("recommenderlab")
-if(!("ROCR" %in% rownames(installed.packages()))) install.packages("ROCR"); print("ROCR")
 if(!("pROC" %in% rownames(installed.packages()))) install.packages("pROC"); print("pROC")
 if(!("Rfast" %in% rownames(installed.packages()))) install.packages("Rfast"); print("Rfast")
 if(!("scatterplot3d" %in% rownames(installed.packages()))) install.packages("scatterplot3d"); print("scatterplot3d")
