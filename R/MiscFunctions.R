@@ -186,7 +186,7 @@ BuildBinary <- function(Root = NULL) {
     devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
   } else {
     setwd("C:/Users/Bizon/Documents/GitHub")
-    devtools::build(pkg = "RemixAutoML", dependencies = FALSE)
+    devtools::build(pkg = "RemixAutoML")
   }
   setwd(x)
 }
