@@ -168,6 +168,29 @@ LB <- function(TimeAgg) {
   }
 }
 
+#' @title BuildBinary
+#'
+#' @description Build package binary
+#'
+#' @author Adrian Antico
+#'
+#' @family Utilities
+#'
+#' @param Root NULL will setwd to project root as defined in function
+#'
+#' @noRd
+BuildBinary <- function(Root = NULL) {
+  x <- getwd()
+  if(!is.null(Root)) {
+    setwd(Root)
+    devtools::install(pkg = "RemixAutoML", dependencies = FALSE)
+  } else {
+    setwd("C:/Users/Bizon/Documents/GitHub")
+    devtools::build(pkg = "RemixAutoML", dependencies = FALSE)
+  }
+  setwd(x)
+}
+
 #' @title Install
 #'
 #' @description To install the package
