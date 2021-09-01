@@ -93,9 +93,17 @@ The most common issue some users are having when trying to install <code>RemixAu
 If you're still having trouble submit an issue and I'll work with you to get it installed.
 
 ```
-# Be sure to use the version you want versus what is listed below
+# Method for on premise servers
 options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
 install.packages("https://github.com/catboost/catboost/releases/download/v0.25.1/catboost-R-Windows-0.25.1.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+
+# Method for azure machine learning Designer pipelines
+
+## catboost
+install.packages("https://github.com/catboost/catboost/releases/download/v0.26.1/catboost-R-Windows-0.26.1.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+
+## RemixAutoML
+install.packages("https://github.com/AdrianAntico/RemixAutoML/archive/refs/tags/V0.5.9.tar.gz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
 ```
  
 If you're having still having trouble installing see if the issue below helps out:
