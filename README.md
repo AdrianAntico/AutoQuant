@@ -95,7 +95,7 @@ If you're still having trouble submit an issue and I'll work with you to get it 
 ```
 # Method for on premise servers
 options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
-install.packages("https://github.com/catboost/catboost/releases/download/v0.25.1/catboost-R-Windows-0.25.1.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
+install.packages("https://github.com/catboost/catboost/releases/download/v0.26.1/catboost-R-Windows-0.26.1.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
 
 # Method for azure machine learning Designer pipelines
 
