@@ -10,6 +10,7 @@ EDA_Histograms(
   SampleCount = 1e+05,
   SavePath = NULL,
   FactorCountPerPlot = 10,
+  AddDensityLine = FALSE,
   PrintOutput = FALSE,
   Size = 12,
   AngleX = 35,
@@ -32,6 +33,8 @@ EDA_Histograms(
 \item{SavePath}{Output file path to where you can optionally save pdf}
 
 \item{FactorCountPerPlot}{Default 10}
+
+\item{AddDensityLine}{Set to TRUE to add a density line to the plots}
 
 \item{PrintOutput}{Default FALSE. TRUE will print results upon running function}
 

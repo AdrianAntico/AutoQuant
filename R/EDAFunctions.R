@@ -363,6 +363,7 @@ NameTypeDistinct <- function(data) {
 #' @param SampleCount Number of random samples to use from data. data is first shuffled and then random samples taken
 #' @param SavePath Output file path to where you can optionally save pdf
 #' @param FactorCountPerPlot Default 10
+#' @param AddDensityLine Set to TRUE to add a density line to the plots
 #' @param PrintOutput Default FALSE. TRUE will print results upon running function
 #' @param Size Default 12
 #' @param AngleX Default 35
@@ -380,6 +381,7 @@ EDA_Histograms <- function(data = NULL,
                            SampleCount = 100000,
                            SavePath = NULL,
                            FactorCountPerPlot = 10,
+                           AddDensityLine = FALSE,
                            PrintOutput = FALSE,
                            Size = 12,
                            AngleX = 35,
@@ -423,7 +425,7 @@ EDA_Histograms <- function(data = NULL,
               varAnalyze, ggplot2::aes(dat)) +
               ggplot2::geom_histogram(ggplot2::aes(y = ..density..), bins = bins, show.legend = FALSE, col = "grey", fill = "#5555ee") +
               ggplot2::scale_fill_discrete(h = c(180, 250), l = 50) +
-              ggplot2::stat_function(fun = dnorm, args = list(mean = mean(varAnalyze$dat, na.rm = TRUE), sd = sd(varAnalyze$dat, na.rm = TRUE)), col = "red") +
+              if(1 == 2) ggplot2::stat_function(fun = dnorm, args = list(mean = mean(varAnalyze$dat, na.rm = TRUE), sd = sd(varAnalyze$dat, na.rm = TRUE)), col = "red") +
               RemixAutoML::ChartTheme(
                 Size = Size,
                 AngleX = AngleX,
@@ -434,7 +436,7 @@ EDA_Histograms <- function(data = NULL,
                 GridColor = GridColor,
                 BackGroundColor = BackGroundColor,
                 LegendPosition = LegendPosition) +
-              ggplot2::labs(x = varName, y = "Rows") +
+              ggplot2::labs(x = varName, y = "Density") +
               ggplot2::ggtitle(paste("Histogram of", varName)))
         } else {
           varAnalyze = data.table::data.table(dat = as.character(data[[varName]]))
@@ -453,7 +455,7 @@ EDA_Histograms <- function(data = NULL,
                 GridColor = GridColor,
                 BackGroundColor = BackGroundColor,
                 LegendPosition = LegendPosition) +
-              ggplot2::labs(x = varName, y = "Rows") +
+              ggplot2::labs(x = varName, y = "Density") +
               ggplot2::ggtitle(paste("Bar Chart of", varName)))
         }
       } else {
