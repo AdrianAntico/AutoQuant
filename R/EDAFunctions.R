@@ -420,12 +420,11 @@ EDA_Histograms <- function(data = NULL,
           } else {
             bins <- 10
           }
-          results[[varName]] <- eval(
+          temp <- eval(
             ggplot2::ggplot(
               varAnalyze, ggplot2::aes(dat)) +
               ggplot2::geom_histogram(ggplot2::aes(y = ..density..), bins = bins, show.legend = FALSE, col = "grey", fill = "#5555ee") +
               ggplot2::scale_fill_discrete(h = c(180, 250), l = 50) +
-              if(1 == 2) ggplot2::stat_function(fun = dnorm, args = list(mean = mean(varAnalyze$dat, na.rm = TRUE), sd = sd(varAnalyze$dat, na.rm = TRUE)), col = "red") +
               RemixAutoML::ChartTheme(
                 Size = Size,
                 AngleX = AngleX,
@@ -438,6 +437,10 @@ EDA_Histograms <- function(data = NULL,
                 LegendPosition = LegendPosition) +
               ggplot2::labs(x = varName, y = "Density") +
               ggplot2::ggtitle(paste("Histogram of", varName)))
+          if(AddDensityLine) {
+            temp <- temp + ggplot2::stat_function(fun = dnorm, args = list(mean = mean(varAnalyze$dat, na.rm = TRUE), sd = sd(varAnalyze$dat, na.rm = TRUE)), col = "red")
+          }
+          results[[varName]] <- temp
         } else {
           varAnalyze = data.table::data.table(dat = as.character(data[[varName]]))
           results[[varName]] <- eval(
