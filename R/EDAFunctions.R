@@ -248,7 +248,6 @@ ScatterCopula <- function(data = NULL,
 
     # Gam fit
     if(FitGam) original_scale_plot <- original_scale_plot + ggplot2::geom_smooth(method='gam')
-
   } else {
     original_scale_plot <- suppressMessages(
       eval(
@@ -270,7 +269,6 @@ ScatterCopula <- function(data = NULL,
 
     # Gam fit
     if(FitGam) original_scale_plot <- original_scale_plot + ggplot2::geom_smooth(method='gam')
-
   }
 
   # Empirical Copula Scatter
@@ -279,8 +277,7 @@ ScatterCopula <- function(data = NULL,
       eval(
         ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1")) +
           ggplot2::geom_point(size = point_size, color = color) +
-          ggplot2::geom_smooth(method = "lm") +
-          ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 1) +
+          ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 0.25) +
           ggplot2::ggtitle(paste0("Copula: Pearson Corr: ", round(cop_Pearson, 3L), " :: Spearman Corr: ", round(cop_Spearman, 3L))) +
           ggplot2::xlab(label = x_var) + ggplot2::ylab(label = y_var) +
           ChartTheme(
@@ -295,8 +292,7 @@ ScatterCopula <- function(data = NULL,
             LegendPosition = legend_position)))
 
     # Gam fit
-    if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method='gam')
-
+    if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method = "lm") + ggplot2::geom_smooth(method='gam')
   } else {
     copula_plot <- suppressMessages(
       eval(
@@ -318,8 +314,7 @@ ScatterCopula <- function(data = NULL,
             LegendPosition = legend_position)))
 
     # Gam fit
-    if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method='gam')
-
+    if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method = "lm") + ggplot2::geom_smooth(method='gam')
   }
 
   # Return
