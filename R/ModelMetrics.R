@@ -163,30 +163,30 @@ ClassificationMetrics <- function(TestData,
                                   NegativeOutcome,
                                   CostMatrix = c(0,1,1,0)) {
   if("Target" %chin% names(TestData)) data.table::set(TestData, j = "Target", value = NULL)
-  ThreshLength <- length(Thresholds)
+  ThreshLength <- rep(1, length(Thresholds))
   ThresholdOutput <- data.table::data.table(
-    Threshold   = rep(1,ThreshLength),
-    TN          = rep(1,ThreshLength),
-    TP          = rep(1,ThreshLength),
-    FN          = rep(1,ThreshLength),
-    FP          = rep(1,ThreshLength),
-    N           = rep(1,ThreshLength),
-    P           = rep(1,ThreshLength),
-    MCC         = rep(1,ThreshLength),
-    Accuracy    = rep(1,ThreshLength),
-    TPR         = rep(1,ThreshLength),
-    TNR         = rep(1,ThreshLength),
-    FNR         = rep(1,ThreshLength),
-    FPR         = rep(1,ThreshLength),
-    FDR         = rep(1,ThreshLength),
-    FOR         = rep(1,ThreshLength),
-    F1_Score    = rep(1,ThreshLength),
-    F2_Score    = rep(1,ThreshLength),
-    F0.5_Score  = rep(1,ThreshLength),
-    NPV         = rep(1,ThreshLength),
-    PPV         = rep(1,ThreshLength),
-    ThreatScore = rep(1,ThreshLength),
-    Utility     = rep(1,ThreshLength))
+    Threshold   = ThreshLength,
+    TN          = ThreshLength,
+    TP          = ThreshLength,
+    FN          = ThreshLength,
+    FP          = ThreshLength,
+    N           = ThreshLength,
+    P           = ThreshLength,
+    MCC         = ThreshLength,
+    Accuracy    = ThreshLength,
+    TPR         = ThreshLength,
+    TNR         = ThreshLength,
+    FNR         = ThreshLength,
+    FPR         = ThreshLength,
+    FDR         = ThreshLength,
+    FOR         = ThreshLength,
+    F1_Score    = ThreshLength,
+    F2_Score    = ThreshLength,
+    F0.5_Score  = ThreshLength,
+    NPV         = ThreshLength,
+    PPV         = ThreshLength,
+    ThreatScore = ThreshLength,
+    Utility     = ThreshLength)
   counter <- 0L
   for(Thresh in Thresholds) {
     counter <- counter + 1L

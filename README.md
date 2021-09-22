@@ -52,7 +52,7 @@ The minimal set of packages that need to be installed are below. The full list c
 #### Install ALL R package dependencies for all functions: 
 XGBoost and LightGBM can be used with GPU. However, their installation is much more involved than CatBoost, which comes with GPU capabilities simply by installing their package. The installation instructions for them below is for the CPU version only. Refer to each's home page for instructions for installing for GPU. 
  
-```
+```r
 # Install Dependencies----
 if(!("devtools" %in% rownames(installed.packages()))) install.packages("devtools"); print("devtools")
 if(!("arules" %in% rownames(installed.packages()))) install.packages("arules"); print("arules")
