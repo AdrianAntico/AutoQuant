@@ -91,7 +91,7 @@ devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependenci
 The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>):
 If you're still having trouble submit an issue and I'll work with you to get it installed.
 
-```
+```r
 # Method for on premise servers
 options(devtools.install.args = c("--no-multiarch", "--no-test-load"))
 install.packages("https://github.com/catboost/catboost/releases/download/v0.26.1/catboost-R-Windows-0.26.1.tgz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))
@@ -148,7 +148,7 @@ If you're having still having trouble installing see if the issue below helps ou
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 # Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
@@ -206,7 +206,7 @@ data <- RemixAutoML::AutoLagRollStats(
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 # Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
@@ -284,7 +284,7 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
 <details><summary>Code Example</summary>
 <p>
  
-```
+```r
 # NO GROUPING CASE: Create fake Panel Data----
 Count <- 1L
 for(Level in LETTERS) {
@@ -371,8 +371,8 @@ data <- RemixAutoML::AutoLagRollMode(
 
 <details><summary>Code Example</summary>
 <p>
- 
-```
+
+```r
 ##############################
 # Current minus lag1
 ##############################
@@ -470,7 +470,7 @@ data <- RemixAutoML::AutoDiffLagN(
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 #########################################
 # Feature Engineering for Model Training
 #########################################
@@ -574,7 +574,7 @@ print(ncol(data))
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.70,
@@ -656,7 +656,7 @@ data <- RemixAutoML::AutoWord2VecScoring(
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 # Create fake data with 10 categorical
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -733,7 +733,7 @@ test <- RemixAutoML::CategoricalEncoding(
 <p>
 
 
-```
+```r
 ############################
 # Training
 ############################
@@ -851,7 +851,7 @@ data <- RemixAutoML::H2OAutoencoderScoring(
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 # Create simulated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.70,
@@ -921,7 +921,7 @@ Outliers <- RemixAutoML::H2OIsolationForestScoring(
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 #########################
 # Training Setup
 #########################
@@ -997,7 +997,7 @@ data <- RemixAutoML::AutoClusteringScoring(
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 # Create fake data with a Date column----
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.75,
@@ -1049,7 +1049,7 @@ print(runtime)
 <details><summary>Code Example</summary>
 <p>
  
-```
+```r
 # Create fake data with a Date----
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.75,
@@ -1102,7 +1102,7 @@ This function counts up the number of specified holidays between the current rec
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 # Create fake data with 10 categorical columns
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1186,7 +1186,7 @@ data <- RemixAutoML::DummifyDT(
 <details><summary>Code Example</summary>
 <p>
 
-```
+```r
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85, 
@@ -1228,7 +1228,7 @@ TestData <- dataSets$TestData
 <details><summary>Code Example</summary>
 <p>
  
-```
+```r
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.75,
@@ -1353,7 +1353,7 @@ The Auto_Regression() models handle a multitude of tasks. In order:
 <details><summary>CatBoost Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1438,7 +1438,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
 <details><summary>XGBoost Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1513,7 +1513,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
 <details><summary>LightGBM Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1656,7 +1656,7 @@ TestModel <- RemixAutoML::AutoLightGBMRegression(
 <details><summary>H2O-GBM Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1732,7 +1732,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
 <details><summary>H2O-DRF Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1804,7 +1804,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
 <details><summary>H2O-GLM Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1879,7 +1879,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
 <details><summary>H2O-AutoML Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data with numeric and categorical features
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -1932,7 +1932,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
 <details><summary>H2O-GAM Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2047,7 +2047,7 @@ The Auto_Classifier() models handle a multitude of tasks. In order:
 <details><summary>CatBoost Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2130,7 +2130,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 <details><summary>XGBoost Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2202,7 +2202,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 <details><summary>LightGBM Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2340,7 +2340,7 @@ TestModel <- RemixAutoML::AutoLightGBMClassifier(
 <details><summary>H2O-GBM Example</summary>
 <p>
 
-``` 
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2412,7 +2412,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
 <details><summary>H2O-DRF Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2481,7 +2481,7 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
 <details><summary>H2O-GLM Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data with numeric and categorical features
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2553,7 +2553,7 @@ TestModel <- RemixAutoML::AutoH2oGLMClassifier(
 <details><summary>H2O-AutoML Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data with numeric and categorical features
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85, 
@@ -2594,7 +2594,7 @@ TestModel <- RemixAutoML::AutoH2oMLClassifier(
 <details><summary>H2O-GAM Example</summary>
 <p>
  
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2702,7 +2702,7 @@ The Auto_MultiClass() models handle a multitude of tasks. In order:
 <details><summary>CatBoost Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2783,7 +2783,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 <details><summary>XGBoost Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2853,7 +2853,7 @@ TestModel <- RemixAutoML::AutoXGBoostMultiClass(
 <details><summary>LightGBM Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -2992,7 +2992,7 @@ TestModel <- RemixAutoML::AutoLightGBMMultiClass(
 <details><summary>H2O-GBM Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -3054,7 +3054,7 @@ TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
 <details><summary>H2O-DRF Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -3114,7 +3114,7 @@ TestModel <- RemixAutoML::AutoH2oDRFMultiClass(
 <details><summary>H2O-GLM Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data with numeric and categorical features
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -3185,7 +3185,7 @@ TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 <details><summary>H2O-AutoML Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data with numeric and categorical features
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.85, N = 1000, ID = 2, ZIP = 0, AddDate = FALSE, Classification = FALSE, MultiClass = TRUE)
 
@@ -3219,7 +3219,7 @@ TestModel <- RemixAutoML::AutoH2oMLMultiClass(
 <details><summary>H2O-GAM Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data with numeric and categorical features
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -3314,7 +3314,7 @@ First step is to build either a binary classification model (in the case of a si
 <details><summary>CatBoost Example</summary>
 <p>
 
-```
+```r
 # Test data.table
 CatBoost_QA <- data.table::CJ(
   TOF = c(TRUE,FALSE),
@@ -3471,7 +3471,7 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 <details><summary>XGBoost Example</summary>
 <p>
 
-```
+```r
 # Test data.table
 XGBoost_QA <- data.table::CJ(
   TOF = c(TRUE,FALSE),
@@ -3616,7 +3616,7 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 <details><summary>LightGBM Example</summary>
 <p>
 
-```
+```r
 # Test data.table
 LightGBM_QA <- data.table::CJ(
   TOF = c(TRUE,FALSE),
@@ -3870,7 +3870,7 @@ for(run in seq_len(LightGBM_QA[,.N])) {
 <details><summary>AutoCatBoostRegression() Scoring Example</summary>
 <p>
 
-```
+```r
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -4036,7 +4036,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <details><summary>AutoCatBoostClassifier() Scoring Example</summary>
 <p>
 
-```
+```r
 # Refresh data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -4197,7 +4197,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <details><summary>AutoCatBoostMultiClasss() Scoring Example</summary>
 <p>
 
-```
+```r
 # Refresh data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -4331,7 +4331,7 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
 <details><summary>AutoCatBoostHurdleModel() Scoring Example</summary>
 <p>
 
-```
+```r
 # Classify or Multiclass example
 Classify <- TRUE
 
@@ -4435,7 +4435,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleModelScoring(
 <details><summary>AutoLightGBMRegression() Scoring Example</summary>
 <p>
 
-```
+```r
 # Refresh data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -4622,7 +4622,7 @@ Preds <- RemixAutoML::AutoLightGBMScoring(
 <details><summary>AutoLightGBMClassifier() Scoring Example</summary>
 <p>
 
-```
+```r
 # Refresh data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -4805,7 +4805,7 @@ Preds <- RemixAutoML::AutoLightGBMScoring(
 <details><summary>AutoLightGBMMultiClasss() Scoring Example</summary>
 <p>
 
-```
+```r
 # Refresh data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -4989,7 +4989,7 @@ Preds <- RemixAutoML::AutoLightGBMScoring(
 <details><summary>AutoLightGBMHurdleModel() Scoring Example</summary>
 <p>
 
-```
+```r
 # Classify
 Classify <- TRUE
 
@@ -5154,7 +5154,7 @@ Output <- RemixAutoML::AutoLightGBMHurdleModelScoring(
 <details><summary>AutoXGBoostRegression() Scoring Example</summary>
 <p>
 
-```
+```r
 # Refresh data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -5269,7 +5269,7 @@ Preds <- RemixAutoML::AutoXGBoostScoring(
 <details><summary>AutoXGBoostClassifier() Scoring Example</summary>
 <p>
 
-```
+```r
 # Refresh data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -5380,7 +5380,7 @@ Preds <- RemixAutoML::AutoXGBoostScoring(
 <details><summary>AutoXGBoostMultiClasss() Scoring Example</summary>
 <p>
 
-```
+```r
 # Refresh data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
@@ -5488,7 +5488,7 @@ Preds <- RemixAutoML::AutoXGBoostScoring(
 <details><summary>AutoXGBoostHurdleModel() Scoring Example</summary>
 <p>
 
-```
+```r
 # Classify
 Classify <- TRUE
 
@@ -5594,7 +5594,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 <details><summary>AutoShapeShap() Example</summary>
 <p>
 
-```
+```r
 ShapTable <- AutoShapeShap(
   ScoringData = TestData,
   Threads = max(1L, parallel::detectCores()-2L),
@@ -5608,7 +5608,7 @@ ShapTable <- AutoShapeShap(
 <details><summary>SingleRowShapeShap() Example</summary>
 <p>
 
-```
+```r
 ShapTable <- SingleRowShapeShap(
   ShapData = SinglePrediction, 
   EntityID = "UserID", 
@@ -5722,7 +5722,7 @@ Choose from:
 <details><summary>Code Example: AutoCatBoostCARMA()</summary>
 <p>
  
-```
+```r
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # Out-of-Sample Feature + Grid Tuning of RemixAutoML::AutoCatBoostCARMA()
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -5967,7 +5967,7 @@ for(Run in seq_len(TotalRuns)) {
 <details><summary>Code Example: AutoCatBoostVectorCARMA()</summary>
 <p>
 
-```
+```r
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # ML-Based Vector AutoRegression CARMA ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -6082,7 +6082,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
 <details><summary>Code Example: AutoXGBoostCARMA()</summary>
 <p>
 
-```
+```r
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # XGBoost Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -6192,7 +6192,7 @@ XGBoostResults <- AutoXGBoostCARMA(
 <details><summary>Code Example: AutoLightGBMCARMA()</summary>
 <p>
 
-```
+```r
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # LightGBM Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -6380,7 +6380,7 @@ Results <- AutoLightGBMCARMA(
 <details><summary>Code Example: AutoH2OCARMA()</summary>
 <p>
 
-```
+```r
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # H2O Version ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -6560,7 +6560,7 @@ Most intermittend demand forecasting I've done professionally were for supply ch
 <details><summary>Code Example: AutoCatBoostHurdleCARMA()</summary>
 <p>
 
-```
+```r
 # Load Walmart Data from Dropbox----
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
@@ -6662,7 +6662,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
 <details><summary>Code Example: AutoXGBoostHurdleCARMA()</summary>
 <p>
 
-```
+```r
 # Load Walmart Data from Dropbox----
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
@@ -6761,7 +6761,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleCARMA(
 <details><summary>Code Example: AutoLightGBMHurdleCARMA()</summary>
 <p>
 
-```
+```r
 # Load Walmart Data from Dropbox----
 data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
@@ -6969,7 +6969,7 @@ There are several additional benefits of forecasting using the Funnel models vs 
 
 <code>AutoCatBoostFunnelCARMA()</code> and <code>AutoCatBoostFunnelCARMAScoring()</code>
 
-```
+```r
 # Create Fake Data
 data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 
@@ -7092,7 +7092,7 @@ Test <- RemixAutoML::AutoCatBoostFunnelCARMAScoring(
 
 <code>AutoLightGBMFunnelCARMA()</code> and <code>AutoLightGBMFunnelCARMAScoring()</code>
 
-```
+```r
 # Create Fake Data
 data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 
@@ -7280,7 +7280,7 @@ Test <- RemixAutoML::AutoLightGBMFunnelCARMAScoring(
 
 <code>AutoXGBoostFunnelCARMA()</code> and <code>AutoXGBoostFunnelCARMAScoring()</code>
 
-```
+```r
 # Create Fake Data
 data <- RemixAutoML::FakeDataGenerator(ChainLadderData = TRUE)
 
@@ -7419,7 +7419,7 @@ There are three sets of functions for single series traditional time series mode
 <details><summary>AutoBanditSarima() Example</summary>
 <p>
  
-```
+```r
 # Build model
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
@@ -7459,7 +7459,7 @@ Output$PerformanceGrid
 <details><summary>AutoBanditNNet() Example</summary>
 <p>
  
-```
+```r
 # Build model
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
@@ -7493,7 +7493,7 @@ Output$PerformanceGrid
 <details><summary>AutoTBATS() Example</summary>
 <p>
  
-```
+```r
 # Build model
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
@@ -7528,7 +7528,7 @@ Output$PerformanceGrid
 <details><summary>AutoETS() Example</summary>
 <p>
  
-```
+```r
 # Build model
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
@@ -7560,7 +7560,7 @@ Output$PerformanceGrid
 <details><summary>AutoArfima() Example</summary>
 <p>
  
-```
+```r
 # Build model
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
@@ -7594,7 +7594,7 @@ Output$PerformanceGrid
 <details><summary>AutoTS() Example</summary>
 <p>
  
-```
+```r
 # Build model
 data <- RemixAutoML::FakeDataGenerator(Correlation = 0.82, TimeSeries = TRUE, TimeSeriesTimeAgg = "1min")
 
@@ -7664,7 +7664,7 @@ Output$TimeSeriesPlot
 <details><summary>AutoRecommenderDataCreate() Example</summary>
 <p>
  
-```
+```r
 # data comes in transactional form as a data.table
 RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
   data,
@@ -7681,7 +7681,7 @@ RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
 <details><summary>AutoRecommenderTrain() Example</summary>
 <p>
  
-```
+```r
 # Build Model
 WinningModel <- RemixAutoML::AutoRecommender(
   RatingsMatrix,
@@ -7702,7 +7702,7 @@ WinningModel <- RemixAutoML::AutoRecommender(
 <details><summary>AutoRecommenderScore() Example</summary>
 <p>
  
-```
+```r
 # Score new data
 Results <- RemixAutoML::AutoRecommenderScore(
   data = data,
@@ -7717,7 +7717,7 @@ Results <- RemixAutoML::AutoRecommenderScore(
 <details><summary>AutoMarketBasketModel() Example</summary>
 <p>
  
-```
+```r
 # Build rules set
 RulesData <- RemixAutoML::AutoMarketBasketModel(
   data,
