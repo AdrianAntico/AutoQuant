@@ -658,11 +658,18 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
         i = i,
         j = paste0(nam, "_Churned"),
         value = length(
+
+          # Setdiff = churn
           setdiff(
+
+            # Previously Active in Both Segments
             intersect(
-              unique(EntityList[[paste0(nam, "Entities", i-ChurnPeriods)]]),
+              unique(EntityList[[paste0(nam, "_Entities", i-ChurnPeriods)]]),
               unique(EntityList[[paste0("Entities", i-ChurnPeriods)]])),
-            unique(EntityList[[paste0(nam, "_Entities", i)]]))))
+
+            # Currently Active in Cross Segment
+            unique(EntityList[[paste0(nam, "_Entities", i)]])
+          )))
     }
   }
 
