@@ -510,32 +510,32 @@ EDA_Histograms <- function(data = NULL,
 #' @param Cross Can be NULL. User base from non source. Must be a named list. Names of list are used to name columns in output table. Entity and DateColumnName must be identical across data sets.
 #' @param Entity Column name of the entity / user
 #' @param DateColumnName Name of the date column used for inclusion of users in time periods
-#' @param TimeAgg Choose from 'Month', 'Week', or 'Day'
+#' @param TimeAgg Choose from 'Month', 'Week', or 'Day'. Do not lowercase
 #' @param ChurnPeriods Defaults to 1. This means for TimeAgg = 'Month' a one month churn period is used. For TimeAgg = 'Week' you will have a one week churn period. If you set ChurnPeriods to 2 then it will be a 2 month churn or a 2 week churn. Same logic applies for daily.
 #'
 #' @export
 UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName = NULL, TimeAgg = NULL, ChurnPeriods = 1) {
 
   # Set up time_agg column
-  temp_func <- function(data = NULL, date_col = NULL, time_agg = NULL) {
+  temp_func <- function(data1 = NULL, date_col = NULL, time_agg = NULL) {
     if(tolower(time_agg) == 'month') {
-      data[, paste0("Year", time_agg) := data.table::month(get(date_col))]
-      data[, paste0("Year", time_agg) := data.table::fifelse(get(paste0("Year", time_agg)) < 10, as.numeric(paste0(data.table::year(get(date_col)), 0, get(paste0("Year", time_agg)))), as.numeric(paste0(data.table::year(get(date_col)), get(paste0("Year", time_agg)))))]
+      data1[, paste0("Year", time_agg) := data.table::month(get(date_col))]
+      data1[, paste0("Year", time_agg) := data.table::fifelse(get(paste0("Year", time_agg)) < 10, as.numeric(paste0(data.table::year(get(date_col)), 0, get(paste0("Year", time_agg)))), as.numeric(paste0(data.table::year(get(date_col)), get(paste0("Year", time_agg)))))]
     } else if(tolower(time_agg) == 'week') {
-      data[, paste0("Year", time_agg) := data.table::week(get(date_col))]
-      data[, paste0("Year", time_agg) := data.table::fifelse(get(paste0("Year", time_agg)) < 10, as.numeric(paste0(data.table::year(get(date_col)), 0, get(paste0("Year", time_agg)))), as.numeric(paste0(data.table::year(get(date_col)), get(paste0("Year", time_agg)))))]
+      data1[, paste0("Year", time_agg) := data.table::week(get(date_col))]
+      data1[, paste0("Year", time_agg) := data.table::fifelse(get(paste0("Year", time_agg)) < 10, as.numeric(paste0(data.table::year(get(date_col)), 0, get(paste0("Year", time_agg)))), as.numeric(paste0(data.table::year(get(date_col)), get(paste0("Year", time_agg)))))]
     } else if(tolower(Time) == 'day') {
-      data[, paste0("Year", time_agg) := data.table::yday(get(date_col))]
-      data[, paste0("Year", time_agg) := data.table::fcase(
+      data1[, paste0("Year", time_agg) := data.table::yday(get(date_col))]
+      data1[, paste0("Year", time_agg) := data.table::fcase(
         get(paste0("Year", time_agg)) < 100, as.numeric(paste0(data.table::year(get(date_col)), 00, get(paste0("Year", time_agg)))),
         get(paste0("Year", time_agg)) < 10, as.numeric(paste0(data.table::year(get(date_col)), 0, get(paste0("Year", time_agg)))),
         get(paste0("Year", time_agg)) > 0, as.numeric(paste0(data.table::year(get(date_col)), get(paste0("Year", time_agg)))))]
     }
-    return(data)
+    return(data1)
   }
 
   # data sets
-  for(g in (1 + length(Cross))) {
+  for(g in seq_len((1 + length(Cross)))) {
     if(g == 1) {
       data <- temp_func(data=data, date_col = DateColumnName, time_agg = TimeAgg)
     } else {
@@ -547,7 +547,7 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
   LoopRange <- sort(data[, unique(get(paste0("Year", TimeAgg)))])
 
   # Set up Entity lists
-  for(g in (1 + length(Cross))) {
+  for(g in seq_len((1 + length(Cross)))) {
     if(g == 1) {
       EntityList <- list()
       for(i in seq_along(LoopRange)) {
@@ -559,13 +559,12 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
         }
       }
     } else {
-      EntityList <- list()
       for(i in seq_along(LoopRange)) {
-        EntityList[[paste0(names(Cross)[g-1], "_Entities", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+        EntityList[[paste0(names(Cross)[g-1], "_Entities", i)]] <- Cross[[names(Cross)[g-1]]][get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
         if(i != 1) {
           EntityList[[paste0(names(Cross)[g-1], "_Accumulated_", i)]] <- unique(c(EntityList[[paste0(names(Cross)[g-1], "_Accumulated_", i-1)]], EntityList[[paste0(names(Cross)[g-1], "_Entities", i)]]))
         } else {
-          EntityList[[paste0(names(Cross)[g-1], "_Accumulated_", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+          EntityList[[paste0(names(Cross)[g-1], "_Accumulated_", i)]] <- Cross[[names(Cross)[g-1]]][get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
         }
       }
     }
@@ -581,6 +580,13 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
     Retained_Entities = 0,
     Churned_Entities = 0,
     Reactivated_Entities = 0)
+
+  # Add columns for Cross
+  if(!is.null(Cross)) {
+    for(nam in names(Cross)) {
+      Collection[, paste0(nam, "_Churned") := 0]
+    }
+  }
 
   # Update name
   data.table::setnames(Collection, "temp", paste0("Year_", TimeAgg))
@@ -644,6 +650,20 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
         setdiff(
           unique(EntityList[[paste0("Entities", i-ChurnPeriods)]]),
           unique(EntityList[[paste0("Entities", i)]]))))
+
+    # Cross
+    for(nam in names(Cross)) {
+      data.table::set(
+        Collection,
+        i = i,
+        j = paste0(nam, "_Churned"),
+        value = length(
+          setdiff(
+            setdiff(
+              unique(EntityList[[paste0("Entities", i-ChurnPeriods)]]),
+              unique(EntityList[[paste0("Entities", i)]])),
+            EntityList[[paste0(nam, "_Entities", i)]])))
+    }
   }
 
   # Reactivated Entities
