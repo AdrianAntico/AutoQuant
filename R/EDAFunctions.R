@@ -499,7 +499,6 @@ EDA_Histograms <- function(data = NULL,
   return(results)
 }
 
-
 #' @title UserBaseEvolution
 #'
 #' @description This function creates a table of user counts over time for accumulated unique users, active unique users, new unique users, retained unique users, churned unique users, and reactivated unique users. You can run this with several specifications. You can request monthly, weekly, or daily counts and you can specify a churn window for the computations.
@@ -508,42 +507,70 @@ EDA_Histograms <- function(data = NULL,
 #' @family EDA
 #'
 #' @param data Source data.table
+#' @param Cross Can be NULL. User base from non source. Must be a named list. Names of list are used to name columns in output table. Entity and DateColumnName must be identical across data sets.
 #' @param Entity Column name of the entity / user
 #' @param DateColumnName Name of the date column used for inclusion of users in time periods
 #' @param TimeAgg Choose from 'Month', 'Week', or 'Day'
 #' @param ChurnPeriods Defaults to 1. This means for TimeAgg = 'Month' a one month churn period is used. For TimeAgg = 'Week' you will have a one week churn period. If you set ChurnPeriods to 2 then it will be a 2 month churn or a 2 week churn. Same logic applies for daily.
 #'
 #' @export
-UserBaseEvolution <- function(data, Entity = NULL, DateColumnName = NULL, TimeAgg = NULL, ChurnPeriods = 1) {
+UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName = NULL, TimeAgg = NULL, ChurnPeriods = 1) {
 
-  # Set up TimeAgg column
-  if(tolower(TimeAgg) == 'month') {
-    data[, paste0("Year", TimeAgg) := data.table::month(get(DateColumnName))]
-    data[, paste0("Year", TimeAgg) := data.table::fifelse(get(paste0("Year", TimeAgg)) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, get(paste0("Year", TimeAgg)))), as.numeric(paste0(data.table::year(get(DateColumnName)), get(paste0("Year", TimeAgg)))))]
-  } else if(tolower(TimeAgg) == 'week') {
-    data[, paste0("Year", TimeAgg) := data.table::week(get(DateColumnName))]
-    data[, paste0("Year", TimeAgg) := data.table::fifelse(get(paste0("Year", TimeAgg)) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, get(paste0("Year", TimeAgg)))), as.numeric(paste0(data.table::year(get(DateColumnName)), get(paste0("Year", TimeAgg)))))]
-  } else if(tolower(Time) == 'day') {
-    data[, paste0("Year", TimeAgg) := data.table::yday(get(DateColumnName))]
-    data[, paste0("Year", TimeAgg) := data.table::fcase(
-      get(paste0("Year", TimeAgg)) < 100, as.numeric(paste0(data.table::year(get(DateColumnName)), 00, get(paste0("Year", TimeAgg)))),
-      get(paste0("Year", TimeAgg)) < 10, as.numeric(paste0(data.table::year(get(DateColumnName)), 0, get(paste0("Year", TimeAgg)))),
-      get(paste0("Year", TimeAgg)) > 0, as.numeric(paste0(data.table::year(get(DateColumnName)), get(paste0("Year", TimeAgg)))))]
+  # Set up time_agg column
+  temp_func <- function(data = NULL, date_col = NULL, time_agg = NULL) {
+    if(tolower(time_agg) == 'month') {
+      data[, paste0("Year", time_agg) := data.table::month(get(date_col))]
+      data[, paste0("Year", time_agg) := data.table::fifelse(get(paste0("Year", time_agg)) < 10, as.numeric(paste0(data.table::year(get(date_col)), 0, get(paste0("Year", time_agg)))), as.numeric(paste0(data.table::year(get(date_col)), get(paste0("Year", time_agg)))))]
+    } else if(tolower(time_agg) == 'week') {
+      data[, paste0("Year", time_agg) := data.table::week(get(date_col))]
+      data[, paste0("Year", time_agg) := data.table::fifelse(get(paste0("Year", time_agg)) < 10, as.numeric(paste0(data.table::year(get(date_col)), 0, get(paste0("Year", time_agg)))), as.numeric(paste0(data.table::year(get(date_col)), get(paste0("Year", time_agg)))))]
+    } else if(tolower(Time) == 'day') {
+      data[, paste0("Year", time_agg) := data.table::yday(get(date_col))]
+      data[, paste0("Year", time_agg) := data.table::fcase(
+        get(paste0("Year", time_agg)) < 100, as.numeric(paste0(data.table::year(get(date_col)), 00, get(paste0("Year", time_agg)))),
+        get(paste0("Year", time_agg)) < 10, as.numeric(paste0(data.table::year(get(date_col)), 0, get(paste0("Year", time_agg)))),
+        get(paste0("Year", time_agg)) > 0, as.numeric(paste0(data.table::year(get(date_col)), get(paste0("Year", time_agg)))))]
+    }
+    return(data)
+  }
+
+  # data sets
+  for(g in (1 + length(Cross))) {
+    if(g == 1) {
+      data <- temp_func(data=data, date_col = DateColumnName, time_agg = TimeAgg)
+    } else {
+      Cross[[names(Cross)[g]]] <- temp_func(data=Cross[[g]], date_col = DateColumnName, time_agg = TimeAgg)
+    }
   }
 
   # Range
   LoopRange <- sort(data[, unique(get(paste0("Year", TimeAgg)))])
 
   # Set up Entity lists
-  EntityList <- list()
-  for(i in seq_along(LoopRange)) {
-    EntityList[[paste0("Entities", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
-    if(i != 1) {
-      EntityList[[paste0("Accumulated_", i)]] <- unique(c(EntityList[[paste0("Accumulated_", i-1)]], EntityList[[paste0("Entities", i)]]))
+  for(g in (1 + length(Cross))) {
+    if(g == 1) {
+      EntityList <- list()
+      for(i in seq_along(LoopRange)) {
+        EntityList[[paste0("Entities", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+        if(i != 1) {
+          EntityList[[paste0("Accumulated_", i)]] <- unique(c(EntityList[[paste0("Accumulated_", i-1)]], EntityList[[paste0("Entities", i)]]))
+        } else {
+          EntityList[[paste0("Accumulated_", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+        }
+      }
     } else {
-      EntityList[[paste0("Accumulated_", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+      EntityList <- list()
+      for(i in seq_along(LoopRange)) {
+        EntityList[[paste0(names(Cross)[g], "_Entities", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+        if(i != 1) {
+          EntityList[[paste0(names(Cross)[g], "_Accumulated_", i)]] <- unique(c(EntityList[[paste0(names(Cross)[g], "_Accumulated_", i-1)]], EntityList[[paste0(names(Cross)[g], "_Entities", i)]]))
+        } else {
+          EntityList[[paste0(names(Cross)[g], "_Accumulated_", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+        }
+      }
     }
   }
+
 
   # Create collection table
   Collection <- data.table::data.table(
