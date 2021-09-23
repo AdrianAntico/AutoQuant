@@ -501,7 +501,7 @@ EDA_Histograms <- function(data = NULL,
 
 #' @title UserBaseEvolution
 #'
-#' @description This function creates a table of user counts over time for accumulated unique users, active unique users, new unique users, retained unique users, churned unique users, and reactivated unique users. You can run this with several specifications. You can request monthly, weekly, or daily counts and you can specify a churn window for the computations.
+#' @description This function creates a table of user counts over time for accumulated unique users, active unique users, new unique users, retained unique users, churned unique users, and reactivated unique users. You can run this with several specifications. You can request monthly, weekly, or daily counts and you can specify a churn window for the computations. If you want to compare how many churned users also churned from another segment of sorts, provide a list in the Cross parameter.
 #'
 #' @author Adrian Antico
 #' @family EDA

@@ -6,6 +6,7 @@
 \usage{
 UserBaseEvolution(
   data,
+  Cross = NULL,
   Entity = NULL,
   DateColumnName = NULL,
   TimeAgg = NULL,
@@ -15,16 +16,18 @@ UserBaseEvolution(
 \arguments{
 \item{data}{Source data.table}
 
+\item{Cross}{Can be NULL. User base from non source. Must be a named list. Names of list are used to name columns in output table. Entity and DateColumnName must be identical across data sets.}
+
 \item{Entity}{Column name of the entity / user}
 
 \item{DateColumnName}{Name of the date column used for inclusion of users in time periods}
 
-\item{TimeAgg}{Choose from 'Month', 'Week', or 'Day'}
+\item{TimeAgg}{Choose from 'Month', 'Week', or 'Day'. Do not lowercase}
 
 \item{ChurnPeriods}{Defaults to 1. This means for TimeAgg = 'Month' a one month churn period is used. For TimeAgg = 'Week' you will have a one week churn period. If you set ChurnPeriods to 2 then it will be a 2 month churn or a 2 week churn. Same logic applies for daily.}
 }
 \description{
-This function creates a table of user counts over time for accumulated unique users, active unique users, new unique users, retained unique users, churned unique users, and reactivated unique users. You can run this with several specifications. You can request monthly, weekly, or daily counts and you can specify a churn window for the computations.
+This function creates a table of user counts over time for accumulated unique users, active unique users, new unique users, retained unique users, churned unique users, and reactivated unique users. You can run this with several specifications. You can request monthly, weekly, or daily counts and you can specify a churn window for the computations. If you want to compare how many churned users also churned from another segment of sorts, provide a list in the Cross parameter.
 }
 \seealso{
 Other EDA: 
