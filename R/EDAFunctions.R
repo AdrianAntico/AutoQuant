@@ -539,7 +539,7 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
     if(g == 1) {
       data <- temp_func(data=data, date_col = DateColumnName, time_agg = TimeAgg)
     } else {
-      Cross[[names(Cross)[g]]] <- temp_func(data=Cross[[g]], date_col = DateColumnName, time_agg = TimeAgg)
+      Cross[[names(Cross)[g-1]]] <- temp_func(data=Cross[[names(Cross)[g-1]]], date_col = DateColumnName, time_agg = TimeAgg)
     }
   }
 
@@ -561,11 +561,11 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
     } else {
       EntityList <- list()
       for(i in seq_along(LoopRange)) {
-        EntityList[[paste0(names(Cross)[g], "_Entities", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+        EntityList[[paste0(names(Cross)[g-1], "_Entities", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
         if(i != 1) {
-          EntityList[[paste0(names(Cross)[g], "_Accumulated_", i)]] <- unique(c(EntityList[[paste0(names(Cross)[g], "_Accumulated_", i-1)]], EntityList[[paste0(names(Cross)[g], "_Entities", i)]]))
+          EntityList[[paste0(names(Cross)[g-1], "_Accumulated_", i)]] <- unique(c(EntityList[[paste0(names(Cross)[g-1], "_Accumulated_", i-1)]], EntityList[[paste0(names(Cross)[g-1], "_Entities", i)]]))
         } else {
-          EntityList[[paste0(names(Cross)[g], "_Accumulated_", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
+          EntityList[[paste0(names(Cross)[g-1], "_Accumulated_", i)]] <- data[get(paste0("Year", TimeAgg)) == eval(LoopRange[i]), unique(get(Entity))]
         }
       }
     }
