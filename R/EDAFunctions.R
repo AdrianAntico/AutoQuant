@@ -674,7 +674,6 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
       j = "Reactivated_Entities",
       value = length(
         setdiff(
-          intersect(Active-1, churned current)
           setdiff(
             unique(EntityList[[paste0("Entities", i-ChurnPeriods-1)]]),
             unique(EntityList[[paste0("Entities", i-1)]])),
