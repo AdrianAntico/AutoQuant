@@ -12,7 +12,7 @@ Table of Contents
 - [Installation](#installation)
 - [RemixAutoML Blogs](#remixautoml-blogs)
 
-Documents with Code Examples
+Documentation + Code Examples
 - [Feature Engineering](#feature-engineering-)
 - [Supervised Learning](#supervised-learning-)
 - [Model Scoring](#model-scoring-)
