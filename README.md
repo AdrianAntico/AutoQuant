@@ -20,7 +20,7 @@
 - [Time Series Forecasting](#time-series-forecasting-)
 - [Recommender Systems](#recommender-systems-)
 - [Database Management](#database-management-)
-- [Utilities EDA and Misc](utilities-eda-and-misc-)
+- [Utilities EDA and Misc](#utilities-eda-and-misc-)
 
 
 
