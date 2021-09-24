@@ -7,6 +7,47 @@
 
 <img src="Images/NewPackageLogo.png" align="center" width="1000" />
 
+- [Background](#background)
+  * [Package Details](#package-details)
+- [Installation](#installation)
+    + [Install ALL R package dependencies for all functions:](#install-all-r-package-dependencies-for-all-functions-)
+    + [Installation Troubleshooting](#installation-troubleshooting)
+- [RemixAutoML Blogs](#remixautoml-blogs)
+- [Feature Engineering <img src="Images/FeatureEngineeringMenu.PNG" align="right" width="80" />](#feature-engineering--img-src--images-featureengineeringmenupng--align--right--width--80----)
+    + [**AutoLagRollStats()** and **AutoLagRollStatsScoring()**](#--autolagrollstats-----and---autolagrollstatsscoring----)
+    + [**AutoLagRollMode()**](#--autolagrollmode----)
+    + [**AutoDiffLagN()**](#--autodifflagn----)
+    + [**AutoInteraction()**](#--autointeraction----)
+    + [**AutoWord2VecModeler()** and **AutoWord2VecScoring()**](#--autoword2vecmodeler-----and---autoword2vecscoring----)
+    + [**CategoricalEncoding()**](#--categoricalencoding----)
+    + [**H2OAutoencoder()** and **H2OAutoencoderScoring()**](#--h2oautoencoder-----and---h2oautoencoderscoring----)
+    + [**H2OIsolationForest()** and **H2OIsolationForestScoring()**](#--h2oisolationforest-----and---h2oisolationforestscoring----)
+    + [**AutoClustering() and AutoClusteringScoring()**](#--autoclustering---and-autoclusteringscoring----)
+    + [**CreateCalendarVariables()**](#--createcalendarvariables----)
+    + [**CreateHolidayVariable()**](#--createholidayvariable----)
+    + [**DummifyDT()**](#--dummifydt----)
+    + [**AutoDataPartition()**](#--autodatapartition----)
+    + [**ModelDataPrep()**](#--modeldataprep----)
+    + [**AutoTransformationCreate()** and **AutoTransformationScore()**](#--autotransformationcreate-----and---autotransformationscore----)
+    + [**AutoHierarchicalFourier()**](#--autohierarchicalfourier----)
+- [Supervised Learning <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/SupervisedLearningImage.png" align="right" width="80" />](#supervised-learning--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-supervisedlearningimagepng--align--right--width--80----)
+  * [Regression](#regression)
+  * [Binary Classification](#binary-classification)
+  * [MultiClass Classification](#multiclass-classification)
+  * [Generalized Hurdle Models](#generalized-hurdle-models)
+- [Model Scoring <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ModelScoringImage.png" align="right" width="80" />](#model-scoring--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-modelscoringimagepng--align--right--width--80----)
+- [Model Evaluation <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ModelEvaluationImage.png" align="right" width="80" />](#model-evaluation--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-modelevaluationimagepng--align--right--width--80----)
+- [Panel Data Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/AutoCARMA2.png" align="right" width="80" />](#panel-data-forecasting--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-autocarma2png--align--right--width--80----)
+- [Intermittent Demand Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/IntermittentDemandForecasting.png" align="right" width="80" />](#intermittent-demand-forecasting--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-intermittentdemandforecastingpng--align--right--width--80----)
+- [Funnel Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/SalesFunnelImage.PNG" align="right" width="80" />](#funnel-forecasting--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-salesfunnelimagepng--align--right--width--80----)
+- [Time Series Forecasting <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/AutoTS.png" align="right" width="80" />](#time-series-forecasting--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-autotspng--align--right--width--80----)
+- [Recommender Systems <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/RecommenderSystemImage2.png" align="right" width="80" />](#recommender-systems--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-recommendersystemimage2png--align--right--width--80----)
+- [Database Management <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/DataBase.PNG" align="right" width="80" />](#database-management--img-src--https---rawgithubusercontentcom-adrianantico-remixautoml-master-images-databasepng--align--right--width--80----)
+- [Utilities, EDA, and Misc. <img src="Images/MiscImage.png" align="right" width="80" />](#utilities--eda--and-misc--img-src--images-miscimagepng--align--right--width--80----)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 ## Background
 
 ![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
