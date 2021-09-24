@@ -7,6 +7,7 @@
 
 <img src="Images/NewPackageLogo.png" align="center" width="1000" />
 
+Table of Contents
 - [Background](#background)
 - [Installation](#installation)
 - [RemixAutoML Blogs](#remixautoml-blogs)
