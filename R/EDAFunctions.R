@@ -652,24 +652,26 @@ UserBaseEvolution <- function(data, Cross = NULL, Entity = NULL, DateColumnName 
           unique(EntityList[[paste0("Entities", i)]]))))
 
     # Cross
-    for(nam in names(Cross)) {
-      data.table::set(
-        Collection,
-        i = i,
-        j = paste0(nam, "_Churned"),
-        value = length(
+    if(!is.null(Cross)) {
+      for(nam in names(Cross)) {
+        data.table::set(
+          Collection,
+          i = i,
+          j = paste0(nam, "_Churned"),
+          value = length(
 
-          # Setdiff = churn
-          setdiff(
+            # Setdiff = churn
+            setdiff(
 
-            # Previously Active in Both Segments
-            intersect(
-              unique(EntityList[[paste0(nam, "_Entities", i-ChurnPeriods)]]),
-              unique(EntityList[[paste0("Entities", i-ChurnPeriods)]])),
+              # Previously Active in Both Segments
+              intersect(
+                unique(EntityList[[paste0(nam, "_Entities", i-ChurnPeriods)]]),
+                unique(EntityList[[paste0("Entities", i-ChurnPeriods)]])),
 
-            # Currently Active in Cross Segment
-            unique(EntityList[[paste0(nam, "_Entities", i)]])
-          )))
+              # Currently Active in Cross Segment
+              unique(EntityList[[paste0(nam, "_Entities", i)]])
+            )))
+      }
     }
   }
 
