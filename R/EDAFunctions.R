@@ -135,7 +135,7 @@ BNLearnArcStrength <- function(data = NULL,
       Collect <- data.table::data.table()
       Collect[, ChildVar := fitted[[arc]][["node"]]]
       Collect <- cbind(Collect, ParentVar = fitted[[arc]][["parents"]])
-      Collect[, ArcStrengths := ArcStrength[from %chin% fitted[[arc]][["parents"]] & to %chin% fittled[[arc]][["node"]]][, strength]]
+      Collect[, ArcStrengths := ArcStrength[from %chin% fitted[[arc]][["parents"]] & to %chin% fitted[[arc]][["node"]]][, strength]]
       OutputList[[arc]] <- Collect
     }
     return(list(Data = data.table::rbindlist(OutputList)[!is.na(ArcStrengths)][order(-abs(ArcStrengths))], Structure = invisible(dbnR::plot_network(structure = fitted))))
@@ -156,8 +156,8 @@ BNLearnArcStrength <- function(data = NULL,
           Collect[, GroupName := eval(group)]
           Collect[, GroupLevel := eval(lev)]
           Collect <- cbind(Collect, ChildVar = fitted[[arc]][["node"]])
-          Collect <- cbind(Collect, ParentVar = fittled[[arc]][["parents"]])
-          Collect[, ArcStrengths := ArcStrength[from %chin% fittled[[arc]][["parents"]] & to %chin% fitted[[arc]][["node"]]][, strength]]
+          Collect <- cbind(Collect, ParentVar = fitted[[arc]][["parents"]])
+          Collect[, ArcStrengths := ArcStrength[from %chin% fitted[[arc]][["parents"]] & to %chin% fitted[[arc]][["node"]]][, strength]]
           OutputList[[paste0(group,"-",lev,"-",arc)]] <- Collect
         }
       }
