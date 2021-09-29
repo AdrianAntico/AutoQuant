@@ -74,17 +74,17 @@ AutoCorrAnalysis <- function(data = NULL,
 
   # Corr Analysis ----
   if(is.null(ByGroupVars)) {
-    CorrAnalysis <- data.table::setDT(correlation::correlation(data = data, p_adjust = PvalAdjMethod, redundant = FALSE, include_factors = TRUE, robust = RobustCalc, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
+    CorrAnalysis <- data.table::setDT(correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, robust = RobustCalc, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
     if(KeepSignificantVars) CorrAnalysis <- CorrAnalysis[p < 0.05]
     return(CorrAnalysis)
   } else {
     VarList <- list()
-    VarList[["TotalData"]] <- data.table::setDT(correlation::correlation(data = data, p_adjust = PvalAdjMethod, redundant = FALSE, include_factors = TRUE, robust = RobustCalc, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
+    VarList[["TotalData"]] <- data.table::setDT(correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, robust = RobustCalc, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
     for(group in ByGroupVars) {
       Levels <- as.character(data[, .N, by = eval(group)][order(-N)][N > MinRows][[eval(group)]])
       for(lev in Levels) {
         data1 <- data[get(group) == eval(lev)]
-        temp <- data.table::setDT(correlation::correlation(data = data1, p_adjust = PvalAdjMethod, redundant = FALSE, include_factors = TRUE, robust = RobustCalc, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
+        temp <- data.table::setDT(correlation::correlation(data = data1, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, robust = RobustCalc, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
         temp <- temp[!is.na(r)]
         if(KeepSignificantVars) temp <- temp[p < 0.05]
         VarList[[paste0(group,"_",lev)]] <- temp
