@@ -48,10 +48,10 @@
 #' @return A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model.
 #' @export
 ResidualOutliers <- function(data,
-                             DateColName = "DateTime",
-                             TargetColName = "Target",
+                             DateColName = 'DateTime',
+                             TargetColName = 'Target',
                              PredictedColName = NULL,
-                             TimeUnit = "day",
+                             TimeUnit = 'day',
                              Lags = 5,
                              MA = 5,
                              SLags = 0,
@@ -59,100 +59,87 @@ ResidualOutliers <- function(data,
                              tstat = 2) {
 
   # Define TS Frequency
-  if(tolower(TimeUnit) %chin% c("hour","hours")) {
+  if(tolower(TimeUnit) %chin% c('hour','hours')) {
     freq <- 24
-  } else if (tolower(TimeUnit) %chin% c("day","days")) {
+  } else if (tolower(TimeUnit) %chin% c('day','days')) {
     freq <- 365
-  } else if (tolower(TimeUnit) %chin% c("week","weeks")) {
+  } else if (tolower(TimeUnit) %chin% c('week','weeks')) {
     freq <- 52
-  } else if (tolower(TimeUnit) %chin% c("month","months")) {
+  } else if (tolower(TimeUnit) %chin% c('month','months')) {
     freq <- 12
-  } else if (tolower(TimeUnit) %chin% c("quarter","quarters")) {
+  } else if (tolower(TimeUnit) %chin% c('quarter','quarters')) {
     freq <- 4
-  } else if (tolower(TimeUnit) %chin% c("year","years")) {
+  } else if (tolower(TimeUnit) %chin% c('year','years')) {
     freq <- 1
   } else {
-    warning("TimeUnit is not in hour, day, week, month, quarter, or year")
+    stop('TimeUnit is not in hour, day, week, month, quarter, or year')
   }
 
   # Ensure data is a data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # convert DateColName to POSIXct ----
-  if(is.character(data[[eval(DateColName)]]) | is.factor(data[[eval(DateColName)]])) {
+  if(is.character(data[[eval(DateColName)]]) || is.factor(data[[eval(DateColName)]])) {
     data[, eval(DateColName) := as.POSIXct(get(DateColName))]
   }
 
   # Ensure data is sorted ----
   data.table::setorderv(x = data, cols = eval(DateColName), order = 1L)
 
-  # Keep columns ----
+  # Residuals
   if(!is.null(PredictedColName)) {
     data[, Residuals := get(TargetColName) - get(PredictedColName)]
   } else {
     data[, Residuals := get(TargetColName)]
   }
-  keep <- c(DateColName, "Residuals")
-  temp <- data[, ..keep]
+
+  # Keep columns ----
+  temp <- data[, .SD, .SDcols = c(DateColName, 'Residuals')]
   MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
 
   # Convert to time series object ----
   tsData <- stats::ts(temp, start = temp[, min(get(DateColName))][[1L]], frequency = freq)
 
   # Build the auto arima ----
-  if(MinVal > 0) {
-    fit <- tryCatch({
-      forecast::auto.arima(
-        y = tsData[, "Residuals"],
-        max.p = Lags,
-        max.q = MA,
-        max.P = SLags,
-        max.Q = SMA,
-        max.d = 1,
-        max.D = 1,
-        ic = "bic",
-        lambda = TRUE,
-        biasadj = TRUE,
-        stepwise = TRUE) }, error = function(x) "empty")
-  } else {
-    fit <- tryCatch({
-      forecast::auto.arima(
-        y = tsData[, "Residuals"],
-        max.p = Lags,
-        max.q = MA,
-        max.P = SLags,
-        max.Q = SMA,
-        max.d = 1,
-        max.D = 1,
-        ic = "bic",
-        lambda = FALSE,
-        biasadj = FALSE,
-        stepwise = TRUE)}, error = function(x) "empty")
-  }
+  fit <- tryCatch({
+    forecast::auto.arima(
+      y = tsData[, 'Residuals'],
+      max.p = Lags,
+      max.q = MA,
+      max.P = SLags,
+      max.Q = SMA,
+      max.d = 1,
+      max.D = 1,
+      ic = 'bic',
+      lambda = if(MinVal > 0) TRUE else FALSE,
+      biasadj = if(MinVal > 0) TRUE else FALSE,
+      stepwise = TRUE)
+    }, error = function(x) NULL)
 
   # Store the arima parameters ----
-  if("empty" %chin% fit) stop("No model could be fit")
+  if(is.null(fit)) stop('No model could be fit')
   pars <- tsoutliers::coefs2poly(fit)
 
   # Store the arima residuals ----
   resid <- cbind(tsData, stats::residuals(fit))
 
   # Find the outliers ----
-  x <- data.table::as.data.table(tsoutliers::locate.outliers(
-    resid = resid[, 3L],
-    pars = pars,
-    cval = tstat,
-    types = c("AO", "TC", "LS", "IO", "SLS")))
+  x <- data.table::as.data.table(
+    tsoutliers::locate.outliers(
+      resid = resid[, 3L],
+      pars = pars,
+      cval = tstat,
+      types = c('AO','TC','LS','IO','SLS')))
 
   # Merge back to source data ----
   residDT <- data.table::as.data.table(resid)
   z <- cbind(data, residDT)
   z[, ind := 1:.N]
-  data.table::setnames(z, names(z)[c((ncol(z) - 3):(ncol(z) - 1))], c("ObsNum", "Preds", "ARIMA_Residuals"))
-  data.table::set(z, j = "ObsNum", value = NULL)
-  data <- merge(z, x, by = "ind", all.x = TRUE)
+  data.table::setnames(z, names(z)[c((ncol(z) - 3):(ncol(z) - 1))], c('ObsNum','Preds','ARIMA_Residuals'))
+  data.table::set(z, j = 'ObsNum', value = NULL)
+  data <- merge(z, x, by = 'ind', all.x = TRUE)
   data[, ':=' (ind = NULL, coefhat = NULL)]
-  data[type == "<NA>", type := NA]
+  data[type == '<NA>', type := NA]
 
   # Reorder data, remove the coefhat column to send to database or stakeholder ----
   return(list(FullData = data, ARIMA_MODEL = fit))
