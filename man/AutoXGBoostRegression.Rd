@@ -20,12 +20,12 @@ AutoXGBoostRegression(
   DebugMode = FALSE,
   SaveInfoToPDF = FALSE,
   ModelID = "FirstModel",
-  EncodingMethod = "binary",
+  EncodingMethod = "credibility",
   ReturnFactorLevels = TRUE,
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+  Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   Verbose = 0L,
   NumOfParDepPlots = 3L,
   NThreads = parallel::detectCores(),
@@ -149,59 +149,58 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoXGBoostRegression(
 
-    # GPU or CPU
-    TreeMethod = "hist",
-    NThreads = parallel::detectCores(),
-    LossFunction = 'reg:squarederror',
+  # GPU or CPU
+  TreeMethod = 'hist',
+  NThreads = parallel::detectCores(),
+  LossFunction = 'reg:squarederror',
 
-    # Metadata args
-    OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
-    model_path = normalizePath("./"),
-    metadata_path = NULL,
-    ModelID = "Test_Model_1",
-    EncodingMethod = "binary",
-    ReturnFactorLevels = TRUE,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-    DebugMode = FALSE,
+  # Metadata args
+  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+  model_path = normalizePath("./"),
+  metadata_path = NULL,
+  ModelID = "Test_Model_1",
+  EncodingMethod = 'credibility',
+  ReturnFactorLevels = TRUE,
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
 
-    # Data args
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    PrimaryDateColumn = NULL,
-    WeightsColumnName = NULL,
-    IDcols = c("IDcol_1","IDcol_2"),
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log",
-      "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  # Data args
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data)[!names(data) \%in\%
+    c('IDcol_1', 'IDcol_2', 'Adrian')],
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
+  IDcols = c('IDcol_1', 'IDcol_2'),
+  TransformNumericColumns = NULL,
+  Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit'),
 
-    # Model evaluation args
-    eval_metric = "rmse",
-    NumOfParDepPlots = 3L,
+  # Model evaluation args
+  eval_metric = 'rmse',
+  NumOfParDepPlots = 3L,
 
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    grid_eval_metric = "r2",
-    BaselineComparison = "default",
-    MaxModelsInGrid = 10L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    Verbose = 1L,
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  grid_eval_metric = 'r2',
+  BaselineComparison = 'default',
+  MaxModelsInGrid = 10L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  Verbose = 1L,
 
-    # ML args
-    Trees = 50L,
-    eta = 0.05,
-    max_depth = 4L,
-    min_child_weight = 1.0,
-    subsample = 0.55,
-    colsample_bytree = 0.55)
+  # ML args
+  Trees = 50L,
+  eta = 0.05,
+  max_depth = 4L,
+  min_child_weight = 1.0,
+  subsample = 0.55,
+  colsample_bytree = 0.55)
 }
 }
 \seealso{

@@ -253,7 +253,7 @@ ParseOptParse <- function(x) {
 #' @noRd
 ColTypes <- function(data) {
   CT <- c()
-  for(Col in names(data)) CT <- c(CT, class(data[[Col]])[[1L]])
+  for(Col in names(data)) CT <- c(CT, class( data[[Col]] )[[1L]], length(class( data[[Col]] )))
   CT
 }
 
@@ -271,3 +271,59 @@ LoadAssign <- function(FilePath) {
   load(FilePath, envir = .GlobalEnv)
   get(ls()[ls() != "FilePath"])
 }
+
+#' @title ColNames
+#'
+#' @family Misc
+#' @author Adrian Antico
+#'
+#' @param data source data.table
+#' @param Types 'all' (basically names(data)), 'numeric', 'character', 'factor', 'logical', 'posix', 'date', 'integer64'
+#'
+#' @noRd
+ColNameFilter <- function(data, Types = 'all') {
+  if(Types == 'all') return(names(data))
+  nam <- c()
+  for(t in Types) {
+    if(tolower(t) == 'numeric') {
+      nam <- c(nam, NumericColNames(data))
+    } else if(tolower(t) == 'character') {
+      nam <- c(nam, CharacterColNames(data))
+    } else if(tolower(t) == 'factor') {
+      nam <- c(nam, FactorColNames(data))
+    } else if(tolower(t) == 'logical') {
+      nam <- c(nam, LogicalColNames(data))
+    }
+  }
+  return(unique(nam))
+}
+
+#' @noRd
+NumericColNames <- function(data) {
+  x <- names(data)[which(sapply(data, is.numeric))]
+  if(!identical(x, character(0))) return(x) else return(NULL)
+}
+
+#' @noRd
+CharacterColNames <- function(data) {
+  x <- names(data)[which(sapply(data, is.character))]
+  if(!identical(x, character(0))) return(x) else return(NULL)
+}
+
+#' @noRd
+FactorColNames <- function(data) {
+  x <- names(data)[which(sapply(data, is.factor))]
+  if(!identical(x, character(0))) return(x) else return(NULL)
+}
+
+#' @noRd
+LogicalColNames <- function(data) {
+  x <- names(data)[which(sapply(data, is.logical))]
+  if(!identical(x, character(0))) return(x) else return(NULL)
+}
+
+# ColNameFilter(data, Types = 'numeric')
+# ColNameFilter(data, Types = 'factor')
+# ColNameFilter(data, Types = 'charcter')
+# ColNameFilter(data, Types = 'logical')
+

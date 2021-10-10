@@ -207,6 +207,19 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
   Depth <- Output$Depth
   RSM <- Output$RSM; rm(Output)
 
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+  ArgsList[['data']] <- NULL
+  ArgsList[['ValidationData']] <- NULL
+  ArgsList[['TestData']] <- NULL
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
+
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
   Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, EvalMetric.=EvalMetric)
@@ -302,9 +315,23 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
   EvalMetricsList <- list()
   if('evalmetrics' %chin% tolower(OutputSelection)) {
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      EvalMetricsList[['TrainData']] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+      EvalMetricsList[['TrainData']] <- RegressionMetrics(SaveModelObjects.=FALSE, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+      if(SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          data.table::fwrite(EvalMetricsList[['TrainData']], file = file.path(metadata_path, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
+        } else if(!is.null(model_path)) {
+          data.table::fwrite(EvalMetricsList[['TrainData']], file = file.path(model_path, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
+        }
+      }
     }
-    EvalMetricsList[['TestData']] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    EvalMetricsList[['TestData']] <- RegressionMetrics(SaveModelObjects.=FALSE, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(metadata_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+      } else if(!is.null(model_path)) {
+        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+      }
+    }
   }
 
   # Regression Plots ----
@@ -312,7 +339,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
   PlotList <- list()
   if('evalplots' %chin% tolower(OutputSelection)) {
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType='regression', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
+      Output <- ML_EvalPlots(ModelType='regression', DataType = 'Train', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
       PlotList[['Train_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
       PlotList[['Train_EvaluationBoxPlot']] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
       PlotList[['Train_ParDepPlots']] <- Output$ParDepPlots;  Output$ParDepPlots <- NULL
@@ -324,7 +351,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
       if(!is.null(VariableImportance$Train_Importance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)) else if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
       if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
     }
-    Output <- ML_EvalPlots(ModelType='regression', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
+    Output <- ML_EvalPlots(ModelType='regression', DataType = 'Test', TrainOnFull.=TrainOnFull, LossFunction.=LossFunction, EvalMetric.=EvalMetric, EvaluationMetrics.=EvalMetricsList, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, predict.=NULL, DateColumnName.=PrimaryDateColumn)
     PlotList[['Test_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
     PlotList[['Test_EvaluationBoxPlot']] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
     PlotList[['Test_ParDepPlots']] <- Output$ParDepPlots;  Output$ParDepPlots <- NULL
@@ -372,6 +399,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
       GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists('Names')) Names else NULL,
       TransformationResults = if(exists('TransformationResults')) TransformationResults else NULL,
-      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL))
+      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL,
+      ArgsList = ArgsList))
   }
 }

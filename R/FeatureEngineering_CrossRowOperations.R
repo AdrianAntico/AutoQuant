@@ -1626,7 +1626,7 @@ DT_GDL_Feature_Engineering <- function(data,
 
       # Define targets----
       if(WindowingLag != 0L) {
-        Targets <- c(paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", Targets))
+        Targets <- paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", Targets)
       }
 
       # MA stats ----
@@ -1691,12 +1691,12 @@ DT_GDL_Feature_Engineering <- function(data,
     return(data)
 
   } else {
+
+    # Sort data
     if(tolower(Type) == "lag") {
-      colVar <- c(sortDateName[1L])
-      data.table::setorderv(data, colVar, order = 1L)
+      data.table::setorderv(data, c(sortDateName[1L]), order = 1L)
     } else {
-      colVar <- c(sortDateName[1L])
-      data.table::setorderv(data, colVar, order = -1L)
+      data.table::setorderv(data, c(sortDateName[1L]), order = -1L)
     }
     Targets <- targets
 
@@ -1705,17 +1705,17 @@ DT_GDL_Feature_Engineering <- function(data,
     for(t in Targets) LAG_Names <- c(LAG_Names, paste0(timeAggss, "_", "LAG_", lags, "_", t))
 
     # Build features ----
-    data[, paste0(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"), .SDcols = c(Targets)]
+    data[, eval(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"), .SDcols = c(Targets)]
 
     # Define targets ----
     if(WindowingLag != 0L) {
-      Targets <- c(paste0(timeAggss, "_", "LAG_", WindowingLag, "_", Targets))
+      Targets <- paste0(timeAggss, "_", "LAG_", WindowingLag, "_", Targets)
     } else {
       Targets <- Targets
     }
 
     # MA stats ----
-    if(any(tolower(statsFUNs) %chin% "mean") & !all(periods %in% c(0L, 1L))) {
+    if(any(tolower(statsFUNs) %chin% "mean") && !all(periods %in% c(0L, 1L))) {
       periods <- periods[periods > 1L]
       MA_Names <- c()
       for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0(timeAggss, "_", "Mean_", periods[j], "_", t))
@@ -1723,7 +1723,7 @@ DT_GDL_Feature_Engineering <- function(data,
     }
 
     # SD stats ----
-    if(any(tolower(statsFUNs) %chin% c("sd")) & !all(SDperiods %in% c(0L,1L))) {
+    if(any(tolower(statsFUNs) %chin% c("sd")) && !all(SDperiods %in% c(0L,1L))) {
       tempperiods <- SDperiods[SDperiods > 1L]
       SD_Names <- c()
       for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0(timeAggss, "_", "SD_", tempperiods[j], "_", t))
@@ -1731,7 +1731,7 @@ DT_GDL_Feature_Engineering <- function(data,
     }
 
     # Skewness stats ----
-    if(any(tolower(statsFUNs) %chin% c("skew")) & !all(Skewperiods %in% c(0L,1L,2L))) {
+    if(any(tolower(statsFUNs) %chin% c("skew")) && !all(Skewperiods %in% c(0L,1L,2L))) {
       tempperiods <- Skewperiods[Skewperiods > 2L]
       Skew_Names <- c()
       for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0(timeAggss, "_", "Skew_", tempperiods[j], "_", t))
@@ -1739,7 +1739,7 @@ DT_GDL_Feature_Engineering <- function(data,
     }
 
     # Kurtosis stats ----
-    if(any(tolower(statsFUNs) %chin% c("kurt")) & !all(Kurtperiods %in% c(0L,1L,2L,3L))) {
+    if(any(tolower(statsFUNs) %chin% c("kurt")) && !all(Kurtperiods %in% c(0L,1L,2L,3L))) {
       tempperiods <- Kurtperiods[Kurtperiods > 3L]
       Kurt_Names <- c()
       for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0(timeAggss, "_", "Kurt_", tempperiods[j], "_", t))

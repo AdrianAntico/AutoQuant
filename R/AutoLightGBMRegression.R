@@ -379,6 +379,19 @@ AutoLightGBMRegression <- function(# data parameters
   # LightGBM Parameters
   params <- LightGBMArgs(input_model.=input_model, task.=tolower(task), objective.=objective, boosting.=boosting, LinearTree.=LinearTree, Trees.=Trees, eta.=eta, num_leaves.=num_leaves, NThreads.=NThreads, device_type.=tolower(device_type), deterministic.=deterministic, force_col_wise.=force_col_wise, force_row_wise.=force_row_wise, max_depth.=max_depth, min_data_in_leaf.=min_data_in_leaf, min_sum_hessian_in_leaf.=min_sum_hessian_in_leaf, bagging_freq.=bagging_freq, bagging_fraction.=bagging_fraction, feature_fraction.=feature_fraction, feature_fraction_bynode.=feature_fraction_bynode, extra_trees.=extra_trees, early_stopping_round.=early_stopping_round, first_metric_only.=first_metric_only, max_delta_step.=max_delta_step, lambda_l1.=lambda_l1, lambda_l2.=lambda_l2, linear_lambda.=linear_lambda, min_gain_to_split.=min_gain_to_split, drop_rate_dart.=drop_rate_dart, max_drop_dart.=max_drop_dart, skip_drop_dart.=skip_drop_dart, uniform_drop_dart.=uniform_drop_dart, top_rate_goss.=top_rate_goss, other_rate_goss.=other_rate_goss, monotone_constraints.=monotone_constraints, monotone_constraints_method.=monotone_constraints_method, monotone_penalty.=monotone_penalty, forcedsplits_filename.=forcedsplits_filename, refit_decay_rate.=refit_decay_rate, path_smooth.=path_smooth, max_bin.=max_bin, min_data_in_bin.=min_data_in_bin, data_random_seed.=data_random_seed, is_enable_sparse.=is_enable_sparse, enable_bundle.=enable_bundle, use_missing.=use_missing, zero_as_missing.=zero_as_missing, two_round.=two_round, convert_model.=convert_model, convert_model_language.=convert_model_language, boost_from_average.=boost_from_average, alpha.=alpha, fair_c.=fair_c, poisson_max_delta_step.=poisson_max_delta_step, tweedie_variance_power.=tweedie_variance_power, lambdarank_truncation_level.=lambdarank_truncation_level, is_unbalance.=NULL, scale_pos_weight.=NULL, multi_error_top_k.=NULL, is_provide_training_metric.=is_provide_training_metric, eval_at.=eval_at, gpu_platform_id.=gpu_platform_id, gpu_device_id.=gpu_device_id, gpu_use_dp.=gpu_use_dp, num_gpu.=num_gpu)
 
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+  ArgsList[['data']] <- NULL
+  ArgsList[['ValidationData']] <- NULL
+  ArgsList[['TestData']] <- NULL
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
+
   # Data prep ----
   if(DebugMode) print('Data prep ----')
   Output <- XGBoostDataPrep(Algo='lightgbm', ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
@@ -464,9 +477,23 @@ AutoLightGBMRegression <- function(# data parameters
   if('evalmetrics' %chin% tolower(OutputSelection)) {
     EvalMetricsList <- list()
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      EvalMetricsList[['TrainData']] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.='Adrian', EvalMetric.=NULL, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+      EvalMetricsList[['TrainData']] <- RegressionMetrics(SaveModelObjects.=FALSE, data.=data, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, LossFunction.='Adrian', EvalMetric.=NULL, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+      if(SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          data.table::fwrite(EvalMetricsList[['TrainData']], file = file.path(metadata_path, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
+        } else if(!is.null(model_path)) {
+          data.table::fwrite(EvalMetricsList[['TrainData']], file = file.path(model_path, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
+        }
+      }
     }
-    EvalMetricsList[['TestData']] <- RegressionMetrics(SaveModelObjects.=SaveModelObjects, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.='Adrian', EvalMetric.=NULL, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    EvalMetricsList[['TestData']] <- RegressionMetrics(SaveModelObjects.=FALSE, data.=data, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, LossFunction.='Adrian', EvalMetric.=NULL, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(metadata_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+      } else if(!is.null(model_path)) {
+        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+      }
+    }
   }
 
   # Classification evaluation plots ----
@@ -474,7 +501,7 @@ AutoLightGBMRegression <- function(# data parameters
   PlotList <- list()
   if('evalplots' %chin% tolower(OutputSelection)) {
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType='regression', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.='RMSE', EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL, DateColumnName.=PrimaryDateColumn)
+      Output <- ML_EvalPlots(ModelType='regression', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.='RMSE', EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL, DateColumnName.=PrimaryDateColumn)
       PlotList[['Train_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
       PlotList[['Train_EvaluationBoxPlot']] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
       PlotList[['Train_ParDepPlots']] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
@@ -484,7 +511,7 @@ AutoLightGBMRegression <- function(# data parameters
       PlotList[['Train_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
       PlotList[['Train_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
     }
-    Output <- ML_EvalPlots(ModelType='regression', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.='RMSE', EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL, DateColumnName.=PrimaryDateColumn)
+    Output <- ML_EvalPlots(ModelType='regression', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.='RMSE', EvalMetric.=NULL, EvaluationMetrics.=EvalMetricsList, predict.=NULL, DateColumnName.=PrimaryDateColumn)
     PlotList[['Test_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
     PlotList[['Test_EvaluationBoxPlot']] <- Output$EvaluationBoxPlot; Output$EvaluationBoxPlot <- NULL
     PlotList[['Test_ParDepPlots']] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
@@ -531,6 +558,7 @@ AutoLightGBMRegression <- function(# data parameters
       GridMetrics = if(exists('ExperimentalGrid')) ExperimentalGrid else NULL,
       ColNames = if(exists('Names')) Names else NULL,
       TransformationResults = if(exists('TransformationResults')) TransformationResults else NULL,
-      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL))
+      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL,
+      ArgsList = ArgsList))
   }
 }

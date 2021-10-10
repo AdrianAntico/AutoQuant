@@ -307,14 +307,14 @@ data <- RemixAutoML::FakeDataGenerator(
   ID = 2,
   ZIP = 0,
   AddDate = FALSE,
-  Classification = FALSE,
+  Classification = TRUE,
   MultiClass = FALSE)
 
 # Run function
 TestModel <- RemixAutoML::AutoLightGBMClassifier(
 
   # Metadata args
-  OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
+  OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
   model_path = normalizePath("./"),
   metadata_path = NULL,
   ModelID = "Test_Model_1",

@@ -401,6 +401,9 @@ AutoCatBoostCARMA <- function(data,
   TimeUnit <- Args$TimeUnit
   TaskType <- Args$TaskType; rm(Args)
 
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+
   # Convert data to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
   if(!is.null(XREGS) && !data.table::is.data.table(XREGS)) data.table::setDT(XREGS)
@@ -745,5 +748,6 @@ AutoCatBoostCARMA <- function(data,
   return(list(
     Forecast = UpdateData,
     ModelInformation = TestModel,
-    TransformationDetail = if(exists('TransformObject') && !is.null(TransformObject)) TransformObject else NULL))
+    TransformationDetail = if(exists('TransformObject') && !is.null(TransformObject)) TransformObject else NULL,
+    ArgsList = ArgsList))
 }

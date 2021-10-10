@@ -99,10 +99,13 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = FALSE,
   MultiClass = FALSE)
 
+# Give h2o a few seconds
+Sys.sleep(5L)
+
 # Create vectors for scoring
 data <- RemixAutoML::AutoWord2VecScoring(
   data,
-  BuildType = "individual",
+  BuildType = 'individual',
   ModelObject = NULL,
   ModelID = "Model_1",
   model_path = getwd(),

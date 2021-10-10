@@ -1048,9 +1048,9 @@ XGBoostValidationData <- function(model.=model,
     data.table::setnames(VariableImportance, c('Feature','Gain'), c('Variable','Importance'))
     if(SaveModelObjects.) {
       if(!is.null(metadata_path.)) {
-        data.table::fwrite(VariableImportance, file = file.path(metadata_path., paste0(ModelID., '_VariableImportance.csv')))
+        data.table::fwrite(VariableImportance, file = file.path(metadata_path., paste0(ModelID., '_Train_Importance_VariableImportance.csv')))
       } else {
-        data.table::fwrite(VariableImportance, file = file.path(model_path., paste0(ModelID., '_VariableImportance.csv')))
+        data.table::fwrite(VariableImportance, file = file.path(model_path., paste0(ModelID., '_Train_Importance_VariableImportance.csv')))
       }
     }
   }

@@ -325,11 +325,6 @@ BinaryMetrics <- function(ClassWeights. = ClassWeights,
   }
   if(SaveModelObjects. && !TrainOnFull.) {
     EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = unique(vals), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
-    if(!is.null(metadata_path.)) {
-      data.table::fwrite(EvalMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
-    } else {
-      data.table::fwrite(EvalMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
-    }
   } else {
     EvalMetrics <- RemixClassificationMetrics(TargetVariable = eval(TargetColumnName.), Thresholds = unique(vals), CostMatrix = CostMatrixWeights., ClassLabels = c(1,0), ValidationData. = ValidationData.)
   }
@@ -394,13 +389,6 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 
     # Save EvaluationMetrics to File
     EvaluationMetrics <- EvaluationMetrics[MetricValue != 999999]
-    if(SaveModelObjects.) {
-      if(!is.null(metadata_path.)) {
-        data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_EvaluationMetrics.csv")))
-      } else {
-        data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_EvaluationMetrics.csv")))
-      }
-    }
   } else {
     EvaluationMetrics <- list()
 
@@ -432,13 +420,6 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 
       # Save EvaluationMetrics to File
       EvaluationMetrics[[TargetColumnName.[TV]]] <- EvaluationMetrics[[TargetColumnName.[TV]]][MetricValue != 999999]
-      if(SaveModelObjects.) {
-        if(!is.null(metadata_path.)) {
-          data.table::fwrite(EvaluationMetrics[[TargetColumnName.[TV]]], file = file.path(metadata_path., paste0(ModelID., "_", TargetColumnName.[TV], "_EvaluationMetrics.csv")))
-        } else {
-          data.table::fwrite(EvaluationMetrics[[TargetColumnName.[TV]]], file = file.path(model_path., paste0(ModelID., "_", TargetColumnName.[TV], "_EvaluationMetrics.csv")))
-        }
-      }
     }
   }
 
@@ -486,7 +467,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   # MultiClass Metrics Accuracy
   MetricAcc <- ValidationData.[, mean(data.table::fifelse(as.character(get(TargetColumnName.)) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
 
-  # MultiClass Metrics MicroAUC Setup ----
+  # MultiClass Metrics MicroAUC Setup
   Response <- ValidationData.[[eval(TargetColumnName.)]]
   if(ModelClass == "catboost") {
     Predictor <- as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[3L:(ncol(PredictData.)+1L)])])
@@ -499,7 +480,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   # Generate metric
   MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = Response, predictor = Predictor)$auc, "\\d+\\.*\\d*"))), 4L)
 
-  # Logloss ----
+  # Logloss
   if(!data.table::is.data.table(TargetLevels.)) N <- length(TargetLevels.) else N <- TargetLevels.[, .N]
   temp <- ValidationData.[, .SD, .SDcols = c(TargetColumnName., "Predict")]
   temp <- DummifyDT(data=temp, cols=eval(TargetColumnName.), KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
@@ -517,7 +498,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
   }
 
-  # MultiClass Evaluation Metrics ----
+  # MultiClass Evaluation Metrics
   EvaluationMetrics <- data.table::data.table(Metric = c("MicroAUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
   if(SaveModelObjects.) {
     if(!is.null(metadata_path.)) {

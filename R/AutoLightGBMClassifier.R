@@ -120,14 +120,14 @@
 #'   ID = 2,
 #'   ZIP = 0,
 #'   AddDate = FALSE,
-#'   Classification = FALSE,
+#'   Classification = TRUE,
 #'   MultiClass = FALSE)
 #'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoLightGBMClassifier(
 #'
 #'   # Metadata args
-#'   OutputSelection = c("Importances","EvalPlots","EvalMetrics","Score_TrainData"),
+#'   OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
 #'   model_path = normalizePath("./"),
 #'   metadata_path = NULL,
 #'   ModelID = "Test_Model_1",
@@ -365,6 +365,19 @@ AutoLightGBMClassifier <- function(# Data Args
   # LightGBM Parameters
   params <- LightGBMArgs(input_model.=input_model, task.=tolower(task), objective.=objective, boosting.=boosting, LinearTree.=LinearTree, Trees.=Trees, eta.=eta, num_leaves.=num_leaves, NThreads.=NThreads, device_type.=tolower(device_type), deterministic.=deterministic, force_col_wise.=force_col_wise, force_row_wise.=force_row_wise, max_depth.=max_depth, min_data_in_leaf.=min_data_in_leaf, min_sum_hessian_in_leaf.=min_sum_hessian_in_leaf, bagging_freq.=bagging_freq, bagging_fraction.=bagging_fraction, feature_fraction.=feature_fraction, feature_fraction_bynode.=feature_fraction_bynode, extra_trees.=extra_trees, early_stopping_round.=early_stopping_round, first_metric_only.=first_metric_only, max_delta_step.=max_delta_step, lambda_l1.=lambda_l1, lambda_l2.=lambda_l2, linear_lambda.=linear_lambda, min_gain_to_split.=min_gain_to_split, drop_rate_dart.=drop_rate_dart, max_drop_dart.=max_drop_dart, skip_drop_dart.=skip_drop_dart, uniform_drop_dart.=uniform_drop_dart, top_rate_goss.=top_rate_goss, other_rate_goss.=other_rate_goss, monotone_constraints.=monotone_constraints, monotone_constraints_method.=monotone_constraints_method, monotone_penalty.=monotone_penalty, forcedsplits_filename.=forcedsplits_filename, refit_decay_rate.=refit_decay_rate, path_smooth.=path_smooth, max_bin.=max_bin, min_data_in_bin.=min_data_in_bin, data_random_seed.=data_random_seed, is_enable_sparse.=is_enable_sparse, enable_bundle.=enable_bundle, use_missing.=use_missing, zero_as_missing.=zero_as_missing, two_round.=two_round, convert_model.=convert_model, convert_model_language.=convert_model_language, boost_from_average.=boost_from_average, alpha.=NULL, fair_c.=NULL, poisson_max_delta_step.=NULL, tweedie_variance_power.=NULL, lambdarank_truncation_level.=NULL, is_unbalance.=is_unbalance, scale_pos_weight.=scale_pos_weight, multi_error_top_k.=NULL, is_provide_training_metric.=is_provide_training_metric, eval_at.=eval_at, gpu_platform_id.=gpu_platform_id, gpu_device_id.=gpu_device_id, gpu_use_dp.=gpu_use_dp, num_gpu.=num_gpu)
 
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+  ArgsList[['data']] <- NULL
+  ArgsList[['ValidationData']] <- NULL
+  ArgsList[['TestData']] <- NULL
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
+
   # Data prep ----
   if(DebugMode) print("Data prep ----")
   Output <- XGBoostDataPrep(Algo="lightgbm", ModelType="classification", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
@@ -450,11 +463,25 @@ AutoLightGBMClassifier <- function(# Data Args
   EvalMetrics2List <- list()
   if("evalmetrics" %chin% tolower(OutputSelection)) {
     if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      EvalMetricsList[["TrainData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
-      EvalMetrics2List[["TrainData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+      EvalMetricsList[["TrainData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=FALSE, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+      EvalMetrics2List[["TrainData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=FALSE, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+      if(SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(metadata_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+        } else if(!is.null(model_path)) {
+          data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+        }
+      }
     }
-    EvalMetricsList[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
-    EvalMetrics2List[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+    EvalMetricsList[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=FALSE, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
+    EvalMetrics2List[["TestData"]] <- BinaryMetrics(ClassWeights.=NULL, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=FALSE, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(metadata_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+      } else if(!is.null(model_path)) {
+        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+      }
+    }
   }
 
   # Classification evaluation plots ----
@@ -462,14 +489,14 @@ AutoLightGBMClassifier <- function(# Data Args
   PlotList <- list()
   if("evalplots" %chin% tolower(OutputSelection)) {
     if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+      Output <- ML_EvalPlots(ModelType="classification", DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
       PlotList[["Train_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
       PlotList[["Train_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
       PlotList[["Train_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
       PlotList[["Train_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
       PlotList[["Train_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
     }
-    Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+    Output <- ML_EvalPlots(ModelType="classification", DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
     PlotList[["Test_EvaluationPlot"]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
     PlotList[["Test_ParDepPlots"]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
     PlotList[["Test_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
@@ -503,6 +530,7 @@ AutoLightGBMClassifier <- function(# Data Args
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
       GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) data.table::setorderv(ExperimentalGrid, cols = "EvalMetric", order = -1L, na.last = TRUE) else NULL,
       ColNames = if(exists("Names")) Names else NULL,
-      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL))
+      FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL,
+      ArgsList = ArgsList))
   }
 }

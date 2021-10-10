@@ -367,6 +367,19 @@ AutoLightGBMMultiClass <- function(data = NULL,
   # LightGBM Parameters
   params <- LightGBMArgs(data.=data, TargetColumnName.=TargetColumnName, input_model.=input_model, task.=tolower(task), objective.=objective, boosting.=boosting, LinearTree.=LinearTree, Trees.=Trees, eta.=eta, num_leaves.=num_leaves, NThreads.=NThreads, device_type.=tolower(device_type), deterministic.=deterministic, force_col_wise.=force_col_wise, force_row_wise.=force_row_wise, max_depth.=max_depth, min_data_in_leaf.=min_data_in_leaf, min_sum_hessian_in_leaf.=min_sum_hessian_in_leaf, bagging_freq.=bagging_freq, bagging_fraction.=bagging_fraction, feature_fraction.=feature_fraction, feature_fraction_bynode.=feature_fraction_bynode, extra_trees.=extra_trees, early_stopping_round.=early_stopping_round, first_metric_only.=first_metric_only, max_delta_step.=max_delta_step, lambda_l1.=lambda_l1, lambda_l2.=lambda_l2, linear_lambda.=linear_lambda, min_gain_to_split.=min_gain_to_split, drop_rate_dart.=drop_rate_dart, max_drop_dart.=max_drop_dart, skip_drop_dart.=skip_drop_dart, uniform_drop_dart.=uniform_drop_dart, top_rate_goss.=top_rate_goss, other_rate_goss.=other_rate_goss, monotone_constraints.=monotone_constraints, monotone_constraints_method.=monotone_constraints_method, monotone_penalty.=monotone_penalty, forcedsplits_filename.=forcedsplits_filename, refit_decay_rate.=refit_decay_rate, path_smooth.=path_smooth, max_bin.=max_bin, min_data_in_bin.=min_data_in_bin, data_random_seed.=data_random_seed, is_enable_sparse.=is_enable_sparse, enable_bundle.=enable_bundle, use_missing.=use_missing, zero_as_missing.=zero_as_missing, two_round.=two_round, convert_model.=convert_model, convert_model_language.=convert_model_language, boost_from_average.=boost_from_average, alpha.=NULL, fair_c.=NULL, poisson_max_delta_step.=NULL, tweedie_variance_power.=NULL, lambdarank_truncation_level.=NULL, is_unbalance.=is_unbalance, scale_pos_weight.=NULL, multi_error_top_k.=multi_error_top_k, is_provide_training_metric.=is_provide_training_metric, eval_at.=eval_at, gpu_platform_id.=gpu_platform_id, gpu_device_id.=gpu_device_id, gpu_use_dp.=gpu_use_dp, num_gpu.=num_gpu)
 
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+  ArgsList[['data']] <- NULL
+  ArgsList[['ValidationData']] <- NULL
+  ArgsList[['TestData']] <- NULL
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
+
   # Data prep ----
   if(DebugMode) print("Data prep ----")
   Output <- XGBoostDataPrep(Algo="lightgbm", ModelType="multiclass", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod)
@@ -454,9 +467,9 @@ AutoLightGBMMultiClass <- function(data = NULL,
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Running MultiClassMetrics()")
   MultinomialMetrics <- list()
-  MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "validate", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Test", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "train", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Train", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Generate EvaluationMetrics ----
@@ -479,6 +492,13 @@ AutoLightGBMMultiClass <- function(data = NULL,
       EvalMetricsList[[paste0("TestData_",tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0("Temp_",tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
       EvalMetrics2List[[paste0("TestData_",tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0("Temp_",tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
       data.table::set(ValidationData, j = c("p1",paste0("Temp_",tarlevel)), value = NULL)
+    }
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+      } else if(!is.null(model_path)) {
+        save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+      }
     }
   }
 
@@ -547,6 +567,7 @@ AutoLightGBMMultiClass <- function(data = NULL,
       GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
       FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL,
-      TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL))
+      TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL,
+      ArgsList = ArgsList))
   }
 }

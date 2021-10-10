@@ -196,6 +196,19 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   Depth <- Output$Depth
   RSM <- Output$RSM; rm(Output)
 
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+  ArgsList[['data']] <- NULL
+  ArgsList[['ValidationData']] <- NULL
+  ArgsList[['TestData']] <- NULL
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
+
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
   Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, ModelType='multiclass', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
@@ -298,9 +311,9 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   # Generate EvaluationMetrics ----
   if(DebugMode) print('Running MultiClassMetrics()')
   MultinomialMetrics <- list()
-  MultinomialMetrics[['TestData']] <- MultiClassMetrics(ModelClass='catboost', DataType = 'validate', SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  MultinomialMetrics[['TestData']] <- MultiClassMetrics(ModelClass='catboost', DataType = 'Test', SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-    MultinomialMetrics[['TrainData']] <- MultiClassMetrics(ModelClass='catboost', DataType = 'train', SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    MultinomialMetrics[['TrainData']] <- MultiClassMetrics(ModelClass='catboost', DataType = 'Train', SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Generate EvaluationMetrics ----
@@ -323,6 +336,13 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       EvalMetricsList[[paste0('TestData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
       EvalMetrics2List[[paste0('TestData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
       data.table::set(ValidationData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
+    }
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+      } else if(!is.null(model_path)) {
+        save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+      }
     }
   }
 
@@ -390,6 +410,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       InteractionImportance = if(exists('Interaction')) Interaction else NULL,
       GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists('Names') && !is.null(Names)) Names else NULL,
-      TargetLevels = if(exists('TargetLevels') && !is.null(TargetLevels)) TargetLevels else NULL))
+      TargetLevels = if(exists('TargetLevels') && !is.null(TargetLevels)) TargetLevels else NULL,
+      ArgsList = ArgsList))
   }
 }

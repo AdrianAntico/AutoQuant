@@ -5,8 +5,7 @@
 \title{AutoCatBoostClassifier}
 \usage{
 AutoCatBoostClassifier(
-  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs",
-    "Score_TrainData"),
+  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
   data = NULL,
   ValidationData = NULL,
   TestData = NULL,
@@ -184,7 +183,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   DebugMode = FALSE,
 
   # Metadata args
-  OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'Metrics', 'PDF'),
+  OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'EvalMetrics'),
   ModelID = 'Test_Model_1',
   model_path = normalizePath('./'),
   metadata_path = normalizePath('./'),

@@ -1,0 +1,111 @@
+---
+title: "RemixAutoML Model Evaluation & Insights"
+author: "RemixAutoML"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: yes
+    toc_depth: 3
+    fig_caption: yes
+    number_sections: yes
+classoption: landscape
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Model Evaluation
+
+* Regression Model Insights
+  * Evaluation Metrics Include:
+    * mean squared error
+    * mean absolute error
+    * r-sq
+  * Evaluation Plots include:
+    * Residual Plots
+    * Calibration Plots
+    * Copula Scatter of Predicted vs Actual
+    * Partial Dependence Plots
+    * Variable Importance Top N Features
+  * Variable Importance
+    * Global Variable Importance
+    * Global Interaction Importance (CatBoost only)
+    * Shapely Global Importance
+    * shapely Drill-Down Importance for Dim and Time Subsets
+    
+* Binary Classification Model Insights
+  * Evaluation Metrics Include:
+    * Comprehensive confusion matrix metrics
+    * Utility score for cost sensitive evaluation
+    * Multi-threshold plots for dual threshold analysis
+  * Evaluation Plots include:
+    * Calibration Plots
+    * ROC Plot
+    * Gains Plot
+    * Lift Plot
+    * Partial Dependence Plots
+    * Variable Importance Top N Features
+  * Variable Importance
+    * Global Variable Importance
+    * Global Interaction Importance (CatBoost only)
+    * Shapely Global Importance
+    * shapely Drill-Down Importance for Dim and Time Subsets
+
+* MultiClass Model Insights
+  * Evaluation Metrics Include:
+    * Comprehensive confusion matrix metrics
+    * Utility score for cost sensitive evaluation
+    * Multi-threshold plots for dual threshold analysis
+  * Evaluation Plots Include:
+    * Calibration Plots
+    * ROC Plot
+    * Gains Plot
+    * Lift Plot
+    * Partial Dependence Plots
+    * Variable Importance Top N Features
+  * Variable Importance
+    * Global Variable Importance
+    * Global Interaction Importance (CatBoost only)
+    * Shapely Global Importance
+    * shapely Drill-Down Importance for Dim and Time Subsets
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+# Evaluation Metrics
+
+```{r Model_Evaluation_Metrics, echo=FALSE}
+
+```
+
+# Evaluation Plots
+
+## Variable Importance Plot
+
+## Calibration Plot
+
+```{r pressure, echo=FALSE, fig.width=10, fig.height=6}
+
+```
+
+
+## ROC Plot
+
+
+## Gains Plot
+
+
+## Lift Plot
+
+
+# Partial Dependence Plots
+
+## Numeric Variables
+
+## Character Variables
+
+
+

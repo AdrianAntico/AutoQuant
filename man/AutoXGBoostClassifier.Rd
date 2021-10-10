@@ -148,7 +148,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
   NThreads = parallel::detectCores(),
 
   # Metadata args
-  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
   model_path = normalizePath("./"),
   metadata_path = NULL,
   ModelID = "Test_Model_1",

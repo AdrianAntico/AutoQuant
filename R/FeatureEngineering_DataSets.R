@@ -345,20 +345,20 @@ PartitionData <- function(data = NULL,
   # Run function
   DataSets <- RemixAutoML::AutoDataPartition(
     data = data,
-    NumDataSets = length(ArgsList$FE_Args$Partition$PartitionRatios),
-    Ratios = ArgsList$FE_Args$Partition$PartitionRatios,
-    PartitionType = ArgsList$FE_Args$Partition$PartitionMethod,
-    StratifyColumnNames = ArgsList$FE_Args$Partition$PartitionByVariables,
-    TimeColumnName = ArgsList$FE_Args$Partition$PartitionTimeColumnName)
+    NumDataSets = length(ArgsList[['FE_Args']][['Partition']][['PartitionRatios']]),
+    Ratios = ArgsList[['FE_Args']][['Partition']][['PartitionRatios']],
+    PartitionType = ArgsList[['FE_Args']][['Partition']][['PartitionMethod']],
+    StratifyColumnNames = ArgsList[['FE_Args']][['Partition']][['PartitionByVariables']],
+    TimeColumnName = ArgsList[['FE_Args']][['Partition']][['PartitionTimeColumnName']])
 
   # Collect data
-  TrainData <- DataSets$TrainData; DataSets$TrainData <- NULL
-  ValidationData <- DataSets$ValidationData; DataSets$ValidationData <- NULL
-  TestData <- DataSets$TestData; DataSets$TestData <- NULL
+  TrainData <- DataSets[['TrainData']]; DataSets[['TrainData']] <- NULL
+  ValidationData <- DataSets[['ValidationData']]; DataSets[['ValidationData']] <- NULL
+  TestData <- DataSets[['TestData']]; DataSets[['TestData']] <- NULL
 
   # Run time tracking
   End <- Sys.time()
-  ArgsList$RunTime$PartitionData <- difftime(End, Start, units = "mins")
+  ArgsList[['RunTime']][['PartitionData']] <- difftime(End, Start, units = "mins")
 
   # Return
   return(list(TrainData = TrainData, ValidationData = ValidationData, TestData = TestData, ArgsList = ArgsList))

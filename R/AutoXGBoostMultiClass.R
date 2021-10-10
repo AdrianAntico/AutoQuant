@@ -148,6 +148,19 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   if(DebugMode) print("Check args ----")
   XGBoostArgsCheck(GridTune.=GridTune, model_path.=model_path, metadata_path.=metadata_path, Trees.=Trees, max_depth.=max_depth, eta.=eta, min_child_weight.=min_child_weight, subsample.=subsample, colsample_bytree.=colsample_bytree)
 
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+  ArgsList[['data']] <- NULL
+  ArgsList[['ValidationData']] <- NULL
+  ArgsList[['TestData']] <- NULL
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
+
   # Data prep ----
   if(DebugMode) print("Data prep ----")
   if(EncodingMethod %chin% c("target_encode", "credibility", "m_estimator", "woe")) EncodingMethod <- "poly_encode"
@@ -211,7 +224,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   # Validation, Importance, Shap data ----
   if(DebugMode) print("Validation, Importance, Shap data ----")
   Output <- XGBoostValidationData(TrainMerge.=TrainMerge, ModelType="multiclass", TestDataCheck=!is.null(TestData), TrainOnFull.=TrainOnFull, model.=model, TargetColumnName.=TargetColumnName, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TestData.=TestData, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TestMerge.=TestMerge, dataTest.=dataTest, TrainTarget.=TrainTarget, predict.=predict, TransformNumericColumns.=NULL, TransformationResults.=NULL, GridTune.=NULL, data.=dataTrain, LossFunction.=LossFunction)
-  VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
+  VariableImportance <- Output[['VariableImportance']]; Output$VariableImportance <- NULL
   ValidationData <- Output$ValidationData; rm(Output)
 
   # TrainData + ValidationData Scoring + Shap ----
@@ -232,9 +245,9 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Running MultiClassMetrics()")
   MultinomialMetrics <- list()
-  MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "validate", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Test", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "train", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Train", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Generate EvaluationMetrics ----
@@ -257,6 +270,13 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
       EvalMetricsList[[paste0("TestData_",tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0("Temp_",tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
       EvalMetrics2List[[paste0("TestData_",tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0("Temp_",tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
       data.table::set(ValidationData, j = c("p1",paste0("Temp_",tarlevel)), value = NULL)
+    }
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+      } else if(!is.null(model_path)) {
+        save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+      }
     }
   }
 
@@ -325,6 +345,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
       GridMetrics = if(exists("ExperimentalGrid") && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
       FactorLevelsList = if(exists("FactorLevelsList")) FactorLevelsList else NULL,
-      TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL))
+      TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL,
+      ArgsList = ArgsList))
   }
 }

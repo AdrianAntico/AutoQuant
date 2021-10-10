@@ -57,7 +57,7 @@ CatBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
 # 40:  TRUE           TRUE    FALSE         RMSE      GPU Failure               FALSE
 
 # AutoCatBoostRegression
-# run = 7
+# run = 13
 for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
 
   # Iteration number

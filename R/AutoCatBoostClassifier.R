@@ -76,7 +76,7 @@
 #'   DebugMode = FALSE,
 #'
 #'   # Metadata args
-#'   OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'Metrics', 'PDF'),
+#'   OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'EvalMetrics'),
 #'   ModelID = 'Test_Model_1',
 #'   model_path = normalizePath('./'),
 #'   metadata_path = normalizePath('./'),
@@ -133,7 +133,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, ROC_Plot.png, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
-AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData'),
+AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
                                    data = NULL,
                                    ValidationData = NULL,
                                    TestData = NULL,
@@ -200,6 +200,19 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots
   NumGPUs <- Output$NumGPUs
   Depth <- Output$Depth
   RSM <- Output$RSM; rm(Output)
+
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+  ArgsList[['data']] <- NULL
+  ArgsList[['ValidationData']] <- NULL
+  ArgsList[['TestData']] <- NULL
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
 
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
@@ -289,9 +302,23 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
       EvalMetricsList[['TrainData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
       EvalMetrics2List[['TrainData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
+      if(SaveModelObjects) {
+        if(!is.null(metadata_path)) {
+          data.table::fwrite(EvalMetricsList[['TrainData']], file = file.path(metadata_path, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
+        } else if(!is.null(model_path)) {
+          data.table::fwrite(EvalMetricsList[['TrainData']], file = file.path(model_path, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
+        }
+      }
     }
     EvalMetricsList[['TestData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
     EvalMetrics2List[['TestData']] <- BinaryMetrics(ClassWeights.=ClassWeights, CostMatrixWeights.=CostMatrixWeights, SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
+    if(SaveModelObjects) {
+      if(!is.null(metadata_path)) {
+        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(metadata_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+      } else if(!is.null(model_path)) {
+        data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+      }
+    }
   }
 
   # Classification evaluation plots ----
@@ -299,7 +326,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots
   PlotList <- list()
   if('evalplots' %chin% tolower(OutputSelection)) {
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
-      Output <- ML_EvalPlots(ModelType='classification', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+      Output <- ML_EvalPlots(ModelType='classification', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
       PlotList[['Train_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
       PlotList[['Train_ParDepPlots']] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
       PlotList[['Train_GainsPlot']] <- Output$GainsPlot; Output$GainsPlot <- NULL
@@ -308,7 +335,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots
       if(!is.null(VariableImportance$Train_Importance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)) else if(!is.null(VariableImportance$Train_Importance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Train_Importance)
       if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
     }
-    Output <- ML_EvalPlots(ModelType='classification', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+    Output <- ML_EvalPlots(ModelType='classification', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
     PlotList[['Test_EvaluationPlot']] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
     PlotList[['Test_ParDepPlots']] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
     PlotList[['Test_GainsPlot']] <- Output$GainsPlot; Output$GainsPlot <- NULL
@@ -342,5 +369,6 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots
     VariableImportance = if(exists('VariableImportance')) VariableImportance else NULL,
     InteractionImportance = if(exists('Interaction')) Interaction else NULL,
     GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
-    ColNames = if(exists('Names')) Names else NULL))
+    ColNames = if(exists('Names')) Names else NULL,
+    ArgsList = ArgsList))
 }

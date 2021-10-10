@@ -104,10 +104,6 @@ AutoH2oMLRegression <- function(OutputSelection = c("EvalMetrics", "PDFs", "Scor
                                 H2OStartUp = TRUE,
                                 DebugMode = FALSE) {
 
-  # Ensure model_path and metadata_path exists ----
-  if(!is.null(model_path)) if(!dir.exists(file.path(model_path))) dir.create(model_path)
-  if(!is.null(metadata_path)) if(!is.null(metadata_path)) if(!dir.exists(file.path(metadata_path))) dir.create(metadata_path)
-
   # Check Arguments ----
   if(!(tolower(eval_metric) %chin% c("mse", "rmse", "mae", "rmsle"))) stop("eval_metric not in MSE, RMSE, MAE, RMSLE")
   if(!is.null(model_path)) if(!is.character(model_path)) stop("model_path needs to be a character type")
@@ -116,6 +112,19 @@ AutoH2oMLRegression <- function(OutputSelection = c("EvalMetrics", "PDFs", "Scor
   if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
+
+  # Grab all official parameters and their evaluated arguments
+  ArgsList <- c(as.list(environment()))
+  ArgsList[['data']] <- NULL
+  ArgsList[['ValidationData']] <- NULL
+  ArgsList[['TestData']] <- NULL
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
 
   # Data Prepare ----
   if(DebugMode) print("Data Prepare ----")
