@@ -7,6 +7,10 @@
 
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
+
+# Check out the 
+
+
 Table of Contents
 - [Background](#background)
 - [Installation](#installation)
@@ -7656,6 +7660,7 @@ Output$TimeSeriesPlot
 
 
 ## Recommender Systems <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/RecommenderSystemImage2.png" align="right" width="80" />
+
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -7698,6 +7703,7 @@ RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
 </p>
 </details>
 
+
 <details><summary>AutoRecommenderTrain() Example</summary>
 <p>
  
@@ -7733,6 +7739,7 @@ Results <- RemixAutoML::AutoRecommenderScore(
 
 </p>
 </details>
+
 
 <details><summary>AutoMarketBasketModel() Example</summary>
 <p>

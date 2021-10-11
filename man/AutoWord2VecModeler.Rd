@@ -52,6 +52,7 @@ This function allows you to automatically build a word2vec model and merge the d
 }
 \examples{
 \dontrun{
+
 # Create fake data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.70,
