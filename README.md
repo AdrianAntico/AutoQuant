@@ -7686,7 +7686,8 @@ Output$TimeSeriesPlot
 
 <code>AutoMarketBasketModel()</code> is a function that runs a market basket analysis automatically. It will convert your data, run the algorithm, and generate the recommended items. On top of that, it includes additional significance values not provided by the source pacakge. 
 
-
+</p>
+</details>
 
 
 <details><summary>AutoRecommenderDataCreate() Example</summary>
@@ -7768,13 +7769,10 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 </details>
 
 
-
 </p>
 </details>
 
 
-</p>
-</details>
 
 
 ## Database Management <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/DataBase.PNG" align="right" width="80" />
