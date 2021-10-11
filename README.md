@@ -8,7 +8,10 @@
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
 
-# Check out the 
+# Check out the RemixAutoML website
+
+[RemixAutoML Webpage](https://adrianantico.github.io/RemixAutoML/)
+
 
 
 Table of Contents
