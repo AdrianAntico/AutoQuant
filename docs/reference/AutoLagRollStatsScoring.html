@@ -290,53 +290,53 @@
 <span class='co'># Create ID columns to know which records to score</span>
 <span class='va'>data</span><span class='op'>[</span>, <span class='va'>ID</span> <span class='op'>:=</span> <span class='va'>.N</span><span class='op'>:</span><span class='fl'>1L</span>, by <span class='op'>=</span> <span class='st'>"Factor1"</span><span class='op'>]</span>
 </div><div class='output co'>#&gt;             Adrian Independent_Variable1 Independent_Variable2
-#&gt;      1: 0.46621466            -0.6962011            0.49847536
-#&gt;      2: 0.10487344            -3.7335914            0.02390682
-#&gt;      3: 0.07188265            -0.2842346            0.75259009
-#&gt;      4: 0.19568632            -2.2671014            0.10361207
-#&gt;      5: 0.17117934            -0.8831195            0.41349101
+#&gt;      1: 0.92028606           -0.05287617             0.9484975
+#&gt;      2: 0.59456676           -1.33106358             0.2641961
+#&gt;      3: 0.81580387           -0.35187512             0.7033680
+#&gt;      4: 0.49911982           -1.49838142             0.2234916
+#&gt;      5: 0.48969516           -0.37787247             0.6853179
 #&gt;     ---                                                       
-#&gt; 649996: 0.41981245            -0.5160793            0.59685605
-#&gt; 649997: 0.26114027            -3.0419262            0.04774284
-#&gt; 649998: 0.72929232            -0.4288549            0.65125441
-#&gt; 649999: 0.02753840            -3.1998630            0.04076779
-#&gt; 650000: 0.32728242            -1.5062836            0.22173249
+#&gt; 649996: 0.71277890           -0.43999505             0.6440396
+#&gt; 649997: 0.06247416           -0.49714600             0.6082642
+#&gt; 649998: 0.26413942           -1.61794840             0.1983051
+#&gt; 649999: 0.82401290           -1.12104584             0.3259387
+#&gt; 650000: 0.61609174           -0.79273006             0.4526075
 #&gt;         Independent_Variable3 Independent_Variable4 Independent_Variable5
-#&gt;      1:              1.646209              5.187280             0.7060279
-#&gt;      2:              1.024195              2.784852             0.1546183
-#&gt;      3:              2.122490              8.351911             0.8675195
-#&gt;      4:              1.109170              3.031841             0.3218883
-#&gt;      5:              1.512087              4.536189             0.6430327
+#&gt;      1:              2.581827             13.221277             0.9739083
+#&gt;      2:              1.302384              3.678053             0.5140001
+#&gt;      3:              2.020546              7.542445             0.8386703
+#&gt;      4:              1.250435              3.491862             0.4727490
+#&gt;      5:              1.984403              7.274700             0.8278393
 #&gt;     ---                                                                  
-#&gt; 649996:              1.816399              6.149674             0.7725646
-#&gt; 649997:              1.048901              2.854512             0.2185013
-#&gt; 649998:              1.917945              6.806957             0.8070034
-#&gt; 649999:              1.041610              2.833776             0.2019104
-#&gt; 650000:              1.248237              3.484196             0.4708848
+#&gt; 649996:              1.904157              6.713748             0.8025208
+#&gt; 649997:              1.837239              6.279181             0.7799129
+#&gt; 649998:              1.219334              3.384934             0.4453146
+#&gt; 649999:              1.385330              3.996146             0.5709104
+#&gt; 650000:              1.572407              4.818231             0.6727611
 #&gt;         Independent_Variable6 Independent_Variable7 Independent_Variable8
-#&gt;      1:             0.9327481             0.8402546            0.59324320
-#&gt;      2:             0.6884180             0.3932154            0.06079830
-#&gt;      3:             0.9719767             0.9314073            0.80801397
-#&gt;      4:             0.7971518             0.5673520            0.18262397
-#&gt;      5:             0.9154752             0.8018932            0.51564350
+#&gt;      1:             0.9947263             0.9868679             0.9611189
+#&gt;      2:             0.8753720             0.7169380             0.3685062
+#&gt;      3:             0.9654244             0.9157895             0.7680455
+#&gt;      4:             0.8608473             0.6875674             0.3250468
+#&gt;      5:             0.9629178             0.9098567             0.7532152
 #&gt;     ---                                                                  
-#&gt; 649996:             0.9497011             0.8789565            0.67905070
-#&gt; 649997:             0.7377188             0.4674413            0.10213655
-#&gt; 649998:             0.9580211             0.8983337            0.72495827
-#&gt; 649999:             0.7261590             0.4493444            0.09072728
-#&gt; 650000:             0.8601673             0.6862105            0.32312607
+#&gt; 649996:             0.9569544             0.8958352             0.7189264
+#&gt; 649997:             0.9515009             0.8831268             0.6887620
+#&gt; 649998:             0.8506157             0.6673190             0.2971669
+#&gt; 649999:             0.8939508             0.7555862             0.4313720
+#&gt; 650000:             0.9237877             0.8202201             0.5518122
 #&gt;         Independent_Variable9 Independent_Variable10   DateTime Factor1    ID
-#&gt;      1:          0.2484776829           6.174116e-02 1953-05-01       A 25000
-#&gt;      2:          0.0005715362           3.266536e-07 1953-05-02       A 24999
-#&gt;      3:          0.5663918395           3.207997e-01 1953-05-03       A 24998
-#&gt;      4:          0.0107354619           1.152501e-04 1953-05-04       A 24997
-#&gt;      5:          0.1709748131           2.923239e-02 1953-05-05       A 24996
+#&gt;      1:            0.89964743            0.809365497 1953-05-01       A 25000
+#&gt;      2:            0.06979959            0.004871983 1953-05-02       A 24999
+#&gt;      3:            0.49472648            0.244754290 1953-05-03       A 24998
+#&gt;      4:            0.04994850            0.002494852 1953-05-04       A 24997
+#&gt;      5:            0.46966061            0.220581091 1953-05-05       A 24996
 #&gt;     ---                                                                      
-#&gt; 649996:          0.3562371427           1.269049e-01 2021-10-06       Z     5
-#&gt; 649997:          0.0022793786           5.195567e-06 2021-10-07       Z     4
-#&gt; 649998:          0.4241323119           1.798882e-01 2021-10-08       Z     3
-#&gt; 649999:          0.0016620127           2.762286e-06 2021-10-09       Z     2
-#&gt; 650000:          0.0491652961           2.417226e-03 2021-10-10       Z     1</div><div class='input'><span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/assign.html'>set</a></span><span class='op'>(</span><span class='va'>data</span>, i <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='st'>"ID"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>==</span> <span class='fl'>2L</span><span class='op'>)</span>, j <span class='op'>=</span> <span class='st'>"ID"</span>, value <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
+#&gt; 649996:            0.41478702            0.172048268 2021-10-06       Z     5
+#&gt; 649997:            0.36998530            0.136889121 2021-10-07       Z     4
+#&gt; 649998:            0.03932492            0.001546450 2021-10-08       Z     3
+#&gt; 649999:            0.10623606            0.011286100 2021-10-09       Z     2
+#&gt; 650000:            0.20485352            0.041964963 2021-10-10       Z     1</div><div class='input'><span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/assign.html'>set</a></span><span class='op'>(</span><span class='va'>data</span>, i <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='st'>"ID"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>==</span> <span class='fl'>2L</span><span class='op'>)</span>, j <span class='op'>=</span> <span class='st'>"ID"</span>, value <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
 
 <span class='co'># Score records</span>
 <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'>AutoLagRollStatsScoring</span><span class='op'>(</span>

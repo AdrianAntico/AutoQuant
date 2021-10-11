@@ -7663,6 +7663,7 @@ Output$TimeSeriesPlot
 
 
 ## Recommender Systems <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/RecommenderSystemImage2.png" align="right" width="80" />
+<p>
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -7706,6 +7707,7 @@ RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
 </details>
 
 
+
 <details><summary>AutoRecommenderTrain() Example</summary>
 <p>
  
@@ -7727,6 +7729,7 @@ WinningModel <- RemixAutoML::AutoRecommender(
 </p>
 </details>
 
+
 <details><summary>AutoRecommenderScore() Example</summary>
 <p>
  
@@ -7741,6 +7744,7 @@ Results <- RemixAutoML::AutoRecommenderScore(
 
 </p>
 </details>
+
 
 
 <details><summary>AutoMarketBasketModel() Example</summary>
@@ -7763,7 +7767,12 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 </p>
 </details>
 
-  
+
+
+</p>
+</details>
+
+
 </p>
 </details>
 
