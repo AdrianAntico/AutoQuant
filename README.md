@@ -11,6 +11,7 @@
 ### Check out the RemixAutoML website or reference manual
 
 [RemixAutoML Webpage](https://adrianantico.github.io/RemixAutoML/)
+
 ![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
 
 
