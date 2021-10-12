@@ -8,10 +8,10 @@
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
 
-### Check out the RemixAutoML website
+### Check out the RemixAutoML website or reference manual
 
 [RemixAutoML Webpage](https://adrianantico.github.io/RemixAutoML/)
-
+![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
 
 
 Table of Contents
@@ -35,8 +35,6 @@ Documentation + Code Examples
 
 
 ## Background
-
-![RemixAutoML Reference Manual](https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette)
 
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
 
