@@ -7690,8 +7690,6 @@ Output$TimeSeriesPlot
 </details>
 
 
-#### **AutoRecommenderDataCreate()**
-
 <details><summary>AutoRecommenderDataCreate() Example</summary>
 <p>
  
@@ -7709,8 +7707,6 @@ RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
 </p>
 </details>
 
-
-#### **AutoRecommenderTrain()**
 
 <details><summary>AutoRecommenderTrain() Example</summary>
 <p>
@@ -7734,8 +7730,6 @@ WinningModel <- RemixAutoML::AutoRecommender(
 </details>
 
 
-#### **AutoRecommenderScore()**
-
 <details><summary>AutoRecommenderScore() Example</summary>
 <p>
  
@@ -7751,8 +7745,6 @@ Results <- RemixAutoML::AutoRecommenderScore(
 </p>
 </details>
 
-
-#### **AutoMarketBasketModel()**
 
 <details><summary>AutoMarketBasketModel() Example</summary>
 <p>
