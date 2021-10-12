@@ -1,0 +1,195 @@
+navbar:
+  structure:
+    left:
+    - home
+    - intro
+    - reference
+    - articles
+    - tutorials
+    - news
+    right: github
+  components:
+    home:
+      icon: fas fa-home fa-lg
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/AdrianAntico/RemixAutoML/
+
+template:
+  params:
+    ganalytics: G-9FSKBWGTJ3
+
+reference:
+
+- title: "Feature Engineering: Row Dependence"
+  desc: >
+    Functions for computations that involve a time element and utilize values across multiple rows.
+- contents:
+  - '`CategoricalEncoding`'
+  - '`AutoDiffLagN`'
+  - '`AutoLagRollStats`'
+  - '`AutoLagRollStatsScoring`'
+  - '`AutoLagRollMode`'
+  - '`AutoHierarchicalFourier`'
+
+- title: "Feature Engineering: Row Independence"
+  desc: "Functions for computations that don't require other rows"
+- contents:
+  - '`DummifyDT`'
+  - '`CreateCalendarVariables`'
+  - '`CreateHolidayVariables`'
+  - '`AutoInteraction`'
+  - '`AutoTransformationCreate`'
+  - '`AutoTransformationScore`'
+
+- title: "Feature Engineering: Data Sets"
+  desc: "Functions that apply to entire data sets"
+- contents:
+  - '`AutoDataPartition`'
+  - '`ModelDataPrep`'
+
+- title: "Feature Engineering: Model-Based"
+  desc: "Functions for generating new features for computations that don't require other rows"
+- contents:
+  - '`AutoClustering`'
+  - '`AutoClusteringScoring`'
+  - '`AutoWord2VecModeler`'
+  - '`AutoWord2VecScoring`'
+  - '`H2OAutoencoder`'
+  - '`H2OAutoencoderScoring`'
+  - '`H2OIsolationForest`'
+  - '`H2OIsolationForestScoring`'
+
+- title: "CatBoost ML and Forecasting"
+- contents:
+  - '`AutoCatBoostCARMA`'
+  - '`AutoCatBoostClassifier`'
+  - '`AutoCatBoostFunnelCARMA`'
+  - '`AutoCatBoostFunnelCARMAScoring`'
+  - '`AutoCatBoostHurdleCARMA`'
+  - '`AutoCatBoostHurdleModel`'
+  - '`AutoCatBoostHurdleModelScoring`'
+  - '`AutoCatBoostMultiClass`'
+  - '`AutoCatBoostRegression`'
+  - '`AutoCatBoostScoring`'
+  - '`AutoCatBoostVectorCARMA`'
+
+- title: "XGBoost ML and Forecasting"
+- contents:
+  - '`AutoXGBoostCARMA`'
+  - '`AutoXGBoostClassifier`'
+  - '`AutoXGBoostFunnelCARMA`'
+  - '`AutoXGBoostFunnelCARMAScoring`'
+  - '`AutoXGBoostHurdleCARMA`'
+  - '`AutoXGBoostHurdleModel`'
+  - '`AutoXGBoostHurdleModelScoring`'
+  - '`AutoXGBoostMultiClass`'
+  - '`AutoXGBoostRegression`'
+  - '`AutoXGBoostScoring`'
+
+- title: "LightGBM ML and Forecasting"
+- contents:
+  - '`AutoLightGBMCARMA`'
+  - '`AutoLightGBMClassifier`'
+  - '`AutoLightGBMFunnelCARMA`'
+  - '`AutoLightGBMFunnelCARMAScoring`'
+  - '`AutoLightGBMHurdleCARMA`'
+  - '`AutoLightGBMHurdleModel`'
+  - '`AutoLightGBMHurdleModelScoring`'
+  - '`AutoLightGBMMultiClass`'
+  - '`AutoLightGBMRegression`'
+  - '`AutoLightGBMScoring`'
+
+- title: "H2O ML and Forecasting"
+  desc: "EDA, Utilities, and Misc."
+- contents:
+  - '`AutoH2OCARMA`'
+  - '`AutoH2oDRFClassifier`'
+  - '`AutoH2oDRFHurdleModel`'
+  - '`AutoH2oDRFMultiClass`'
+  - '`AutoH2oDRFRegression`'
+  - '`AutoH2oGAMClassifier`'
+  - '`AutoH2oGAMMultiClass`'
+  - '`AutoH2oGAMRegression`'
+  - '`AutoH2oGBMClassifier`'
+  - '`AutoH2oGBMHurdleModel`'
+  - '`AutoH2oGBMMultiClass`'
+  - '`AutoH2oGBMRegression`'
+  - '`AutoH2oGLMClassifier`'
+  - '`AutoH2oGLMMultiClass`'
+  - '`AutoH2oGLMRegression`'
+  - '`AutoH2oMLClassifier`'
+  - '`AutoH2oMLMultiClass`'
+  - '`AutoH2oMLRegression`'
+  - '`AutoH2OMLScoring`'
+
+- title: "Model Evaluation"
+  desc: "Functions for model evaluation"
+- contents:
+  - '`ModelInsightsReport`'
+  - '`ParDepCalPlots`'
+  - '`threshOptim`'
+  - '`RedYellowGreen`'
+  - '`ResidualPlots`'
+  - '`CumGainsChart`'
+  - '`EvalPlot`'
+  - '`ROCPlot`'
+  - '`ScatterCopula`'
+  - '`SingleRowShapeShap`'
+  - '`AutoShapeShap`'
+
+- title: "Time Series Forecasting"
+  desc: "Forecasting for single series (no xregs)"
+- contents:
+  - '`TimeSeriesFill`'
+  - '`AutoBanditSarima`'
+  - '`AutoBanditNNet`'
+  - '`AutoTBATS`'
+  - '`AutoArfima`'
+  - '`AutoETS`'
+  - '`AutoTS`'
+  - '`TimeSeriesDataPrepare`'
+
+- title: "Recommenders"
+  desc: "Functions for recommender systems"
+- contents:
+  - '`AutoMarketBasketModel`'
+  - '`AutoRecommenderDataCreate`'
+  - '`AutoRecommenderScore`'
+  - '`AutoRecommenderTrain`'
+
+- title: "EDA, Utilities, and Misc."
+  desc: "Everything else bucket"
+- contents:
+  - '`ResidualOutliers`'
+  - '`ChartTheme`'
+  - '`multiplot`'
+  - '`EDA_Histograms`'
+  - '`FakeDataGenerator`'
+  - '`UserBaseEvolution`'
+  - '`PrintToPDF`'
+  - '`GenTSAnomVars`'
+  - '`AutoNLS`'
+  - '`PlotGUI`'
+  - '`InsertSortedValue`'
+  - '`Mode`'
+  - '`AutoWordFreq`'
+  - '`Bisection`'
+
+- title: "Database Helpers"
+  desc: "SQL Helpers"
+- contents:
+  - '`AutoDataDictionaries`'
+  - '`SQL_ClearTable`'
+  - '`SQL_DropTable`'
+  - '`SQL_Query`'
+  - '`SQL_Query_Push`'
+  - '`SQL_SaveTable`'
+  - '`SQL_Server_DBConnection`'
+
+
+

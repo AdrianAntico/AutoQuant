@@ -54,6 +54,16 @@
 <![endif]-->
 
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9FSKBWGTJ3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9FSKBWGTJ3');
+</script>
+
 
   </head>
 
@@ -121,8 +131,8 @@
     <tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
+          <h2 id="section-feature-engineering-row-dependence" class="hasAnchor"><a href="#section-feature-engineering-row-dependence" class="anchor"></a>Feature Engineering: Row Dependence</h2>
+          <p class="section-desc"><p>Functions for computations that involve a time element and utilize values across multiple rows.</p></p>
         </th>
       </tr>
       
@@ -133,22 +143,188 @@
       <tr>
         
         <td>
-          <p><code><a href="AutoArfima.html">AutoArfima()</a></code> </p>
+          <p><code><a href="CategoricalEncoding.html">CategoricalEncoding()</a></code> </p>
         </td>
-        <td><p>AutoArfima</p></td>
+        <td><p>CategoricalEncoding</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="AutoBanditNNet.html">AutoBanditNNet()</a></code> </p>
+          <p><code><a href="AutoDiffLagN.html">AutoDiffLagN()</a></code> </p>
         </td>
-        <td><p>AutoBanditNNet</p></td>
+        <td><p>AutoDiffLagN</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="AutoBanditSarima.html">AutoBanditSarima()</a></code> </p>
+          <p><code><a href="AutoLagRollStats.html">AutoLagRollStats()</a></code> </p>
         </td>
-        <td><p>AutoBanditSarima</p></td>
+        <td><p>AutoLagRollStats</p></td>
       </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLagRollStatsScoring.html">AutoLagRollStatsScoring()</a></code> </p>
+        </td>
+        <td><p>AutoLagRollStatsScoring</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLagRollMode.html">AutoLagRollMode()</a></code> </p>
+        </td>
+        <td><p>AutoLagRollMode</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoHierarchicalFourier.html">AutoHierarchicalFourier()</a></code> </p>
+        </td>
+        <td><p>AutoHierarchicalFourier</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-feature-engineering-row-independence" class="hasAnchor"><a href="#section-feature-engineering-row-independence" class="anchor"></a>Feature Engineering: Row Independence</h2>
+          <p class="section-desc"><p>Functions for computations that don’t require other rows</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="DummifyDT.html">DummifyDT()</a></code> </p>
+        </td>
+        <td><p>DummifyDT</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="CreateCalendarVariables.html">CreateCalendarVariables()</a></code> </p>
+        </td>
+        <td><p>CreateCalendarVariables</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="CreateHolidayVariables.html">CreateHolidayVariables()</a></code> </p>
+        </td>
+        <td><p>CreateHolidayVariables</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoInteraction.html">AutoInteraction()</a></code> </p>
+        </td>
+        <td><p>AutoInteraction</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoTransformationCreate.html">AutoTransformationCreate()</a></code> </p>
+        </td>
+        <td><p>AutoTransformationCreate</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoTransformationScore.html">AutoTransformationScore()</a></code> </p>
+        </td>
+        <td><p>AutoTransformationScore() is a the complimentary function to AutoTransformationCreate()</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-feature-engineering-data-sets" class="hasAnchor"><a href="#section-feature-engineering-data-sets" class="anchor"></a>Feature Engineering: Data Sets</h2>
+          <p class="section-desc"><p>Functions that apply to entire data sets</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="AutoDataPartition.html">AutoDataPartition()</a></code> </p>
+        </td>
+        <td><p>AutoDataPartition</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ModelDataPrep.html">ModelDataPrep()</a></code> </p>
+        </td>
+        <td><p>ModelDataPrep</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-feature-engineering-model-based" class="hasAnchor"><a href="#section-feature-engineering-model-based" class="anchor"></a>Feature Engineering: Model-Based</h2>
+          <p class="section-desc"><p>Functions for generating new features for computations that don’t require other rows</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="AutoClustering.html">AutoClustering()</a></code> </p>
+        </td>
+        <td><p>AutoClustering</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoClusteringScoring.html">AutoClusteringScoring()</a></code> </p>
+        </td>
+        <td><p>AutoClusteringScoring</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoWord2VecModeler.html">AutoWord2VecModeler()</a></code> </p>
+        </td>
+        <td><p>AutoWord2VecModeler</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoWord2VecScoring.html">AutoWord2VecScoring()</a></code> </p>
+        </td>
+        <td><p>AutoWord2VecScoring</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="H2OAutoencoder.html">H2OAutoencoder()</a></code> </p>
+        </td>
+        <td><p>H2OAutoencoder</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="H2OAutoencoderScoring.html">H2OAutoencoderScoring()</a></code> </p>
+        </td>
+        <td><p>H2OAutoencoderScoring</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="H2OIsolationForest.html">H2OIsolationForest()</a></code> </p>
+        </td>
+        <td><p>H2OIsolationForest</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="H2OIsolationForestScoring.html">H2OIsolationForestScoring()</a></code> </p>
+        </td>
+        <td><p>H2OIsolationForestScoring</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-catboost-ml-and-forecasting" class="hasAnchor"><a href="#section-catboost-ml-and-forecasting" class="anchor"></a>CatBoost ML and Forecasting</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
           <p><code><a href="AutoCatBoostCARMA.html">AutoCatBoostCARMA()</a></code> </p>
@@ -214,43 +390,166 @@
           <p><code><a href="AutoCatBoostVectorCARMA.html">AutoCatBoostVectorCARMA()</a></code> </p>
         </td>
         <td><p>AutoCatBoostVectorCARMA</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-xgboost-ml-and-forecasting" class="hasAnchor"><a href="#section-xgboost-ml-and-forecasting" class="anchor"></a>XGBoost ML and Forecasting</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="AutoXGBoostCARMA.html">AutoXGBoostCARMA()</a></code> </p>
+        </td>
+        <td><p>AutoXGBoostCARMA</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="AutoClustering.html">AutoClustering()</a></code> </p>
+          <p><code><a href="AutoXGBoostClassifier.html">AutoXGBoostClassifier()</a></code> </p>
         </td>
-        <td><p>AutoClustering</p></td>
+        <td><p>AutoXGBoostClassifier</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="AutoClusteringScoring.html">AutoClusteringScoring()</a></code> </p>
+          <p><code><a href="AutoXGBoostFunnelCARMA.html">AutoXGBoostFunnelCARMA()</a></code> </p>
         </td>
-        <td><p>AutoClusteringScoring</p></td>
+        <td><p>AutoXGBoostFunnelCARMA</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="AutoDataDictionaries.html">AutoDataDictionaries()</a></code> </p>
+          <p><code><a href="AutoXGBoostFunnelCARMAScoring.html">AutoXGBoostFunnelCARMAScoring()</a></code> </p>
         </td>
-        <td><p>AutoDataDictionaries</p></td>
+        <td><p>AutoLightGBMFunnelCARMAScoring</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="AutoDataPartition.html">AutoDataPartition()</a></code> </p>
+          <p><code><a href="AutoXGBoostHurdleCARMA.html">AutoXGBoostHurdleCARMA()</a></code> </p>
         </td>
-        <td><p>AutoDataPartition</p></td>
+        <td><p>AutoXGBoostHurdleCARMA</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="AutoDiffLagN.html">AutoDiffLagN()</a></code> </p>
+          <p><code><a href="AutoXGBoostHurdleModel.html">AutoXGBoostHurdleModel()</a></code> </p>
         </td>
-        <td><p>AutoDiffLagN</p></td>
+        <td><p>AutoXGBoostHurdleModel</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="AutoETS.html">AutoETS()</a></code> </p>
+          <p><code><a href="AutoXGBoostHurdleModelScoring.html">AutoXGBoostHurdleModelScoring()</a></code> </p>
         </td>
-        <td><p>AutoETS</p></td>
+        <td><p>AutoXGBoostHurdleModelScoring</p></td>
       </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoXGBoostMultiClass.html">AutoXGBoostMultiClass()</a></code> </p>
+        </td>
+        <td><p>AutoXGBoostMultiClass</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoXGBoostRegression.html">AutoXGBoostRegression()</a></code> </p>
+        </td>
+        <td><p>AutoXGBoostRegression</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoXGBoostScoring.html">AutoXGBoostScoring()</a></code> </p>
+        </td>
+        <td><p>AutoXGBoostScoring</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-lightgbm-ml-and-forecasting" class="hasAnchor"><a href="#section-lightgbm-ml-and-forecasting" class="anchor"></a>LightGBM ML and Forecasting</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMCARMA.html">AutoLightGBMCARMA()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMCARMA</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMClassifier.html">AutoLightGBMClassifier()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMClassifier</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMFunnelCARMA.html">AutoLightGBMFunnelCARMA()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMFunnelCARMA</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMFunnelCARMAScoring.html">AutoLightGBMFunnelCARMAScoring()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMFunnelCARMAScoring</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMHurdleCARMA.html">AutoLightGBMHurdleCARMA()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMHurdleCARMA</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMHurdleModel.html">AutoLightGBMHurdleModel()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMHurdleModel</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMHurdleModelScoring.html">AutoLightGBMHurdleModelScoring()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMHurdleModelScoring</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMMultiClass.html">AutoLightGBMMultiClass()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMMultiClass</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMRegression.html">AutoLightGBMRegression()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMRegression</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoLightGBMScoring.html">AutoLightGBMScoring()</a></code> </p>
+        </td>
+        <td><p>AutoLightGBMScoring</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-h-o-ml-and-forecasting" class="hasAnchor"><a href="#section-h-o-ml-and-forecasting" class="anchor"></a>H2O ML and Forecasting</h2>
+          <p class="section-desc"><p>EDA, Utilities, and Misc.</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
           <p><code><a href="AutoH2OCARMA.html">AutoH2OCARMA()</a></code> </p>
@@ -364,354 +663,25 @@
           <p><code><a href="AutoH2OMLScoring.html">AutoH2OMLScoring()</a></code> </p>
         </td>
         <td><p>AutoH2OMLScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoHierarchicalFourier.html">AutoHierarchicalFourier()</a></code> </p>
-        </td>
-        <td><p>AutoHierarchicalFourier</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoInteraction.html">AutoInteraction()</a></code> </p>
-        </td>
-        <td><p>AutoInteraction</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLagRollMode.html">AutoLagRollMode()</a></code> </p>
-        </td>
-        <td><p>AutoLagRollMode</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLagRollStats.html">AutoLagRollStats()</a></code> </p>
-        </td>
-        <td><p>AutoLagRollStats</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLagRollStatsScoring.html">AutoLagRollStatsScoring()</a></code> </p>
-        </td>
-        <td><p>AutoLagRollStatsScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMCARMA.html">AutoLightGBMCARMA()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMCARMA</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMClassifier.html">AutoLightGBMClassifier()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMClassifier</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMFunnelCARMA.html">AutoLightGBMFunnelCARMA()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMFunnelCARMA</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMFunnelCARMAScoring.html">AutoLightGBMFunnelCARMAScoring()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMFunnelCARMAScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMHurdleCARMA.html">AutoLightGBMHurdleCARMA()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMHurdleCARMA</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMHurdleModel.html">AutoLightGBMHurdleModel()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMHurdleModel</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMHurdleModelScoring.html">AutoLightGBMHurdleModelScoring()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMHurdleModelScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMMultiClass.html">AutoLightGBMMultiClass()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMMultiClass</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMRegression.html">AutoLightGBMRegression()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMRegression</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoLightGBMScoring.html">AutoLightGBMScoring()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoMarketBasketModel.html">AutoMarketBasketModel()</a></code> </p>
-        </td>
-        <td><p>AutoMarketBasketModel</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoNLS.html">AutoNLS()</a></code> </p>
-        </td>
-        <td><p>AutoNLS</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoRecommenderDataCreate.html">AutoRecommenderDataCreate()</a></code> </p>
-        </td>
-        <td><p>AutoRecommenderDataCreate</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoRecommenderScore.html">AutoRecommenderScore()</a></code> </p>
-        </td>
-        <td><p>AutoRecommenderScore</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoRecommenderTrain.html">AutoRecommenderTrain()</a></code> </p>
-        </td>
-        <td><p>AutoRecommenderTrain</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoShapeShap.html">AutoShapeShap()</a></code> </p>
-        </td>
-        <td><p>AutoShapeShap</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoTBATS.html">AutoTBATS()</a></code> </p>
-        </td>
-        <td><p>AutoTBATS</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoTransformationCreate.html">AutoTransformationCreate()</a></code> </p>
-        </td>
-        <td><p>AutoTransformationCreate</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoTransformationScore.html">AutoTransformationScore()</a></code> </p>
-        </td>
-        <td><p>AutoTransformationScore() is a the complimentary function to AutoTransformationCreate()</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoTS.html">AutoTS()</a></code> </p>
-        </td>
-        <td><p>AutoTS</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoWord2VecModeler.html">AutoWord2VecModeler()</a></code> </p>
-        </td>
-        <td><p>AutoWord2VecModeler</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoWord2VecScoring.html">AutoWord2VecScoring()</a></code> </p>
-        </td>
-        <td><p>AutoWord2VecScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoWordFreq.html">AutoWordFreq()</a></code> </p>
-        </td>
-        <td><p>Automated Word Frequency and Word Cloud Creation</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostCARMA.html">AutoXGBoostCARMA()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostCARMA</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostClassifier.html">AutoXGBoostClassifier()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostClassifier</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostFunnelCARMA.html">AutoXGBoostFunnelCARMA()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostFunnelCARMA</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostFunnelCARMAScoring.html">AutoXGBoostFunnelCARMAScoring()</a></code> </p>
-        </td>
-        <td><p>AutoLightGBMFunnelCARMAScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostHurdleCARMA.html">AutoXGBoostHurdleCARMA()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostHurdleCARMA</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostHurdleModel.html">AutoXGBoostHurdleModel()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostHurdleModel</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostHurdleModelScoring.html">AutoXGBoostHurdleModelScoring()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostHurdleModelScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostMultiClass.html">AutoXGBoostMultiClass()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostMultiClass</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostRegression.html">AutoXGBoostRegression()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostRegression</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="AutoXGBoostScoring.html">AutoXGBoostScoring()</a></code> </p>
-        </td>
-        <td><p>AutoXGBoostScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="Bisection.html">Bisection()</a></code> </p>
-        </td>
-        <td><p>Bisection</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="CategoricalEncoding.html">CategoricalEncoding()</a></code> </p>
-        </td>
-        <td><p>CategoricalEncoding</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="ChartTheme.html">ChartTheme()</a></code> </p>
-        </td>
-        <td><p>ChartTheme</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="CreateCalendarVariables.html">CreateCalendarVariables()</a></code> </p>
-        </td>
-        <td><p>CreateCalendarVariables</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="CreateHolidayVariables.html">CreateHolidayVariables()</a></code> </p>
-        </td>
-        <td><p>CreateHolidayVariables</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="CumGainsChart.html">CumGainsChart()</a></code> </p>
-        </td>
-        <td><p>CumGainsChart</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="DummifyDT.html">DummifyDT()</a></code> </p>
-        </td>
-        <td><p>DummifyDT</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="EDA_Histograms.html">EDA_Histograms()</a></code> </p>
-        </td>
-        <td><p>EDA_Histograms</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="EvalPlot.html">EvalPlot()</a></code> </p>
-        </td>
-        <td><p>EvalPlot</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="FakeDataGenerator.html">FakeDataGenerator()</a></code> </p>
-        </td>
-        <td><p>FakeDataGenerator</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="GenTSAnomVars.html">GenTSAnomVars()</a></code> </p>
-        </td>
-        <td><p>GenTSAnomVars</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="H2OAutoencoder.html">H2OAutoencoder()</a></code> </p>
-        </td>
-        <td><p>H2OAutoencoder</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="H2OAutoencoderScoring.html">H2OAutoencoderScoring()</a></code> </p>
-        </td>
-        <td><p>H2OAutoencoderScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="H2OIsolationForest.html">H2OIsolationForest()</a></code> </p>
-        </td>
-        <td><p>H2OIsolationForest</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="H2OIsolationForestScoring.html">H2OIsolationForestScoring()</a></code> </p>
-        </td>
-        <td><p>H2OIsolationForestScoring</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="InsertSortedValue.html">InsertSortedValue()</a></code> </p>
-        </td>
-        <td><p>InsertSortedValue</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="Mode.html">Mode()</a></code> </p>
-        </td>
-        <td><p>Mode</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="ModelDataPrep.html">ModelDataPrep()</a></code> </p>
-        </td>
-        <td><p>ModelDataPrep</p></td>
-      </tr><tr>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-model-evaluation" class="hasAnchor"><a href="#section-model-evaluation" class="anchor"></a>Model Evaluation</h2>
+          <p class="section-desc"><p>Functions for model evaluation</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
           <p><code><a href="ModelInsightsReport.html">ModelInsightsReport()</a></code> </p>
         </td>
         <td><p>ModelInsightsReport</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="multiplot.html">multiplot()</a></code> </p>
-        </td>
-        <td><p>multiplot</p></td>
       </tr><tr>
         
         <td>
@@ -721,15 +691,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="PlotGUI.html">PlotGUI()</a></code> </p>
+          <p><code><a href="threshOptim.html">threshOptim()</a></code> </p>
         </td>
-        <td><p>PlotGUI</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="PrintToPDF.html">PrintToPDF()</a></code> </p>
-        </td>
-        <td><p>PrintToPDF</p></td>
+        <td><p>threshOptim</p></td>
       </tr><tr>
         
         <td>
@@ -739,21 +703,21 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="RemixAutoML-package.html">RemixAutoML-package</a></code> </p>
-        </td>
-        <td><p>Automated Machine Learning Remixed</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="ResidualOutliers.html">ResidualOutliers()</a></code> </p>
-        </td>
-        <td><p>ResidualOutliers</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="ResidualPlots.html">ResidualPlots()</a></code> </p>
         </td>
         <td><p>ResidualPlots</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="CumGainsChart.html">CumGainsChart()</a></code> </p>
+        </td>
+        <td><p>CumGainsChart</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="EvalPlot.html">EvalPlot()</a></code> </p>
+        </td>
+        <td><p>EvalPlot</p></td>
       </tr><tr>
         
         <td>
@@ -772,6 +736,226 @@
           <p><code><a href="SingleRowShapeShap.html">SingleRowShapeShap()</a></code> </p>
         </td>
         <td><p>SingleRowShapeShap</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoShapeShap.html">AutoShapeShap()</a></code> </p>
+        </td>
+        <td><p>AutoShapeShap</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-time-series-forecasting" class="hasAnchor"><a href="#section-time-series-forecasting" class="anchor"></a>Time Series Forecasting</h2>
+          <p class="section-desc"><p>Forecasting for single series (no xregs)</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="TimeSeriesFill.html">TimeSeriesFill()</a></code> </p>
+        </td>
+        <td><p>TimeSeriesFill</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoBanditSarima.html">AutoBanditSarima()</a></code> </p>
+        </td>
+        <td><p>AutoBanditSarima</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoBanditNNet.html">AutoBanditNNet()</a></code> </p>
+        </td>
+        <td><p>AutoBanditNNet</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoTBATS.html">AutoTBATS()</a></code> </p>
+        </td>
+        <td><p>AutoTBATS</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoArfima.html">AutoArfima()</a></code> </p>
+        </td>
+        <td><p>AutoArfima</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoETS.html">AutoETS()</a></code> </p>
+        </td>
+        <td><p>AutoETS</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoTS.html">AutoTS()</a></code> </p>
+        </td>
+        <td><p>AutoTS</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="TimeSeriesDataPrepare.html">TimeSeriesDataPrepare()</a></code> </p>
+        </td>
+        <td><p>TimeSeriesDataPrepare</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-recommenders" class="hasAnchor"><a href="#section-recommenders" class="anchor"></a>Recommenders</h2>
+          <p class="section-desc"><p>Functions for recommender systems</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="AutoMarketBasketModel.html">AutoMarketBasketModel()</a></code> </p>
+        </td>
+        <td><p>AutoMarketBasketModel</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoRecommenderDataCreate.html">AutoRecommenderDataCreate()</a></code> </p>
+        </td>
+        <td><p>AutoRecommenderDataCreate</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoRecommenderScore.html">AutoRecommenderScore()</a></code> </p>
+        </td>
+        <td><p>AutoRecommenderScore</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoRecommenderTrain.html">AutoRecommenderTrain()</a></code> </p>
+        </td>
+        <td><p>AutoRecommenderTrain</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-eda-utilities-and-misc-" class="hasAnchor"><a href="#section-eda-utilities-and-misc-" class="anchor"></a>EDA, Utilities, and Misc.</h2>
+          <p class="section-desc"><p>Everything else bucket</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="ResidualOutliers.html">ResidualOutliers()</a></code> </p>
+        </td>
+        <td><p>ResidualOutliers</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ChartTheme.html">ChartTheme()</a></code> </p>
+        </td>
+        <td><p>ChartTheme</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="multiplot.html">multiplot()</a></code> </p>
+        </td>
+        <td><p>multiplot</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="EDA_Histograms.html">EDA_Histograms()</a></code> </p>
+        </td>
+        <td><p>EDA_Histograms</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="FakeDataGenerator.html">FakeDataGenerator()</a></code> </p>
+        </td>
+        <td><p>FakeDataGenerator</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="UserBaseEvolution.html">UserBaseEvolution()</a></code> </p>
+        </td>
+        <td><p>UserBaseEvolution</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="PrintToPDF.html">PrintToPDF()</a></code> </p>
+        </td>
+        <td><p>PrintToPDF</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="GenTSAnomVars.html">GenTSAnomVars()</a></code> </p>
+        </td>
+        <td><p>GenTSAnomVars</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoNLS.html">AutoNLS()</a></code> </p>
+        </td>
+        <td><p>AutoNLS</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="PlotGUI.html">PlotGUI()</a></code> </p>
+        </td>
+        <td><p>PlotGUI</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="InsertSortedValue.html">InsertSortedValue()</a></code> </p>
+        </td>
+        <td><p>InsertSortedValue</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="Mode.html">Mode()</a></code> </p>
+        </td>
+        <td><p>Mode</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="AutoWordFreq.html">AutoWordFreq()</a></code> </p>
+        </td>
+        <td><p>Automated Word Frequency and Word Cloud Creation</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="Bisection.html">Bisection()</a></code> </p>
+        </td>
+        <td><p>Bisection</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-database-helpers" class="hasAnchor"><a href="#section-database-helpers" class="anchor"></a>Database Helpers</h2>
+          <p class="section-desc"><p>SQL Helpers</p></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="AutoDataDictionaries.html">AutoDataDictionaries()</a></code> </p>
+        </td>
+        <td><p>AutoDataDictionaries</p></td>
       </tr><tr>
         
         <td>
@@ -808,30 +992,6 @@
           <p><code><a href="SQL_Server_DBConnection.html">SQL_Server_DBConnection()</a></code> </p>
         </td>
         <td><p>SQL_Server_DBConnection</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="threshOptim.html">threshOptim()</a></code> </p>
-        </td>
-        <td><p>threshOptim</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="TimeSeriesDataPrepare.html">TimeSeriesDataPrepare()</a></code> </p>
-        </td>
-        <td><p>TimeSeriesDataPrepare</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="TimeSeriesFill.html">TimeSeriesFill()</a></code> </p>
-        </td>
-        <td><p>TimeSeriesFill</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="UserBaseEvolution.html">UserBaseEvolution()</a></code> </p>
-        </td>
-        <td><p>UserBaseEvolution</p></td>
       </tr>
     </tbody>
     </table>

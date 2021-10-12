@@ -55,6 +55,16 @@
 <![endif]-->
 
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9FSKBWGTJ3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9FSKBWGTJ3');
+</script>
+
 
   </head>
 
@@ -149,7 +159,7 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>TargetType</th>
-      <td><p>Set this value to 'regression', 'classification', 'multiclass', or 'multiregression' to score models built using AutoCatBoostRegression(), AutoCatBoostClassify() or AutoCatBoostMultiClass().</p></td>
+      <td><p>Set this value to 'regression', 'classification', 'multiclass', or 'multiregression' to score models built using AutoCatBoostRegression(), AutoCatBoostClassifier() or AutoCatBoostMultiClass().</p></td>
     </tr>
     <tr>
       <th>ScoringData</th>

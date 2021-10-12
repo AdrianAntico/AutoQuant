@@ -288,15 +288,15 @@ AutoBanditSarima <- function(data,
         } else {
           Arima_ExperimentGrid <<- Arima_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <<- counter + 1L
-          if(counter > MaxConsecutiveFails) stop("Unable to build model")
+          if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
         }
       } else {
         counter <<- counter + 1L
-        if(counter > MaxConsecutiveFails) stop("Unable to build model")
+        if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
       }
     }
   } else {
-    stop("Model unable to build")
+    stop("No suitable model could be fit to the data")
   }
 }
 
@@ -557,15 +557,15 @@ AutoBanditNNet <- function(data,
           if(Debug) for(zzz in 1:100) print(paste0("Counter after failure", counter))
           NNET_ExperimentGrid <- NNET_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > MaxConsecutiveFails) stop("Unable to build model")
+          if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
         }
       } else {
         counter <- counter + 1L
-        if(counter > MaxConsecutiveFails) stop("Unable to build model")
+        if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
       }
     }
   } else {
-    stop("Unable to build a model")
+    stop("No suitable model could be fit to the data")
   }
 }
 
@@ -788,15 +788,15 @@ AutoTBATS <- function(data,
         } else {
           TBATS_ExperimentGrid <<- TBATS_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > MaxConsecutiveFails) stop("Unable to build model")
+          if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
         }
       } else {
         counter <- counter + 1L
-        if(counter > MaxConsecutiveFails) stop("Unable to build model")
+        if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
       }
     }
   } else {
-    stop("Unable to build model")
+    stop("No suitable model could be fit to the data")
   }
 }
 
@@ -995,15 +995,15 @@ AutoETS <- function(data,
         } else {
           ETS_ExperimentGrid <<- ETS_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > MaxConsecutiveFails) stop("Unable to build model")
+          if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
         }
       } else {
         counter <- counter + 1L
-        if(counter > MaxConsecutiveFails) stop("Unable to build model")
+        if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
       }
     }
   } else {
-    stop("Unable to build model")
+    stop("No suitable model could be fit to the data")
   }
 }
 
@@ -1222,14 +1222,14 @@ AutoArfima <- function(data,
         } else {
           Arfima_ExperimentGrid <<- Arfima_ExperimentGrid[ModelRankByDataType != eval(counter)]
           counter <- counter + 1L
-          if(counter > MaxConsecutiveFails) stop("Unable to build model")
+          if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
         }
       } else {
         counter <- counter + 1L
-        if(counter > MaxConsecutiveFails) stop("Unable to build model")
+        if(counter > MaxConsecutiveFails) stop("No suitable model could be fit to the data")
       }
     }
   } else {
-    stop("Unable to build model")
+    stop("No suitable model could be fit to the data")
   }
 }
