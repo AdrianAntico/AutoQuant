@@ -403,7 +403,7 @@
 </div><div class='output co'>#&gt;  Connection successful!
 #&gt; 
 #&gt; R is connected to the H2O cluster: 
-#&gt;     H2O cluster uptime:         10 seconds 221 milliseconds 
+#&gt;     H2O cluster uptime:         10 seconds 195 milliseconds 
 #&gt;     H2O cluster timezone:       America/Phoenix 
 #&gt;     H2O data parsing timezone:  UTC 
 #&gt;     H2O cluster version:        3.32.1.4 
@@ -422,7 +422,12 @@
 #&gt;     R Version:                  R version 4.1.0 (2021-05-18) 
 #&gt; 
 #&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%</div><div class='output co'>#&gt; <span class='error'>Error in .h2o.doSafeREST(h2oRestApiVersion = h2oRestApiVersion, urlSuffix = urlSuffix,     parms = parms, method = "POST", fileUploadInfo = fileUploadInfo,     ...): Unexpected CURL error: Failed to connect to localhost port 54321: Connection refused</span></div><div class='input'><span class='co'># }</span>
+#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+#&gt; 
+#&gt; ERROR: Unexpected HTTP Status code: 503 Service Unavailable (url = http://localhost:54321/3/PostFile?destination_frame=C%3A%2FUsers%2FBizon%2FAppData%2FLocal%2FTemp%2FRtmp8o5HwV%2Ffile477c41175d72.csv_sid_affb_12)
+#&gt; </div><div class='output co'>#&gt; <span class='error'>Error: lexical error: invalid char in json text.</span>
+#&gt; <span class='error'>                                       &lt;html&gt; &lt;head&gt; &lt;meta http-equiv=</span>
+#&gt; <span class='error'>                     (right here) ------^</span></div><div class='input'><span class='co'># }</span>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
