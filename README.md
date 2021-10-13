@@ -7655,14 +7655,11 @@ Output$TimeSeriesPlot
 </p>
 </details>
 
-
-
 </p>
 </details>
 
 
 ## Recommender Systems <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/RecommenderSystemImage2.png" align="right" width="80" />
-<p>
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -7764,7 +7761,6 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 
 </p>
 </details>
-
 
 </p>
 </details>

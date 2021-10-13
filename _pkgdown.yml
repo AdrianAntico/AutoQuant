@@ -53,7 +53,7 @@ reference:
   - '`ModelDataPrep`'
 
 - title: "Feature Engineering: Model-Based"
-  desc: "Functions for generating new features for computations that don't require other rows"
+  desc: "Functions for using unsupervised learning to build new features"
 - contents:
   - '`AutoClustering`'
   - '`AutoClusteringScoring`'
