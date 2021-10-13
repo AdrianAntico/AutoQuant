@@ -58,6 +58,8 @@ RmarkdownQA <- data.table::data.table(
 # Run = 3 # User supplied data, fill gaps that can be filled, skip the rest
 for(Run in 1:3) {
 
+  Run <- 1
+
   # Working directory
   setwd("C:/Users/Bizon/Documents/GitHub")
 

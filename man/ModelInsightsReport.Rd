@@ -197,6 +197,10 @@ RemixAutoML::ModelInsightsReport(
 }
 
 }
+\seealso{
+Other Model Insights: 
+\code{\link{Run_ModelInsightsReport}()}
+}
 \author{
 Adrian Antico
 }
