@@ -66,7 +66,7 @@ AutoCorrAnalysis <- function(data = NULL,
   }
 
   # Subset data
-  if(!all(names(data) %chin% CorVars)) data <- data[, .SD, .SDcols = c(CorVars)]
+  if(!all(names(data) %chin% CorVars)) data <- data[, .SD, .SDcols = c(CorVars, ByGroupVars)]
   if(DataSampleRate < 1.0) data <- data[order(runif(.N))][seq_len(floor(.N*DataSampleRate))]
 
   # Bayesian calc ----
