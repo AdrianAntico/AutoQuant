@@ -85,6 +85,7 @@ AutoCorrAnalysis <- function(data = NULL,
     if(KeepSignificantVars) CorrAnalysis <- CorrAnalysis[p < 0.05]
     return(CorrAnalysis)
   } else {
+    print('starting correlation analysis')
     VarList <- list()
     VarList[["TotalData"]] <- data.table::setDT(correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
     for(group in ByGroupVars) {
