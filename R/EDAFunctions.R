@@ -88,8 +88,10 @@ AutoCorrAnalysis <- function(data = NULL,
     VarList <- list()
     VarList[["TotalData"]] <- data.table::setDT(correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
     for(group in ByGroupVars) {
+      print(group)
       Levels <- as.character(data[, .N, by = eval(group)][order(-N)][N > MinRows][[eval(group)]])
       for(lev in Levels) {
+        print(lev)
         data1 <- data[get(group) == eval(lev)]
         temp <- data.table::setDT(correlation::correlation(data = data1, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE,  ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
         temp <- temp[!is.na(r)]
