@@ -150,7 +150,7 @@ for(Run in 1:3) {
   # Create Model Insights Report
   if(Run %in% c(1)) train <- RemixOutput[['TrainData']] else train <- NULL
   if(Run %in% c(1)) valid <- RemixOutput[['TestData']] else valid <- NULL
-  if(Run %in% c(3)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(1)) test <- RemixOutput[['TestData']] else test <- NULL
   if(Run == 3) rm(RemixOutput)
   tryCatch({
 
@@ -574,6 +574,9 @@ for(Run in 7:8) {
     Classification = TRUE,
     MultiClass = FALSE)
 
+  # Copy data
+  data1 <- data.table::copy(data)
+
   # Run function
   RemixOutput <- RemixAutoML::AutoCatBoostClassifier(
 
@@ -588,16 +591,16 @@ for(Run in 7:8) {
     ModelID = 'Test_Model_1',
     model_path = getwd(),
     metadata_path = getwd(),
-    SaveModelObjects = if(Run == 7) TRUE else FALSE,
-    ReturnModelObjects = if(Run == 7) FALSE else TRUE,
+    SaveModelObjects = if(Run == 7) FALSE else TRUE,
+    ReturnModelObjects = if(Run == 7) TRUE else FALSE,
     SaveInfoToPDF = FALSE,
 
     # Data args
-    data = data,
+    data = data1,
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = 'Adrian',
-    FeatureColNames = names(data)[!names(data) %in% c('IDcol_1','IDcol_2','Adrian')],
+    FeatureColNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
     PrimaryDateColumn = NULL,
     WeightsColumnName = NULL,
     IDcols = c('IDcol_1','IDcol_2'),
@@ -609,7 +612,7 @@ for(Run in 7:8) {
     grid_eval_metric = 'MCC',
     LossFunction = 'Logloss',
     MetricPeriods = 10L,
-    NumOfParDepPlots = ncol(data)-1L-2L,
+    NumOfParDepPlots = ncol(data1)-1L-2L,
 
     # Grid tuning args
     PassInGrid = NULL,
@@ -639,13 +642,34 @@ for(Run in 7:8) {
     min_data_in_leaf = 1)
 
   # Create Model Insights Report
-  tryCatch({RemixAutoML::ModelInsightsReport(
-    RemixOutput = if(Run == 7) RemixOutput else NULL,
-    OutputPath = getwd(),
-    TargetColumnName = 'Adrian',
-    TargetType = 'classification',
-    ModelID = 'Test_Model_1',
-    Algo = 'catboost')}, error = NULL)
+  if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run == 3) rm(RemixOutput)
+  tryCatch({
+
+    RemixAutoML::ModelInsightsReport(
+
+      # DataSets (use TestData for ValidationData)
+      TrainData = train,
+      ValidationData = valid,
+      TestData = test,
+
+      # Meta info
+      TargetColumnName = 'Adrian',
+      PredictionColumnName = 'p1',
+      FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
+      DateColumnName = NULL,
+
+      # Control options
+      TargetType = 'classification',
+      ModelID = 'Test_Model_1',
+      Algo = 'catboost',
+      SourcePath = getwd(),
+      OutputPath = getwd(),
+      RemixOutput = if(Run %in% c(8)) NULL else RemixOutput)
+
+  }, error = function(x) NULL)
 
   # Update
   if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
@@ -660,13 +684,41 @@ for(Run in 7:8) {
   }
 }
 
-# Args
-OutputPath = getwd()
+library(data.table)
+library(RemixAutoML)
+
+# Create Model Insights Report
+if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
+if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
+if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
+if(Run == 3) rm(RemixOutput)
+
+# DataSets (use TestData for ValidationData)
+TrainData = train
+ValidationData = valid
+TestData = test
+
+# Meta info
+TargetColumnName = 'Adrian'
+PredictionColumnName = 'p1'
+FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
+DateColumnName = NULL
+
+# Control options
 TargetType = 'classification'
 ModelID = 'Test_Model_1'
 Algo = 'catboost'
-TargetColumnName = 'Adrian'
-#RemixOutput = TestModel
+SourcePath = getwd()
+OutputPath = getwd()
+RemixOutput = if(Run %in% c(8)) NULL else RemixOutput
+
+Test_Importance_dt = NULL
+Validation_Importance_dt = NULL
+Train_Importance_dt = NULL
+Test_Interaction_dt = NULL
+Validation_Interaction_dt = NULL
+Train_Interaction_dt = NULL
+GlobalVars = ls()
 
 # ----
 

@@ -173,16 +173,16 @@ Run_ModelInsightsReport <- function(TrainData = NULL,
     msg <- c(msg, 'You have to supply the TargetColumnName')
   }
 
-  # Check if Predict is in all existing data sets
+  # Check if PredictionColumnName is in all existing data sets
   if(is.null(PredictionColumnName) && is.null(RemixOutput) && DataExists) {
-    if(!is.null(TestData) && !'Predict' %in% names(TestData)) {
-      msg <- c(msg, "'Predict' is not found in TestData")
+    if(!is.null(TestData) && !PredictionColumnName %in% names(TestData)) {
+      msg <- c(msg, paste0(PredictionColumnName," is not found in TestData"))
     }
-    if(!is.null(ValidationData) && 'Predict' %in% names(ValidationData)) {
-      msg <- c(msg, "'Predict' is not found in ValidationData")
+    if(!is.null(ValidationData) && PredictionColumnName %in% names(ValidationData)) {
+      msg <- c(msg, paste0(PredictionColumnName," is not found in ValidationData"))
     }
-    if(!is.null(TrainData) && 'Predict' %in% names(TrainData)) {
-      msg <- c(msg, "'Predict' is not found in TrainData")
+    if(!is.null(TrainData) && PredictionColumnName %in% names(TrainData)) {
+      msg <- c(msg, paste0(PredictionColumnName," is not found in TrainData"))
     }
   }
 
@@ -295,7 +295,7 @@ Run_ModelInsightsReport <- function(TrainData = NULL,
 #' data1 <- data.table::copy(data)
 #'
 #' # Run function
-#' TestModel <- RemixAutoML::AutoCatBoostRegression(
+#' RemixOutput <- RemixAutoML::AutoCatBoostRegression(
 #'
 #'   # GPU or CPU and the number of available GPUs
 #'   TrainOnFull = FALSE,
@@ -391,7 +391,7 @@ Run_ModelInsightsReport <- function(TrainData = NULL,
 #'   Algo = 'catboost',
 #'   SourcePath = getwd(),
 #'   OutputPath = getwd(),
-#'   RemixOutput = TestModel)
+#'   RemixOutput = RemixOutput)
 #' }
 #'
 #' @export

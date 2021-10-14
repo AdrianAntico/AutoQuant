@@ -97,7 +97,7 @@ data <- RemixAutoML::FakeDataGenerator(
 data1 <- data.table::copy(data)
 
 # Run function
-TestModel <- RemixAutoML::AutoCatBoostRegression(
+RemixOutput <- RemixAutoML::AutoCatBoostRegression(
 
   # GPU or CPU and the number of available GPUs
   TrainOnFull = FALSE,
@@ -193,7 +193,7 @@ RemixAutoML::ModelInsightsReport(
   Algo = 'catboost',
   SourcePath = getwd(),
   OutputPath = getwd(),
-  RemixOutput = TestModel)
+  RemixOutput = RemixOutput)
 }
 
 }

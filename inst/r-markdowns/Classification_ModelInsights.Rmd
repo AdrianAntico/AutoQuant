@@ -128,25 +128,24 @@ if(!is.null(RemixOutput)) {
 
   # Evaluation Plots ----
   
-  ## EvaluationPlots_ResidualHistogram ----
-  Test_ResidualHistogram <- RemixOutput[['PlotList']][['Test_ResidualsHistogram']]
-  Train_ResidualHistogram <- RemixOutput[['PlotList']][['Train_ResidualsHistogram']]
   
   ## EvaluationPlots_CalibrationPlot ----
   Test_EvaluationPlot <- RemixOutput[['PlotList']][['Test_EvaluationPlot']]
   Train_EvaluationPlot <- RemixOutput[['PlotList']][['Train_EvaluationPlot']]
   
-  ## EvaluationPlots_CalibrationBoxPlot ----
-  Test_EvaluationBoxPlot <- RemixOutput[['PlotList']][['Test_EvaluationBoxPlot']]
-  Train_EvaluationBoxPlot <- RemixOutput[['PlotList']][['Train_EvaluationBoxPlot']]
+  ## ROCPlot ----
+  Test_ROCPlot <- RemixOutput[['PlotList']][['Test_ROC_Plot']]
+  Train_ROCPlot <- RemixOutput[['PlotList']][['Train_ROC_Plot']]
   
-  ## EvaluationPlots_ResidualsScatterPlot ----
-  Test_ScatterPlot <- RemixOutput[['PlotList']][['Test_ScatterPlot']]
-  Train_ScatterPlot <- RemixOutput[['PlotList']][['Train_ScatterPlot']]
+  ## Cumulative Gains Plot ----
+  Test_CumGainsChart <- list()
+  Train_CumGainsChart <- list()
   
-  ## EvaluationPlots_ResidualsCopulaPlot ----
-  Test_CopulaPlot <- RemixOutput[['PlotList']][['Test_CopulaPlot']]
-  Train_CopulaPlot <- RemixOutput[['PlotList']][['Train_CopulaPlot']]
+  Test_CumGainsChart[['GainsPlot']] <- RemixOutput[['PlotList']][['Test_GainsPlot']]
+  Test_CumGainsChart[['LiftPlot']] <- RemixOutput[['PlotList']][['Test_LiftPlot']]
+  
+  Train_CumGainsChart[['GainsPlot']] <- RemixOutput[['PlotList']][['Train_GainsPlot']]
+  Train_CumGainsChart[['LiftPlot']] <- RemixOutput[['PlotList']][['Train_LiftPlot']]
 }
 ```  
 
@@ -196,7 +195,7 @@ if(!is.null(RemixOutput)) {
         # Add
         Test_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TestData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -248,7 +247,7 @@ if(!is.null(RemixOutput)) {
         # Add
         Train_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TrainData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -300,7 +299,7 @@ if(!is.null(RemixOutput)) {
         # Add
         Test_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TestData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -353,7 +352,7 @@ if(!is.null(RemixOutput)) {
         # Add
         Train_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TrainData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -407,7 +406,7 @@ if(!is.null(RemixOutput)) {
         # Add
         Test_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TestData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -459,7 +458,7 @@ if(!is.null(RemixOutput)) {
         # Add
         Train_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TrainData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -684,7 +683,7 @@ if(is.null(RemixOutput)) {
   if(!is.null(TestData)) {
     Test_EvaluationPlot <- RemixAutoML::EvalPlot(
       data = data.table::copy(TestData), 
-      PredictionColName = 'Predict', 
+      PredictionColName = 'p1', 
       TargetColName = TargetColumnName, 
       GraphType = 'calibration',
       PercentileBucket = 0.05, 
@@ -697,7 +696,7 @@ if(is.null(RemixOutput)) {
   if(!is.null(TrainData)) {
     Train_EvaluationPlot <- RemixAutoML::EvalPlot(
       data = data.table::copy(TrainData), 
-      PredictionColName = 'Predict',
+      PredictionColName = 'p1',
       TargetColName = TargetColumnName, 
       GraphType = 'calibration',
       PercentileBucket = 0.05, 
@@ -717,6 +716,8 @@ if(is.null(RemixOutput)) {
       Name = ModelID,
       metapath = NULL,
       modelpath = NULL)
+  } else {
+    Test_ROCPlot <- NULL
   }
   
   ### TrainData ----
@@ -814,7 +815,7 @@ if(is.null(RemixOutput)) {
         # Add
         Test_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TestData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -870,7 +871,7 @@ if(is.null(RemixOutput)) {
         # Add
         Train_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TrainData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -928,7 +929,7 @@ if(is.null(RemixOutput)) {
         # Add
         Test_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TestData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'boxplot', 
@@ -985,7 +986,7 @@ if(is.null(RemixOutput)) {
         # Add
         Train_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = data.table::copy(TrainData),
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'boxplot', 
@@ -1043,7 +1044,7 @@ if(is.null(RemixOutput)) {
         # Add
         Test_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = data.table::copy(TestData), 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -1099,7 +1100,7 @@ if(is.null(RemixOutput)) {
         # Add
         Train_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
           data = TrainData, 
-          PredictionColName = 'Predict', 
+          PredictionColName = 'p1', 
           TargetColName = TargetColumnName, 
           IndepVar = g, 
           GraphType = 'calibration', 
@@ -1440,7 +1441,7 @@ if(!is.null(Train_EvaluationPlot)) {
 <p>
 
 ```{r ROC_Plot, echo=FALSE}
-if(!is.null(Test_EvaluationPlot)) {
+if(!is.null(Test_ROCPlot)) {
   eval(Test_ROCPlot)
 } else {
   print('Test_ROCPlot is NULL or TestData is NULL')
