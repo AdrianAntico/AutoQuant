@@ -23,6 +23,7 @@ for(nam in TempNames) {
 ```
 
 
+
 ```{r RemixOutput_DataSets_And_MetaData, echo = FALSE}
 if(!is.null(RemixOutput)) {
   
@@ -1157,7 +1158,6 @@ if(is.null(RemixOutput)) {
 ```
 
 
-
 Model Evaluation and Insights:
 
 - Provide a wide range of output to investigate high level performance and insights
@@ -1165,8 +1165,6 @@ Model Evaluation and Insights:
 - Deliver high quality report design layout to reduce time to delivery of info
 
 This report is for investigating model performance from a variety of perspectives. Each section has its own content that can be viewed if expanded. Output exists for both TestData (out of sample) and TrainData (some cases can have ValidationData results as well) for comparison purposes.
-
-
 
 
 # Evaluation Metrics

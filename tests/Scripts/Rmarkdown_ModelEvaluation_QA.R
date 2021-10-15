@@ -645,7 +645,7 @@ for(Run in 7:8) {
   if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
   if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
   if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
-  if(Run == 3) rm(RemixOutput)
+  if(Run == 8) rm(RemixOutput)
   tryCatch({
 
     RemixAutoML::ModelInsightsReport(
