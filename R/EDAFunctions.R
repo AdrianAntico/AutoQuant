@@ -12,7 +12,6 @@
 #' @param ByGroupVars Categorical variables to run correlation analysis by
 #' @param DataSampleRate = 0.50,
 #' @param MinRows = 30,
-#' @param KeepSignificantVars = TRUE,
 #' @param PValAdjMethod = "holm",
 #' @param RankTransform = TRUE,
 #' @param PartialCorr = FALSE,
@@ -40,7 +39,6 @@
 #'   ByGroupVars = "Factor_1",
 #'   DataSampleRate = 0.50,
 #'   MinRows = 30,
-#'   KeepSignificantVars = TRUE,
 #'   PValAdjMethod = "holm",
 #'   RankTransform = TRUE,
 #'   PartialCorr = FALSE,
@@ -53,7 +51,6 @@ AutoCorrAnalysis <- function(data = NULL,
                              ByGroupVars = NULL,
                              DataSampleRate = 0.50,
                              MinRows = 30,
-                             KeepSignificantVars = TRUE,
                              PValAdjMethod = "holm",
                              RankTransform = TRUE,
                              PartialCorr = FALSE,
@@ -81,22 +78,19 @@ AutoCorrAnalysis <- function(data = NULL,
 
   # Corr Analysis ----
   if(is.null(ByGroupVars)) {
-    CorrAnalysis <- data.table::setDT(correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
-    if(KeepSignificantVars) CorrAnalysis <- CorrAnalysis[p < 0.05]
+    CorrAnalysis <- correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian)
     return(CorrAnalysis)
   } else {
     print('starting correlation analysis')
     VarList <- list()
-    VarList[["TotalData"]] <- data.table::setDT(correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
+    VarList[["TotalData"]] <- correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian)
     for(group in ByGroupVars) {
       print(group)
       Levels <- as.character(data[, .N, by = eval(group)][order(-N)][N > MinRows][[eval(group)]])
       for(lev in Levels) {
         print(lev)
         data1 <- data[get(group) == eval(lev)]
-        temp <- data.table::setDT(correlation::correlation(data = data1, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE,  ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian))
-        temp <- temp[!is.na(r)]
-        if(KeepSignificantVars) temp <- temp[p < 0.05]
+        temp <- correlation::correlation(data = data1, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE,  ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian)
         VarList[[paste0(group,"_",lev)]] <- temp
         rm(temp)
       }
