@@ -5624,7 +5624,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 <details><summary>Expand to view content</summary>
 <p>
 
-<details><summary>AutoShapeShap() Example</summary>
+<details><summary>ModelInsightsReport() Example</summary>
 <p>
 
 ```r
