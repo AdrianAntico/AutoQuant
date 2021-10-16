@@ -28,7 +28,7 @@
 #' @param Validation_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'
 #' @param Train_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'
 #'
-#' @export
+#' @noRd
 Run_ModelInsightsReport <- function(TrainData = NULL,
                                     ValidationData = NULL,
                                     TestData = NULL,

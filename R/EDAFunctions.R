@@ -83,7 +83,7 @@ AutoCorrAnalysis <- function(data = NULL,
   } else {
     print('starting correlation analysis')
     VarList <- list()
-    VarList[["TotalData"]] <- correlation::correlation(data = data, p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian)
+    VarList[["TotalData"]] <- correlation::correlation(data = data, method = 'auto', p_adjust = PValAdjMethod, redundant = FALSE, include_factors = TRUE, ranktransform = RankTransform, partial = PartialCorr, bayesian = BayesianCorr, partial_bayesian = PartialBayesian)
     for(group in ByGroupVars) {
       print(group)
       Levels <- as.character(data[, .N, by = eval(group)][order(-N)][N > MinRows][[eval(group)]])

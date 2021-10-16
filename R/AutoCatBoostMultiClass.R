@@ -103,7 +103,7 @@
 #'
 #'     # Grid tuning args
 #'     PassInGrid = NULL,
-#'     GridTune = TRUE,
+#'     GridTune = FALSE,
 #'     MaxModelsInGrid = 30L,
 #'     MaxRunsWithoutNewWinner = 20L,
 #'     MaxRunMinutes = 24L*60L,
@@ -112,15 +112,15 @@
 #'     # ML args
 #'     langevin = FALSE,
 #'     diffusion_temperature = 10000,
-#'     Trees = seq(100L, 500L, 50L),
-#'     Depth = seq(4L, 8L, 1L),
-#'     LearningRate = seq(0.01,0.10,0.01),
-#'     L2_Leaf_Reg = seq(1.0, 10.0, 1.0),
+#'     Trees = 100L,
+#'     Depth = 4L,
+#'     LearningRate = NULL,
+#'     L2_Leaf_Reg = NULL,
 #'     RandomStrength = 1,
 #'     BorderCount = 254,
-#'     RSM = c(0.80, 0.85, 0.90, 0.95, 1.0),
-#'     BootStrapType = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'),
-#'     GrowPolicy = c('SymmetricTree', 'Depthwise', 'Lossguide'),
+#'     RSM = NULL,
+#'     BootStrapType = 'Bayesian',
+#'     GrowPolicy = 'SymmetricTree',
 #'     model_size_reg = 0.5,
 #'     feature_border_type = 'GreedyLogSum',
 #'     sampling_unit = 'Object',
@@ -258,6 +258,8 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
 
   # TrainData + ValidationData Scoring + Shap
   if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
+
+    # Training Data
     predict <- data.table::as.data.table(cbind(
       1 + catboost::catboost.predict(
         model = model,
@@ -267,6 +269,8 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
         model = model,
         pool = TrainPool,
         prediction_type = 'Probability')))
+
+    # Validation Data
     if(!is.null(TestPool)) {
       predict_validate <- data.table::as.data.table(cbind(
         1 + catboost::catboost.predict(
@@ -280,7 +284,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       predict <- data.table::rbindlist(list(predict, predict_validate))
       rm(predict_validate)
     }
-    TrainData <- CatBoostValidationData(ModelType='multiclass', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.=dataTrain, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=TargetLevels)
+    TrainData <- CatBoostValidationData(ModelType='multiclass', TrainOnFull.=TRUE, TestDataCheck=FALSE, FinalTestTarget.=FinalTestTarget, TestTarget.=TestTarget, TrainTarget.=TrainTarget, TrainMerge.=TrainMerge, TestMerge.=TestMerge, dataTest.=dataTest, data.= TrainMerge, predict.=predict, TargetColumnName.=TargetColumnName, SaveModelObjects. = SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, TransformNumericColumns.=NULL, GridTune.=GridTune, TransformationResults.=NULL, TargetLevels.=TargetLevels)
   } else {
     TrainData <- NULL
   }

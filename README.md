@@ -37,7 +37,12 @@ Documentation + Code Examples
 
 ## Background
 
+Machine Learning and Panel Forecasting Models
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
+
+
+Model Insights Reports
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="800" />
 
 
 <details><summary>Expand to view content</summary>
@@ -5616,6 +5621,72 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 ## Model Evaluation <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ModelEvaluationImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
+
+<details><summary>AutoShapeShap() Example</summary>
+<p>
+
+```r
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 10000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = FALSE)
+
+# Copy data
+data1 <- data.table::copy(data)
+
+# Run function
+RemixOutput <- RemixAutoML::AutoCatBoostRegression(
+
+  # GPU or CPU and the number of available GPUs
+  TrainOnFull = FALSE,
+  task_type = 'GPU',
+  NumGPUs = 1,
+
+  # Metadata args
+  OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+  ModelID = 'Test_Model_1',
+  model_path = getwd(),
+  metadata_path = getwd(),
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  ReturnModelObjects = TRUE,
+
+  # Data args
+  data = data1,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
+  IDcols = c('IDcol_1','IDcol_2'),
+  TransformNumericColumns = 'Adrian',
+  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
+
+  # Model evaluation
+  eval_metric = 'RMSE',
+  eval_metric_value = 1.5,
+  loss_function = 'RMSE',
+  loss_function_value = 1.5,
+  MetricPeriods = 10L,
+  NumOfParDepPlots = ncol(data1)-1L-2L)
+
+# Create Model Insights Report
+RemixAutoML::ModelInsightsReport(
+  TargetType = 'regression',
+  ModelID = 'ModelTest',
+  Algo = 'catboost',
+  SourcePath = getwd(),
+  OutputPath = getwd(),
+  RemixOutput = RemixOutput)
+```
+
+</p>
+</details>
+
 
 <details><summary>AutoShapeShap() Example</summary>
 <p>

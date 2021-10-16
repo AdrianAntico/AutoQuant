@@ -475,7 +475,18 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   } else {
     keep <- unique(c(WeightsColumnName., IDcols.))
   }
-  if("score_traindata" %chin% tolower(OutputSelection.)) TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), fill = TRUE) else TrainMerge <- NULL
+
+
+  # Sorting is getting messed up here, I think
+  if("score_traindata" %chin% tolower(OutputSelection.)) {
+    TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), fill = TRUE)
+    data.table::setorderv(x = TrainMerge, cols = TargetColumnName., order = 1, na.last = TRUE)
+  } else {
+    TrainMerge <- NULL
+  }
+
+
+
   if(!is.null(keep)) data.table::set(data., j = c(keep), value = NULL)
   if(!TrainOnFull. && !is.null(keep)) data.table::set(ValidationData., j = c(keep), value = NULL) else ValidationData. <- NULL
 

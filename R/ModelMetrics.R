@@ -470,7 +470,7 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   # MultiClass Metrics MicroAUC Setup
   Response <- ValidationData.[[eval(TargetColumnName.)]]
   if(ModelClass == "catboost") {
-    Predictor <- as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[3L:(ncol(PredictData.)+1L)])])
+    Predictor <- as.matrix(ValidationData.[, .SD, .SDcols = unique(as.character(TargetLevels.[['OriginalLevels']]))])
   } else if(ModelClass == "h2o") {
     Predictor <- as.matrix(ValidationData.[, .SD, .SDcols = unique(names(ValidationData.)[(ncol(ValidationData.) + 1 - length(TargetLevels.)):(ncol(ValidationData.))])])
   } else if(ModelClass == "xgboost") {
@@ -489,9 +489,10 @@ MultiClassMetrics <- function(ModelClass = "catboost",
       y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(as.character(TargetLevels.[["OriginalLevels"]]))]),
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
   } else if(ModelClass == "catboost") {
+    temp <- DummifyDT(data=temp, cols='Predict', KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
     logloss <- MLmetrics::LogLoss(
-      y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[c(3L:(2L+N))])]),
-      y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
+      y_pred = as.matrix(ValidationData.[, .SD, .SDcols = unique(as.character(TargetLevels.[['OriginalLevels']]))]),
+      y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[seq_len(N)])]))
   } else if(ModelClass == "h2o") {
     logloss <- MLmetrics::LogLoss(
       y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(unique(names(ValidationData.)[(ncol(ValidationData.) + 1 - length(TargetLevels.)):(ncol(ValidationData.))]))]),

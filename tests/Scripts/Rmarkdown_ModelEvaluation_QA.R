@@ -22,9 +22,9 @@
 
 #       Results Table Create  ----
 RmarkdownQA <- data.table::data.table(
-  Algo = rep('not run', 18),
-  Type = rep('not run', 18),
-  Success = rep('not run', 18))
+  Algo = rep('not run', 27),
+  Type = rep('not run', 27),
+  Success = rep('not run', 27))
 
 # ----
 
@@ -1005,6 +1005,203 @@ for(Run in 11:12) {
 # ----
 
 # ----
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+# ----
+
+#       MultiClass MODELS (Runs: 19-27)   ----
+
+# ----
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+#         CatBoost MultiClass  ----
+
+# Run = 25
+# Run = 26
+# Run = 27
+for(Run in 25:27) {
+
+  # Working directory
+  setwd("C:/Users/Bizon/Documents/GitHub")
+
+  # Clear output
+  if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-MultiClass.html"))) {
+    file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))
+  }
+
+  # Create some dummy correlated data
+  data <- RemixAutoML::FakeDataGenerator(
+    Correlation = 0.85,
+    N = 10000L,
+    ID = 2L,
+    ZIP = 0L,
+    AddDate = FALSE,
+    Classification = FALSE,
+    MultiClass = TRUE)
+
+  # Convert Character Cols to Factor
+  ## New requirement with catboost 1.0.0, doesn't affect older
+  data <- RemixAutoML::ModelDataPrep(
+    data,
+    Impute = FALSE,
+    CharToFactor = TRUE,
+    FactorToChar = FALSE,
+    IntToNumeric = TRUE,
+    LogicalToBinary = TRUE,
+    DateToChar = FALSE,
+    IDateConversion = FALSE,
+    RemoveDates = FALSE,
+    MissFactor = "0",
+    MissNum = -1,
+    IgnoreCols = NULL)
+
+  # Copy data
+  data1 <- data.table::copy(data)
+
+  # Run function
+  TestModel <- RemixAutoML::AutoCatBoostMultiClass(
+
+    # GPU or CPU and the number of available GPUs
+    task_type = 'GPU',
+    NumGPUs = 1,
+    TrainOnFull = FALSE,
+    DebugMode = FALSE,
+
+    # Metadata args
+    OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+    ModelID = 'Test_Model_1',
+    model_path = normalizePath('./'),
+    metadata_path = normalizePath('./'),
+    SaveModelObjects = FALSE,
+    ReturnModelObjects = TRUE,
+
+    # Data args
+    data = data,
+    ValidationData = NULL,
+    TestData = NULL,
+    TargetColumnName = 'Adrian',
+    FeatureColNames = names(data)[!names(data) %in%
+                                    c('IDcol_1', 'IDcol_2','Adrian')],
+    PrimaryDateColumn = NULL,
+    WeightsColumnName = NULL,
+    ClassWeights = c(1L,1L,1L,1L,1L),
+    IDcols = c('IDcol_1','IDcol_2'),
+
+    # Model evaluation
+    eval_metric = 'MCC',
+    loss_function = 'MultiClassOneVsAll',
+    grid_eval_metric = 'Accuracy',
+    MetricPeriods = 10L,
+    NumOfParDepPlots = 3,
+
+    # Grid tuning args
+    PassInGrid = NULL,
+    GridTune = FALSE,
+    MaxModelsInGrid = 30L,
+    MaxRunsWithoutNewWinner = 20L,
+    MaxRunMinutes = 24L*60L,
+    BaselineComparison = 'default',
+
+    # ML args
+    langevin = FALSE,
+    diffusion_temperature = 10000,
+    Trees = 100L,
+    Depth = 4L,
+    LearningRate = NULL,
+    L2_Leaf_Reg = NULL,
+    RandomStrength = 1,
+    BorderCount = 254,
+    RSM = NULL,
+    BootStrapType = 'Bayesian',
+    GrowPolicy = 'SymmetricTree',
+    model_size_reg = 0.5,
+    feature_border_type = 'GreedyLogSum',
+    sampling_unit = 'Object',
+    subsample = NULL,
+    score_function = 'Cosine',
+    min_data_in_leaf = 1)
+
+  # Create Model Insights Report
+  if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run == 8) rm(RemixOutput)
+  tryCatch({
+
+    RemixAutoML::ModelInsightsReport(
+
+      # DataSets (use TestData for ValidationData)
+      TrainData = train,
+      ValidationData = valid,
+      TestData = test,
+
+      # Meta info
+      TargetColumnName = 'Adrian',
+      PredictionColumnName = 'p1',
+      FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
+      DateColumnName = NULL,
+
+      # Control options
+      TargetType = 'classification',
+      ModelID = 'Test_Model_1',
+      Algo = 'catboost',
+      SourcePath = getwd(),
+      OutputPath = getwd(),
+      RemixOutput = if(Run %in% c(8)) NULL else RemixOutput)
+
+  }, error = function(x) NULL)
+
+  # Update
+  if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
+    RmarkdownQA[Run, Algo := 'catboost']
+    RmarkdownQA[Run, Type := 'classification']
+    RmarkdownQA[Run, Success := 'success']
+    file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))
+  } else {
+    RmarkdownQA[Run, Algo := 'catboost']
+    RmarkdownQA[Run, Type := 'classification']
+    RmarkdownQA[Run, Success := 'failure']
+  }
+}
+
+library(data.table)
+library(RemixAutoML)
+
+# Create Model Insights Report
+if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
+if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
+if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
+if(Run == 3) rm(RemixOutput)
+
+# DataSets (use TestData for ValidationData)
+TrainData = train
+ValidationData = valid
+TestData = test
+
+# Meta info
+TargetColumnName = 'Adrian'
+PredictionColumnName = names(data1)[!names(data1) %in% names(data)]
+FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
+DateColumnName = NULL
+
+# Control options
+TargetType = 'MultiClass'
+ModelID = 'Test_Model_1'
+Algo = 'catboost'
+SourcePath = getwd()
+OutputPath = getwd()
+RemixOutput = if(Run %in% c(26, 27)) NULL else RemixOutput
+
+Test_Importance_dt = NULL
+Validation_Importance_dt = NULL
+Train_Importance_dt = NULL
+Test_Interaction_dt = NULL
+Validation_Interaction_dt = NULL
+Train_Interaction_dt = NULL
+GlobalVars = ls()
+
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 

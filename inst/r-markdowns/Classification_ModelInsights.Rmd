@@ -77,7 +77,7 @@ if(!is.null(RemixOutput)) {
     
   } else {
     
-    #### Envoding-Based Models
+    #### Encoding-Based Models
     if(is.null(Test_Importance_dt)) {
       Test_Importance <- NULL
     } else {
