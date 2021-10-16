@@ -42,7 +42,9 @@ Machine Learning and Panel Forecasting Models
 
 
 Model Insights Reports
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="500" />
+<p>
+
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="350" />
 
 
 <details><summary>Expand to view content</summary>
