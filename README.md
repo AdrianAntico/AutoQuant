@@ -36,6 +36,7 @@ Documentation + Code Examples
 
 
 ## Background
+<p>
 
 Machine Learning and Panel Forecasting Models
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
