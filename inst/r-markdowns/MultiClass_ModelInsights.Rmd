@@ -48,6 +48,7 @@ if(!is.null(RemixOutput)) {
   
   # Meta info
   TargetColumnName <- RemixOutput[['ArgsList']][['TargetColumnName']]
+  TargetLevels <- RemixOutput[['ArgsList']][['TargetLevels']]
   PredictionColumnName <- PredictionColumnName
   if(is.null(FeatureColumnNames)) {
     FeatureColumnNames <- RemixOutput[['ColNames']][[1L]]
@@ -66,8 +67,13 @@ if(!is.null(RemixOutput)) {
   # Evaluation Metrics ----
   
   ## Model_Evaluation_Metrics ----
-  Test_EvalMetrics <- RemixOutput[['EvaluationMetrics']][['TestData']]
-  Train_EvalMetrics <- RemixOutput[['EvaluationMetrics']][['TrainData']]
+  EvalMetricsNames <- names(RemixOutput[['EvaluationMetrics']])
+  Test_EvalMetricss <- TestNames[which(EvalMetricsNames %like% 'TestData_')]
+  Test_EvalMetrics <- list()
+  for(nam in Test_EvalMetricss) Test_EvalMetrics[[nam]] <- RemixOutput[['EvaluationMetrics']][[nam]]
+  Train_EvalMetricss <- setdiff(EvalMetricsNames, Test_EvalMetricss)
+  Train_EvalMetrics <- list()
+  for(nam in Train_EvalMetricss) Train_EvalMetrics[[nam]] <- RemixOutput[['EvaluationMetrics']][[nam]]
   
   ## Model_VarImportanceTable ----
   if(tolower(Algo) == 'catboost') {
@@ -128,24 +134,41 @@ if(!is.null(RemixOutput)) {
 
   # Evaluation Plots ----
   
-  
   ## EvaluationPlots_CalibrationPlot ----
-  Test_EvaluationPlot <- RemixOutput[['PlotList']][['Test_EvaluationPlot']]
-  Train_EvaluationPlot <- RemixOutput[['PlotList']][['Train_EvaluationPlot']]
+  EvalPlotNames <- names(RemixOutput[['PlotList']])
+  Test_EvaluationPlotss <- EvalPlotNames[which(EvalPlotNames %like% 'Test_EvaluationPlot_')]
+  Test_EvalMetrics <- list()
+  for(nam in Test_EvalMetricss) Test_EvalMetrics[[nam]] <- RemixOutput[['PlotList']][[nam]]
+  Train_EvaluationPlotss <- EvalPlotNames[which(EvalPlotNames %like% 'Train_EvaluationPlot_')]
+  Train_EvaluationPlots <- list()
+  for(nam in Train_EvaluationPlotss) Train_EvaluationPlots[[nam]] <- RemixOutput[['PlotList']][[nam]]
   
   ## ROCPlot ----
-  Test_ROCPlot <- RemixOutput[['PlotList']][['Test_ROC_Plot']]
-  Train_ROCPlot <- RemixOutput[['PlotList']][['Train_ROC_Plot']]
+  EvalPlotNames <- names(RemixOutput[['PlotList']])
+  Test_EvaluationPlotss <- EvalPlotNames[which(EvalPlotNames %like% 'Test_ROC_Plot_')]
+  Test_ROCPlot <- list()
+  for(nam in Test_EvaluationPlotss) Test_ROCPlot[[nam]] <- RemixOutput[['PlotList']][[nam]]
+  Train_EvaluationPlotss <- EvalPlotNames[which(EvalPlotNames %like% 'Train_ROC_Plot_')]
+  Train_ROCPlot <- list()
+  for(nam in Train_EvaluationPlotss) Train_ROCPlot[[nam]] <- RemixOutput[['PlotList']][[nam]]
   
   ## Cumulative Gains Plot ----
+  CumGainsNames <- names(RemixOutput[['PlotList']])
+  Test_CumGainsCharts <- CumGainsNames[which(CumGainsNames %like% 'Test_GainsPlot_')]
   Test_CumGainsChart <- list()
+  for(nam in Test_CumGainsCharts) Test_CumGainsChart[[nam]] <- RemixOutput[['PlotList']][[nam]]
+  Train_CumGainsCharts <- CumGainsNames[which(CumGainsNames %like% 'Train_GainsPlot_')]
   Train_CumGainsChart <- list()
+  for(nam in Train_CumGainsCharts) Train_CumGainsChart[[nam]] <- RemixOutput[['PlotList']][[nam]]
   
-  Test_CumGainsChart[['GainsPlot']] <- RemixOutput[['PlotList']][['Test_GainsPlot']]
-  Test_CumGainsChart[['LiftPlot']] <- RemixOutput[['PlotList']][['Test_LiftPlot']]
-  
-  Train_CumGainsChart[['GainsPlot']] <- RemixOutput[['PlotList']][['Train_GainsPlot']]
-  Train_CumGainsChart[['LiftPlot']] <- RemixOutput[['PlotList']][['Train_LiftPlot']]
+  # Lift Plots ----
+  LiftPlotNames <- names(RemixOutput[['PlotList']])
+  Test_LiftPlots <- LiftPlotNames[which(LiftPlotNames %like% 'Test_LiftPlot_')]
+  Test_LiftPlot <- list()
+  for(nam in Test_LiftPlots) Test_LiftPlot[[nam]] <- RemixOutput[['PlotList']][[nam]]
+  Train_LiftPlots <- LiftPlotNames[which(LiftPlotNames %like% 'Train_LiftPlot_')]
+  Train_LiftPlot <- list()
+  for(nam in Train_LiftPlots) Train_LiftPlot[[nam]] <- RemixOutput[['PlotList']][[nam]]
 }
 ```  
 
@@ -160,56 +183,65 @@ if(!is.null(RemixOutput)) {
   
   # Plots to Add and Remove
   
+  # Extra list mgt + par dep plot for multinomial
+  
   # Starting batch of plots
-  Test_ParDepPlots <- RemixOutput[['PlotList']][['Test_ParDepPlots']]
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-  
-  # Remove Names
-  A <- names(Test_ParDepPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Line <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Line)) RemovePDPList_Line <- NULL
-  
-  # Add Names
-  AddPDPList_Line = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
-  
-  # Remove Plots from List per User Request
-  if(!is.null(A)) {
+  ParDepPlotsNames <- names(RemixOutput[['PlotList']])
+  Test_ParDepPlotss <- gsub(pattern = 'Test_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Test_ParDepPlots_'])
+  for(nam in Test_ParDepPlotss) {
     
-    # Loop through all names of PDP List
-    for(v in A) {
+    # Name to keep and remove
+    Test_ParDepPlots <- RemixOutput$PlotList[[paste0('Test_ParDepPlots_', nam)]]
 
-      # Remove Plots
-      if(!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line) {
-        Test_ParDepPlots[[v]] <- NULL
+    # Remove Names
+    A <- names(Test_ParDepPlots)
+    B <- FeatureColumnNames
+    RemovePDPList_Line <- setdiff(A, B)
+    if(identical(character(0), RemovePDPList_Line)) RemovePDPList_Line <- NULL
+    
+    # Add Names
+    AddPDPList_Line = setdiff(B, A)
+    if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
+    
+    # Remove Plots from List per User Request
+    if(!is.null(A)) {
+      
+      # Loop through all names of PDP List
+      for(v in A) {
+  
+        # Remove Plots
+        if(!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line) {
+          Test_ParDepPlots[[nam]][[v]] <- NULL
+        }
+      }
+    }
+  
+    # Add Plots to List per User Request
+    if(!is.null(AddPDPList_Line)) {
+      for(g in AddPDPList_Line) {
+        if(is.numeric(TestData[[g]])) {
+          
+          # Need TestData
+          TestData[, p1 := get(nam)]
+          TestData[, paste0('Temp_', nam) := data.table::fifelse(Predict == eval(nam), 1, 0)]
+          
+          # Add Plots
+          Test_ParDepPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+            data = TestData, 
+            PredictionColName = 'p1', 
+            TargetColName = paste0('Temp_', nam), 
+            IndepVar = g, 
+            GraphType = 'calibration', 
+            PercentileBucket = 0.05, 
+            FactLevels = 10, 
+            Function = function(x) mean(x, na.rm = TRUE), 
+            DateColumn = NULL, 
+            DateAgg_3D = FALSE)
+        }
       }
     }
   }
-
-  # Add Plots to List per User Request
-  if(!is.null(AddPDPList_Line)) {
-    for(g in AddPDPList_Line) {
-      if(is.numeric(TestData[[g]])) {
-        
-        # Add Plots
-        Test_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
-          data = TestData, 
-          PredictionColName = 'p1', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-
+  
   ### TrainData ----
   
   # Plots to Add and Remove
@@ -1157,7 +1189,7 @@ This report is for investigating model performance from a variety of perspective
 
 ```{r Model_Evaluation_Metrics, echo=FALSE}
 if(!is.null(Test_EvalMetrics)) {
-  print(knitr::kable(Test_EvalMetrics))
+  for(nam in names(Test_EvalMetrics)) print(knitr::kable(Test_EvalMetrics[[nam]]))
 } else {
   print('Test_EvalMetrics is NULL')
 }
@@ -1175,7 +1207,7 @@ if(!is.null(Test_EvalMetrics)) {
 
 ```{r Model_Evaluation_Metrics_Train, echo=FALSE}
 if(!is.null(Train_EvalMetrics)) {
-  print(knitr::kable(Train_EvalMetrics))
+  for(nam in names(Train_EvalMetrics)) print(knitr::kable(Train_EvalMetrics[[nam]]))
 } else {
   print('Train_EvalMetrics is NULL')
 }

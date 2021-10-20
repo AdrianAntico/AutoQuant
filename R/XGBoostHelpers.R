@@ -408,6 +408,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
         TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+        data.table::setorderv(x = TrainMerge, cols = TargetColumnName., order = 1, na.last = TRUE)
       } else {
         TrainMerge <- NULL
       }

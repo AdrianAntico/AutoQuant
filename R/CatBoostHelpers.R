@@ -480,7 +480,6 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   # Sorting is getting messed up here, I think
   if("score_traindata" %chin% tolower(OutputSelection.)) {
     TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), fill = TRUE)
-    data.table::setorderv(x = TrainMerge, cols = TargetColumnName., order = 1, na.last = TRUE)
   } else {
     TrainMerge <- NULL
   }

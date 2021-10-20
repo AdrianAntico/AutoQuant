@@ -13,6 +13,7 @@
 #' @param FeatureColumnNames NULL
 #' @param DateColumnName NULL
 #' @param TargetColumnName For selecting columns
+#' @param TargetLevels Character vector of the unique target levels
 #' @param TargetType 'regression', 'classification', or 'multiclass'
 #' @param ModelID ModelID used in the RemixAutoML supervised learning function
 #' @param Algo 'catboost', 'xgboost', 'lightgbm', 'h2o'
@@ -35,12 +36,14 @@ Run_ModelInsightsReport <- function(TrainData = NULL,
 
                                     # Meta info
                                     TargetColumnName = NULL,
+                                    TargetType = 'regression',
+                                    TargetLevels = NULL,
                                     PredictionColumnName = 'Predict',
                                     FeatureColumnNames = NULL,
                                     DateColumnName = NULL,
 
                                     # Control options
-                                    TargetType = 'regression',
+
                                     ModelID = 'ModelTest',
                                     Algo = 'catboost',
                                     SourcePath = NULL,
@@ -140,6 +143,7 @@ Run_ModelInsightsReport <- function(TrainData = NULL,
 
   # Metadata args
   TargetType <- TargetType
+  TargetLevels <- TargetLevels
   ModelID <- ModelID
   Algo <- Algo
   SourcePath <- SourcePath

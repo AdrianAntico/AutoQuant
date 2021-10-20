@@ -201,13 +201,6 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   ArgsList[['data']] <- NULL
   ArgsList[['ValidationData']] <- NULL
   ArgsList[['TestData']] <- NULL
-  if(SaveModelObjects) {
-    if(!is.null(metadata_path)) {
-      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
-    } else if(!is.null(model_path)) {
-      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
-    }
-  }
 
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
@@ -224,6 +217,16 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   TestData <- Output$TestData; Output$TestData <- NULL
   TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
   Names <- Output$Names; rm(Output)
+
+  # Need TargetLevels from CatBoostDataPrep() so this code block is here instead of before CatBoostDataPrep()
+  ArgsList[['TargetLevels']] <- sort(as.character(TargetLevels))
+  if(SaveModelObjects) {
+    if(!is.null(metadata_path)) {
+      save(ArgsList, file = file.path(metadata_path, paste0(ModelID, "_ArgsList.Rdata")))
+    } else if(!is.null(model_path)) {
+      save(ArgsList, file = file.path(model_path, paste0(ModelID, "_ArgsList.Rdata")))
+    }
+  }
 
   # Create catboost data objects ----
   if(DebugMode) print('Running CatBoostDataConversion()')
@@ -363,11 +366,11 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
         TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
         if(length(unique(TrainData[[paste0('Temp_',tarlevel)]])) == 1) next
         Output <- ML_EvalPlots(ModelType='classification', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=FALSE, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
-        PlotList[[paste0('Train_EvaluationPlot_',tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-        PlotList[[paste0('Train_ParDepPlots_',tarlevel)]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-        PlotList[[paste0('Train_GainsPlot_',tarlevel)]] <- Output$GainsPlot; Output$GainsPlot <- NULL
-        PlotList[[paste0('Train_LiftPlot_',tarlevel)]] <- Output$LiftPlot; Output$LiftPlot <- NULL
-        PlotList[[paste0('Train_ROC_Plot_',tarlevel)]] <- Output$ROC_Plot; rm(Output)
+        PlotList[[paste0('Train_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
+        PlotList[[paste0('Train_ParDepPlots_',tarlevel)]] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
+        PlotList[[paste0('Train_GainsPlot_',tarlevel)]] <- Output[['GainsPlot']]; Output[['GainsPlot']] <- NULL
+        PlotList[[paste0('Train_LiftPlot_',tarlevel)]] <- Output[['LiftPlot']]; Output[['LiftPlot']] <- NULL
+        PlotList[[paste0('Train_ROC_Plot_',tarlevel)]] <- Output[['ROC_Plot']]; rm(Output)
         data.table::set(TrainData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
       }
     }

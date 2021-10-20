@@ -4,8 +4,17 @@ CatBoost_QA_Results_MultiClass <- data.table::CJ(
   GridTune = c(TRUE,FALSE),
   TaskType = c("CPU","GPU"),
   Success = "Failure",
-  PartitionInFunction = c(TRUE,FALSE)
-)
+  PartitionInFunction = c(TRUE,FALSE),
+  PlotList = 0,
+  MultinomialMetrics = 0,
+  EvaluationMetrics = 0,
+  EvaluationMetrics2 = 0,
+  VariableImportance = 0,
+  InteractionImportance = 0,
+  GridMetrics = 0,
+  ColNames = 0,
+  TargetLevels = 0,
+  ArgsList = 0)
 
 # Remove impossible combinations
 CatBoost_QA_Results_MultiClass <- CatBoost_QA_Results_MultiClass[!(TOF & GridTune)]
@@ -140,7 +149,11 @@ for(run in seq_len(CatBoost_QA_Results_MultiClass[,.N])) {
     DebugMode = TRUE)}, error = function(x) NULL)
 
   # Outcome
-  if(!is.null(TestModel)) CatBoost_QA_Results_MultiClass[run, Success := "Success"]
+  if(!is.null(TestModel)) {
+    CatBoost_QA_Results_MultiClass[run, Success := "Success"]
+    CatBoost_QA_Results_MultiClass[run, Success := "Success"]
+
+  }
   TestModel <- NULL
   gc(); Sys.sleep(5)
   data.table::fwrite(CatBoost_QA_Results_MultiClass, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoCatBoostMultiClass_QA.csv")

@@ -1061,7 +1061,7 @@ for(Run in 25:27) {
   data1 <- data.table::copy(data)
 
   # Run function
-  TestModel <- RemixAutoML::AutoCatBoostMultiClass(
+  RemixOutput <- RemixAutoML::AutoCatBoostMultiClass(
 
     # GPU or CPU and the number of available GPUs
     task_type = 'GPU',
@@ -1082,8 +1082,7 @@ for(Run in 25:27) {
     ValidationData = NULL,
     TestData = NULL,
     TargetColumnName = 'Adrian',
-    FeatureColNames = names(data)[!names(data) %in%
-                                    c('IDcol_1', 'IDcol_2','Adrian')],
+    FeatureColNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
     PrimaryDateColumn = NULL,
     WeightsColumnName = NULL,
     ClassWeights = c(1L,1L,1L,1L,1L),
@@ -1124,10 +1123,10 @@ for(Run in 25:27) {
     min_data_in_leaf = 1)
 
   # Create Model Insights Report
-  if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
-  if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
-  if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
-  if(Run == 8) rm(RemixOutput)
+  if(Run %in% c(26)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(26)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(26)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run == 26) rm(RemixOutput)
   tryCatch({
 
     RemixAutoML::ModelInsightsReport(
@@ -1139,7 +1138,7 @@ for(Run in 25:27) {
 
       # Meta info
       TargetColumnName = 'Adrian',
-      PredictionColumnName = 'p1',
+      PredictionColumnName = 'Predict',
       FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
       DateColumnName = NULL,
 
