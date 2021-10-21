@@ -1181,12 +1181,13 @@ TestData = test
 
 # Meta info
 TargetColumnName = 'Adrian'
-PredictionColumnName = names(data1)[!names(data1) %in% names(data)]
+PredictionColumnName = 'Predict'
 FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
 DateColumnName = NULL
 
 # Control options
 TargetType = 'MultiClass'
+TargetLevels = NULL
 ModelID = 'Test_Model_1'
 Algo = 'catboost'
 SourcePath = getwd()

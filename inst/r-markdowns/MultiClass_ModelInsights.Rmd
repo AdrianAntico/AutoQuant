@@ -68,7 +68,7 @@ if(!is.null(RemixOutput)) {
   
   ## Model_Evaluation_Metrics ----
   EvalMetricsNames <- names(RemixOutput[['EvaluationMetrics']])
-  Test_EvalMetricss <- TestNames[which(EvalMetricsNames %like% 'TestData_')]
+  Test_EvalMetricss <- EvalMetricsNames[which(EvalMetricsNames %like% 'TestData_')]
   Test_EvalMetrics <- list()
   for(nam in Test_EvalMetricss) Test_EvalMetrics[[nam]] <- RemixOutput[['EvaluationMetrics']][[nam]]
   Train_EvalMetricss <- setdiff(EvalMetricsNames, Test_EvalMetricss)
@@ -185,7 +185,7 @@ if(!is.null(RemixOutput)) {
   
   # Extra list mgt + par dep plot for multinomial
   
-  # Starting batch of plots
+  # Numeric-Test: Starting batch of plots
   ParDepPlotsNames <- names(RemixOutput[['PlotList']])
   Test_ParDepPlotss <- gsub(pattern = 'Test_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Test_ParDepPlots_'])
   for(nam in Test_ParDepPlotss) {
@@ -237,6 +237,9 @@ if(!is.null(RemixOutput)) {
             Function = function(x) mean(x, na.rm = TRUE), 
             DateColumn = NULL, 
             DateAgg_3D = FALSE)
+          
+          # Remove added cols
+          data.table::set(TestData, j = c('p1', paste0('Temp_', nam)), value = NULL)
         }
       }
     }
@@ -246,160 +249,64 @@ if(!is.null(RemixOutput)) {
   
   # Plots to Add and Remove
   
-  # Starting batch of plots
-  Train_ParDepPlots <- RemixOutput[['PlotList']][['Train_ParDepPlots']]
-
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Line <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Line)) RemovePDPList_Line <- NULL
+  # Extra list mgt + par dep plot for multinomial
   
-  # Add Names
-  AddPDPList_Line = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
-
-  # Remove Plots from List per User Request
-  if(!is.null(A)) {
+  # Numeric-Train: Starting batch of plots
+  ParDepPlotsNames <- names(RemixOutput[['PlotList']])
+  Train_ParDepPlotss <- gsub(pattern = 'Train_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Train_ParDepPlots_'])
+  for(nam in Train_ParDepPlotss) {
     
-    # Loop through all names of PDP List
-    for(v in A) {
+    # Name to keep and remove
+    Train_ParDepPlots <- RemixOutput$PlotList[[paste0('Train_ParDepPlots_', nam)]]
 
-      # Remove Plots
-      if(!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line) {
-        Train_ParDepPlots[[v]] <- NULL
+    # Remove Names
+    A <- names(Train_ParDepPlots)
+    B <- FeatureColumnNames
+    RemovePDPList_Line <- setdiff(A, B)
+    if(identical(character(0), RemovePDPList_Line)) RemovePDPList_Line <- NULL
+    
+    # Add Names
+    AddPDPList_Line = setdiff(B, A)
+    if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
+    
+    # Remove Plots from List per User Request
+    if(!is.null(A)) {
+      
+      # Loop through all names of PDP List
+      for(v in A) {
+  
+        # Remove Plots
+        if(!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line) {
+          Train_ParDepPlots[[nam]][[v]] <- NULL
+        }
       }
     }
-  }
-
-  # Add Plots to List per User Request
-  if(!is.null(AddPDPList_Line)) {
-    for(g in AddPDPList_Line) {
-      if(is.numeric(TrainData[[g]])) {
-
-        # Add Plots
-        Train_ParDepPlots[[g]] <- RemixAutoML::ParDepCalPlots(
-          data = TrainData, 
-          PredictionColName = 'p1', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
   
-  ## Model_Evaluation_Metrics_NumericVariables_Box ----
-    
-  ### Test Data ----
-    
-  # Starting batch of plots
-  Test_ParDepBoxPlots <- RemixOutput[['PlotList']][['Test_ParDepBoxPlots']]
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Test_ParDepBoxPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Box <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Box)) RemovePDPList_Box <- NULL
-  
-  # Add Names
-  AddPDPList_Box = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Box)) AddPDPList_Box <- NULL
-
-  # Remove Plots from List per User Request
-  if(!is.null(A)) {
-    
-    # Loop through all names of PDP List
-    for(v in A) {
-
-      # Remove Plots
-      if(!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Box) {
-        Test_ParDepBoxPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots to List per User Request
-  if(!is.null(AddPDPList_Box)) {
-    for(g in AddPDPList_Box) {
-      if(is.numeric(TestData[[g]])) {
-
-        # Add Request
-        Test_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
-          data = TestData, 
-          PredictionColName = 'p1', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-    
-  ### Train Data ----
-  
-  # Starting batch of plots
-  Train_ParDepBoxPlots <- RemixOutput[['PlotList']][['Train_ParDepBoxPlots']]
-  
-  # Name to keep and remove
-  # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepBoxPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Box <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Box)) RemovePDPList_Box <- NULL
-  
-  # Add Names
-  AddPDPList_Box = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Box)) AddPDPList_Box <- NULL
-
-  # Remove Plots from List per User Request
-  if(!is.null(A)) {
-    
-    # Loop through all names of PDP List
-    for(v in A) {
-
-      # Remove Plots
-      if(!is.null(TrainData) && is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Box) {
-        Train_ParDepBoxPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Box) {
-        Train_ParDepBoxPlots[[v]] <- NULL
-      }
-    }
-  }
-
-  # Add Plots to List per User Request
-  if(!is.null(AddPDPList_Box) && !is.null(TrainData)) {
-    for(g in AddPDPList_Box) {
-      if(is.numeric(TrainData[[g]])) {
-
-        # Add Plots
-        Train_ParDepBoxPlots[[g]] <- RemixAutoML::ParDepCalPlots(
-          data = TrainData, 
-          PredictionColName = 'p1', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
+    # Add Plots to List per User Request
+    if(!is.null(AddPDPList_Line)) {
+      for(g in AddPDPList_Line) {
+        if(is.numeric(TrainData[[g]])) {
+          
+          # Need TestData
+          TrainData[, p1 := get(nam)]
+          TrainData[, paste0('Temp_', nam) := data.table::fifelse(Predict == eval(nam), 1, 0)]
+          
+          # Add Plots
+          Train_ParDepPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+            data = TrainData, 
+            PredictionColName = 'p1', 
+            TargetColName = paste0('Temp_', nam), 
+            IndepVar = g, 
+            GraphType = 'calibration', 
+            PercentileBucket = 0.05, 
+            FactLevels = 10, 
+            Function = function(x) mean(x, na.rm = TRUE), 
+            DateColumn = NULL, 
+            DateAgg_3D = FALSE)
+          
+          # Remove added cols
+          data.table::set(TrainData, j = c('p1', paste0('Temp_', nam)), value = NULL)
+        }
       }
     }
   }
@@ -408,108 +315,134 @@ if(!is.null(RemixOutput)) {
   
   ### Test Data ----
   
-  # Starting batch of plots
-  Test_ParDepCatPlots <- RemixOutput[['PlotList']][['Test_ParDepPlots']]
-  
   # Name to keep and remove
   # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Test_ParDepCatPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Bar <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Bar)) RemovePDPList_Bar <- NULL
   
-  # Add Names
-  AddPDPList_Bar = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
-
-  # Remove Plots from List per User Request
-  if(!is.null(A)) {
+  # Categorical-Test: Starting batch of plots
+  ParDepCatPlotsNames <- names(RemixOutput[['PlotList']])
+  Test_ParDepCatPlotss <- gsub(pattern = 'Test_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Test_ParDepPlots_'])
+  for(nam in Test_ParDepPlotss) {
     
-    # Loop through all names of PDP List
-    for(v in A) {
+    # Name to keep and remove
+    Test_ParDepCatPlots <- RemixOutput$PlotList[[paste0('Test_ParDepPlots_', nam)]]
 
-      # Remove Plots
-      if(!is.null(TestData) && is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar) {
-        Test_ParDepCatPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Bar) {
-        Test_ParDepCatPlots[[v]] <- NULL
+    # Remove Names
+    A <- names(Test_ParDepCatPlots)
+    B <- FeatureColumnNames
+    RemovePDPList_Bar <- setdiff(A, B)
+    if(identical(character(0), RemovePDPList_Bar)) RemovePDPList_Bar <- NULL
+    
+    # Add Names
+    AddPDPList_Bar = setdiff(B, A)
+    if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
+
+    # Remove Plots from List per User Request
+    if(!is.null(A)) {
+      
+      # Loop through all names of PDP List
+      for(v in A) {
+  
+        # Remove Plots
+        if(!is.null(TestData) && is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar) {
+          Test_ParDepCatPlots[[nam]][[v]] <- NULL
+        } else if(v %in% RemovePDPList_Bar) {
+          Test_ParDepCatPlots[[nam]][[v]] <- NULL
+        }
+      }
+    }
+    
+    # Add Plots to List per User Request
+    if(!is.null(AddPDPList_Bar) && !is.null(TestData)) {
+      for(g in AddPDPList_Bar) {
+        if(!is.numeric(TestData[[g]])) {
+          
+          # Need TestData
+          TestData[, p1 := get(nam)]
+          TestData[, paste0('Temp_', nam) := data.table::fifelse(Predict == eval(nam), 1, 0)]
+  
+          # Add Plots
+          Test_ParDepCatPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+            data = TestData, 
+            PredictionColName = 'p1', 
+            TargetColName = paste0('Temp_', nam), 
+            IndepVar = g, 
+            GraphType = 'calibration', 
+            PercentileBucket = 0.05, 
+            FactLevels = 10, 
+            Function = function(x) mean(x, na.rm = TRUE), 
+            DateColumn = NULL, 
+            DateAgg_3D = FALSE)
+          
+          # Remove added cols
+          data.table::set(TestData, j = c('p1', paste0('Temp_', nam)), value = NULL)
+        }
       }
     }
   }
-    
-  # Add Plots to List per User Request
-  if(!is.null(AddPDPList_Bar) && !is.null(TestData)) {
-    for(g in AddPDPList_Bar) {
-      if(!is.numeric(TestData[[g]])) {
-
-        # Add Plots
-        Test_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
-          data = TestData, 
-          PredictionColName = 'p1', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
-      }
-    }
-  }
-    
+  
   ### Train Data ----
   
-  # Starting batch of plots
-  Train_ParDepCatPlots <- RemixOutput[['PlotList']][['Train_ParDepPlots']]
-  
   # Name to keep and remove
   # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
-
-  # Remove Names
-  A <- names(Train_ParDepCatPlots)
-  B <- FeatureColumnNames
-  RemovePDPList_Bar <- setdiff(A, B)
-  if(identical(character(0), RemovePDPList_Bar)) RemovePDPList_Bar <- NULL
   
-  # Add Names
-  AddPDPList_Bar = setdiff(B, A)
-  if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
-
-  # Remove Plots from List per User Request
-  if(!is.null(A)) {
+  # Categorical-Test: Starting batch of plots
+  ParDepCatPlotsNames <- names(RemixOutput[['PlotList']])
+  Test_ParDepCatPlotss <- gsub(pattern = 'Test_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Test_ParDepPlots_'])
+  for(nam in Test_ParDepPlotss) {
     
-    # Loop through all names of PDP List
-    for(v in A) {
+    # Name to keep and remove
+    Train_ParDepCatPlots <- RemixOutput$PlotList[[paste0('Train_ParDepPlots_', nam)]]
 
-      # Remove Plots
-      if(!is.null(TrainData) && is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar) {
-        Train_ParDepCatPlots[[v]] <- NULL
-      } else if(v %in% RemovePDPList_Bar) {
-        Train_ParDepCatPlots[[v]] <- NULL
+    # Remove Names
+    A <- names(Train_ParDepCatPlots)
+    B <- FeatureColumnNames
+    RemovePDPList_Bar <- setdiff(A, B)
+    if(identical(character(0), RemovePDPList_Bar)) RemovePDPList_Bar <- NULL
+    
+    # Add Names
+    AddPDPList_Bar = setdiff(B, A)
+    if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
+
+    # Remove Plots from List per User Request
+    if(!is.null(A)) {
+      
+      # Loop through all names of PDP List
+      for(v in A) {
+  
+        # Remove Plots
+        if(!is.null(TrainData) && is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar) {
+          Train_ParDepCatPlots[[nam]][[v]] <- NULL
+        } else if(v %in% RemovePDPList_Bar) {
+          Train_ParDepCatPlots[[nam]][[v]] <- NULL
+        }
       }
     }
-  }
-
-  # Add Plots to List per User Request
-  if(!is.null(AddPDPList_Bar)) {
-    for(g in AddPDPList_Bar) {
-      if(!is.numeric(TrainData[[g]])) {
-
-        # Add Plots
-        Train_ParDepCatPlots[[g]] <- RemixAutoML::ParDepCalPlots(
-          data = TrainData, 
-          PredictionColName = 'p1', 
-          TargetColName = TargetColumnName, 
-          IndepVar = g, 
-          GraphType = 'calibration', 
-          PercentileBucket = 0.05, 
-          FactLevels = 10, 
-          Function = function(x) mean(x, na.rm = TRUE), 
-          DateColumn = NULL, 
-          DateAgg_3D = FALSE)
+    
+    # Add Plots to List per User Request
+    if(!is.null(AddPDPList_Bar) && !is.null(TrainData)) {
+      for(g in AddPDPList_Bar) {
+        if(!is.numeric(TrainData[[g]])) {
+          
+          # Need TrainData
+          TrainData[, p1 := get(nam)]
+          TrainData[, paste0('Temp_', nam) := data.table::fifelse(Predict == eval(nam), 1, 0)]
+  
+          # Add Plots
+          Train_ParDepCatPlots[[nam]][[g]] <- RemixAutoML::ParDepCalPlots(
+            data = TrainData, 
+            PredictionColName = 'p1', 
+            TargetColName = paste0('Temp_', nam), 
+            IndepVar = g, 
+            GraphType = 'calibration', 
+            PercentileBucket = 0.05, 
+            FactLevels = 10, 
+            Function = function(x) mean(x, na.rm = TRUE), 
+            DateColumn = NULL, 
+            DateAgg_3D = FALSE)
+          
+          # Remove added cols
+          data.table::set(TrainData, j = c('p1', paste0('Temp_', nam)), value = NULL)
+        }
       }
     }
   }

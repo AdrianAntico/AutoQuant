@@ -1141,7 +1141,9 @@ CatBoostValidationData <- function(ModelType = "classification",
 
     # MultiClass Grid Validation Data ----
     if(TestDataCheck) {
-      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., predict., TestMerge.[, .SD, .SDcols = unique(names(TestMerge.)[c(1L:(ncol(TestMerge.)-1L))])]))
+      zz <- unique(names(TestMerge.))
+      zz <- zz[!zz %chin% TargetColumnName.]
+      ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., predict., TestMerge.[, .SD, .SDcols = zz]))
     } else if(!TrainOnFull.) {
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., predict.))
     } else {

@@ -442,27 +442,27 @@ EvalMetric.=NULL
 # TargetLevels.=TargetLevels
 
 # Validation data ----
-# ModelType="multiclass"
-# TrainOnFull.=TrainOnFull
-# TestDataCheck=!is.null(TestData)
-# FinalTestTarget.=FinalTestTarget
-# TestTarget.=TestTarget
-# TrainTarget.=TrainTarget
-# TestMerge.=TestMerge
-# TrainMerge.=NULL
-# dataTest.=dataTest
-# data.=data
-# predict.=predict
-# TargetColumnName.=TargetColumnName
-# SaveModelObjects.= SaveModelObjects
-# metadata_path.=metadata_path
-# model_path.=model_path
-# ModelID.=ModelID
-# LossFunction.=LossFunction
-# TransformNumericColumns.=NULL
-# GridTune.=GridTune
-# TransformationResults.=NULL
-# TargetLevels.=TargetLevels
+ModelType="multiclass"
+TrainOnFull.=TrainOnFull
+TestDataCheck=!is.null(TestData)
+FinalTestTarget.=FinalTestTarget
+TestTarget.=TestTarget
+TrainTarget.=TrainTarget
+TestMerge.=TestMerge
+TrainMerge.=NULL
+dataTest.=dataTest
+data.=data
+predict.=predict
+TargetColumnName.=TargetColumnName
+SaveModelObjects.= SaveModelObjects
+metadata_path.=metadata_path
+model_path.=model_path
+ModelID.=ModelID
+LossFunction.=LossFunction
+TransformNumericColumns.=NULL
+GridTune.=GridTune
+TransformationResults.=NULL
+TargetLevels.=TargetLevels
 
 # Importances ----
 # ModelType="multiclass"
@@ -495,6 +495,23 @@ EvalMetric.=NULL
 # ModelID.=ModelID
 # model_path.=model_path
 # metadata_path.=metadata_path
+
+# Eval Plots
+ModelType='classification'
+TrainOnFull.=TrainOnFull
+ValidationData.=ValidationData
+NumOfParDepPlots.=NumOfParDepPlots
+VariableImportance.=VariableImportance
+TargetColumnName.=paste0('Temp_',tarlevel)
+FeatureColNames.=FeatureColNames
+SaveModelObjects.=SaveModelObjects
+ModelID.=ModelID
+metadata_path.=metadata_path
+model_path.=model_path
+LossFunction.=NULL
+EvalMetric.=NULL
+EvaluationMetrics.=NULL
+predict.=NULL
 
 # ----
 

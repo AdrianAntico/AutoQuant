@@ -365,7 +365,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
         TrainData[, p1 := get(tarlevel)]
         TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
         if(length(unique(TrainData[[paste0('Temp_',tarlevel)]])) == 1) next
-        Output <- ML_EvalPlots(ModelType='classification', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=FALSE, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+        Output <- ML_EvalPlots(ModelType='classification', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=FALSE, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
         PlotList[[paste0('Train_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
         PlotList[[paste0('Train_ParDepPlots_',tarlevel)]] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
         PlotList[[paste0('Train_GainsPlot_',tarlevel)]] <- Output[['GainsPlot']]; Output[['GainsPlot']] <- NULL
@@ -379,7 +379,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       ValidationData[, p1 := get(tarlevel)]
       ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
       if(length(unique(ValidationData[[paste0('Temp_',tarlevel)]])) == 1) next
-      Output <- ML_EvalPlots(ModelType='classification', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
+      Output <- ML_EvalPlots(ModelType='classification', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
       PlotList[[paste0('Test_EvaluationPlot_',tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
       PlotList[[paste0('Test_ParDepPlots_',tarlevel)]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
       PlotList[[paste0('Test_GainsPlot_',tarlevel)]] <- Output$GainsPlot; Output$GainsPlot <- NULL
