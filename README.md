@@ -37,6 +37,11 @@ Documentation + Code Examples
 
 ## Background
 
+Model Insights Reports
+<p>
+
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="325" />
+
 
 Machine Learning and Panel Forecasting Models
 <p>
@@ -44,15 +49,6 @@ Machine Learning and Panel Forecasting Models
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
 
 
-Model Insights Reports
-<p>
-
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="325" />
-
-
-<details><summary>Expand to view content</summary>
-<p>
- 
 > Automated Machine Learning - In my view, AutoML should consist of functions to help make professional model development and operationalization more efficient. The functions in this package are there to help no matter which part of the ML lifecycle you are working on. The functions in this package have been tested across a variety of industries and have consistently outperformed competing methods. RemixAutoML has enabled me to deliver exceptionally high quality solutions in minimal time and as a result I can focus more time on the other aspects of projects that are critical for generating a high ROI and high adoption rate.
 
 ### Package Details
