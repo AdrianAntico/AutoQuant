@@ -137,11 +137,11 @@ if(!is.null(RemixOutput)) {
   ## EvaluationPlots_CalibrationPlot ----
   EvalPlotNames <- names(RemixOutput[['PlotList']])
   Test_EvaluationPlotss <- EvalPlotNames[which(EvalPlotNames %like% 'Test_EvaluationPlot_')]
-  Test_EvalMetrics <- list()
-  for(nam in Test_EvalMetricss) Test_EvalMetrics[[nam]] <- RemixOutput[['PlotList']][[nam]]
+  Test_EvaluationPlot <- list()
+  for(nam in Test_EvaluationPlotss) Test_EvaluationPlot[[nam]] <- RemixOutput[['PlotList']][[nam]]
   Train_EvaluationPlotss <- EvalPlotNames[which(EvalPlotNames %like% 'Train_EvaluationPlot_')]
-  Train_EvaluationPlots <- list()
-  for(nam in Train_EvaluationPlotss) Train_EvaluationPlots[[nam]] <- RemixOutput[['PlotList']][[nam]]
+  Train_EvaluationPlot <- list()
+  for(nam in Train_EvaluationPlotss) Train_EvaluationPlot[[nam]] <- RemixOutput[['PlotList']][[nam]]
   
   ## ROCPlot ----
   EvalPlotNames <- names(RemixOutput[['PlotList']])
@@ -186,12 +186,13 @@ if(!is.null(RemixOutput)) {
   # Extra list mgt + par dep plot for multinomial
   
   # Numeric-Test: Starting batch of plots
+  Test_ParDepPlots <- list()
   ParDepPlotsNames <- names(RemixOutput[['PlotList']])
   Test_ParDepPlotss <- gsub(pattern = 'Test_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Test_ParDepPlots_'])
   for(nam in Test_ParDepPlotss) {
     
     # Name to keep and remove
-    Test_ParDepPlots <- RemixOutput$PlotList[[paste0('Test_ParDepPlots_', nam)]]
+    Test_ParDepPlots[[nam]] <- RemixOutput$PlotList[[paste0('Test_ParDepPlots_', nam)]]
 
     # Remove Names
     A <- names(Test_ParDepPlots)
@@ -210,14 +211,16 @@ if(!is.null(RemixOutput)) {
       for(v in A) {
   
         # Remove Plots
-        if(!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line) {
+        if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line)) {
+          Test_ParDepPlots[[nam]][[v]] <- NULL
+        } else if(v %in% RemovePDPList_Line)) {
           Test_ParDepPlots[[nam]][[v]] <- NULL
         }
       }
     }
   
     # Add Plots to List per User Request
-    if(!is.null(AddPDPList_Line)) {
+    if(!is.null(TestData) && !is.null(AddPDPList_Line)) {
       for(g in AddPDPList_Line) {
         if(is.numeric(TestData[[g]])) {
           
@@ -252,12 +255,13 @@ if(!is.null(RemixOutput)) {
   # Extra list mgt + par dep plot for multinomial
   
   # Numeric-Train: Starting batch of plots
+  Train_ParDepPlots <- list()
   ParDepPlotsNames <- names(RemixOutput[['PlotList']])
   Train_ParDepPlotss <- gsub(pattern = 'Train_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Train_ParDepPlots_'])
   for(nam in Train_ParDepPlotss) {
     
     # Name to keep and remove
-    Train_ParDepPlots <- RemixOutput$PlotList[[paste0('Train_ParDepPlots_', nam)]]
+    Train_ParDepPlots[[nam]] <- RemixOutput$PlotList[[paste0('Train_ParDepPlots_', nam)]]
 
     # Remove Names
     A <- names(Train_ParDepPlots)
@@ -276,7 +280,9 @@ if(!is.null(RemixOutput)) {
       for(v in A) {
   
         # Remove Plots
-        if(!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line) {
+        if(!is.null(TrainData) && (!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line)) {
+          Train_ParDepPlots[[nam]][[v]] <- NULL
+        } else if(v %in% RemovePDPList_Line) {
           Train_ParDepPlots[[nam]][[v]] <- NULL
         }
       }
@@ -319,12 +325,13 @@ if(!is.null(RemixOutput)) {
   # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
   
   # Categorical-Test: Starting batch of plots
+  Test_ParDepCatPlots <- list()
   ParDepCatPlotsNames <- names(RemixOutput[['PlotList']])
   Test_ParDepCatPlotss <- gsub(pattern = 'Test_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Test_ParDepPlots_'])
   for(nam in Test_ParDepPlotss) {
     
     # Name to keep and remove
-    Test_ParDepCatPlots <- RemixOutput$PlotList[[paste0('Test_ParDepPlots_', nam)]]
+    Test_ParDepCatPlots[[nam]] <- RemixOutput$PlotList[[paste0('Test_ParDepPlots_', nam)]]
 
     # Remove Names
     A <- names(Test_ParDepCatPlots)
@@ -343,7 +350,7 @@ if(!is.null(RemixOutput)) {
       for(v in A) {
   
         # Remove Plots
-        if(!is.null(TestData) && is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar) {
+        if(!is.null(TestData) && (is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar)) {
           Test_ParDepCatPlots[[nam]][[v]] <- NULL
         } else if(v %in% RemovePDPList_Bar) {
           Test_ParDepCatPlots[[nam]][[v]] <- NULL
@@ -386,12 +393,13 @@ if(!is.null(RemixOutput)) {
   # setdiff(x = c(1,2,3,4,5), y = c(3,4,5,6,7))
   
   # Categorical-Test: Starting batch of plots
+  Train_ParDepCatPlots <- list()
   ParDepCatPlotsNames <- names(RemixOutput[['PlotList']])
-  Test_ParDepCatPlotss <- gsub(pattern = 'Test_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Test_ParDepPlots_'])
-  for(nam in Test_ParDepPlotss) {
+  Train_ParDepCatPlotss <- gsub(pattern = 'Test_ParDepPlots_', replacement = '', x = ParDepPlotsNames[ParDepPlotsNames %like% 'Test_ParDepPlots_'])
+  for(nam in Train_ParDepCatPlotss) {
     
     # Name to keep and remove
-    Train_ParDepCatPlots <- RemixOutput$PlotList[[paste0('Train_ParDepPlots_', nam)]]
+    Train_ParDepCatPlots[[nam]] <- RemixOutput$PlotList[[paste0('Train_ParDepPlots_', nam)]]
 
     # Remove Names
     A <- names(Train_ParDepCatPlots)
@@ -403,14 +411,14 @@ if(!is.null(RemixOutput)) {
     AddPDPList_Bar = setdiff(B, A)
     if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
 
-    # Remove Plots from List per User Request
+    # Remove Plots from List per User Request or due to type mismatch
     if(!is.null(A)) {
       
       # Loop through all names of PDP List
       for(v in A) {
   
         # Remove Plots
-        if(!is.null(TrainData) && is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar) {
+        if(!is.null(TrainData) && (is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar)) {
           Train_ParDepCatPlots[[nam]][[v]] <- NULL
         } else if(v %in% RemovePDPList_Bar) {
           Train_ParDepCatPlots[[nam]][[v]] <- NULL
@@ -1391,7 +1399,7 @@ if(!is.null(Test_EvaluationPlot)) {
 if(!is.null(Train_EvaluationPlot)) {
   eval(Train_EvaluationPlot)
 } else {
-  print('Test_EvaluationPlot is NULL or TrainData is NULL')
+  print('Test_EvaluationPlots is NULL or TrainData is NULL')
 }
 ```
 
@@ -1520,7 +1528,9 @@ if(!is.null(Test_CumGainsChart)) {
 ```{r Model_Evaluation_Metrics_NumericVariables, echo=FALSE}
 options(warn = -1)
 if(!is.null(Test_ParDepPlots) && length(Test_ParDepPlots) > 0) {
-  eval(Test_ParDepPlots)
+  for(nam in names(Test_ParDepPlots)) {
+    eval(Test_ParDepPlots[[nam]])
+  }
 } else {
   print('Test_ParDepPlots is NULL and TestData is NULL')
 }

@@ -1028,7 +1028,7 @@ for(Run in 25:27) {
 
   # Clear output
   if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-MultiClass.html"))) {
-    file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))
+    file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-MultiClass.html"))
   }
 
   # Create some dummy correlated data
@@ -1143,7 +1143,7 @@ for(Run in 25:27) {
       DateColumnName = NULL,
 
       # Control options
-      TargetType = 'classification',
+      TargetType = 'MultiClass',
       ModelID = 'Test_Model_1',
       Algo = 'catboost',
       SourcePath = getwd(),
@@ -1157,7 +1157,7 @@ for(Run in 25:27) {
     RmarkdownQA[Run, Algo := 'catboost']
     RmarkdownQA[Run, Type := 'classification']
     RmarkdownQA[Run, Success := 'success']
-    file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))
+    file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-MultiClass.html"))
   } else {
     RmarkdownQA[Run, Algo := 'catboost']
     RmarkdownQA[Run, Type := 'classification']

@@ -182,14 +182,16 @@ if(!is.null(RemixOutput)) {
     for(v in A) {
 
       # Remove
-      if(!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line) {
+      if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line)) {
+        Test_ParDepPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Line) {
         Test_ParDepPlots[[v]] <- NULL
       }
     }
   }
     
   # Add Plots
-  if(!is.null(AddPDPList_Line)) {
+  if(!is.null(TestData) && !is.null(AddPDPList_Line)) {
     for(g in AddPDPList_Line) {
       if(is.numeric(TestData[[g]])) {
         
@@ -234,14 +236,16 @@ if(!is.null(RemixOutput)) {
     for(v in A) {
 
       # Remove
-      if(!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line) {
+      if(!is.null(TrainData) && (!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line)) {
+        Train_ParDepPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Line) {
         Train_ParDepPlots[[v]] <- NULL
       }
     }
   }
 
   # Add Plots
-  if(!is.null(AddPDPList_Line)) {
+  if(!is.null(TrainData) && !is.null(AddPDPList_Line)) {
     for(g in AddPDPList_Line) {
       if(is.numeric(TrainData[[g]])) {
 
@@ -286,14 +290,16 @@ if(!is.null(RemixOutput)) {
     for(v in A) {
 
       # Remove
-      if(!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Box) {
+      if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Box)) {
+        Test_ParDepBoxPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Box) {
         Test_ParDepBoxPlots[[v]] <- NULL
       }
     }
   }
 
   # Add Plots
-  if(!is.null(AddPDPList_Box)) {
+  if(!is.null(TestData) && !is.null(AddPDPList_Box)) {
     for(g in AddPDPList_Box) {
       if(is.numeric(TestData[[g]])) {
 
@@ -336,8 +342,7 @@ if(!is.null(RemixOutput)) {
     for(v in A) {
 
       # Remove
-      # Remove
-      if(!is.null(TrainData) && is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Box) {
+      if(!is.null(TrainData) && (is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Box)) {
         Train_ParDepBoxPlots[[v]] <- NULL
       } else if(v %in% RemovePDPList_Box) {
         Train_ParDepBoxPlots[[v]] <- NULL
@@ -346,7 +351,7 @@ if(!is.null(RemixOutput)) {
   }
 
   # Add Plots
-  if(!is.null(AddPDPList_Box) && !is.null(TrainData)) {
+  if(!is.null(TrainData) && !is.null(AddPDPList_Box)) {
     for(g in AddPDPList_Box) {
       if(is.numeric(TrainData[[g]])) {
 
@@ -391,7 +396,7 @@ if(!is.null(RemixOutput)) {
     for(v in A) {
     
       # Remove
-      if(!is.null(TestData) && is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar) {
+      if(!is.null(TestData) && (is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar)) {
         Test_ParDepCatPlots[[v]] <- NULL
       } else if(v %in% RemovePDPList_Bar) {
         Test_ParDepCatPlots[[v]] <- NULL
@@ -400,7 +405,7 @@ if(!is.null(RemixOutput)) {
   }
     
   # Add Plots
-  if(!is.null(AddPDPList_Bar) && !is.null(TestData)) {
+  if(!is.null(TestData) && !is.null(AddPDPList_Bar)) {
     for(g in AddPDPList_Bar) {
       if(!is.numeric(TestData[[g]])) {
 
@@ -443,7 +448,7 @@ if(!is.null(RemixOutput)) {
     for(v in A) {
 
       # Remove
-      if(!is.null(TrainData) && is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar) {
+      if(!is.null(TrainData) && (is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar)) {
         Train_ParDepCatPlots[[v]] <- NULL
       } else if(v %in% RemovePDPList_Bar) {
         Train_ParDepCatPlots[[v]] <- NULL
@@ -452,7 +457,7 @@ if(!is.null(RemixOutput)) {
   }
 
   # Add Plots
-  if(!is.null(AddPDPList_Bar)) {
+  if(!is.null(TrainData) && !is.null(AddPDPList_Bar)) {
     for(g in AddPDPList_Bar) {
       if(!is.numeric(TrainData[[g]])) {
 
@@ -839,18 +844,20 @@ if(is.null(RemixOutput)) {
   if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
 
   # Remove Plots
-  if(!is.null(A) && !is.null(TestData)) {
+  if(!is.null(A)) {
     for(v in A) {
 
       # Remove
-      if(!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line) {
+      if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line)) {
+        Test_ParDepPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Line) {
         Test_ParDepPlots[[v]] <- NULL
       }
     }
   }
   
   # Add Plots
-  if(!is.null(AddPDPList_Line) && !is.null(TestData)) {
+  if(!is.null(TestData) && !is.null(AddPDPList_Line)) {
     for(g in AddPDPList_Line) {
       if(is.numeric(TestData[[g]])) {
 
@@ -895,18 +902,20 @@ if(is.null(RemixOutput)) {
   if(identical(character(0), AddPDPList_Line)) AddPDPList_Line <- NULL
 
   # Remove Plots
-  if(!is.null(A) && !is.null(TrainData)) {
+  if(!is.null(A)) {
     for(v in A) {
 
       # Remove
-      if(!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line) {
+      if(!is.null(TrainData) && (!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Line)) {
+        Train_ParDepPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Line) {
         Train_ParDepPlots[[v]] <- NULL
       }
     }
   }
   
   # Add Plots
-  if(!is.null(AddPDPList_Line) && !is.null(TrainData)) {
+  if(!is.null(TrainData) && !is.null(AddPDPList_Line)) {
     for(g in AddPDPList_Line) {
       if(is.numeric(TrainData[[g]])) {
 
@@ -953,18 +962,20 @@ if(is.null(RemixOutput)) {
   if(identical(character(0), AddPDPList_Box)) AddPDPList_Box <- NULL
 
   # Remove Plots
-  if(!is.null(A) && !is.null(TestData)) {
+  if(!is.null(A)) {
     for(v in A) {
 
       # Remove
-      if(!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Box) {
+      if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Box)) {
+        Test_ParDepBoxPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Box) {
         Test_ParDepBoxPlots[[v]] <- NULL
       }
     }
   }
 
   # Add Plots
-  if(!is.null(AddPDPList_Box) && !is.null(TestData)) {
+  if(!is.null(TestData) && !is.null(AddPDPList_Box)) {
     for(g in AddPDPList_Box) {
       if(is.numeric(TestData[[g]])) {
 
@@ -1010,18 +1021,20 @@ if(is.null(RemixOutput)) {
   if(identical(character(0), AddPDPList_Box)) AddPDPList_Box <- NULL
 
   # Remove Plots
-  if(!is.null(A) && !is.null(TrainData)) {
+  if(!is.null(A)) {
     for(v in A) {
 
       # Remove
-      if(!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Box) {
+      if(!is.null(TrainData) && (!is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Box)) {
+        Train_ParDepBoxPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Box) {
         Train_ParDepBoxPlots[[v]] <- NULL
       }
     }
   }
 
   # Add Plots
-  if(!is.null(AddPDPList_Box) && !is.null(TrainData)) {
+  if(!is.null(TrainData) && !is.null(AddPDPList_Box)) {
     for(g in AddPDPList_Box) {
       if(is.numeric(TrainData[[g]])) {
 
@@ -1068,18 +1081,20 @@ if(is.null(RemixOutput)) {
   if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
 
   # Remove Plots
-  if(!is.null(A) && !is.null(TestData)) {
+  if(!is.null(A)) {
     for(v in A) {
     
       # Remove
-      if(is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar) {
+      if(!is.null(TestData) && (is.numeric(TestData[[v]]) || v %in% RemovePDPList_Bar)) {
+        Test_ParDepCatPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Bar) {
         Test_ParDepCatPlots[[v]] <- NULL
       }
     }
   }
   
   # Add Plots
-  if(!is.null(AddPDPList_Bar) && !is.null(TestData)) {
+  if(!is.null(TestData) && !is.null(AddPDPList_Bar)) {
     for(g in AddPDPList_Bar) {
       if(!is.numeric(TestData[[g]])) {
 
@@ -1124,18 +1139,20 @@ if(is.null(RemixOutput)) {
   if(identical(character(0), AddPDPList_Bar)) AddPDPList_Bar <- NULL
 
   # Remove Plots
-  if(!is.null(AddPDPList_Bar) && !is.null(TrainData)) {
+  if(!is.null(AddPDPList_Bar)) {
     for(v in A) {
     
       # Remove
-      if(is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar) {
+      if(!is.null(TrainData) && (is.numeric(TrainData[[v]]) || v %in% RemovePDPList_Bar)) {
+        Train_ParDepCatPlots[[v]] <- NULL
+      } else if(v %in% RemovePDPList_Bar) {
         Train_ParDepCatPlots[[v]] <- NULL
       }
     }
   }
 
   # Add Plots
-  if(!is.null(AddPDPList_Bar) && !is.null(TrainData)) {
+  if(!is.null(TrainData) && !is.null(AddPDPList_Bar)) {
     for(g in AddPDPList_Bar) {
       if(!is.numeric(TrainData[[g]])) {
 
