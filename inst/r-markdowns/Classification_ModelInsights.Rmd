@@ -552,30 +552,15 @@ if(is.null(RemixOutput)) {
   ## Model_Evaluation_Metrics ----
   
   ### Test
-  if(!is.null(TestData) && !is.null(TrainData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
-    Test_EvalMetrics <- RemixAutoML:::RegressionMetrics(
-      SaveModelObjects. = FALSE,
-      data.           = TrainData,
-      ValidationData. = TestData,
-      TrainOnFull. = TRUE,
-      LossFunction. = 'mse',
-      EvalMetric. = 'RMSE',
-      TargetColumnName. = TargetColumnName,
-      ModelID. = ModelID,
-      model_path. = SourcePath,
-      metadata_path. = SourcePath)
-  } else if(!is.null(TestData) && is.null(TrainData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
-    Test_EvalMetrics <- RemixAutoML:::RegressionMetrics(
-      SaveModelObjects. = FALSE,
-      data.           = TestData,
-      ValidationData. = TestData,
-      TrainOnFull. = TRUE,
-      LossFunction. = 'mse',
-      EvalMetric. = 'RMSE',
-      TargetColumnName. = TargetColumnName,
-      ModelID. = ModelID,
-      model_path. = SourcePath,
-      metadata_path. = SourcePath)
+  if(!is.null(TestData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
+    Test_EvalMetrics <- RemixAutoML:::ClassificationMetrics(
+      TestData = TestData,
+      Thresholds = seq(0,1,0.01),
+      Target = TargetColumnName,
+      PredictColumnName = 'p1',
+      PositiveOutcome = 1,
+      NegativeOutcome = 0,
+      CostMatrix = c(0,1,1,0))
   } else if(file.exists(file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))) {
     Test_EvalMetrics <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
   } else {
@@ -584,17 +569,14 @@ if(is.null(RemixOutput)) {
 
   ### Train
   if(!is.null(TrainData) && !file.exists(file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))) {
-    Train_EvalMetrics <- RemixAutoML:::RegressionMetrics(
-      SaveModelObjects. = FALSE,
-      data. = TrainData,
-      ValidationData. = TrainData,
-      TrainOnFull. = TRUE,
-      LossFunction. = 'mse',
-      EvalMetric. = 'RMSE',
-      TargetColumnName. = TargetColumnName,
-      ModelID. = ModelID,
-      model_path. = SourcePath,
-      metadata_path. = SourcePath)
+    Train_EvalMetrics <- RemixAutoML:::ClassificationMetrics(
+      TestData = TrainData,
+      Thresholds = seq(0,1,0.01),
+      Target = TargetColumnName,
+      PredictColumnName = 'p1',
+      PositiveOutcome = 1,
+      NegativeOutcome = 0,
+      CostMatrix = c(0,1,1,0))
   } else if(file.exists(file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))) {
     Train_EvalMetrics <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
   } else {
