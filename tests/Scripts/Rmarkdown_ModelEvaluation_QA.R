@@ -21,7 +21,7 @@
 # ----
 
 #       Results Table Create  ----
-RmarkdownQA <- data.table::data.table(
+  RmarkdownQA <- data.table::data.table(
   Algo = rep('not run', 27),
   Type = rep('not run', 27),
   Success = rep('not run', 27))
@@ -57,8 +57,6 @@ RmarkdownQA <- data.table::data.table(
 # Run = 2 # Load RemixOutput objects and fill in any gaps per parameter requests
 # Run = 3 # User supplied data, fill gaps that can be filled, skip the rest
 for(Run in 1:3) {
-
-  Run <- 1
 
   # Working directory
   setwd("C:/Users/Bizon/Documents/GitHub")
@@ -191,23 +189,23 @@ for(Run in 1:3) {
 }
 
 # # Args ModelInsightsReport
-TrainData = train
-ValidationData = valid
-TestData = test
-
-# Meta info
-TargetColumnName = 'Adrian'
-PredictionColumnName = 'Predict'
-FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
-DateColumnName = NULL
-
-# Control options
-TargetType = 'regression'
-ModelID = 'Test_Model_1'
-Algo = 'catboost'
-SourcePath = getwd()
-OutputPath = getwd()
-RemixOutput = if(Run %in% c(1)) RemixOutput else NULL
+# TrainData = train
+# ValidationData = valid
+# TestData = test
+#
+# # Meta info
+# TargetColumnName = 'Adrian'
+# PredictionColumnName = 'Predict'
+# FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
+# DateColumnName = NULL
+#
+# # Control options
+# TargetType = 'regression'
+# ModelID = 'Test_Model_1'
+# Algo = 'catboost'
+# SourcePath = getwd()
+# OutputPath = getwd()
+# RemixOutput = if(Run %in% c(1)) RemixOutput else NULL
 
 # ----
 
@@ -334,23 +332,23 @@ for(Run in 4:6) {
 }
 
 # # Args ModelInsightsReport
-TrainData = train
-ValidationData = valid
-TestData = test
-
-# Meta info
-TargetColumnName = 'Adrian'
-PredictionColumnName = 'Predict'
-FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
-DateColumnName = NULL
-
-# Control options
-TargetType = 'regression'
-ModelID = 'Test_Model_1'
-Algo = 'catboost'
-SourcePath = getwd()
-OutputPath = getwd()
-RemixOutput = if(Run %in% c(1)) RemixOutput else NULL
+# TrainData = train
+# ValidationData = valid
+# TestData = test
+#
+# # Meta info
+# TargetColumnName = 'Adrian'
+# PredictionColumnName = 'Predict'
+# FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
+# DateColumnName = NULL
+#
+# # Control options
+# TargetType = 'regression'
+# ModelID = 'Test_Model_1'
+# Algo = 'catboost'
+# SourcePath = getwd()
+# OutputPath = getwd()
+# RemixOutput = if(Run %in% c(1)) RemixOutput else NULL
 
 
 
@@ -684,41 +682,41 @@ for(Run in 7:8) {
   }
 }
 
-library(data.table)
-library(RemixAutoML)
-
-# Create Model Insights Report
-if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
-if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
-if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
-if(Run == 3) rm(RemixOutput)
-
-# DataSets (use TestData for ValidationData)
-TrainData = train
-ValidationData = valid
-TestData = test
-
-# Meta info
-TargetColumnName = 'Adrian'
-PredictionColumnName = 'p1'
-FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
-DateColumnName = NULL
-
-# Control options
-TargetType = 'classification'
-ModelID = 'Test_Model_1'
-Algo = 'catboost'
-SourcePath = getwd()
-OutputPath = getwd()
-RemixOutput = if(Run %in% c(8)) NULL else RemixOutput
-
-Test_Importance_dt = NULL
-Validation_Importance_dt = NULL
-Train_Importance_dt = NULL
-Test_Interaction_dt = NULL
-Validation_Interaction_dt = NULL
-Train_Interaction_dt = NULL
-GlobalVars = ls()
+# library(data.table)
+# library(RemixAutoML)
+#
+# # Create Model Insights Report
+# if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
+# if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
+# if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
+# if(Run == 3) rm(RemixOutput)
+#
+# # DataSets (use TestData for ValidationData)
+# TrainData = train
+# ValidationData = valid
+# TestData = test
+#
+# # Meta info
+# TargetColumnName = 'Adrian'
+# PredictionColumnName = 'p1'
+# FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
+# DateColumnName = NULL
+#
+# # Control options
+# TargetType = 'classification'
+# ModelID = 'Test_Model_1'
+# Algo = 'catboost'
+# SourcePath = getwd()
+# OutputPath = getwd()
+# RemixOutput = if(Run %in% c(8)) NULL else RemixOutput
+#
+# Test_Importance_dt = NULL
+# Validation_Importance_dt = NULL
+# Train_Importance_dt = NULL
+# Test_Interaction_dt = NULL
+# Validation_Interaction_dt = NULL
+# Train_Interaction_dt = NULL
+# GlobalVars = ls()
 
 # ----
 
@@ -799,13 +797,34 @@ for(Run in 9:10) {
     DebugMode = FALSE)
 
   # Create Model Insights Report
-  tryCatch({RemixAutoML::ModelInsightsReport(
-    RemixOutput = if(Run == 9) RemixOutput else NULL,
-    OutputPath = getwd(),
-    TargetColumnName = 'Adrian',
-    TargetType = 'classification',
-    ModelID = 'Test_Model_1',
-    Algo = 'xgboost')}, error = NULL)
+  if(Run %in% c(10)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(10)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(10)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run == 10) rm(RemixOutput)
+  tryCatch({
+
+    RemixAutoML::ModelInsightsReport(
+
+      # DataSets (use TestData for ValidationData)
+      TrainData = train,
+      ValidationData = valid,
+      TestData = test,
+
+      # Meta info
+      TargetColumnName = 'Adrian',
+      PredictionColumnName = 'p1',
+      FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
+      DateColumnName = NULL,
+
+      # Control options
+      TargetType = 'classification',
+      ModelID = 'Test_Model_1',
+      Algo = 'xgboost',
+      SourcePath = getwd(),
+      OutputPath = getwd(),
+      RemixOutput = if(Run %in% c(10)) NULL else RemixOutput)
+
+  }, error = function(x) NULL)
 
   # Update
   if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
@@ -1074,8 +1093,8 @@ for(Run in 25:27) {
     ModelID = 'Test_Model_1',
     model_path = normalizePath('./'),
     metadata_path = normalizePath('./'),
-    SaveModelObjects = FALSE,
-    ReturnModelObjects = TRUE,
+    SaveModelObjects = if(Run == 25) FALSE else TRUE,
+    ReturnModelObjects = if(Run %in% c(25, 27)) TRUE else FALSE,
 
     # Data args
     data = data,
@@ -1123,10 +1142,10 @@ for(Run in 25:27) {
     min_data_in_leaf = 1)
 
   # Create Model Insights Report
-  if(Run %in% c(26)) train <- RemixOutput[['TrainData']] else train <- NULL
-  if(Run %in% c(26)) valid <- RemixOutput[['TestData']] else valid <- NULL
-  if(Run %in% c(26)) test <- RemixOutput[['TestData']] else test <- NULL
-  if(Run == 26) rm(RemixOutput)
+  if(Run %in% c(27)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(27)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(27)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(26, 27)) rm(RemixOutput)
   tryCatch({
 
     RemixAutoML::ModelInsightsReport(
@@ -1148,19 +1167,19 @@ for(Run in 25:27) {
       Algo = 'catboost',
       SourcePath = getwd(),
       OutputPath = getwd(),
-      RemixOutput = if(Run %in% c(8)) NULL else RemixOutput)
+      RemixOutput = if(Run %in% c(26, 27)) NULL else RemixOutput)
 
   }, error = function(x) NULL)
 
   # Update
-  if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
+  if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-MultiClass.html"))) {
     RmarkdownQA[Run, Algo := 'catboost']
-    RmarkdownQA[Run, Type := 'classification']
+    RmarkdownQA[Run, Type := 'multiclass']
     RmarkdownQA[Run, Success := 'success']
     file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-MultiClass.html"))
   } else {
     RmarkdownQA[Run, Algo := 'catboost']
-    RmarkdownQA[Run, Type := 'classification']
+    RmarkdownQA[Run, Type := 'multiclass']
     RmarkdownQA[Run, Success := 'failure']
   }
 }
@@ -1169,10 +1188,10 @@ library(data.table)
 library(RemixAutoML)
 
 # Create Model Insights Report
-if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
-if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
-if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
-if(Run == 3) rm(RemixOutput)
+if(Run %in% c(27)) train <- RemixOutput[['TrainData']] else train <- NULL
+if(Run %in% c(27)) valid <- RemixOutput[['TestData']] else valid <- NULL
+if(Run %in% c(27)) test <- RemixOutput[['TestData']] else test <- NULL
+if(Run %in% c(26, 27)) rm(RemixOutput)
 
 # DataSets (use TestData for ValidationData)
 TrainData = train

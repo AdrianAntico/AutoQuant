@@ -213,7 +213,7 @@ if(!is.null(RemixOutput)) {
         # Remove Plots
         if(!is.null(TestData) && (!is.numeric(TestData[[v]]) || v %in% RemovePDPList_Line)) {
           Test_ParDepPlots[[nam]][[v]] <- NULL
-        } else if(v %in% RemovePDPList_Line)) {
+        } else if(v %in% RemovePDPList_Line) {
           Test_ParDepPlots[[nam]][[v]] <- NULL
         }
       }
@@ -665,10 +665,12 @@ if(is.null(RemixOutput)) {
   
   ### Test ----
   if(!is.null(TestData)) {
+    TestData[, p1 := get(tarlevel)]
+    TestData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
     Test_EvaluationPlot <- RemixAutoML::EvalPlot(
       data = data.table::copy(TestData), 
-      PredictionColName = 'p1', 
-      TargetColName = TargetColumnName, 
+      PredictionColName = 'p1',
+      TargetColName = paste0('Temp_',tarlevel), 
       GraphType = 'calibration',
       PercentileBucket = 0.05, 
       aggrfun = function(x) mean(x, na.rm = TRUE))
