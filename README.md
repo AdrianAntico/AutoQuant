@@ -37,19 +37,6 @@ Documentation + Code Examples
 
 ## Background
 
-Model Insights Reports for Supervised Learning Functions
-<p>
-
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="150" height="200" />
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="150" height="200" />
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="150" height="200" />
-
-
-Machine Learning and Panel Forecasting Models
-<p>
-
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
-
 <details><summary>Expand to view content</summary>
 <p>
 
@@ -68,6 +55,21 @@ Machine Learning and Panel Forecasting Models
 
 </p>
 </details>
+
+## Highlights
+
+Model Insights Reports for Supervised Learning Functions
+<p>
+
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="150" height="200" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="150" height="200" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="150" height="200" />
+
+
+Machine Learning and Panel Forecasting Models
+<p>
+
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
 
 ## Installation
 
