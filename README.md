@@ -72,6 +72,11 @@ Machine Learning and Panel Forecasting Models
 
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
 
+Feature Engineering
+<p>
+
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/FeatureEngineeringMenu.PNG" align="center" width="600" />
+
 ## Installation
 
 The Description File is designed to require only the minimum number of packages to install RemixAutoML. However, in order to utilize most of the functions in the package, you'll have to install additional libraries. I set it up this way on purpose. You don't need to install every single possible dependency if you are only interested in using a few of the functions. For example, if you only want to use CatBoost then intall the catboost package and forget about the h2o, xgboost, and lightgbm packages. This is one of the primary benefits of not hosting an R package on cran, as they require dependencies to be part of the Imports section on the Description File, which subsequently requires users to have all dependencies installed in order to install the package.
