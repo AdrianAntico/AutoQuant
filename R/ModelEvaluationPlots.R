@@ -194,7 +194,7 @@ ParDepCalPlots <- function(data,
     if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
     preds3 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
 
-    Breaks <- round(preds3$Independent_Variable1, 2)
+    Breaks <- round(preds3[[IndepVar]], 2)
 
     # Cross section plot
     plot <- eval(
