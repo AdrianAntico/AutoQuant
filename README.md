@@ -40,9 +40,9 @@ Documentation + Code Examples
 Model Insights Reports
 <p>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="150" height="100" />
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="150" height="100" />
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="150" height="100" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="150" height="300" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="150" height="300" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="150" height="300" />
 
 
 Machine Learning and Panel Forecasting Models
