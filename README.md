@@ -17,6 +17,7 @@
 
 Table of Contents
 - [Background](#background)
+- [Highlights](#highlights)
 - [Installation](#installation)
 - [RemixAutoML Blogs](#remixautoml-blogs)
 
