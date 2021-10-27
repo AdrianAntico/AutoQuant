@@ -37,10 +37,8 @@ Documentation + Code Examples
 
 ## Background
 
-Model Insights Reports
+Model Insights Reports for Supervised Learning Functions
 <p>
-
-Regression        Classification        MultiClass
 
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="150" height="200" />
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="150" height="200" />
