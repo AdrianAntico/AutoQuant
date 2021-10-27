@@ -40,7 +40,7 @@ Documentation + Code Examples
 Model Insights Reports
 <p>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="325" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="800" />
 
 
 Machine Learning and Panel Forecasting Models
