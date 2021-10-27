@@ -194,8 +194,6 @@ ParDepCalPlots <- function(data,
     if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
     preds3 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
 
-    Breaks <- round(preds3[[IndepVar]], 2)
-
     # Cross section plot
     plot <- eval(
       ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
@@ -211,10 +209,7 @@ ParDepCalPlots <- function(data,
         ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
         ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "chocolate") +
         ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple") +
-        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple") +
-        ggplot2::scale_x_continuous(breaks = Breaks))
-
-
+        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple"))
 
     # Heatmap
     if(!is.null(DateColumn) && !is.null(DateAgg_3D)) {
