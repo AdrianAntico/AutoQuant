@@ -24,7 +24,7 @@ AutoCatBoostClassifier(
   model_path = NULL,
   metadata_path = NULL,
   EvalMetric = "MCC",
-  LossFunction = NULL,
+  LossFunction = "Logloss",
   grid_eval_metric = "MCC",
   ClassWeights = c(1, 1),
   CostMatrixWeights = c(1, 0, 0, 1),

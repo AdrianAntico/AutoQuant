@@ -1209,6 +1209,21 @@ CatBoostValidationData <- function(ModelType = "classification",
       data.table::set(ValidationData, j = eval(TargetColumnName.), value = as.character(ValidationData[[eval(TargetColumnName.)]]))
     }
     data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
+
+    # Save validation data
+    if(SaveModelObjects. && is.null(TrainMerge.)) {
+      if(!is.null(metadata_path.)) {
+        data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_ValidationData.csv")))
+      } else {
+        data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_ValidationData.csv")))
+      }
+    } else if(SaveModelObjects. && !is.null(TrainMerge.)) {
+      if(!is.null(metadata_path.)) {
+        data.table::fwrite(ValidationData, file = file.path(metadata_path., paste0(ModelID., "_TrainData.csv")))
+      } else {
+        data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_TrainData.csv")))
+      }
+    }
   }
 
   # Return

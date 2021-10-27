@@ -21,7 +21,7 @@
 # ----
 
 #       Results Table Create  ----
-  RmarkdownQA <- data.table::data.table(
+RmarkdownQA <- data.table::data.table(
   Algo = rep('not run', 27),
   Type = rep('not run', 27),
   Success = rep('not run', 27))
@@ -1184,42 +1184,42 @@ for(Run in 25:27) {
   }
 }
 
-library(data.table)
-library(RemixAutoML)
-
-# Create Model Insights Report
-if(Run %in% c(27)) train <- RemixOutput[['TrainData']] else train <- NULL
-if(Run %in% c(27)) valid <- RemixOutput[['TestData']] else valid <- NULL
-if(Run %in% c(27)) test <- RemixOutput[['TestData']] else test <- NULL
-if(Run %in% c(26, 27)) rm(RemixOutput)
-
-# DataSets (use TestData for ValidationData)
-TrainData = train
-ValidationData = valid
-TestData = test
-
-# Meta info
-TargetColumnName = 'Adrian'
-PredictionColumnName = 'Predict'
-FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
-DateColumnName = NULL
-
-# Control options
-TargetType = 'MultiClass'
-TargetLevels = NULL
-ModelID = 'Test_Model_1'
-Algo = 'catboost'
-SourcePath = getwd()
-OutputPath = getwd()
-RemixOutput = if(Run %in% c(26, 27)) NULL else RemixOutput
-
-Test_Importance_dt = NULL
-Validation_Importance_dt = NULL
-Train_Importance_dt = NULL
-Test_Interaction_dt = NULL
-Validation_Interaction_dt = NULL
-Train_Interaction_dt = NULL
-GlobalVars = ls()
+# library(data.table)
+# library(RemixAutoML)
+#
+# # Create Model Insights Report
+# if(Run %in% c(27)) train <- RemixOutput[['TrainData']] else train <- NULL
+# if(Run %in% c(27)) valid <- RemixOutput[['TestData']] else valid <- NULL
+# if(Run %in% c(27)) test <- RemixOutput[['TestData']] else test <- NULL
+# if(Run %in% c(26, 27)) rm(RemixOutput)
+#
+# # DataSets (use TestData for ValidationData)
+# TrainData = train
+# ValidationData = valid
+# TestData = test
+#
+# # Meta info
+# TargetColumnName = 'Adrian'
+# PredictionColumnName = 'Predict'
+# FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
+# DateColumnName = NULL
+#
+# # Control options
+# TargetType = 'MultiClass'
+# TargetLevels = NULL
+# ModelID = 'Test_Model_1'
+# Algo = 'catboost'
+# SourcePath = getwd()
+# OutputPath = getwd()
+# RemixOutput = if(Run %in% c(26, 27)) NULL else RemixOutput
+#
+# Test_Importance_dt = NULL
+# Validation_Importance_dt = NULL
+# Train_Importance_dt = NULL
+# Test_Interaction_dt = NULL
+# Validation_Interaction_dt = NULL
+# Train_Interaction_dt = NULL
+# GlobalVars = ls()
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----

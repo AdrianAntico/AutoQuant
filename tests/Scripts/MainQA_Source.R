@@ -533,6 +533,7 @@ for(zz in c("Cat","Light","xgb","h2o","Carma","HurdleCARMA","VectorCARMA","Funne
 All_Methods <- data.table::rbindlist(All_Methods, fill = TRUE)
 OverallEnd <- Sys.time()
 print(difftime(time1 = OverallEnd, time2 = OverallStart, units = 'mins'))
+View(All_Methods)
 
 # . ----
 

@@ -660,7 +660,8 @@ ML_EvalPlots <- function(ModelType = "classification",
                          metadata_path. = metadata_path,
                          model_path. = model_path,
                          predict. = predict,
-                         DateColumnName. = NULL) {
+                         DateColumnName. = NULL,
+                         TargetLevel = NULL) {
 
   # Variable Importance Managment
   if(!data.table::is.data.table(VariableImportance.)) {
@@ -671,6 +672,14 @@ ML_EvalPlots <- function(ModelType = "classification",
 
   # Helper
   ID <- paste0(ModelID.,"_", DataType, "_")
+  if(tolower(ModelType) == 'multiclass') {
+    PNG <- paste0('_', TargetLevel, '.png')
+    Rdata <- paste0('_', TargetLevel, '.Rdata')
+    ModelType <- 'classification'
+  } else {
+    PNG <- paste0('.png')
+    Rdata <- paste0('.Rdata')
+  }
 
   # Classification
   if(ModelType == "classification") {
@@ -689,9 +698,9 @@ ML_EvalPlots <- function(ModelType = "classification",
       EvaluationPlot <- EvaluationPlot + ggplot2::ggtitle(paste0("Calibration Evaluation Plot: AUC = ", round(AUC_Metrics$auc, 3L)))
       if(SaveModelObjects.) {
         if(!is.null(metadata_path.)) {
-          ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationPlot.png")))
+          ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationPlot", PNG)))
         } else {
-          ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationPlot.png")))
+          ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationPlot", PNG)))
         }
       }
 
@@ -722,9 +731,9 @@ ML_EvalPlots <- function(ModelType = "classification",
       }
       if(SaveModelObjects.) {
         if(!is.null(metadata_path.)) {
-          if(!is.null(VarImp)) save(ParDepPlots, file = file.path(metadata_path., paste0(ID, "ParDepPlots.Rdata")))
+          if(!is.null(VarImp)) save(ParDepPlots, file = file.path(metadata_path., paste0(ID, "ParDepPlots", Rdata)))
         } else {
-          if(!is.null(VarImp)) save(ParDepPlots, file = file.path(model_path., paste0(ID, "ParDepPlots.Rdata")))
+          if(!is.null(VarImp)) save(ParDepPlots, file = file.path(model_path., paste0(ID, "ParDepPlots", Rdata)))
         }
       }
     } else {
@@ -754,9 +763,9 @@ ML_EvalPlots <- function(ModelType = "classification",
       # Save plot to file
       if(!TrainOnFull. && SaveModelObjects.) {
         if(!is.null(metadata_path.)) {
-          ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationPlot.png")))
+          ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationPlot", PNG)))
         } else {
-          ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationPlot.png")))
+          ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationPlot", PNG)))
         }
       }
 
@@ -776,9 +785,9 @@ ML_EvalPlots <- function(ModelType = "classification",
       # Save plot to file
       if(SaveModelObjects.) {
         if(!is.null(metadata_path.)) {
-          ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationBoxPlot.png")))
+          ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationBoxPlot", PNG)))
         } else {
-          ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationBoxPlot.png")))
+          ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationBoxPlot", PNG)))
         }
       }
 
@@ -821,18 +830,18 @@ ML_EvalPlots <- function(ModelType = "classification",
           # Regression Save ParDepPlots to file
           if(SaveModelObjects.) {
             if(!is.null(metadata_path.)) {
-              save(ParDepPlots, file = file.path(metadata_path., paste0(ID, "ParDepPlots.Rdata")))
+              save(ParDepPlots, file = file.path(metadata_path., paste0(ID, "ParDepPlots", Rdata)))
             } else {
-              save(ParDepPlots, file = file.path(model_path., paste0(ID, "ParDepPlots.Rdata")))
+              save(ParDepPlots, file = file.path(model_path., paste0(ID, "ParDepPlots", Rdata)))
             }
           }
 
           # Regression Save ParDepBoxPlots to file
           if(SaveModelObjects.) {
             if(!is.null(metadata_path.)) {
-              save(ParDepBoxPlots, file = file.path(metadata_path., paste0(ID, "ParDepBoxPlots.Rdata")))
+              save(ParDepBoxPlots, file = file.path(metadata_path., paste0(ID, "ParDepBoxPlots", Rdata)))
             } else {
-              save(ParDepBoxPlots, file = file.path(model_path., paste0(ID, "ParDepBoxPlots.Rdata")))
+              save(ParDepBoxPlots, file = file.path(model_path., paste0(ID, "ParDepBoxPlots", Rdata)))
             }
           }
         }
@@ -878,9 +887,9 @@ ML_EvalPlots <- function(ModelType = "classification",
         if(!TrainOnFull.) {
           if(SaveModelObjects.) {
             if(!is.null(metadata_path.)) {
-              ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationPlot.png")))
+              ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationPlot", PNG)))
             } else {
-              ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationPlot.png")))
+              ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationPlot", PNG)))
             }
           }
         }
@@ -900,9 +909,9 @@ ML_EvalPlots <- function(ModelType = "classification",
         # Save plot to file
         if(SaveModelObjects.) {
           if(!is.null(metadata_path.)) {
-            ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationBoxPlot.png")))
+            ggplot2::ggsave(file.path(metadata_path., paste0(ID, "EvaluationBoxPlot", PNG)))
           } else {
-            ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationBoxPlot.png")))
+            ggplot2::ggsave(file.path(model_path., paste0(ID, "EvaluationBoxPlot", PNG)))
           }
         }
 
@@ -945,18 +954,18 @@ ML_EvalPlots <- function(ModelType = "classification",
             # Regression Save ParDepPlots to file
             if(SaveModelObjects.) {
               if(!is.null(metadata_path.)) {
-                save(ParDepPlots, file = file.path(metadata_path., paste0(ID, TargetColumnName.[TV], "ParDepPlots.Rdata")))
+                save(ParDepPlots, file = file.path(metadata_path., paste0(ID, TargetColumnName.[TV], "ParDepPlots", Rdata)))
               } else {
-                save(ParDepPlots, file = file.path(model_path., paste0(ID, TargetColumnName.[TV], "ParDepPlots.Rdata")))
+                save(ParDepPlots, file = file.path(model_path., paste0(ID, TargetColumnName.[TV], "ParDepPlots", Rdata)))
               }
             }
 
             # Regression Save ParDepBoxPlots to file
             if(SaveModelObjects.) {
               if(!is.null(metadata_path.)) {
-                save(ParDepBoxPlots, file = file.path(metadata_path., paste0(ID, TargetColumnName.[TV], "ParDepBoxPlots.Rdata")))
+                save(ParDepBoxPlots, file = file.path(metadata_path., paste0(ID, TargetColumnName.[TV], "ParDepBoxPlots", Rdata)))
               } else {
-                save(ParDepBoxPlots, file = file.path(model_path., paste0(ID, TargetColumnName.[TV], "ParDepBoxPlots.Rdata")))
+                save(ParDepBoxPlots, file = file.path(model_path., paste0(ID, TargetColumnName.[TV], "ParDepBoxPlots", Rdata)))
               }
             }
           }

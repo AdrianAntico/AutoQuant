@@ -1184,7 +1184,7 @@ Model Evaluation and Insights:
 This report is for investigating model performance from a variety of perspectives. Each section has its own content that can be viewed if expanded. Output exists for both TestData (out of sample) and TrainData (some cases can have ValidationData results as well) for comparison purposes.
 
 
-# Evaluation Metrics
+# <font size="6">Evaluation Metrics</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1192,7 +1192,7 @@ This report is for investigating model performance from a variety of perspective
 
 
 
-##  Evaluation Metrics Tables
+##  <font size="5">Evaluation Metrics Tables</font>
 
 <details><summary>Model Metrics Tables</summary>
 <p>
@@ -1235,7 +1235,7 @@ if(!is.null(Train_EvalMetrics)) {
 
 
 
-##  Variable Importance Tables
+##  <font size="5">Variable Importance Tables</font>
 
 <details><summary>Variable Importance Tables</summary>
 <p>
@@ -1296,7 +1296,7 @@ if(!is.null(Train_Importance)) {
 
 
 
-##  Interaction Importance Tables
+##  <font size="5">Interaction Importance Tables</font>
 
 <details><summary>Interaction Importance Tables</summary>
 <p>
@@ -1368,7 +1368,7 @@ if(!is.null(Train_Interaction)) {
 
 
 
-# Evaluation Plots
+# <font size="6">Evaluation Plots</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1376,7 +1376,7 @@ if(!is.null(Train_Interaction)) {
 
 
 
-##  Variable Importance Plots
+## <font size="5">Variable Importance Plots</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1438,7 +1438,7 @@ if(!is.null(Train_Importance)) {
 
 
 
-##  Residual Histograms
+## <font size="5">Residual Histograms</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1480,7 +1480,7 @@ if(!is.null(Train_ResidualHistogram)) {
 
 
 
-##  Calibration Plots
+## <font size="5">Calibration Plots</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1522,7 +1522,7 @@ if(!is.null(Train_EvaluationPlot)) {
 
 
 
-##  Calibration BoxPlots
+## <font size="5">Calibration BoxPlots</font>
 <p>
 
 
@@ -1569,7 +1569,7 @@ if(!is.null(Train_EvaluationBoxPlot)) {
 
 
 
-##  Residuals ScatterPlots
+## <font size="5">Residuals ScatterPlots</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1613,7 +1613,7 @@ if(!is.null(Train_ScatterPlot)) {
 
 
 
-##  Residuals CopulaPlots
+## <font size="5">Residuals CopulaPlots</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1667,7 +1667,7 @@ if(!is.null(Train_CopulaPlot)) {
 
 
 
-# Model Interpretation
+# <font size="6">Model Interpretation</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1675,7 +1675,7 @@ if(!is.null(Train_CopulaPlot)) {
 
 
 
-##  Partial Dependence Plots: Numeric-Features 
+## <font size="5">Partial Dependence Plots: Numeric-Features</font> 
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1778,7 +1778,7 @@ options(warn = 1)
 
 
 
-##  Partial Dependence Plots: Categorical-Features  
+## <font size="5">Partial Partial Dependence Plots: Categorical-Features</font> 
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1836,7 +1836,7 @@ options(warn = 1)
 
 
 
-# Model MetaData
+# <font size="6">Model MetaData</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1844,7 +1844,7 @@ options(warn = 1)
 
 
 
-##  Parameters and Settings
+## <font size="5">Parameters and Settings</font> 
 
 <details><summary>Model Parameters</summary>
 <p>
@@ -1860,7 +1860,7 @@ if(!is.null(ArgsList)) {
 
 
 
-##  Grid Tuning Metrics
+## <font size="5">Grid Tuning Metrics</font>
 
 <details><summary>Grid Tuning Metrics</summary>
 <p>

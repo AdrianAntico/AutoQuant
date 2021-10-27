@@ -1,4 +1,4 @@
-![Version: 0.5.9](https://img.shields.io/static/v1?label=Version&message=0.5.9&color=blue&?style=plastic)
+![Version: 0.6.0](https://img.shields.io/static/v1?label=Version&message=0.6.0&color=blue&?style=plastic)
 ![Build: Passing](https://img.shields.io/static/v1?label=Build&message=passing&color=brightgreen)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -5625,7 +5625,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleModelScoring(
 <details><summary>Expand to view content</summary>
 <p>
 
-<details><summary>ModelInsightsReport() Example</summary>
+<details><summary>Regression ModelInsightsReport() Example</summary>
 <p>
 
 ```r
@@ -5642,53 +5642,181 @@ data <- RemixAutoML::FakeDataGenerator(
 # Copy data
 data1 <- data.table::copy(data)
 
+# Define features names
+Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
+
 # Run function
 RemixOutput <- RemixAutoML::AutoCatBoostRegression(
-
+  
   # GPU or CPU and the number of available GPUs
-  TrainOnFull = FALSE,
   task_type = 'GPU',
   NumGPUs = 1,
-
+  NumOfParDepPlots = length(Features),
+  
   # Metadata args
   OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
   ModelID = 'Test_Model_1',
   model_path = getwd(),
   metadata_path = getwd(),
-  SaveModelObjects = FALSE,
-  SaveInfoToPDF = FALSE,
   ReturnModelObjects = TRUE,
-
+  
   # Data args
   data = data1,
-  ValidationData = NULL,
-  TestData = NULL,
   TargetColumnName = 'Adrian',
-  FeatureColNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
+  FeatureColNames = Features,
   IDcols = c('IDcol_1','IDcol_2'),
   TransformNumericColumns = 'Adrian',
-  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
+  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'))
 
-  # Model evaluation
-  eval_metric = 'RMSE',
-  eval_metric_value = 1.5,
-  loss_function = 'RMSE',
-  loss_function_value = 1.5,
-  MetricPeriods = 10L,
-  NumOfParDepPlots = ncol(data1)-1L-2L)
-
-# Create Model Insights Report
+# Build report
 RemixAutoML::ModelInsightsReport(
+  
+  # Meta info
+  TargetColumnName = 'Adrian',
+  PredictionColumnName = 'Predict',
+  FeatureColumnNames = Features,
+  DateColumnName = NULL,
+  
+  # Control options
   TargetType = 'regression',
-  ModelID = 'ModelTest',
+  ModelID = 'Test_Model_1',
   Algo = 'catboost',
-  SourcePath = getwd(),
   OutputPath = getwd(),
   RemixOutput = RemixOutput)
 ```
 
 </p>
 </details>
+
+
+<details><summary>Classification ModelInsightsReport() Example</summary>
+<p>
+
+```r
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 10000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
+
+# Copy data
+data1 <- data.table::copy(data)
+
+# Feature names
+Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
+
+# Run function
+RemixOutput <- RemixAutoML::AutoCatBoostClassifier(
+  
+  # GPU or CPU and the number of available GPUs
+  task_type = 'GPU',
+  NumGPUs = 1,
+  
+  # Metadata args
+  OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'EvalMetrics'),
+  ModelID = 'Test_Model_1',
+  model_path = getwd(),
+  metadata_path = getwd(),
+  ReturnModelObjects = TRUE,
+  NumOfParDepPlots = length(Features),
+
+  # Data args
+  data = data1,
+  TargetColumnName = 'Adrian',
+  FeatureColNames = Features,
+  IDcols = c('IDcol_1','IDcol_2'))
+
+# Build report
+RemixAutoML::ModelInsightsReport(
+  
+  # Meta info
+  TargetColumnName = 'Adrian',
+  PredictionColumnName = 'p1',
+  FeatureColumnNames = Features,
+  DateColumnName = NULL,
+  
+  # Control options
+  TargetType = 'classification',
+  ModelID = 'Test_Model_1',
+  Algo = 'catboost',
+  OutputPath = getwd(),
+  RemixOutput = RemixOutput)
+```
+
+</p>
+</details>
+
+
+
+<details><summary>MultiClass ModelInsightsReport() Example</summary>
+<p>
+
+```r
+# Create some dummy correlated data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 10000L,
+  ID = 2L,
+  ZIP = 0L,
+  AddDate = FALSE,
+  Classification = FALSE,
+  MultiClass = TRUE)
+
+# Copy data
+data1 <- data.table::copy(data)
+
+# Feature Colnames
+Features <- c(names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')])
+
+# Run function
+RemixOutput <- RemixAutoML::AutoCatBoostMultiClass(
+  
+  # GPU or CPU and the number of available GPUs
+  task_type = 'GPU',
+  NumGPUs = 1,
+  NumOfParDepPlots = length(Features),
+  
+  # Metadata args
+  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+  ModelID = 'Test_Model_1',
+  model_path = getwd(),
+  metadata_path = getwd(),
+  ReturnModelObjects = TRUE,
+  
+  # Data args
+  data = data,
+  TargetColumnName = 'Adrian',
+  FeatureColNames = Features,
+  IDcols = c('IDcol_1','IDcol_2'))
+
+# Create Model Insights Report
+RemixAutoML::ModelInsightsReport(
+  
+  # DataSets (use TestData for ValidationData)
+  TrainData = train,
+  ValidationData = valid,
+  TestData = test,
+  
+  # Meta info
+  TargetColumnName = 'Adrian',
+  PredictionColumnName = 'Predict',
+  FeatureColumnNames = Features,
+  
+  # Control options
+  TargetType = 'MultiClass',
+  ModelID = 'Test_Model_1',
+  Algo = 'catboost',
+  OutputPath = getwd(),
+  RemixOutput = RemixOutput)
+```
+
+</p>
+</details>
+
 
 
 <details><summary>AutoShapeShap() Example</summary>
