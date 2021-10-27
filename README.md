@@ -70,12 +70,12 @@ Model Insights Reports for Supervised Learning Functions
 Machine Learning and Panel Forecasting Models
 <p>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="500" />
 
 Feature Engineering
 <p>
 
-<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/FeatureEngineeringMenu.PNG" align="center" width="600" />
+<img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/FeatureEngineeringMenu.PNG" align="center" width="500" />
 
 ## Installation
 
