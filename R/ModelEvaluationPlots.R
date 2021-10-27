@@ -194,6 +194,8 @@ ParDepCalPlots <- function(data,
     if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
     preds3 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
 
+    Breaks <- round(preds3$Independent_Variable1, 2)
+
     # Cross section plot
     plot <- eval(
       ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
@@ -202,14 +204,17 @@ ParDepCalPlots <- function(data,
         ggplot2::ylab(eval(TargetColName)) +
         ggplot2::xlab(IndepVar) +
         ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
-        ChartTheme(Size = 13) +
+        ChartTheme(Size = 13, AngleX = 90) +
         ggplot2::labs(
           title = "Partial Dependence Calibration Plot",
           subtitle = paste0("black line -> mean(", TargetColName,"); purple lines -> 10th & 90th-%tile; chocolate line = mean")) +
         ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
         ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "chocolate") +
         ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple") +
-        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple"))
+        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple") +
+        ggplot2::scale_x_continuous(breaks = Breaks))
+
+
 
     # Heatmap
     if(!is.null(DateColumn) && !is.null(DateAgg_3D)) {
