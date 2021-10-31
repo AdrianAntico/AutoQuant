@@ -66,6 +66,29 @@ if(!is.null(RemixOutput)) {
   
   # Evaluation Metrics ----
   
+  ## MultiClass Metrics ----
+  Test_MultiClassMetrics <- RemixOutput[['MultinomialMetrics']][['TestData']]
+  Train_MultiClassMetrics <- RemixOutput[['MultinomialMetrics']][['TrainData']]
+
+  # Update Colnames
+  if(!is.null(Test_MultiClassMetrics)) Test_MultiClassMetrics[, Data_Source := 'Test']
+  if(!is.null(Train_MultiClassMetrics)) Train_MultiClassMetrics[, Data_Source := 'Train']
+
+  # CatBoost only
+  if(is.null(Test_MultiClassMetrics) && is.null(Train_MultiClassMetrics)) {
+    All_MultiClassMetrics <- NULL
+  } else if(!is.null(Test_MultiClassMetrics) && !is.null(Train_MultiClassMetrics)) {
+    All_MultiClassMetrics <- data.table::rbindlist(list(
+      Test_MultiClassMetrics, Train_MultiClassMetrics))
+  } else if(is.null(Test_MultiClassMetrics) && !is.null(Train_MultiClassMetrics)) {
+    All_MultiClassMetrics <- Train_MultiClassMetrics
+  } else if(!is.null(Test_MultiClassMetrics) && is.null(Train_MultiClassMetrics)) {
+    All_MultiClassMetrics <- Test_MultiClassMetrics
+  } else {
+    All_MultiClassMetrics <- NULL
+  }
+  
+  
   ## Model_Evaluation_Metrics ----
   EvalMetricsNames <- names(RemixOutput[['EvaluationMetrics']])
   Test_EvalMetricss <- EvalMetricsNames[which(EvalMetricsNames %like% 'TestData_')]
@@ -80,6 +103,33 @@ if(!is.null(RemixOutput)) {
     Test_Importance <- RemixOutput[['VariableImportance']][['Test_Importance']]
     Validation_Importance <- RemixOutput[['VariableImportance']][['Validation_Importance']]
     Train_Importance <- RemixOutput[['VariableImportance']][['Train_Importance']]
+
+    # Update Colnames
+    if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = 'Importance', new = 'Test_Importance', skip_absent = TRUE)
+    if(!is.null(Validation_Importance)) data.table::setnames(Validation_Importance, old = 'Importance', new = 'Validation_Importance', skip_absent = TRUE)
+    if(!is.null(Train_Importance)) data.table::setnames(Train_Importance, old = 'Importance', new = 'Train_Importance', skip_absent = TRUE)
+
+    # CatBoost only
+    if(is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- NULL
+    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
+      All_Importance <- merge(All_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
+    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Validation_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- Train_Importance
+    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- Validation_Importance
+    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- Test_Importance
+    } else {
+      All_Importance <- NULL
+    }
     
   } else {
     
@@ -99,6 +149,34 @@ if(!is.null(RemixOutput)) {
     } else {
       Train_Importance <- Train_Importance_dt
     }
+    
+    # Update Colnames
+    if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = 'Importance', new = 'Test_Importance', skip_absent = TRUE)
+    if(!is.null(Validation_Importance)) data.table::setnames(Validation_Importance, old = 'Importance', new = 'Validation_Importance', skip_absent = TRUE)
+    if(!is.null(Train_Importance)) data.table::setnames(Train_Importance, old = 'Importance', new = 'Train_Importance', skip_absent = TRUE)
+
+    # CatBoost only
+    if(is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- NULL
+    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
+      All_Importance <- merge(All_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
+    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Validation_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- Train_Importance
+    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- Validation_Importance
+    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- Test_Importance
+    } else {
+      All_Importance <- NULL
+    }
+    
   }
   
   ## Model_IntImportanceTable ----
@@ -106,6 +184,37 @@ if(!is.null(RemixOutput)) {
     Test_Interaction <- RemixOutput[['InteractionImportance']][['Test_Interaction']]
     Validation_Interaction <- RemixOutput[['InteractionImportance']][['Validation_Interaction']]
     Train_Interaction <- RemixOutput[['InteractionImportance']][['Train_Interaction']]
+    
+    # Update Colnames
+    if(!is.null(Test_Interaction)) data.table::setnames(Test_Interaction, old = 'score', new = 'Test_Importance', skip_absent = TRUE)
+    if(!is.null(Validation_Interaction)) data.table::setnames(Validation_Interaction, old = 'score', new = 'Validation_Importance', skip_absent = TRUE)
+    if(!is.null(Train_Interaction)) data.table::setnames(Train_Interaction, old = 'score', new = 'Train_Importance', skip_absent = TRUE)
+
+    # CatBoost only
+    if(is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- NULL
+    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
+      All_Interaction <- merge(All_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Validation_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- Train_Interaction
+    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- Validation_Interaction
+    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- Test_Interaction
+    } else {
+      All_Interaction <- NULL
+    }
     
   } else {
     
@@ -125,6 +234,38 @@ if(!is.null(RemixOutput)) {
     } else {
       Train_Interaction <- Train_Interaction_dt
     }
+    
+    # Update Colnames
+    if(!is.null(Test_Interaction)) data.table::setnames(Test_Interaction, old = 'score', new = 'Test_Importance', skip_absent = TRUE)
+    if(!is.null(Validation_Interaction)) data.table::setnames(Validation_Interaction, old = 'score', new = 'Validation_Importance', skip_absent = TRUE)
+    if(!is.null(Train_Interaction)) data.table::setnames(Train_Interaction, old = 'score', new = 'Train_Importance', skip_absent = TRUE)
+
+    # CatBoost only
+    if(is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- NULL
+    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
+      All_Interaction <- merge(All_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Validation_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- Train_Interaction
+    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- Validation_Interaction
+    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- Test_Interaction
+    } else {
+      All_Interaction <- NULL
+    }
+    
   }
 }
 ``` 
@@ -544,6 +685,29 @@ if(is.null(RemixOutput)) {
 if(is.null(RemixOutput)) {
   
   # Evaluation Metrics ----
+  
+  ## MultiClass Metrics ----
+  Test_MultiClassMetrics <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
+  Train_MultiClassMetrics <- data.table::fread(file = file.path(SourcePath, paste0(ModelID, "_Train_EvaluationMetrics.csv")))
+
+  # Update Colnames
+  if(!is.null(Test_MultiClassMetrics)) Test_MultiClassMetrics[, Data_Source := 'Test']
+  if(!is.null(Train_MultiClassMetrics)) Train_MultiClassMetrics[, Data_Source := 'Train']
+
+  # CatBoost only
+  if(is.null(Test_MultiClassMetrics) && is.null(Train_MultiClassMetrics)) {
+    All_MultiClassMetrics <- NULL
+  } else if(!is.null(Test_MultiClassMetrics) && !is.null(Train_MultiClassMetrics)) {
+    All_MultiClassMetrics <- data.table::rbindlist(list(
+      Test_MultiClassMetrics, Train_MultiClassMetrics))
+  } else if(is.null(Test_MultiClassMetrics) && !is.null(Train_MultiClassMetrics)) {
+    All_MultiClassMetrics <- Train_MultiClassMetrics
+  } else if(!is.null(Test_MultiClassMetrics) && is.null(Train_MultiClassMetrics)) {
+    All_MultiClassMetrics <- Test_MultiClassMetrics
+  } else {
+    All_MultiClassMetrics <- NULL
+  }
+  
     
   ## Model_Evaluation_Metrics ----
   
@@ -604,6 +768,34 @@ if(is.null(RemixOutput)) {
     } else {
       Train_Importance <- NULL
     }
+    
+    # Update Colnames
+    if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = 'Importance', new = 'Test_Importance', skip_absent = TRUE)
+    if(!is.null(Validation_Importance)) data.table::setnames(Validation_Importance, old = 'Importance', new = 'Validation_Importance', skip_absent = TRUE)
+    if(!is.null(Train_Importance)) data.table::setnames(Train_Importance, old = 'Importance', new = 'Train_Importance', skip_absent = TRUE)
+
+    # CatBoost only
+    if(is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- NULL
+    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
+      All_Importance <- merge(All_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
+    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Validation_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- Train_Importance
+    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- Validation_Importance
+    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- Test_Importance
+    } else {
+      All_Importance <- NULL
+    }
+    
   } else {
     
     # Encoding-based Models + Generic Connector
@@ -622,6 +814,34 @@ if(is.null(RemixOutput)) {
     } else {
       Train_Importance <- Train_Importance_dt
     }
+    
+    # Update Colnames
+    if(!is.null(Test_Importance)) data.table::setnames(Test_Importance, old = 'Importance', new = 'Test_Importance', skip_absent = TRUE)
+    if(!is.null(Validation_Importance)) data.table::setnames(Validation_Importance, old = 'Importance', new = 'Validation_Importance', skip_absent = TRUE)
+    if(!is.null(Train_Importance)) data.table::setnames(Train_Importance, old = 'Importance', new = 'Train_Importance', skip_absent = TRUE)
+
+    # CatBoost only
+    if(is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- NULL
+    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
+      All_Importance <- merge(All_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(!is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Validation_Importance, by = 'Variable', all = TRUE)
+    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Test_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- merge(Validation_Importance, Train_Importance, by = 'Variable', all = TRUE)
+    } else if(is.null(Test_Importance) && is.null(Validation_Importance) && !is.null(Train_Importance)) {
+      All_Importance <- Train_Importance
+    } else if(is.null(Test_Importance) && !is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- Validation_Importance
+    } else if(!is.null(Test_Importance) && is.null(Validation_Importance) && is.null(Train_Importance)) {
+      All_Importance <- Test_Importance
+    } else {
+      All_Importance <- NULL
+    }
+    
   }
   
   ## Model_IntImportanceTable ----
@@ -641,6 +861,38 @@ if(is.null(RemixOutput)) {
     } else {
       Train_Interaction <- NULL
     }
+    
+    # Update Colnames
+    if(!is.null(Test_Interaction)) data.table::setnames(Test_Interaction, old = 'score', new = 'Test_Importance', skip_absent = TRUE)
+    if(!is.null(Validation_Interaction)) data.table::setnames(Validation_Interaction, old = 'score', new = 'Validation_Importance', skip_absent = TRUE)
+    if(!is.null(Train_Interaction)) data.table::setnames(Train_Interaction, old = 'score', new = 'Train_Importance', skip_absent = TRUE)
+    
+    # CatBoost only
+    if(is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- NULL
+    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
+      All_Interaction <- merge(All_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Validation_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- Train_Interaction
+    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- Validation_Interaction
+    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- Test_Interaction
+    } else {
+      All_Interaction <- NULL
+    }
+    
   } else {
     
     # Encoding-based Models + Generic Connector
@@ -659,6 +911,38 @@ if(is.null(RemixOutput)) {
     } else {
       Train_Interaction <- Train_Interaction_dt
     }
+    
+    # Update Colnames
+    if(!is.null(Test_Interaction)) data.table::setnames(Test_Interaction, old = 'score', new = 'Test_Importance', skip_absent = TRUE)
+    if(!is.null(Validation_Interaction)) data.table::setnames(Validation_Interaction, old = 'score', new = 'Validation_Importance', skip_absent = TRUE)
+    if(!is.null(Train_Interaction)) data.table::setnames(Train_Interaction, old = 'score', new = 'Train_Importance', skip_absent = TRUE)
+    
+    # CatBoost only
+    if(is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- NULL
+    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
+      All_Interaction <- merge(All_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(!is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Validation_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Test_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- merge(Validation_Interaction, Train_Interaction, by = c('Features1','Features2'), all = TRUE)
+      data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1)
+    } else if(is.null(Test_Interaction) && is.null(Validation_Interaction) && !is.null(Train_Interaction)) {
+      All_Interaction <- Train_Interaction
+    } else if(is.null(Test_Interaction) && !is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- Validation_Interaction
+    } else if(!is.null(Test_Interaction) && is.null(Validation_Interaction) && is.null(Train_Interaction)) {
+      All_Interaction <- Test_Interaction
+    } else {
+      All_Interaction <- NULL
+    }
+    
   }
 }
 ```
@@ -1081,7 +1365,28 @@ This report is for investigating model performance from a variety of perspective
 
 
 
-##  <font size="5">Evaluation Metrics Tables</font>
+##  <font size="5">MultiClass Metrics Tables</font>
+
+<details><summary>MultiClass Metrics</summary>
+<p>
+
+```{r Model_MultiClass_Metrics, echo=FALSE}
+if(!is.null(All_MultiClassMetrics)) {
+  All_MultiClassMetrics <- All_MultiClassMetrics[Data_Source != 'Train']
+  data.table::setcolorder(All_MultiClassMetrics, c(3L, 1L, 2L))
+  print(knitr::kable(All_MultiClassMetrics))
+} else {
+  print('All_MultiClassMetrics is NULL')
+}
+```
+
+</details>
+</p>
+
+
+
+
+##  <font size="5">Binary Metrics 1 vs All Tables</font>
 
 <details><summary>Model Metrics Tables</summary>
 <p>
@@ -1095,7 +1400,10 @@ This report is for investigating model performance from a variety of perspective
 
 ```{r Model_Evaluation_Metrics, echo=FALSE}
 if(!is.null(Test_EvalMetrics)) {
-  for(nam in names(Test_EvalMetrics)) print(knitr::kable(Test_EvalMetrics[[nam]]))
+  for(nam in names(Test_EvalMetrics)) {
+    print(nam)
+    print(knitr::kable(Test_EvalMetrics[[nam]]))
+  }
 } else {
   print('Test_EvalMetrics is NULL')
 }
@@ -1113,7 +1421,10 @@ if(!is.null(Test_EvalMetrics)) {
 
 ```{r Model_Evaluation_Metrics_Train, echo=FALSE}
 if(!is.null(Train_EvalMetrics)) {
-  for(nam in names(Train_EvalMetrics)) print(knitr::kable(Train_EvalMetrics[[nam]]))
+  for(nam in names(Train_EvalMetrics)) {
+    print(nam)
+    print(knitr::kable(Train_EvalMetrics[[nam]]))
+  }
 } else {
   print('Train_EvalMetrics is NULL')
 }
@@ -1127,23 +1438,17 @@ if(!is.null(Train_EvalMetrics)) {
 
 
 
-##  <font size="5">Variable Importance Tables</font>
+##  <font size="5">Variable Importance Table</font>
 
-<details><summary>Variable Importance Tables</summary>
-<p>
-
-
-### **TestData**
-<p>
-
-<details><summary>Variable Importance Table</summary>
+<details><summary>Variable Importance</summary>
 <p>
 
 ```{r Model_VarImportanceTable, echo=FALSE}
-if(!is.null(Test_Importance)) {
-  print(knitr::kable(Test_Importance))
+if(!is.null(All_Importance)) {
+  data.table::setorderv(x = All_Importance, cols = names(All_Importance)[2L], order = -1L, na.last = TRUE)
+  print(knitr::kable(All_Importance))
 } else {
-  print("See TrainData for output")
+  print("No Importance data was provided")
 }
 ```
 
@@ -1151,102 +1456,20 @@ if(!is.null(Test_Importance)) {
 </p>
 
 
-### **ValidationData**
+##  <font size="5">Interaction Importance Table</font>
 <p>
 
-<details><summary>Variable Importance Table</summary>
-<p>
-
-```{r Model_VarImportanceTable_Validate, echo=FALSE}
-if(!is.null(Validation_Importance)) {
-  print(knitr::kable(Validation_Importance))
-} else {
-  print("See TrainData for output")
-}
-```
-
-</details>
-</p>
-
-
-### **TrainData**
-<p>
-
-<details><summary>Variable Importance Table</summary>
-<p>
-
-```{r Model_VarImportanceTable_Train, echo=FALSE}
-if(!is.null(Train_Importance)) {
-  print(knitr::kable(Train_Importance))
-} else {
-  print("Train_Importance is NULL")
-}
-```
-
-</details>
-</p>
-
-
-
-##  <font size="5">Interaction Importance Tables</font>
-
-<details><summary>Interaction Importance Tables</summary>
-<p>
-
-
-### **TestData**
-<p>
-
-<details><summary>Interaction Importance Table</summary>
+<details><summary>Interaction Importance</summary>
 <p>
 
 ```{r Model_IntImportanceTable, echo=FALSE}
-if(!is.null(Test_Interaction)) {
-  print(knitr::kable(Test_Interaction))
+if(!is.null(All_Interaction)) {
+  data.table::setorderv(x = All_Interaction, cols = names(All_Interaction)[3L], order = -1L, na.last = TRUE)
+  print(knitr::kable(All_Interaction))
 } else {
-  print('Test_Interaction is NULL')
+  print('No interaction importance data was provided')
 }
 ```
-
-</details>
-</p>
-
-
-### **ValidationData**
-<p>
-
-<details><summary>Interaction Importance Table</summary>
-<p>
-
-```{r Model_IntImportanceTable_Validate, echo=FALSE}
-if(!is.null(Validation_Interaction)) {
-  print(knitr::kable(Validation_Interaction))
-} else {
-  print("Validation_Interaction is NULL")
-}
-```
-
-</details>
-</p>
-
-
-### **TrainData**
-<p>
-
-<details><summary>Interaction Importance Table</summary>
-<p>
-
-```{r Model_IntImportanceTable_Train, echo=FALSE}
-if(!is.null(Train_Interaction)) {
-  print(knitr::kable(Train_Interaction))
-} else {
-  print("Train_Interaction is NULL")
-}
-```
-
-</details>
-</p>
-
 
 </details>
 </p>
@@ -1276,51 +1499,24 @@ if(!is.null(Train_Interaction)) {
 <details><summary>Expand to view content</summary>
 <p>
 
-
-### **TestData**
-<p>
-
-<details><summary>Variable Importance</summary>
-<p>
-
 ```{r EvaluationPlots_VIPlot, echo=FALSE}
+print('Test Importance')
 if(!is.null(Test_Importance)) {
+  data.table::setnames(Test_Importance, 'Test_Importance', 'Importance', skip_absent = TRUE)
   eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Test_Importance, TopN = 15))
 } else {
   print("Test_Importance is NULL")
 }
-```
-
-</details>
-</p>
-
-
-### **ValidationData**
-<p>
-
-<details><summary>Variable Importance</summary>
-<p>
-
-```{r EvaluationPlots_VIPlot_Val, echo=FALSE}
+print('Validation Importance')
 if(!is.null(Validation_Importance)) {
+  data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
   eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Validation_Importance, TopN = 15))
 } else {
   print("Validation_Importance is NULL")
 }
-```
-
-</details>
-</p>
-
-
-### **TrainData**
-<p>
-
-<details><summary>Variable Importance</summary>
-<p>
-
-```{r EvaluationPlots_VIPlot_Train, echo=FALSE}
+print('Train Importance')
 if(!is.null(Train_Importance)) {
+  data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
   eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Train_Importance, TopN = 15))
 } else {
   print("Train_Importance is NULL")

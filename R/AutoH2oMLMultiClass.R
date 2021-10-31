@@ -238,9 +238,9 @@ AutoH2oMLMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Scor
       }
       if(SaveModelObjects) {
         if(!is.null(metadata_path)) {
-          save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+          save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.Rdata")))
         } else if(!is.null(model_path)) {
-          save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+          save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.Rdata")))
         }
       }
     }

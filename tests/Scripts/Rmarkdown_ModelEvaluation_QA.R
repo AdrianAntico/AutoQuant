@@ -42,7 +42,7 @@ RmarkdownQA <- data.table::data.table(
 
 # ----
 
-#       REGRESSION MODELS (Runs: 1-6)           ----
+#       REGRESSION MODELS (Runs: 1-9)           ----
 
 # ----
 
@@ -146,10 +146,10 @@ for(Run in 1:3) {
     min_data_in_leaf = 1)
 
   # Create Model Insights Report
-  if(Run %in% c(1)) train <- RemixOutput[['TrainData']] else train <- NULL
-  if(Run %in% c(1)) valid <- RemixOutput[['TestData']] else valid <- NULL
-  if(Run %in% c(1)) test <- RemixOutput[['TestData']] else test <- NULL
-  if(Run == 3) rm(RemixOutput)
+  if(Run %in% c(3)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(3)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(3)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(2,3)) rm(RemixOutput)
   tryCatch({
 
     RemixAutoML::ModelInsightsReport(
@@ -188,7 +188,7 @@ for(Run in 1:3) {
   }
 }
 
-# # Args ModelInsightsReport
+# Args ModelInsightsReport
 # TrainData = train
 # ValidationData = valid
 # TestData = test
@@ -205,7 +205,7 @@ for(Run in 1:3) {
 # Algo = 'catboost'
 # SourcePath = getwd()
 # OutputPath = getwd()
-# RemixOutput = if(Run %in% c(1)) RemixOutput else NULL
+# RemixOutput = if(Run %in% c(2,3)) NULL else RemixOutput
 
 # ----
 
@@ -289,10 +289,10 @@ for(Run in 4:6) {
     colsample_bytree = 0.55)
 
   # Create Model Insights Report
-  if(Run %in% c(5)) train <- RemixOutput[['TrainData']] else train <- NULL
-  if(Run %in% c(4)) valid <- RemixOutput[['TestData']] else valid <- NULL
-  if(Run %in% c(3)) test <- RemixOutput[['TestData']] else test <- NULL
-  if(Run == 3) rm(RemixOutput)
+  if(Run %in% c(6)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(6)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(6)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(5, 6)) rm(RemixOutput)
   tryCatch({
 
     RemixAutoML::ModelInsightsReport(
@@ -314,7 +314,7 @@ for(Run in 4:6) {
       Algo = 'xgboost',
       SourcePath = getwd(),
       OutputPath = getwd(),
-      RemixOutput = if(Run %in% c(4)) NULL else RemixOutput)
+      RemixOutput = if(Run %in% c(5, 6)) NULL else RemixOutput)
 
   }, error = function(x) NULL)
 
@@ -355,15 +355,16 @@ for(Run in 4:6) {
 # ----
 
 #         LightGBM Regression  ----
-# Run = 5
-# Run = 6
-for(Run in 5:6) {
+# Run = 7
+# Run = 8
+# Run = 9
+for(Run in 7:9) {
 
   # Working directory
   setwd("C:/Users/Bizon/Documents/GitHub")
 
   # Clear output
-  if(Run == 5 && file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-regression.html"))) {
+  if(Run == 7 && file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-regression.html"))) {
     file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-regression.html"))
   }
 
@@ -388,8 +389,8 @@ for(Run in 5:6) {
     NumOfParDepPlots = 3L,
     EncodingMethod = 'credibility',
     ReturnFactorLevels = TRUE,
-    ReturnModelObjects = if(Run == 5) TRUE else FALSE,
-    SaveModelObjects = if(Run == 5) FALSE else TRUE,
+    ReturnModelObjects = if(Run %in% c(7, 9)) TRUE else FALSE,
+    SaveModelObjects = if(Run %in% c(7, 9)) FALSE else TRUE,
     SaveInfoToPDF = FALSE,
     DebugMode = FALSE,
 
@@ -503,13 +504,34 @@ for(Run in 5:6) {
     num_gpu = 1)
 
   # Create Model Insights Report
-  tryCatch({RemixAutoML::ModelInsightsReport(
-    RemixOutput = if(Run == 5) RemixOutput else NULL,
-    OutputPath = getwd(),
-    TargetColumnName = 'Adrian',
-    TargetType = 'regression',
-    ModelID = 'Test_Model_1',
-    Algo = 'lightgbm')}, error = NULL)
+  if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(8, 9)) rm(RemixOutput)
+  tryCatch({
+
+    RemixAutoML::ModelInsightsReport(
+
+      # DataSets (use TestData for ValidationData)
+      TrainData = train,
+      ValidationData = valid,
+      TestData = test,
+
+      # Meta info
+      TargetColumnName = 'Adrian',
+      PredictionColumnName = 'Predict',
+      FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1','IDcol_2','Adrian')],
+      DateColumnName = NULL,
+
+      # Control options
+      TargetType = 'regression',
+      ModelID = 'Test_Model_1',
+      Algo = 'lightgbm',
+      SourcePath = getwd(),
+      OutputPath = getwd(),
+      RemixOutput = if(Run %in% c(8, 9)) NULL else RemixOutput)
+
+  }, error = function(x) NULL)
 
   # Update
   if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-regression.html"))) {
@@ -539,7 +561,7 @@ for(Run in 5:6) {
 
 # ----
 
-#       BINARY CLASSIFIER MODELS (Runs: 7-12)   ----
+#       BINARY CLASSIFIER MODELS (Runs: 10-18)  ----
 
 # ----
 
@@ -550,15 +572,16 @@ for(Run in 5:6) {
 # ----
 
 #         CatBoost Classifier  ----
-# Run = 7
-# Run = 8
-for(Run in 7:8) {
+# Run = 10
+# Run = 11
+# Run = 12
+for(Run in 10:12) {
 
   # Working directory
   setwd("C:/Users/Bizon/Documents/GitHub")
 
   # Clear output
-  if(Run == 7 && file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
+  if(Run == 10 && file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
     file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))
   }
 
@@ -589,8 +612,8 @@ for(Run in 7:8) {
     ModelID = 'Test_Model_1',
     model_path = getwd(),
     metadata_path = getwd(),
-    SaveModelObjects = if(Run == 7) FALSE else TRUE,
-    ReturnModelObjects = if(Run == 7) TRUE else FALSE,
+    SaveModelObjects = if(Run %in% c(10, 12)) FALSE else TRUE,
+    ReturnModelObjects = if(Run %in% c(10, 12)) TRUE else FALSE,
     SaveInfoToPDF = FALSE,
 
     # Data args
@@ -640,10 +663,10 @@ for(Run in 7:8) {
     min_data_in_leaf = 1)
 
   # Create Model Insights Report
-  if(Run %in% c(9)) train <- RemixOutput[['TrainData']] else train <- NULL
-  if(Run %in% c(9)) valid <- RemixOutput[['TestData']] else valid <- NULL
-  if(Run %in% c(9)) test <- RemixOutput[['TestData']] else test <- NULL
-  if(Run == 8) rm(RemixOutput)
+  if(Run %in% c(12)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(12)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(12)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(11, 12)) rm(RemixOutput)
   tryCatch({
 
     RemixAutoML::ModelInsightsReport(
@@ -665,7 +688,7 @@ for(Run in 7:8) {
       Algo = 'catboost',
       SourcePath = getwd(),
       OutputPath = getwd(),
-      RemixOutput = if(Run %in% c(8)) NULL else RemixOutput)
+      RemixOutput = if(Run %in% c(11, 12)) NULL else RemixOutput)
 
   }, error = function(x) NULL)
 
@@ -721,15 +744,16 @@ for(Run in 7:8) {
 # ----
 
 #         XGBoost Classifier   ----
-# Run = 9
-# Run = 10
-for(Run in 9:10) {
+# Run = 13
+# Run = 14
+# Run = 15
+for(Run in 13:15) {
 
   # Working directory
   setwd("C:/Users/Bizon/Documents/GitHub")
 
   # Clear output
-  if(Run == 9 && file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
+  if(Run == 13 && file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
     file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))
   }
 
@@ -757,8 +781,8 @@ for(Run in 9:10) {
     ModelID = "Test_Model_1",
     EncodingMethod = "binary",
     ReturnFactorLevels = TRUE,
-    ReturnModelObjects = if(Run == 9) TRUE else FALSE,
-    SaveModelObjects = if(Run == 9) FALSE else TRUE,
+    ReturnModelObjects = if(Run %in% c(13, 15)) TRUE else FALSE,
+    SaveModelObjects = if(Run %in% c(13, 15)) FALSE else TRUE,
     SaveInfoToPDF = FALSE,
 
     # Data args
@@ -797,10 +821,10 @@ for(Run in 9:10) {
     DebugMode = FALSE)
 
   # Create Model Insights Report
-  if(Run %in% c(10)) train <- RemixOutput[['TrainData']] else train <- NULL
-  if(Run %in% c(10)) valid <- RemixOutput[['TestData']] else valid <- NULL
-  if(Run %in% c(10)) test <- RemixOutput[['TestData']] else test <- NULL
-  if(Run == 10) rm(RemixOutput)
+  if(Run %in% c(15)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(15)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(15)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(14, 15)) rm(RemixOutput)
   tryCatch({
 
     RemixAutoML::ModelInsightsReport(
@@ -822,7 +846,7 @@ for(Run in 9:10) {
       Algo = 'xgboost',
       SourcePath = getwd(),
       OutputPath = getwd(),
-      RemixOutput = if(Run %in% c(10)) NULL else RemixOutput)
+      RemixOutput = if(Run %in% c(14, 15)) NULL else RemixOutput)
 
   }, error = function(x) NULL)
 
@@ -839,25 +863,50 @@ for(Run in 9:10) {
   }
 }
 
-# Args
-# RemixOutput = RemixOutput
-# OutputPath = getwd()
-# TargetType = 'classification'
+# library(data.table)
+# library(RemixAutoML)
+#
+# # DataSets (use TestData for ValidationData)
+# TrainData = train
+# ValidationData = valid
+# TestData = test
+#
+# # Meta info
+# TargetColumnName = 'Adrian'
+# PredictionColumnName = 'p1'
+# FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')]
+# DateColumnName = NULL
+#
+# # Control options
+# TargetType = 'Classification'
+# TargetLevels = NULL
 # ModelID = 'Test_Model_1'
 # Algo = 'xgboost'
+# SourcePath = getwd()
+# OutputPath = getwd()
+# RemixOutput = if(Run %in% c(14, 15)) NULL else RemixOutput
+#
+# Test_Importance_dt = NULL
+# Validation_Importance_dt = NULL
+# Train_Importance_dt = NULL
+# Test_Interaction_dt = NULL
+# Validation_Interaction_dt = NULL
+# Train_Interaction_dt = NULL
+# GlobalVars = ls()
 
 # ----
 
 #         LightGBM Classifier  ----
-# Run = 11
-# Run = 12
-for(Run in 11:12) {
+# Run = 16
+# Run = 17
+# Run = 18
+for(Run in 16:18) {
 
   # Working directory
   setwd("C:/Users/Bizon/Documents/GitHub")
 
   # Clear output
-  if(Run == 11 && file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
+  if(Run == 14 && file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
     file.remove(File = file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))
   }
 
@@ -882,8 +931,8 @@ for(Run in 11:12) {
     NumOfParDepPlots = 3L,
     EncodingMethod = "credibility",
     ReturnFactorLevels = TRUE,
-    ReturnModelObjects = if(Run == 9) TRUE else FALSE,
-    SaveModelObjects = if(Run == 9) FALSE else TRUE,
+    ReturnModelObjects = if(Run %in% c(16, 18)) TRUE else FALSE,
+    SaveModelObjects = if(Run %in% c(16, 18)) FALSE else TRUE,
     SaveInfoToPDF = FALSE,
     DebugMode = FALSE,
 
@@ -991,14 +1040,35 @@ for(Run in 11:12) {
     gpu_use_dp = TRUE,
     num_gpu = 1)
 
-  # Create Model Insights Report
-  tryCatch({RemixAutoML::ModelInsightsReport(
-    RemixOutput = if(Run == 11) RemixOutput else NULL,
-    OutputPath = getwd(),
-    TargetColumnName = 'Adrian',
-    TargetType = 'classification',
-    ModelID = 'Test_Model_1',
-    Algo = 'lightgbm')}, error = NULL)
+  # Create report
+  if(Run %in% c(18)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(18)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(18)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(17, 18)) rm(RemixOutput)
+  tryCatch({
+
+    RemixAutoML::ModelInsightsReport(
+
+      # DataSets (use TestData for ValidationData)
+      TrainData = train,
+      ValidationData = valid,
+      TestData = test,
+
+      # Meta info
+      TargetColumnName = 'Adrian',
+      PredictionColumnName = 'p1',
+      FeatureColumnNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
+      DateColumnName = NULL,
+
+      # Control options
+      TargetType = 'classification',
+      ModelID = 'Test_Model_1',
+      Algo = 'lightgbm',
+      SourcePath = getwd(),
+      OutputPath = getwd(),
+      RemixOutput = if(Run %in% c(17, 18)) NULL else RemixOutput)
+
+  }, error = function(x) NULL)
 
   # Update
   if(file.exists(file.path(getwd(), "ModelInsights-Test_Model_1-classification.html"))) {
@@ -1029,18 +1099,22 @@ for(Run in 11:12) {
 
 # ----
 
-#       MultiClass MODELS (Runs: 19-27)   ----
+#       MultiClass MODELS (Runs: 19-27)         ----
 
 # ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
+# ----
+
+# ----
+
 #         CatBoost MultiClass  ----
 
-# Run = 25
-# Run = 26
-# Run = 27
-for(Run in 25:27) {
+# Run = 19
+# Run = 20
+# Run = 21
+for(Run in 19:21) {
 
   # Working directory
   setwd("C:/Users/Bizon/Documents/GitHub")
@@ -1053,7 +1127,7 @@ for(Run in 25:27) {
   # Create some dummy correlated data
   data <- RemixAutoML::FakeDataGenerator(
     Correlation = 0.85,
-    N = 10000L,
+    N = 20000L,
     ID = 2L,
     ZIP = 0L,
     AddDate = FALSE,
@@ -1093,8 +1167,8 @@ for(Run in 25:27) {
     ModelID = 'Test_Model_1',
     model_path = normalizePath('./'),
     metadata_path = normalizePath('./'),
-    SaveModelObjects = if(Run == 25) FALSE else TRUE,
-    ReturnModelObjects = if(Run %in% c(25, 27)) TRUE else FALSE,
+    SaveModelObjects = if(Run %in% c(19, 21)) FALSE else TRUE,
+    ReturnModelObjects = if(Run %in% c(19, 21)) TRUE else FALSE,
 
     # Data args
     data = data,
@@ -1142,10 +1216,10 @@ for(Run in 25:27) {
     min_data_in_leaf = 1)
 
   # Create Model Insights Report
-  if(Run %in% c(27)) train <- RemixOutput[['TrainData']] else train <- NULL
-  if(Run %in% c(27)) valid <- RemixOutput[['TestData']] else valid <- NULL
-  if(Run %in% c(27)) test <- RemixOutput[['TestData']] else test <- NULL
-  if(Run %in% c(26, 27)) rm(RemixOutput)
+  if(Run %in% c(21)) train <- RemixOutput[['TrainData']] else train <- NULL
+  if(Run %in% c(21)) valid <- RemixOutput[['TestData']] else valid <- NULL
+  if(Run %in% c(21)) test <- RemixOutput[['TestData']] else test <- NULL
+  if(Run %in% c(20, 21)) rm(RemixOutput)
   tryCatch({
 
     RemixAutoML::ModelInsightsReport(
@@ -1167,7 +1241,7 @@ for(Run in 25:27) {
       Algo = 'catboost',
       SourcePath = getwd(),
       OutputPath = getwd(),
-      RemixOutput = if(Run %in% c(26, 27)) NULL else RemixOutput)
+      RemixOutput = if(Run %in% c(20, 21)) NULL else RemixOutput)
 
   }, error = function(x) NULL)
 
@@ -1221,7 +1295,12 @@ for(Run in 25:27) {
 # Train_Interaction_dt = NULL
 # GlobalVars = ls()
 
+# ----
+
+# ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+View(RmarkdownQA)

@@ -30,11 +30,7 @@
 #' @param Train_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'
 #'
 #' @noRd
-Run_ModelInsightsReport <- function(TrainData = NULL,
-                                    ValidationData = NULL,
-                                    TestData = NULL,
-
-                                    # Meta info
+Run_ModelInsightsReport <- function(# Meta info
                                     TargetColumnName = NULL,
                                     TargetType = 'regression',
                                     TargetLevels = NULL,
@@ -43,14 +39,19 @@ Run_ModelInsightsReport <- function(TrainData = NULL,
                                     DateColumnName = NULL,
 
                                     # Control options
-
                                     ModelID = 'ModelTest',
                                     Algo = 'catboost',
                                     SourcePath = NULL,
                                     OutputPath = NULL,
                                     RemixOutput = NULL,
 
-                                    # Variable Importance
+                                    # If you want to pass in data
+                                    TrainData = NULL,
+                                    ValidationData = NULL,
+                                    TestData = NULL,
+
+                                    # If you want to pass in your
+                                    #  own variable importance
                                     Test_Importance_dt = NULL,
                                     Validation_Importance_dt = NULL,
                                     Train_Importance_dt = NULL,
@@ -254,29 +255,27 @@ Run_ModelInsightsReport <- function(TrainData = NULL,
 #' @family Model Insights
 #'
 #' @param TrainData data.table or something that converts to data.table via as.data.table
-#' @param ValidationData = data.table or something that converts to data.table via as.data.table
-#' @param TestData = data.table or something that converts to data.table via as.data.table
-#' @param TargetColumnName NULL
-#' @param PredictionColumnName NULL
-#' @param FeatureColumnNames NULL
-#' @param DateColumnName NULL
-#' @param TargetColumnName For selecting columns
+#' @param ValidationData data.table or something that converts to data.table via as.data.table
+#' @param TestData data.table or something that converts to data.table via as.data.table
+#' @param TargetColumnName NULL. Target variable column name as character
+#' @param PredictionColumnName NULL. Predicted value column name as character. 'p1' for RemixAutoML functions
+#' @param FeatureColumnNames NULL. Feature column names as character vector.
+#' @param DateColumnName NULL. Date column name as character
 #' @param TargetType 'regression', 'classification', or 'multiclass'
 #' @param ModelID ModelID used in the RemixAutoML supervised learning function
-#' @param Algo 'catboost', 'xgboost', 'lightgbm', 'h2o'
-#' @param RemixOutput Output from a RemixAutoML supervised learning function
+#' @param Algo 'catboost' or 'other'. Use 'catboost' if using RemixAutoML::AutoCatBoost_() functions. Otherwise, 'other'
 #' @param Path Path to Model Output if RemixOutput is left NULL
 #' @param SourcePath Path to directory with RemixAutoML Model Output
 #' @param OutputPath Path to directory where the html will be saved
-#' @param RemixOutput Model Output passed from RemixAutoML::Auto_*() functions
+#' @param RemixOutput Returned output from regression, classificaiton, and multiclass Remix Auto_() models. Currenly supports CatBoost, XGBoost, and LightGBM models
 #' @param GlobalVars ls() don't use
 #' @param KeepOutput NULL A list of output names to select. Pass in as a character vector. E.g. c('Test_VariableImportance', 'Train_VariableImportance')
 #' @param Test_Importance_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a two column data.table with colnames 'Variable' and 'Importance'
 #' @param Validation_Importance_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a two column data.table with colnames 'Variable' and 'Importance'
 #' @param Train_Importance_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a two column data.table with colnames 'Variable' and 'Importance'
-#' @param Test_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2' and 'Importance'
-#' @param Validation_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'
-#' @param Train_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'
+#' @param Test_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'
+#' @param Validation_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'
+#' @param Train_Interaction_dt NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'
 #'
 #' @examples
 #' \dontrun{

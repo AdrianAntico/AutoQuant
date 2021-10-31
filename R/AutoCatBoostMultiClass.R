@@ -346,9 +346,9 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
     }
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.Rdata")))
       } else if(!is.null(model_path)) {
-        save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.Rdata")))
       }
     }
   }
@@ -380,11 +380,11 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
       if(length(unique(ValidationData[[paste0('Temp_',tarlevel)]])) == 1) next
       Output <- ML_EvalPlots(ModelType='multiclass', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)
-      PlotList[[paste0('Test_EvaluationPlot_',tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
-      PlotList[[paste0('Test_ParDepPlots_',tarlevel)]] <- Output$ParDepPlots; Output$ParDepPlots <- NULL
-      PlotList[[paste0('Test_GainsPlot_',tarlevel)]] <- Output$GainsPlot; Output$GainsPlot <- NULL
-      PlotList[[paste0('Test_LiftPlot_',tarlevel)]] <- Output$LiftPlot; Output$LiftPlot <- NULL
-      PlotList[[paste0('Test_ROC_Plot_',tarlevel)]] <- Output$ROC_Plot; rm(Output)
+      PlotList[[paste0('Test_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
+      PlotList[[paste0('Test_ParDepPlots_',tarlevel)]] <- Output[['ParDepPlots']]; Output[['ParDepPlots']] <- NULL
+      PlotList[[paste0('Test_GainsPlot_',tarlevel)]] <- Output[['GainsPlot']]; Output[['GainsPlot']] <- NULL
+      PlotList[[paste0('Test_LiftPlot_',tarlevel)]] <- Output[['LiftPlot']]; Output[['LiftPlot']] <- NULL
+      PlotList[[paste0('Test_ROC_Plot_',tarlevel)]] <- Output[['ROC_Plot']]; rm(Output)
       data.table::set(ValidationData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
     }
   }

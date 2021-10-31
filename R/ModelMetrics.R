@@ -440,7 +440,7 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 #' @family Model Evaluation
 #'
 #' @param ModelClass "catboost"
-#' @param DataType "validate" or "train"
+#' @param DataType "test" or "train"
 #' @param SaveModelObjects. = SaveModelObjects
 #' @param ValidationData. = ValidationData
 #' @param PredictData. = predict
@@ -453,7 +453,7 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 #'
 #' @noRd
 MultiClassMetrics <- function(ModelClass = "catboost",
-                              DataType = "validate",
+                              DataType = "test",
                               SaveModelObjects. = SaveModelObjects,
                               ValidationData. = ValidationData,
                               PredictData. = predict,
@@ -503,11 +503,11 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   EvaluationMetrics <- data.table::data.table(Metric = c("MicroAUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
   if(SaveModelObjects.) {
     if(!is.null(metadata_path.)) {
-      if(DataType == "train") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
-      if(DataType == "validate") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))
+      if(tolower(DataType) == "train") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))
+      if(tolower(DataType) == "test") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
     } else {
-      if(DataType == "train") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
-      if(DataType == "validate") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))
+      if(tolower(DataType) == "train") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))
+      if(tolower(DataType) == "test") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
     }
   }
   return(EvaluationMetrics)

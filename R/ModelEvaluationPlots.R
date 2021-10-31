@@ -142,7 +142,6 @@ ParDepCalPlots <- function(data,
                            Function = function(x) mean(x, na.rm = TRUE),
                            DateColumn = NULL,
                            DateAgg_3D = NULL,
-
                            PlotYMeanColor = 'black',
                            PlotXMeanColor = 'chocolate',
                            PlotXLowColor = 'purple',

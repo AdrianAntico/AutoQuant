@@ -82,7 +82,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">RemixAutoML</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -164,27 +164,27 @@
     </tr>
     <tr>
       <th>ValidationData</th>
-      <td><p>= data.table or something that converts to data.table via as.data.table</p></td>
+      <td><p>data.table or something that converts to data.table via as.data.table</p></td>
     </tr>
     <tr>
       <th>TestData</th>
-      <td><p>= data.table or something that converts to data.table via as.data.table</p></td>
+      <td><p>data.table or something that converts to data.table via as.data.table</p></td>
     </tr>
     <tr>
       <th>TargetColumnName</th>
-      <td><p>For selecting columns</p></td>
+      <td><p>NULL. Target variable column name as character</p></td>
     </tr>
     <tr>
       <th>PredictionColumnName</th>
-      <td><p>NULL</p></td>
+      <td><p>NULL. Predicted value column name as character. 'p1' for RemixAutoML functions</p></td>
     </tr>
     <tr>
       <th>FeatureColumnNames</th>
-      <td><p>NULL</p></td>
+      <td><p>NULL. Feature column names as character vector.</p></td>
     </tr>
     <tr>
       <th>DateColumnName</th>
-      <td><p>NULL</p></td>
+      <td><p>NULL. Date column name as character</p></td>
     </tr>
     <tr>
       <th>TargetType</th>
@@ -196,7 +196,7 @@
     </tr>
     <tr>
       <th>Algo</th>
-      <td><p>'catboost', 'xgboost', 'lightgbm', 'h2o'</p></td>
+      <td><p>'catboost' or 'other'. Use 'catboost' if using RemixAutoML::AutoCatBoost_() functions. Otherwise, 'other'</p></td>
     </tr>
     <tr>
       <th>SourcePath</th>
@@ -208,7 +208,7 @@
     </tr>
     <tr>
       <th>RemixOutput</th>
-      <td><p>Model Output passed from RemixAutoML::Auto_*() functions</p></td>
+      <td><p>Returned output from regression, classificaiton, and multiclass Remix Auto_() models. Currenly supports CatBoost, XGBoost, and LightGBM models</p></td>
     </tr>
     <tr>
       <th>Test_Importance_dt</th>
@@ -224,15 +224,15 @@
     </tr>
     <tr>
       <th>Test_Interaction_dt</th>
-      <td><p>NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2' and 'Importance'</p></td>
+      <td><p>NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'</p></td>
     </tr>
     <tr>
       <th>Validation_Interaction_dt</th>
-      <td><p>NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'</p></td>
+      <td><p>NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'</p></td>
     </tr>
     <tr>
       <th>Train_Interaction_dt</th>
-      <td><p>NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'</p></td>
+      <td><p>NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'</p></td>
     </tr>
     <tr>
       <th>GlobalVars</th>

@@ -273,9 +273,9 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     }
     if(SaveModelObjects) {
       if(!is.null(metadata_path)) {
-        save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        save(EvalMetricsList, file = file.path(metadata_path, paste0(ModelID, "_EvaluationMetrics.Rdata")))
       } else if(!is.null(model_path)) {
-        save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.csv")))
+        save(EvalMetricsList, file = file.path(model_path, paste0(ModelID, "_EvaluationMetrics.Rdata")))
       }
     }
   }

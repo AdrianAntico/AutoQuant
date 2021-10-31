@@ -37,7 +37,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">RemixAutoML</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -75,14 +75,15 @@
 
 
 <p><img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/NewPackageLogo.png" align="center" width="1000"></p>
-<div id="check-out-the-remixautoml-website-or-reference-manual" class="section level3">
+<div id="remixautoml-website-and-reference-manual" class="section level3">
 <h3 class="hasAnchor">
-<a href="#check-out-the-remixautoml-website-or-reference-manual" class="anchor"></a>Check out the RemixAutoML website or reference manual</h3>
+<a href="#remixautoml-website-and-reference-manual" class="anchor"></a>RemixAutoML website and reference manual</h3>
 <p><a href="https://adrianantico.github.io/RemixAutoML/">RemixAutoML Webpage</a></p>
 <p><img src="https://github.com/AdrianAntico/RemixAutoML/tree/master/vignette" alt="RemixAutoML Reference Manual"></p>
 <p>Table of Contents</p>
 <ul>
 <li><a href="#background">Background</a></li>
+<li><a href="#highlights">Highlights</a></li>
 <li><a href="#installation">Installation</a></li>
 <li><a href="#remixautoml-blogs">RemixAutoML Blogs</a></li>
 </ul>
@@ -104,14 +105,6 @@
 <div id="background" class="section level2">
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
-Machine Learning and Panel Forecasting Models
-<p>
-</p>
-<p><img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="800"></p>
-Model Insights Reports
-<p>
-</p>
-<p><img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="325"></p>
 <details><summary>
 Expand to view content
 </summary><p>
@@ -142,6 +135,34 @@ Expand to view content
 </div>
 </details>
 </div>
+<div id="highlights" class="section level2">
+<h2 class="hasAnchor">
+<a href="#highlights" class="anchor"></a>Highlights</h2>
+<div id="model-insights-reports" class="section level4">
+<h4 class="hasAnchor">
+<a href="#model-insights-reports" class="anchor"></a>Model Insights Reports</h4>
+Automatically generate reports with relevant evaluation metrics, tables, plots, and metadata
+<p>
+</p>
+<p><img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="166" height="200"><img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-classification-collapsed.PNG" align="center" width="166" height="200"><img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="166" height="200"></p>
+</div>
+<div id="machine-learning-and-panel-forecasting-models" class="section level4">
+<h4 class="hasAnchor">
+<a href="#machine-learning-and-panel-forecasting-models" class="anchor"></a>Machine Learning and Panel Forecasting Models</h4>
+AutoML functions by algorithm type and use case type
+<p>
+</p>
+<p><img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="500"></p>
+</div>
+<div id="feature-engineering" class="section level4">
+<h4 class="hasAnchor">
+<a href="#feature-engineering" class="anchor"></a>Feature Engineering</h4>
+Feature engineering functions for a variety of data types and data sets
+<p>
+</p>
+<p><img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/FeatureEngineeringMenu.PNG" align="center" width="500"></p>
+</div>
+</div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
@@ -156,6 +177,19 @@ Expand to view content
 <li>lubridate</li>
 <li>timeDate</li>
 </ul>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="co"># Base dependencies</span>
+<span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="st">'arules'</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">'arules'</span><span class="op">)</span>
+<span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="st">'bit64'</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">'bit64'</span><span class="op">)</span>
+<span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="st">'data.table'</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">'data.table'</span><span class="op">)</span>
+<span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="st">'doParallel'</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">'doParallel'</span><span class="op">)</span>
+<span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="st">'foreach'</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">'foreach'</span><span class="op">)</span>
+<span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="st">'lubridate'</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">'lubridate'</span><span class="op">)</span>
+<span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="st">'timeDate'</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">'timeDate'</span><span class="op">)</span>
+
+<span class="co"># RemixAutoML</span>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">'AdrianAntico/RemixAutoML'</span>, upgrade <span class="op">=</span> <span class="cn">FALSE</span>, dependencies <span class="op">=</span> <span class="cn">FALSE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <details><summary>
 Expand to view content
 </summary><p>
@@ -164,7 +198,7 @@ Expand to view content
 <h4 class="hasAnchor">
 <a href="#install-all-r-package-dependencies-for-all-functions" class="anchor"></a>Install ALL R package dependencies for all functions:</h4>
 <p>XGBoost and LightGBM can be used with GPU. However, their installation is much more involved than CatBoost, which comes with GPU capabilities simply by installing their package. The installation instructions for them below is for the CPU version only. Refer to each’s home page for instructions for installing for GPU.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Install Dependencies----</span>
 <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="op">(</span><span class="st">"devtools"</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
 <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="op">(</span><span class="st">"arules"</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"arules"</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="st">"arules"</span><span class="op">)</span>
@@ -196,13 +230,14 @@ Expand to view content
 <span class="kw">for</span> <span class="op">(</span><span class="va">pkg</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"RCurl"</span>,<span class="st">"jsonlite"</span><span class="op">)</span><span class="op">)</span> <span class="kw">if</span> <span class="op">(</span><span class="op">!</span> <span class="op">(</span><span class="va">pkg</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/installed.packages.html">installed.packages</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span> <span class="op">}</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"h2o"</span>, type <span class="op">=</span> <span class="st">"source"</span>, repos <span class="op">=</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">'catboost/catboost'</span>, subdir <span class="op">=</span> <span class="st">'catboost/R-package'</span><span class="op">)</span>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">'AdrianAntico/prettydoc'</span>, upgrade <span class="op">=</span> <span class="cn">FALSE</span>, dependencies <span class="op">=</span> <span class="cn">FALSE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">'AdrianAntico/RemixAutoML'</span>, upgrade <span class="op">=</span> <span class="cn">FALSE</span>, dependencies <span class="op">=</span> <span class="cn">FALSE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="installation-troubleshooting" class="section level4">
 <h4 class="hasAnchor">
 <a href="#installation-troubleshooting" class="anchor"></a>Installation Troubleshooting</h4>
 <p>The most common issue some users are having when trying to install <code>RemixAutoML</code> is the installation of the <code>catboost</code> package dependency. Since <code>catboost</code> is not on CRAN it can only be installed through GitHub. To install <code>catboost</code> without error (and consequently install <code>RemixAutoML</code> without error), try running this line of code first, then restart your R session, then re-run the 2-step installation process above. (<a href="https://github.com/catboost/catboost/issues/612" target="_blank">Reference</a>): If you’re still having trouble submit an issue and I’ll work with you to get it installed.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Method for on premise servers</span>
 <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span>devtools.install.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"--no-multiarch"</span>, <span class="st">"--no-test-load"</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"https://github.com/catboost/catboost/releases/download/v0.26.1/catboost-R-Windows-0.26.1.tgz"</span>, repos <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="st">"source"</span>, INSTALL_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"--no-multiarch"</span>, <span class="st">"--no-test-load"</span><span class="op">)</span><span class="op">)</span>
@@ -255,7 +290,7 @@ Expand to view content
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create fake Panel Data----</span>
 <span class="va">Count</span> <span class="op">&lt;-</span> <span class="fl">1L</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">Level</span> <span class="kw">in</span> <span class="va">LETTERS</span><span class="op">)</span> <span class="op">{</span>
@@ -310,7 +345,7 @@ Code Example
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create fake Panel Data----</span>
 <span class="va">Count</span> <span class="op">&lt;-</span> <span class="fl">1L</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">Level</span> <span class="kw">in</span> <span class="va">LETTERS</span><span class="op">)</span> <span class="op">{</span>
@@ -384,7 +419,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># NO GROUPING CASE: Create fake Panel Data----</span>
 <span class="va">Count</span> <span class="op">&lt;-</span> <span class="fl">1L</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">Level</span> <span class="kw">in</span> <span class="va">LETTERS</span><span class="op">)</span> <span class="op">{</span>
@@ -469,7 +504,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">##############################</span>
 <span class="co"># Current minus lag1</span>
 <span class="co">##############################</span>
@@ -566,7 +601,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#########################################</span>
 <span class="co"># Feature Engineering for Model Training</span>
 <span class="co">#########################################</span>
@@ -669,7 +704,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create fake data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.70</span>,
@@ -748,62 +783,62 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create fake data with 10 categorical</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">FakeDataGenerator</span>(</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Correlation =</span> <span class="fl">0.85</span>,</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="dv">1000000</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ID =</span> 2L,</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ZIP =</span> <span class="dv">0</span>,</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">FactorCount =</span> 10L,</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">AddDate =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Classification =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">MultiClass =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Take your pick</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>Meth <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">'m_estimator'</span>,</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>          <span class="st">'credibility'</span>,</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>          <span class="st">'woe'</span>,</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>          <span class="st">'target_encoding'</span>,</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>          <span class="st">'poly_encode'</span>,</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>          <span class="st">'backward_difference'</span>,</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>          <span class="st">'helmert'</span>)</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Pass to function</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>MethNum <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Mock test data with same factor levels</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> data.table<span class="sc">::</span><span class="fu">copy</span>(data)</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Run in Train Mode</span></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">CategoricalEncoding</span>(</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data,</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">ML_Type =</span> <span class="st">"classification"</span>,</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">GroupVariables =</span> <span class="fu">paste0</span>(<span class="st">"Factor_"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>),</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">TargetVariable =</span> <span class="st">"Adrian"</span>,</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">Method =</span> Meth[MethNum],</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">SavePath =</span> <span class="fu">getwd</span>(),</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">Scoring =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">ReturnFactorLevelList =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">SupplyFactorLevelList =</span> <span class="cn">NULL</span>,</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">KeepOriginalFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="co"># View results</span></span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(data)</span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Run in Score Mode by pulling in the csv's</span></span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">CategoricalEncoding</span>(</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data,</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">ML_Type =</span> <span class="st">"classification"</span>,</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">GroupVariables =</span> <span class="fu">paste0</span>(<span class="st">"Factor_"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>),</span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>  <span class="at">TargetVariable =</span> <span class="st">"Adrian"</span>,</span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>  <span class="at">Method =</span> Meth[MethNum],</span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">SavePath =</span> <span class="fu">getwd</span>(),</span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">Scoring =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">ImputeValueScoring =</span> <span class="dv">222</span>,</span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">ReturnFactorLevelList =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">SupplyFactorLevelList =</span> <span class="cn">NULL</span>,</span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">KeepOriginalFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create fake data with 10 categorical</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">FakeDataGenerator</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Correlation =</span> <span class="fl">0.85</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="dv">1000000</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ID =</span> 2L,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ZIP =</span> <span class="dv">0</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">FactorCount =</span> 10L,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">AddDate =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Classification =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">MultiClass =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Take your pick</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>Meth <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">'m_estimator'</span>,</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>          <span class="st">'credibility'</span>,</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>          <span class="st">'woe'</span>,</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>          <span class="st">'target_encoding'</span>,</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>          <span class="st">'poly_encode'</span>,</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>          <span class="st">'backward_difference'</span>,</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>          <span class="st">'helmert'</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Pass to function</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>MethNum <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Mock test data with same factor levels</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> data.table<span class="sc">::</span><span class="fu">copy</span>(data)</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Run in Train Mode</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">CategoricalEncoding</span>(</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data,</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">ML_Type =</span> <span class="st">"classification"</span>,</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">GroupVariables =</span> <span class="fu">paste0</span>(<span class="st">"Factor_"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>),</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">TargetVariable =</span> <span class="st">"Adrian"</span>,</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">Method =</span> Meth[MethNum],</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">SavePath =</span> <span class="fu">getwd</span>(),</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">Scoring =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">ReturnFactorLevelList =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">SupplyFactorLevelList =</span> <span class="cn">NULL</span>,</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">KeepOriginalFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co"># View results</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(data)</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Run in Score Mode by pulling in the csv's</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">CategoricalEncoding</span>(</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> data,</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">ML_Type =</span> <span class="st">"classification"</span>,</span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">GroupVariables =</span> <span class="fu">paste0</span>(<span class="st">"Factor_"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>),</span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>  <span class="at">TargetVariable =</span> <span class="st">"Adrian"</span>,</span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>  <span class="at">Method =</span> Meth[MethNum],</span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">SavePath =</span> <span class="fu">getwd</span>(),</span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">Scoring =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">ImputeValueScoring =</span> <span class="dv">222</span>,</span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">ReturnFactorLevelList =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">SupplyFactorLevelList =</span> <span class="cn">NULL</span>,</span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">KeepOriginalFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
 
 </details><details><summary>
 Function Description
@@ -821,7 +856,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">############################</span>
 <span class="co"># Training</span>
 <span class="co">############################</span>
@@ -937,7 +972,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create simulated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.70</span>,
@@ -1005,7 +1040,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#########################</span>
 <span class="co"># Training Setup</span>
 <span class="co">#########################</span>
@@ -1079,7 +1114,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create fake data with a Date column----</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.75</span>,
@@ -1130,39 +1165,39 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create fake data with a Date----</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">FakeDataGenerator</span>(</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Correlation =</span> <span class="fl">0.75</span>,</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> 25000L,</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ID =</span> 2L,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ZIP =</span> 0L,</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">FactorCount =</span> 4L,</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">AddDate =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Classification =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">MultiClass =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">seq_len</span>(20L)) {</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(i)</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data.table<span class="sc">::</span><span class="fu">rbindlist</span>(<span class="fu">list</span>(data, RemixAutoML<span class="sc">::</span><span class="fu">FakeDataGenerator</span>(</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">Correlation =</span> <span class="fl">0.75</span>,</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">N =</span> 25000L,</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">ID =</span> 2L,</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">ZIP =</span> 0L,</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">FactorCount =</span> 4L,</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">AddDate =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">Classification =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">MultiClass =</span> <span class="cn">FALSE</span>)))</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Run function and time it</span></span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>runtime <span class="ot">&lt;-</span> <span class="fu">system.time</span>(</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> <span class="fu">CreateHolidayVariables</span>(</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    data,</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">DateCols =</span> <span class="st">"DateTime"</span>,</span>
-<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">LookbackDays =</span> <span class="dv">7</span>,</span>
-<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">HolidayGroups =</span> <span class="fu">c</span>(<span class="st">"USPublicHolidays"</span>,<span class="st">"EasterGroup"</span>,<span class="st">"ChristmasGroup"</span>,<span class="st">"OtherEcclesticalFeasts"</span>),</span>
-<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">Holidays =</span> <span class="cn">NULL</span></span>
-<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">Print =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span>
-<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(runtime)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create fake data with a Date----</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">FakeDataGenerator</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Correlation =</span> <span class="fl">0.75</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> 25000L,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ID =</span> 2L,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ZIP =</span> 0L,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">FactorCount =</span> 4L,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">AddDate =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Classification =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">MultiClass =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">seq_len</span>(20L)) {</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(i)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data.table<span class="sc">::</span><span class="fu">rbindlist</span>(<span class="fu">list</span>(data, RemixAutoML<span class="sc">::</span><span class="fu">FakeDataGenerator</span>(</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">Correlation =</span> <span class="fl">0.75</span>,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">N =</span> 25000L,</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">ID =</span> 2L,</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">ZIP =</span> 0L,</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">FactorCount =</span> 4L,</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">AddDate =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">Classification =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">MultiClass =</span> <span class="cn">FALSE</span>)))</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Run function and time it</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>runtime <span class="ot">&lt;-</span> <span class="fu">system.time</span>(</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> <span class="fu">CreateHolidayVariables</span>(</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    data,</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">DateCols =</span> <span class="st">"DateTime"</span>,</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">LookbackDays =</span> <span class="dv">7</span>,</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">HolidayGroups =</span> <span class="fu">c</span>(<span class="st">"USPublicHolidays"</span>,<span class="st">"EasterGroup"</span>,<span class="st">"ChristmasGroup"</span>,<span class="st">"OtherEcclesticalFeasts"</span>),</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">Holidays =</span> <span class="cn">NULL</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">Print =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(runtime)</span></code></pre></div>
 
 </details><details><summary>
 Function Description
@@ -1180,7 +1215,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create fake data with 10 categorical columns</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -1263,7 +1298,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create fake data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>, 
@@ -1304,7 +1339,7 @@ Function Description
 Code Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create fake data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.75</span>,
@@ -1427,7 +1462,7 @@ Regression Description
 CatBoost Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -1509,7 +1544,7 @@ CatBoost Example
 XGBoost Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -1524,12 +1559,12 @@ XGBoost Example
 <span class="va">TestModel</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoXGBoostRegression.html">AutoXGBoostRegression</a></span><span class="op">(</span>
   
   <span class="co"># GPU or CPU</span>
-  TreeMethod <span class="op">=</span> <span class="st">"hist"</span>,
+  TreeMethod <span class="op">=</span> <span class="st">'hist'</span>,
   NThreads <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span><span class="op">(</span><span class="op">)</span>,
   LossFunction <span class="op">=</span> <span class="st">'reg:squarederror'</span>,
   
   <span class="co"># Metadata args</span>
-  OutputSelection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Importances"</span>, <span class="st">"EvalPlots"</span>, <span class="st">"EvalMetrics"</span>, <span class="st">"Score_TrainData"</span><span class="op">)</span>,
+  OutputSelection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Importances'</span>, <span class="st">'EvalPlots'</span>, <span class="st">'EvalMetrics'</span>, <span class="st">'Score_TrainData'</span><span class="op">)</span>,
   model_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html">normalizePath</a></span><span class="op">(</span><span class="st">"./"</span><span class="op">)</span>,
   metadata_path <span class="op">=</span> <span class="cn">NULL</span>,
   ModelID <span class="op">=</span> <span class="st">"Test_Model_1"</span>,
@@ -1546,24 +1581,22 @@ XGBoost Example
   ValidationData <span class="op">=</span> <span class="cn">NULL</span>,
   TestData <span class="op">=</span> <span class="cn">NULL</span>,
   TargetColumnName <span class="op">=</span> <span class="st">"Adrian"</span>,
-  FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">%in%</span>
-                                  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>,
+  FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span>,<span class="st">'Adrian'</span><span class="op">)</span><span class="op">]</span>,
   PrimaryDateColumn <span class="op">=</span> <span class="cn">NULL</span>,
   WeightsColumnName <span class="op">=</span> <span class="cn">NULL</span>,
-  IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>,<span class="st">"IDcol_2"</span><span class="op">)</span>,
-  TransformNumericColumns <span class="op">=</span> <span class="cn">NULL</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>,
-              <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span>, <span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span><span class="op">)</span>,
+  TransformNumericColumns <span class="op">=</span> <span class="st">'Adrian'</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Asinh'</span>,<span class="st">'Asin'</span>,<span class="st">'Log'</span>,<span class="st">'LogPlus1'</span>,<span class="st">'Sqrt'</span>,<span class="st">'Logit'</span><span class="op">)</span>,
   
   <span class="co"># Model evaluation args</span>
-  eval_metric <span class="op">=</span> <span class="st">"rmse"</span>,
+  eval_metric <span class="op">=</span> <span class="st">'rmse'</span>,
   NumOfParDepPlots <span class="op">=</span> <span class="fl">3L</span>,
   
   <span class="co"># Grid tuning args</span>
   PassInGrid <span class="op">=</span> <span class="cn">NULL</span>,
   GridTune <span class="op">=</span> <span class="cn">FALSE</span>,
-  grid_eval_metric <span class="op">=</span> <span class="st">"r2"</span>,
-  BaselineComparison <span class="op">=</span> <span class="st">"default"</span>,
+  grid_eval_metric <span class="op">=</span> <span class="st">'r2'</span>,
+  BaselineComparison <span class="op">=</span> <span class="st">'default'</span>,
   MaxModelsInGrid <span class="op">=</span> <span class="fl">10L</span>,
   MaxRunsWithoutNewWinner <span class="op">=</span> <span class="fl">20L</span>,
   MaxRunMinutes <span class="op">=</span> <span class="fl">24L</span><span class="op">*</span><span class="fl">60L</span>,
@@ -1581,7 +1614,7 @@ XGBoost Example
 LightGBM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -1721,7 +1754,7 @@ LightGBM Example
 H2O-GBM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -1758,11 +1791,11 @@ H2O-GBM Example
   TrainOnFull <span class="op">=</span> <span class="cn">FALSE</span>,
   ValidationData <span class="op">=</span> <span class="cn">NULL</span>,
   TestData <span class="op">=</span> <span class="cn">NULL</span>,
-  TargetColumnName <span class="op">=</span> <span class="st">"Adrian"</span>,
-  FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>,
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span>,<span class="st">'Adrian'</span><span class="op">)</span><span class="op">]</span>,
   WeightsColumn <span class="op">=</span> <span class="cn">NULL</span>,
   TransformNumericColumns <span class="op">=</span> <span class="cn">NULL</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span>,<span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Asinh'</span>,<span class="st">'Asin'</span>,<span class="st">'Log'</span>,<span class="st">'LogPlus1'</span>,<span class="st">'Sqrt'</span>,<span class="st">'Logit'</span><span class="op">)</span>,
   
   <span class="co"># ML grid tuning args</span>
   GridTune <span class="op">=</span> <span class="cn">FALSE</span>,
@@ -1794,7 +1827,7 @@ H2O-GBM Example
 H2O-DRF Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -1836,7 +1869,7 @@ H2O-DRF Example
   FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>,
   WeightsColumn <span class="op">=</span> <span class="cn">NULL</span>,
   TransformNumericColumns <span class="op">=</span> <span class="cn">NULL</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span>, <span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span><span class="op">)</span>,
   
   <span class="co"># Grid Tuning Args</span>
   GridStrategy <span class="op">=</span> <span class="st">"Cartesian"</span>,
@@ -1863,7 +1896,7 @@ H2O-DRF Example
 H2O-GLM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -1907,7 +1940,7 @@ H2O-GLM Example
   InteractionColNumbers <span class="op">=</span> <span class="cn">NULL</span>,
   WeightsColumn <span class="op">=</span> <span class="cn">NULL</span>,
   TransformNumericColumns <span class="op">=</span> <span class="cn">NULL</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span>, <span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span><span class="op">)</span>,
   
   <span class="co"># Model args</span>
   GridTune <span class="op">=</span> <span class="cn">FALSE</span>,
@@ -1935,7 +1968,7 @@ H2O-GLM Example
 H2O-AutoML Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data with numeric and categorical features</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -1973,7 +2006,7 @@ H2O-AutoML Example
   TargetColumnName <span class="op">=</span> <span class="st">"Adrian"</span>,
   FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>,
   TransformNumericColumns <span class="op">=</span> <span class="cn">NULL</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Logit"</span>, <span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Logit"</span><span class="op">)</span>,
 
   <span class="co"># Model args</span>
   GridTune <span class="op">=</span> <span class="cn">FALSE</span>,
@@ -1985,7 +2018,7 @@ H2O-AutoML Example
 H2O-GAM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2034,7 +2067,7 @@ H2O-GAM Example
   WeightsColumn <span class="op">=</span> <span class="cn">NULL</span>,
   GamColNames <span class="op">=</span> <span class="va">GamCols</span>,
   TransformNumericColumns <span class="op">=</span> <span class="cn">NULL</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span>, <span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span><span class="op">)</span>,
   
   <span class="co"># Model args</span>
   num_knots <span class="op">=</span> <span class="cn">NULL</span>,
@@ -2096,7 +2129,7 @@ Classification Description
 CatBoost Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2176,7 +2209,7 @@ CatBoost Example
 XGBoost Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2245,7 +2278,7 @@ XGBoost Example
 LightGBM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2380,7 +2413,7 @@ LightGBM Example
 H2O-GBM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2449,7 +2482,7 @@ H2O-GBM Example
 H2O-DRF Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2515,7 +2548,7 @@ H2O-DRF Example
 H2O-GLM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data with numeric and categorical features</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2584,7 +2617,7 @@ H2O-GLM Example
 H2O-AutoML Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data with numeric and categorical features</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>, 
@@ -2622,7 +2655,7 @@ H2O-AutoML Example
 H2O-GAM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2726,7 +2759,7 @@ MultiClass Description
 CatBoost Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2804,7 +2837,7 @@ CatBoost Example
 XGBoost Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -2871,7 +2904,7 @@ XGBoost Example
 LightGBM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -3007,7 +3040,7 @@ LightGBM Example
 H2O-GBM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -3066,7 +3099,7 @@ H2O-GBM Example
 H2O-DRF Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -3123,7 +3156,7 @@ H2O-DRF Example
 H2O-GLM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data with numeric and categorical features</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -3191,7 +3224,7 @@ H2O-GLM Example
 H2O-AutoML Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data with numeric and categorical features</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>Correlation <span class="op">=</span> <span class="fl">0.85</span>, N <span class="op">=</span> <span class="fl">1000</span>, ID <span class="op">=</span> <span class="fl">2</span>, ZIP <span class="op">=</span> <span class="fl">0</span>, AddDate <span class="op">=</span> <span class="cn">FALSE</span>, Classification <span class="op">=</span> <span class="cn">FALSE</span>, MultiClass <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
@@ -3222,7 +3255,7 @@ H2O-AutoML Example
 H2O-GAM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data with numeric and categorical features</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -3312,7 +3345,7 @@ Hurdle Model Description
 CatBoost Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Test data.table</span>
 <span class="va">CatBoost_QA</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/J.html">CJ</a></span><span class="op">(</span>
   TOF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>,<span class="cn">FALSE</span><span class="op">)</span>,
@@ -3466,7 +3499,7 @@ CatBoost Example
 XGBoost Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Test data.table</span>
 <span class="va">XGBoost_QA</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/J.html">CJ</a></span><span class="op">(</span>
   TOF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>,<span class="cn">FALSE</span><span class="op">)</span>,
@@ -3608,7 +3641,7 @@ XGBoost Example
 LightGBM Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Test data.table</span>
 <span class="va">LightGBM_QA</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/J.html">CJ</a></span><span class="op">(</span>
   TOF <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>,<span class="cn">FALSE</span><span class="op">)</span>,
@@ -3844,7 +3877,7 @@ AutoCatBoost__() Examples
 AutoCatBoostRegression() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -4007,7 +4040,7 @@ AutoCatBoostRegression() Scoring Example
 AutoCatBoostClassifier() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Refresh data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -4165,7 +4198,7 @@ AutoCatBoostClassifier() Scoring Example
 AutoCatBoostMultiClasss() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Refresh data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -4296,7 +4329,7 @@ AutoCatBoostMultiClasss() Scoring Example
 AutoCatBoostHurdleModel() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Classify or Multiclass example</span>
 <span class="va">Classify</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span>
 
@@ -4392,7 +4425,7 @@ AutoLightGBM__() Examples
 AutoLightGBMRegression() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Refresh data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -4576,7 +4609,7 @@ AutoLightGBMRegression() Scoring Example
 AutoLightGBMClassifier() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Refresh data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -4756,7 +4789,7 @@ AutoLightGBMClassifier() Scoring Example
 AutoLightGBMMultiClasss() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Refresh data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -4937,7 +4970,7 @@ AutoLightGBMMultiClasss() Scoring Example
 AutoLightGBMHurdleModel() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Classify</span>
 <span class="va">Classify</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span>
 
@@ -5095,7 +5128,7 @@ AutoXGBoost__() Examples
 AutoXGBoostRegression() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Refresh data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -5152,7 +5185,7 @@ AutoXGBoostRegression() Scoring Example
   WeightsColumnName <span class="op">=</span> <span class="st">"Weights"</span>,
   IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>,<span class="st">"IDcol_2"</span>,<span class="st">"DateTime"</span><span class="op">)</span>,
   TransformNumericColumns <span class="op">=</span> <span class="cn">NULL</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span>, <span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span><span class="op">)</span>,
   
   <span class="co"># Model evaluation</span>
   eval_metric <span class="op">=</span> <span class="st">"rmse"</span>,
@@ -5207,7 +5240,7 @@ AutoXGBoostRegression() Scoring Example
 AutoXGBoostClassifier() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Refresh data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -5315,7 +5348,7 @@ AutoXGBoostClassifier() Scoring Example
 AutoXGBoostMultiClasss() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Refresh data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -5420,7 +5453,7 @@ AutoXGBoostMultiClasss() Scoring Example
 AutoXGBoostHurdleModel() Scoring Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Classify</span>
 <span class="va">Classify</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span>
 
@@ -5515,10 +5548,10 @@ AutoXGBoostHurdleModel() Scoring Example
 Expand to view content
 </summary><p>
 <details><summary>
-ModelInsightsReport() Example
+Regression ModelInsightsReport() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
   Correlation <span class="op">=</span> <span class="fl">0.85</span>,
@@ -5532,55 +5565,173 @@ ModelInsightsReport() Example
 <span class="co"># Copy data</span>
 <span class="va">data1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/copy.html">copy</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>
 
+<span class="co"># Define features names</span>
+<span class="va">Features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span>,<span class="st">'Adrian'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+
 <span class="co"># Run function</span>
 <span class="va">RemixOutput</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostRegression.html">AutoCatBoostRegression</a></span><span class="op">(</span>
-
+  
   <span class="co"># GPU or CPU and the number of available GPUs</span>
-  TrainOnFull <span class="op">=</span> <span class="cn">FALSE</span>,
   task_type <span class="op">=</span> <span class="st">'GPU'</span>,
   NumGPUs <span class="op">=</span> <span class="fl">1</span>,
-
+  NumOfParDepPlots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">Features</span><span class="op">)</span>,
+  
   <span class="co"># Metadata args</span>
   OutputSelection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Importances'</span>,<span class="st">'EvalPlots'</span>,<span class="st">'EvalMetrics'</span>,<span class="st">'Score_TrainData'</span><span class="op">)</span>,
   ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
   model_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
   metadata_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
-  SaveModelObjects <span class="op">=</span> <span class="cn">FALSE</span>,
-  SaveInfoToPDF <span class="op">=</span> <span class="cn">FALSE</span>,
   ReturnModelObjects <span class="op">=</span> <span class="cn">TRUE</span>,
-
+  
   <span class="co"># Data args</span>
   data <span class="op">=</span> <span class="va">data1</span>,
-  ValidationData <span class="op">=</span> <span class="cn">NULL</span>,
-  TestData <span class="op">=</span> <span class="cn">NULL</span>,
   TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
-  FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span>,<span class="st">'Adrian'</span><span class="op">)</span><span class="op">]</span>,
+  FeatureColNames <span class="op">=</span> <span class="va">Features</span>,
   IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span><span class="op">)</span>,
   TransformNumericColumns <span class="op">=</span> <span class="st">'Adrian'</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Asinh'</span>,<span class="st">'Asin'</span>,<span class="st">'Log'</span>,<span class="st">'LogPlus1'</span>,<span class="st">'Sqrt'</span>,<span class="st">'Logit'</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Asinh'</span>,<span class="st">'Asin'</span>,<span class="st">'Log'</span>,<span class="st">'LogPlus1'</span>,<span class="st">'Sqrt'</span>,<span class="st">'Logit'</span><span class="op">)</span><span class="op">)</span>
 
-  <span class="co"># Model evaluation</span>
-  eval_metric <span class="op">=</span> <span class="st">'RMSE'</span>,
-  eval_metric_value <span class="op">=</span> <span class="fl">1.5</span>,
-  loss_function <span class="op">=</span> <span class="st">'RMSE'</span>,
-  loss_function_value <span class="op">=</span> <span class="fl">1.5</span>,
-  MetricPeriods <span class="op">=</span> <span class="fl">10L</span>,
-  NumOfParDepPlots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span><span class="op">-</span><span class="fl">1L</span><span class="op">-</span><span class="fl">2L</span><span class="op">)</span>
-
-<span class="co"># Create Model Insights Report</span>
+<span class="co"># Build report</span>
 <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/ModelInsightsReport.html">ModelInsightsReport</a></span><span class="op">(</span>
+  
+  <span class="co"># Meta info</span>
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  PredictionColumnName <span class="op">=</span> <span class="st">'Predict'</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
+  DateColumnName <span class="op">=</span> <span class="cn">NULL</span>,
+  
+  <span class="co"># Control options</span>
   TargetType <span class="op">=</span> <span class="st">'regression'</span>,
-  ModelID <span class="op">=</span> <span class="st">'ModelTest'</span>,
+  ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
   Algo <span class="op">=</span> <span class="st">'catboost'</span>,
-  SourcePath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
   OutputPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
   RemixOutput <span class="op">=</span> <span class="va">RemixOutput</span><span class="op">)</span></code></pre></div>
 </details></p>
 </details><details><summary>
+Classification ModelInsightsReport() Example
+</summary><p>
+</p>
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
+<span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
+  Correlation <span class="op">=</span> <span class="fl">0.85</span>,
+  N <span class="op">=</span> <span class="fl">10000</span>,
+  ID <span class="op">=</span> <span class="fl">2</span>,
+  ZIP <span class="op">=</span> <span class="fl">0</span>,
+  AddDate <span class="op">=</span> <span class="cn">FALSE</span>,
+  Classification <span class="op">=</span> <span class="cn">TRUE</span>,
+  MultiClass <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+
+<span class="co"># Copy data</span>
+<span class="va">data1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/copy.html">copy</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>
+
+<span class="co"># Feature names</span>
+<span class="va">Features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span>,<span class="st">'Adrian'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+
+<span class="co"># Run function</span>
+<span class="va">RemixOutput</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostClassifier.html">AutoCatBoostClassifier</a></span><span class="op">(</span>
+  
+  <span class="co"># GPU or CPU and the number of available GPUs</span>
+  task_type <span class="op">=</span> <span class="st">'GPU'</span>,
+  NumGPUs <span class="op">=</span> <span class="fl">1</span>,
+  
+  <span class="co"># Metadata args</span>
+  OutputSelection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Score_TrainData'</span>, <span class="st">'Importances'</span>, <span class="st">'EvalPlots'</span>, <span class="st">'EvalMetrics'</span><span class="op">)</span>,
+  ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
+  model_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  metadata_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  ReturnModelObjects <span class="op">=</span> <span class="cn">TRUE</span>,
+  NumOfParDepPlots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">Features</span><span class="op">)</span>,
+
+  <span class="co"># Data args</span>
+  data <span class="op">=</span> <span class="va">data1</span>,
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  FeatureColNames <span class="op">=</span> <span class="va">Features</span>,
+  IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># Build report</span>
+<span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/ModelInsightsReport.html">ModelInsightsReport</a></span><span class="op">(</span>
+  
+  <span class="co"># Meta info</span>
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  PredictionColumnName <span class="op">=</span> <span class="st">'p1'</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
+  DateColumnName <span class="op">=</span> <span class="cn">NULL</span>,
+  
+  <span class="co"># Control options</span>
+  TargetType <span class="op">=</span> <span class="st">'classification'</span>,
+  ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
+  Algo <span class="op">=</span> <span class="st">'catboost'</span>,
+  OutputPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  RemixOutput <span class="op">=</span> <span class="va">RemixOutput</span><span class="op">)</span></code></pre></div>
+
+</details><details><summary>
+MultiClass ModelInsightsReport() Example
+</summary><p>
+</p>
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Create some dummy correlated data</span>
+<span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>
+  Correlation <span class="op">=</span> <span class="fl">0.85</span>,
+  N <span class="op">=</span> <span class="fl">10000L</span>,
+  ID <span class="op">=</span> <span class="fl">2L</span>,
+  ZIP <span class="op">=</span> <span class="fl">0L</span>,
+  AddDate <span class="op">=</span> <span class="cn">FALSE</span>,
+  Classification <span class="op">=</span> <span class="cn">FALSE</span>,
+  MultiClass <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+
+<span class="co"># Copy data</span>
+<span class="va">data1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/copy.html">copy</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>
+
+<span class="co"># Feature Colnames</span>
+<span class="va">Features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span>,<span class="st">'Adrian'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+
+<span class="co"># Run function</span>
+<span class="va">RemixOutput</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostMultiClass.html">AutoCatBoostMultiClass</a></span><span class="op">(</span>
+  
+  <span class="co"># GPU or CPU and the number of available GPUs</span>
+  task_type <span class="op">=</span> <span class="st">'GPU'</span>,
+  NumGPUs <span class="op">=</span> <span class="fl">1</span>,
+  NumOfParDepPlots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">Features</span><span class="op">)</span>,
+  
+  <span class="co"># Metadata args</span>
+  OutputSelection <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Importances'</span>, <span class="st">'EvalPlots'</span>, <span class="st">'EvalMetrics'</span>, <span class="st">'Score_TrainData'</span><span class="op">)</span>,
+  ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
+  model_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  metadata_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  ReturnModelObjects <span class="op">=</span> <span class="cn">TRUE</span>,
+  
+  <span class="co"># Data args</span>
+  data <span class="op">=</span> <span class="va">data</span>,
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  FeatureColNames <span class="op">=</span> <span class="va">Features</span>,
+  IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co"># Create Model Insights Report</span>
+<span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/ModelInsightsReport.html">ModelInsightsReport</a></span><span class="op">(</span>
+  
+  <span class="co"># DataSets (use TestData for ValidationData)</span>
+  TrainData <span class="op">=</span> <span class="va">train</span>,
+  ValidationData <span class="op">=</span> <span class="va">valid</span>,
+  TestData <span class="op">=</span> <span class="va">test</span>,
+  
+  <span class="co"># Meta info</span>
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  PredictionColumnName <span class="op">=</span> <span class="st">'Predict'</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
+  
+  <span class="co"># Control options</span>
+  TargetType <span class="op">=</span> <span class="st">'MultiClass'</span>,
+  ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
+  Algo <span class="op">=</span> <span class="st">'catboost'</span>,
+  OutputPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  RemixOutput <span class="op">=</span> <span class="va">RemixOutput</span><span class="op">)</span></code></pre></div>
+
+</details><details><summary>
 AutoShapeShap() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ShapTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/AutoShapeShap.html">AutoShapeShap</a></span><span class="op">(</span>
   ScoringData <span class="op">=</span> <span class="va">TestData</span>,
   Threads <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">-</span><span class="fl">2L</span><span class="op">)</span>,
@@ -5591,7 +5742,7 @@ AutoShapeShap() Example
 SingleRowShapeShap() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ShapTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/SingleRowShapeShap.html">SingleRowShapeShap</a></span><span class="op">(</span>
   ShapData <span class="op">=</span> <span class="va">SinglePrediction</span>, 
   EntityID <span class="op">=</span> <span class="st">"UserID"</span>, 
@@ -5690,7 +5841,7 @@ Panel Models Description
 Code Example: AutoCatBoostCARMA()
 </summary><p>
 </p>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
 <span class="co"># Out-of-Sample Feature + Grid Tuning of RemixAutoML::AutoCatBoostCARMA()</span>
 <span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
@@ -5810,7 +5961,7 @@ Code Example: AutoCatBoostCARMA()
 
     <span class="co"># Target variable transformations</span>
     TargetTransformation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">Tuning</span><span class="op">[</span><span class="va">Run</span>, <span class="va">TargetTransformation</span><span class="op">]</span><span class="op">)</span>,
-    Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>,<span class="st">"Asinh"</span>,<span class="st">"Log"</span>,<span class="st">"LogPlus1"</span>,<span class="st">"YeoJohnson"</span><span class="op">)</span>,
+    Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Asinh'</span>,<span class="st">'Log'</span>,<span class="st">'LogPlus1'</span>,<span class="st">'Sqrt'</span><span class="op">)</span>,
     Difference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">Tuning</span><span class="op">[</span><span class="va">Run</span>, <span class="va">Difference</span><span class="op">]</span><span class="op">)</span>,
     NonNegativePred <span class="op">=</span> <span class="cn">TRUE</span>,
     RoundPreds <span class="op">=</span> <span class="cn">FALSE</span>,
@@ -5932,7 +6083,7 @@ Code Example: AutoCatBoostCARMA()
 Code Example: AutoCatBoostVectorCARMA()
 </summary><p>
 </p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
 <span class="co"># ML-Based Vector AutoRegression CARMA ----</span>
 <span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
@@ -5984,26 +6135,20 @@ Code Example: AutoCatBoostVectorCARMA()
 
   <span class="co"># Target transformations</span>
   TargetTransformation <span class="op">=</span> <span class="cn">TRUE</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>,
-              <span class="st">"LogPlus1"</span>, <span class="st">"Logit"</span>, <span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Logit"</span><span class="op">)</span>,
   Difference <span class="op">=</span> <span class="cn">FALSE</span>,
   NonNegativePred <span class="op">=</span> <span class="cn">FALSE</span>,
   RoundPreds <span class="op">=</span> <span class="cn">FALSE</span>,
 
   <span class="co"># Date features</span>
   CalendarVariables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"week"</span>, <span class="st">"month"</span>, <span class="st">"quarter"</span><span class="op">)</span>,
-  HolidayVariable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"USPublicHolidays"</span>,
-                      <span class="st">"EasterGroup"</span>,
-                      <span class="st">"ChristmasGroup"</span>,<span class="st">"OtherEcclesticalFeasts"</span><span class="op">)</span>,
+  HolidayVariable <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"USPublicHolidays"</span>, <span class="st">"EasterGroup"</span>, <span class="st">"ChristmasGroup"</span>,<span class="st">"OtherEcclesticalFeasts"</span><span class="op">)</span>,
   HolidayLookback <span class="op">=</span> <span class="cn">NULL</span>,
   HolidayLags <span class="op">=</span> <span class="fl">1</span>,
   HolidayMovingAverages <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,
 
   <span class="co"># Time series features</span>
-  Lags <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"weeks"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">10L</span>, <span class="fl">2L</span><span class="op">)</span>,
-              <span class="st">"months"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span>,
-  MA_Periods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"weeks"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">10L</span>, <span class="fl">2L</span><span class="op">)</span>,
-                    <span class="st">"months"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>,
+  Lags <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"weeks"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">2L</span>,<span class="fl">10L</span>,<span class="fl">2L</span><span class="op">)</span>, <span class="st">"months"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span>, MA_Periods<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"weeks"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">2L</span>,<span class="fl">10L</span>,<span class="fl">2L</span><span class="op">)</span>, <span class="st">"months"</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>,
   SD_Periods <span class="op">=</span> <span class="cn">NULL</span>,
   Skew_Periods <span class="op">=</span> <span class="cn">NULL</span>,
   Kurt_Periods <span class="op">=</span> <span class="cn">NULL</span>,
@@ -6044,7 +6189,7 @@ Code Example: AutoCatBoostVectorCARMA()
 Code Example: AutoXGBoostCARMA()
 </summary><p>
 </p>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
 <span class="co"># XGBoost Version ----</span>
 <span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
@@ -6108,7 +6253,7 @@ Code Example: AutoXGBoostCARMA()
 
   <span class="co"># Target Transformations</span>
   TargetTransformation <span class="op">=</span> <span class="cn">TRUE</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span>,<span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span><span class="op">)</span>,
   Difference <span class="op">=</span> <span class="cn">FALSE</span>,
 
   <span class="co"># Features</span>
@@ -6151,7 +6296,7 @@ Code Example: AutoXGBoostCARMA()
 Code Example: AutoLightGBMCARMA()
 </summary><p>
 </p>
-<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
 <span class="co"># LightGBM Version ----</span>
 <span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
@@ -6336,7 +6481,7 @@ Code Example: AutoLightGBMCARMA()
 Code Example: AutoH2OCARMA()
 </summary><p>
 </p>
-<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
 <span class="co"># H2O Version ----</span>
 <span class="co"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
@@ -6397,8 +6542,7 @@ Code Example: AutoH2OCARMA()
 
   <span class="co"># Target Transformations</span>
   TargetTransformation <span class="op">=</span> <span class="cn">FALSE</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>, <span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>,
-    <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span>, <span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>, <span class="st">"Asin"</span>, <span class="st">"Log"</span>, <span class="st">"LogPlus1"</span>, <span class="st">"Sqrt"</span>, <span class="st">"Logit"</span><span class="op">)</span>,
   Difference <span class="op">=</span> <span class="cn">FALSE</span>,
   NonNegativePred <span class="op">=</span> <span class="cn">FALSE</span>,
   RoundPreds <span class="op">=</span> <span class="cn">FALSE</span>,
@@ -6495,7 +6639,7 @@ Funnel Forecasting Description
 Code Example: AutoCatBoostHurdleCARMA()
 </summary><p>
 </p>
-<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Load Walmart Data from Dropbox----</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html">fread</a></span><span class="op">(</span><span class="st">"https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1"</span><span class="op">)</span>
 
@@ -6541,7 +6685,7 @@ Code Example: AutoCatBoostHurdleCARMA()
 
   <span class="co"># Target transformations</span>
   TargetTransformation <span class="op">=</span> <span class="cn">FALSE</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>,<span class="st">"Asinh"</span>,<span class="st">"Asin"</span>,<span class="st">"Log"</span>,<span class="st">"LogPlus1"</span>,<span class="st">"Logit"</span>,<span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>,<span class="st">"Asin"</span>,<span class="st">"Log"</span>,<span class="st">"LogPlus1"</span>,<span class="st">"Logit"</span><span class="op">)</span>,
   Difference <span class="op">=</span> <span class="cn">FALSE</span>,
   NonNegativePred <span class="op">=</span> <span class="cn">FALSE</span>,
   RoundPreds <span class="op">=</span> <span class="cn">FALSE</span>,  
@@ -6594,7 +6738,7 @@ Code Example: AutoCatBoostHurdleCARMA()
 Code Example: AutoXGBoostHurdleCARMA()
 </summary><p>
 </p>
-<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Load Walmart Data from Dropbox----</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html">fread</a></span><span class="op">(</span><span class="st">"https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1"</span><span class="op">)</span>
 
@@ -6639,7 +6783,7 @@ Code Example: AutoXGBoostHurdleCARMA()
 
   <span class="co"># Target transformations</span>
   TargetTransformation <span class="op">=</span> <span class="cn">FALSE</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>,<span class="st">"Asinh"</span>,<span class="st">"Asin"</span>,<span class="st">"Log"</span>,<span class="st">"LogPlus1"</span>,<span class="st">"Logit"</span>,<span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>,<span class="st">"Asin"</span>,<span class="st">"Log"</span>,<span class="st">"LogPlus1"</span>,<span class="st">"Logit"</span><span class="op">)</span>,
   Difference <span class="op">=</span> <span class="cn">FALSE</span>,
   NonNegativePred <span class="op">=</span> <span class="cn">FALSE</span>,
   RoundPreds <span class="op">=</span> <span class="cn">FALSE</span>,  
@@ -6690,7 +6834,7 @@ Code Example: AutoXGBoostHurdleCARMA()
 Code Example: AutoLightGBMHurdleCARMA()
 </summary><p>
 </p>
-<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Load Walmart Data from Dropbox----</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html">fread</a></span><span class="op">(</span><span class="st">"https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1"</span><span class="op">)</span>
 
@@ -6735,7 +6879,7 @@ Code Example: AutoLightGBMHurdleCARMA()
 
   <span class="co"># Target transformations</span>
   TargetTransformation <span class="op">=</span> <span class="cn">FALSE</span>,
-  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"BoxCox"</span>,<span class="st">"Asinh"</span>,<span class="st">"Asin"</span>,<span class="st">"Log"</span>,<span class="st">"LogPlus1"</span>,<span class="st">"Logit"</span>,<span class="st">"YeoJohnson"</span><span class="op">)</span>,
+  Methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Asinh"</span>,<span class="st">"Asin"</span>,<span class="st">"Log"</span>,<span class="st">"LogPlus1"</span>,<span class="st">"Logit"</span><span class="op">)</span>,
   Difference <span class="op">=</span> <span class="cn">FALSE</span>,
   NonNegativePred <span class="op">=</span> <span class="cn">FALSE</span>,
   RoundPreds <span class="op">=</span> <span class="cn">FALSE</span>,  
@@ -6875,7 +7019,7 @@ CatBoost Funnel Example
 </summary><p>
 </p>
 <p><code><a href="reference/AutoCatBoostFunnelCARMA.html">AutoCatBoostFunnelCARMA()</a></code> and <code><a href="reference/AutoCatBoostFunnelCARMAScoring.html">AutoCatBoostFunnelCARMAScoring()</a></code></p>
-<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create Fake Data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>ChainLadderData <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
@@ -6994,7 +7138,7 @@ LightGBM Funnel Example
 </summary><p>
 </p>
 <p><code><a href="reference/AutoLightGBMFunnelCARMA.html">AutoLightGBMFunnelCARMA()</a></code> and <code><a href="reference/AutoLightGBMFunnelCARMAScoring.html">AutoLightGBMFunnelCARMAScoring()</a></code></p>
-<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create Fake Data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>ChainLadderData <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
@@ -7178,7 +7322,7 @@ XGBoost Funnel Example
 </summary><p>
 </p>
 <p><code><a href="reference/AutoXGBoostFunnelCARMA.html">AutoXGBoostFunnelCARMA()</a></code> and <code><a href="reference/AutoXGBoostFunnelCARMAScoring.html">AutoXGBoostFunnelCARMAScoring()</a></code></p>
-<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Create Fake Data</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>ChainLadderData <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
@@ -7309,7 +7453,7 @@ Time Series Forecasting Description
 AutoBanditSarima() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Build model</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>Correlation <span class="op">=</span> <span class="fl">0.82</span>, TimeSeries <span class="op">=</span> <span class="cn">TRUE</span>, TimeSeriesTimeAgg <span class="op">=</span> <span class="st">"1min"</span><span class="op">)</span>
 
@@ -7346,7 +7490,7 @@ AutoBanditSarima() Example
 AutoBanditNNet() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Build model</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>Correlation <span class="op">=</span> <span class="fl">0.82</span>, TimeSeries <span class="op">=</span> <span class="cn">TRUE</span>, TimeSeriesTimeAgg <span class="op">=</span> <span class="st">"1min"</span><span class="op">)</span>
 
@@ -7376,7 +7520,7 @@ AutoBanditNNet() Example
 AutoTBATS() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb76"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Build model</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>Correlation <span class="op">=</span> <span class="fl">0.82</span>, TimeSeries <span class="op">=</span> <span class="cn">TRUE</span>, TimeSeriesTimeAgg <span class="op">=</span> <span class="st">"1min"</span><span class="op">)</span>
 
@@ -7407,7 +7551,7 @@ AutoTBATS() Example
 AutoETS() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Build model</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>Correlation <span class="op">=</span> <span class="fl">0.82</span>, TimeSeries <span class="op">=</span> <span class="cn">TRUE</span>, TimeSeriesTimeAgg <span class="op">=</span> <span class="st">"1min"</span><span class="op">)</span>
 
@@ -7435,7 +7579,7 @@ AutoETS() Example
 AutoArfima() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Build model</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>Correlation <span class="op">=</span> <span class="fl">0.82</span>, TimeSeries <span class="op">=</span> <span class="cn">TRUE</span>, TimeSeriesTimeAgg <span class="op">=</span> <span class="st">"1min"</span><span class="op">)</span>
 
@@ -7465,7 +7609,7 @@ AutoArfima() Example
 AutoTS() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb76"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb79"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Build model</span>
 <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/FakeDataGenerator.html">FakeDataGenerator</a></span><span class="op">(</span>Correlation <span class="op">=</span> <span class="fl">0.82</span>, TimeSeries <span class="op">=</span> <span class="cn">TRUE</span>, TimeSeriesTimeAgg <span class="op">=</span> <span class="st">"1min"</span><span class="op">)</span>
 
@@ -7526,37 +7670,37 @@ Functions Description
 AutoRecommenderDataCreate() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co"># data comes in transactional form as a data.table</span></span>
-<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>RatingsMatrix <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">AutoRecommenderDataCreate</span>(</span>
-<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>  data,</span>
-<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">EntityColName =</span> <span class="st">"CustomerID"</span>,</span>
-<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ProductColName =</span> <span class="st">"StockCode"</span>,</span>
-<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">MetricColName =</span> <span class="st">"TotalSales"</span>,</span>
-<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">ReturnMatrix =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co"># data comes in transactional form as a data.table</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>RatingsMatrix <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">AutoRecommenderDataCreate</span>(</span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>  data,</span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">EntityColName =</span> <span class="st">"CustomerID"</span>,</span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ProductColName =</span> <span class="st">"StockCode"</span>,</span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">MetricColName =</span> <span class="st">"TotalSales"</span>,</span>
+<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">ReturnMatrix =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
 
 </details><details><summary>
 AutoRecommenderTrain() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb78"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build Model</span></span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>WinningModel <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">AutoRecommender</span>(</span>
-<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>  RatingsMatrix,</span>
-<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Partition =</span> <span class="st">"Split"</span>,</span>
-<span id="cb78-5"><a href="#cb78-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">KFolds =</span> <span class="dv">1</span>,</span>
-<span id="cb78-6"><a href="#cb78-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Ratio =</span> <span class="fl">0.75</span>,</span>
-<span id="cb78-7"><a href="#cb78-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Given =</span> <span class="dv">1</span>,</span>
-<span id="cb78-8"><a href="#cb78-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">RatingType =</span> <span class="st">"TopN"</span>,</span>
-<span id="cb78-9"><a href="#cb78-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">RatingsKeep =</span> <span class="dv">20</span>,</span>
-<span id="cb78-10"><a href="#cb78-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">SkipModels =</span> <span class="st">"AssociationRules"</span>,</span>
-<span id="cb78-11"><a href="#cb78-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">ModelMetric =</span> <span class="st">"TPR"</span>)</span>
-<span id="cb78-12"><a href="#cb78-12" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build Model</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>WinningModel <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">AutoRecommender</span>(</span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  RatingsMatrix,</span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Partition =</span> <span class="st">"Split"</span>,</span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">KFolds =</span> <span class="dv">1</span>,</span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Ratio =</span> <span class="fl">0.75</span>,</span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Given =</span> <span class="dv">1</span>,</span>
+<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">RatingType =</span> <span class="st">"TopN"</span>,</span>
+<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">RatingsKeep =</span> <span class="dv">20</span>,</span>
+<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">SkipModels =</span> <span class="st">"AssociationRules"</span>,</span>
+<span id="cb81-11"><a href="#cb81-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">ModelMetric =</span> <span class="st">"TPR"</span>)</span>
+<span id="cb81-12"><a href="#cb81-12" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
 
 </details><details><summary>
 AutoRecommenderScore() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb79"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Score new data</span>
 <span class="va">Results</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoRecommenderScore.html">AutoRecommenderScore</a></span><span class="op">(</span>
   data <span class="op">=</span> <span class="va">data</span>,
@@ -7568,7 +7712,7 @@ AutoRecommenderScore() Example
 AutoMarketBasketModel() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb83"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Build rules set</span>
 <span class="va">RulesData</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoMarketBasketModel.html">AutoMarketBasketModel</a></span><span class="op">(</span>
   <span class="va">data</span>,

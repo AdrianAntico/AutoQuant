@@ -8,7 +8,7 @@
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/NewPackageLogo.png" align="center" width="1000" />
 
 
-### Check out the RemixAutoML website or reference manual
+### RemixAutoML website and reference manual
 
 [RemixAutoML Webpage](https://adrianantico.github.io/RemixAutoML/)
 
@@ -59,7 +59,9 @@ Documentation + Code Examples
 
 ## Highlights
 
-Model Insights Reports for Supervised Learning Functions
+#### Model Insights Reports
+
+Automatically generate reports with relevant evaluation metrics, tables, plots, and metadata
 <p>
 
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-regression-collapsed.PNG" align="center" width="166" height="200" />
@@ -67,12 +69,16 @@ Model Insights Reports for Supervised Learning Functions
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/Rmarkdown-multiclass-collapsed.PNG" align="center" width="166" height="200" />
 
 
-Machine Learning and Panel Forecasting Models
+#### Machine Learning and Panel Forecasting Models
+
+AutoML functions by algorithm type and use case type
 <p>
 
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/ML_Models_Menu.PNG" align="center" width="500" />
 
-Feature Engineering
+#### Feature Engineering
+
+Feature engineering functions for a variety of data types and data sets
 <p>
 
 <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/FeatureEngineeringMenu.PNG" align="center" width="500" />
@@ -89,6 +95,21 @@ The minimal set of packages that need to be installed are below. The full list c
 * foreach
 * lubridate
 * timeDate
+
+```r
+
+# Base dependencies
+if(!'arules' %in% installed.packages()) install.packages('arules')
+if(!'bit64' %in% installed.packages()) install.packages('bit64')
+if(!'data.table' %in% installed.packages()) install.packages('data.table')
+if(!'doParallel' %in% installed.packages()) install.packages('doParallel')
+if(!'foreach' %in% installed.packages()) install.packages('foreach')
+if(!'lubridate' %in% installed.packages()) install.packages('lubridate')
+if(!'timeDate' %in% installed.packages()) install.packages('timeDate')
+
+# RemixAutoML
+devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+```
 
 <details><summary>Expand to view content</summary>
 <p>
@@ -128,6 +149,7 @@ if(!("lightgbm" %in% rownames(installed.packages()))) install.packages("lightgbm
 for (pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
 install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))
 devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
+devtools::install_github('AdrianAntico/prettydoc', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 
@@ -1497,12 +1519,12 @@ data <- RemixAutoML::FakeDataGenerator(
 TestModel <- RemixAutoML::AutoXGBoostRegression(
   
   # GPU or CPU
-  TreeMethod = "hist",
+  TreeMethod = 'hist',
   NThreads = parallel::detectCores(),
   LossFunction = 'reg:squarederror',
   
   # Metadata args
-  OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
   model_path = normalizePath("./"),
   metadata_path = NULL,
   ModelID = "Test_Model_1",
@@ -1519,24 +1541,22 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in%
-                                  c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) %in% c('IDcol_1','IDcol_2','Adrian')],
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
-  IDcols = c("IDcol_1","IDcol_2"),
-  TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  IDcols = c('IDcol_1','IDcol_2'),
+  TransformNumericColumns = 'Adrian',
+  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
   
   # Model evaluation args
-  eval_metric = "rmse",
+  eval_metric = 'rmse',
   NumOfParDepPlots = 3L,
   
   # Grid tuning args
   PassInGrid = NULL,
   GridTune = FALSE,
-  grid_eval_metric = "r2",
-  BaselineComparison = "default",
+  grid_eval_metric = 'r2',
+  BaselineComparison = 'default',
   MaxModelsInGrid = 10L,
   MaxRunsWithoutNewWinner = 20L,
   MaxRunMinutes = 24L*60L,
@@ -1737,11 +1757,11 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
   TrainOnFull = FALSE,
   ValidationData = NULL,
   TestData = NULL,
-  TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data)[!names(data) %in% c('IDcol_1','IDcol_2','Adrian')],
   WeightsColumn = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
+  Methods = c('Asinh','Asin','Log','LogPlus1','Sqrt','Logit'),
   
   # ML grid tuning args
   GridTune = FALSE,
@@ -1818,7 +1838,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
   WeightsColumn = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
   
   # Grid Tuning Args
   GridStrategy = "Cartesian",
@@ -1892,7 +1912,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
   InteractionColNumbers = NULL,
   WeightsColumn = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
   
   # Model args
   GridTune = FALSE,
@@ -1961,7 +1981,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
   TargetColumnName = "Adrian",
   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Logit"),
 
   # Model args
   GridTune = FALSE,
@@ -2025,7 +2045,7 @@ TestModel <- RemixAutoML::AutoH2oGAMRegression(
   WeightsColumn = NULL,
   GamColNames = GamCols,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
   
   # Model args
   num_knots = NULL,
@@ -5255,7 +5275,7 @@ TestModel <- RemixAutoML::AutoXGBoostRegression(
   WeightsColumnName = "Weights",
   IDcols = c("IDcol_1","IDcol_2","DateTime"),
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
   
   # Model evaluation
   eval_metric = "rmse",
@@ -6080,7 +6100,7 @@ for(Run in seq_len(TotalRuns)) {
 
     # Target variable transformations
     TargetTransformation = as.logical(Tuning[Run, TargetTransformation]),
-    Methods = c("BoxCox","Asinh","Log","LogPlus1","YeoJohnson"),
+    Methods = c('Asinh','Log','LogPlus1','Sqrt'),
     Difference = as.logical(Tuning[Run, Difference]),
     NonNegativePred = TRUE,
     RoundPreds = FALSE,
@@ -6257,26 +6277,20 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
 
   # Target transformations
   TargetTransformation = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-              "LogPlus1", "Logit", "YeoJohnson"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Logit"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
 
   # Date features
   CalendarVariables = c("week", "month", "quarter"),
-  HolidayVariable = c("USPublicHolidays",
-                      "EasterGroup",
-                      "ChristmasGroup","OtherEcclesticalFeasts"),
+  HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup","OtherEcclesticalFeasts"),
   HolidayLookback = NULL,
   HolidayLags = 1,
   HolidayMovingAverages = 1:2,
 
   # Time series features
-  Lags = list("weeks" = seq(2L, 10L, 2L),
-              "months" = c(1:3)),
-  MA_Periods = list("weeks" = seq(2L, 10L, 2L),
-                    "months" = c(2,3)),
+  Lags = list("weeks"=seq(2L,10L,2L), "months"=c(1:3)), MA_Periods=list("weeks"=seq(2L,10L,2L), "months"=c(2,3)),
   SD_Periods = NULL,
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
@@ -6384,7 +6398,7 @@ XGBoostResults <- AutoXGBoostCARMA(
 
   # Target Transformations
   TargetTransformation = TRUE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
   Difference = FALSE,
 
   # Features
@@ -6679,8 +6693,7 @@ Results <- RemixAutoML::AutoH2OCARMA(
 
   # Target Transformations
   TargetTransformation = FALSE,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-    "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
@@ -6844,7 +6857,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
 
   # Target transformations
   TargetTransformation = FALSE,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Methods = c("Asinh","Asin","Log","LogPlus1","Logit"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,  
@@ -6945,7 +6958,7 @@ Output <- RemixAutoML::AutoXGBoostHurdleCARMA(
 
   # Target transformations
   TargetTransformation = FALSE,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Methods = c("Asinh","Asin","Log","LogPlus1","Logit"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,  
@@ -7044,7 +7057,7 @@ Output <- RemixAutoML::AutoLightGBMHurdleCARMA(
 
   # Target transformations
   TargetTransformation = FALSE,
-  Methods = c("BoxCox","Asinh","Asin","Log","LogPlus1","Logit","YeoJohnson"),
+  Methods = c("Asinh","Asin","Log","LogPlus1","Logit"),
   Difference = FALSE,
   NonNegativePred = FALSE,
   RoundPreds = FALSE,  

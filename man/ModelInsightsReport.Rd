@@ -33,29 +33,29 @@ ModelInsightsReport(
 
 \item{TrainData}{data.table or something that converts to data.table via as.data.table}
 
-\item{ValidationData}{= data.table or something that converts to data.table via as.data.table}
+\item{ValidationData}{data.table or something that converts to data.table via as.data.table}
 
-\item{TestData}{= data.table or something that converts to data.table via as.data.table}
+\item{TestData}{data.table or something that converts to data.table via as.data.table}
 
-\item{TargetColumnName}{For selecting columns}
+\item{TargetColumnName}{NULL. Target variable column name as character}
 
-\item{PredictionColumnName}{NULL}
+\item{PredictionColumnName}{NULL. Predicted value column name as character. 'p1' for RemixAutoML functions}
 
-\item{FeatureColumnNames}{NULL}
+\item{FeatureColumnNames}{NULL. Feature column names as character vector.}
 
-\item{DateColumnName}{NULL}
+\item{DateColumnName}{NULL. Date column name as character}
 
 \item{TargetType}{'regression', 'classification', or 'multiclass'}
 
 \item{ModelID}{ModelID used in the RemixAutoML supervised learning function}
 
-\item{Algo}{'catboost', 'xgboost', 'lightgbm', 'h2o'}
+\item{Algo}{'catboost' or 'other'. Use 'catboost' if using RemixAutoML::AutoCatBoost_() functions. Otherwise, 'other'}
 
 \item{SourcePath}{Path to directory with RemixAutoML Model Output}
 
 \item{OutputPath}{Path to directory where the html will be saved}
 
-\item{RemixOutput}{Model Output passed from RemixAutoML::Auto_*() functions}
+\item{RemixOutput}{Returned output from regression, classificaiton, and multiclass Remix Auto_() models. Currenly supports CatBoost, XGBoost, and LightGBM models}
 
 \item{Test_Importance_dt}{NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a two column data.table with colnames 'Variable' and 'Importance'}
 
@@ -63,11 +63,11 @@ ModelInsightsReport(
 
 \item{Train_Importance_dt}{NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a two column data.table with colnames 'Variable' and 'Importance'}
 
-\item{Test_Interaction_dt}{NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2' and 'Importance'}
+\item{Test_Interaction_dt}{NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'}
 
-\item{Validation_Interaction_dt}{NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'}
+\item{Validation_Interaction_dt}{NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'}
 
-\item{Train_Interaction_dt}{NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Feature1', 'Feature2'  and 'Importance'}
+\item{Train_Interaction_dt}{NULL.. Ignore if using RemixAutoML Models. Otherwise, supply a three column data.table with colnames 'Features1', 'Features2'  and 'score'}
 
 \item{GlobalVars}{ls() don't use}
 
