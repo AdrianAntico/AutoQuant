@@ -15,6 +15,7 @@
 #' @param SLags Max seasonal lags
 #' @param SMA Max seasonal moving averages
 #' @param tstat the t-stat value for tsoutliers
+#' @param FixedParams Set to TRUE or FALSE. If TRUE, a stats::Arima() model if fitted with those parameter values. If FALSE, then an auto.arima is built with the parameter values representing the max those values can be.
 #' @examples
 #' \dontrun{
 #' data <- data.table::data.table(
@@ -56,7 +57,8 @@ ResidualOutliers <- function(data,
                              MA = 5,
                              SLags = 0,
                              SMA = 0,
-                             tstat = 2) {
+                             tstat = 2,
+                             FixedParams = FALSE) {
 
   # Define TS Frequency
   if(tolower(TimeUnit) %chin% c('hour','hours')) {
@@ -101,20 +103,35 @@ ResidualOutliers <- function(data,
   tsData <- stats::ts(temp, start = temp[, min(get(DateColName))][[1L]], frequency = freq)
 
   # Build the auto arima ----
-  fit <- tryCatch({
-    forecast::auto.arima(
-      y = tsData[, 'Residuals'],
-      max.p = Lags,
-      max.q = MA,
-      max.P = SLags,
-      max.Q = SMA,
-      max.d = 1,
-      max.D = 1,
-      ic = 'bic',
-      lambda = if(MinVal > 0) TRUE else FALSE,
-      biasadj = if(MinVal > 0) TRUE else FALSE,
-      stepwise = TRUE)
+  if(!FixedParams) {
+    fit <- tryCatch({
+      forecast::auto.arima(
+        y = tsData[, 'Residuals'],
+        max.p = Lags,
+        max.q = MA,
+        max.P = SLags,
+        max.Q = SMA,
+        max.d = 1,
+        max.D = 1,
+        ic = 'bic',
+        lambda = if(MinVal > 0) TRUE else FALSE,
+        biasadj = if(MinVal > 0) TRUE else FALSE,
+        stepwise = TRUE)
+      }, error = function(x) NULL)
+  } else {
+    fit <- tryCatch({
+      stats::arima(
+        tsData[, 'Residuals'],
+        order = c(Lags, 1L, MA),
+        seasonal = list(order = c(SLags, 1L, SMA), period = freq),
+        xreg = NULL, include.mean = TRUE,
+        transform.pars = TRUE,
+        fixed = NULL, init = NULL,
+        method = c("ML"),
+        optim.method = "BFGS",
+        optim.control = list(), kappa = 1e6)
     }, error = function(x) NULL)
+  }
 
   # Store the arima parameters ----
   if(is.null(fit)) stop('No model could be fit')

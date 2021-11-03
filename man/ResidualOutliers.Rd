@@ -14,7 +14,8 @@ ResidualOutliers(
   MA = 5,
   SLags = 0,
   SMA = 0,
-  tstat = 2
+  tstat = 2,
+  FixedParams = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ ResidualOutliers(
 \item{SMA}{Max seasonal moving averages}
 
 \item{tstat}{the t-stat value for tsoutliers}
+
+\item{FixedParams}{Set to TRUE or FALSE. If TRUE, a stats::Arima() model if fitted with those parameter values. If FALSE, then an auto.arima is built with the parameter values representing the max those values can be.}
 }
 \value{
 A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model.
