@@ -11,8 +11,10 @@
 #' @param PredictedColName The name of your predicted value column. If you supply this, you will run anomaly detection of the difference between the target variable and your predicted value. If you leave PredictedColName NULL then you will run anomaly detection over the target variable.
 #' @param TimeUnit The time unit of your date column: hour, day, week, month, quarter, year
 #' @param Lags the largest lag or moving average (seasonal too) values for the arima fit
+#' @param Diff The largest d value for differencing
 #' @param MA Max moving average
 #' @param SLags Max seasonal lags
+#' @param SDiff The largest d value for seasonal differencing
 #' @param SMA Max seasonal moving averages
 #' @param tstat the t-stat value for tsoutliers
 #' @param FixedParams Set to TRUE or FALSE. If TRUE, a stats::Arima() model if fitted with those parameter values. If FALSE, then an auto.arima is built with the parameter values representing the max those values can be.
@@ -38,8 +40,10 @@
 #'   PredictedColName = NULL,
 #'   TimeUnit = "day",
 #'   Lags = 5,
+#'   Diff = 1,
 #'   MA = 5,
 #'   SLags = 0,
+#'   SDiff = 0,
 #'   SMA = 0,
 #'   tstat = 4)
 #' data     <- stuff[[1]]
@@ -54,8 +58,10 @@ ResidualOutliers <- function(data,
                              PredictedColName = NULL,
                              TimeUnit = 'day',
                              Lags = 5,
+                             Diff = 1,
                              MA = 5,
                              SLags = 0,
+                             SDiff = 1,
                              SMA = 0,
                              tstat = 2,
                              FixedParams = FALSE) {
@@ -111,8 +117,8 @@ ResidualOutliers <- function(data,
         max.q = MA,
         max.P = SLags,
         max.Q = SMA,
-        max.d = 1,
-        max.D = 1,
+        max.d = Diff,
+        max.D = SDiff,
         ic = 'bic',
         lambda = if(MinVal > 0) TRUE else FALSE,
         biasadj = if(MinVal > 0) TRUE else FALSE,
@@ -122,14 +128,15 @@ ResidualOutliers <- function(data,
     fit <- tryCatch({
       stats::arima(
         tsData[, 'Residuals'],
-        order = c(Lags, 1L, MA),
-        seasonal = list(order = c(SLags, 1L, SMA), period = freq),
+        order = c(Lags, Diff, MA),
+        seasonal = list(order = c(SLags, SDiff, SMA), period = freq),
         xreg = NULL, include.mean = TRUE,
         transform.pars = TRUE,
         fixed = NULL, init = NULL,
         method = c("ML"),
         optim.method = "BFGS",
-        optim.control = list(), kappa = 1e6)
+        optim.control = list(),
+        kappa = 1e6)
     }, error = function(x) NULL)
   }
 

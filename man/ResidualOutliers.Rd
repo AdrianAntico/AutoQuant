@@ -11,8 +11,10 @@ ResidualOutliers(
   PredictedColName = NULL,
   TimeUnit = "day",
   Lags = 5,
+  Diff = 1,
   MA = 5,
   SLags = 0,
+  SDiff = 1,
   SMA = 0,
   tstat = 2,
   FixedParams = FALSE
@@ -31,9 +33,13 @@ ResidualOutliers(
 
 \item{Lags}{the largest lag or moving average (seasonal too) values for the arima fit}
 
+\item{Diff}{The largest d value for differencing}
+
 \item{MA}{Max moving average}
 
 \item{SLags}{Max seasonal lags}
+
+\item{SDiff}{The largest d value for seasonal differencing}
 
 \item{SMA}{Max seasonal moving averages}
 
@@ -69,8 +75,10 @@ stuff <- ResidualOutliers(
   PredictedColName = NULL,
   TimeUnit = "day",
   Lags = 5,
+  Diff = 1,
   MA = 5,
   SLags = 0,
+  SDiff = 0,
   SMA = 0,
   tstat = 4)
 data     <- stuff[[1]]
