@@ -6,8 +6,8 @@
 \usage{
 ResidualOutliers(
   data,
-  DateColName = "DateTime",
-  TargetColName = "Target",
+  DateColName = NULL,
+  TargetColName = NULL,
   PredictedColName = NULL,
   TimeUnit = "day",
   Lags = 5,
@@ -48,7 +48,7 @@ ResidualOutliers(
 \item{FixedParams}{Set to TRUE or FALSE. If TRUE, a stats::Arima() model if fitted with those parameter values. If FALSE, then an auto.arima is built with the parameter values representing the max those values can be.}
 }
 \value{
-A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model.
+A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model object
 }
 \description{
 ResidualOutliers is an automated time series outlier detection function that utilizes tsoutliers and auto.arima. It looks for five types of outliers: "AO" Additive outliter - a singular extreme outlier that surrounding values aren't affected by; "IO" Innovational outlier - Initial outlier with subsequent anomalous values; "LS" Level shift - An initial outlier with subsequent observations being shifted by some constant on average; "TC" Transient change - initial outlier with lingering effects that dissapate exponentially over time; "SLS" Seasonal level shift - similar to level shift but on a seasonal scale.
@@ -57,18 +57,19 @@ ResidualOutliers is an automated time series outlier detection function that uti
 \dontrun{
 data <- data.table::data.table(
   DateTime = as.Date(Sys.time()),
-  Target = as.numeric(stats::filter(
-    rnorm(1000, mean = 50, sd = 20),
-  filter=rep(1,10),
-  circular=TRUE)))
-data[, temp := seq(1:1000)][, DateTime := DateTime - temp][
-  , temp := NULL]
-data <- data[order(DateTime)]
+  Target = as.numeric(
+    stats::filter(
+      rnorm(1000, mean = 50, sd = 20),
+      filter=rep(1,10),
+      circular=TRUE)))
+data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+data.table::setorderv(x = data, cols = 'DateTime', 1)
 data[, Predicted := as.numeric(
-  stats::filter(rnorm(1000, mean = 50, sd = 20),
-filter=rep(1,10),
-circular=TRUE))]
-stuff <- ResidualOutliers(
+  stats::filter(
+    rnorm(1000, mean = 50, sd = 20),
+    filter=rep(1,10),
+    circular=TRUE))]
+Output <- ResidualOutliers(
   data = data,
   DateColName = "DateTime",
   TargetColName = "Target",
@@ -81,8 +82,8 @@ stuff <- ResidualOutliers(
   SDiff = 0,
   SMA = 0,
   tstat = 4)
-data     <- stuff[[1]]
-model    <- stuff[[2]]
+data <- Output[['FullData']]
+model <- Output[['ARIMA_MODEL']]
 outliers <- data[type != "<NA>"]
 }
 }

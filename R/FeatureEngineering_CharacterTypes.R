@@ -218,7 +218,7 @@ DummifyDT <- function(data,
 #'
 #' @family Feature Engineering
 #'
-#' @param data Source data
+#' @param data Source data.table
 #' @param ML_Type Only use with Method "credibility'. Select from 'classification' or 'regression'.
 #' @param GroupVariables Columns to encode
 #' @param TargetVariabl Target column name

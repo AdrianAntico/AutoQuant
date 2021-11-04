@@ -22,18 +22,19 @@
 #' \dontrun{
 #' data <- data.table::data.table(
 #'   DateTime = as.Date(Sys.time()),
-#'   Target = as.numeric(stats::filter(
-#'     rnorm(1000, mean = 50, sd = 20),
-#'   filter=rep(1,10),
-#'   circular=TRUE)))
-#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][
-#'   , temp := NULL]
-#' data <- data[order(DateTime)]
+#'   Target = as.numeric(
+#'     stats::filter(
+#'       rnorm(1000, mean = 50, sd = 20),
+#'       filter=rep(1,10),
+#'       circular=TRUE)))
+#' data[, temp := seq(1:1000)][, DateTime := DateTime - temp][, temp := NULL]
+#' data.table::setorderv(x = data, cols = 'DateTime', 1)
 #' data[, Predicted := as.numeric(
-#'   stats::filter(rnorm(1000, mean = 50, sd = 20),
-#' filter=rep(1,10),
-#' circular=TRUE))]
-#' stuff <- ResidualOutliers(
+#'   stats::filter(
+#'     rnorm(1000, mean = 50, sd = 20),
+#'     filter=rep(1,10),
+#'     circular=TRUE))]
+#' Output <- ResidualOutliers(
 #'   data = data,
 #'   DateColName = "DateTime",
 #'   TargetColName = "Target",
@@ -46,15 +47,15 @@
 #'   SDiff = 0,
 #'   SMA = 0,
 #'   tstat = 4)
-#' data     <- stuff[[1]]
-#' model    <- stuff[[2]]
+#' data <- Output[['FullData']]
+#' model <- Output[['ARIMA_MODEL']]
 #' outliers <- data[type != "<NA>"]
 #' }
-#' @return A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model.
+#' @return A named list containing FullData = original data.table with outliers data and ARIMA_MODEL = the arima model object
 #' @export
 ResidualOutliers <- function(data,
-                             DateColName = 'DateTime',
-                             TargetColName = 'Target',
+                             DateColName = NULL,
+                             TargetColName = NULL,
                              PredictedColName = NULL,
                              TimeUnit = 'day',
                              Lags = 5,
@@ -103,7 +104,7 @@ ResidualOutliers <- function(data,
 
   # Keep columns ----
   temp <- data[, .SD, .SDcols = c(DateColName, 'Residuals')]
-  MinVal <- min(data[[eval(TargetColName)]], na.rm = TRUE)
+  MinVal <- data[, min(get(TargetColName), na.rm = TRUE)]
 
   # Convert to time series object ----
   tsData <- stats::ts(temp, start = temp[, min(get(DateColName))][[1L]], frequency = freq)
@@ -138,6 +139,24 @@ ResidualOutliers <- function(data,
         optim.control = list(),
         kappa = 1e6)
     }, error = function(x) NULL)
+
+    # If FixedParams fails to build, try auto.arima approach
+    if(is.null(fit)) {
+      fit <- tryCatch({
+        forecast::auto.arima(
+          y = tsData[, 'Residuals'],
+          max.p = Lags,
+          max.q = MA,
+          max.P = SLags,
+          max.Q = SMA,
+          max.d = if(Diff == 0) 1 else Diff,
+          max.D = if(SDiff == 0) 1 else SDiff,
+          ic = 'bic',
+          lambda = if(MinVal > 0) TRUE else FALSE,
+          biasadj = if(MinVal > 0) TRUE else FALSE,
+          stepwise = TRUE)
+      }, error = function(x) NULL)
+    }
   }
 
   # Store the arima parameters ----
@@ -158,11 +177,11 @@ ResidualOutliers <- function(data,
   # Merge back to source data ----
   residDT <- data.table::as.data.table(resid)
   z <- cbind(data, residDT)
-  z[, ind := 1:.N]
-  data.table::setnames(z, names(z)[c((ncol(z) - 3):(ncol(z) - 1))], c('ObsNum','Preds','ARIMA_Residuals'))
+  z[, ind := seq_len(.N)]
+  data.table::setnames(z, names(z)[c((ncol(z) - 3L):(ncol(z) - 1L))], c('ObsNum','Preds','ARIMA_Residuals'))
   data.table::set(z, j = 'ObsNum', value = NULL)
   data <- merge(z, x, by = 'ind', all.x = TRUE)
-  data[, ':=' (ind = NULL, coefhat = NULL)]
+  data.table::set(data, j = c('ind', 'coefhat'), value = NULL)
   data[type == '<NA>', type := NA]
 
   # Reorder data, remove the coefhat column to send to database or stakeholder ----

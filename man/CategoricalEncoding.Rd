@@ -19,7 +19,7 @@ CategoricalEncoding(
 )
 }
 \arguments{
-\item{data}{Source data}
+\item{data}{Source data.table}
 
 \item{ML_Type}{Only use with Method "credibility'. Select from 'classification' or 'regression'.}
 
