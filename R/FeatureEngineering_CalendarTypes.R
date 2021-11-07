@@ -334,7 +334,7 @@ CreateHolidayVariables <- function(data,
   data.table::alloc.col(DT = data, ncol(data) + 1L)
 
   # Create Temp Date Columns----
-  MinDate <- data[, min(get(DateCols[1L]))]
+  MinDate <- data[, min(get(DateCols[1L]), na.rm = TRUE)]
 
   # Run holiday function to get unique dates----
   library(timeDate)

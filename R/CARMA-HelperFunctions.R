@@ -1302,13 +1302,26 @@ UpdateFeatures <- function(UpdateData. = UpdateData,
   UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
 
   # Update holiday feature
-  if(!is.null(HolidayVariable.)) {
-    UpdateData. <- CreateHolidayVariables(
-      UpdateData.,
-      DateCols = eval(DateColumnName.),
-      LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
-      HolidayGroups = HolidayVariable.,
-      Holidays = NULL)
+  if(!is.null(HolidayVariable.) && any(is.na(UpdateData.[['HolidayCounts']]))) {
+    if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else LBD <- LB(TimeUnit.)
+    if(is.null(GroupVariables.)) {
+      temp <- UpdateData.[(.N-LBD):.N]
+      UpdateData. <- UpdateData.[1:(.N-LBD-1)]
+      temp <- CreateHolidayVariables(
+        temp,
+        DateCols = eval(DateColumnName.),
+        LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
+        HolidayGroups = HolidayVariable.,
+        Holidays = NULL)
+      UpdateData. <- data.table::rbindlist(list(UpdateData., temp))
+    } else {
+      UpdateData. <- CreateHolidayVariables(
+        UpdateData.,
+        DateCols = eval(DateColumnName.),
+        LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
+        HolidayGroups = HolidayVariable.,
+        Holidays = NULL)
+    }
   }
 
   # Update Anomaly Detection
