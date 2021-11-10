@@ -3891,6 +3891,9 @@ AutoCatBoostRegression() Scoring Example
 <span class="co"># Copy data</span>
 <span class="va">data1</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/copy.html">copy</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>
 
+<span class="co"># Feature Colnames</span>
+<span class="va">Features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"DateTime"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>
+
 <span class="co"># Run function</span>
 <span class="va">TestModel</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostRegression.html">AutoCatBoostRegression</a></span><span class="op">(</span>
   
@@ -3914,7 +3917,7 @@ AutoCatBoostRegression() Scoring Example
   ValidationData <span class="op">=</span> <span class="cn">NULL</span>,
   TestData <span class="op">=</span> <span class="cn">NULL</span>,
   TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
-  FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span>,<span class="st">'Adrian'</span><span class="op">)</span><span class="op">]</span>,
+  FeatureColNames <span class="op">=</span> <span class="va">Features</span>,
   PrimaryDateColumn <span class="op">=</span> <span class="cn">NULL</span>,
   WeightsColumnName <span class="op">=</span> <span class="cn">NULL</span>,
   IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span><span class="op">)</span>,
@@ -3956,64 +3959,29 @@ AutoCatBoostRegression() Scoring Example
   score_function <span class="op">=</span> <span class="st">'Cosine'</span>,
   min_data_in_leaf <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
 
-<span class="co">## Model Output ##</span>
-             
-<span class="co"># Trained Model Object</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">Model</span>
 
-<span class="co"># Train Data (includes validation data) and Test Data with predictions and shap values</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">TrainData</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">TestData</span>
+<span class="co"># Insights Report</span>
+<span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/ModelInsightsReport.html">ModelInsightsReport</a></span><span class="op">(</span>
+  
+  <span class="co"># Meta info</span>
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  PredictionColumnName <span class="op">=</span> <span class="st">'Predict'</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
+  DateColumnName <span class="op">=</span> <span class="cn">NULL</span>,
+  
+  <span class="co"># Control options</span>
+  TargetType <span class="op">=</span> <span class="st">'regression'</span>,
+  ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
+  Algo <span class="op">=</span> <span class="st">'catboost'</span>,
+  OutputPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  RemixOutput <span class="op">=</span> <span class="va">TestModel</span><span class="op">)</span>
 
-<span class="co"># Calibration Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_EvaluationPlot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_EvaluationPlot</span>
-
-<span class="co"># Calibration Box Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_EvaluationBoxPlot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_EvaluationBoxPlot</span>
-
-<span class="co"># Residual Analysis Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_ResidualsHistogram</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_ResidualsHistogram</span>
-
-<span class="co"># Preds vs Actuals Scatterplots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_ScatterPlot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_ScatterPlot</span>
-
-<span class="co"># Preds vs Actuals Copula Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_CopulaPlot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_CopulaPlot</span>
-
-<span class="co"># Variable Importance Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_VariableImportance</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Validation_VariableImportance</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_VariableImportance</span>
-
-<span class="co"># Evaluation Metrics</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">EvaluationMetrics</span><span class="op">$</span><span class="va">TrainData</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">EvaluationMetrics</span><span class="op">$</span><span class="va">TestData</span>
-
-<span class="co"># Variable Importance Tables</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">VariableImportance</span><span class="op">$</span><span class="va">Train_Importance</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">VariableImportance</span><span class="op">$</span><span class="va">Validation_Importance</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">VariableImportance</span><span class="op">$</span><span class="va">Test_Importance</span>
-
-<span class="co"># Interaction Importance Tables</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">InteractionImportance</span><span class="op">$</span><span class="va">Train_Interaction</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">InteractionImportance</span><span class="op">$</span><span class="va">Validation_Interaction</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">InteractionImportance</span><span class="op">$</span><span class="va">Test_Interaction</span>
-
-<span class="co"># Meta Data</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">ColNames</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">TransformationResults</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">GridList</span>
 
 <span class="co"># Score data</span>
 <span class="va">Preds</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostScoring.html">AutoCatBoostScoring</a></span><span class="op">(</span>
   TargetType <span class="op">=</span> <span class="st">'regression'</span>,
   ScoringData <span class="op">=</span> <span class="va">data</span>,
-  FeatureColumnNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>, <span class="st">'IDcol_2'</span>,<span class="st">'Adrian'</span><span class="op">)</span><span class="op">]</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
   FactorLevelsList <span class="op">=</span> <span class="va">TestModel</span><span class="op">$</span><span class="va">FactorLevelsList</span>,
   IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'IDcol_1'</span>,<span class="st">'IDcol_2'</span><span class="op">)</span>,
   OneHot <span class="op">=</span> <span class="cn">FALSE</span>,
@@ -4068,6 +4036,9 @@ AutoCatBoostClassifier() Scoring Example
 <span class="va">TTestData</span> <span class="op">&lt;-</span> <span class="va">Sets</span><span class="op">$</span><span class="va">TestData</span>
 <span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span><span class="va">Sets</span><span class="op">)</span>
 
+<span class="co"># Feature Colnames</span>
+<span class="va">Features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"DateTime"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>
+
 <span class="co"># AutoCatBoostClassifier</span>
 <span class="va">TestModel</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostClassifier.html">AutoCatBoostClassifier</a></span><span class="op">(</span>
   
@@ -4090,7 +4061,7 @@ AutoCatBoostClassifier() Scoring Example
   ValidationData <span class="op">=</span> <span class="va">VValidationData</span>,
   TestData <span class="op">=</span> <span class="va">TTestData</span>,
   TargetColumnName <span class="op">=</span> <span class="st">"Adrian"</span>,
-  FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"DateTime"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>,
+  FeatureColNames <span class="op">=</span> <span class="va">Features</span>,
   PrimaryDateColumn <span class="op">=</span> <span class="st">"DateTime"</span>,
   WeightsColumnName <span class="op">=</span> <span class="st">"Weights"</span>,
   ClassWeights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1L</span>,<span class="fl">1L</span><span class="op">)</span>,
@@ -4132,46 +4103,29 @@ AutoCatBoostClassifier() Scoring Example
   min_data_in_leaf <span class="op">=</span> <span class="fl">1</span>,
   DebugMode <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
-<span class="co">## Model Evaluation ##</span>
 
-<span class="co"># Evaluation Metrics </span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">EvaluationMetrics</span><span class="op">$</span><span class="va">TrainData</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">EvaluationMetrics</span><span class="op">$</span><span class="va">TestData</span>
+<span class="co"># Insights Report</span>
+<span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/ModelInsightsReport.html">ModelInsightsReport</a></span><span class="op">(</span>
+  
+  <span class="co"># Meta info</span>
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  PredictionColumnName <span class="op">=</span> <span class="st">'p1'</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
+  DateColumnName <span class="op">=</span> <span class="cn">NULL</span>,
+  
+  <span class="co"># Control options</span>
+  TargetType <span class="op">=</span> <span class="st">'classification'</span>,
+  ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
+  Algo <span class="op">=</span> <span class="st">'catboost'</span>,
+  OutputPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  RemixOutput <span class="op">=</span> <span class="va">TestModel</span><span class="op">)</span>
 
-<span class="co"># By decile</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">EvaluationMetrics2</span><span class="op">$</span><span class="va">TrainData</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">EvaluationMetrics2</span><span class="op">$</span><span class="va">TestData</span>
-
-<span class="co"># Model Calibration Plot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_EvaluationPlot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_EvaluationPlot</span>
-
-<span class="co"># Gains Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_GainsPlot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_GainsPlot</span>
-
-<span class="co"># Lift Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_LiftPlot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_LiftPlot</span>
-
-<span class="co"># ROC Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_ROC_Plot</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_ROC_Plot</span>
-
-<span class="co"># Variable Importance Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_VariableImportance</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Validation_VariableImportance</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_VariableImportance</span>
-
-<span class="co"># Partial Dependence Calibration Plots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Train_ParDepPlots</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span><span class="op">$</span><span class="va">Test_ParDepPlots</span>
 
 <span class="co"># Score data</span>
 <span class="va">Preds</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostScoring.html">AutoCatBoostScoring</a></span><span class="op">(</span>
   TargetType <span class="op">=</span> <span class="st">'classifier'</span>,
   ScoringData <span class="op">=</span> <span class="va">data</span>,
-  FeatureColumnNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"DateTime"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
   FactorLevelsList <span class="op">=</span> <span class="va">TestModel</span><span class="op">$</span><span class="va">FactorLevelsList</span>,
   IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>,<span class="st">"IDcol_2"</span>,<span class="st">"DateTime"</span><span class="op">)</span>,
   OneHot <span class="op">=</span> <span class="cn">FALSE</span>,
@@ -4226,6 +4180,9 @@ AutoCatBoostMultiClasss() Scoring Example
 <span class="va">TTestData</span> <span class="op">&lt;-</span> <span class="va">Sets</span><span class="op">$</span><span class="va">TestData</span>
 <span class="fu"><a href="https://rdrr.io/r/base/rm.html">rm</a></span><span class="op">(</span><span class="va">Sets</span><span class="op">)</span>
 
+<span class="co"># Feature Colnames</span>
+<span class="va">Features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"Adrian"</span>,<span class="st">"DateTime"</span><span class="op">)</span><span class="op">]</span>
+
 <span class="co"># Run function</span>
 <span class="va">TestModel</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostMultiClass.html">AutoCatBoostMultiClass</a></span><span class="op">(</span>
   
@@ -4247,7 +4204,7 @@ AutoCatBoostMultiClasss() Scoring Example
   ValidationData <span class="op">=</span> <span class="va">VValidationData</span>,
   TestData <span class="op">=</span> <span class="va">TTestData</span>,
   TargetColumnName <span class="op">=</span> <span class="st">"Adrian"</span>,
-  FeatureColNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"Adrian"</span>,<span class="st">"DateTime"</span><span class="op">)</span><span class="op">]</span>,
+  FeatureColNames <span class="op">=</span> <span class="va">Features</span>,
   PrimaryDateColumn <span class="op">=</span> <span class="st">"DateTime"</span>,
   WeightsColumnName <span class="op">=</span> <span class="st">"Weights"</span>,
   ClassWeights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1L</span>,<span class="fl">1L</span>,<span class="fl">1L</span>,<span class="fl">1L</span>,<span class="fl">1L</span><span class="op">)</span>,
@@ -4287,22 +4244,29 @@ AutoCatBoostMultiClasss() Scoring Example
   min_data_in_leaf <span class="op">=</span> <span class="fl">1</span>,
   DebugMode <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
-<span class="co">## Model Evaluation ##</span>
 
-<span class="co"># Evaluation Metrics (individual output per target level for both train and test)</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">EvaluationMetrics</span> <span class="co"># list</span>
+<span class="co"># Insights Report</span>
+<span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/ModelInsightsReport.html">ModelInsightsReport</a></span><span class="op">(</span>
+  
+  <span class="co"># Meta info</span>
+  TargetColumnName <span class="op">=</span> <span class="st">'Adrian'</span>,
+  PredictionColumnName <span class="op">=</span> <span class="st">'Predict'</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
+  DateColumnName <span class="op">=</span> <span class="cn">NULL</span>,
+  
+  <span class="co"># Control options</span>
+  TargetType <span class="op">=</span> <span class="st">'multiclass'</span>,
+  ModelID <span class="op">=</span> <span class="st">'Test_Model_1'</span>,
+  Algo <span class="op">=</span> <span class="st">'catboost'</span>,
+  OutputPath <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/getwd.html">getwd</a></span><span class="op">(</span><span class="op">)</span>,
+  RemixOutput <span class="op">=</span> <span class="va">TestModel</span><span class="op">)</span>
 
-<span class="co"># Evaluation Metrics by Decile (individual output per target level for both train and test)</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">EvaluationMetrics2</span> <span class="co"># list</span>
-
-<span class="co"># Model Plots (by train and test data and by each target level)</span>
-<span class="va">TestModel</span><span class="op">$</span><span class="va">PlotList</span>
 
 <span class="co"># Score data</span>
 <span class="va">Preds</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoCatBoostScoring.html">AutoCatBoostScoring</a></span><span class="op">(</span>
   TargetType <span class="op">=</span> <span class="st">'multiclass'</span>,
   ScoringData <span class="op">=</span> <span class="va">data</span>,
-  FeatureColumnNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">TTrainData</span><span class="op">)</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>, <span class="st">"IDcol_2"</span>,<span class="st">"DateTime"</span>,<span class="st">"Adrian"</span><span class="op">)</span><span class="op">]</span>,
+  FeatureColumnNames <span class="op">=</span> <span class="va">Features</span>,
   FactorLevelsList <span class="op">=</span> <span class="va">TestModel</span><span class="op">$</span><span class="va">FactorLevelsList</span>,
   IDcols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"IDcol_1"</span>,<span class="st">"IDcol_2"</span>,<span class="st">"DateTime"</span><span class="op">)</span>,
   OneHot <span class="op">=</span> <span class="cn">FALSE</span>,

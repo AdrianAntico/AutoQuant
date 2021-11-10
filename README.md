@@ -3948,6 +3948,9 @@ data <- RemixAutoML::FakeDataGenerator(
 # Copy data
 data1 <- data.table::copy(data)
 
+# Feature Colnames
+Features <- names(data1)[!names(data1) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")]
+
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostRegression(
   
@@ -3971,7 +3974,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = 'Adrian',
-  FeatureColNames = names(data1)[!names(data1) %in% c('IDcol_1','IDcol_2','Adrian')],
+  FeatureColNames = Features,
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = c('IDcol_1','IDcol_2'),
@@ -4013,64 +4016,29 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   score_function = 'Cosine',
   min_data_in_leaf = 1)
 
-## Model Output ##
-             
-# Trained Model Object
-TestModel$Model
 
-# Train Data (includes validation data) and Test Data with predictions and shap values
-TestModel$TrainData
-TestModel$TestData
+# Insights Report
+RemixAutoML::ModelInsightsReport(
+  
+  # Meta info
+  TargetColumnName = 'Adrian',
+  PredictionColumnName = 'Predict',
+  FeatureColumnNames = Features,
+  DateColumnName = NULL,
+  
+  # Control options
+  TargetType = 'regression',
+  ModelID = 'Test_Model_1',
+  Algo = 'catboost',
+  OutputPath = getwd(),
+  RemixOutput = TestModel)
 
-# Calibration Plots
-TestModel$PlotList$Train_EvaluationPlot
-TestModel$PlotList$Test_EvaluationPlot
-
-# Calibration Box Plots
-TestModel$PlotList$Train_EvaluationBoxPlot
-TestModel$PlotList$Test_EvaluationBoxPlot
-
-# Residual Analysis Plots
-TestModel$PlotList$Train_ResidualsHistogram
-TestModel$PlotList$Test_ResidualsHistogram
-
-# Preds vs Actuals Scatterplots
-TestModel$PlotList$Train_ScatterPlot
-TestModel$PlotList$Test_ScatterPlot
-
-# Preds vs Actuals Copula Plots
-TestModel$PlotList$Train_CopulaPlot
-TestModel$PlotList$Test_CopulaPlot
-
-# Variable Importance Plots
-TestModel$PlotList$Train_VariableImportance
-TestModel$PlotList$Validation_VariableImportance
-TestModel$PlotList$Test_VariableImportance
-
-# Evaluation Metrics
-TestModel$EvaluationMetrics$TrainData
-TestModel$EvaluationMetrics$TestData
-
-# Variable Importance Tables
-TestModel$VariableImportance$Train_Importance
-TestModel$VariableImportance$Validation_Importance
-TestModel$VariableImportance$Test_Importance
-
-# Interaction Importance Tables
-TestModel$InteractionImportance$Train_Interaction
-TestModel$InteractionImportance$Validation_Interaction
-TestModel$InteractionImportance$Test_Interaction
-
-# Meta Data
-TestModel$ColNames
-TestModel$TransformationResults
-TestModel$GridList
 
 # Score data
 Preds <- RemixAutoML::AutoCatBoostScoring(
   TargetType = 'regression',
   ScoringData = data,
-  FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')],
+  FeatureColumnNames = Features,
   FactorLevelsList = TestModel$FactorLevelsList,
   IDcols = c('IDcol_1','IDcol_2'),
   OneHot = FALSE,
@@ -4128,6 +4096,9 @@ VValidationData <- Sets$ValidationData
 TTestData <- Sets$TestData
 rm(Sets)
 
+# Feature Colnames
+Features <- names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")]
+
 # AutoCatBoostClassifier
 TestModel <- RemixAutoML::AutoCatBoostClassifier(
   
@@ -4150,7 +4121,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   ValidationData = VValidationData,
   TestData = TTestData,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  FeatureColNames = Features,
   PrimaryDateColumn = "DateTime",
   WeightsColumnName = "Weights",
   ClassWeights = c(1L,1L),
@@ -4192,46 +4163,29 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   min_data_in_leaf = 1,
   DebugMode = TRUE)
 
-## Model Evaluation ##
 
-# Evaluation Metrics 
-TestModel$EvaluationMetrics$TrainData
-TestModel$EvaluationMetrics$TestData
+# Insights Report
+RemixAutoML::ModelInsightsReport(
+  
+  # Meta info
+  TargetColumnName = 'Adrian',
+  PredictionColumnName = 'p1',
+  FeatureColumnNames = Features,
+  DateColumnName = NULL,
+  
+  # Control options
+  TargetType = 'classification',
+  ModelID = 'Test_Model_1',
+  Algo = 'catboost',
+  OutputPath = getwd(),
+  RemixOutput = TestModel)
 
-# By decile
-TestModel$EvaluationMetrics2$TrainData
-TestModel$EvaluationMetrics2$TestData
-
-# Model Calibration Plot
-TestModel$PlotList$Train_EvaluationPlot
-TestModel$PlotList$Test_EvaluationPlot
-
-# Gains Plots
-TestModel$PlotList$Train_GainsPlot
-TestModel$PlotList$Test_GainsPlot
-
-# Lift Plots
-TestModel$PlotList$Train_LiftPlot
-TestModel$PlotList$Test_LiftPlot
-
-# ROC Plots
-TestModel$PlotList$Train_ROC_Plot
-TestModel$PlotList$Test_ROC_Plot
-
-# Variable Importance Plots
-TestModel$PlotList$Train_VariableImportance
-TestModel$PlotList$Validation_VariableImportance
-TestModel$PlotList$Test_VariableImportance
-
-# Partial Dependence Calibration Plots
-TestModel$PlotList$Train_ParDepPlots
-TestModel$PlotList$Test_ParDepPlots
 
 # Score data
 Preds <- RemixAutoML::AutoCatBoostScoring(
   TargetType = 'classifier',
   ScoringData = data,
-  FeatureColumnNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  FeatureColumnNames = Features,
   FactorLevelsList = TestModel$FactorLevelsList,
   IDcols = c("IDcol_1","IDcol_2","DateTime"),
   OneHot = FALSE,
@@ -4289,6 +4243,9 @@ VValidationData <- Sets$ValidationData
 TTestData <- Sets$TestData
 rm(Sets)
 
+# Feature Colnames
+Features <- names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Adrian","DateTime")]
+
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostMultiClass(
   
@@ -4310,7 +4267,7 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
   ValidationData = VValidationData,
   TestData = TTestData,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","Adrian","DateTime")],
+  FeatureColNames = Features,
   PrimaryDateColumn = "DateTime",
   WeightsColumnName = "Weights",
   ClassWeights = c(1L,1L,1L,1L,1L),
@@ -4350,22 +4307,29 @@ TestModel <- RemixAutoML::AutoCatBoostMultiClass(
   min_data_in_leaf = 1,
   DebugMode = TRUE)
 
-## Model Evaluation ##
 
-# Evaluation Metrics (individual output per target level for both train and test)
-TestModel$EvaluationMetrics # list
+# Insights Report
+RemixAutoML::ModelInsightsReport(
+  
+  # Meta info
+  TargetColumnName = 'Adrian',
+  PredictionColumnName = 'Predict',
+  FeatureColumnNames = Features,
+  DateColumnName = NULL,
+  
+  # Control options
+  TargetType = 'multiclass',
+  ModelID = 'Test_Model_1',
+  Algo = 'catboost',
+  OutputPath = getwd(),
+  RemixOutput = TestModel)
 
-# Evaluation Metrics by Decile (individual output per target level for both train and test)
-TestModel$EvaluationMetrics2 # list
-
-# Model Plots (by train and test data and by each target level)
-TestModel$PlotList
 
 # Score data
 Preds <- RemixAutoML::AutoCatBoostScoring(
   TargetType = 'multiclass',
   ScoringData = data,
-  FeatureColumnNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+  FeatureColumnNames = Features,
   FactorLevelsList = TestModel$FactorLevelsList,
   IDcols = c("IDcol_1","IDcol_2","DateTime"),
   OneHot = FALSE,

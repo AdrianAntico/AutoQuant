@@ -336,17 +336,17 @@
 #&gt; 649999:             0.8939508             0.7555862             0.4313720
 #&gt; 650000:             0.9237877             0.8202201             0.5518122
 #&gt;         Independent_Variable9 Independent_Variable10   DateTime Factor1    ID
-#&gt;      1:            0.89964743            0.809365497 1953-05-21       A 25000
-#&gt;      2:            0.06979959            0.004871983 1953-05-22       A 24999
-#&gt;      3:            0.49472648            0.244754290 1953-05-23       A 24998
-#&gt;      4:            0.04994850            0.002494852 1953-05-24       A 24997
-#&gt;      5:            0.46966061            0.220581091 1953-05-25       A 24996
+#&gt;      1:            0.89964743            0.809365497 1953-05-31       A 25000
+#&gt;      2:            0.06979959            0.004871983 1953-06-01       A 24999
+#&gt;      3:            0.49472648            0.244754290 1953-06-02       A 24998
+#&gt;      4:            0.04994850            0.002494852 1953-06-03       A 24997
+#&gt;      5:            0.46966061            0.220581091 1953-06-04       A 24996
 #&gt;     ---                                                                      
-#&gt; 649996:            0.41478702            0.172048268 2021-10-26       Z     5
-#&gt; 649997:            0.36998530            0.136889121 2021-10-27       Z     4
-#&gt; 649998:            0.03932492            0.001546450 2021-10-28       Z     3
-#&gt; 649999:            0.10623606            0.011286100 2021-10-29       Z     2
-#&gt; 650000:            0.20485352            0.041964963 2021-10-30       Z     1</div><div class='input'><span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/assign.html'>set</a></span><span class='op'>(</span><span class='va'>data</span>, i <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='st'>"ID"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>==</span> <span class='fl'>2L</span><span class='op'>)</span>, j <span class='op'>=</span> <span class='st'>"ID"</span>, value <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
+#&gt; 649996:            0.41478702            0.172048268 2021-11-05       Z     5
+#&gt; 649997:            0.36998530            0.136889121 2021-11-06       Z     4
+#&gt; 649998:            0.03932492            0.001546450 2021-11-07       Z     3
+#&gt; 649999:            0.10623606            0.011286100 2021-11-08       Z     2
+#&gt; 650000:            0.20485352            0.041964963 2021-11-09       Z     1</div><div class='input'><span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/assign.html'>set</a></span><span class='op'>(</span><span class='va'>data</span>, i <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='st'>"ID"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>==</span> <span class='fl'>2L</span><span class='op'>)</span>, j <span class='op'>=</span> <span class='st'>"ID"</span>, value <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
 
 <span class='co'># Score records</span>
 <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'>AutoLagRollStatsScoring</span><span class='op'>(</span>
