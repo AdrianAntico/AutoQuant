@@ -40,7 +40,7 @@ EvalPlot <- function(data,
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # Cap number of records----
-  if(data[,.N] > 1000000) data <- data[order(runif(.N))][1:1000000]
+  if(data[,.N] > 1000000) data <- data[order(runif(.N))][seq_len(1000000)]
 
   # Structure data
   data <- data[, .SD, .SDcols = c(eval(PredictionColName), eval(TargetColName))]

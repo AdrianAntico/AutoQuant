@@ -6,7 +6,7 @@
 ProjectID <- 'Sample_Project'
 
 # Path To Scripts
-FE_Script_Path <- file.path(system.file("shiny-examples", "myapp", package = "RemixAutoML"), "Feature_Engineering.R")
+FE_Script_Path <- file.path(system.file("remix-scripts", package = "RemixAutoML"), "Feature_Engineering.R")
 
 # Admin: Project Directories
 Root_Path <- 'C:/Users/Bizon/Documents/GitHub/QA_Code/Sample_Project'
