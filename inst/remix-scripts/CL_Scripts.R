@@ -96,7 +96,7 @@ DiffPeriods <- 3L
 
 # AutoLagRollStats()                 ----
 TimeSeriesGroupVariables <- if(ModelType == "MultiClass") 'Factor_2' else c('Factor_1,Factor_2')
-TimeSeriesDateGroups <- c('days, weeks')
+TimeSeriesDateGroups <- c('days,weeks')
 TimeUnitAgg <- c('weeks')
 Lag_Periods <- as.character(c(1:5))
 RollAverage_Periods <- as.character(c(2:5))

@@ -382,7 +382,6 @@ if("Args Setup" == "Args Setup") {
   ArgsList$FE_Args$Encoding[["EncodeImpute"]] <- CL_ArgsList_FE[["EncodeImpute"]]
   ArgsList$FE_Args$Encoding[["KeepCharColumns"]] <- CL_ArgsList_FE[["KeepCharColumns"]]
 
-
   # H2O Word2Vec Variables
   ArgsList$FE_Args$H2O_Word2Vec[["BuildType"]] <- CL_ArgsList_FE[["BuildType"]]
   ArgsList$FE_Args$H2O_Word2Vec[["NumberVectors"]] <- CL_ArgsList_FE[["NumberVectors"]]
