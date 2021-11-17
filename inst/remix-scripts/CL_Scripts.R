@@ -1,14 +1,37 @@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# ML Final Features Engineering
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# ML Final Features Engineering      ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
-# Admin: Define Command Line Defaults ----
+# ----
+
+# ----
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# Admin                              ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+# ----
+
+# ----
+
+# Admin: Command Line Defaults       ----
 ProjectID <- 'Sample_Project'
 
-# Path To Scripts
+# Admin: Services args               ----
+Services <- c(
+  'CalendarVariables',
+  'HolidayVariables',
+  'PartialDummies',
+  'FeatureInteraction',
+  'Differencing',
+  'TimeSeries',
+  'DataPartition',
+  'Encoding') #, 'H2OWord2Vec', 'H2OAutoEncoder', 'H2OIsolationForest', 'H2OClustering')
+
+# Admin: Path To Scripts             ----
 FE_Script_Path <- file.path(system.file("remix-scripts", package = "RemixAutoML"), "Feature_Engineering.R")
 
-# Admin: Project Directories
+# Admin: Project Directories         ----
 Root_Path <- 'C:/Users/Bizon/Documents/GitHub/QA_Code/Sample_Project'
 Data_Path <- file.path(Root_Path, 'Data')
 MetaData_Path <- file.path(Root_Path, 'MetaData')
@@ -16,7 +39,7 @@ Model_Path <- file.path(Root_Path, 'Models')
 Results_Path <- file.path(Root_Path, 'Results')
 ModelType <- "Classifier"
 
-# Admin: Categorize data base columns
+# Data: Colnames by Type             ----
 TargetVariables <- c('Adrian')
 DateVariables <- c('DateTime')
 GroupVariables <- if(ModelType == "MultiClass") c('Factor_2') else c('Factor_1', 'Factor_2')
@@ -24,16 +47,19 @@ ByVariables <- if(ModelType == "MultiClass") c('Factor_2') else "Factor_1"
 TextVariables <- c('Comment')
 IDVariables <- c('IDcol_1', 'IDcol_2')
 
-# Base columns for feature engineering
-InteractionVariables <- c('Independent_Variable1','Independent_Variable2', 'Independent_Variable3')
-DiffVariables <- NULL
-DiffDateVariables <- c('DateTime')
-DiffGroupVariables <- NULL
+# ----
 
-# Services args ----
-Services <- c('CalendarVariables', 'HolidayVariables', 'PartialDummies', 'FeatureInteraction', 'Differencing', 'TimeSeries', 'DataPartition', 'Encoding') #, 'H2OWord2Vec', 'H2OAutoEncoder', 'H2OIsolationForest', 'H2OClustering')
+# ----
 
-# Clean data
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# Functions                          ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+# ----
+
+# ----
+
+# ModelDataPrep()                    ----
 Impute <- TRUE
 CharToFactor <- FALSE
 FactorToChar <- TRUE
@@ -46,7 +72,7 @@ MissFactor <- 'missing'
 MissNum <- -1
 IgnoreCols <- NULL
 
-# Calendar Variables
+# CreateCalendarVariables()          ----
 Calendar_Variables <- c('week', 'wom', 'month', 'quarter')
 
 # Holiday Variables
@@ -57,16 +83,20 @@ Holiday_Variables <- c('USPublicHolidays', 'EasterGroup', 'ChristmasGroup', 'Oth
 NumberLevels <- 3
 
 # Interaction Variables
+InteractionVariables <- c('Independent_Variable1','Independent_Variable2', 'Independent_Variable3')
 InteractionDepth <- 3
 InteractionCenter <- TRUE
 InteractionScale <- TRUE
 
 # Differencing
+DiffVariables <- NULL
+DiffDateVariables <- c('DateTime')
+DiffGroupVariables <- NULL
 DiffPeriods <- 3L
 
-# Time Series Variables
+# AutoLagRollStats()                 ----
 TimeSeriesGroupVariables <- if(ModelType == "MultiClass") 'Factor_2' else c('Factor_1,Factor_2')
-TimeSeriesDateGroups <- c('days,weeks')
+TimeSeriesDateGroups <- c('days, weeks')
 TimeUnitAgg <- c('weeks')
 Lag_Periods <- as.character(c(1:5))
 RollAverage_Periods <- as.character(c(2:5))
@@ -76,28 +106,28 @@ RollKurtosis_Periods <- NULL
 RollQuantiles_Periods <- NULL
 RollQuantiles <- NULL
 
-# Partition Data
+# AutoPartitionData                  ----
 PartitionRatios <- as.character(c(0.70,0.20,0.10))
 PartitionMethod <- 'random'
 PartitionByVariables <- if(ModelType == "MultiClass") 'Factor_2' else 'Factor_1'
 PartitionTimeColumnName <- 'DateTime'
 
-# Categorical Encoding
+# CategoricalEncoding()              ----
 EncodeMethod <- c('credibility')
 EncodeImpute <- 0
 KeepCharColumns <- TRUE
 
-# H2O General
+# H2O General                        ----
 H2O_Memory <- '128g'
 
-# H2O Word2Vec Variables
+# AutoWord2VecModeler()              ----
 BuildType <- 'individual'
 NumberVectors <- 20
 Window <- 5
 Iterations <- 20
 MinWords <- 2
 
-# H2O AutoEncoder
+# H2OAutoEncoder()                   ----
 AnomalyDetection <- TRUE
 DimensionReduction <- TRUE
 AD_PerFeature <- FALSE
@@ -109,7 +139,7 @@ ElasticAveraging <- TRUE
 ElasticAveragingMovingRate <- 0.90
 ElasticAveragingRegularization <- 0.001
 
-# H2O Isolation Forest
+# H2OIsolationForest()               ----
 Threshold <- 0.95
 NTrees <- 500
 MaxDepth <- 8
@@ -119,7 +149,7 @@ ColSampleRate <- 1
 ColSampleRatePerLevel <- 1
 ColSampleRatePerTree <- 1
 
-# H2O Clustering
+# AutoClustering()                   ----
 MaxClusters <- 50
 ClusterMetric <- 'totss'
 Clustering_ShrinkRate <- (sqrt(5) - 1) / 2
@@ -129,8 +159,19 @@ Clustering_ElasticAveraging <- TRUE
 Clustering_ElasticAveragingMovingRate <- 0.90
 Clustering_ElasticAveragingRegularization <- 0.001
 
+# ----
 
-# Create command line script ----
+# ----
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# Run Script                         ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+# ----
+
+# ----
+
+# Create command line script         ----
 CL_Script <- paste0(
   "Rscript --vanilla ", FE_Script_Path,
   " --Services=", paste0(Services, collapse = ","),
@@ -220,7 +261,14 @@ CL_Script <- paste0(
   " --Clustering_ElasticAveragingMovingRate=", Clustering_ElasticAveragingMovingRate,
   " --Clustering_ElasticAveragingRegularization=", Clustering_ElasticAveragingRegularization)
 
-# Run async job ----
+# Run async job                      ----
 job::job(packages = c('RemixAutoML','data.table','h2o'), {
   system(CL_Script)
 })
+
+
+# ----
+
+# ----
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
