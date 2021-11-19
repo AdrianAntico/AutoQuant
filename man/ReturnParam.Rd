@@ -14,12 +14,14 @@ ReturnParam(input, VarName, Type, Default, Switch = FALSE)
 \item{Type}{"character" "numeric" "logical"}
 
 \item{Default}{default value}
+
+\item{Switch}{= FALSE}
 }
 \value{
-Updates ProjectList inside function. Do not assign function to anything
+Updates ProjectList inside function
 }
 \description{
-Automatically save VarNameuments to project list
+Automatically save VarNames to project list
 }
 \examples{
 \dontrun{

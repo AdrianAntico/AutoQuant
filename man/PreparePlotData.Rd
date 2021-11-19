@@ -46,7 +46,17 @@ PreparePlotData automatically builds a picker input with tryCatch's and ProjectL
 }
 \examples{
 \dontrun{
-  PlotData <- RemixAutoML::PreparePlotData(input, PlotDataForecast, Aggregate = "mean", TargetVariable = "TargetVariables", DateVariable = "DateVariables", GroupVariables = GroupVariables, G1Levels = "TS_Group1Levels", G2Levels = "TS_Group2Levels", G3Levels = "TS_Group3Levels")
+  PlotData <- RemixAutoML::PreparePlotData(
+    input,
+    PlotDataForecast,
+    SubsetOnly = FALSE,
+    Aggregate = "mean",
+    TargetVariable = "TargetVariables",
+    DateVariable = "DateVariables",
+    GroupVariables = GroupVariables,
+    G1Levels = "TS_Group1Levels",
+    G2Levels = "TS_Group2Levels",
+    G3Levels = "TS_Group3Levels")
 }
 }
 \seealso{

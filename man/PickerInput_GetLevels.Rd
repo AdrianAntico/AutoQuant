@@ -6,6 +6,7 @@
 \usage{
 PickerInput_GetLevels(
   input,
+  data = "SourceData",
   NumGroupVar = 3,
   InputID = "TS_CARMA_HolidayMovingAverages",
   InputID2 = "timeSeriesGroupVars",
@@ -19,6 +20,8 @@ PickerInput_GetLevels(
 }
 \arguments{
 \item{input}{input object within shiny context}
+
+\item{data}{'SourceData' or whatever the name of your data is}
 
 \item{NumGroupVar}{Which group var to select}
 
