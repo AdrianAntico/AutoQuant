@@ -556,24 +556,23 @@ PickerInput_GetLevels <- function(input,
                                   SelectedText = "count > 1",
                                   Multiple = TRUE,
                                   ActionBox = TRUE) {
-  return(if(exists(data)) {
-    if(!is.null(input[[InputID2]])) {
-      if(length(input[[InputID2]]) >= NumGroupVar) {
-        shinyWidgets::pickerInput(inputId = InputID, label = paste0(input[[InputID2]][[NumGroupVar]]," Levels"),
-                    choices = Choices, selected = "",
-                    options = list(`actions-box` = TRUE, size = 10, `selected-text-format` = "count > 1"), multiple = TRUE, width = "100%")
+  return(
+    if(exists(eval(data))) {
+      if(!is.null(input[[InputID2]])) {
+        if(length(input[[InputID2]]) >= NumGroupVar) {
+          shinyWidgets::pickerInput(inputId = InputID, label = paste0(input[[InputID2]][[NumGroupVar]]," Levels"),
+                      choices = Choices, selected = "",
+                      options = list(`actions-box` = TRUE, size = 10, `selected-text-format` = "count > 1"), multiple = TRUE, width = "100%")
+        } else {
+          shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >", choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+        }
       } else {
-        shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >",
-                    choices = NULL, selected = NULL, multiple = TRUE, width = "100%")
+        shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >", choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
       }
     } else {
-      shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >",
-                  choices = NULL, selected = NULL, multiple = TRUE, width = "100%")
+      shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >", choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
     }
-  } else {
-    shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >",
-                choices = NULL, selected = NULL, multiple = TRUE, width = "100%")
-  })
+  )
 }
 
 #' @title PreparePlotData
