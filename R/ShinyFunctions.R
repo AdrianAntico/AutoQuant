@@ -112,7 +112,7 @@ StoreArgs <- function(input,
 
 #' @title Save VarName values within a project
 #'
-#' @description Automatically save VarNameuments to project list
+#' @description Automatically save VarNames to project list
 #'
 #' @author Adrian Antico
 #' @family Shiny
@@ -121,13 +121,14 @@ StoreArgs <- function(input,
 #' @param VarName The name of the VarNameument you want to store
 #' @param Type "character" "numeric" "logical"
 #' @param Default default value
+#' @param Switch = FALSE
 #'
 #' @examples
 #' \dontrun{
 #' Aggregate <- RemixAutoML::ReturnParam(input, VarName = "TS_AggregateFunction", Type = "character", Default = "mean")
 #' }
 #'
-#' @return Updates ProjectList inside function. Do not assign function to anything
+#' @return Updates ProjectList inside function
 #' @export
 ReturnParam <- function(input,
                         VarName,
@@ -593,7 +594,17 @@ PickerInput_GetLevels <- function(input,
 #'
 #' @examples
 #' \dontrun{
-#'   PlotData <- RemixAutoML::PreparePlotData(input, PlotDataForecast, Aggregate = "mean", TargetVariable = "TargetVariables", DateVariable = "DateVariables", GroupVariables = GroupVariables, G1Levels = "TS_Group1Levels", G2Levels = "TS_Group2Levels", G3Levels = "TS_Group3Levels")
+#'   PlotData <- RemixAutoML::PreparePlotData(
+#'     input,
+#'     PlotDataForecast,
+#'     SubsetOnly = FALSE,
+#'     Aggregate = "mean",
+#'     TargetVariable = "TargetVariables",
+#'     DateVariable = "DateVariables",
+#'     GroupVariables = GroupVariables,
+#'     G1Levels = "TS_Group1Levels",
+#'     G2Levels = "TS_Group2Levels",
+#'     G3Levels = "TS_Group3Levels")
 #' }
 #' @return PreparePlotData object for server.R to
 #' @export
@@ -713,8 +724,6 @@ PreparePlotData <- function(input,
 
   # G1 ----
   if(!is.null(GroupVariables[1L]) && is.na(GroupVariables[2L])) {
-
-    print("here motherfucker 1 group")
 
     # None ----
     if(is.null(input[[G1Levels]])) {
