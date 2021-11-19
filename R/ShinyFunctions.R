@@ -582,6 +582,7 @@ PickerInput_GetLevels <- function(input,
 #'
 #' @param input input object within shiny context
 #' @param PlotDataForecast Source data in shiny app
+#' @param SubsetOnly Set to TRUE to only subset data
 #' @param Aggregate Session object indicating whether to use mean or sum
 #' @param TargetVariable Target variable name
 #' @param GroupVariables Group variable names
@@ -598,6 +599,7 @@ PickerInput_GetLevels <- function(input,
 #' @export
 PreparePlotData <- function(input,
                             PlotDataForecast,
+                            SubsetOnly = FALSE,
                             Aggregate = NULL,
                             TargetVariable = NULL,
                             DateVariable = NULL,
@@ -619,48 +621,52 @@ PreparePlotData <- function(input,
     # G2 & G3 ----
     if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
 
     # G1 & G3 ----
     if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
 
     # G1 & G2 ----
     if(!is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
 
     # G3 ----
     if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
 
     # G2 ----
     if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
 
     # G1 ----
     if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
 
     # None ----
     if(is.null(input[[G1Levels]]) && is.na(input[[G2Levels]]) && is.na(input[[G3Levels]])) {
-      PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) {
+        PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
+      } else {
+        PlotDataForecastFinal <- PlotDataForecast
+      }
       return(PlotDataForecastFinal)
     }
 
@@ -677,14 +683,14 @@ PreparePlotData <- function(input,
     # G2 ----
     if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
 
     # G1 ----
     if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
 
@@ -696,7 +702,11 @@ PreparePlotData <- function(input,
 
     # None ----
     if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]])) {
-      PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) {
+        PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
+      } else {
+        PlotDataForecastFinal <- PlotDataForecast
+      }
       return(PlotDataForecastFinal)
     }
   }
@@ -708,14 +718,18 @@ PreparePlotData <- function(input,
 
     # None ----
     if(is.null(input[[G1Levels]])) {
-      PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) {
+        PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      } else {
+        PlotDataForecastFinal <- PlotDataForecast
+      }
       return(PlotDataForecastFinal)
     }
 
     # G1 ----
     if(!is.null(input[[G1Levels]])) {
       PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
-      PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
+      if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       return(PlotDataForecastFinal)
     }
   }
@@ -723,14 +737,14 @@ PreparePlotData <- function(input,
   # NO Grouping Variables ----
   if(is.null(GroupVariables)) {
     PlotDataForecastFinal <- PlotDataForecast[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
-    PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = eval(DateVariable), .SDcols = c(TargetVariable)]
+    if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = eval(DateVariable), .SDcols = c(TargetVariable)]
     return(PlotDataForecastFinal)
   }
 
   # None up till now ----
   if(!exists("PlotDataForecastFinal")) {
     PlotDataForecastFinal <- PlotDataForecast[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
-    PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
+    if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
     return(PlotDataForecastFinal)
   }
 }

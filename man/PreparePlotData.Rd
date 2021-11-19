@@ -7,6 +7,7 @@
 PreparePlotData(
   input,
   PlotDataForecast,
+  SubsetOnly = FALSE,
   Aggregate = NULL,
   TargetVariable = NULL,
   DateVariable = NULL,
@@ -20,6 +21,8 @@ PreparePlotData(
 \item{input}{input object within shiny context}
 
 \item{PlotDataForecast}{Source data in shiny app}
+
+\item{SubsetOnly}{Set to TRUE to only subset data}
 
 \item{Aggregate}{Session object indicating whether to use mean or sum}
 
