@@ -556,19 +556,19 @@ PickerInput_GetLevels <- function(input,
   return(if(exists("SourceData")) {
     if(!is.null(input[[InputID2]])) {
       if(length(input[[InputID2]]) >= NumGroupVar) {
-        pickerInput(inputId = InputID, label = paste0(input[[InputID2]][[NumGroupVar]]," Levels"),
+        shinyWidgets::pickerInput(inputId = InputID, label = paste0(input[[InputID2]][[NumGroupVar]]," Levels"),
                     choices = Choices, selected = "",
                     options = list(`actions-box` = TRUE, size = 10, `selected-text-format` = "count > 1"), multiple = TRUE, width = "100%")
       } else {
-        pickerInput(inputId = InputID, label = "< N/A >",
+        shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >",
                     choices = NULL, selected = NULL, multiple = TRUE, width = "100%")
       }
     } else {
-      pickerInput(inputId = InputID, label = "< N/A >",
+      shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >",
                   choices = NULL, selected = NULL, multiple = TRUE, width = "100%")
     }
   } else {
-    pickerInput(inputId = InputID, label = "< N/A >",
+    shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >",
                 choices = NULL, selected = NULL, multiple = TRUE, width = "100%")
   })
 }

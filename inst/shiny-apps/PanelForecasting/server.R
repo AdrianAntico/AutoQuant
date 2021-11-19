@@ -859,10 +859,10 @@ server <- shiny::shinyServer(function(input, output, session) {
     RemixAutoML::PickerInput(InputID = "timeSeriesTarget", Label = "Select Target Variable", Choices = names(SourceData), SelectedDefault = if(exists("ProjectList")) ProjectList[["timeSeriesTarget"]] else names(SourceData), Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$timeSeriesDateColumn <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "timeSeriesDateColumn",Label = "Select Date Variable", Choices = names(SourceData), SelectedDefault = if(exists("ProjectList")) ProjectList[["timeSeriesDateColumn"]] else names(SourceData), Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = "timeSeriesDateColumn", Label = "Select Date Variable", Choices = names(SourceData), SelectedDefault = if(exists("ProjectList")) ProjectList[["timeSeriesDateColumn"]] else names(SourceData), Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$timeSeriesGroupVars  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "timeSeriesGroupVars",Label = "Select Group Variables", Choices = names(SourceData), SelectedDefault = if(exists("ProjectList")) ProjectList[["timeSeriesGroupVars"]] else NULL, Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = "timeSeriesGroupVars", Label = "Select Group Variables", Choices = names(SourceData), SelectedDefault = if(exists("ProjectList")) ProjectList[["timeSeriesGroupVars"]] else NULL, Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
   output$TS_Group1Levels <- shiny::renderUI({
     RemixAutoML::PickerInput_GetLevels(input, NumGroupVar = 1L, InputID = "TS_Group1Levels", InputID2 = "timeSeriesGroupVars", Choices = c(as.character(unique(SourceData[[eval(input$timeSeriesGroupVars[[1L]])]]))), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
