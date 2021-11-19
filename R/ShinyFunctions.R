@@ -525,6 +525,7 @@ TextInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #' @family Shiny
 #'
 #' @param input input object within shiny context
+#' @param data 'SourceData' or whatever the name of your data is
 #' @param NumGroupVar Which group var to select
 #' @param InputID Feeds ProjectList and inputId. Argument saved in ProjectList
 #' @param InputID2 Secondary object name
@@ -545,6 +546,7 @@ TextInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
 #' @export
 PickerInput_GetLevels <- function(input,
+                                  data = 'SourceData',
                                   NumGroupVar = 3,
                                   InputID = "TS_CARMA_HolidayMovingAverages",
                                   InputID2 = "timeSeriesGroupVars",
@@ -554,7 +556,7 @@ PickerInput_GetLevels <- function(input,
                                   SelectedText = "count > 1",
                                   Multiple = TRUE,
                                   ActionBox = TRUE) {
-  return(if(exists("SourceData")) {
+  return(if(exists(data)) {
     if(!is.null(input[[InputID2]])) {
       if(length(input[[InputID2]]) >= NumGroupVar) {
         shinyWidgets::pickerInput(inputId = InputID, label = paste0(input[[InputID2]][[NumGroupVar]]," Levels"),
