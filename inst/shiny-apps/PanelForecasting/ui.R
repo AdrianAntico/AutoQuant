@@ -1955,21 +1955,21 @@ shinydashboard::dashboardPage(
                   # Single Group Level Selection ----
                   shiny::column(
                     width = 4,
-                    conditionalPanel(
+                    shiny::conditionalPanel(
                       condition = "length(input['timeSeriesGroupVars']) >= 1",
                       shiny::uiOutput("TS_Group1Levels"))),
 
                   # Two Group Level Selection ----
                   shiny::column(
                     width = 4,
-                    conditionalPanel(
+                    shiny::conditionalPanel(
                       condition = "length(input['timeSeriesGroupVars']) >= 2",
                       shiny::uiOutput("TS_Group2Levels"))),
 
                   # Three Group Level Selection ----
                   shiny::column(
                     width = 4,
-                    conditionalPanel(
+                    shiny::conditionalPanel(
                       condition = "1 < 0", #"length(input['timeSeriesGroupVars']) >= 3",
                       shiny::uiOutput("TS_Group3Levels")))))),
 
@@ -1977,50 +1977,50 @@ shinydashboard::dashboardPage(
             RemixAutoML::BlankRow(12),
 
             # Time Series Plot Box ----
-            shinydashboard::box(title = tagList(shiny::icon("database", lib = "font-awesome"), "Time Series Plot"),
-                                solidHeader = TRUE,
-                                width = 12,
-                                htmltools::tags$br(),
-                                background = "aqua",
-                                shiny::column(
-                                  width = 1,
-                                  shinyWidgets::dropdown(
-                                    htmltools::tags$h5("Time Series Plot Inputs"),
-                                    htmltools::tags$h5(htmltools::tags$style('h5 {color:darkblue;}')),
-                                    htmltools::tags$h5(htmltools::tags$style('#TS_AggregateFunction {color:darkblue;}')),
-                                    htmltools::tags$h5(htmltools::tags$style('#TS_OtherGroups {color:darkblue;}')),
-                                    htmltools::tags$h5(htmltools::tags$style('#TS_NumberGroupsDisplay {color:darkblue;}')),
-                                    style = "pill",
-                                    icon = shiny::icon("gear"),
-                                    tooltip = shinyWidgets::tooltipOptions(title = "Click to see plot options"),
-                                    status = "default", width = "300px",
-                                    shiny::uiOutput("TS_AggregateFunction"),
-                                    shiny::uiOutput("TS_OtherGroups"),
-                                    shiny::uiOutput("TS_NumberGroupsDisplay"))),
-                                shiny::column(
-                                  width = 9,
-                                  shiny::fluidRow(
-                                    shinyjs::useShinyjs(),
-                                    shinyWidgets::actionBttn(
-                                      inputId = "CreateTimeSeriesPlot",
-                                      label = "Create Time Series Plot",
-                                      style = "gradient",
-                                      color = "royal"))),
-                                shiny::column(
-                                  width = 2,
-                                  shiny::fluidRow(
-                                    shinyjs::useShinyjs(),
-                                    shinyWidgets::actionBttn(
-                                      inputId = "TS_ResetPlotSettings",
-                                      label = "Reset Plot",
-                                      style = "gradient",
-                                      color = "primary"))),
+            shinydashboard::box(
+              title = tagList(shiny::icon("database", lib = "font-awesome"), "Time Series Plot"),
+              solidHeader = TRUE,
+              width = 12,
+              htmltools::tags$br(),
+              background = "aqua",
+              shiny::column(
+                width = 1,
+                shinyWidgets::dropdown(
+                  htmltools::tags$h5("Time Series Plot Inputs"),
+                  htmltools::tags$h5(htmltools::tags$style('h5 {color:darkblue;}')),
+                  htmltools::tags$h5(htmltools::tags$style('#TS_AggregateFunction {color:darkblue;}')),
+                  htmltools::tags$h5(htmltools::tags$style('#TS_OtherGroups {color:darkblue;}')),
+                  htmltools::tags$h5(htmltools::tags$style('#TS_NumberGroupsDisplay {color:darkblue;}')),
+                  style = "pill",
+                  icon = shiny::icon("gear"),
+                  tooltip = shinyWidgets::tooltipOptions(title = "Click to see plot options"),
+                  status = "default", width = "300px",
+                  shiny::uiOutput("TS_AggregateFunction"),
+                  shiny::uiOutput("TS_OtherGroups"),
+                  shiny::uiOutput("TS_NumberGroupsDisplay"))),
+              shiny::column(
+                width = 9,
+                shiny::fluidRow(
+                  shinyjs::useShinyjs(),
+                  shinyWidgets::actionBttn(
+                    inputId = "CreateTimeSeriesPlot",
+                    label = "Create Time Series Plot",
+                    style = "gradient",
+                    color = "royal"))),
+              shiny::column(
+                width = 2,
+                shiny::fluidRow(
+                  shinyjs::useShinyjs(),
+                  shinyWidgets::actionBttn(
+                    inputId = "TS_ResetPlotSettings",
+                    label = "Reset Plot",
+                    style = "gradient",
+                    color = "primary"))),
 
-                                # -- ADD SPACE ----
-                                RemixAutoML::BlankRow(12),
+              # -- ADD SPACE ----
+              RemixAutoML::BlankRow(12),
 
-
-                                # Time Series Plot ----
+              # Time Series Plot ----
                                 plotly::plotlyOutput("TimeSeriesPlot", width = "100%")),
 
             # -- ADD SPACE ----
