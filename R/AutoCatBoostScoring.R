@@ -339,7 +339,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(is.null(ModelObject)) ModelObject <- catboost::catboost.load_model(file.path(ModelPath, ModelID))
 
   # Score model ----
-  if(TargetType == 'regression' || TargetType == 'multiregression') {
+  if(TargetType %chin% c('regression', 'multiregression')) {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
         model = ModelObject,

@@ -78,17 +78,18 @@ EvalPlot <- function(data,
 
   } else {
     data <- data[, lapply(.SD, noquote(aggrfun)), by = list(rank)]
-    plot <- eval(ggplot2::ggplot(data, ggplot2::aes(x = rank))  +
-      ggplot2::geom_line(ggplot2::aes(y = data[[3L]], color = "Actual")) +
-      ggplot2::geom_line(ggplot2::aes(y = data[[2L]], color = "Predicted")) +
-      ggplot2::xlab("Predicted Percentile") +
-      ggplot2::ylab("Observed Values") +
-      ggplot2::scale_color_manual(values = c("red", "blue")) +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
-      ggplot2::theme(legend.position = "bottom") +
-      ggplot2::ggtitle("Calibration Evaluation Plot") +
-      ChartTheme(Size = 15) +
-      ggplot2::scale_fill_manual(values = c("blue", "gold")))
+    plot <- eval(
+      ggplot2::ggplot(data, ggplot2::aes(x = rank))  +
+        ggplot2::geom_line(ggplot2::aes(y = data[[3L]], color = "Actual")) +
+        ggplot2::geom_line(ggplot2::aes(y = data[[2L]], color = "Predicted")) +
+        ggplot2::xlab("Predicted Percentile") +
+        ggplot2::ylab("Observed Values") +
+        ggplot2::scale_color_manual(values = c("red", "blue")) +
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+        ggplot2::theme(legend.position = "bottom") +
+        ggplot2::ggtitle("Calibration Evaluation Plot") +
+        ggplot2::scale_fill_manual(values = c("blue", "gold")) +
+        ChartTheme(Size = 15))
   }
   return(plot)
 }
