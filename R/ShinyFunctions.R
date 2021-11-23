@@ -384,9 +384,9 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
       }}, error = function(x) shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple))
   } else {
     tryCatch({
-    shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault,options = Options, multiple = Multiple)},
-    error = function(x) {
-      shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
+      shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)},
+      error = function(x) {
+        shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
     })
   })
 }

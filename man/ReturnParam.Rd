@@ -31,6 +31,7 @@ Aggregate <- RemixAutoML::ReturnParam(input, VarName = "TS_AggregateFunction", T
 }
 \seealso{
 Other Shiny: 
+\code{\link{App_BoxPlotsOverTime}()},
 \code{\link{ArgNullCheck2}()},
 \code{\link{ArgNullCheck}()},
 \code{\link{BlankRow}()},

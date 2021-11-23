@@ -2314,7 +2314,7 @@ server <- shiny::shinyServer(function(input, output, session) {
       shinyWidgets::sendSweetAlert(session, title = NULL, text = "Model settings are saved!", type = "success", btn_labels = "Ok", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "60%")
     })
 
-  # Build Forecasts and Save to Forecasts sz  /----
+  # Build Forecasts and Save to Forecasts ----
   shiny::observeEvent(input$TS_Build, {
 
     # Define ML Models ----
