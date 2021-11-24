@@ -1,14 +1,3 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
-library(shiny)
-
 # Local function
 UniqueLevels <- function(input, data, n, GroupVariables) {
   tryCatch({
@@ -24,8 +13,8 @@ FeatureNames <- shiny::getShinyOption('FeatureNames')
 GroupVariables <- shiny::getShinyOption('GroupVariables')
 FilterVariable <- shiny::getShinyOption('FilterVariable')
 DateName <- shiny::getShinyOption('DateName')
-Debug <- shiny::getShinyOption('Debug')
 AppWidth <- shiny::getShinyOption('AppWidth')
+Debug <- shiny::getShinyOption('Debug')
 
 # Define UI for application that draws a histogram
 # Create ui ----
@@ -58,17 +47,17 @@ ui <- shinydashboard::dashboardPage(
 
       # Box to house Group Variables Selection
       shiny::column(
-        width = 9,
+        width = AppWidth,
         shinyjs::useShinyjs(),
         shinydashboard::box(
           title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Levels"),
           solidHeader = TRUE,
           collapsible = FALSE,
           background = "aqua",
-          width = 9,
+          width = AppWidth,
 
           # Select GroupVariables
-          shiny::column(width = AppWidth, shiny::fluidRow(shiny::column(4L, shiny::uiOutput(outputId = 'GroupVars')))),
+          shiny::column(AppWidth, shiny::fluidRow(shiny::column(4L, shiny::uiOutput(outputId = 'GroupVars')))),
 
           # Add Space
           RemixAutoML::BlankRow(AppWidth),
@@ -102,9 +91,7 @@ ui <- shinydashboard::dashboardPage(
 
     # Show Plot
     shiny::fluidRow(
-      shiny::column(
-        width = AppWidth,
-        shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend'))))),
+      shiny::column(AppWidth, shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend'))))),
 
     # Add Space
     RemixAutoML::BlankRow(AppWidth),
@@ -137,35 +124,23 @@ ui <- shinydashboard::dashboardPage(
           width = AppWidth,
 
           # Slect the Target Variable ----
-          shiny::column(
-            3L,
-            shiny::selectInput('YVar', 'Y_Variable', FeatureNames, selected = FeatureNames[1L])),
+          shiny::column(3L, shiny::selectInput('YVar', 'Y_Variable', FeatureNames, selected = FeatureNames[1L])),
 
           # Select a Scale Factor for reducing the max-value of the y-axis
-          shiny::column(
-            3L,
-            shiny::uiOutput('YMin')),
-          shiny::column(
-            3L,
-            shiny::uiOutput('YMax')),
+          shiny::column(3L, shiny::uiOutput('YMin')),
+          shiny::column(3L, shiny::uiOutput('YMax')),
 
           # Add Space
           RemixAutoML::BlankRow(AppWidth),
 
           # Select FilterVariable ----
-          shiny::column(
-            3L,
-            shiny::uiOutput(outputId = 'FilterVariable')),
+          shiny::column(3L, shiny::uiOutput('FilterVariable')),
 
           # Select a Scale Factor for reducing the max-value of the Y-Axis
-          shiny::column(
-            3L,
-            shiny::uiOutput(outputId = 'FilterValue')),
+          shiny::column(3L, shiny::uiOutput('FilterValue')),
 
           # GroupVar3 level selection
-          shiny::column(
-            width = 3L,
-            shiny::uiOutput('FilterLogic'))))),
+          shiny::column(3L, shiny::uiOutput('FilterLogic'))))),
 
     # Optional Plot Inputs----
     shiny::fluidRow(
@@ -182,45 +157,17 @@ ui <- shinydashboard::dashboardPage(
 
           # UI Plot Options ----
           shiny::fluidRow(
-            shiny::column(
-              width = 3L,
-              shiny::uiOutput("TickMarks"),
-              htmltools::tags$br()),
-            shiny::column(
-              width = 3L,
-              shiny::uiOutput("AngleY"),
-              htmltools::tags$br()),
-            shiny::column(
-              width = 3L,
-              shiny::uiOutput("AngleX"),
-              htmltools::tags$br())),
+            shiny::column(3L, shiny::uiOutput("TickMarks"), htmltools::tags$br()),
+            shiny::column(3L, shiny::uiOutput("AngleY"), htmltools::tags$br()),
+            shiny::column(3L, shiny::uiOutput("AngleX"), htmltools::tags$br())),
           shiny::fluidRow(
-            shiny::column(
-              width = 3L,
-              shiny::uiOutput("TextSize"),
-              htmltools::tags$br()),
-            shiny::column(
-              width = 3L,
-              shiny::uiOutput("TextColor"),
-              htmltools::tags$br()),
-            shiny::column(
-              width = 3,
-              shiny::uiOutput("ChartColor"),
-              htmltools::tags$br())),
+            shiny::column(3L, shiny::uiOutput("TextSize"), htmltools::tags$br()),
+            shiny::column(3L, shiny::uiOutput("TextColor"), htmltools::tags$br()),
+            shiny::column(3L, shiny::uiOutput("ChartColor"), htmltools::tags$br())),
           shiny::fluidRow(
-            shiny::column(
-              width = 3L,
-              shiny::uiOutput("GridColor"),
-              htmltools::tags$br()),
-            shiny::column(
-              width = 3L,
-              shiny::uiOutput("BackGroundColor"),
-              htmltools::tags$br()),
-            shiny::column(
-              width = 3L,
-              shiny::uiOutput("BorderColor"),
-              htmltools::tags$br())))))))
-
+            shiny::column(3L, shiny::uiOutput("GridColor"), htmltools::tags$br()),
+            shiny::column(3L, shiny::uiOutput("BackGroundColor"), htmltools::tags$br()),
+            shiny::column(3L, shiny::uiOutput("BorderColor"), htmltools::tags$br())))))))
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -315,7 +262,7 @@ server <- function(input, output, session) {
 
   # Select Filter Logic
   output$FilterLogic <- shiny::renderUI({
-    x <- class(data[[eval(input$FilterVariable)]])
+    x <- class(data[[eval(input[['FilterVariable']])]])
     if(x %in% c('factor', 'character')) {
       FL_Default <- '%chin%'
     } else {
@@ -400,7 +347,7 @@ server <- function(input, output, session) {
   })
 
   # Generate Plot
-  shiny::observeEvent(eventExpr = input$TrendPlotExecute,ignoreInit = TRUE, {
+  shiny::observeEvent(eventExpr = input[['TrendPlotExecute']],ignoreInit = TRUE, {
 
     # Remove NA's
     if(Debug) print('remove NA')
@@ -426,17 +373,17 @@ server <- function(input, output, session) {
     shiny::isolate(
       if(!is.null(input[['FilterVariable']])) {
         if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('factor', 'character')) {
-          if(input$FilterLogic == '%in%') {
+          if(input[['FilterLogic']] == '%in%') {
             data1 <- data1[get(input[['FilterVariable']]) %chin% c(eval(input[['FilterValue']]))]
-          } else if(input$FilterLogic == '%like%') {
+          } else if(input[['FilterLogic']] == '%like%') {
             data1 <- data1[get(input[['FilterVariable']]) %like% c(eval(input[['FilterValue']]))]
           }
         } else if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
-          if(input$FilterLogic == '>') {
+          if(input[['FilterLogic']] == '>') {
             data1 <- data1[get(input[['FilterVariable']]) > eval(input[['FilterValue']])]
-          } else if(input$FilterLogic == '>=') {
+          } else if(input[['FilterLogic']] == '>=') {
             data1 <- data1[get(input[['FilterVariable']]) >= eval(input[['FilterValue']])]
-          } else if(input$FilterLogic == '<') {
+          } else if(input[['FilterLogic']] == '<') {
             data1 <- data1[get(input[['FilterVariable']]) < eval(input[['FilterValue']])]
           } else {
             data1 <- data1[get(input[['FilterVariable']]) <= eval(input[['FilterValue']])]
@@ -454,14 +401,14 @@ server <- function(input, output, session) {
           ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray') +
           ggplot2::geom_hline(color = 'red', yintercept = eval(mean(data1[[eval(shiny::isolate(YVar()))]], na.rm = TRUE))) +
           RemixAutoML::ChartTheme(
-            Size = input$TextSize,
-            AngleX = input$AngleX,
-            AngleY = input$AngleY,
-            ChartColor = input$ChartColor,
-            BorderColor = input$BorderColor,
-            TextColor = input$TextColor,
-            GridColor = input$GridColor,
-            BackGroundColor = input$BackGroundColor) +
+            Size = input[['TextSize']],
+            AngleX = input[['AngleX']],
+            AngleY = input[['AngleY']],
+            ChartColor = input[['ChartColor']],
+            BorderColor = input[['BorderColor']],
+            TextColor = input[['TextColor']],
+            GridColor = input[['GridColor']],
+            BackGroundColor = input[['BackGroundColor']]) +
           ggplot2::labs(
             title = 'Distribution over Time',
             subtitle = 'Red line = mean(Y)',
