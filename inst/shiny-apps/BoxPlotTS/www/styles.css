@@ -5,13 +5,13 @@ body > div > div > section > div:nth-child(4) > div > div > button {
      border-color: #00aa9d;
 }
 
-body > div > div > section > div:nth-child(odd) > div > div > button:hover{ 
+body > div > div > section > div:nth-child(odd) > div > div > button:hover{
     transition: all 2s ease;
     transform: translateX(10px);
     cursor: pointer;
     box-shadow: -6px -9px 2px -2px #a5a5a5;
 }
- 
+
 body > div > div > section > div:nth-child(even) > div > div > button:hover{
     transition: all 2s ease;
     transform: translateX(-10px);

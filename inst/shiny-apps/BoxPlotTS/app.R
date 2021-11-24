@@ -29,149 +29,191 @@ DateLabels <- shiny::getShinyOption('DateLabels')
 Title <- shiny::getShinyOption('Title')
 SubTitle <- shiny::getShinyOption('SubTitle')
 Debug <- shiny::getShinyOption('Debug')
+AppWidth <- shiny::getShinyOption('AppWidth')
 
 # Define UI for application that draws a histogram
 # Create ui ----
-ui <- shiny::fluidPage(
+#ui <- shiny::fluidPage(
 
-  # Add Space
-  RemixAutoML::BlankRow(12L),
+ui <- shinydashboard::dashboardPage(
 
-  # Add image
-  shiny::fluidRow(shiny::img(src = 'NewPackageLogo.png', width = "1500px", height = "459px")),
+  # htmltools::HTML('
+  #   <!DOCTYPE html>
+  #   <html>
+  #   <head>
+  #     <link rel="stylesheet" href="stylin.css">
+  #   </head>
+  #   <body>
+  #
+  #   <h1>Heading @ #5512e7</h1>
+  #   <p>Nuclear</p>
+  #
+  #   <p2>Vomit</p2>
+  #
+  #   </body>
+  #   </html>
+  # '),
 
-  # Add Space
-  RemixAutoML::BlankRow(12L),
+  shinydashboard::dashboardHeader(title="Distribution over Time"),
+  shinydashboard::dashboardSidebar(),
+  shinydashboard::dashboardBody(
 
-  # GroupVar_1 selection and Level selection
-  shiny::fluidRow(
+    # Custom css ----
+    htmltools::tags$head(htmltools::tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
+    htmltools::tags$head(htmltools::tags$style('h1 {color:darkblue;}')),
+    htmltools::tags$head(htmltools::tags$style('body {color:darkblue;}')),
+    htmltools::tags$head(htmltools::tags$style('box-solid {color:black;}')),
 
-    # Box to house Group Variables Selection
-    shiny::column(
-      width = 12,
-      shinyjs::useShinyjs(),
-      shinydashboard::box(
-        title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Levels"),
-        solidHeader = TRUE,
-        collapsible = FALSE,
-        background = "blue",
-        width = 12,
+    # Add Space
+    RemixAutoML::BlankRow(AppWidth),
 
-        # Select GroupVariables
-        shiny::column(width = 12L, shiny::fluidRow(shiny::column(3L, shiny::uiOutput(outputId = 'GroupVars')))),
+    # Add image
+    shiny::fluidRow(shiny::img(src = 'NewPackageLogo.png', width = "1100px", height = "259px")),
 
-        # Add Space
-        RemixAutoML::BlankRow(12L),
+    # Add Space
+    RemixAutoML::BlankRow(AppWidth),
 
-        # GroupVar1 level selection
-        shiny::column(
-          width = 3L,
-          shiny::conditionalPanel(
+    # GroupVar_1 selection and Level selection
+    shiny::fluidRow(
+
+      # Box to house Group Variables Selection
+      shiny::column(
+        width = 9,
+        shinyjs::useShinyjs(),
+        shinydashboard::box(
+          title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Levels"),
+          solidHeader = TRUE,
+          collapsible = FALSE,
+          background = "teal",
+          width = 9,
+
+          # Select GroupVariables
+          shiny::column(width = AppWidth, shiny::fluidRow(shiny::column(4L, shiny::uiOutput(outputId = 'GroupVars')))),
+
+          # Add Space
+          RemixAutoML::BlankRow(AppWidth),
+
+          # GroupVar1 level selection
+          shiny::column(
             width = 3L,
-            condition = "length(input['GroupVars']) >= 1",
-            shiny::uiOutput('Levels_1'))),
+            shiny::conditionalPanel(
+              width = 3L,
+              condition = "length(input['GroupVars']) >= 1",
+              shiny::uiOutput('Levels_1'))),
 
-        # GroupVar2 level selection
-        shiny::column(
-          width = 3L,
-          shiny::conditionalPanel(
+          # GroupVar2 level selection
+          shiny::column(
             width = 3L,
-            condition = "length(input['GroupVars']) >= 2",
-            shiny::uiOutput('Levels_2'))),
+            shiny::conditionalPanel(
+              width = 3L,
+              condition = "length(input['GroupVars']) >= 2",
+              shiny::uiOutput('Levels_2'))),
 
-        # GroupVar3 level selection
-        shiny::column(
-          width = 3L,
-          shiny::conditionalPanel(
+          # GroupVar3 level selection
+          shiny::column(
             width = 3L,
-            condition = "length(input['GroupVars']) >= 3",
-            shiny::uiOutput('Levels_3')))))),
+            shiny::conditionalPanel(
+              width = 3L,
+              condition = "length(input['GroupVars']) >= 3",
+              shiny::uiOutput('Levels_3')))))),
 
-  # Add Space
-  RemixAutoML::BlankRow(12L),
+    # Add Space
+    RemixAutoML::BlankRow(AppWidth),
 
-  # Show Plot
-  shiny::fluidRow(
-    shiny::column(
-      width = 12,
-      shinyjs::useShinyjs(),
-      shinydashboard::box(
-        title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Distribution over time"),
-        solidHeader = TRUE,
-        collapsible = FALSE,
-        background = "blue",
-        width = 12L,
-        shiny::fluidRow(shiny::column(width = 10L, shiny::plotOutput('Trend')))))),
+    # Show Plot
+    shiny::fluidRow(
+      shiny::column(
+        width = AppWidth,
+        shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend'))))),
 
-  # Add Space
-  RemixAutoML::BlankRow(12L),
+    # Add Space
+    RemixAutoML::BlankRow(AppWidth),
 
-  # Button to build plot
-  shiny::fluidRow(
-    shiny::column(
-      width = 4,
-      shinyjs::useShinyjs(),
-      shinyWidgets::actionBttn(
-        inputId = 'TrendPlotExecute',
-        label = 'Create Plot!',
-        icon = shiny::icon('chevron-right', lib = 'font-awesome'),
-        style = 'gradient',
-        color = 'royal'))),
+    # Button to build plot
+    shiny::fluidRow(
+      shiny::column(
+        width = AppWidth,
+        shinyjs::useShinyjs(),
+        shinyWidgets::actionBttn(
+          inputId = 'TrendPlotExecute',
+          label = 'Create Plot!',
+          icon = shiny::icon('chevron-right', lib = 'font-awesome'),
+          style = 'gradient',
+          color = 'royal'))),
 
-  # Add Space
-  RemixAutoML::BlankRow(12L),
+    # Add Space
+    RemixAutoML::BlankRow(AppWidth),
 
-  # Inputs for User ----
-  shiny::column(
-    width = 12,
-    shinyjs::useShinyjs(),
-    shinydashboard::box(
-      title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Plot Variable"),
-      solidHeader = TRUE,
-      collapsible = FALSE,
-      background = "blue",
-      width = 12,
+    # Inputs for User ----
+    shiny::fluidRow(
+      shiny::column(
+        width = AppWidth,
+        shinyjs::useShinyjs(),
+        shinydashboard::box(
+          title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Plot Variable"),
+          solidHeader = TRUE,
+          collapsible = FALSE,
+          background = "teal",
+          width = AppWidth,
 
-      shiny:: fluidRow(
+          # Slect the Target Variable ----
+          shiny::column(
+            3L,
+            shiny::selectInput('YVar', 'Y_Variable', FeatureNames, selected = FeatureNames[1L])),
 
-        # Slect the Target Variable ----
-        shiny::column(
-          3L,
-          shiny::selectInput('YVar', 'Y_Variable', FeatureNames, selected = FeatureNames[1L])),
+          # Select a Scale Factor for reducing the max-value of the y-axis
+          shiny::column(
+            3L,
+            shiny::uiOutput('YMin')),
+          shiny::column(
+            3L,
+            shiny::uiOutput('YMax')),
 
-        # Select a Scale Factor for reducing the max-value of the y-axis
-        shiny::column(
-          3L,
-          shiny::uiOutput('YMax')),
-        shiny::column(
-          3L,
-          shiny::uiOutput('YMin'))),
+          # Add Space
+          RemixAutoML::BlankRow(AppWidth),
 
-      # Add Space
-      RemixAutoML::BlankRow(12L),
+          # Select FilterVariable ----
+          shiny::column(
+            3L,
+            shiny::uiOutput(outputId = 'FilterVariable')),
 
-      # Filters
-      shiny::fluidRow(
+          # Select a Scale Factor for reducing the max-value of the Y-Axis
+          shiny::column(
+            3L,
+            shiny::uiOutput(outputId = 'FilterValue')),
 
-        # Select FilterVariable ----
-        shiny::column(
-          3L,
-          shiny::uiOutput(outputId = 'FilterVariable')),
-
-        # Select a Scale Factor for reducing the max-value of the Y-Axis
-        shiny::column(
-          3L,
-          shiny::uiOutput(outputId = 'FilterValue')),
-
-        # GroupVar3 level selection
-        shiny::column(
-          width = 3L,
-          shiny::uiOutput('FilterLogic'))))))
+          # GroupVar3 level selection
+          shiny::column(
+            width = 3L,
+            shiny::uiOutput('FilterLogic')))))))
 
 
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+
+  # Metadata
+  SelectedGroups <- shiny::reactive({
+    RemixAutoML::ReturnParam(
+      input,
+      VarName = 'GroupVars',
+      Default = GroupVariables,
+      Switch = TRUE,
+      Type = 'character')
+  })
+
+  # Select GroupVars
+  output$GroupVars <- shiny::renderUI({
+    if(Debug) print('PickerInput GroupVars')
+    RemixAutoML::PickerInput(
+      InputID = 'GroupVars',
+      Label = 'Select Group Variables',
+      Choices = GroupVariables,
+      SelectedDefault = GroupVariables,
+      SelectedText = 'count > 1',
+      Multiple = TRUE,
+      ActionBox = TRUE)
+  })
 
   # Global
   YVar <- shiny::reactive({shiny::req(input[['YVar']])})
@@ -191,7 +233,6 @@ server <- function(input, output, session) {
   output$YMax <- shiny::renderUI({
     minn <- floor(data[, min(get(eval(YVar())))])
     maxx <- ceiling(data[, max(get(eval(YVar())))])
-    print(maxx)
     shiny::selectInput(
       inputId = 'YMax',
       label = 'Max Y-Value',
@@ -236,42 +277,15 @@ server <- function(input, output, session) {
     # picker
     RemixAutoML::PickerInput(
       InputID = 'FilterValue',
-      Label = 'Subset data using FilterVariable',
+      Label = 'Percentile or Levels',
       Choices = FilterUnique,
       SelectedDefault = FilterUnique[1L],
       Multiple = FALSE,
       ActionBox = TRUE)
   })
 
-  # Metadata
-  SelectedGroups <- shiny::reactive({
-    RemixAutoML::ReturnParam(
-      input,
-      VarName = 'GroupVars',
-      Default = GroupVariables,
-      Switch = TRUE,
-      Type = 'character')
-  })
-
-  # Select GroupVars
-  output$GroupVars <- shiny::renderUI({
-
-    # Debug
-    if(Debug) print('PickerInput GroupVars')
-    RemixAutoML::PickerInput(
-      InputID = 'GroupVars',
-      Label = 'Select Group Variables',
-      Choices = SelectedGroups(),
-      SelectedDefault = SelectedGroups(),
-      SelectedText = 'count > 1',
-      Multiple = TRUE,
-      ActionBox = TRUE)
-  })
-
   # Levels
   output$Levels_1 <- shiny::renderUI({
-
-    # Debug
     if(Debug) print('PickerInput_GetLevels 1')
     RemixAutoML::PickerInput_GetLevels(
       input,
@@ -281,7 +295,7 @@ server <- function(input, output, session) {
       InputID2 = 'GroupVars',
       Choices = UniqueLevels(input, data, 1L, SelectedGroups()),
       SelectedDefault = UniqueLevels(input, data, 1L, SelectedGroups()),
-      Size = 10,
+      Size = 9,
       SelectedText = 'count > 1',
       Multiple = TRUE,
       ActionBox = TRUE)
@@ -289,8 +303,6 @@ server <- function(input, output, session) {
 
   # Levels
   output$Levels_2 <- shiny::renderUI({
-
-    # Debug
     if(Debug) print('PickerInput_GetLevels 2')
     RemixAutoML::PickerInput_GetLevels(
       input,
@@ -300,7 +312,7 @@ server <- function(input, output, session) {
       InputID2 = 'GroupVars',
       Choices = UniqueLevels(input, data, 2L, SelectedGroups()),
       SelectedDefault = UniqueLevels(input, data, 2L, SelectedGroups()),
-      Size = 10,
+      Size = 9,
       SelectedText = 'count > 1',
       Multiple = TRUE,
       ActionBox = TRUE)
@@ -308,8 +320,6 @@ server <- function(input, output, session) {
 
   # Levels
   output$Levels_3 <- shiny::renderUI({
-
-    # Debug
     if(Debug) print('PickerInput_GetLevels 3')
     RemixAutoML::PickerInput_GetLevels(
       input,
@@ -326,67 +336,69 @@ server <- function(input, output, session) {
   })
 
   # Generate Plot
-  shiny::observeEvent(eventExpr = input$TrendPlotExecute, {
+  shiny::observeEvent(eventExpr = input$TrendPlotExecute,ignoreInit = TRUE, {
 
     # Render Plot
     output$Trend <- shiny::renderPlot({
 
       # Remove NA's
       if(Debug) print('remove NA')
-      data1 <- data[!is.na(get(YVar()))]
+      data1 <- data[!is.na(get(shiny::isolate(YVar())))]
 
       # Subset Rows based on Filters
       if(Debug) print('Subset Rows based on Filters')
-      data1 <- RemixAutoML::PreparePlotData(
-        SubsetOnly = TRUE,
-        input,
-        PlotDataForecast = data1,
-        Aggregate = 'mean',
-        TargetVariable = YVar(),
-        DateVariable = DateName,
-        GroupVariables = SelectedGroups(),
-        G1Levels = 'Levels_1',
-        G2Levels = 'Levels_2',
-        G3Levels = 'Levels_3')
+      data1 <- shiny::isolate(
+        RemixAutoML::PreparePlotData(
+          SubsetOnly = TRUE,
+          input,
+          PlotDataForecast = data1,
+          Aggregate = 'mean',
+          TargetVariable = shiny::isolate(YVar()),
+          DateVariable = DateName,
+          GroupVariables = SelectedGroups(),
+          G1Levels = 'Levels_1',
+          G2Levels = 'Levels_2',
+          G3Levels = 'Levels_3'))
 
       # Subset by FilterVariable
       if(Debug) print('Subset by FilterVariable')
-      if(!is.null(FilterVariable)) {
-        if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')) {
-          if(input$FilterLogic == '%in%') {
-            data1 <- data1[get(FilterVariable) %chin% c(eval(input[['FilterValue']]))]
-          } else if(input$FilterLogic == '%like%') {
-            data1 <- data1[get(FilterVariable) %like% c(eval(input[['FilterValue']]))]
+      shiny::isolate(
+        if(!is.null(input[['FilterVariable']])) {
+          if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('factor', 'character')) {
+            if(input$FilterLogic == '%in%') {
+              data1 <- data1[get(input[['FilterVariable']]) %chin% c(eval(input[['FilterValue']]))]
+            } else if(input$FilterLogic == '%like%') {
+              data1 <- data1[get(input[['FilterVariable']]) %like% c(eval(input[['FilterValue']]))]
+            }
+          } else if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
+            if(input$FilterLogic == '>') {
+              data1 <- data1[get(input[['FilterVariable']]) > eval(input[['FilterValue']])]
+            } else if(input$FilterLogic == '>=') {
+              data1 <- data1[get(input[['FilterVariable']]) >= eval(input[['FilterValue']])]
+            } else if(input$FilterLogic == '<') {
+              data1 <- data1[get(input[['FilterVariable']]) < eval(input[['FilterValue']])]
+            } else {
+              data1 <- data1[get(input[['FilterVariable']]) <= eval(input[['FilterValue']])]
+            }
           }
-        } else if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
-          if(input$FilterLogic == '>') {
-            data1 <- data1[get(FilterVariable) > eval(input[['FilterValue']])]
-          } else if(input$FilterLogic == '>=') {
-            data1 <- data1[get(FilterVariable) >= eval(input[['FilterValue']])]
-          } else if(input$FilterLogic == '<') {
-            data1 <- data1[get(FilterVariable) < eval(input[['FilterValue']])]
-          } else {
-            data1 <- data1[get(FilterVariable) <= eval(input[['FilterValue']])]
-          }
-        }
-      }
+        })
 
       # Create Plot
       if(Debug) print('Create Plot')
-      suppressMessages(
+      shiny::isolate(suppressMessages(
         ggplot2::ggplot(
           data = data1,
-          ggplot2::aes(x = get(DateName), y = get(YVar()), group = get(DateName))) +
+          ggplot2::aes(x = get(DateName), y = get(shiny::isolate(YVar())), group = get(DateName))) +
           ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray') +
-          ggplot2::geom_hline(color = 'red', yintercept = eval(mean(data1[[eval(YVar())]], na.rm = TRUE))) +
+          ggplot2::geom_hline(color = 'red', yintercept = eval(mean(data1[[eval(shiny::isolate(YVar()))]], na.rm = TRUE))) +
           RemixAutoML::ChartTheme(AngleX = 90) +
           ggplot2::labs(
             title = Title,
             subtitle = SubTitle,
             caption = 'by RemixAutoML') +
           ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateName) +
-          ggplot2::scale_x_date(date_breaks = DateBreaks, date_labels = DateLabels))
+          ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(DateName) +
+          ggplot2::scale_x_date(date_breaks = DateBreaks, date_labels = DateLabels)))
     })
   })
 }

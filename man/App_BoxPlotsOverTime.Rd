@@ -14,6 +14,7 @@ App_BoxPlotsOverTime(
   DateLabels = "\%b \%d",
   Title = NULL,
   SubTitle = NULL,
+  AppWidth = 9L,
   Debug = FALSE
 )
 }
@@ -28,14 +29,18 @@ App_BoxPlotsOverTime(
 
 \item{DateName}{Character scalar of the date column name}
 
+\item{DateLabels}{Passthrough format for ggplot2}
+
 \item{Title}{Title for plot}
 
 \item{SubTitle}{SubTitle for plot}
 
+\item{AppWidth}{Width of boxes}
+
 \item{Debug}{FALSE}
 }
 \description{
-Simple shiny app for viewing boxplots over time. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus.
+Simple shiny app for viewing boxplots over time. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
 }
 \examples{
 \dontrun{
@@ -54,6 +59,7 @@ RemixAutoML::App_BoxPlotsOverTime(
   DateLabels = '\%Y \%b \%d',
   Title = 'Time Series Distribution',
   SubTitle = 'Dist. by Day',
+  AppWidth = 9L,
   Debug = TRUE)
 
 # FeatureNames = names(data)[5L:ncol(data)]

@@ -1,5 +1,8 @@
 #' @noRd
-UniqueLevels <- function(input, data, n, GroupVariables) {
+UniqueLevels <- function(input,
+                         data,
+                         n,
+                         GroupVariables) {
   tryCatch({
     c(unique(data[[eval(input[['GroupVars']][[n]])]]))}, error = function(x) {
       tryCatch({
@@ -8,7 +11,7 @@ UniqueLevels <- function(input, data, n, GroupVariables) {
 
 #' @title App_BoxPlotsOverTime
 #'
-#' @description Simple shiny app for viewing boxplots over time. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus.
+#' @description Simple shiny app for viewing boxplots over time. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
 #'
 #' @author Adrian Antico
 #' @family Shiny
@@ -18,8 +21,10 @@ UniqueLevels <- function(input, data, n, GroupVariables) {
 #' @param GroupVariables Character vector of group column names
 #' @param FilterVariable Variable to use to filter data before plotting
 #' @param DateName Character scalar of the date column name
+#' @param DateLabels Passthrough format for ggplot2
 #' @param Title Title for plot
 #' @param SubTitle SubTitle for plot
+#' @param AppWidth Width of boxes
 #' @param Debug FALSE
 #'
 #' @examples
@@ -39,6 +44,7 @@ UniqueLevels <- function(input, data, n, GroupVariables) {
 #'   DateLabels = '%Y %b %d',
 #'   Title = 'Time Series Distribution',
 #'   SubTitle = 'Dist. by Day',
+#'   AppWidth = 9L,
 #'   Debug = TRUE)
 #'
 #' # FeatureNames = names(data)[5L:ncol(data)]
@@ -62,19 +68,22 @@ App_BoxPlotsOverTime <- function(data,
                                  DateLabels = '%b %d',
                                  Title = NULL,
                                  SubTitle = NULL,
+                                 AppWidth = 9L,
                                  Debug = FALSE) {
 
   # Pass args to shiny app
-  shiny::shinyOptions(data = data,
-                      FeatureNames = FeatureNames,
-                      GroupVariables = GroupVariables,
-                      FilterVariable = FilterVariable,
-                      DateName = DateName,
-                      DateBreaks = DateBreaks,
-                      DateLabels = DateLabels,
-                      Title = Title,
-                      SubTitle = SubTitle,
-                      Debug = Debug)
+  shiny::shinyOptions(
+    data = data,
+    FeatureNames = FeatureNames,
+    GroupVariables = GroupVariables,
+    FilterVariable = FilterVariable,
+    DateName = DateName,
+    DateBreaks = DateBreaks,
+    DateLabels = DateLabels,
+    Title = Title,
+    SubTitle = SubTitle,
+    AppWidth = AppWidth,
+    Debug = Debug)
 
   # Run shiny app
   shiny::shinyAppDir(appDir = system.file("shiny-apps", "BoxPlotTS", package = 'RemixAutoML'))
