@@ -402,52 +402,50 @@ server <- function(input, output, session) {
   # Generate Plot
   shiny::observeEvent(eventExpr = input$TrendPlotExecute,ignoreInit = TRUE, {
 
+    # Remove NA's
+    if(Debug) print('remove NA')
+    data1 <- data[!is.na(get(shiny::isolate(YVar())))]
+
+    # Subset Rows based on Filters
+    if(Debug) print('Subset Rows based on Filters')
+    data1 <- shiny::isolate(
+      RemixAutoML::PreparePlotData(
+        SubsetOnly = TRUE,
+        input,
+        PlotDataForecast = data1,
+        Aggregate = 'mean',
+        TargetVariable = shiny::isolate(YVar()),
+        DateVariable = DateName,
+        GroupVariables = SelectedGroups(),
+        G1Levels = 'Levels_1',
+        G2Levels = 'Levels_2',
+        G3Levels = 'Levels_3'))
+
+    # Subset by FilterVariable
+    if(Debug) print('Subset by FilterVariable')
+    shiny::isolate(
+      if(!is.null(input[['FilterVariable']])) {
+        if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('factor', 'character')) {
+          if(input$FilterLogic == '%in%') {
+            data1 <- data1[get(input[['FilterVariable']]) %chin% c(eval(input[['FilterValue']]))]
+          } else if(input$FilterLogic == '%like%') {
+            data1 <- data1[get(input[['FilterVariable']]) %like% c(eval(input[['FilterValue']]))]
+          }
+        } else if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
+          if(input$FilterLogic == '>') {
+            data1 <- data1[get(input[['FilterVariable']]) > eval(input[['FilterValue']])]
+          } else if(input$FilterLogic == '>=') {
+            data1 <- data1[get(input[['FilterVariable']]) >= eval(input[['FilterValue']])]
+          } else if(input$FilterLogic == '<') {
+            data1 <- data1[get(input[['FilterVariable']]) < eval(input[['FilterValue']])]
+          } else {
+            data1 <- data1[get(input[['FilterVariable']]) <= eval(input[['FilterValue']])]
+          }
+        }
+      })
+
     # Render Plot
     output$Trend <- shiny::renderPlot({
-
-      # Remove NA's
-      if(Debug) print('remove NA')
-      data1 <- data[!is.na(get(shiny::isolate(YVar())))]
-
-      # Subset Rows based on Filters
-      if(Debug) print('Subset Rows based on Filters')
-      data1 <- shiny::isolate(
-        RemixAutoML::PreparePlotData(
-          SubsetOnly = TRUE,
-          input,
-          PlotDataForecast = data1,
-          Aggregate = 'mean',
-          TargetVariable = shiny::isolate(YVar()),
-          DateVariable = DateName,
-          GroupVariables = SelectedGroups(),
-          G1Levels = 'Levels_1',
-          G2Levels = 'Levels_2',
-          G3Levels = 'Levels_3'))
-
-      # Subset by FilterVariable
-      if(Debug) print('Subset by FilterVariable')
-      shiny::isolate(
-        if(!is.null(input[['FilterVariable']])) {
-          if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('factor', 'character')) {
-            if(input$FilterLogic == '%in%') {
-              data1 <- data1[get(input[['FilterVariable']]) %chin% c(eval(input[['FilterValue']]))]
-            } else if(input$FilterLogic == '%like%') {
-              data1 <- data1[get(input[['FilterVariable']]) %like% c(eval(input[['FilterValue']]))]
-            }
-          } else if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
-            if(input$FilterLogic == '>') {
-              data1 <- data1[get(input[['FilterVariable']]) > eval(input[['FilterValue']])]
-            } else if(input$FilterLogic == '>=') {
-              data1 <- data1[get(input[['FilterVariable']]) >= eval(input[['FilterValue']])]
-            } else if(input$FilterLogic == '<') {
-              data1 <- data1[get(input[['FilterVariable']]) < eval(input[['FilterValue']])]
-            } else {
-              data1 <- data1[get(input[['FilterVariable']]) <= eval(input[['FilterValue']])]
-            }
-          }
-        })
-
-      # Create Plot
       if(Debug) print('Create Plot')
       shiny::isolate(suppressMessages(
         ggplot2::ggplot(
