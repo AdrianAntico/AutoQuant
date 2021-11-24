@@ -24,10 +24,6 @@ FeatureNames <- shiny::getShinyOption('FeatureNames')
 GroupVariables <- shiny::getShinyOption('GroupVariables')
 FilterVariable <- shiny::getShinyOption('FilterVariable')
 DateName <- shiny::getShinyOption('DateName')
-DateBreaks <- shiny::getShinyOption('DateBreaks')
-DateLabels <- shiny::getShinyOption('DateLabels')
-Title <- shiny::getShinyOption('Title')
-SubTitle <- shiny::getShinyOption('SubTitle')
 Debug <- shiny::getShinyOption('Debug')
 AppWidth <- shiny::getShinyOption('AppWidth')
 
@@ -37,23 +33,7 @@ AppWidth <- shiny::getShinyOption('AppWidth')
 
 ui <- shinydashboard::dashboardPage(
 
-  # htmltools::HTML('
-  #   <!DOCTYPE html>
-  #   <html>
-  #   <head>
-  #     <link rel="stylesheet" href="stylin.css">
-  #   </head>
-  #   <body>
-  #
-  #   <h1>Heading @ #5512e7</h1>
-  #   <p>Nuclear</p>
-  #
-  #   <p2>Vomit</p2>
-  #
-  #   </body>
-  #   </html>
-  # '),
-
+  # Page layout
   shinydashboard::dashboardHeader(title="Distribution over Time"),
   shinydashboard::dashboardSidebar(),
   shinydashboard::dashboardBody(
@@ -84,7 +64,7 @@ ui <- shinydashboard::dashboardPage(
           title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Levels"),
           solidHeader = TRUE,
           collapsible = FALSE,
-          background = "teal",
+          background = "aqua",
           width = 9,
 
           # Select GroupVariables
@@ -153,7 +133,7 @@ ui <- shinydashboard::dashboardPage(
           title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Plot Variable"),
           solidHeader = TRUE,
           collapsible = FALSE,
-          background = "teal",
+          background = "aqua",
           width = AppWidth,
 
           # Slect the Target Variable ----
@@ -185,12 +165,96 @@ ui <- shinydashboard::dashboardPage(
           # GroupVar3 level selection
           shiny::column(
             width = 3L,
-            shiny::uiOutput('FilterLogic')))))))
+            shiny::uiOutput('FilterLogic'))))),
 
+    # Optional Plot Inputs----
+    shiny::fluidRow(
+      shiny::column(
+        width = AppWidth,
+        shinyjs::useShinyjs(),
+        shinydashboard::box(
+          title = tagList(shiny::icon("database", lib = "font-awesome"), "Plot Options"),
+          solidHeader = TRUE,
+          collapsible = TRUE,
+          collapsed = FALSE,
+          background = "aqua",
+          width = AppWidth,
+
+          # UI Plot Options ----
+          shiny::fluidRow(
+            shiny::column(
+              width = 3L,
+              shiny::uiOutput("TickMarks"),
+              htmltools::tags$br()),
+            shiny::column(
+              width = 3L,
+              shiny::uiOutput("AngleY"),
+              htmltools::tags$br()),
+            shiny::column(
+              width = 3L,
+              shiny::uiOutput("AngleX"),
+              htmltools::tags$br())),
+          shiny::fluidRow(
+            shiny::column(
+              width = 3L,
+              shiny::uiOutput("TextSize"),
+              htmltools::tags$br()),
+            shiny::column(
+              width = 3L,
+              shiny::uiOutput("TextColor"),
+              htmltools::tags$br()),
+            shiny::column(
+              width = 3,
+              shiny::uiOutput("ChartColor"),
+              htmltools::tags$br())),
+          shiny::fluidRow(
+            shiny::column(
+              width = 3L,
+              shiny::uiOutput("GridColor"),
+              htmltools::tags$br()),
+            shiny::column(
+              width = 3L,
+              shiny::uiOutput("BackGroundColor"),
+              htmltools::tags$br()),
+            shiny::column(
+              width = 3L,
+              shiny::uiOutput("BorderColor"),
+              htmltools::tags$br())))))))
 
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+
+  # UI Plot Options ----
+  output$TickMarks <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = "TickMarks", Label = "Tick marks x-axis", Choices = c("1 year","1 day","3 day","1 week","2 week","1 month","3 month","6 month","2 year","5 year","10 year","1 minute","15 minutes","30 minutes","1 hour","3 hour","6 hour","12 hour"), SelectedDefault = "1 year", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$AngleY <- shiny::renderUI({
+    RemixAutoML::NumericInput(InputID = "AngleY", Label = "Y-axis text angle", Step = 5, Min = 0, Max = 360, Value = 0)
+  })
+  output$AngleX <- shiny::renderUI({
+    RemixAutoML::NumericInput(InputID = "AngleX", Label = "X-axis text angle", Step = 5, Min = 0, Max = 360, Value = 90)
+  })
+  output$TextSize <- shiny::renderUI({
+    RemixAutoML::NumericInput(InputID = "TextSize", Label = "Text size", Step = 1, Min = 1, Max = 50, Value = 12)
+  })
+
+  # Color boxes ----
+  output$TextColor <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = "TextColor", Label = "Text color", Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$ChartColor <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = "ChartColor", Label = "Chart color", Choices = grDevices::colors(), SelectedDefault = "lightsteelblue1", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$GridColor <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = "GridColor", Label = "Grid lines color", Choices = grDevices::colors(), SelectedDefault = "white", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$BackGroundColor <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = "BackGroundColor", Label = "Background color", Choices = grDevices::colors(), SelectedDefault = "gray95", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$BorderColor <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = "BorderColor", Label = "Border color", Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
 
   # Metadata
   SelectedGroups <- shiny::reactive({
@@ -391,14 +455,22 @@ server <- function(input, output, session) {
           ggplot2::aes(x = get(DateName), y = get(shiny::isolate(YVar())), group = get(DateName))) +
           ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray') +
           ggplot2::geom_hline(color = 'red', yintercept = eval(mean(data1[[eval(shiny::isolate(YVar()))]], na.rm = TRUE))) +
-          RemixAutoML::ChartTheme(AngleX = 90) +
+          RemixAutoML::ChartTheme(
+            Size = input$TextSize,
+            AngleX = input$AngleX,
+            AngleY = input$AngleY,
+            ChartColor = input$ChartColor,
+            BorderColor = input$BorderColor,
+            TextColor = input$TextColor,
+            GridColor = input$GridColor,
+            BackGroundColor = input$BackGroundColor) +
           ggplot2::labs(
-            title = Title,
-            subtitle = SubTitle,
+            title = 'Distribution over Time',
+            subtitle = 'Red line = mean(Y)',
             caption = 'by RemixAutoML') +
           ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
           ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(DateName) +
-          ggplot2::scale_x_date(date_breaks = DateBreaks, date_labels = DateLabels)))
+          ggplot2::scale_x_date(date_breaks = input[['TickMarks']])))
     })
   })
 }

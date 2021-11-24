@@ -10,10 +10,6 @@ App_BoxPlotsOverTime(
   GroupVariables = NULL,
   FilterVariable = NULL,
   DateName = NULL,
-  DateBreaks = "1 day",
-  DateLabels = "\%b \%d",
-  Title = NULL,
-  SubTitle = NULL,
   AppWidth = 9L,
   Debug = FALSE
 )
@@ -28,12 +24,6 @@ App_BoxPlotsOverTime(
 \item{FilterVariable}{Variable to use to filter data before plotting}
 
 \item{DateName}{Character scalar of the date column name}
-
-\item{DateLabels}{Passthrough format for ggplot2}
-
-\item{Title}{Title for plot}
-
-\item{SubTitle}{SubTitle for plot}
 
 \item{AppWidth}{Width of boxes}
 
@@ -55,10 +45,6 @@ RemixAutoML::App_BoxPlotsOverTime(
   GroupVariables = names(data)[seq_len(3L)],
   FilterVariable = 'XREG1',
   DateName = 'Date',
-  DateBreaks = '14 day',
-  DateLabels = '\%Y \%b \%d',
-  Title = 'Time Series Distribution',
-  SubTitle = 'Dist. by Day',
   AppWidth = 9L,
   Debug = TRUE)
 
@@ -66,10 +52,6 @@ RemixAutoML::App_BoxPlotsOverTime(
 # GroupVariables = names(data)[seq_len(3L)]
 # FilterVariable = 'XREG1'
 # DateName = 'Date'
-# DateBreaks = '1 day'
-# DateLabels = '\%Y \%b \%d'
-# Title = 'Time Series Distribution'
-# SubTitle = 'Dist. by Day'
 # Debug = TRUE
 }
 

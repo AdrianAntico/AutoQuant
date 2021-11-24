@@ -21,9 +21,6 @@ UniqueLevels <- function(input,
 #' @param GroupVariables Character vector of group column names
 #' @param FilterVariable Variable to use to filter data before plotting
 #' @param DateName Character scalar of the date column name
-#' @param DateLabels Passthrough format for ggplot2
-#' @param Title Title for plot
-#' @param SubTitle SubTitle for plot
 #' @param AppWidth Width of boxes
 #' @param Debug FALSE
 #'
@@ -40,10 +37,6 @@ UniqueLevels <- function(input,
 #'   GroupVariables = names(data)[seq_len(3L)],
 #'   FilterVariable = 'XREG1',
 #'   DateName = 'Date',
-#'   DateBreaks = '14 day',
-#'   DateLabels = '%Y %b %d',
-#'   Title = 'Time Series Distribution',
-#'   SubTitle = 'Dist. by Day',
 #'   AppWidth = 9L,
 #'   Debug = TRUE)
 #'
@@ -51,10 +44,6 @@ UniqueLevels <- function(input,
 #' # GroupVariables = names(data)[seq_len(3L)]
 #' # FilterVariable = 'XREG1'
 #' # DateName = 'Date'
-#' # DateBreaks = '1 day'
-#' # DateLabels = '%Y %b %d'
-#' # Title = 'Time Series Distribution'
-#' # SubTitle = 'Dist. by Day'
 #' # Debug = TRUE
 #' }
 #'
@@ -64,10 +53,6 @@ App_BoxPlotsOverTime <- function(data,
                                  GroupVariables = NULL,
                                  FilterVariable = NULL,
                                  DateName = NULL,
-                                 DateBreaks = '1 day',
-                                 DateLabels = '%b %d',
-                                 Title = NULL,
-                                 SubTitle = NULL,
                                  AppWidth = 9L,
                                  Debug = FALSE) {
 
@@ -78,10 +63,6 @@ App_BoxPlotsOverTime <- function(data,
     GroupVariables = GroupVariables,
     FilterVariable = FilterVariable,
     DateName = DateName,
-    DateBreaks = DateBreaks,
-    DateLabels = DateLabels,
-    Title = Title,
-    SubTitle = SubTitle,
     AppWidth = AppWidth,
     Debug = Debug)
 
