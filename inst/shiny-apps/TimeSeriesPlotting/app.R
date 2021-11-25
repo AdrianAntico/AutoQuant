@@ -16,6 +16,12 @@ DateName <- shiny::getShinyOption('DateName')
 AppWidth <- shiny::getShinyOption('AppWidth')
 LogoWidth <- shiny::getShinyOption('LogoWidth')
 LogoHeight <- shiny::getShinyOption('LogoHeight')
+Box1Color <- shiny::getShinyOption('Box1Color')
+Box2Color <- shiny::getShinyOption('Box2Color')
+Box3Color <- shiny::getShinyOption('Box3Color')
+CreatePlotButtonColor <- shiny::getShinyOption('CreatePlotButtonColor')
+UpdatePlotButtonColor <- shiny::getShinyOption('UpdatePlotButtonColor')
+ResetPlotButtonColor <- shiny::getShinyOption('ResetPlotButtonColor')
 Debug <- shiny::getShinyOption('Debug')
 
 # Define UI for application that draws a histogram
@@ -29,7 +35,7 @@ ui <- shinydashboard::dashboardPage(
 
   # Page layout
   shinydashboard::dashboardHeader(
-    title="Distribution over Time",
+    title="Time Series Plotting",
 
     # Adjustments to page sizing
     htmltools::tags$li(class = "dropdown",
@@ -37,7 +43,7 @@ ui <- shinydashboard::dashboardPage(
                        htmltools::tags$style(".main-header .logo {height: 55px;}"),
                        htmltools::tags$style(".sidebar-toggle {height: 20px; padding-top: 1px !important;}"),
                        htmltools::tags$style(".navbar {min-height:55px !important}")),
-    titleWidth = 190),
+    titleWidth = 300),
 
   shinydashboard::dashboardSidebar(),
   shinydashboard::dashboardBody(
@@ -68,7 +74,7 @@ ui <- shinydashboard::dashboardPage(
           title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Levels"),
           solidHeader = TRUE,
           collapsible = FALSE,
-          background = "navy",
+          background = Box1Color,
           width = AppWidth,
 
           # Select GroupVariables
@@ -123,7 +129,7 @@ ui <- shinydashboard::dashboardPage(
           label = 'Create Plot!',
           icon = shiny::icon('chevron-right', lib = 'font-awesome'),
           style = 'gradient',
-          color = 'default')),
+          color = CreatePlotButtonColor)),
 
       # Update Theme!
       shiny::column(
@@ -134,7 +140,7 @@ ui <- shinydashboard::dashboardPage(
           label = 'Update Theme!',
           icon = shiny::icon('chevron-right', lib = 'font-awesome'),
           style = 'gradient',
-          color = 'default')),
+          color = UpdatePlotButtonColor)),
 
       # Reset Theme!
       shiny::column(
@@ -145,7 +151,7 @@ ui <- shinydashboard::dashboardPage(
           label = 'Reset Theme!',
           icon = shiny::icon('chevron-right', lib = 'font-awesome'),
           style = 'gradient',
-          color = 'default'))),
+          color = ResetPlotButtonColor))),
 
     # Add Space
     RemixAutoML::BlankRow(AppWidth),
@@ -159,7 +165,7 @@ ui <- shinydashboard::dashboardPage(
           title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Plotting Data"),
           solidHeader = TRUE,
           collapsible = FALSE,
-          background = "purple",
+          background = Box2Color,
           width = AppWidth,
 
           # Select plot type ----
@@ -192,7 +198,7 @@ ui <- shinydashboard::dashboardPage(
           solidHeader = TRUE,
           collapsible = TRUE,
           collapsed = FALSE,
-          background = "aqua",
+          background = Box3Color,
           width = AppWidth,
 
           # UI Plot Options ----

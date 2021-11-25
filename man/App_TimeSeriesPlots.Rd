@@ -13,6 +13,12 @@ App_TimeSeriesPlots(
   AppWidth = 10L,
   LogoWidth = "1200px",
   LogoHeight = "300px",
+  Box1Color = "navy",
+  Box2Color = "purple",
+  Box3Color = "aqua",
+  CreatePlotButtonColor = "default",
+  UpdatePlotButtonColor = "default",
+  ResetPlotButtonColor = "default",
   Debug = FALSE
 )
 }
@@ -28,6 +34,18 @@ App_TimeSeriesPlots(
 \item{DateName}{Character scalar of the date column name}
 
 \item{AppWidth}{Width of boxes}
+
+\item{Box1Color}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
+
+\item{Box2Color}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
+
+\item{Box3Color}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
+
+\item{CreatePlotButtonColor}{Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'}
+
+\item{UpdatePlotButtonColor}{Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'}
+
+\item{ResetPlotButtonColor}{Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'}
 
 \item{Debug}{FALSE}
 }
@@ -47,9 +65,15 @@ RemixAutoML::App_TimeSeriesPlots(
   GroupVariables = names(data)[seq_len(3L)],
   FilterVariable = 'XREG1',
   DateName = 'Date',
-  AppWidth = 9L,
+  AppWidth = 10L,
   LogoWidth = '1100px',
   LogoHeight = '259px',
+  Box1Color = 'navy',
+  Box2Color = 'purple',
+  Box3Color = 'aqua',
+  CreatePlotButtonColor = 'default',
+  UpdatePlotButtonColor = 'default',
+  ResetPlotButtonColor = 'default',
   Debug = TRUE)
 
 # FeatureNames = names(data)[5L:ncol(data)]
@@ -60,6 +84,12 @@ RemixAutoML::App_TimeSeriesPlots(
 # AppWidth = 9L
 # LogoWidth = '1100px',
 # LogoHeight = '259px',
+# Box1Color = 'navy',
+# Box2Color = 'purple',
+# Box3Color = 'aqua',
+# CreatePlotButtonColor = 'default',
+# UpdatePlotButtonColor = 'default',
+# ResetPlotButtonColor = 'default',
 # Debug = TRUE
 }
 

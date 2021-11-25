@@ -22,6 +22,12 @@ UniqueLevels <- function(input,
 #' @param FilterVariable Variable to use to filter data before plotting
 #' @param DateName Character scalar of the date column name
 #' @param AppWidth Width of boxes
+#' @param Box1Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
+#' @param Box2Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
+#' @param Box3Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
+#' @param CreatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
+#' @param UpdatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
+#' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param Debug FALSE
 #'
 #' @examples
@@ -37,9 +43,15 @@ UniqueLevels <- function(input,
 #'   GroupVariables = names(data)[seq_len(3L)],
 #'   FilterVariable = 'XREG1',
 #'   DateName = 'Date',
-#'   AppWidth = 9L,
+#'   AppWidth = 10L,
 #'   LogoWidth = '1100px',
 #'   LogoHeight = '259px',
+#'   Box1Color = 'navy',
+#'   Box2Color = 'purple',
+#'   Box3Color = 'aqua',
+#'   CreatePlotButtonColor = 'default',
+#'   UpdatePlotButtonColor = 'default',
+#'   ResetPlotButtonColor = 'default',
 #'   Debug = TRUE)
 #'
 #' # FeatureNames = names(data)[5L:ncol(data)]
@@ -50,6 +62,12 @@ UniqueLevels <- function(input,
 #' # AppWidth = 9L
 #' # LogoWidth = '1100px',
 #' # LogoHeight = '259px',
+#' # Box1Color = 'navy',
+#' # Box2Color = 'purple',
+#' # Box3Color = 'aqua',
+#' # CreatePlotButtonColor = 'default',
+#' # UpdatePlotButtonColor = 'default',
+#' # ResetPlotButtonColor = 'default',
 #' # Debug = TRUE
 #' }
 #'
@@ -62,6 +80,12 @@ App_TimeSeriesPlots <- function(data,
                                 AppWidth = 10L,
                                 LogoWidth = '1200px',
                                 LogoHeight = '300px',
+                                Box1Color = 'navy',
+                                Box2Color = 'purple',
+                                Box3Color = 'aqua',
+                                CreatePlotButtonColor = 'default',
+                                UpdatePlotButtonColor = 'default',
+                                ResetPlotButtonColor = 'default',
                                 Debug = FALSE) {
 
   # Pass args to shiny app
@@ -74,6 +98,12 @@ App_TimeSeriesPlots <- function(data,
     AppWidth = AppWidth,
     LogoWidth = LogoWidth,
     LogoHeight = LogoHeight,
+    Box1Color = 'navy',
+    Box2Color = 'purple',
+    Box3Color = 'aqua',
+    CreatePlotButtonColor = 'default',
+    UpdatePlotButtonColor = 'default',
+    ResetPlotButtonColor = 'default',
     Debug = Debug)
 
   # Run shiny app
