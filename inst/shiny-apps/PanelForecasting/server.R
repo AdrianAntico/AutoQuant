@@ -1057,7 +1057,7 @@ server <- shiny::shinyServer(function(input, output, session) {
         }
 
         # Generate Plot----
-        TimeSeriesPlotObject <<- RemixAutoML::TimeSeriesPlotter(
+        TimeSeriesPlotObject <<- RemixAutoML:::TimeSeriesPlotter(
           data = if(exists("PlotDataForecastFinal")) PlotDataForecastFinal else SourceData,
           TargetVariable = as.character(input$timeSeriesTarget),
           DateVariable = as.character(input$timeSeriesDateColumn),
@@ -1386,7 +1386,7 @@ server <- shiny::shinyServer(function(input, output, session) {
 
           # Plot ----
           output$TimeSeriesPlot <- plotly::renderPlotly({
-            TimeSeriesPlotObject <<- RemixAutoML::TimeSeriesPlotter(
+            TimeSeriesPlotObject <<- RemixAutoML:::TimeSeriesPlotter(
               data = PlotDataForecastFinal,
               TargetVariable = TargetVariable,
               DateVariable = DateVariable,
@@ -3914,7 +3914,7 @@ server <- shiny::shinyServer(function(input, output, session) {
           Group1Levels2_ <<- Group1Levels2
           Group2Levels2_ <<- Group2Levels2
           Group3Levels2_ <<- Group3Levels2
-          TimeSeriesPlotObject  <<- RemixAutoML::TimeSeriesPlotter(
+          TimeSeriesPlotObject  <<- RemixAutoML:::TimeSeriesPlotter(
             EvaluationMode = EvalMode,
             data = PlotDataForecastFinal,
             TargetVariable = if(EvalMode) c("Forecast", targetvariables) else targetvariables,

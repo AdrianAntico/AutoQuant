@@ -33,7 +33,7 @@ GenerateEvaluationMetrics calculates evaluation metrics for out of sample foreca
 }
 \seealso{
 Other Shiny: 
-\code{\link{App_BoxPlotsOverTime}()},
+\code{\link{App_TimeSeriesPlots}()},
 \code{\link{ArgNullCheck2}()},
 \code{\link{ArgNullCheck}()},
 \code{\link{BlankRow}()},

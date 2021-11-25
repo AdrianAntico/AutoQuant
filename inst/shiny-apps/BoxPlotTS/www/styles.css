@@ -1,8 +1,8 @@
 /*--AutoTS Forecast button--*/
-
+/* border-color: #00aa9d; */
 body > div > div > section > div:nth-child(4) > div > div > button {
      background-image: linear-gradient(to top, #d83f91, #d0409b, #c743a5, #bb47af, #ae4bb8);
-     border-color: #00aa9d;
+     border-color: #0000C6;
 }
 
 body > div > div > section > div:nth-child(odd) > div > div > button:hover{

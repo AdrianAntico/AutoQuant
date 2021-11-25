@@ -20,7 +20,7 @@ Debug <- shiny::getShinyOption('Debug')
 # Create ui ----
 #ui <- shiny::fluidPage(
 
-ui <- shinydashboard::dashboardPage(
+ui <- shinydashboard::dashboardPage(skin = 'purple',
 
   # Page layout
   shinydashboard::dashboardHeader(title="Distribution over Time"),
@@ -37,7 +37,7 @@ ui <- shinydashboard::dashboardPage(
     RemixAutoML::BlankRow(AppWidth),
 
     # Add image
-    shiny::fluidRow(shiny::img(src = 'NewPackageLogo.png', width = "1100px", height = "259px")),
+    shiny::fluidRow(shiny::img(src = 'NewPackageLogo.png', width = "1100px", height = "278px")),
 
     # Add Space
     RemixAutoML::BlankRow(AppWidth),
@@ -98,15 +98,28 @@ ui <- shinydashboard::dashboardPage(
 
     # Button to build plot
     shiny::fluidRow(
+
+      # Create Plot!
       shiny::column(
-        width = AppWidth,
+        width = 3L,
         shinyjs::useShinyjs(),
         shinyWidgets::actionBttn(
           inputId = 'TrendPlotExecute',
           label = 'Create Plot!',
           icon = shiny::icon('chevron-right', lib = 'font-awesome'),
           style = 'gradient',
-          color = 'royal'))),
+          color = 'royal')),
+
+      # Update Theme!
+      shiny::column(
+        width = 3L,
+        shinyjs::useShinyjs(),
+        shinyWidgets::actionBttn(
+          inputId = 'UpdatePlotThemeElements',
+          label = 'Update Theme!',
+          icon = shiny::icon('chevron-right', lib = 'font-awesome'),
+          style = 'gradient',
+          color = 'success'))),
 
     # Add Space
     RemixAutoML::BlankRow(AppWidth),
@@ -123,10 +136,15 @@ ui <- shinydashboard::dashboardPage(
           background = "aqua",
           width = AppWidth,
 
-          # Slect the Target Variable ----
-          shiny::column(3L, shiny::selectInput('YVar', 'Y_Variable', FeatureNames, selected = FeatureNames[1L])),
+          # Select plot type ----
+          shiny::column(3L, shiny::uiOutput('PlotType')),
+          shiny::column(3L, shiny::uiOutput('NumberGroupsDisplay')),
 
-          # Select a Scale Factor for reducing the max-value of the y-axis
+          # Add Space
+          RemixAutoML::BlankRow(AppWidth),
+
+          # Select the Target Variable ----
+          shiny::column(3L, shiny::selectInput('YVar', 'Y_Variable', FeatureNames, selected = FeatureNames[1L])),
           shiny::column(3L, shiny::uiOutput('YMin')),
           shiny::column(3L, shiny::uiOutput('YMax')),
 
@@ -135,11 +153,7 @@ ui <- shinydashboard::dashboardPage(
 
           # Select FilterVariable ----
           shiny::column(3L, shiny::uiOutput('FilterVariable')),
-
-          # Select a Scale Factor for reducing the max-value of the Y-Axis
           shiny::column(3L, shiny::uiOutput('FilterValue')),
-
-          # GroupVar3 level selection
           shiny::column(3L, shiny::uiOutput('FilterLogic'))))),
 
     # Optional Plot Inputs----
@@ -171,6 +185,14 @@ ui <- shinydashboard::dashboardPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+
+  # PlotType
+  output$PlotType <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('box', 'line'), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$NumberGroupsDisplay <- shiny::renderUI({
+    RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = '# of Levels', Step = 1L, Value = 5L, Min = 1L, Max = 100L)
+  })
 
   # UI Plot Options ----
   output$TickMarks <- shiny::renderUI({
@@ -346,27 +368,41 @@ server <- function(input, output, session) {
       ActionBox = TRUE)
   })
 
+  # Update Plot Format Only
+  shiny::observeEvent(eventExpr = input[['UpdatePlotThemeElements']], {
+
+    # Update chart theme elements
+    p1 <- shiny::isolate(p1 + RemixAutoML::ChartTheme(
+      Size = input[['TextSize']],
+      AngleX = input[['AngleX']],
+      AngleY = input[['AngleY']],
+      ChartColor = input[['ChartColor']],
+      BorderColor = input[['BorderColor']],
+      TextColor = input[['TextColor']],
+      GridColor = input[['GridColor']],
+      BackGroundColor = input[['BackGroundColor']]))
+
+    # Update labels
+    p1 <- shiny::isolate(p1 + ggplot2::labs(
+      title = 'Distribution over Time',
+      subtitle = 'Red line = mean(Y)',
+      caption = 'by RemixAutoML') +
+        ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
+        ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateName))
+
+    # Return
+    p1 <<- p1
+    output$Trend <- shiny::renderPlot({
+      p1
+    })
+  })
+
   # Generate Plot
-  shiny::observeEvent(eventExpr = input[['TrendPlotExecute']],ignoreInit = TRUE, {
+  shiny::observeEvent(eventExpr = input[['TrendPlotExecute']], {
 
     # Remove NA's
     if(Debug) print('remove NA')
-    data1 <- data[!is.na(get(shiny::isolate(YVar())))]
-
-    # Subset Rows based on Filters
-    if(Debug) print('Subset Rows based on Filters')
-    data1 <- shiny::isolate(
-      RemixAutoML::PreparePlotData(
-        SubsetOnly = TRUE,
-        input,
-        PlotDataForecast = data1,
-        Aggregate = 'mean',
-        TargetVariable = shiny::isolate(YVar()),
-        DateVariable = DateName,
-        GroupVariables = SelectedGroups(),
-        G1Levels = 'Levels_1',
-        G2Levels = 'Levels_2',
-        G3Levels = 'Levels_3'))
+    data1 <- shiny::isolate(data[!is.na(get(YVar()))])
 
     # Subset by FilterVariable
     if(Debug) print('Subset by FilterVariable')
@@ -391,16 +427,34 @@ server <- function(input, output, session) {
         }
       })
 
+    # Subset Rows based on Filters
+    if(Debug) print('Subset Rows based on Filters')
+    data1 <- shiny::isolate(
+      RemixAutoML::PreparePlotData(
+        SubsetOnly = if(input[['PlotType']] == 'box') TRUE else FALSE,
+        input,
+        PlotDataForecast = data1,
+        Aggregate = 'mean',
+        TargetVariable = YVar(),
+        DateVariable = DateName,
+        GroupVariables = SelectedGroups(),
+        G1Levels = 'Levels_1',
+        G2Levels = 'Levels_2',
+        G3Levels = 'Levels_3'))
+
     # Render Plot
     output$Trend <- shiny::renderPlot({
-      if(Debug) print('Create Plot')
-      shiny::isolate(suppressMessages(
-        ggplot2::ggplot(
-          data = data1,
-          ggplot2::aes(x = get(DateName), y = get(shiny::isolate(YVar())), group = get(DateName))) +
-          ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray') +
-          ggplot2::geom_hline(color = 'red', yintercept = eval(mean(data1[[eval(shiny::isolate(YVar()))]], na.rm = TRUE))) +
-          RemixAutoML::ChartTheme(
+
+      if(Debug) print(data1)
+      print(SelectedGroups())
+
+      # Plot
+      shiny::isolate(
+        if(input[['PlotType']] == 'box') {
+          p1 <- shiny::isolate(ggplot2::ggplot(data = data1, ggplot2::aes(x = get(DateName), y = get(YVar()), group = get(DateName))))
+          p1 <- p1 + ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray')
+          p1 <- shiny::isolate(p1 + ggplot2::geom_hline(color = 'red', yintercept = eval(mean(data1[[eval(YVar())]], na.rm = TRUE))))
+          p1 <- shiny::isolate(p1 + RemixAutoML::ChartTheme(
             Size = input[['TextSize']],
             AngleX = input[['AngleX']],
             AngleY = input[['AngleY']],
@@ -408,15 +462,46 @@ server <- function(input, output, session) {
             BorderColor = input[['BorderColor']],
             TextColor = input[['TextColor']],
             GridColor = input[['GridColor']],
-            BackGroundColor = input[['BackGroundColor']]) +
-          ggplot2::labs(
+            BackGroundColor = input[['BackGroundColor']]))
+          p1 <- shiny::isolate(p1 + ggplot2::labs(
             title = 'Distribution over Time',
             subtitle = 'Red line = mean(Y)',
             caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(DateName) +
-          ggplot2::scale_x_date(date_breaks = input[['TickMarks']])))
-    })
+              ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
+              ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateName) +
+              ggplot2::scale_x_date(date_breaks = input[['TickMarks']]))
+        } else {
+          p1 <- RemixAutoML:::TimeSeriesPlotter(
+            data = data1,
+            TargetVariable = YVar(),
+            DateVariable = DateName,
+            GroupVariables = SelectedGroups(),
+            Aggregate = 'mean',
+            NumberGroupsDisplay = input[['NumberGroupsDisplay']],
+            LevelsToDisplay = NULL,
+            OtherGroupLabel = "OtherGroups",
+            DisplayOtherGroup = TRUE,
+            TextSize = input[['TextSize']],
+            LineWidth = 0.5,
+            Color = 'blue',
+            XTickMarks = input[['TickMarks']],
+            AngleX = input[['AngleX']],
+            AngleY = input[['AngleY']],
+            ChartColor = input[['ChartColor']],
+            BorderColor = input[['BorderColor']],
+            TextColor = input[['TextColor']],
+            GridColor = input[['GridColor']],
+            BackGroundColor = input[['BackGroundColor']],
+            LegendPosition = 'bottom',
+            LegendTextColor = 'darkblue',
+            LegendTextSize = 10)
+        })
+
+
+      # Return
+      p1 <<- p1
+      p1
+      })
   })
 }
 

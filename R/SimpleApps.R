@@ -9,9 +9,9 @@ UniqueLevels <- function(input,
         c(unique(data[[eval(GroupVariables[[n]])]]))}, error = function(x) NULL)})
 }
 
-#' @title App_BoxPlotsOverTime
+#' @title App_TimeSeriesPlots
 #'
-#' @description Simple shiny app for viewing boxplots over time. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
+#' @description Simple shiny app for viewing time series plots with box plots or line plots. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
 #'
 #' @author Adrian Antico
 #' @family Shiny
@@ -31,7 +31,7 @@ UniqueLevels <- function(input,
 #' data[, Date := as.Date(Date)]
 #'
 #' # Run App
-#' RemixAutoML::App_BoxPlotsOverTime(
+#' RemixAutoML::App_TimeSeriesPlots(
 #'   data,
 #'   FeatureNames = names(data)[5L:ncol(data)],
 #'   GroupVariables = names(data)[seq_len(3L)],
@@ -48,13 +48,13 @@ UniqueLevels <- function(input,
 #' }
 #'
 #' @export
-App_BoxPlotsOverTime <- function(data,
-                                 FeatureNames = NULL,
-                                 GroupVariables = NULL,
-                                 FilterVariable = NULL,
-                                 DateName = NULL,
-                                 AppWidth = 9L,
-                                 Debug = FALSE) {
+App_TimeSeriesPlots <- function(data,
+                                FeatureNames = NULL,
+                                GroupVariables = NULL,
+                                FilterVariable = NULL,
+                                DateName = NULL,
+                                AppWidth = 9L,
+                                Debug = FALSE) {
 
   # Pass args to shiny app
   shiny::shinyOptions(

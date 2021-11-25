@@ -2021,7 +2021,7 @@ shinydashboard::dashboardPage(
               RemixAutoML::BlankRow(12),
 
               # Time Series Plot ----
-                                plotly::plotlyOutput("TimeSeriesPlot", width = "100%")),
+              plotly::plotlyOutput("TimeSeriesPlot", width = "100%")),
 
             # -- ADD SPACE ----
             RemixAutoML::BlankRow(12),
