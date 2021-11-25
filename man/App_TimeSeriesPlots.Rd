@@ -10,9 +10,9 @@ App_TimeSeriesPlots(
   GroupVariables = NULL,
   FilterVariable = NULL,
   DateName = NULL,
-  AppWidth = 9L,
-  LogoWidth = "1100px",
-  LogoHeight = "259px",
+  AppWidth = 10L,
+  LogoWidth = "1200px",
+  LogoHeight = "300px",
   Debug = FALSE
 )
 }
