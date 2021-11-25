@@ -38,12 +38,18 @@ UniqueLevels <- function(input,
 #'   FilterVariable = 'XREG1',
 #'   DateName = 'Date',
 #'   AppWidth = 9L,
+#'   LogoWidth = '1100px',
+#'   LogoHeight = '259px',
 #'   Debug = TRUE)
 #'
 #' # FeatureNames = names(data)[5L:ncol(data)]
 #' # GroupVariables = names(data)[seq_len(3L)]
 #' # FilterVariable = 'XREG1'
 #' # DateName = 'Date'
+#' # Debug = TRUE
+#' # AppWidth = 9L
+#' # LogoWidth = '1100px',
+#' # LogoHeight = '259px',
 #' # Debug = TRUE
 #' }
 #'
@@ -54,6 +60,8 @@ App_TimeSeriesPlots <- function(data,
                                 FilterVariable = NULL,
                                 DateName = NULL,
                                 AppWidth = 9L,
+                                LogoWidth = '1100px',
+                                LogoHeight = '259px',
                                 Debug = FALSE) {
 
   # Pass args to shiny app
@@ -64,8 +72,10 @@ App_TimeSeriesPlots <- function(data,
     FilterVariable = FilterVariable,
     DateName = DateName,
     AppWidth = AppWidth,
+    LogoWidth = LogoWidth,
+    LogoHeight = LogoHeight,
     Debug = Debug)
 
   # Run shiny app
-  shiny::shinyAppDir(appDir = system.file("shiny-apps", "BoxPlotTS", package = 'RemixAutoML'))
+  shiny::shinyAppDir(appDir = system.file("shiny-apps", "TimeSeriesPlotting", package = 'RemixAutoML'))
 }

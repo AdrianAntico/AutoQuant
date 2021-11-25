@@ -11,6 +11,8 @@ App_TimeSeriesPlots(
   FilterVariable = NULL,
   DateName = NULL,
   AppWidth = 9L,
+  LogoWidth = "1100px",
+  LogoHeight = "259px",
   Debug = FALSE
 )
 }
@@ -46,12 +48,18 @@ RemixAutoML::App_TimeSeriesPlots(
   FilterVariable = 'XREG1',
   DateName = 'Date',
   AppWidth = 9L,
+  LogoWidth = '1100px',
+  LogoHeight = '259px',
   Debug = TRUE)
 
 # FeatureNames = names(data)[5L:ncol(data)]
 # GroupVariables = names(data)[seq_len(3L)]
 # FilterVariable = 'XREG1'
 # DateName = 'Date'
+# Debug = TRUE
+# AppWidth = 9L
+# LogoWidth = '1100px',
+# LogoHeight = '259px',
 # Debug = TRUE
 }
 
