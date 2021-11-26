@@ -21,6 +21,7 @@ UniqueLevels <- function(input,
 #' @param GroupVariables Character vector of group column names
 #' @param FilterVariable Variable to use to filter data before plotting
 #' @param DateName Character scalar of the date column name
+#' @param AppTitle Defaults to 'Time Series Plotting'
 #' @param AppWidth Width of boxes
 #' @param Box1Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
 #' @param Box2Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
@@ -43,6 +44,7 @@ UniqueLevels <- function(input,
 #'   GroupVariables = names(data)[seq_len(3L)],
 #'   FilterVariable = 'XREG1',
 #'   DateName = 'Date',
+#'   AppTitle = 'Time Series Plotting',
 #'   AppWidth = 10L,
 #'   LogoWidth = '1100px',
 #'   LogoHeight = '259px',
@@ -77,6 +79,7 @@ App_TimeSeriesPlots <- function(data,
                                 GroupVariables = NULL,
                                 FilterVariable = NULL,
                                 DateName = NULL,
+                                AppTitle = 'Time Series Plotting',
                                 AppWidth = 10L,
                                 LogoWidth = '1200px',
                                 LogoHeight = '300px',
@@ -95,6 +98,7 @@ App_TimeSeriesPlots <- function(data,
     GroupVariables = GroupVariables,
     FilterVariable = FilterVariable,
     DateName = DateName,
+    AppTitle = AppTitle,
     AppWidth = AppWidth,
     LogoWidth = LogoWidth,
     LogoHeight = LogoHeight,

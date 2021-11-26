@@ -1,9 +1,43 @@
-# Local function
+#'@noRd
 UniqueLevels <- function(input, data, n, GroupVariables) {
   tryCatch({
     c(unique(data[[eval(input[['GroupVars']][[n]])]]))}, error = function(x) {
       tryCatch({
         c(unique(data[[eval(GroupVariables[[n]])]]))}, error = function(x) NULL)})
+}
+
+#'@noRd
+AddFaceting <- function(p1, input) {
+  if(input[['FacetRow']] != 'None' && input[['FacetCol']] != 'None') {
+    p1 <- p1 + ggplot2::facet_grid(get(input[['FacetRow']]) ~ get(input[['FacetCol']]))
+  } else if(input[['FacetRow']] == 'None' && input[['FacetCol']] != 'None') {
+    p1 <- p1 + ggplot2::facet_wrap(~ get(input[['FacetCol']]))
+  } else if(input[['FacetRow']] != 'None' && input[['FacetCol']] == 'None') {
+    p1 <- p1 + ggplot2::facet_wrap(~ get(input[['FacetRow']]))
+  }
+  p1
+}
+
+#' @noRd
+FilterLogicData <- function(data1, input, FilterLogic = 'FilterLogic', FilterVariable = 'FilterVariable', FilterValue = 'FilterValue') {
+  if(tolower(class(data1[[eval(input[[eval(FilterVariable)]])]])) %chin% c('factor', 'character')) {
+    if(input[[eval(FilterLogic)]] == '%in%') {
+      data1 <- data1[get(input[[eval(FilterVariable)]]) %chin% c(eval(input[[eval(FilterValue)]]))]
+    } else if(input[[eval(FilterLogic)]] == '%like%') {
+      data1 <- data1[get(input[[eval(FilterVariable)]]) %like% c(eval(input[[eval(FilterValue)]]))]
+    }
+  } else if(tolower(class(data1[[eval(input[[eval(FilterVariable)]])]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
+    if(input[[eval(FilterLogic)]] == '>') {
+      data1 <- data1[get(input[[eval(FilterVariable)]]) > eval(input[[eval(FilterValue)]])]
+    } else if(input[[eval(FilterLogic)]] == '>=') {
+      data1 <- data1[get(input[[eval(FilterVariable)]]) >= eval(input[[eval(FilterValue)]])]
+    } else if(input[[eval(FilterLogic)]] == '<') {
+      data1 <- data1[get(input[[eval(FilterVariable)]]) < eval(input[[eval(FilterValue)]])]
+    } else {
+      data1 <- data1[get(input[[eval(FilterVariable)]]) <= eval(input[[eval(FilterValue)]])]
+    }
+  }
+  data1
 }
 
 # Turn up horsepower
@@ -13,6 +47,7 @@ FeatureNames <- shiny::getShinyOption('FeatureNames')
 GroupVariables <- shiny::getShinyOption('GroupVariables')
 FilterVariable <- shiny::getShinyOption('FilterVariable')
 DateName <- shiny::getShinyOption('DateName')
+AppTitle <- shiny::getShinyOption('AppTitle')
 AppWidth <- shiny::getShinyOption('AppWidth')
 LogoWidth <- shiny::getShinyOption('LogoWidth')
 LogoHeight <- shiny::getShinyOption('LogoHeight')
@@ -33,26 +68,30 @@ ui <- shinydashboard::dashboardPage(
   # Top of page color
   skin = 'purple',
 
-  # Page layout
+  # App Header
   shinydashboard::dashboardHeader(
-    title="Time Series Plotting",
+
+    # App Title and Width
+    title = AppTitle, titleWidth = 250,
 
     # Adjustments to page sizing
     htmltools::tags$li(class = "dropdown",
                        htmltools::tags$style(".main-header {max-height: 55px}"),
                        htmltools::tags$style(".main-header .logo {height: 55px;}"),
                        htmltools::tags$style(".sidebar-toggle {height: 20px; padding-top: 1px !important;}"),
-                       htmltools::tags$style(".navbar {min-height:55px !important}")),
-    titleWidth = 300),
+                       htmltools::tags$style(".navbar {min-height:55px !important}"))),
 
+  # App Sidebar
   shinydashboard::dashboardSidebar(),
+
+  # App Body
   shinydashboard::dashboardBody(
 
     # Custom css ----
-    htmltools::tags$head(htmltools::tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
-    htmltools::tags$head(htmltools::tags$style('h1 {color:darkblue;}')),
-    htmltools::tags$head(htmltools::tags$style('body {color:darkblue;}')),
-    htmltools::tags$head(htmltools::tags$style('box-solid {color:black;}')),
+    #htmltools::tags$head(htmltools::tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
+    #htmltools::tags$head(htmltools::tags$style('h1 {color:darkblue;}')),
+    #htmltools::tags$head(htmltools::tags$style('body {color:darkblue;}')),
+    #htmltools::tags$head(htmltools::tags$style('box-solid {color:black;}')),
 
     # Add Space
     RemixAutoML::BlankRow(AppWidth),
@@ -78,7 +117,9 @@ ui <- shinydashboard::dashboardPage(
           width = AppWidth,
 
           # Select GroupVariables
-          shiny::column(AppWidth, shiny::fluidRow(shiny::column(4L, shiny::uiOutput(outputId = 'GroupVars')))),
+          shiny::column(3L, shiny::uiOutput('GroupVars')),
+          shiny::column(3L, shiny::uiOutput("FacetRow"), htmltools::tags$br()),
+          shiny::column(3L, shiny::uiOutput("FacetCol"), htmltools::tags$br()),
 
           # Add Space
           RemixAutoML::BlankRow(AppWidth),
@@ -111,8 +152,7 @@ ui <- shinydashboard::dashboardPage(
     RemixAutoML::BlankRow(AppWidth),
 
     # Show Plot
-    shiny::fluidRow(
-      shiny::column(AppWidth, shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend'))))),
+    shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend'))),
 
     # Add Space
     RemixAutoML::BlankRow(AppWidth),
@@ -226,35 +266,42 @@ server <- function(input, output, session) {
     RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = '# of Levels', Step = 1L, Value = 5L, Min = 1L, Max = 100L)
   })
 
+  output$FacetRow <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'FacetRow', Label = 'Facet Row Variable', Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$FacetCol <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'FacetCol', Label = 'Facet Col Variable', Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+
   # UI Plot Options ----
   output$TickMarks <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "TickMarks", Label = "Tick marks x-axis", Choices = c("1 year","1 day","3 day","1 week","2 week","1 month","3 month","6 month","2 year","5 year","10 year","1 minute","15 minutes","30 minutes","1 hour","3 hour","6 hour","12 hour"), SelectedDefault = "1 year", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'TickMarks', Label = 'Tick marks x-axis', Choices = c('1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'), SelectedDefault = '1 year', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$AngleY <- shiny::renderUI({
-    RemixAutoML::NumericInput(InputID = "AngleY", Label = "Y-axis text angle", Step = 5, Min = 0, Max = 360, Value = 0)
+    RemixAutoML::NumericInput(InputID = 'AngleY', Label = 'Y-axis text angle', Step = 5, Min = 0, Max = 360, Value = 0)
   })
   output$AngleX <- shiny::renderUI({
-    RemixAutoML::NumericInput(InputID = "AngleX", Label = "X-axis text angle", Step = 5, Min = 0, Max = 360, Value = 90)
+    RemixAutoML::NumericInput(InputID = 'AngleX', Label = 'X-axis text angle', Step = 5, Min = 0, Max = 360, Value = 90)
   })
   output$TextSize <- shiny::renderUI({
-    RemixAutoML::NumericInput(InputID = "TextSize", Label = "Text size", Step = 1, Min = 1, Max = 50, Value = 12)
+    RemixAutoML::NumericInput(InputID = 'TextSize', Label = 'Text size', Step = 1, Min = 1, Max = 50, Value = 12)
   })
 
   # Color boxes ----
   output$TextColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "TextColor", Label = "Text color", Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'TextColor', Label = 'Text color', Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ChartColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ChartColor", Label = "Chart color", Choices = grDevices::colors(), SelectedDefault = "lightsteelblue1", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'ChartColor', Label = 'Chart color', Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$GridColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "GridColor", Label = "Grid lines color", Choices = grDevices::colors(), SelectedDefault = "white", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'GridColor', Label = 'Grid lines color', Choices = grDevices::colors(), SelectedDefault = 'white', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$BackGroundColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "BackGroundColor", Label = "Background color", Choices = grDevices::colors(), SelectedDefault = "gray95", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'BackGroundColor', Label = 'Background color', Choices = grDevices::colors(), SelectedDefault = 'gray95', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$BorderColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "BorderColor", Label = "Border color", Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'BorderColor', Label = 'Border color', Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # Metadata
@@ -412,7 +459,8 @@ server <- function(input, output, session) {
       BorderColor = 'darkblue',
       TextColor = 'darkblue',
       GridColor = 'white',
-      BackGroundColor = 'gray95'))
+      BackGroundColor = 'gray95') +
+        ggplot2::theme(legend.title = ggplot2::element_blank()))
 
     # Update labels
     if(input[['PlotType']] == 'box') {
@@ -481,10 +529,11 @@ server <- function(input, output, session) {
       BorderColor = input[['BorderColor']],
       TextColor = input[['TextColor']],
       GridColor = input[['GridColor']],
-      BackGroundColor = input[['BackGroundColor']]))
+      BackGroundColor = input[['BackGroundColor']]) +
+        ggplot2::theme(legend.title = ggplot2::element_blank()))
 
     # Update labels
-    if(input[['PlotType']] == 'box') {
+    if(shiny::isolate(input[['PlotType']] == 'box')) {
       p1 <- shiny::isolate(p1 + ggplot2::labs(
         title = 'Distribution over Time',
         subtitle = 'Red line = mean(Y)',
@@ -513,28 +562,13 @@ server <- function(input, output, session) {
     if(Debug) print('remove NA')
     data1 <- shiny::isolate(data[!is.na(get(YVar()))])
 
-    # Subset by FilterVariable
+    # Subset by Additional FilterVariable
     if(Debug) print('Subset by FilterVariable')
     shiny::isolate(
       if(!is.null(input[['FilterVariable']])) {
-        if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('factor', 'character')) {
-          if(input[['FilterLogic']] == '%in%') {
-            data1 <- data1[get(input[['FilterVariable']]) %chin% c(eval(input[['FilterValue']]))]
-          } else if(input[['FilterLogic']] == '%like%') {
-            data1 <- data1[get(input[['FilterVariable']]) %like% c(eval(input[['FilterValue']]))]
-          }
-        } else if(tolower(class(data1[[eval(input[['FilterVariable']])]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
-          if(input[['FilterLogic']] == '>') {
-            data1 <- data1[get(input[['FilterVariable']]) > eval(input[['FilterValue']])]
-          } else if(input[['FilterLogic']] == '>=') {
-            data1 <- data1[get(input[['FilterVariable']]) >= eval(input[['FilterValue']])]
-          } else if(input[['FilterLogic']] == '<') {
-            data1 <- data1[get(input[['FilterVariable']]) < eval(input[['FilterValue']])]
-          } else {
-            data1 <- data1[get(input[['FilterVariable']]) <= eval(input[['FilterValue']])]
-          }
-        }
-      })
+        data1 <- FilterLogicData(data1, input)
+      }
+    )
 
     # Subset Rows based on Filters
     if(Debug) print('Subset Rows based on Filters')
@@ -555,15 +589,15 @@ server <- function(input, output, session) {
     output$Trend <- shiny::renderPlot({
 
       if(Debug) print(data1)
-      print(SelectedGroups())
+      shiny::isolate(print(SelectedGroups()))
 
       # Plot
       shiny::isolate(
         if(input[['PlotType']] == 'box') {
-          p1 <- shiny::isolate(ggplot2::ggplot(data = data1, ggplot2::aes(x = get(DateName), y = get(YVar()), group = get(DateName))))
+          p1 <- ggplot2::ggplot(data = data1, ggplot2::aes(x = get(DateName), y = get(YVar()), group = get(DateName)))
           p1 <- p1 + ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray')
-          p1 <- shiny::isolate(p1 + ggplot2::geom_hline(color = 'red', yintercept = eval(mean(data1[[eval(YVar())]], na.rm = TRUE))))
-          p1 <- shiny::isolate(p1 + RemixAutoML::ChartTheme(
+          p1 <- p1 + ggplot2::geom_hline(color = 'red', yintercept = eval(mean(data1[[eval(YVar())]], na.rm = TRUE)))
+          p1 <- p1 + RemixAutoML::ChartTheme(
             Size = input[['TextSize']],
             AngleX = input[['AngleX']],
             AngleY = input[['AngleY']],
@@ -571,14 +605,18 @@ server <- function(input, output, session) {
             BorderColor = input[['BorderColor']],
             TextColor = input[['TextColor']],
             GridColor = input[['GridColor']],
-            BackGroundColor = input[['BackGroundColor']]))
-          p1 <- shiny::isolate(p1 + ggplot2::labs(
+            BackGroundColor = input[['BackGroundColor']])
+          p1 <- p1 + ggplot2::labs(
             title = 'Distribution over Time',
             subtitle = 'Red line = mean(Y)',
             caption = 'by RemixAutoML') +
               ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
               ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateName) +
-              ggplot2::scale_x_date(date_breaks = input[['TickMarks']]))
+              ggplot2::scale_x_date(date_breaks = input[['TickMarks']])
+
+          # Add faceting (returns no faceting in none was requested)
+          p1 <- AddFaceting(p1, input)
+
         } else {
           p1 <- RemixAutoML:::TimeSeriesPlotter(
             data = data1,
@@ -610,7 +648,11 @@ server <- function(input, output, session) {
             title = 'Time Series Plot',
             caption = 'by RemixAutoML') +
               ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-              ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateName))
+              ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateName) +
+              ggplot2::theme(legend.title = ggplot2::element_blank()))
+
+          # Add faceting (returns no faceting in none was requested)
+          #p1 <- AddFaceting(p1, input)
         })
 
 

@@ -10,6 +10,7 @@ App_TimeSeriesPlots(
   GroupVariables = NULL,
   FilterVariable = NULL,
   DateName = NULL,
+  AppTitle = "Time Series Plotting",
   AppWidth = 10L,
   LogoWidth = "1200px",
   LogoHeight = "300px",
@@ -32,6 +33,8 @@ App_TimeSeriesPlots(
 \item{FilterVariable}{Variable to use to filter data before plotting}
 
 \item{DateName}{Character scalar of the date column name}
+
+\item{AppTitle}{Defaults to 'Time Series Plotting'}
 
 \item{AppWidth}{Width of boxes}
 
@@ -65,6 +68,7 @@ RemixAutoML::App_TimeSeriesPlots(
   GroupVariables = names(data)[seq_len(3L)],
   FilterVariable = 'XREG1',
   DateName = 'Date',
+  AppTitle = 'Time Series Plotting',
   AppWidth = 10L,
   LogoWidth = '1100px',
   LogoHeight = '259px',
