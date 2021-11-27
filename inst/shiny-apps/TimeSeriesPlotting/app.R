@@ -59,14 +59,7 @@ ui <- shinydashboard::dashboardPage(
   shinydashboard::dashboardHeader(
 
     # App Title and Width
-    title = AppTitle, titleWidth = 250,
-
-    # Adjustments to page sizing
-    htmltools::tags$li(class = "dropdown",
-                       htmltools::tags$style(".main-header {max-height: 55px}"),
-                       htmltools::tags$style(".main-header .logo {height: 55px;}"),
-                       htmltools::tags$style(".sidebar-toggle {height: 20px; padding-top: 1px !important;}"),
-                       htmltools::tags$style(".navbar {min-height:55px !important}"))),
+    title = AppTitle, titleWidth = 250),
 
   # App Sidebar
   shinydashboard::dashboardSidebar(disable = TRUE),
@@ -89,7 +82,7 @@ ui <- shinydashboard::dashboardPage(
         width = AppWidth,
         shinyjs::useShinyjs(),
         shinydashboard::box(
-          title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Levels"),
+          title = htmltools::tagList(shiny::icon("filter", lib = "font-awesome"), "Select Group Variables, Facets, and Levels"),
           solidHeader = TRUE,
           collapsible = FALSE,
           background = Box1Color,
@@ -166,7 +159,7 @@ ui <- shinydashboard::dashboardPage(
     # Add Space
     RemixAutoML::BlankRow(AppWidth),
 
-    # Optional Plot Inputs----
+    # Optional Plot Inputs ----
     shiny::fluidRow(
       shiny::column(
         width = AppWidth,
@@ -472,13 +465,10 @@ server <- function(input, output, session) {
 
     # UI Plot Options ----
     output$PlotWidth <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "PlotWidth", Label = 'Plot Width', Step = 50, Min = 800, Max = 1800, Value = 1200)
+      RemixAutoML::NumericInput(InputID = "PlotWidth", Label = 'Plot Width', Step = 50, Min = 800, Max = 1800, Value = 1600)
     })
     output$PlotHeight <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "PlotHeight", Label = 'Plot Height', Step = 25, Min = 350, Max = 350*10, Value = 350)
-    })
-    output$TickMarks <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = "TickMarks", Label = "Tick marks x-axis", Choices = c("1 year","1 day","3 day","1 week","2 week","1 month","3 month","6 month","2 year","5 year","10 year","1 minute","15 minutes","30 minutes","1 hour","3 hour","6 hour","12 hour"), SelectedDefault = "1 year", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::NumericInput(InputID = "PlotHeight", Label = 'Plot Height', Step = 25, Min = 350, Max = 350*10, Value = 500)
     })
     output$AngleY <- shiny::renderUI({
       RemixAutoML::NumericInput(InputID = "AngleY", Label = "Y-axis text angle", Step = 5, Min = 0, Max = 360, Value = 0)
@@ -585,7 +575,7 @@ server <- function(input, output, session) {
 
     # Render Plot
     if(Debug) print(data1)
-    shiny::isolate(print(SelectedGroups()))
+    if(Debug) shiny::isolate(print(SelectedGroups()))
 
     # Create Plot Object
     if(shiny::isolate(input[['PlotType']] == 'box')) {
