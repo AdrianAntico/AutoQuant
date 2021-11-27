@@ -1,14 +1,3 @@
-#' @noRd
-UniqueLevels <- function(input,
-                         data,
-                         n,
-                         GroupVariables) {
-  tryCatch({
-    c(unique(data[[eval(input[['GroupVars']][[n]])]]))}, error = function(x) {
-      tryCatch({
-        c(unique(data[[eval(GroupVariables[[n]])]]))}, error = function(x) NULL)})
-}
-
 #' @title App_TimeSeriesPlots
 #'
 #' @description Simple shiny app for viewing time series plots with box plots or line plots. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
@@ -45,9 +34,9 @@ UniqueLevels <- function(input,
 #'   FilterVariable = 'XREG1',
 #'   DateName = 'Date',
 #'   AppTitle = 'Time Series Plotting',
-#'   AppWidth = 10L,
-#'   LogoWidth = '1100px',
-#'   LogoHeight = '259px',
+#'   AppWidth = 12L,
+#'   LogoWidth = '1300px',
+#'   LogoHeight = '100px',
 #'   Box1Color = 'navy',
 #'   Box2Color = 'purple',
 #'   Box3Color = 'aqua',
@@ -61,9 +50,9 @@ UniqueLevels <- function(input,
 #' # FilterVariable = 'XREG1'
 #' # DateName = 'Date'
 #' # Debug = TRUE
-#' # AppWidth = 9L
-#' # LogoWidth = '1100px',
-#' # LogoHeight = '259px',
+#' # AppWidth = 12L,
+#' # LogoWidth = '1300px',
+#' # LogoHeight = '100px',
 #' # Box1Color = 'navy',
 #' # Box2Color = 'purple',
 #' # Box3Color = 'aqua',
@@ -80,9 +69,9 @@ App_TimeSeriesPlots <- function(data,
                                 FilterVariable = NULL,
                                 DateName = NULL,
                                 AppTitle = 'Time Series Plotting',
-                                AppWidth = 10L,
-                                LogoWidth = '1200px',
-                                LogoHeight = '300px',
+                                AppWidth = 12L,
+                                LogoWidth = '1300px',
+                                LogoHeight = '100px',
                                 Box1Color = 'navy',
                                 Box2Color = 'purple',
                                 Box3Color = 'aqua',
