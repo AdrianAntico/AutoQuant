@@ -12,7 +12,7 @@ App_TimeSeriesPlots(
   DateName = NULL,
   AppTitle = "Time Series Plotting",
   AppWidth = 12L,
-  LogoWidth = "1300px",
+  LogoWidth = "1000px",
   LogoHeight = "100px",
   Box1Color = "navy",
   Box2Color = "purple",
@@ -53,7 +53,7 @@ App_TimeSeriesPlots(
 \item{Debug}{FALSE}
 }
 \description{
-Simple shiny app for viewing time series plots with box plots or line plots. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
+Simple shiny app for viewing time series plots with box plots, viloin plots, or line plots. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
 }
 \examples{
 \dontrun{
@@ -70,7 +70,7 @@ RemixAutoML::App_TimeSeriesPlots(
   DateName = 'Date',
   AppTitle = 'Time Series Plotting',
   AppWidth = 12L,
-  LogoWidth = '1300px',
+  LogoWidth = '1000px',
   LogoHeight = '100px',
   Box1Color = 'navy',
   Box2Color = 'purple',
@@ -86,7 +86,7 @@ RemixAutoML::App_TimeSeriesPlots(
 # DateName = 'Date'
 # Debug = TRUE
 # AppWidth = 12L,
-# LogoWidth = '1300px',
+# LogoWidth = '1000px',
 # LogoHeight = '100px',
 # Box1Color = 'navy',
 # Box2Color = 'purple',

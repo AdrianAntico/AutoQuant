@@ -1,3 +1,13 @@
+#' Tag to display code
+#'
+#' @param ... Character strings
+#'
+#' @noRd
+rCodeContainer <- function(...) {
+  code <- htmltools::HTML(as.character(tags$code(class = "language-r", ...)))
+  htmltools::tags$div(htmltools::tags$pre(code))
+}
+
 #'@noRd
 UniqueLevels <- function(input, data, n, GroupVariables) {
   tryCatch({
@@ -238,7 +248,7 @@ server <- function(input, output, session) {
 
   # PlotType
   output$PlotType <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('box', 'line'), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('BoxPlot', 'Violin', 'Line'), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$NumberGroupsDisplay <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = '# of Levels', Step = 1L, Value = 5L, Min = 1L, Max = 100L)
@@ -562,7 +572,7 @@ server <- function(input, output, session) {
     if(Debug) print('Subset Rows based on Filters')
     data1 <- shiny::isolate(
       RemixAutoML::PreparePlotData(
-        SubsetOnly = if(input[['PlotType']] == 'box') TRUE else FALSE,
+        SubsetOnly = if(input[['PlotType']] %chin% c('BoxPlot','Violin')) TRUE else FALSE,
         input,
         PlotDataForecast = data1,
         Aggregate = 'mean',
@@ -578,10 +588,19 @@ server <- function(input, output, session) {
     if(Debug) shiny::isolate(print(SelectedGroups()))
 
     # Create Plot Object
-    if(shiny::isolate(input[['PlotType']] == 'box')) {
+    if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlot','Violin'))) {
+      if(Debug) print('Create Plot Objects 1')
       p1 <- shiny::isolate(ggplot2::ggplot(data = data1, ggplot2::aes(x = get(DateName), y = get(YVar()), group = get(DateName))))
-      p1 <- p1 + ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray')
+      if(shiny::isolate(input[['PlotType']] == 'BoxPlot')) {
+        if(Debug) print('Create Plot Objects 2a')
+        p1 <- p1 + ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray')
+      } else if(shiny::isolate(input[['PlotType']] == 'Violin')) {
+        if(Debug) print('Create Plot Objects 2b')
+        p1 <- p1 + ggplot2::geom_violin(draw_quantiles = TRUE)
+      }
+      if(Debug) print('Create Plot Objects 3')
       p1 <- shiny::isolate(p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data1[[eval(YVar())]], na.rm = TRUE))))
+      if(Debug) print('Create Plot Objects 4')
       p1 <-shiny::isolate( p1 + RemixAutoML::ChartTheme(
         Size = input[['TextSize']],
         AngleX = input[['AngleX']],
@@ -591,6 +610,7 @@ server <- function(input, output, session) {
         TextColor = input[['TextColor']],
         GridColor = input[['GridColor']],
         BackGroundColor = input[['BackGroundColor']]))
+      if(Debug) print('Create Plot Objects 5')
       p1 <- shiny::isolate(p1 + ggplot2::labs(
         title = 'Distribution over Time',
         subtitle = 'Blue line = mean(Y)',
@@ -601,15 +621,19 @@ server <- function(input, output, session) {
 
       # Add faceting (returns no faceting in none was requested)
       if(shiny::isolate(input[['FacetRow']]) != 'None' && shiny::isolate(input[['FacetCol']]) != 'None') {
+        if(Debug) print('Create Plot Objects 6a')
         p1 <- p1 + ggplot2::facet_grid(get(shiny::isolate(input[['FacetRow']])) ~ get(shiny::isolate(input[['FacetCol']])))
       } else if(shiny::isolate(input[['FacetRow']]) == 'None' && shiny::isolate(input[['FacetCol']] != 'None')) {
+        if(Debug) print('Create Plot Objects 6b')
         p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetCol']])))
       } else if(shiny::isolate(input[['FacetRow']]) != 'None' && shiny::isolate(input[['FacetCol']]) == 'None') {
+        if(Debug) print('Create Plot Objects 6c')
         p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetRow']])))
       }
       p1 <<- p1
 
-    } else {
+    } else if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
+
       p1 <- shiny::isolate(RemixAutoML:::TimeSeriesPlotter(
         data = data1,
         TargetVariable = YVar(),
@@ -651,6 +675,7 @@ server <- function(input, output, session) {
 
     # Return
     output$Trend <- shiny::renderPlot(width = shiny::isolate(input[['PlotWidth']]), height = shiny::isolate(input[['PlotHeight']]), {
+      if(Debug) print('Create Plot output$Trend')
       p1
     })
   })
