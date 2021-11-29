@@ -1,3 +1,5 @@
+library(data.table)
+
 #' Tag to display code
 #'
 #' @param ... Character strings
