@@ -1,15 +1,16 @@
-#' @title App_TimeSeriesPlots
+#' @title Apps_Plotting
 #'
-#' @description Simple shiny app for viewing time series plots with box plots, viloin plots, or line plots. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
+#' @description Simple shiny app for viewing time series plots with box plots or line plots. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
 #'
 #' @author Adrian Antico
 #' @family Shiny
 #'
 #' @param data Source data.table
-#' @param FeatureNames Character vector of feature column names
-#' @param GroupVariables Character vector of group column names
-#' @param FilterVariable Variable to use to filter data before plotting
-#' @param DateName Character scalar of the date column name
+#' @param XVariable Starter column name for x-variable. Not needed if x-axis is the DateName column
+#' @param YVariable Starter column name for y-variable
+#' @param DateName Starter column name for date-variable
+#' @param GroupVariables Starter column name for group-variables
+#' @param FilterVariable Starter column name for filter-variable
 #' @param AppTitle Defaults to 'Time Series Plotting'
 #' @param AppWidth Width of boxes
 #' @param Box1Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
@@ -27,12 +28,13 @@
 #' data[, Date := as.Date(Date)]
 #'
 #' # Run App
-#' RemixAutoML::App_TimeSeriesPlots(
+#' RemixAutoML::Apps_Plotting(
 #'   data,
-#'   FeatureNames = names(data)[5L:ncol(data)],
-#'   GroupVariables = names(data)[seq_len(3L)],
-#'   FilterVariable = 'XREG1',
+#'   XVariable = 'Date',
+#'   YVariable = 'XREG1',
 #'   DateName = 'Date',
+#'   FilterVariable = 'XREG1',
+#'   GroupVariables = names(data)[seq_len(3L)],
 #'   AppTitle = 'Time Series Plotting',
 #'   AppWidth = 12L,
 #'   LogoWidth = '1000px',
@@ -45,10 +47,11 @@
 #'   ResetPlotButtonColor = 'default',
 #'   Debug = TRUE)
 #'
-#' # FeatureNames = names(data)[5L:ncol(data)]
+#' # XVariable = 'Date'
+#' # YVariable = 'XREG1'
+#' # DateName = 'Date'
 #' # GroupVariables = names(data)[seq_len(3L)]
 #' # FilterVariable = 'XREG1'
-#' # DateName = 'Date'
 #' # Debug = TRUE
 #' # AppWidth = 12L,
 #' # LogoWidth = '1000px',
@@ -63,30 +66,32 @@
 #' }
 #'
 #' @export
-App_TimeSeriesPlots <- function(data,
-                                FeatureNames = NULL,
-                                GroupVariables = NULL,
-                                FilterVariable = NULL,
-                                DateName = NULL,
-                                AppTitle = 'Time Series Plotting',
-                                AppWidth = 12L,
-                                LogoWidth = '1000px',
-                                LogoHeight = '100px',
-                                Box1Color = 'navy',
-                                Box2Color = 'purple',
-                                Box3Color = 'aqua',
-                                CreatePlotButtonColor = 'default',
-                                UpdatePlotButtonColor = 'default',
-                                ResetPlotButtonColor = 'default',
-                                Debug = FALSE) {
+AppsPlotting <- function(data,
+                         XVariable = NULL,
+                         YVariable = NULL,
+                         DateName = NULL,
+                         GroupVariables = NULL,
+                         FilterVariable = NULL,
+                         AppTitle = 'Time Series Plotting',
+                         AppWidth = 12L,
+                         LogoWidth = '1000px',
+                         LogoHeight = '100px',
+                         Box1Color = 'navy',
+                         Box2Color = 'purple',
+                         Box3Color = 'aqua',
+                         CreatePlotButtonColor = 'default',
+                         UpdatePlotButtonColor = 'default',
+                         ResetPlotButtonColor = 'default',
+                         Debug = FALSE) {
 
   # Pass args to shiny app
   shiny::shinyOptions(
     data = data,
-    FeatureNames = FeatureNames,
+    XVariable = XVariable,
+    YVariable = YVariable,
+    DateName = DateName,
     GroupVariables = GroupVariables,
     FilterVariable = FilterVariable,
-    DateName = DateName,
     AppTitle = AppTitle,
     AppWidth = AppWidth,
     LogoWidth = LogoWidth,

@@ -22,7 +22,7 @@ RemixAutoML::BlankRow(12)
 }
 \seealso{
 Other Shiny: 
-\code{\link{App_TimeSeriesPlots}()},
+\code{\link{AppsPlotting}()},
 \code{\link{ArgNullCheck2}()},
 \code{\link{ArgNullCheck}()},
 \code{\link{DateInput}()},

@@ -9,6 +9,8 @@ ScatterCopula(
   x_var = NULL,
   y_var = NULL,
   GroupVariable = NULL,
+  FacetCol = NULL,
+  FacetRow = NULL,
   SampleCount = 100000L,
   FitGam = TRUE,
   color = "darkblue",
@@ -32,6 +34,10 @@ ScatterCopula(
 \item{y_var}{Numeric variable}
 
 \item{GroupVariable}{Color options}
+
+\item{FacetCol}{NULL or string}
+
+\item{FacetRow}{NULL or string}
 
 \item{SampleCount}{Number of randomized rows to utilize. For speedup and memory purposes}
 
