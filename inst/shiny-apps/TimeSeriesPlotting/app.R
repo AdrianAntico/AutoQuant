@@ -710,7 +710,7 @@ server <- function(input, output, session) {
 
     # Get Choices argument for PickerInput
     if(tolower(class(data[[eval(input[['FilterVariable']])]]) %chin% c('numeric', 'integer'))) {
-      FilterUnique <- sort(data[, quantile(get(input[['FilterVariable']]), probs = c(seq(0, 1, 0.05)))])
+      FilterUnique <- sort(data[, quantile(get(input[['FilterVariable']]), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])
     } else if(tolower(class(data[[eval(input[['FilterVariable']])]])) %chin% c('factor', 'character')) {
       FilterUnique <- sort(data[, unique(get(input[['FilterVariable']]))])
     } else {
