@@ -106,15 +106,18 @@ KeyVarsInit <- function(data, VarName = NULL) {
   if(!is.null(VarName) && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
     minn <- tryCatch({floor(data[, min(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
     maxx <- tryCatch({ceiling(data[, max(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
-    if(minn == 0 && maxx == 1) {
-      choices <- tryCatch({unique(as.character(c(minn, seq(minn, maxx, (maxx-minn)/20.0), maxx)))}, error = function(x) {
-        tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
-      })
-    } else {
-      choices <- tryCatch({unique(as.character(c(minn, seq(minn, maxx, 1.0+floor((maxx-minn)/20.0)), maxx)))}, error = function(x) {
-        tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
-      })
-    }
+    choices <- tryCatch({unique(as.character(round(as.numeric(sort(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])), 5L)))}, error = function(x) {
+      tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
+    })
+    # if(minn == 0 && maxx == 1) {
+    #   choices <- tryCatch({unique(as.character(c(minn, seq(minn, maxx, (maxx-minn)/20.0), maxx)))}, error = function(x) {
+    #     tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
+    #   })
+    # } else {
+    #   choices <- tryCatch({unique(as.character(as.numeric(sort(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)]))))}, error = function(x) {
+    #     tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
+    #   })
+    # }
   } else if(!is.null(VarName) && any(c('Date','IDate','POSIXct','POSIXt','character','factor') %chin% class(data[[(eval(VarName))]][[1L]]))) {
     choices <- tryCatch({unique(data[[eval(VarName)]])}, error = function(x) NULL)
     maxx <- tryCatch({data[, max(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
@@ -710,7 +713,7 @@ server <- function(input, output, session) {
 
     # Get Choices argument for PickerInput
     if(tolower(class(data[[eval(input[['FilterVariable']])]]) %chin% c('numeric', 'integer'))) {
-      FilterUnique <- sort(data[, quantile(get(input[['FilterVariable']]), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])
+      FilterUnique <- unique(as.numeric(sort(data[, quantile(get(input[['FilterVariable']]), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])))
     } else if(tolower(class(data[[eval(input[['FilterVariable']])]])) %chin% c('factor', 'character')) {
       FilterUnique <- sort(data[, unique(get(input[['FilterVariable']]))])
     } else {
