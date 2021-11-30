@@ -42,10 +42,12 @@ FilterLogicData <- function(data1, input, FilterLogic = 'FilterLogic', FilterVar
 
 #' @noRd
 KeyVarsInit <- function(data, VarName = NULL) {
-  if(!is.null(VarName) && 'numeric' %chin% class(data[[eval(VarName)]])) {
+  if(!is.null(VarName) && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
     minn <- tryCatch({floor(data[, min(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
     maxx <- tryCatch({ceiling(data[, max(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
-    choices <- tryCatch({unique(as.character(c(minn, seq(minn, maxx, 1+floor((maxx-minn)/20)), maxx)))}, error = function(x) NULL)
+    choices <- tryCatch({unique(as.character(c(minn, seq(minn, maxx, 1+floor((maxx-minn)/20)), maxx)))}, error = function(x) {
+      tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
+    })
   } else if(!is.null(VarName) && any(c('Date','IDate','POSIXct','POSIXt','character','factor') %chin% class(data[[(eval(VarName))]][[1L]]))) {
     choices <- tryCatch({unique(data[[eval(VarName)]])}, error = function(x) NULL)
     maxx <- tryCatch({data[, max(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
@@ -272,7 +274,7 @@ ui <- shinydashboard::dashboardPage(
           shiny::fluidRow(
             shiny::column(3L, shiny::uiOutput('PlotWidth')),
             shiny::column(3L, shiny::uiOutput('PlotHeight')),
-            shiny::column(3L, shiny::uiOutput('TickMarks'))),
+            shiny::column(3L, shiny::uiOutput('DateTicks'))),
           shiny::fluidRow(
             shiny::column(3L, shiny::uiOutput('AngleY')),
             shiny::column(3L, shiny::uiOutput('TextSize')),
@@ -468,7 +470,7 @@ server <- function(input, output, session) {
 
   # PlotType
   output$PlotType <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('Box','Violin','Line','Scatter','Copula'), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('BoxPlotTS','ViolinPlotTS','Line','Scatter','Copula'), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$NumberGroupsDisplay <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = '# of Levels', Step = 1L, Value = 5L, Min = 1L, Max = 100L)
@@ -492,8 +494,8 @@ server <- function(input, output, session) {
   output$PlotHeight <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = "PlotHeight", Label = 'Plot Height', Step = 25, Min = 350, Max = 350*10, Value = 500)
   })
-  output$TickMarks <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'TickMarks', Label = 'Tick marks x-axis', Choices = c('1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'), SelectedDefault = '1 year', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  output$DateTicks <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'DateTicks', Label = 'Date ticks x-axis', Choices = c('1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'), SelectedDefault = '1 year', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$AngleY <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = 'AngleY', Label = 'Y-axis text angle', Step = 5, Min = 0, Max = 360, Value = 0)
@@ -678,8 +680,8 @@ server <- function(input, output, session) {
         ggplot2::theme(legend.title = ggplot2::element_blank()))
 
     # Update labels
-    if(shiny::isolate(input[['PlotType']] %chin% c('Box','Violin'))) {
-      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['TickMarks']]))
+    if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinTS'))) {
+      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['DateTicks']]))
       p1 <- shiny::isolate(p1 + ggplot2::labs(
         title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
         subtitle = 'Blue line = mean(Y)',
@@ -687,7 +689,7 @@ server <- function(input, output, session) {
           ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
           ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateVar()))
     } else if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
-      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['TickMarks']]))
+      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['DateTicks']]))
       p1 <- shiny::isolate(p1 + ggplot2::labs(
         title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
         caption = 'by RemixAutoML') +
@@ -742,7 +744,6 @@ server <- function(input, output, session) {
     })
   })
 
-
   # ----
 
   # ----
@@ -765,8 +766,8 @@ server <- function(input, output, session) {
         ggplot2::theme(legend.title = ggplot2::element_blank()))
 
     # Update labels
-    if(shiny::isolate(input[['PlotType']] %chin% c('Box','Violin'))) {
-      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['TickMarks']]))
+    if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS'))) {
+      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['DateTicks']]))
       p1 <- shiny::isolate(p1 + ggplot2::labs(
         title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
         subtitle = 'Blue line = mean(Y)',
@@ -774,7 +775,7 @@ server <- function(input, output, session) {
           ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
           ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateVar()))
     } else if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
-      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['TickMarks']]))
+      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['DateTicks']]))
       p1 <- shiny::isolate(p1 + ggplot2::labs(
         title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
         caption = 'by RemixAutoML') +
@@ -824,7 +825,7 @@ server <- function(input, output, session) {
     if(Debug) print('Subset Rows based on Filters')
     data1 <- shiny::isolate(
       RemixAutoML::PreparePlotData(
-        SubsetOnly = if(input[['PlotType']] %chin% c('Box','Violin','Scatter','Copula')) TRUE else FALSE,
+        SubsetOnly = if(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS','Scatter','Copula')) TRUE else FALSE,
         input,
         PlotDataForecast = data1,
         Aggregate = 'mean',
@@ -840,13 +841,13 @@ server <- function(input, output, session) {
     if(Debug) shiny::isolate(print(SelectedGroups()))
 
     # Create Plot Object
-    if(shiny::isolate(input[['PlotType']] %chin% c('Box','Violin'))) {
+    if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS'))) {
       if(Debug) print('Create Plot Objects 1')
       p1 <- shiny::isolate(ggplot2::ggplot(data = data1, ggplot2::aes(x = get(shiny::isolate(DateVar())), y = get(shiny::isolate(YVar())), group = get(shiny::isolate(DateVar())))))
-      if(shiny::isolate(input[['PlotType']] == 'Box')) {
+      if(shiny::isolate(input[['PlotType']] == 'BoxPlotTS')) {
         if(Debug) print('Create Plot Objects 2a')
         p1 <- p1 + ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray')
-      } else if(shiny::isolate(input[['PlotType']] == 'Violin')) {
+      } else if(shiny::isolate(input[['PlotType']] == 'ViolinPlotTS')) {
         if(Debug) print('Create Plot Objects 2b')
         p1 <- p1 + ggplot2::geom_violin(draw_quantiles = TRUE)
       }
@@ -869,7 +870,7 @@ server <- function(input, output, session) {
         caption = 'by RemixAutoML') +
           ggplot2::ylim(as.numeric(eval(shiny::isolate(input[['YMin']]))), as.numeric(eval(shiny::isolate(input[['YMax']])))) +
           ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(shiny::isolate(DateVar())) +
-          ggplot2::scale_x_date(date_breaks = input[['TickMarks']])
+          ggplot2::scale_x_date(date_breaks = input[['DateTicks']])
 
       # Add faceting (returns no faceting in none was requested)
       if(shiny::isolate(input[['FacetRow']]) != 'None' && shiny::isolate(input[['FacetCol']]) != 'None') {
@@ -899,7 +900,7 @@ server <- function(input, output, session) {
           TextSize = input[['TextSize']],
           LineWidth = 0.5,
           Color = 'blue',
-          XTickMarks = input[['TickMarks']],
+          XTickMarks = input[['DateTicks']],
           AngleX = input[['AngleX']],
           AngleY = input[['AngleY']],
           ChartColor = input[['ChartColor']],
