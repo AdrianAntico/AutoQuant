@@ -1,5 +1,66 @@
 library(data.table)
 
+#' Search for object with specific class in an environment
+#'
+#' @param what a class to look for
+#' @param env An environment
+#'
+#' @return Character vector of the names of objects, NULL if none
+#' @noRd
+#'
+#' @examples
+#'
+#' # NULL if no data.frame
+#' search_obj("data.frame")
+#'
+#' library(ggplot2)
+#' data("mpg")
+#' search_obj("data.frame")
+#'
+#'
+#' gg <- ggplot()
+#' search_obj("ggplot")
+#'
+search_obj <- function(what = "data.frame", env = globalenv()) {
+  all <- ls(name = env)
+  objs <- lapply(
+    X = all,
+    FUN = function(x) {
+      if (inherits(get(x, envir = env), what = what)) {
+        x
+      } else {
+        NULL
+      }
+    }
+  )
+  objs <- unlist(objs)
+  if (length(objs) == 1 && objs == "") {
+    NULL
+  } else {
+    objs
+  }
+}
+
+#' Retrieve a data.frame by name from an environment
+#'
+#' @param df character, name of the object
+#' @param env an environment
+#'
+#' @return the object
+#' @noRd
+#'
+#' @importFrom utils data
+#'
+get_df <- function(df, env = globalenv()) {
+  if (df %in% ls(name = env)) {
+    get(x = df, envir = env)
+  } else if (df %in% data(package = "ggplot2", envir = environment())$results[, "Item"]) {
+    get(utils::data(list = df, package = "ggplot2", envir = environment()))
+  } else {
+    NULL
+  }
+}
+
 #' Tag to display code
 #'
 #' @param ... Character strings
@@ -45,9 +106,15 @@ KeyVarsInit <- function(data, VarName = NULL) {
   if(!is.null(VarName) && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
     minn <- tryCatch({floor(data[, min(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
     maxx <- tryCatch({ceiling(data[, max(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
-    choices <- tryCatch({unique(as.character(c(minn, seq(minn, maxx, 1+floor((maxx-minn)/20)), maxx)))}, error = function(x) {
-      tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
-    })
+    if(minn == 0 && maxx == 1) {
+      choices <- tryCatch({unique(as.character(c(minn, seq(minn, maxx, (maxx-minn)/20.0), maxx)))}, error = function(x) {
+        tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
+      })
+    } else {
+      choices <- tryCatch({unique(as.character(c(minn, seq(minn, maxx, 1.0+floor((maxx-minn)/20.0)), maxx)))}, error = function(x) {
+        tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
+      })
+    }
   } else if(!is.null(VarName) && any(c('Date','IDate','POSIXct','POSIXt','character','factor') %chin% class(data[[(eval(VarName))]][[1L]]))) {
     choices <- tryCatch({unique(data[[eval(VarName)]])}, error = function(x) NULL)
     maxx <- tryCatch({data[, max(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
@@ -138,6 +205,8 @@ ui <- shinydashboard::dashboardPage(
 
     # Add Logo Image
     shiny::fluidRow(shiny::img(src = 'LogoNoPuma.png', width = LogoWidth, height = LogoHeight)),
+    #shiny::fluidRow(shiny::img(src = 'https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/inst/shiny-apps/TimeSeriesPlotting/www/LogoNoPuma.png', width = LogoWidth, height = LogoHeight)),
+
 
     # Add Space
     RemixAutoML::BlankRow(AppWidth),
