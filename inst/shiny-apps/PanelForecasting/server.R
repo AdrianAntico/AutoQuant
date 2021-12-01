@@ -3725,8 +3725,7 @@ server <- shiny::shinyServer(function(input, output, session) {
     })
 
   # Plot Forecasts ----
-  shiny::observeEvent({
-    input$TS_BuildForecastPlot}, {
+  shiny::observeEvent({input$TS_BuildForecastPlot}, {
 
       # Evaluation Mode ----
       EvalMode <- as.logical(input$Evaluate)

@@ -11,16 +11,17 @@ AppsPlotting(
   DateName = NULL,
   GroupVariables = NULL,
   FilterVariable = NULL,
-  AppTitle = "Time Series Plotting",
+  HeaderColor = "black",
   AppWidth = 12L,
   LogoWidth = "1000px",
   LogoHeight = "100px",
-  Box1Color = "navy",
-  Box2Color = "purple",
-  Box3Color = "aqua",
-  CreatePlotButtonColor = "default",
-  UpdatePlotButtonColor = "default",
-  ResetPlotButtonColor = "default",
+  GroupVarsBoxColor = "navy",
+  VarsBoxColor = "purple",
+  FilterBoxColor = "blue",
+  PlotBoxColor = "aqua",
+  CreatePlotButtonColor = "primary",
+  UpdatePlotButtonColor = "primary",
+  ResetPlotButtonColor = "primary",
   Debug = FALSE
 )
 }
@@ -37,15 +38,17 @@ AppsPlotting(
 
 \item{FilterVariable}{Starter column name for filter-variable}
 
-\item{AppTitle}{Defaults to 'Time Series Plotting'}
+\item{HeaderColor}{'black', 'blue', 'purple', 'green', 'red', 'yellow'}
 
 \item{AppWidth}{Width of boxes}
 
-\item{Box1Color}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
+\item{GroupVarsBoxColor}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
 
-\item{Box2Color}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
+\item{VarsBoxColor}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
 
-\item{Box3Color}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
+\item{FilterBoxColor}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
+
+\item{PlotBoxColor}{Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'}
 
 \item{CreatePlotButtonColor}{Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'}
 
@@ -65,24 +68,25 @@ data <- data.table::fread(system.file('tests/QA_DataSets/ThreeGroup-FC-Walmart-X
 data[, Date := as.Date(Date)]
 
 # Run App
-RemixAutoML::Apps_Plotting(
+RemixAutoML::AppsPlotting(
   data,
-  XVariable = 'Date',
+  XVariable = NULL,
   YVariable = 'XREG1',
   DateName = 'Date',
-  FilterVariable = 'XREG1',
   GroupVariables = names(data)[seq_len(3L)],
-  AppTitle = 'Time Series Plotting',
+  FilterVariable = 'XREG1',
+  HeaderColor = 'black',
   AppWidth = 12L,
   LogoWidth = '1000px',
   LogoHeight = '100px',
-  Box1Color = 'navy',
-  Box2Color = 'purple',
-  Box3Color = 'aqua',
+  GroupVarsBoxColor = 'navy',
+  VarsBoxColor = 'purple',
+  FilterBoxColor = 'blue',
+  PlotBoxColor = 'aqua',
   CreatePlotButtonColor = 'default',
   UpdatePlotButtonColor = 'default',
   ResetPlotButtonColor = 'default',
-  Debug = TRUE)
+  Debug = FALSE)
 
 # XVariable = 'Date'
 # YVariable = 'XREG1'
@@ -90,12 +94,14 @@ RemixAutoML::Apps_Plotting(
 # GroupVariables = names(data)[seq_len(3L)]
 # FilterVariable = 'XREG1'
 # Debug = TRUE
+# HeaderColor = 'black'
 # AppWidth = 12L,
 # LogoWidth = '1000px',
 # LogoHeight = '100px',
-# Box1Color = 'navy',
-# Box2Color = 'purple',
-# Box3Color = 'aqua',
+# GroupVarsBoxColor = 'navy',
+# VarsBoxColor = 'purple',
+# FilterBoxColor = 'blue'
+# PlotBoxColor = 'aqua',
 # CreatePlotButtonColor = 'default',
 # UpdatePlotButtonColor = 'default',
 # ResetPlotButtonColor = 'default',

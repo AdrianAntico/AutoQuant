@@ -11,11 +11,12 @@
 #' @param DateName Starter column name for date-variable
 #' @param GroupVariables Starter column name for group-variables
 #' @param FilterVariable Starter column name for filter-variable
-#' @param AppTitle Defaults to 'Time Series Plotting'
+#' @param HeaderColor 'black', 'blue', 'purple', 'green', 'red', 'yellow'
 #' @param AppWidth Width of boxes
-#' @param Box1Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
-#' @param Box2Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
-#' @param Box3Color Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
+#' @param GroupVarsBoxColor Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
+#' @param VarsBoxColor Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
+#' @param FilterBoxColor Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
+#' @param PlotBoxColor Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
 #' @param CreatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param UpdatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
@@ -28,24 +29,25 @@
 #' data[, Date := as.Date(Date)]
 #'
 #' # Run App
-#' RemixAutoML::Apps_Plotting(
+#' RemixAutoML::AppsPlotting(
 #'   data,
-#'   XVariable = 'Date',
+#'   XVariable = NULL,
 #'   YVariable = 'XREG1',
 #'   DateName = 'Date',
-#'   FilterVariable = 'XREG1',
 #'   GroupVariables = names(data)[seq_len(3L)],
-#'   AppTitle = 'Time Series Plotting',
+#'   FilterVariable = 'XREG1',
+#'   HeaderColor = 'black',
 #'   AppWidth = 12L,
 #'   LogoWidth = '1000px',
 #'   LogoHeight = '100px',
-#'   Box1Color = 'navy',
-#'   Box2Color = 'purple',
-#'   Box3Color = 'aqua',
+#'   GroupVarsBoxColor = 'navy',
+#'   VarsBoxColor = 'purple',
+#'   FilterBoxColor = 'blue',
+#'   PlotBoxColor = 'aqua',
 #'   CreatePlotButtonColor = 'default',
 #'   UpdatePlotButtonColor = 'default',
 #'   ResetPlotButtonColor = 'default',
-#'   Debug = TRUE)
+#'   Debug = FALSE)
 #'
 #' # XVariable = 'Date'
 #' # YVariable = 'XREG1'
@@ -53,12 +55,14 @@
 #' # GroupVariables = names(data)[seq_len(3L)]
 #' # FilterVariable = 'XREG1'
 #' # Debug = TRUE
+#' # HeaderColor = 'black'
 #' # AppWidth = 12L,
 #' # LogoWidth = '1000px',
 #' # LogoHeight = '100px',
-#' # Box1Color = 'navy',
-#' # Box2Color = 'purple',
-#' # Box3Color = 'aqua',
+#' # GroupVarsBoxColor = 'navy',
+#' # VarsBoxColor = 'purple',
+#' # FilterBoxColor = 'blue'
+#' # PlotBoxColor = 'aqua',
 #' # CreatePlotButtonColor = 'default',
 #' # UpdatePlotButtonColor = 'default',
 #' # ResetPlotButtonColor = 'default',
@@ -72,16 +76,17 @@ AppsPlotting <- function(data,
                          DateName = NULL,
                          GroupVariables = NULL,
                          FilterVariable = NULL,
-                         AppTitle = 'Time Series Plotting',
+                         HeaderColor = 'black',
                          AppWidth = 12L,
                          LogoWidth = '1000px',
                          LogoHeight = '100px',
-                         Box1Color = 'navy',
-                         Box2Color = 'purple',
-                         Box3Color = 'aqua',
-                         CreatePlotButtonColor = 'default',
-                         UpdatePlotButtonColor = 'default',
-                         ResetPlotButtonColor = 'default',
+                         GroupVarsBoxColor = 'navy',
+                         VarsBoxColor = 'purple',
+                         FilterBoxColor = 'blue',
+                         PlotBoxColor = 'aqua',
+                         CreatePlotButtonColor = 'primary',
+                         UpdatePlotButtonColor = 'primary',
+                         ResetPlotButtonColor = 'primary',
                          Debug = FALSE) {
 
   # Pass args to shiny app
@@ -92,13 +97,14 @@ AppsPlotting <- function(data,
     DateName = DateName,
     GroupVariables = GroupVariables,
     FilterVariable = FilterVariable,
-    AppTitle = AppTitle,
+    HeaderColor = HeaderColor,
     AppWidth = AppWidth,
     LogoWidth = LogoWidth,
     LogoHeight = LogoHeight,
-    Box1Color = 'navy',
-    Box2Color = 'purple',
-    Box3Color = 'aqua',
+    GroupVarsBoxColor = GroupVarsBoxColor,
+    VarsBoxColor = VarsBoxColor,
+    FilterBoxColor = FilterBoxColor,
+    PlotBoxColor = PlotBoxColor,
     CreatePlotButtonColor = 'default',
     UpdatePlotButtonColor = 'default',
     ResetPlotButtonColor = 'default',

@@ -14,7 +14,8 @@ PreparePlotData(
   GroupVariables = NULL,
   G1Levels = NULL,
   G2Levels = NULL,
-  G3Levels = NULL
+  G3Levels = NULL,
+  Debug = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ PreparePlotData(
 \item{G2Levels}{Name of group 2 levels list element}
 
 \item{G3Levels}{Name of group 3 levels list element}
+
+\item{Debug}{FALSE}
 }
 \value{
 PreparePlotData object for server.R to
