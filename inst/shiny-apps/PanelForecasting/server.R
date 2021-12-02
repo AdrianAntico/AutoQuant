@@ -24,6 +24,12 @@ TargetVariable <- shiny::getShinyOption('TargetName')
 PredictName <- shiny::getShinyOption('PredictName')
 DateName <- shiny::getShinyOption('DateName')
 Debug <- shiny::getShinyOption('Debug')
+if(Debug) {
+  print(ArgsList)
+  print(TargetVariable)
+  print(PredictName)
+  print(DateName)
+}
 
 # Server begin
 server <- shiny::shinyServer(function(input, output, session) {

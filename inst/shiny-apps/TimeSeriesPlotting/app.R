@@ -553,10 +553,6 @@ server <- function(input, output, session) {
     minnx <- Output[['MinVal']]
     maxxx <- Output[['MaxVal']]
     choices <- Output[['ChoiceInput']]
-    if(Debug) print(XVar())
-    if(Debug) print(minnx)
-    if(Debug) print(maxxx)
-    if(Debug) print(choices)
     RemixAutoML::PickerInput(
       InputID = 'XMin',
       Label = 'Min X-Value',
@@ -571,6 +567,7 @@ server <- function(input, output, session) {
     minn <- Output[['MinVal']]
     maxx <- Output[['MaxVal']]
     choices <- Output[['ChoiceInput']]
+    if(Debug) print(maxx)
     RemixAutoML::PickerInput(
       InputID = 'YMax',
       Label = 'Max Y-Value',
