@@ -241,9 +241,9 @@ server <- shiny::shinyServer(function(input, output, session) {
   # shiny::observeEvent(eventExpr = input[['ML_TrainData']], {
   #   ML_TrainData <- RemixAutoML::ReactiveLoadCSV(input, InputVal = 'ML_TrainData')
   # })
-  shiny::observeEvent(eventExpr = input[['ML_ShapTable']], {
-    ML_ShapTable <- RemixAutoML::ReactiveLoadCSV(input, InputVal = 'ML_ShapTable')
-  })
+  # shiny::observeEvent(eventExpr = input[['ML_ShapTable']], {
+  #   ML_ShapTable <- RemixAutoML::ReactiveLoadCSV(input, InputVal = 'ML_ShapTable')
+  # })
 
   # ModelInsights - Load Model Objects Tab: Load Model Output List ----
   # shiny::observeEvent(eventExpr = input[['ML_ArgsList']], {
@@ -273,70 +273,75 @@ server <- shiny::shinyServer(function(input, output, session) {
 
   # ModelInsights - Visualization Tab: Variables of Interest ----
   output$ModelInsights_ScoreVariable <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_ScoreVariable", Label = "Select Predicted Column", Choices = PredictName, SelectedDefault = PredictName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ScoreVariable", Label="Select Predicted Column", Choices = PredictName, SelectedDefault = PredictName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_TargetVariable <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_TargetVariable", Label = "Select Target Column", Choices = TargetVariable, SelectedDefault = TargetVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_TargetVariable", Label="Select Target Column", Choices = TargetVariable, SelectedDefault = TargetVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_DateVariable <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_DateVariable",Label = "Select Date Column", Choices = DateName, SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_DateVariable", Label="Select Date Column", Choices = DateName, SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_IndependentVariable <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_IndependentVariable",Label = "Select Independent Variable Column", Choices = c(ModelList$ColNames[[1L]]), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_IndependentVariable", Label="Select Independent Variable Column", Choices = c(ModelList$ColNames[[1L]]), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ByVariables
   output$ModelInsights_ByVariables1  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_ByVariables1",Label = "By-Variables (1)", Choices = c("None", names(ModelList$ValidationData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables1", Label="By-Variables (1)", Choices = c("None", names(ModelList$TestData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_ByVariables2  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_ByVariables2",Label = "By-Variables (2)", Choices = c("None", names(ModelList$ValidationData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables2", Label="By-Variables (2)", Choices = c("None", names(ModelList$TestData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_ByVariables3  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_ByVariables3",Label = "By-Variables (3)", Choices = c("None", names(ModelList$ValidationData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables3",Label="By-Variables (3)", Choices = c("None", names(ModelList$TestData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ByVariable levels
-  output$ModelInsights_ByVariables1Levels  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_ByVariables1Levels", Label = "Select Levels (1)", Choices = if(!is.null(ModelList$ValidationData) && !is.null(input$ModelInsights_ByVariables1)) sort(unique(as.character(ModelList$ValidationData[[eval(input$ModelInsights_ByVariables1)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  output$ModelInsights_ByVariables1Levels <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables1Levels", Label="Select Levels (1)", Choices = if(!is.null(ModelList$TestData) && !is.null(input$ModelInsights_ByVariables1)) sort(unique(as.character(ModelList$TestData[[eval(input$ModelInsights_ByVariables1)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
-  output$ModelInsights_ByVariables2Levels  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_ByVariables2Levels", Label = "Select Levels (2)", Choices = if(!is.null(ModelList$ValidationData) && !is.null(input$ModelInsights_ByVariables2)) sort(unique(as.character(ModelList$ValidationData[[eval(input$ModelInsights_ByVariables2)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  output$ModelInsights_ByVariables2Levels <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables2Levels", Label="Select Levels (2)", Choices = if(!is.null(ModelList$TestData) && !is.null(input$ModelInsights_ByVariables2)) sort(unique(as.character(ModelList$TestData[[eval(input$ModelInsights_ByVariables2)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
-  output$ModelInsights_ByVariables3Levels  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_ByVariables3Levels", Label = "Select Levels (3)", Choices = if(!is.null(ModelList$ValidationData) && !is.null(input$ModelInsights_ByVariables3)) sort(unique(as.character(ModelList$ValidationData[[eval(input$ModelInsights_ByVariables3)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  output$ModelInsights_ByVariables3Levels <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables3Levels", Label="Select Levels (3)", Choices = if(!is.null(ModelList$TestData) && !is.null(input$ModelInsights_ByVariables3)) sort(unique(as.character(ModelList$TestData[[eval(input$ModelInsights_ByVariables3)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # Plot Options
   output$ModelInsights_PlotBuckets  <- shiny::renderUI({
-    RemixAutoML::NumericInput(InputID = "ModelInsights_PlotBuckets", Label = "# Buckets for Plots", Min = 5, Max = 100, Step = 5, Value = 20)
+    RemixAutoML::NumericInput(InputID="ModelInsights_PlotBuckets", Label="# Buckets for Plots", Min = 5, Max = 100, Step = 5, Value = 20)
   })
 
   # Plot Type
   output$ModelInsights_PlotOptions  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_PlotOptions",Label = "Select Plot Option", Choices = names(ModelList$PlotList), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = "ModelInsights_PlotOptions", Label = "Select Plot Option", Choices = sort(unique(c(names(ModelList$PlotList), names(ModelList$VariableImportance)))), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ModelInsights - Visualization ----
 
   # EvaluationPlot
-  shiny::observeEvent(eventExpr = input$ML_Plot, {
+  shiny::observeEvent(eventExpr = input[['ML_Plot']], {
 
     # Subset check ----
+    if(Debug) print('Subset check ----')
     Check <- (!is.null(input$ModelInsights_ByVariables1) || !is.null(input$ModelInsights_ByVariables2) || !is.null(input$ModelInsights_ByVariables3)) &&
       (!is.null(input$ModelInsights_ByVariables1Levels) || !is.null(input$ModelInsights_ByVariables2Levels) || !is.null(input$ModelInsights_ByVariables3Levels))
 
     # PlotBuckets check
+    if(Debug) print('PlotBuckets check')
     Check2 <- input$ModelInsights_PlotBuckets == 20
 
     # SubsetData
     if(Check) {
 
+      if(Debug) print('Check == TRUE 1')
+
       # All
       if((!is.null(input$ModelInsights_ByVariables1) && !is.null(input$ModelInsights_ByVariables1Levels)) &&
          (!is.null(input$ModelInsights_ByVariables2) && !is.null(input$ModelInsights_ByVariables2Levels)) &&
          (!is.null(input$ModelInsights_ByVariables3) && !is.null(input$ModelInsights_ByVariables3Levels))) {
-        temp <- ModelList$ValidationData[
+        if(Debug) print('All')
+        temp <- ModelList$TestData[
           get(input$ModelInsights_ByVariables1) %in% c(eval(input$ModelInsights_ByVariables1Levels)) &
             get(input$ModelInsights_ByVariables2) %in% c(eval(input$ModelInsights_ByVariables2Levels)) &
             get(input$ModelInsights_ByVariables3) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
@@ -346,7 +351,8 @@ server <- shiny::shinyServer(function(input, output, session) {
       if((!is.null(input$ModelInsights_ByVariables1) && !is.null(input$ModelInsights_ByVariables1Levels)) &&
          is.null(input$ModelInsights_ByVariables2) &&
          (!is.null(input$ModelInsights_ByVariables3) && !is.null(input$ModelInsights_ByVariables3Levels))) {
-        temp <- ModelList$ValidationData[
+        if(Debug) print('2v1')
+        temp <- ModelList$TestData[
           get(input$ModelInsights_ByVariables1) %in% c(eval(input$ModelInsights_ByVariables1Levels)) &
             get(input$ModelInsights_ByVariables3) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
       }
@@ -355,7 +361,7 @@ server <- shiny::shinyServer(function(input, output, session) {
       if((!is.null(input$ModelInsights_ByVariables1) && !is.null(input$ModelInsights_ByVariables1Levels)) &&
          (!is.null(input$ModelInsights_ByVariables2) && !is.null(input$ModelInsights_ByVariables2Levels)) &&
          is.null(input$ModelInsights_ByVariables3)) {
-        temp <- ModelList$ValidationData[
+        temp <- ModelList$TestData[
           get(input$ModelInsights_ByVariables1) %in% c(eval(input$ModelInsights_ByVariables1Levels)) &
             get(input$ModelInsights_ByVariables2) %in% c(eval(input$ModelInsights_ByVariables2Levels))]
       }
@@ -364,7 +370,8 @@ server <- shiny::shinyServer(function(input, output, session) {
       if(is.null(input$ModelInsights_ByVariables1) &&
          (!is.null(input$ModelInsights_ByVariables2) && !is.null(input$ModelInsights_ByVariables2Levels)) &&
          (!is.null(input$ModelInsights_ByVariables3) && !is.null(input$ModelInsights_ByVariables3Levels))) {
-        temp <- ModelList$ValidationData[
+        if(Debug) print('2v3')
+        temp <- ModelList$TestData[
           get(input$ModelInsights_ByVariables2) %in% c(eval(input$ModelInsights_ByVariables2Levels)) &
             get(input$ModelInsights_ByVariables3) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
       }
@@ -372,36 +379,44 @@ server <- shiny::shinyServer(function(input, output, session) {
       # 1V1
       if((!is.null(input$ModelInsights_ByVariables1) && !is.null(input$ModelInsights_ByVariables1Levels)) &&
          is.null(input$ModelInsights_ByVariables2) && is.null(input$ModelInsights_ByVariables3)) {
-        temp <- ModelList$ValidationData[get(eval(input$ModelInsights_ByVariables1)) %in% c(eval(input$ModelInsights_ByVariables1Levels))]
+        if(Debug) print('1v1')
+        temp <- ModelList$TestData[get(eval(input$ModelInsights_ByVariables1)) %in% c(eval(input$ModelInsights_ByVariables1Levels))]
       }
 
       # 1V2
       if(is.null(input$ModelInsights_ByVariables1) && is.null(input$ModelInsights_ByVariables3) &&
          (!is.null(input$ModelInsights_ByVariables2) && !is.null(input$ModelInsights_ByVariables2Levels))) {
-        temp <- ModelList$ValidationData[get(eval(input$ModelInsights_ByVariables2)) %in% c(eval(input$ModelInsights_ByVariables2Levels))]
+        if(Debug) print('1v2')
+        temp <- ModelList$TestData[get(eval(input$ModelInsights_ByVariables2)) %in% c(eval(input$ModelInsights_ByVariables2Levels))]
       }
 
       # 1V3
       if(is.null(input$ModelInsights_ByVariables1) && is.null(input$ModelInsights_ByVariables2) &&
          (!is.null(input$ModelInsights_ByVariables3) && !is.null(input$ModelInsights_ByVariables3Levels))) {
-        temp <- ModelList$ValidationData[get(eval(input$ModelInsights_ByVariables3)) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
+        if(Debug) print('1v3')
+        temp <- ModelList$TestData[get(eval(input$ModelInsights_ByVariables3)) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
       }
 
       # 3V1
       if(is.null(input$ModelInsights_ByVariables1) && is.null(input$ModelInsights_ByVariables2) && is.null(input$ModelInsights_ByVariables3)) {
-        temp <- ModelList$ValidationData
+        if(Debug) print('3v1')
+        temp <- ModelList$TestData
       }
     } else {
-      temp <- ModelList$ValidationData
+      if(Debug) print('else')
+      temp <- ModelList$TestData
     }
 
     # Evaluation Plot ----
-    if(any(input$ModelInsights_PlotOptions %chin% "EvaluationPlot")) {
-      if(!Check && Check2 && !is.null(ModelList$EvaluationPlot)) {
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_EvaluationPlot")) {
+      if(Debug) print('Evaluation Plot')
+      if(!Check && Check2 && !is.null(ModelList$PlotList[['Test_EvaluationPlot']])) {
+        if(Debug) print('!Check')
         output$ML_OutputPlot <- shiny::renderPlot({
-          ModelList$EvaluationPlot
+          ModelList$PlotList[['Test_EvaluationPlot']]
         })
       } else {
+        if(Debug) print('! !Check')
         output$ML_OutputPlot <- shiny::renderPlot({
           RemixAutoML::EvalPlot(
             data = temp,
@@ -414,13 +429,26 @@ server <- shiny::shinyServer(function(input, output, session) {
       }
     }
 
-    # Evaluation BoxPlot ----
-    if(any(input$ModelInsights_PlotOptions %chin% "EvaluationBoxPlot")) {
-      if(!Check && Check2 && !is.null(ModelList$EvaluationBoxPlot)) {
+    # Evaluation Plot ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Train_EvaluationPlot")) {
+      if(Debug) print('Evaluation Plot')
+      if(!Check && Check2 && !is.null(ModelList$PlotList[['Train_EvaluationPlot']])) {
+        if(Debug) print('!Check')
         output$ML_OutputPlot <- shiny::renderPlot({
-          ModelList$EvaluationBoxPlot
+          ModelList$PlotList[['Train_EvaluationPlot']]
+        })
+      }
+    }
+
+    # Evaluation BoxPlot ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_EvaluationBoxPlot")) {
+      if(!Check && Check2 && !is.null(ModelList$PlotList[['Test_EvaluationBoxPlot']])) {
+        if(Debug) print('EvalBoxPlot !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Test_EvaluationBoxPlot']]
         })
       } else {
+        if(Debug) print('EvalBoxPlot ! !Check')
         output$ML_OutputPlot <- shiny::renderPlot({
           RemixAutoML::EvalPlot(
             data = temp,
@@ -432,13 +460,25 @@ server <- shiny::shinyServer(function(input, output, session) {
       }
     }
 
-    # ROC Plot ----
-    if(any(input$ModelInsights_PlotOptions %chin% "ROC_Plot")) {
-      if(!Check && !is.null(ModelList$ROC_Plot)) {
+    # Evaluation BoxPlot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Train_EvaluationBoxPlot")) {
+      if(!Check && Check2 && !is.null(ModelList$PlotList[['Train_EvaluationBoxPlot']])) {
+        if(Debug) print('EvalBoxPlot !Check')
         output$ML_OutputPlot <- shiny::renderPlot({
-          ModelList$ROC_Plot
+          ModelList$PlotList[['Train_EvaluationBoxPlot']]
+        })
+      }
+    }
+
+    # ROC Plot ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_ROC_Plot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Test_ROC_Plot']])) {
+        if(Debug) print('ROC !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Test_ROC_Plot']]
         })
       } else {
+        if(Debug) print('Test_ROC_Plot ! !Check')
         output$ML_OutputPlot <- shiny::renderPlot({
           RemixAutoML::ROCPlot(
             data = temp,
@@ -451,13 +491,25 @@ server <- shiny::shinyServer(function(input, output, session) {
       }
     }
 
-    # Gains Plot ----
-    if(any(input$ModelInsights_PlotOptions %chin% "GainsPlot")) {
-      if(!Check && !is.null(ModelList$GainsPlot)) {
+    # ROC Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Train_ROC_Plot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Train_ROC_Plot']])) {
+        if(Debug) print('Train_ROC_Plot !Check')
         output$ML_OutputPlot <- shiny::renderPlot({
-          ModelList$GainsPlot
+          ModelList$PlotList[['Train_ROC_Plot']]
+        })
+      }
+    }
+
+    # Gains Plot ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_GainsPlot")) {
+      if(!Check && !is.null(ModelList$PlotList[['GainsPlot']])) {
+        if(Debug) print('Test_GainsPlot !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Test_GainsPlot']]
         })
       } else {
+        if(Debug) print('Gains Plot ! !Check')
         output$ML_OutputPlot <- shiny::renderPlot({
           RemixAutoML::CumGainsChart(
             data = temp,
@@ -471,13 +523,25 @@ server <- shiny::shinyServer(function(input, output, session) {
       }
     }
 
-    # Lift Plot ----
-    if(any(input$ModelInsights_PlotOptions %chin% "LiftPlot")) {
-      if(!Check && !is.null(ModelList$LiftPlot)) {
+    # Gains Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Train_GainsPlot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Train_GainsPlot']])) {
+        if(Debug) print('Gains Plot !Check')
         output$ML_OutputPlot <- shiny::renderPlot({
-          ModelList$LiftPlot
+          ModelList$PlotList[['Train_GainsPlot']]
+        })
+      }
+    }
+
+    # Lift Plot Test ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_LiftPlot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Test_LiftPlot']])) {
+        if(Debug) print('Test_LiftPlot !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Test_LiftPlot']]
         })
       } else {
+        if(Debug) print('Test_LiftPlot ! !Check')
         output$ML_OutputPlot <- shiny::renderPlot({
           RemixAutoML::CumGainsChart(
             data = temp,
@@ -491,28 +555,136 @@ server <- shiny::shinyServer(function(input, output, session) {
       }
     }
 
-    # Variable Importance Plot ----
-    if(any(input$ModelInsights_PlotOptions %chin% "VariableImportance")) {
+    # Lift Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Train_LiftPlot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Train_LiftPlot']])) {
+        if(Debug) print('Train_LiftPlot !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Train_LiftPlot']]
+        })
+      }
+    }
+
+    # Scatter Plot Test ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_ScatterPlot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Test_ScatterPlot']])) {
+        if(Debug) print('Test_ScatterPlot !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Test_ScatterPlot']]
+        })
+      } else {
+        if(Debug) print('Test_ScatterPlot ! !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          RemixAutoML::ResidualPlots(
+            TestData = temp,
+            Target = input$ModelInsights_TargetVariable,
+            Predicted = input$ModelInsights_ScoreVariable,
+            DateColumnName = input$ModelInsights_DateVariable,
+            Gam_Fit = FALSE)$ScatterPlot
+        })
+      }
+    }
+
+    # Scatter Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Train_ScatterPlot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Train_ScatterPlot']])) {
+        if(Debug) print('Train_ScatterPlot !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Train_ScatterPlot']]
+        })
+      }
+    }
+
+    # Copula Plot Test ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_CopulaPlot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Test_CopulaPlot']])) {
+        if(Debug) print('Test_CopulaPlot !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Test_CopulaPlot']]
+        })
+      } else {
+        if(Debug) print('Test_CopulaPlot ! !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          RemixAutoML::ResidualPlots(
+            TestData = temp,
+            Target = input$ModelInsights_TargetVariable,
+            Predicted = input$ModelInsights_ScoreVariable,
+            DateColumnName = input$ModelInsights_DateVariable,
+            Gam_Fit = FALSE)$CopulaPlot
+        })
+      }
+    }
+
+    # Copula Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Train_CopulaPlot")) {
+      if(!Check && !is.null(ModelList$PlotList[['Train_CopulaPlot']])) {
+        if(Debug) print('Train_CopulaPlot !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Train_CopulaPlot']]
+        })
+      }
+    }
+
+    # Residuals Histogram Plot Test ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_ResidualsHistogram")) {
+      if(!Check && !is.null(ModelList$PlotList[['Test_ResidualsHistogram']])) {
+        if(Debug) print('Test_ResidualsHistogram !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Test_ResidualsHistogram']]
+        })
+      } else {
+        if(Debug) print('Test_ResidualsHistogram ! !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          RemixAutoML::ResidualPlots(
+            TestData = temp,
+            Target = input$ModelInsights_TargetVariable,
+            Predicted = input$ModelInsights_ScoreVariable,
+            DateColumnName = input$ModelInsights_DateVariable,
+            Gam_Fit = FALSE)$ResidualsHistogram
+        })
+      }
+    }
+
+    # Residuals Histogram Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Train_ResidualsHistogram")) {
+      if(!Check && !is.null(ModelList$PlotList[['Train_ResidualsHistogram']])) {
+        if(Debug) print('Train_ResidualsHistogram !Check')
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList[['Train_ResidualsHistogram']]
+        })
+      }
+    }
+
+    # Variable Importance Plot Test ----
+    if(any(input$ModelInsights_PlotOptions %chin% "Test_Importance")) {
+      if(Debug) print('Test_Importance ! !Check')
       output$ML_OutputPlot <- shiny::renderPlot({
-        RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelList$VariableImportance, TopN = 25)
+        RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelList$VariableImportance[['Test_Importance']], TopN = 25)
       })
     }
 
-    # Partial Dependence Plot ----
-    if(any(input$ModelInsights_PlotOptions %chin% "PartialDependencePlot") && !is.null(input$ModelInsights_IndependentVariable)) {
-      if(!Check && Check2 && !is.null(ModelList$PartialDependencePlots[[eval(input$ModelInsights_IndependentVariable)]])) {
+    # Variable Importance Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% 'Train_Importance')) {
+      if(Debug) print('Train_Importance ! !Check')
+      output$ML_OutputPlot <- shiny::renderPlot({
+        RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = ModelList$VariableImportance[['Train_Importance']], TopN = 25)
+      })
+    }
+
+    # Partial Dependence Plot Test ----
+    if(any(input$ModelInsights_PlotOptions %chin% 'Test_ParDepPlots') && !is.null(input$ModelInsights_IndependentVariable)) {
+      if(!Check && Check2 && !is.null(ModelList$PlotList$Test_ParDepPlots[[eval(input$ModelInsights_IndependentVariable)]])) {
         output$ML_OutputPlot <- shiny::renderPlot({
-          ModelList$PartialDependencePlots[[eval(input$ModelInsights_IndependentVariable)]]
+          ModelList$PlotList$Test_ParDepPlots[[eval(input$ModelInsights_IndependentVariable)]]
         })
       } else {
-        print(temp)
         output$ML_OutputPlot <- shiny::renderPlot({
           RemixAutoML::ParDepCalPlots(
             data = temp,
             PredictionColName = input$ModelInsights_ScoreVariable,
             TargetColName = input$ModelInsights_TargetVariable,
             IndepVar = input$ModelInsights_IndependentVariable,
-            GraphType = "calibration",
+            GraphType = 'calibration',
             PercentileBucket = 1 / input$ModelInsights_PlotBuckets,
             FactLevels = 10,
             Function = function(x) mean(x, na.rm = TRUE))
@@ -520,11 +692,53 @@ server <- shiny::shinyServer(function(input, output, session) {
       }
     }
 
-    # Partial Dependence Box Plot ----
-    if(any(input$ModelInsights_PlotOptions %chin% "PartialDependenceBoxPlot") && !is.null(input$ModelInsights_IndependentVariable)) {
-      if(!Check && Check2 && !is.null(ModelList$PartialDependenceBoxPlots[[eval(input$ModelInsights_IndependentVariable)]])) {
+    # Partial Dependence Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% 'Train_ParDepPlots') && !is.null(input$ModelInsights_IndependentVariable)) {
+      if(!Check && Check2 && !is.null(ModelList$PlotList$Train_ParDepPlots[[eval(input$ModelInsights_IndependentVariable)]])) {
         output$ML_OutputPlot <- shiny::renderPlot({
-          ModelList$PartialDependenceBoxPlots[[eval(input$ModelInsights_IndependentVariable)]]
+          ModelList$PlotList$Train_ParDepPlots[[eval(input$ModelInsights_IndependentVariable)]]
+        })
+      } else {
+        output$ML_OutputPlot <- shiny::renderPlot({
+          RemixAutoML::ParDepCalPlots(
+            data = temp,
+            PredictionColName = input$ModelInsights_ScoreVariable,
+            TargetColName = input$ModelInsights_TargetVariable,
+            IndepVar = input$ModelInsights_IndependentVariable,
+            GraphType = 'calibration',
+            PercentileBucket = 1 / input$ModelInsights_PlotBuckets,
+            FactLevels = 10,
+            Function = function(x) mean(x, na.rm = TRUE))
+        })
+      }
+    }
+
+    # Partial Dependence Box Plot Test ----
+    if(any(input$ModelInsights_PlotOptions %chin% 'Test_ParDepBoxPlots') && !is.null(input$ModelInsights_IndependentVariable)) {
+      if(!Check && Check2 && !is.null(ModelList$PlotList$Test_ParDepBoxPlots[[eval(input$ModelInsights_IndependentVariable)]])) {
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList$Test_ParDepBoxPlots[[eval(input$ModelInsights_IndependentVariable)]]
+        })
+      } else {
+        output$ML_OutputPlot <- shiny::renderPlot({
+          RemixAutoML::ParDepCalPlots(
+            data = temp,
+            PredictionColName = input$ModelInsights_ScoreVariable,
+            TargetColName = input$ModelInsights_TargetVariable,
+            IndepVar = input$ModelInsights_IndependentVariable,
+            GraphType = "boxplot",
+            PercentileBucket = 1 / input$ModelInsights_PlotBuckets,
+            FactLevels = 10,
+            Function = function(x) mean(x, na.rm = TRUE))
+        })
+      }
+    }
+
+    # Partial Dependence Box Plot Train ----
+    if(any(input$ModelInsights_PlotOptions %chin% 'Train_ParDepBoxPlots') && !is.null(input$ModelInsights_IndependentVariable)) {
+      if(!Check && Check2 && !is.null(ModelList$PlotList$Train_ParDepBoxPlots[[eval(input$ModelInsights_IndependentVariable)]])) {
+        output$ML_OutputPlot <- shiny::renderPlot({
+          ModelList$PlotList$Train_ParDepBoxPlots[[eval(input$ModelInsights_IndependentVariable)]]
         })
       } else {
         output$ML_OutputPlot <- shiny::renderPlot({

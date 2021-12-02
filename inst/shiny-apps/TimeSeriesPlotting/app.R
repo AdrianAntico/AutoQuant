@@ -537,7 +537,6 @@ server <- function(input, output, session) {
   output$YMin <- shiny::renderUI({
     Output <- KeyVarsInit(data, VarName = eval(YVar()))
     minn <- Output[['MinVal']]
-    maxx <- Output[['MaxVal']]
     choices <- Output[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'YMin',
@@ -551,7 +550,6 @@ server <- function(input, output, session) {
   output$XMin <- shiny::renderUI({
     Output <- KeyVarsInit(data, VarName = eval(XVar()))
     minnx <- Output[['MinVal']]
-    maxxx <- Output[['MaxVal']]
     choices <- Output[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'XMin',
@@ -564,43 +562,40 @@ server <- function(input, output, session) {
   # YMax
   output$YMax <- shiny::renderUI({
     Output <- KeyVarsInit(data, VarName = eval(YVar()))
-    minn <- Output[['MinVal']]
-    maxx <- Output[['MaxVal']]
+    maxxy <- Output[['MaxVal']]
     choices <- Output[['ChoiceInput']]
-    if(Debug) print(maxx)
+    if(Debug) print(maxxy)
     RemixAutoML::PickerInput(
       InputID = 'YMax',
       Label = 'Max Y-Value',
       Choices = CharNull(choices),
-      SelectedDefault = CharNull(maxx),
+      SelectedDefault = CharNull(maxxy),
       Multiple = FALSE)
   })
 
   # XMax
   output$XMax <- shiny::renderUI({
     Output <- KeyVarsInit(data, VarName = eval(XVar()))
-    minnx <- Output[['MinVal']]
-    maxxx <- Output[['MaxVal']]
+    maxxxx <- Output[['MaxVal']]
     choices <- Output[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'XMax',
       Label = 'Max X-Value',
       Choices = CharNull(choices),
-      SelectedDefault = CharNull(maxxx),
+      SelectedDefault = CharNull(maxxxx),
       Multiple = FALSE)
   })
 
   # DateMin
   output$DateMin <- shiny::renderUI({
     Output <- KeyVarsInit(data, VarName = eval(DateVar()))
-    minnx <- Output[['MinVal']]
-    maxxx <- Output[['MaxVal']]
+    minnd <- Output[['MinVal']]
     choices <- Output[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'DateMin',
       Label = 'Min Date-Value',
       Choices = CharNull(choices),
-      SelectedDefault = CharNull(minnx),
+      SelectedDefault = CharNull(minnd),
       Multiple = FALSE)
   })
 
