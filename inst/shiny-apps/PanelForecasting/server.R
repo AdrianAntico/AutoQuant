@@ -17,6 +17,8 @@ data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 data.table::getDTthreads(verbose = TRUE)
 Local <- TRUE
 
+library(data.table)
+
 ML_TrainData <- shiny::getShinyOption('data')
 ModelList <- shiny::getShinyOption('ModelOutput')
 ArgsList <- ModelList$ArgsList
@@ -269,9 +271,18 @@ server <- shiny::shinyServer(function(input, output, session) {
     shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "model_insights_load_model_output_list")
   })
 
-  # . ----
+  # ----
 
+  # ----
+
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # ModelInsights - Visualization Tab: Variables of Interest ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  temp <- shiny::reactive({
+    if(!is.null(ML_TrainData)) temp <- ML_TrainData else temp <- ModelList$TestData
+    temp
+  })
   output$ModelInsights_ScoreVariable <- shiny::renderUI({
     RemixAutoML::PickerInput(InputID="ModelInsights_ScoreVariable", Label="Select Predicted Column", Choices = PredictName, SelectedDefault = PredictName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
@@ -282,32 +293,271 @@ server <- shiny::shinyServer(function(input, output, session) {
     RemixAutoML::PickerInput(InputID="ModelInsights_DateVariable", Label="Select Date Column", Choices = DateName, SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_IndependentVariable <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID="ModelInsights_IndependentVariable", Label="Select Independent Variable Column", Choices = c(ModelList$ColNames[[1L]]), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    if(!is.null(ModelList$ColNames[[1L]])) tempnames <- ModelList$ColNames[[1L]] else tempnames <- names(ML_TrainData)
+    RemixAutoML::PickerInput(InputID="ModelInsights_IndependentVariable", Label="Select Independent Variable Column", Choices = c(tempnames), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
-  # ByVariables
+  # YMin
+  output$YMin <- shiny::renderUI({
+    if(Debug) print(eval(temp()))
+    Output <- RemixAutoML:::KeyVarsInit(eval(temp()), VarName = eval(input[['ModelInsights_TargetVariable']]))
+    if(Debug) print('issue here')
+    if(Debug) print(Output)
+    minn <- Output[['MinVal']]
+    choices <- Output[['ChoiceInput']]
+    RemixAutoML::PickerInput(
+      InputID = 'YMin',
+      Label = 'Min Y-Value',
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(minn),
+      Multiple = FALSE)
+  })
+
+  # XMin
+  output$XMin <- shiny::renderUI({
+    Output <- RemixAutoML:::KeyVarsInit(eval(temp()), VarName = eval(input[['ModelInsights_ScoreVariable']]))
+    minnx <- Output[['MinVal']]
+    choices <- Output[['ChoiceInput']]
+    RemixAutoML::PickerInput(
+      InputID = 'XMin',
+      Label = 'Min X-Value',
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(minnx),
+      Multiple = FALSE)
+  })
+
+  # YMax
+  output$YMax <- shiny::renderUI({
+    Output <- RemixAutoML:::KeyVarsInit(eval(temp()), VarName = eval(input[['ModelInsights_TargetVariable']]))
+    maxxy <- Output[['MaxVal']]
+    choices <- Output[['ChoiceInput']]
+    if(Debug) {print(maxxy); print(eval(temp())[[eval(input[['ModelInsights_TargetVariable']])]][1:5])}
+    RemixAutoML::PickerInput(
+      InputID = 'YMax',
+      Label = 'Max Y-Value',
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(maxxy),
+      Multiple = FALSE)
+  })
+
+  # XMax
+  output$XMax <- shiny::renderUI({
+    Output <- RemixAutoML:::KeyVarsInit(eval(temp()), VarName = eval(input[['ModelInsights_ScoreVariable']]))
+    maxxxx <- Output[['MaxVal']]
+    choices <- Output[['ChoiceInput']]
+    RemixAutoML::PickerInput(
+      InputID = 'XMax',
+      Label = 'Max X-Value',
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(maxxxx),
+      Multiple = FALSE)
+  })
+
+  # DateMin
+  output$DateMin <- shiny::renderUI({
+    Output <- RemixAutoML:::KeyVarsInit(eval(temp()), VarName = eval(input[['ModelInsights_DateVariable']]))
+    minnd <- Output[['MinVal']]
+    choices <- Output[['ChoiceInput']]
+    RemixAutoML::PickerInput(
+      InputID = 'DateMin',
+      Label = 'Min Date-Value',
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(minnd),
+      Multiple = FALSE)
+  })
+
+  # DateMax
+  output$DateMax <- shiny::renderUI({
+    Output <- RemixAutoML:::KeyVarsInit(eval(temp()), VarName = eval(input[['ModelInsights_DateVariable']]))
+    minnx <- Output[['MinVal']]
+    maxxx <- Output[['MaxVal']]
+    choices <- Output[['ChoiceInput']]
+    RemixAutoML::PickerInput(
+      InputID = 'DateMax',
+      Label = 'Max Date-Value',
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(maxxx),
+      Multiple = FALSE)
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Filter Variables ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Filter Variable 1
+  output$FilterVariable_1 <- shiny::renderUI({
+    shiny::selectInput(inputId='FilterVariable_1', label='Filter Variable', choices=c('None', names(eval(temp()))), selected='None')
+  })
+
+  # Filter Variable 2
+  output$FilterVariable_2 <- shiny::renderUI({
+    shiny::selectInput(inputId='FilterVariable_2', label='Filter Variable', choices=c('None', names(eval(temp()))), selected='None')
+  })
+
+  # Filter Variable 3
+  output$FilterVariable_3 <- shiny::renderUI({
+    shiny::selectInput(inputId='FilterVariable_3', label='Filter Variable', choices=c('None', names(eval(temp()))), selected='None')
+  })
+
+  # Filter Variable 4
+  output$FilterVariable_4 <- shiny::renderUI({
+    shiny::selectInput(inputId='FilterVariable_4', label='Filter Variable', choices=c('None', names(eval(temp()))), selected='None')
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Filter Logic ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Filter Logic 1
+  output$FilterLogic_1 <- shiny::renderUI({
+    x <- class(eval(temp())[[eval(input[['FilterVariable_1']])]])
+    if(x %in% c('factor', 'character')) FL_Default <- '%chin%' else FL_Default <- '>='
+    shiny::selectInput(inputId='FilterLogic_1', label='Logical Operation', choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%','NULL'), selected=FL_Default, multiple=FALSE)
+  })
+
+  # Filter Logic 2
+  output$FilterLogic_2 <- shiny::renderUI({
+    x <- class(eval(temp())[[eval(input[['FilterVariable_2']])]])
+    if(x %in% c('factor', 'character')) FL_Default <- '%chin%' else FL_Default <- '>='
+    shiny::selectInput(inputId='FilterLogic_2', label='Logical Operation', choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%','NULL'), selected=FL_Default, multiple=FALSE)
+  })
+
+  # Filter Logic 3
+  output$FilterLogic_3 <- shiny::renderUI({
+    if(!is.null(names(ModelList$TestData))) temp <- ModelList$TestData else temp <- ML_TrainData
+    x <- class(eval(temp())[[eval(input[['FilterVariable_3']])]])
+    if(x %in% c('factor', 'character')) FL_Default <- '%chin%' else FL_Default <- '>='
+    shiny::selectInput(inputId='FilterLogic_3', label='Logical Operation', choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%','NULL'), selected=FL_Default, multiple=FALSE)
+  })
+
+  # Filter Logic 4
+  output$FilterLogic_4 <- shiny::renderUI({
+    x <- class(eval(temp())[[eval(input[['FilterVariable_4']])]])
+    if(x %in% c('factor', 'character')) FL_Default <- '%chin%' else FL_Default <- '>='
+    shiny::selectInput(inputId='FilterLogic_4', label='Logical Operation', choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%','NULL'), selected=FL_Default, multiple=FALSE)
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Filter Values ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Filter Values 1a
+  output$FilterValue_1a <- shiny::renderUI({
+    params <- list(data=eval(temp()), VarName = input[['FilterVariable_1']], type = 1)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML:::FilterValues, params)
+    RemixAutoML::PickerInput(InputID='FilterValue_1a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
+  })
+
+  # Filter Values 1b
+  output$FilterValue_1b <- shiny::renderUI({
+    params <- list(data=eval(temp()), VarName = input[['FilterVariable_1']], type = 2)
+    Mult <- do.call(RemixAutoML:::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML:::FilterValues, params)
+    RemixAutoML::PickerInput(InputID='FilterValue_1b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
+  })
+
+  # Filter Values 2a
+  output$FilterValue_2a <- shiny::renderUI({
+    params <- list(data=eval(temp()), VarName = input[['FilterVariable_2']], type = 1)
+    Mult <- do.call(RemixAutoML:::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML:::FilterValues, params)
+    RemixAutoML::PickerInput(InputID='FilterValue_2a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
+  })
+
+  # Filter Values 2b
+  output$FilterValue_2b <- shiny::renderUI({
+    if(!is.null(names(ModelList$TestData))) temp <- ModelList$TestData else temp <- ML_TrainData
+    params <- list(data=temp, VarName = input[['FilterVariable_2']], type = 2)
+    Mult <- do.call(RemixAutoML:::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML:::FilterValues, params)
+    RemixAutoML::PickerInput(InputID='FilterValue_2b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
+  })
+
+  # Filter Values 3a
+  output$FilterValue_3a <- shiny::renderUI({
+    params <- list(data=eval(temp()), VarName = input[['FilterVariable_3']], type = 1)
+    Mult <- do.call(RemixAutoML:::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML:::FilterValues, params)
+    RemixAutoML::PickerInput(InputID='FilterValue_3a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
+  })
+
+  # Filter Values 3b
+  output$FilterValue_3b <- shiny::renderUI({
+    params <- list(data=eval(temp()), VarName = input[['FilterVariable_3']], type = 2)
+    Mult <- do.call(RemixAutoML:::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML:::FilterValues, params)
+    RemixAutoML::PickerInput(InputID='FilterValue_3b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
+  })
+
+  # Filter Values 4a
+  output$FilterValue_4a <- shiny::renderUI({
+    params <- list(data=eval(temp()), VarName = input[['FilterVariable_4']], type = 1)
+    Mult <- do.call(RemixAutoML:::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML:::FilterValues, params)
+    RemixAutoML::PickerInput(InputID='FilterValue_4a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
+  })
+
+  # Filter Values 4b
+  output$FilterValue_4b <- shiny::renderUI({
+    if(!is.null(names(ModelList$TestData))) temp <- ModelList$TestData else temp <- ML_TrainData
+    params <- list(data=temp, VarName = input[['FilterVariable_4']], type = 2)
+    Mult <- do.call(RemixAutoML:::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML:::FilterValues, params)
+    RemixAutoML::PickerInput(InputID='FilterValue_4b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # ByVariables ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   output$ModelInsights_ByVariables1  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables1", Label="By-Variables (1)", Choices = c("None", names(ModelList$TestData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables1", Label="By-Variables (1)", Choices = c("None", names(eval(temp()))), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_ByVariables2  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables2", Label="By-Variables (2)", Choices = c("None", names(ModelList$TestData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables2", Label="By-Variables (2)", Choices = c("None", names(eval(temp()))), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_ByVariables3  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables3",Label="By-Variables (3)", Choices = c("None", names(ModelList$TestData)), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables3",Label="By-Variables (3)", Choices = c("None", names(eval(temp()))), SelectedDefault = "None", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ByVariable levels
   output$ModelInsights_ByVariables1Levels <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables1Levels", Label="Select Levels (1)", Choices = if(!is.null(ModelList$TestData) && !is.null(input$ModelInsights_ByVariables1)) sort(unique(as.character(ModelList$TestData[[eval(input$ModelInsights_ByVariables1)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables1Levels", Label="Select Levels (1)", Choices = if(!is.null(eval(temp())) && !is.null(input$ModelInsights_ByVariables1)) sort(unique(as.character(eval(temp())[[eval(input$ModelInsights_ByVariables1)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_ByVariables2Levels <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables2Levels", Label="Select Levels (2)", Choices = if(!is.null(ModelList$TestData) && !is.null(input$ModelInsights_ByVariables2)) sort(unique(as.character(ModelList$TestData[[eval(input$ModelInsights_ByVariables2)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables2Levels", Label="Select Levels (2)", Choices = if(!is.null(eval(temp())) && !is.null(input$ModelInsights_ByVariables2)) sort(unique(as.character(eval(temp())[[eval(input$ModelInsights_ByVariables2)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_ByVariables3Levels <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables3Levels", Label="Select Levels (3)", Choices = if(!is.null(ModelList$TestData) && !is.null(input$ModelInsights_ByVariables3)) sort(unique(as.character(ModelList$TestData[[eval(input$ModelInsights_ByVariables3)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID="ModelInsights_ByVariables3Levels", Label="Select Levels (3)", Choices = if(!is.null(eval(temp())) && !is.null(input$ModelInsights_ByVariables3)) sort(unique(as.character(eval(temp())[[eval(input$ModelInsights_ByVariables3)]]))) else NULL, SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
-  # Plot Options
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Plot Options ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   output$ModelInsights_PlotBuckets  <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID="ModelInsights_PlotBuckets", Label="# Buckets for Plots", Min = 5, Max = 100, Step = 5, Value = 20)
   })
@@ -317,10 +567,54 @@ server <- shiny::shinyServer(function(input, output, session) {
     RemixAutoML::PickerInput(InputID = "ModelInsights_PlotOptions", Label = "Select Plot Option", Choices = sort(unique(c(names(ModelList$PlotList), names(ModelList$VariableImportance)))), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # ModelInsights - Visualization ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # EvaluationPlot
   shiny::observeEvent(eventExpr = input[['ML_Plot']], {
+
+    # Remove NA's
+    if(Debug) print('remove NA')
+    temp <- shiny::isolate(eval(temp()))[!is.na(get(input[['ModelInsights_TargetVariable']]))]
+
+    # Filter by Date
+    if(Debug) print('Filter by Date')
+    if(!is.null(input$ModelInsights_DateVariable)) {
+      temp <- temp[get(input$ModelInsights_DateVariable) <= eval(input[['DateMax']]) & get(input$ModelInsights_DateVariable) >= eval(input[['DateMin']])]
+    }
+
+    # Subset by FilterVariable_1
+    if(Debug) print('Subset by FilterVariable_1')
+    if(input[['FilterVariable_1']] != 'None') {
+      fv <- input[['FilterValue_1b']]
+      if(Debug) print(fv)
+      if(Debug) print(input[['FilterLogic_1']])
+      if(Debug) print(temp)
+      temp <- RemixAutoML::FilterLogicData(temp, input, FilterLogic=input[['FilterLogic_1']], FilterVariable=input[['FilterVariable_1']], FilterValue=input[['FilterValue_1a']], FilterValue2=fv, Debug = Debug)
+      if(Debug) print(temp)
+    }
+
+    # Subset by FilterVariable_2
+    if(Debug) print('Subset by FilterVariable_2')
+    if(input[['FilterVariable_2']] != 'None') {
+      fv <- input[['FilterValue_2b']]
+      temp <- RemixAutoML::FilterLogicData(temp, input, FilterLogic=input[['FilterLogic_2']], FilterVariable=input[['FilterVariable_2']], FilterValue=input[['FilterValue_2a']], FilterValue2=fv)
+    }
+
+    # Subset by FilterVariable_3
+    if(Debug) print('Subset by FilterVariable_3')
+    if(input[['FilterVariable_3']] != 'None') {
+      fv <- input[['FilterValue_3b']]
+      temp <- RemixAutoML::FilterLogicData(temp, input, FilterLogic=input[['FilterLogic_3']], FilterVariable=input[['FilterVariable_3']], FilterValue=input[['FilterValue_3a']], FilterValue2=fv)
+    }
+
+    # Subset by FilterVariable_4
+    if(Debug) print('Subset by FilterVariable_4')
+    if(input[['FilterVariable_4']] != 'None') {
+      fv <- input[['FilterValue_4b']]
+      temp <- RemixAutoML::FilterLogicData(temp, input, FilterLogic=input[['FilterLogic_4']], FilterVariable=input[['FilterVariable_4']], FilterValue=input[['FilterValue_4a']], FilterValue2=fv)
+    }
 
     # Subset check ----
     if(Debug) print('Subset check ----')
@@ -341,7 +635,7 @@ server <- shiny::shinyServer(function(input, output, session) {
          (!is.null(input$ModelInsights_ByVariables2) && !is.null(input$ModelInsights_ByVariables2Levels)) &&
          (!is.null(input$ModelInsights_ByVariables3) && !is.null(input$ModelInsights_ByVariables3Levels))) {
         if(Debug) print('All')
-        temp <- ModelList$TestData[
+        temp <- temp[
           get(input$ModelInsights_ByVariables1) %in% c(eval(input$ModelInsights_ByVariables1Levels)) &
             get(input$ModelInsights_ByVariables2) %in% c(eval(input$ModelInsights_ByVariables2Levels)) &
             get(input$ModelInsights_ByVariables3) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
@@ -352,7 +646,7 @@ server <- shiny::shinyServer(function(input, output, session) {
          is.null(input$ModelInsights_ByVariables2) &&
          (!is.null(input$ModelInsights_ByVariables3) && !is.null(input$ModelInsights_ByVariables3Levels))) {
         if(Debug) print('2v1')
-        temp <- ModelList$TestData[
+        temp <- temp[
           get(input$ModelInsights_ByVariables1) %in% c(eval(input$ModelInsights_ByVariables1Levels)) &
             get(input$ModelInsights_ByVariables3) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
       }
@@ -361,7 +655,7 @@ server <- shiny::shinyServer(function(input, output, session) {
       if((!is.null(input$ModelInsights_ByVariables1) && !is.null(input$ModelInsights_ByVariables1Levels)) &&
          (!is.null(input$ModelInsights_ByVariables2) && !is.null(input$ModelInsights_ByVariables2Levels)) &&
          is.null(input$ModelInsights_ByVariables3)) {
-        temp <- ModelList$TestData[
+        temp <- temp[
           get(input$ModelInsights_ByVariables1) %in% c(eval(input$ModelInsights_ByVariables1Levels)) &
             get(input$ModelInsights_ByVariables2) %in% c(eval(input$ModelInsights_ByVariables2Levels))]
       }
@@ -371,7 +665,7 @@ server <- shiny::shinyServer(function(input, output, session) {
          (!is.null(input$ModelInsights_ByVariables2) && !is.null(input$ModelInsights_ByVariables2Levels)) &&
          (!is.null(input$ModelInsights_ByVariables3) && !is.null(input$ModelInsights_ByVariables3Levels))) {
         if(Debug) print('2v3')
-        temp <- ModelList$TestData[
+        temp <- temp[
           get(input$ModelInsights_ByVariables2) %in% c(eval(input$ModelInsights_ByVariables2Levels)) &
             get(input$ModelInsights_ByVariables3) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
       }
@@ -380,31 +674,31 @@ server <- shiny::shinyServer(function(input, output, session) {
       if((!is.null(input$ModelInsights_ByVariables1) && !is.null(input$ModelInsights_ByVariables1Levels)) &&
          is.null(input$ModelInsights_ByVariables2) && is.null(input$ModelInsights_ByVariables3)) {
         if(Debug) print('1v1')
-        temp <- ModelList$TestData[get(eval(input$ModelInsights_ByVariables1)) %in% c(eval(input$ModelInsights_ByVariables1Levels))]
+        temp <- temp[get(eval(input$ModelInsights_ByVariables1)) %in% c(eval(input$ModelInsights_ByVariables1Levels))]
       }
 
       # 1V2
       if(is.null(input$ModelInsights_ByVariables1) && is.null(input$ModelInsights_ByVariables3) &&
          (!is.null(input$ModelInsights_ByVariables2) && !is.null(input$ModelInsights_ByVariables2Levels))) {
         if(Debug) print('1v2')
-        temp <- ModelList$TestData[get(eval(input$ModelInsights_ByVariables2)) %in% c(eval(input$ModelInsights_ByVariables2Levels))]
+        temp <- temp[get(eval(input$ModelInsights_ByVariables2)) %in% c(eval(input$ModelInsights_ByVariables2Levels))]
       }
 
       # 1V3
       if(is.null(input$ModelInsights_ByVariables1) && is.null(input$ModelInsights_ByVariables2) &&
          (!is.null(input$ModelInsights_ByVariables3) && !is.null(input$ModelInsights_ByVariables3Levels))) {
         if(Debug) print('1v3')
-        temp <- ModelList$TestData[get(eval(input$ModelInsights_ByVariables3)) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
+        temp <- temp[get(eval(input$ModelInsights_ByVariables3)) %in% c(eval(input$ModelInsights_ByVariables3Levels))]
       }
 
       # 3V1
       if(is.null(input$ModelInsights_ByVariables1) && is.null(input$ModelInsights_ByVariables2) && is.null(input$ModelInsights_ByVariables3)) {
         if(Debug) print('3v1')
-        temp <- ModelList$TestData
+        temp <- temp
       }
     } else {
       if(Debug) print('else')
-      temp <- ModelList$TestData
+      temp <- temp
     }
 
     # Evaluation Plot ----

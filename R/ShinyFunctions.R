@@ -1,3 +1,237 @@
+#' Search for object with specific class in an environment
+#'
+#' @param what a class to look for
+#' @param env An environment
+#'
+#' @return Character vector of the names of objects, NULL if none
+#' @noRd
+#'
+#' @examples
+#'
+#' # NULL if no data.frame
+#' search_obj("data.frame")
+#'
+#' library(ggplot2)
+#' data("mpg")
+#' search_obj("data.frame")
+#'
+#'
+#' gg <- ggplot()
+#' search_obj("ggplot")
+#'
+search_obj <- function(what = "data.frame", env = globalenv()) {
+  all <- ls(name = env)
+  objs <- lapply(
+    X = all,
+    FUN = function(x) {
+      if (inherits(get(x, envir = env), what = what)) {
+        x
+      } else {
+        NULL
+      }
+    }
+  )
+  objs <- unlist(objs)
+  if (length(objs) == 1 && objs == "") {
+    NULL
+  } else {
+    objs
+  }
+}
+
+#' Tag to display code
+#'
+#' @param ... Character strings
+#'
+#' @noRd
+rCodeContainer <- function(...) {
+  code <- htmltools::HTML(as.character(tags$code(class = "language-r", ...)))
+  htmltools::tags$div(htmltools::tags$pre(code))
+}
+
+#' @title UniqueLevels
+#'
+#' @param input passthrough
+#' @param data data.table
+#' @param GroupVars passthrough
+#'
+#' @export
+UniqueLevels <- function(input, data, n, GroupVars=NULL) {
+  if(is.null(GroupVars[[n]]) || is.na(GroupVars[[n]])) {
+    x <- NULL
+  } else {
+    x <- tryCatch({
+      c(sort(unique(data[[eval(GroupVars[[n]])]])))}, error = function(x)  NULL)
+  }
+  x
+}
+
+#' @title FilterValues
+#'
+#' @param data data.table
+#' @param VarName Variable name
+#' @param type 1 for min, 2 for max
+#'
+#' @export
+FilterValues <- function(data, VarName = input[['FilterVariable_1']], type = 1) {
+  if(tolower(class(data[[eval(VarName)]]) %chin% c('numeric', 'integer'))) {
+    x <- unique(as.numeric(sort(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])))
+  } else if(tolower(class(data[[eval(VarName)]])) %chin% c('factor', 'character')) {
+    x <- sort(data[, unique(get(VarName))])
+  } else {
+    x <- NULL
+  }
+  x
+}
+
+#' @title FilterLogicData
+#'
+#' @param data1 data.table
+#' @param input passthrough
+#' @param FilterLogic passthrough
+#' @param FilterVariable passthrough
+#' @param FilterValue passthrough
+#' @param FilterValue2 passthrough
+#'
+#' @export
+FilterLogicData <- function(data1, input, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
+  if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')) {
+    if(Debug) print('FilterLogicData else if')
+    if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character'))
+    if(FilterLogic == '%in%') {
+      data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
+    } else if(input[[eval(FilterLogic)]] == '%like%') {
+      data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
+    }
+  } else if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
+    if(Debug) print('FilterLogicData else if')
+    if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))
+    if(FilterLogic == '>') {
+      data1 <- data1[get(FilterVariable) > eval(as.numeric(FilterValue))]
+    } else if(FilterLogic == '>=') {
+      data1 <- data1[get(FilterVariable) >= eval(as.numeric(FilterValue))]
+    } else if(FilterLogic == '<') {
+      data1 <- data1[get(FilterVariable) < eval(as.numeric(FilterValue2))]
+    } else if(FilterLogic == '%between%') {
+      if(Debug) print('At %between% section')
+      if(Debug) print(as.numeric(FilterVariable))
+      if(Debug) print(as.numeric(FilterValue))
+      if(Debug) print(as.numeric(FilterValue2))
+      if(Debug) print(data1)
+      if(Debug) print('Run data.table operation')
+      data1 <- data1[get(FilterVariable) >= eval(as.numeric(FilterValue)) & get(FilterVariable) <= eval(as.numeric(FilterValue2))]
+      if(Debug) print('Done with data.table operation')
+      if(Debug) print(data1)
+    } else if(FilterLogic == 'not %between%') {
+      data1 <- data1[get(FilterVariable) < eval(as.numeric(FilterValue)) | get(FilterVariable) > eval(as.numeric(FilterValue2))]
+    } else {
+      data1 <- data1[get(FilterVariable) <= eval(as.numeric(FilterValue2))]
+    }
+  }
+  data1
+}
+
+#' @title KeyVarsInit
+#'
+#' @param data data.table
+#' @param VarName Variable name
+#' @param type 1 for min, 2 for max
+#'
+#' @export
+KeyVarsInit <- function(data, VarName = NULL, type = 1) {
+  if(!is.null(VarName) && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
+    minn <- tryCatch({floor(data[, min(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
+    maxx <- tryCatch({ceiling(data[, max(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
+    choices <- tryCatch({unique(as.character(round(as.numeric(sort(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])), 5L)))}, error = function(x) {
+      tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
+    })
+  } else if(!is.null(VarName) && any(c('Date','IDate','POSIXct','POSIXt','character','factor') %chin% class(data[[(eval(VarName))]][[1L]]))) {
+    choices <- tryCatch({unique(data[[eval(VarName)]])}, error = function(x) NULL)
+    maxx <- tryCatch({data[, max(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
+    minn <- tryCatch({data[, min(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
+  } else {
+    minn <- NULL
+    maxx <- NULL
+    choices <- NULL
+  }
+  return(list(MinVal = minn, MaxVal = maxx, ChoiceInput = choices))
+}
+
+#' @title GetFilterValueLabel
+#'
+#' @param data data.table
+#' @param VarName Variable name
+#' @param type 1 for min, 2 for max
+#'
+#' @export
+GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
+  if((!is.null(VarName) || tolower(VarName) != 'None') && !is.null(data)) {
+    if(is.numeric(data[[eval(VarName)]])) {
+      if(type == 1) x <- 'Min Value' else x <- 'Max Value'
+    }  else {
+      x <- 'Select Levels'
+    }
+  } else {
+    x <- 'N/A'
+  }
+  x
+}
+
+#' @title GetFilterValueMultiple
+#'
+#' @param data data.table
+#' @param VarName Variable name
+#' @param type 1 for min, 2 for max
+#'
+#' @export
+GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
+  if((!is.null(VarName) || tolower(VarName) != 'None') && !is.null(data)) {
+    if(!is.numeric(data[[eval(VarName)]])) x <- TRUE else x <- FALSE
+  } else {
+    x <- FALSE
+  }
+  x
+}
+
+#' @title CharNull
+#'
+#' @param x Value
+#'
+#' @export
+CharNull <- function(x) {
+  if(!is.null(x)) {
+    return(as.character(x))
+  } else {
+    return(NULL)
+  }
+}
+
+#' @title NumNull
+#'
+#' @param x value
+#'
+#' @export
+NumNull <- function(x) {
+  if(!is.null(x)) {
+    return(as.numeric(x))
+  } else {
+    return(NULL)
+  }
+}
+
+#' @title IntNull
+#'
+#' @param x value
+#'
+#' @export
+IntNull <- function(x) {
+  if(!is.null(x)) {
+    return(as.integer(x))
+  } else {
+    return(NULL)
+  }
+}
+
 #' Assign a data.table by name from an environment
 #'
 #' @param df character, name of the object

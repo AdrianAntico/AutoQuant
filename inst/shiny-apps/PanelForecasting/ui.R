@@ -1228,28 +1228,6 @@ shinydashboard::dashboardPage(
               shiny::column(
                 width = 12,
                 RemixAutoML::BlankRow(12),
-                shinydashboard::box(
-                  title = tagList(shiny::icon("filter", lib = "font-awesome"), "Variables of Interest"),
-                  solidHeader = TRUE,
-                  collapsible = TRUE,
-                  background = "navy",
-                  width = 12,
-
-                  # -- ADD SPACE ----
-                  RemixAutoML::BlankRow(12),
-
-                  # Model Input Variables ----
-                  #RemixAutoML::BlankRow(12),
-                  shiny::fluidRow(
-                    shiny::column(
-                      width = 4,
-                      shiny::uiOutput("ModelInsights_ScoreVariable")),
-                    shiny::column(
-                      width = 4,
-                      shiny::uiOutput("ModelInsights_TargetVariable")),
-                    shiny::column(
-                      width = 4,
-                      shiny::uiOutput("ModelInsights_DateVariable")))),
 
                 # Select ByVariables ----
                 RemixAutoML::BlankRow(12),
@@ -1286,7 +1264,93 @@ shinydashboard::dashboardPage(
                       width = 4,
                       shiny::uiOutput("ModelInsights_ByVariables3Levels")))),
 
-                # -- ADD SPACE ----
+                # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+                # Variables ----
+                # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+                # X, Y, and Date Variables Box
+                shiny::fluidRow(
+                  shiny::column(
+                    width = 12L,
+                    shinyjs::useShinyjs(),
+                    shinydashboard::box(
+                      title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Plotting Variables'),
+                      solidHeader = TRUE,
+                      collapsible = TRUE,
+                      collapsed = FALSE,
+                      background = 'blue',
+                      width = 12L,
+
+                      # Select the Y-Variable
+                      shiny::fluidRow(
+                        shiny::column(3L, shiny::uiOutput("ModelInsights_TargetVariable")),
+                        shiny::column(3L, shiny::uiOutput('YMin')),
+                        shiny::column(3L, shiny::uiOutput('YMax'))),
+
+                      # Select the X-Variable
+                      shiny::fluidRow(
+                        shiny::column(3L, shiny::uiOutput("ModelInsights_ScoreVariable")),
+                        shiny::column(3L, shiny::uiOutput('XMin')),
+                        shiny::column(3L, shiny::uiOutput('XMax'))),
+
+                      # Select the X-Variable
+                      shiny::fluidRow(
+                        shiny::column(3L, shiny::uiOutput("ModelInsights_DateVariable")),
+                        shiny::column(3L, shiny::uiOutput('DateMin')),
+                        shiny::column(3L, shiny::uiOutput('DateMax')))))),
+
+                # Add Space
+                RemixAutoML::BlankRow(12L),
+
+                # Filter Variable Box
+                shiny::fluidRow(
+                  shiny::column(
+                    width = 12L,
+                    shinyjs::useShinyjs(),
+                    shinydashboard::box(
+                      title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Data Filtering'),
+                      solidHeader = TRUE,
+                      collapsible = TRUE,
+                      collapsed = FALSE,
+                      background = 'blue',
+                      width = 12L,
+
+                      # Select FilterVariable_1x
+                      shiny::fluidRow(
+                        shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
+                        shiny::column(3L, shiny::uiOutput('FilterLogic_1')),
+                        shiny::column(3L, shiny::uiOutput('FilterValue_1a')),
+                        shiny::column(3L, shiny::uiOutput('FilterValue_1b'))),
+
+                      # Select FilterVariable_1x
+                      shiny::fluidRow(
+                        shiny::column(3L, shiny::uiOutput('FilterVariable_2')),
+                        shiny::column(3L, shiny::uiOutput('FilterLogic_2')),
+                        shiny::column(3L, shiny::uiOutput('FilterValue_2a')),
+                        shiny::column(3L, shiny::uiOutput('FilterValue_2b'))),
+
+                      # Select FilterVariable_1x
+                      shiny::fluidRow(
+                        shiny::column(3L, shiny::uiOutput('FilterVariable_3')),
+                        shiny::column(3L, shiny::uiOutput('FilterLogic_3')),
+                        shiny::column(3L, shiny::uiOutput('FilterValue_3a')),
+                        shiny::column(3L, shiny::uiOutput('FilterValue_3b'))),
+
+                      # Select FilterVariable_1x
+                      shiny::fluidRow(
+                        shiny::column(3L, shiny::uiOutput('FilterVariable_4')),
+                        shiny::column(3L, shiny::uiOutput('FilterLogic_4')),
+                        shiny::column(3L, shiny::uiOutput('FilterValue_4a')),
+                        shiny::column(3L, shiny::uiOutput('FilterValue_4b')))))),
+
+                # Add Space
+                RemixAutoML::BlankRow(12L),
+
+                # ----
+
+                # ----
+
+                # -- ML Evaluation Plots ----
                 RemixAutoML::BlankRow(12),
                 shinydashboard::box(
                   title = tagList(shiny::icon("database", lib = "font-awesome"), "ML Evaluation Plots"),
@@ -1325,16 +1389,6 @@ shinydashboard::dashboardPage(
 
                   # ML Plot ----
                   shiny::plotOutput("ML_OutputPlot", width = "100%"))))))),
-
-
-
-
-
-
-
-
-
-
 
       # PANEL FORECASTING Create Project Tab ----
       shinydashboard::tabItem(

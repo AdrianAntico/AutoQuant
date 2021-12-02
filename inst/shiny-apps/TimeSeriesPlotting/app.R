@@ -564,7 +564,7 @@ server <- function(input, output, session) {
     Output <- KeyVarsInit(data, VarName = eval(YVar()))
     maxxy <- Output[['MaxVal']]
     choices <- Output[['ChoiceInput']]
-    if(Debug) print(maxxy)
+    if(Debug) {print(maxxy); print(data[[eval(YVar())]][1:5])}
     RemixAutoML::PickerInput(
       InputID = 'YMax',
       Label = 'Max Y-Value',
@@ -1272,6 +1272,8 @@ server <- function(input, output, session) {
             TextColor = input[['TextColor']],
             GridColor = input[['GridColor']],
             BackGroundColor = input[['BackGroundColor']]))
+          p1 <- p1 + ggplot2::ylim(as.numeric(eval(shiny::isolate(input[['YMin']]))), as.numeric(eval(shiny::isolate(input[['YMax']]))))
+          p1 <- p1 + ggplot2::xlim(as.numeric(eval(shiny::isolate(input[['XMin']]))), as.numeric(eval(shiny::isolate(input[['XMax']]))))
 
         } else if(shiny::isolate(input[['PlotType']] %chin% c('Copula'))) {
 
