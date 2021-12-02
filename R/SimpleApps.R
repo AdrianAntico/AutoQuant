@@ -1,9 +1,9 @@
-#' @title Apps_Plotting
+#' @title AppsPlotting
 #'
 #' @description Simple shiny app for viewing time series plots with box plots or line plots. You can use up to 3 categorical variables to filter by and one additional variable to filter as a bonus. You'll need to have shiny, shinyWidgets, htmltools
 #'
 #' @author Adrian Antico
-#' @family Shiny
+#' @family GUI
 #'
 #' @param data Source data.table
 #' @param XVariable Starter column name for x-variable. Not needed if x-axis is the DateName column
@@ -111,5 +111,41 @@ AppsPlotting <- function(data,
     Debug = Debug)
 
   # Run shiny app
-  shiny::shinyAppDir(appDir = system.file("shiny-apps", "TimeSeriesPlotting", package = 'RemixAutoML'))
+  shiny::shinyAppDir(appDir = system.file('shiny-apps', 'TimeSeriesPlotting', package = 'RemixAutoML'))
+}
+
+#' @title RunRemixAutoML
+#'
+#' @description GUI for running RemixAutoML functions. Time series evaluation and forecasting, machine learning, etc.
+#'
+#' @author Adrian Antico
+#'
+#' @family GUI
+#'
+#' @export
+RunRemixAutoML <- function(data = NULL, ModelOutput = NULL, TargetName = NULL, PredictName = NULL, DateName = NULL, Debug = FALSE) {
+
+  # Pass args to shiny app
+  shiny::shinyOptions(
+    data = data,
+    ModelOutput = ModelOutput,
+    TargetName = TargetName,
+    PredictName = PredictName,
+    DateName = DateName,
+    Debug = Debug)
+  shiny::shinyAppDir(appDir = system.file('shiny-apps', 'PanelForecasting', package = 'RemixAutoML'))
+  #shiny::runApp(appDir, display.mode = "normal", launch.browser = TRUE)
+}
+
+#' @title FeatureEngineering
+#'
+#' @description Feature Engineering Script
+#'
+#' @author Adrian Antico
+#'
+#' @family GUI
+#'
+#' @noRd
+FeatureEngineering <- function() {
+  source(file.path(system.file("shiny-apps", "myapp", package = "RemixAutoML"), "Feature_Engineering.R"))
 }

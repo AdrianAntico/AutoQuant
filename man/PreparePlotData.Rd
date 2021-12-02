@@ -64,7 +64,6 @@ PreparePlotData automatically builds a picker input with tryCatch's and ProjectL
 }
 \seealso{
 Other Shiny: 
-\code{\link{AppsPlotting}()},
 \code{\link{ArgNullCheck2}()},
 \code{\link{ArgNullCheck}()},
 \code{\link{BlankRow}()},

@@ -17,6 +17,14 @@ data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
 data.table::getDTthreads(verbose = TRUE)
 Local <- TRUE
 
+ML_TrainData <- shiny::getShinyOption('data')
+ModelList <- shiny::getShinyOption('ModelOutput')
+ArgsList <- ModelList$ArgsList
+TargetVariable <- shiny::getShinyOption('TargetName')
+PredictName <- shiny::getShinyOption('PredictName')
+DateName <- shiny::getShinyOption('DateName')
+Debug <- shiny::getShinyOption('Debug')
+
 # Server begin
 server <- shiny::shinyServer(function(input, output, session) {
 
@@ -211,17 +219,41 @@ server <- shiny::shinyServer(function(input, output, session) {
   # . ----
 
   # ModelInsights - Load Model Objects Tab: Load Model Output List ----
-  RemixAutoML::observeEventLoad(input, InputVal = "ML_ModelOutputList", ObjectName = "ModelList")
+  # shiny::observeEvent(eventExpr = input[['ML_ModelOutputList']], {
+  #   if(Debug) print('here 1')
+  #   inFile <- input[['ML_ModelOutputList']]
+  #   if(Debug) print('here 2')
+  #   e = new.env()
+  #   if(Debug) print('here 3')
+  #   name <- load(inFile$datapath, envir = e)
+  #   if(Debug) print('here 4')
+  #   assign(x = 'ModelList', value = e[[name]], envir = .GlobalEnv)
+  #   if(Debug) print('here 5')
+  # })
 
   # ModelInsights - Load Model Objects Tab: Load Training Data
-  ML_TrainData <<- RemixAutoML::ReactiveLoadCSV(input, InputVal = "ML_TrainData")
-  ML_ShapTable <<- RemixAutoML::ReactiveLoadCSV(input, InputVal = "ML_ShapTable")
+  # shiny::observeEvent(eventExpr = input[['ML_TrainData']], {
+  #   ML_TrainData <- RemixAutoML::ReactiveLoadCSV(input, InputVal = 'ML_TrainData')
+  # })
+  shiny::observeEvent(eventExpr = input[['ML_ShapTable']], {
+    ML_ShapTable <- RemixAutoML::ReactiveLoadCSV(input, InputVal = 'ML_ShapTable')
+  })
 
   # ModelInsights - Load Model Objects Tab: Load Model Output List ----
-  RemixAutoML::observeEventLoad(input, InputVal = "ML_ArgsList", ObjectName = "ArgsList")
+  # shiny::observeEvent(eventExpr = input[['ML_ArgsList']], {
+  #   inFile <- input[['ML_ArgsList']]
+  #   e = new.env()
+  #   name <- load(inFile$datapath, envir = e)
+  #   assign(x = 'ArgsList', value = e[[name]], envir = .GlobalEnv)
+  # })
 
-  # ModelInsights - Load Model Objects Tab: Load Training Data
-  ML_WarehouseData <<- RemixAutoML::ReactiveLoadCSV(input, InputVal = "ML_TrainData")
+  # ModelInsights - Load Model Objects Tab: Load Shap Table ----
+  shiny::observeEvent(eventExpr = input[['ML_ShapTable']], {
+    inFile <- input[['ML_ShapTable']]
+    e = new.env()
+    name <- load(inFile$datapath, envir = e)
+    assign(x = 'ML_ShapTable', value = e[[name]], envir = .GlobalEnv)
+  })
 
   # Next and Previous Buttons ----
   shiny::observeEvent(eventExpr = input$link_model_insights_load, {
@@ -235,13 +267,13 @@ server <- shiny::shinyServer(function(input, output, session) {
 
   # ModelInsights - Visualization Tab: Variables of Interest ----
   output$ModelInsights_ScoreVariable <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_ScoreVariable", Label = "Select Predicted Column", Choices = if("p1" %chin% names(ModelList$ValidationData)) "p1" else names(ModelList$ValidationData), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = "ModelInsights_ScoreVariable", Label = "Select Predicted Column", Choices = PredictName, SelectedDefault = PredictName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_TargetVariable <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_TargetVariable", Label = "Select Target Column", Choices = names(ModelList$ValidationData), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = "ModelInsights_TargetVariable", Label = "Select Target Column", Choices = TargetVariable, SelectedDefault = TargetVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_DateVariable <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_DateVariable",Label = "Select Date Column", Choices = names(ModelList$ValidationData), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = "ModelInsights_DateVariable",Label = "Select Date Column", Choices = DateName, SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$ModelInsights_IndependentVariable <- shiny::renderUI({
     RemixAutoML::PickerInput(InputID = "ModelInsights_IndependentVariable",Label = "Select Independent Variable Column", Choices = c(ModelList$ColNames[[1L]]), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
@@ -276,7 +308,7 @@ server <- shiny::shinyServer(function(input, output, session) {
 
   # Plot Type
   output$ModelInsights_PlotOptions  <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = "ModelInsights_PlotOptions",Label = "Select Plot Option", Choices = c("EvaluationPlot", "EvaluationBoxPlot", "PartialDependencePlot", "PartialDependenceBoxPlot", "ROC_Plot", "GainsPlot", "LiftPlot", "VariableImportance", "ShapPlot"), SelectedDefault = "EvaluationPlot", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = "ModelInsights_PlotOptions",Label = "Select Plot Option", Choices = names(ModelList$PlotList), SelectedDefault = NULL, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ModelInsights - Visualization ----
@@ -725,9 +757,9 @@ server <- shiny::shinyServer(function(input, output, session) {
   # Panel Forecasting - DATA IMPORT ----
 
   # New Project: Load Train Data ----
-  TimeSeriesData <- RemixAutoML::ReactiveLoadCSV(input, InputVal = "TimeSeriesData", ProjectList = ProjectList, DateUpdateName = "SourceDataCreateDate", RemoveObjects = c("SourceData","TimeSeriesFillCheck"))
-  XREGS <- RemixAutoML::ReactiveLoadCSV(input, InputVal = "XREGS", ProjectList = ProjectList, DateUpdateName = "SourceXREGSCreateDate", RemoveObjects = c("XREGS","TimeSeriesFillCheck1"))
-  Eval <- RemixAutoML::ReactiveLoadCSV(input, InputVal = "Eval", ProjectList = ProjectList, DateUpdateName = "SourceEvalCreateDate", RemoveObjects = c("EvalData","TimeSeriesFillCheck2"))
+  TimeSeriesData <- shiny::reactive({RemixAutoML::ReactiveLoadCSV(input, InputVal = "TimeSeriesData", ProjectList = ProjectList, DateUpdateName = "SourceDataCreateDate", RemoveObjects = c("SourceData","TimeSeriesFillCheck"))})
+  XREGS <- shiny::reactive({RemixAutoML::ReactiveLoadCSV(input, InputVal = "XREGS", ProjectList = ProjectList, DateUpdateName = "SourceXREGSCreateDate", RemoveObjects = c("XREGS","TimeSeriesFillCheck1"))})
+  Eval <- shiny::reactive({RemixAutoML::ReactiveLoadCSV(input, InputVal = "Eval", ProjectList = ProjectList, DateUpdateName = "SourceEvalCreateDate", RemoveObjects = c("EvalData","TimeSeriesFillCheck2"))})
 
   # UI Selection Boxes ----
   output$TS_SourceData <- shiny::renderUI({

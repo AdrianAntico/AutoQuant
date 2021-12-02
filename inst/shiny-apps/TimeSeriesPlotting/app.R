@@ -41,26 +41,6 @@ search_obj <- function(what = "data.frame", env = globalenv()) {
   }
 }
 
-#' Retrieve a data.frame by name from an environment
-#'
-#' @param df character, name of the object
-#' @param env an environment
-#'
-#' @return the object
-#' @noRd
-#'
-#' @importFrom utils data
-#'
-get_df <- function(df, env = globalenv()) {
-  if (df %in% ls(name = env)) {
-    get(x = df, envir = env)
-  } else if (df %in% data(package = "ggplot2", envir = environment())$results[, "Item"]) {
-    get(utils::data(list = df, package = "ggplot2", envir = environment()))
-  } else {
-    NULL
-  }
-}
-
 #' Tag to display code
 #'
 #' @param ... Character strings
@@ -594,7 +574,7 @@ server <- function(input, output, session) {
     RemixAutoML::PickerInput(
       InputID = 'YMax',
       Label = 'Max Y-Value',
-      Choices = CharNull(c(minn, seq(minn, maxx, 1+floor((maxx-minn)/20)), maxx)),
+      Choices = CharNull(choices),
       SelectedDefault = CharNull(maxx),
       Multiple = FALSE)
   })
@@ -1335,5 +1315,12 @@ server <- function(input, output, session) {
 
 }
 
+# ----
+
+# ----
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Run the application ----
 shinyApp(ui = ui, server = server)
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----

@@ -25,7 +25,6 @@ ArgValue <<- RemixAutoML::ArgNullCheck2(Input = input, InputID = "TS_Value", Def
 }
 \seealso{
 Other Shiny: 
-\code{\link{AppsPlotting}()},
 \code{\link{ArgNullCheck}()},
 \code{\link{BlankRow}()},
 \code{\link{DateInput}()},

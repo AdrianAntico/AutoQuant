@@ -2,7 +2,7 @@
 % Please edit documentation in R/SimpleApps.R
 \name{AppsPlotting}
 \alias{AppsPlotting}
-\title{Apps_Plotting}
+\title{AppsPlotting}
 \usage{
 AppsPlotting(
   data,
@@ -110,23 +110,10 @@ RemixAutoML::AppsPlotting(
 
 }
 \seealso{
-Other Shiny: 
-\code{\link{ArgNullCheck2}()},
-\code{\link{ArgNullCheck}()},
-\code{\link{BlankRow}()},
-\code{\link{DateInput}()},
-\code{\link{GenerateEvaluationMetrics}()},
-\code{\link{NumericInput}()},
-\code{\link{PickerInput_GetLevels}()},
-\code{\link{PickerInput}()},
-\code{\link{PreparePlotData}()},
-\code{\link{ReactiveLoadCSV}()},
-\code{\link{ReturnParam}()},
-\code{\link{StoreArgs}()},
-\code{\link{TextInput}()},
-\code{\link{observeEventLoad}()}
+Other GUI: 
+\code{\link{RunRemixAutoML}()}
 }
 \author{
 Adrian Antico
 }
-\concept{Shiny}
+\concept{GUI}

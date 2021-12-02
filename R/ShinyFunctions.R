@@ -1,3 +1,18 @@
+#' Assign a data.table by name from an environment
+#'
+#' @param df character, name of the object
+#' @param env an environment
+#'
+#' @return the object
+#' @export
+AssignData <- function(data, env = globalenv()) {
+  if(data %in% ls(name = env)) {
+    get(x = data, envir = env)
+  } else {
+    NULL
+  }
+}
+
 #' @title BlankRow
 #'
 #' @description BlankRow add blank row with width w
@@ -53,13 +68,12 @@ observeEventLoad <- function(input, InputVal = NULL, ObjectName = NULL) {
 #'
 #' @export
 ReactiveLoadCSV <- function(input, InputVal = NULL, ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL) {
-  shiny::reactive({
-    inFile <- input[[eval(InputVal)]]
-    if(is.null(inFile)) return(NULL)
-    if(!is.null(ProjectList)) ProjectList[[eval(DateUpdateName)]] <<- Sys.Date()
-    if(!is.null(RemoveObjects)) for(i in seq_along(RemoveObjects)) if(exists(RemoveObjects[i])) rm(RemoveObjects[i])
-    data.table::fread(file = inFile$datapath)
-  })
+  inFile <- input[[eval(InputVal)]]
+  if(is.null(inFile)) return(NULL)
+  if(!is.null(ProjectList)) ProjectList[[eval(DateUpdateName)]] <<- Sys.Date()
+  if(!is.null(RemoveObjects)) for(i in seq_along(RemoveObjects)) if(exists(RemoveObjects[i])) rm(RemoveObjects[i])
+  x <- data.table::fread(file = inFile$datapath)
+  return(x)
 }
 
 #' @title Store Args values within a project

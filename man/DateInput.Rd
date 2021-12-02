@@ -45,7 +45,6 @@ output$TS_Date <- renderUI({
 }
 \seealso{
 Other Shiny: 
-\code{\link{AppsPlotting}()},
 \code{\link{ArgNullCheck2}()},
 \code{\link{ArgNullCheck}()},
 \code{\link{BlankRow}()},
