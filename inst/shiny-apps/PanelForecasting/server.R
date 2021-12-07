@@ -970,10 +970,10 @@ server <- shiny::shinyServer(function(input, output, session) {
       if(!Check && Check2 && !is.null(ModelList$PlotList$Test_ParDepPlots[[eval(input$ModelInsights_IndependentVariable)]])) {
         output$ML_OutputPlot <- shiny::renderPlot({
           p1 <- ModelList$PlotList$Test_ParDepPlots[[eval(input$ModelInsights_IndependentVariable)]]
-          p1 <- p1 + ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']])))
-          p1$layers[[6]] <- NULL
-          p1$layers[[5]] <- NULL
-          p1$layers[[4]] <- NULL
+          p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
+          p1$layers[[6L]] <- NULL
+          p1$layers[[5L]] <- NULL
+          p1$layers[[4L]] <- NULL
           p1
         })
       } else {
@@ -987,10 +987,10 @@ server <- shiny::shinyServer(function(input, output, session) {
             PercentileBucket = 1 / input$ModelInsights_PlotBuckets,
             FactLevels = 10,
             Function = function(x) mean(x, na.rm = TRUE))
-          p1 <- p1 + ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']])))
-          p1$layers[[6]] <- NULL
-          p1$layers[[5]] <- NULL
-          p1$layers[[4]] <- NULL
+          p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
+          p1$layers[[6L]] <- NULL
+          p1$layers[[5L]] <- NULL
+          p1$layers[[4L]] <- NULL
           p1
         })
       }
@@ -1001,10 +1001,10 @@ server <- shiny::shinyServer(function(input, output, session) {
       if(!Check && Check2 && !is.null(ModelList$PlotList$Train_ParDepPlots[[eval(input$ModelInsights_IndependentVariable)]])) {
         output$ML_OutputPlot <- shiny::renderPlot({
           p1 <- ModelList$PlotList$Train_ParDepPlots[[eval(input$ModelInsights_IndependentVariable)]]
-          p1 <- p1 + ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']])))
-          p1$layers[[6]] <- NULL
-          p1$layers[[5]] <- NULL
-          p1$layers[[4]] <- NULL
+          p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
+          p1$layers[[6L]] <- NULL
+          p1$layers[[5L]] <- NULL
+          p1$layers[[4L]] <- NULL
           p1
         })
       } else {
@@ -1018,10 +1018,10 @@ server <- shiny::shinyServer(function(input, output, session) {
             PercentileBucket = 1 / input$ModelInsights_PlotBuckets,
             FactLevels = 10,
             Function = function(x) mean(x, na.rm = TRUE))
-          p1 <- p1 + ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']])))
-          p1$layers[[6]] <- NULL
-          p1$layers[[5]] <- NULL
-          p1$layers[[4]] <- NULL
+          p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
+          p1$layers[[6L]] <- NULL
+          p1$layers[[5L]] <- NULL
+          p1$layers[[4L]] <- NULL
           p1
         })
       }
@@ -1035,7 +1035,7 @@ server <- shiny::shinyServer(function(input, output, session) {
         })
       } else {
         output$ML_OutputPlot <- shiny::renderPlot({
-          RemixAutoML::ParDepCalPlots(
+          p1 <- RemixAutoML::ParDepCalPlots(
             data = temp,
             PredictionColName = input$ModelInsights_ScoreVariable,
             TargetColName = input$ModelInsights_TargetVariable,
@@ -1044,6 +1044,11 @@ server <- shiny::shinyServer(function(input, output, session) {
             PercentileBucket = 1 / input$ModelInsights_PlotBuckets,
             FactLevels = 10,
             Function = function(x) mean(x, na.rm = TRUE))
+          p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
+          p1$layers[[6L]] <- NULL
+          p1$layers[[5L]] <- NULL
+          p1$layers[[4L]] <- NULL
+          p1
         })
       }
     }
@@ -1056,7 +1061,7 @@ server <- shiny::shinyServer(function(input, output, session) {
         })
       } else {
         output$ML_OutputPlot <- shiny::renderPlot({
-          RemixAutoML::ParDepCalPlots(
+          p1 <- RemixAutoML::ParDepCalPlots(
             data = temp,
             PredictionColName = input$ModelInsights_ScoreVariable,
             TargetColName = input$ModelInsights_TargetVariable,
@@ -1065,6 +1070,11 @@ server <- shiny::shinyServer(function(input, output, session) {
             PercentileBucket = 1 / input$ModelInsights_PlotBuckets,
             FactLevels = 10,
             Function = function(x) mean(x, na.rm = TRUE))
+          p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
+          p1$layers[[6L]] <- NULL
+          p1$layers[[5L]] <- NULL
+          p1$layers[[4L]] <- NULL
+          p1
         })
       }
     }

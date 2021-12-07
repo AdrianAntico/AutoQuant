@@ -12,7 +12,8 @@ PickerInput(
   Size = 10,
   SelectedText = "count > 1",
   Multiple = TRUE,
-  ActionBox = TRUE
+  ActionBox = TRUE,
+  Debug = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ PickerInput(
 \item{Multiple}{Feeds multiple for enabling selecting more than one element from list}
 
 \item{ActionBox}{Feeds actions-box for option list}
+
+\item{Debug}{FALSE}
 }
 \value{
 PickerInput object for server.R to go into renderUI({PickerInput()})

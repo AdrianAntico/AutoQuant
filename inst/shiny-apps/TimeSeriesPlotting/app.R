@@ -1,192 +1,14 @@
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# Environment Setup ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 library(data.table)
-
-#' Search for object with specific class in an environment
-#'
-#' @param what a class to look for
-#' @param env An environment
-#'
-#' @return Character vector of the names of objects, NULL if none
-#' @noRd
-#'
-#' @examples
-#'
-#' # NULL if no data.frame
-#' search_obj("data.frame")
-#'
-#' library(ggplot2)
-#' data("mpg")
-#' search_obj("data.frame")
-#'
-#'
-#' gg <- ggplot()
-#' search_obj("ggplot")
-#'
-search_obj <- function(what = "data.frame", env = globalenv()) {
-  all <- ls(name = env)
-  objs <- lapply(
-    X = all,
-    FUN = function(x) {
-      if (inherits(get(x, envir = env), what = what)) {
-        x
-      } else {
-        NULL
-      }
-    }
-  )
-  objs <- unlist(objs)
-  if (length(objs) == 1 && objs == "") {
-    NULL
-  } else {
-    objs
-  }
-}
-
-#' Tag to display code
-#'
-#' @param ... Character strings
-#'
-#' @noRd
-rCodeContainer <- function(...) {
-  code <- htmltools::HTML(as.character(tags$code(class = "language-r", ...)))
-  htmltools::tags$div(htmltools::tags$pre(code))
-}
-
-#'@noRd
-UniqueLevels <- function(input, data, n, GroupVars=NULL) {
-  if(is.null(GroupVars[[n]]) || is.na(GroupVars[[n]])) {
-    x <- NULL
-  } else {
-    x <- tryCatch({
-      c(sort(unique(data[[eval(GroupVars[[n]])]])))}, error = function(x)  NULL)
-  }
-  x
-}
-
-#' @noRd
-FilterValues <- function(data, VarName = input[['FilterVariable_1']], type = 1) {
-  if(tolower(class(data[[eval(VarName)]]) %chin% c('numeric', 'integer'))) {
-    x <- unique(as.numeric(sort(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])))
-  } else if(tolower(class(data[[eval(VarName)]])) %chin% c('factor', 'character')) {
-    x <- sort(data[, unique(get(VarName))])
-  } else {
-    x <- NULL
-  }
-  x
-}
-
-#' @noRd
-FilterLogicData <- function(data1, input, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
-  if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')) {
-    if(Debug) print('FilterLogicData else if')
-    if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character'))
-    if(FilterLogic == '%in%') {
-      data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
-    } else if(input[[eval(FilterLogic)]] == '%like%') {
-      data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
-    }
-  } else if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
-    if(Debug) print('FilterLogicData else if')
-    if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))
-    if(FilterLogic == '>') {
-      data1 <- data1[get(FilterVariable) > eval(as.numeric(FilterValue))]
-    } else if(FilterLogic == '>=') {
-      data1 <- data1[get(FilterVariable) >= eval(as.numeric(FilterValue))]
-    } else if(FilterLogic == '<') {
-      data1 <- data1[get(FilterVariable) < eval(as.numeric(FilterValue2))]
-    } else if(FilterLogic == '%between%') {
-      if(Debug) print('At %between% section')
-      if(Debug) print(as.numeric(FilterVariable))
-      if(Debug) print(as.numeric(FilterValue))
-      if(Debug) print(as.numeric(FilterValue2))
-      if(Debug) print(data1)
-      if(Debug) print('Run data.table operation')
-      data1 <- data1[get(FilterVariable) >= eval(as.numeric(FilterValue)) & get(FilterVariable) <= eval(as.numeric(FilterValue2))]
-      if(Debug) print('Done with data.table operation')
-      if(Debug) print(data1)
-    } else if(FilterLogic == 'not %between%') {
-      data1 <- data1[get(FilterVariable) < eval(as.numeric(FilterValue)) | get(FilterVariable) > eval(as.numeric(FilterValue2))]
-    } else {
-      data1 <- data1[get(FilterVariable) <= eval(as.numeric(FilterValue2))]
-    }
-  }
-  data1
-}
-
-#' @noRd
-KeyVarsInit <- function(data, VarName = NULL, type = 1) {
-  if(!is.null(VarName) && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
-    minn <- tryCatch({floor(data[, min(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
-    maxx <- tryCatch({ceiling(data[, max(get(eval(VarName)), na.rm = TRUE)])}, error = function(x) NULL)
-    choices <- tryCatch({unique(as.character(round(as.numeric(sort(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])), 5L)))}, error = function(x) {
-      tryCatch({unique(data[[eval(VarName)]])}, error = NULL)
-    })
-  } else if(!is.null(VarName) && any(c('Date','IDate','POSIXct','POSIXt','character','factor') %chin% class(data[[(eval(VarName))]][[1L]]))) {
-    choices <- tryCatch({unique(data[[eval(VarName)]])}, error = function(x) NULL)
-    maxx <- tryCatch({data[, max(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
-    minn <- tryCatch({data[, min(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
-  } else {
-    minn <- NULL
-    maxx <- NULL
-    choices <- NULL
-  }
-  return(list(MinVal = minn, MaxVal = maxx, ChoiceInput = choices))
-}
-
-#' @noRd
-GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
-  if((!is.null(VarName) || tolower(VarName) != 'None') && !is.null(data)) {
-    if(is.numeric(data[[eval(VarName)]])) {
-      if(type == 1) x <- 'Min Value' else x <- 'Max Value'
-    }  else {
-      x <- 'Select Levels'
-    }
-  } else {
-    x <- 'N/A'
-  }
-  x
-}
-
-#' @noRd
-GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
-  if((!is.null(VarName) || tolower(VarName) != 'None') && !is.null(data)) {
-    if(!is.numeric(data[[eval(VarName)]])) x <- TRUE else x <- FALSE
-  } else {
-    x <- FALSE
-  }
-  x
-}
-
-#' @noRd
-CharNull <- function(x) {
-  if(!is.null(x)) {
-    return(as.character(x))
-  } else {
-    return(NULL)
-  }
-}
-
-#' @noRd
-NumNull <- function(x) {
-  if(!is.null(x)) {
-    return(as.numeric(x))
-  } else {
-    return(NULL)
-  }
-}
-
-#' @noRd
-IntNull <- function(x) {
-  if(!is.null(x)) {
-    return(as.integer(x))
-  } else {
-    return(NULL)
-  }
-}
-
-# Turn up horsepower
 data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
+options(shiny.maxRequestSize = 300000*1024^2)
+options(scipen = 999)
 
-# Passthrough Args
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# Passthrough Args ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
 # data related
 data <- shiny::getShinyOption('data')
@@ -209,10 +31,6 @@ CreatePlotButtonColor <- shiny::getShinyOption('CreatePlotButtonColor')
 UpdatePlotButtonColor <- shiny::getShinyOption('UpdatePlotButtonColor')
 ResetPlotButtonColor <- shiny::getShinyOption('ResetPlotButtonColor')
 Debug <- shiny::getShinyOption('Debug')
-
-# Global settings
-options(shiny.maxRequestSize = 300000*1024^2)
-options(scipen = 999)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Create ui ----
@@ -288,8 +106,9 @@ ui <- shinydashboard::dashboardPage(
 
           # Select GroupVariables
           shiny::column(3L, shiny::uiOutput('GroupVars')),
-          shiny::column(3L, shiny::uiOutput('FacetRow')),
-          shiny::column(3L, shiny::uiOutput('FacetCol')),
+          shiny::column(3L, shiny::uiOutput('FacetVar1')),
+          shiny::column(3L, shiny::uiOutput('FacetVar2')),
+          shiny::column(3L, shiny::uiOutput('SizeVar1')),
 
           # Add Space
           RemixAutoML::BlankRow(AppWidth),
@@ -435,7 +254,8 @@ ui <- shinydashboard::dashboardPage(
           shiny::fluidRow(
             shiny::column(3L, shiny::uiOutput('PlotWidth')),
             shiny::column(3L, shiny::uiOutput('PlotHeight')),
-            shiny::column(3L, shiny::uiOutput('DateTicks'))),
+            shiny::column(3L, shiny::uiOutput('XTicks')),
+            shiny::column(3L, shiny::uiOutput('YTicks'))),
           shiny::fluidRow(
             shiny::column(3L, shiny::uiOutput('AngleY')),
             shiny::column(3L, shiny::uiOutput('TextSize')),
@@ -535,82 +355,89 @@ server <- function(input, output, session) {
 
   # YMin
   output$YMin <- shiny::renderUI({
-    Output <- KeyVarsInit(data, VarName = eval(YVar()))
-    minn <- Output[['MinVal']]
-    choices <- Output[['ChoiceInput']]
+    if(Debug) print('YMin  PickerInput')
+    outvals1 <- RemixAutoML::KeyVarsInit(data, VarName = eval(YVar()))
+    minn <- outvals1[['MinVal']]
+    choices <- outvals1[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'YMin',
       Label = 'Min Y-Value',
-      Choices = CharNull(choices),
-      SelectedDefault = CharNull(minn),
-      Multiple = FALSE)
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(choices[1L]),
+      Multiple = FALSE,
+      Debug = Debug)
   })
 
   # XMin
   output$XMin <- shiny::renderUI({
-    Output <- KeyVarsInit(data, VarName = eval(XVar()))
-    minnx <- Output[['MinVal']]
-    choices <- Output[['ChoiceInput']]
+    if(Debug) print('XMin  PickerInput')
+    outvals2 <- RemixAutoML::KeyVarsInit(data, VarName = eval(XVar()))
+    choices <- outvals2[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'XMin',
       Label = 'Min X-Value',
-      Choices = CharNull(choices),
-      SelectedDefault = CharNull(minnx),
-      Multiple = FALSE)
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(choices[1L]),
+      Multiple = FALSE,
+      Debug = Debug)
   })
 
   # YMax
   output$YMax <- shiny::renderUI({
-    Output <- KeyVarsInit(data, VarName = eval(YVar()))
-    maxxy <- Output[['MaxVal']]
-    choices <- Output[['ChoiceInput']]
-    if(Debug) {print(maxxy); print(data[[eval(YVar())]][1:5])}
+    if(Debug) print('YMax  PickerInput')
+    outvals3 <- RemixAutoML::KeyVarsInit(data, VarName = eval(YVar()))
+    maxxy <- outvals3[['MaxVal']]
+    choices <- outvals3[['ChoiceInput']]
+    if(Debug) print(maxxy)
     RemixAutoML::PickerInput(
       InputID = 'YMax',
       Label = 'Max Y-Value',
-      Choices = CharNull(choices),
-      SelectedDefault = CharNull(maxxy),
-      Multiple = FALSE)
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(choices[length(choices)]),
+      Multiple = FALSE,
+      Debug = Debug)
   })
 
   # XMax
   output$XMax <- shiny::renderUI({
-    Output <- KeyVarsInit(data, VarName = eval(XVar()))
-    maxxxx <- Output[['MaxVal']]
-    choices <- Output[['ChoiceInput']]
+    if(Debug) print('XMax  PickerInput')
+    outvals4 <- RemixAutoML::KeyVarsInit(data, VarName = eval(XVar()))
+    choices <- outvals4[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'XMax',
       Label = 'Max X-Value',
-      Choices = CharNull(choices),
-      SelectedDefault = CharNull(maxxxx),
-      Multiple = FALSE)
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(choices[length(choices)]),
+      Multiple = FALSE,
+      Debug = Debug)
   })
 
   # DateMin
   output$DateMin <- shiny::renderUI({
-    Output <- KeyVarsInit(data, VarName = eval(DateVar()))
-    minnd <- Output[['MinVal']]
-    choices <- Output[['ChoiceInput']]
+    if(Debug) print('DateMin  PickerInput')
+    outvals5 <- RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar()))
+    choices <- outvals5[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'DateMin',
       Label = 'Min Date-Value',
-      Choices = CharNull(choices),
-      SelectedDefault = CharNull(minnd),
-      Multiple = FALSE)
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(choices[1L]),
+      Multiple = FALSE,
+      Debug = Debug)
   })
 
   # DateMax
   output$DateMax <- shiny::renderUI({
-    Output <- KeyVarsInit(data, VarName = eval(DateVar()))
-    minnx <- Output[['MinVal']]
-    maxxx <- Output[['MaxVal']]
-    choices <- Output[['ChoiceInput']]
+    if(Debug) print('DateMax PickerInput')
+    outvals6 <- RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar()))
+    choices <- outvals6[['ChoiceInput']]
     RemixAutoML::PickerInput(
       InputID = 'DateMax',
       Label = 'Max Date-Value',
-      Choices = CharNull(choices),
-      SelectedDefault = CharNull(maxxx),
-      Multiple = FALSE)
+      Choices = RemixAutoML::CharNull(choices),
+      SelectedDefault = RemixAutoML::CharNull(choices[length(choices)]),
+      Multiple = FALSE,
+      Debug = Debug)
   })
 
   # ----
@@ -629,15 +456,7 @@ server <- function(input, output, session) {
     RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = '# of Levels', Step = 1L, Value = 5L, Min = 1L, Max = 100L)
   })
   output$GamFitScatter <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'GamFitScatter', Label = 'Fit Gam on Scatterplot', Choices = c('TRUE', 'FALSE'), SelectedDefault = FALSE, Multiple = FALSE, ActionBox = TRUE)
-  })
-
-  # Faceting
-  output$FacetRow <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'FacetRow', Label = 'Facet Row Variable', Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-  })
-  output$FacetCol <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'FacetCol', Label = 'Facet Col Variable', Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'GamFitScatter', Label = 'Fit Gam on Scatter or Copula', Choices = c('TRUE', 'FALSE'), SelectedDefault = FALSE, Multiple = FALSE, ActionBox = TRUE)
   })
 
   # UI Plot Options
@@ -647,8 +466,26 @@ server <- function(input, output, session) {
   output$PlotHeight <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = "PlotHeight", Label = 'Plot Height', Step = 25, Min = 350, Max = 350*10, Value = 500)
   })
-  output$DateTicks <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'DateTicks', Label = 'Date ticks x-axis', Choices = c('1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'), SelectedDefault = '1 year', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  output$YTicks <- shiny::renderUI({
+    Uniques <- data[, unique(get(YVar()))]
+    if(any(class(data[[eval(YVar())]]) %in% c('numeric','integer')) && Uniques > 10L) {
+      choices <- c('Default', 'percentiles', '5th-tiles', 'Deciles', 'Quantiles', 'Quartiles', as.character(data[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]))
+    } else {
+      choices <- c('Default', Uniques)
+    }
+    RemixAutoML::PickerInput(InputID = 'YTicks', Label = 'Y-Axis Ticks', Choices = choices, SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+  })
+  output$XTicks <- shiny::renderUI({
+    Uniques <- data[, unique(get(XVar()))]
+    if(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS','Line')) {
+      choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
+      default <- '1 year'
+    } else if(any(class(data[[eval(XVar())]]) %in% c('numeric','integer')) && length(Uniques) > 10L) {
+      choices <- choices <- c('Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles', as.character(data[, quantile(round(get(XVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]))
+    } else {
+      choices <- c('Default', Uniques)
+    }
+    RemixAutoML::PickerInput(InputID = 'XTicks', Label = 'X-Axis Ticks', Choices = choices, SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
   output$AngleY <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = 'AngleY', Label = 'Y-axis text angle', Step = 5, Min = 0, Max = 360, Value = 0)
@@ -691,8 +528,8 @@ server <- function(input, output, session) {
     RemixAutoML::PickerInput(
       InputID = 'GroupVars',
       Label = 'Select Group Variables',
-      Choices = names(data),
-      SelectedDefault = GroupVariables,
+      Choices = c('None', names(data)),
+      SelectedDefault = if(!is.null(GroupVariables)) GroupVariables else 'None',
       SelectedText = 'count > 1',
       Multiple = TRUE,
       ActionBox = TRUE)
@@ -703,7 +540,7 @@ server <- function(input, output, session) {
     RemixAutoML::ReturnParam(
       input,
       VarName = 'GroupVars',
-      Default = GroupVariables,
+      Default = if(!is.null(GroupVariables)) GroupVariables else 'None',
       Switch = TRUE,
       Type = 'character')
   })
@@ -713,7 +550,7 @@ server <- function(input, output, session) {
     if(Debug) print('PickerInput_GetLevels 1')
     if(Debug) print(SelectedGroups())
     if(Debug) print('here')
-    if(Debug) print(UniqueLevels(input, data, 1L, GroupVars=SelectedGroups()))
+    if(Debug) print(RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=SelectedGroups()))
     if(Debug) print('here 1')
     RemixAutoML::PickerInput_GetLevels(
       input,
@@ -721,7 +558,7 @@ server <- function(input, output, session) {
       NumGroupVar = 1L,
       InputID = 'Levels_1',
       InputID2 = 'GroupVars',
-      Choices = UniqueLevels(input, data, 1L, GroupVars=SelectedGroups()),
+      Choices = RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=SelectedGroups()),
       SelectedDefault = NULL,
       Size = 9,
       SelectedText = 'count > 1',
@@ -738,7 +575,7 @@ server <- function(input, output, session) {
       NumGroupVar = 2L,
       InputID = 'Levels_2',
       InputID2 = 'GroupVars',
-      Choices = UniqueLevels(input, data, 2L, GroupVars=SelectedGroups()),
+      Choices = RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=SelectedGroups()),
       SelectedDefault = NULL,
       Size = 9,
       SelectedText = 'count > 1',
@@ -755,12 +592,30 @@ server <- function(input, output, session) {
       NumGroupVar = 3L,
       InputID = 'Levels_3',
       InputID2 = 'GroupVars',
-      Choices = UniqueLevels(input, data, 3L, GroupVars=SelectedGroups()),
+      Choices = RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=SelectedGroups()),
       SelectedDefault = NULL,
       Size = 10,
       SelectedText = "count > 1",
       Multiple = TRUE,
       ActionBox = TRUE)
+  })
+
+  # Faceting
+  output$FacetVar1 <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'FacetVar1', Label = 'Facet Variable 1', Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$FacetVar2 <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'FacetVar2', Label = 'Facet Variable 2', Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+
+  # Coloring
+  output$ColorVar1 <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'ColorVar1', Label = 'Color Variable', Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+
+  # Sizing
+  output$SizeVar1 <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'SizeVar1', Label = 'Size Variable', Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ----
@@ -838,72 +693,72 @@ server <- function(input, output, session) {
   # Filter Values 1a
   output$FilterValue_1a <- shiny::renderUI({
     params <- list(data=data, VarName = input[['FilterVariable_1']], type = 1)
-    Mult <- do.call(GetFilterValueMultiple, params)
-    Lab <- do.call(GetFilterValueLabel, params)
-    FilterUnique <- do.call(FilterValues, params)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML::FilterValues, params)
     RemixAutoML::PickerInput(InputID='FilterValue_1a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
   })
 
   # Filter Values 1b
   output$FilterValue_1b <- shiny::renderUI({
     params <- list(data=data, VarName = input[['FilterVariable_1']], type = 2)
-    Mult <- do.call(GetFilterValueMultiple, params)
-    Lab <- do.call(GetFilterValueLabel, params)
-    FilterUnique <- do.call(FilterValues, params)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML::FilterValues, params)
     RemixAutoML::PickerInput(InputID='FilterValue_1b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
   })
 
   # Filter Values 2a
   output$FilterValue_2a <- shiny::renderUI({
     params <- list(data=data, VarName = input[['FilterVariable_2']], type = 1)
-    Mult <- do.call(GetFilterValueMultiple, params)
-    Lab <- do.call(GetFilterValueLabel, params)
-    FilterUnique <- do.call(FilterValues, params)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML::FilterValues, params)
     RemixAutoML::PickerInput(InputID='FilterValue_2a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
   })
 
   # Filter Values 2b
   output$FilterValue_2b <- shiny::renderUI({
     params <- list(data=data, VarName = input[['FilterVariable_2']], type = 2)
-    Mult <- do.call(GetFilterValueMultiple, params)
-    Lab <- do.call(GetFilterValueLabel, params)
-    FilterUnique <- do.call(FilterValues, params)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML::FilterValues, params)
     RemixAutoML::PickerInput(InputID='FilterValue_2b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
   })
 
   # Filter Values 3a
   output$FilterValue_3a <- shiny::renderUI({
     params <- list(data=data, VarName = input[['FilterVariable_3']], type = 1)
-    Mult <- do.call(GetFilterValueMultiple, params)
-    Lab <- do.call(GetFilterValueLabel, params)
-    FilterUnique <- do.call(FilterValues, params)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML::FilterValues, params)
     RemixAutoML::PickerInput(InputID='FilterValue_3a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
   })
 
   # Filter Values 3b
   output$FilterValue_3b <- shiny::renderUI({
     params <- list(data=data, VarName = input[['FilterVariable_3']], type = 2)
-    Mult <- do.call(GetFilterValueMultiple, params)
-    Lab <- do.call(GetFilterValueLabel, params)
-    FilterUnique <- do.call(FilterValues, params)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML::FilterValues, params)
     RemixAutoML::PickerInput(InputID='FilterValue_3b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
   })
 
   # Filter Values 4a
   output$FilterValue_4a <- shiny::renderUI({
     params <- list(data=data, VarName = input[['FilterVariable_4']], type = 1)
-    Mult <- do.call(GetFilterValueMultiple, params)
-    Lab <- do.call(GetFilterValueLabel, params)
-    FilterUnique <- do.call(FilterValues, params)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML::FilterValues, params)
     RemixAutoML::PickerInput(InputID='FilterValue_4a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
   })
 
   # Filter Values 4b
   output$FilterValue_4b <- shiny::renderUI({
     params <- list(data=data, VarName = input[['FilterVariable_4']], type = 2)
-    Mult <- do.call(GetFilterValueMultiple, params)
-    Lab <- do.call(GetFilterValueLabel, params)
-    FilterUnique <- do.call(FilterValues, params)
+    Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+    Lab <- do.call(RemixAutoML::GetFilterValueLabel, params)
+    FilterUnique <- do.call(RemixAutoML::FilterValues, params)
     RemixAutoML::PickerInput(InputID='FilterValue_4b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
   })
 
@@ -916,81 +771,130 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['ResetPlotThemeElements']], {
 
-    # Update chart theme elements
-    p1 <- shiny::isolate(p1 + RemixAutoML::ChartTheme(
-      Size = 12,
-      AngleX = 90,
-      AngleY = 0,
-      ChartColor = 'lightsteelblue1',
-      BorderColor = 'darkblue',
-      TextColor = 'darkblue',
-      GridColor = 'white',
-      BackGroundColor = 'gray95') +
-        ggplot2::theme(legend.title = ggplot2::element_blank()))
+    if(!exists('p1') || !exists('data1')) {
 
-    # Update labels
-    if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinTS'))) {
-      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['DateTicks']]))
-      p1 <- shiny::isolate(p1 + ggplot2::labs(
-        title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
-        subtitle = 'Blue line = mean(Y)',
-        caption = 'by RemixAutoML') +
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = "Try Create Plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+
+    } else {
+
+      # Update chart theme elements
+      p1 <- shiny::isolate(p1 + RemixAutoML::ChartTheme(
+        Size = 12,
+        AngleX = 90,
+        AngleY = 0,
+        ChartColor = 'lightsteelblue1',
+        BorderColor = 'darkblue',
+        TextColor = 'darkblue',
+        GridColor = 'white',
+        BackGroundColor = 'gray95') +
+          ggplot2::theme(legend.title = ggplot2::element_blank()))
+
+      # Update labels
+      if(input[['PlotType']] %chin% c('BoxPlotTS','ViolinTS')) {
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_date(date_breaks = as.numeric(input[['XTicks']]))
+        p1 <- p1 + ggplot2::labs(
+          title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
+          subtitle = 'Blue line = mean(Y)',
+          caption = 'by RemixAutoML') +
           ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateVar()))
-    } else if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
-      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['DateTicks']]))
-      p1 <- shiny::isolate(p1 + ggplot2::labs(
-        title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
-        caption = 'by RemixAutoML') +
+          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(DateVar()))
+      } else if(input[['PlotType']] %chin% c('Line')) {
+        if(!'Default' %in% input[['XTicks']]) {
+          p1 <- p1 + ggplot2::scale_x_date(date_breaks = as.numeric(input[['XTicks']]))
+        }
+        p1 <- p1 + ggplot2::labs(
+          title = paste0(input[['PlotType']], ' Plot'),
+          caption = 'by RemixAutoML') +
           ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateVar()))
-    } else if(shiny::isolate(input[['PlotType']] %chin% c('Scatter','Copula'))) {
-      p1 <- shiny::isolate(p1 + ggplot2::labs(
-        title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
-        caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(YVar())) + ggplot2::xlab(XVar()))
+          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(DateVar()))
+      } else if(input[['PlotType']] %chin% c('Scatter','Copula')) {
+
+        # Labs
+        p1 <- p1 + ggplot2::labs(
+          title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
+          caption = 'by RemixAutoML') +
+          ggplot2::ylim(as.numeric(input[['YMin']]), as.numeric(input[['YMax']])) +
+          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(XVar()))
+
+        # Tick Marks
+        if('Percentiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        } else if('Every 5th percentile' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
+        } else if('Deciles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
+        } else if('Quantiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
+        } else if('Quartiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
+        } else {
+          y_vals <- input[['YTicks']]
+        }
+        if('Percentiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(XVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        } else if('Every 5th percentile' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
+        } else if('Deciles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
+        } else if('Quantiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
+        } else if('Quartiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
+        } else {
+          x_vals <- input[['XTicks']]
+        }
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
+        if(!'Default' %in% input[['YTicks']]) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+      }
+
+      # UI Plot Options ----
+      output$PlotWidth <- shiny::renderUI({
+        RemixAutoML::NumericInput(InputID = "PlotWidth", Label = 'Plot Width', Step = 50, Min = 800, Max = 1800, Value = 1600)
+      })
+      output$PlotHeight <- shiny::renderUI({
+        RemixAutoML::NumericInput(InputID = "PlotHeight", Label = 'Plot Height', Step = 25, Min = 350, Max = 350*10, Value = 500)
+      })
+      output$AngleY <- shiny::renderUI({
+        RemixAutoML::NumericInput(InputID = "AngleY", Label = "Y-axis text angle", Step = 5, Min = 0, Max = 360, Value = 0)
+      })
+      output$AngleX <- shiny::renderUI({
+        RemixAutoML::NumericInput(InputID = "AngleX", Label = "X-axis text angle", Step = 5, Min = 0, Max = 360, Value = 90)
+      })
+      output$TextSize <- shiny::renderUI({
+        RemixAutoML::NumericInput(InputID = "TextSize", Label = "Text size", Step = 1, Min = 1, Max = 50, Value = 12)
+      })
+
+      # Color boxes ----
+      output$TextColor <- shiny::renderUI({
+        RemixAutoML::PickerInput(InputID = "TextColor", Label = "Text color", Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      })
+      output$ChartColor <- shiny::renderUI({
+        RemixAutoML::PickerInput(InputID = "ChartColor", Label = "Chart color", Choices = grDevices::colors(), SelectedDefault = "lightsteelblue1", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      })
+      output$GridColor <- shiny::renderUI({
+        RemixAutoML::PickerInput(InputID = "GridColor", Label = "Grid lines color", Choices = grDevices::colors(), SelectedDefault = "white", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      })
+      output$BackGroundColor <- shiny::renderUI({
+        RemixAutoML::PickerInput(InputID = "BackGroundColor", Label = "Background color", Choices = grDevices::colors(), SelectedDefault = "gray95", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      })
+      output$BorderColor <- shiny::renderUI({
+        RemixAutoML::PickerInput(InputID = "BorderColor", Label = "Border color", Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      })
+
+      # Return
+      p1 <<- p1
+      output$Trend <- shiny::renderPlot(width = input[['PlotWidth']], height = input[['PlotHeight']], {
+        p1
+      })
     }
-
-    # UI Plot Options ----
-    output$PlotWidth <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "PlotWidth", Label = 'Plot Width', Step = 50, Min = 800, Max = 1800, Value = 1600)
-    })
-    output$PlotHeight <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "PlotHeight", Label = 'Plot Height', Step = 25, Min = 350, Max = 350*10, Value = 500)
-    })
-    output$AngleY <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "AngleY", Label = "Y-axis text angle", Step = 5, Min = 0, Max = 360, Value = 0)
-    })
-    output$AngleX <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "AngleX", Label = "X-axis text angle", Step = 5, Min = 0, Max = 360, Value = 90)
-    })
-    output$TextSize <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "TextSize", Label = "Text size", Step = 1, Min = 1, Max = 50, Value = 12)
-    })
-
-    # Color boxes ----
-    output$TextColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = "TextColor", Label = "Text color", Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-    })
-    output$ChartColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = "ChartColor", Label = "Chart color", Choices = grDevices::colors(), SelectedDefault = "lightsteelblue1", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-    })
-    output$GridColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = "GridColor", Label = "Grid lines color", Choices = grDevices::colors(), SelectedDefault = "white", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-    })
-    output$BackGroundColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = "BackGroundColor", Label = "Background color", Choices = grDevices::colors(), SelectedDefault = "gray95", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-    })
-    output$BorderColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = "BorderColor", Label = "Border color", Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-    })
-
-    # Return
-    p1 <<- p1
-    output$Trend <- shiny::renderPlot(width = shiny::isolate(input[['PlotWidth']]), height = shiny::isolate(input[['PlotHeight']]), {
-      p1
-    })
   })
 
   # ----
@@ -1002,47 +906,92 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['UpdatePlotThemeElements']], {
 
-    # Update chart theme elements
-    p1 <- shiny::isolate(p1 + RemixAutoML::ChartTheme(
-      Size = input[['TextSize']],
-      AngleX = input[['AngleX']],
-      AngleY = input[['AngleY']],
-      ChartColor = input[['ChartColor']],
-      BorderColor = input[['BorderColor']],
-      TextColor = input[['TextColor']],
-      GridColor = input[['GridColor']],
-      BackGroundColor = input[['BackGroundColor']]) +
-        ggplot2::theme(legend.title = ggplot2::element_blank()))
+    if(!exists('p1') || !exists('data1')) {
 
-    # Update labels
-    if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS'))) {
-      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['DateTicks']]))
-      p1 <- shiny::isolate(p1 + ggplot2::labs(
-        title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
-        subtitle = 'Blue line = mean(Y)',
-        caption = 'by RemixAutoML') +
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = "Try Create Plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+
+    } else {
+
+      # Update chart theme elements
+      p1 <- shiny::isolate(p1 + RemixAutoML::ChartTheme(
+        Size = input[['TextSize']],
+        AngleX = input[['AngleX']],
+        AngleY = input[['AngleY']],
+        ChartColor = input[['ChartColor']],
+        BorderColor = input[['BorderColor']],
+        TextColor = input[['TextColor']],
+        GridColor = input[['GridColor']],
+        BackGroundColor = input[['BackGroundColor']]) +
+          ggplot2::theme(legend.title = ggplot2::element_blank()))
+
+      # Update labels
+      if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS'))) {
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_date(date_breaks = input[['XTicks']])
+        p1 <- p1 + ggplot2::labs(
+          title = paste0(input[['PlotType']], ' Plot'),
+          subtitle = 'Blue line = mean(Y)',
+          caption = 'by RemixAutoML') +
+          ggplot2::ylim(as.numeric(input[['YMin']]), as.numeric(input[['YMax']])) +
+          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(DateVar()))
+      } else if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_date(date_breaks = input[['XTicks']])
+        p1 <- p1 + ggplot2::labs(
+          title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
+          caption = 'by RemixAutoML') +
+          ggplot2::ylim(as.numeric(input[['YMin']]), as.numeric(input[['YMax']])) +
+          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(DateVar()))
+      } else if(shiny::isolate(input[['PlotType']] %chin% c('Scatter','Copula'))) {
+        p1 <- p1 + ggplot2::labs(
+          title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
+          caption = 'by RemixAutoML') +
           ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateVar()))
-    } else if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
-      p1 <- p1 + ggplot2::scale_x_date(date_breaks = shiny::isolate(input[['DateTicks']]))
-      p1 <- shiny::isolate(p1 + ggplot2::labs(
-        title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
-        caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(YVar())) + ggplot2::xlab(DateVar()))
-    } else if(shiny::isolate(input[['PlotType']] %chin% c('Scatter','Copula'))) {
-      p1 <- shiny::isolate(p1 + ggplot2::labs(
-        title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
-        caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(YVar())) + ggplot2::xlab(XVar()))
+          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(XVar()))
+
+        # Tick Marks
+        if('Percentiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        } else if('Every 5th percentile' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
+        } else if('Deciles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
+        } else if('Quantiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
+        } else if('Quartiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
+        } else {
+          y_vals <- input[['YTicks']]
+        }
+        if('Percentiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(XVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        } else if('Every 5th percentile' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
+        } else if('Deciles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
+        } else if('Quantiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
+        } else if('Quartiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
+        } else {
+          x_vals <- input[['XTicks']]
+        }
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
+        if(!'Default' %in% input[['YTicks']]) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+      }
+
+      # Return
+      p1 <<- p1
+      output$Trend <- shiny::renderPlot(width = shiny::isolate(input[['PlotWidth']]), height = shiny::isolate(input[['PlotHeight']]), {
+        p1
+      })
     }
-
-    # Return
-    p1 <<- p1
-    output$Trend <- shiny::renderPlot(width = shiny::isolate(input[['PlotWidth']]), height = shiny::isolate(input[['PlotHeight']]), {
-      p1
-    })
   })
 
   # ----
@@ -1071,7 +1020,7 @@ server <- function(input, output, session) {
       if(Debug) print(fv)
       if(Debug) print(input[['FilterLogic_1']])
       if(Debug) print(data1)
-      data1 <- FilterLogicData(data1, input, FilterLogic=input[['FilterLogic_1']], FilterVariable=input[['FilterVariable_1']], FilterValue=input[['FilterValue_1a']], FilterValue2=fv, Debug = Debug)
+      data1 <- RemixAutoML::FilterLogicData(data1, input, FilterLogic=input[['FilterLogic_1']], FilterVariable=input[['FilterVariable_1']], FilterValue=input[['FilterValue_1a']], FilterValue2=fv, Debug = Debug)
       if(Debug) print(data1)
     }
 
@@ -1079,21 +1028,21 @@ server <- function(input, output, session) {
     if(Debug) print('Subset by FilterVariable_2')
     if(input[['FilterVariable_2']] != 'None') {
       fv <- input[['FilterValue_2b']]
-      data1 <- FilterLogicData(data1, input, FilterLogic=input[['FilterLogic_2']], FilterVariable=input[['FilterVariable_2']], FilterValue=input[['FilterValue_2a']], FilterValue2=fv)
+      data1 <- RemixAutoML::FilterLogicData(data1, input, FilterLogic=input[['FilterLogic_2']], FilterVariable=input[['FilterVariable_2']], FilterValue=input[['FilterValue_2a']], FilterValue2=fv)
     }
 
     # Subset by FilterVariable_3
     if(Debug) print('Subset by FilterVariable_3')
     if(input[['FilterVariable_3']] != 'None') {
       fv <- input[['FilterValue_3b']]
-      data1 <- FilterLogicData(data1, input, FilterLogic=input[['FilterLogic_3']], FilterVariable=input[['FilterVariable_3']], FilterValue=input[['FilterValue_3a']], FilterValue2=fv)
+      data1 <- RemixAutoML::FilterLogicData(data1, input, FilterLogic=input[['FilterLogic_3']], FilterVariable=input[['FilterVariable_3']], FilterValue=input[['FilterValue_3a']], FilterValue2=fv)
     }
 
     # Subset by FilterVariable_4
     if(Debug) print('Subset by FilterVariable_4')
     if(input[['FilterVariable_4']] != 'None') {
       fv <- input[['FilterValue_4b']]
-      data1 <- FilterLogicData(data1, input, FilterLogic=input[['FilterLogic_4']], FilterVariable=input[['FilterVariable_4']], FilterValue=input[['FilterValue_4a']], FilterValue2=fv)
+      data1 <- RemixAutoML::FilterLogicData(data1, input, FilterLogic=input[['FilterLogic_4']], FilterVariable=input[['FilterVariable_4']], FilterValue=input[['FilterValue_4a']], FilterValue2=fv)
     }
 
     # Subset Rows based on Filters
@@ -1122,13 +1071,17 @@ server <- function(input, output, session) {
 
     # Render Plot
     if(Debug) print(data1)
-    if(Debug) shiny::isolate(print(SelectedGroups()))
+    if(Debug) print(shiny::isolate(SelectedGroups()))
 
     # Create Plot Object
+    if(Debug) {
+      print('Create Plot Object')
+      print(input[['PlotType']])
+    }
     if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS'))) {
       if(Debug) print('Create Plot Objects 1')
-      p1 <- shiny::isolate(ggplot2::ggplot(data = data1, ggplot2::aes(x = get(shiny::isolate(DateVar())), y = get(shiny::isolate(YVar())), group = get(shiny::isolate(DateVar())))))
-      if(shiny::isolate(input[['PlotType']] == 'BoxPlotTS')) {
+      p1 <- ggplot2::ggplot(data = data1, ggplot2::aes(x = get(shiny::isolate(DateVar())), y = get(shiny::isolate(YVar())), group = get(shiny::isolate(DateVar()))))
+      if(input[['PlotType']] == 'BoxPlotTS') {
         if(Debug) print('Create Plot Objects 2a')
         p1 <- p1 + ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray')
       } else if(shiny::isolate(input[['PlotType']] == 'ViolinPlotTS')) {
@@ -1152,20 +1105,23 @@ server <- function(input, output, session) {
         title = 'Distribution over Time',
         subtitle = 'Blue line = mean(Y)',
         caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(eval(shiny::isolate(input[['YMin']]))), as.numeric(eval(shiny::isolate(input[['YMax']])))) +
-          ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(shiny::isolate(DateVar())) +
-          ggplot2::scale_x_date(date_breaks = input[['DateTicks']])
+        ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
+        ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(shiny::isolate(DateVar()))
+      if(Debug) print('XTicks')
+      if(Debug) print(input[['XTicks']])
+      if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_date(date_breaks = input[['XTicks']])
+      if(Debug) print('XTicks end')
 
       # Add faceting (returns no faceting in none was requested)
-      if(shiny::isolate(input[['FacetRow']]) != 'None' && shiny::isolate(input[['FacetCol']]) != 'None') {
+      if(shiny::isolate(input[['FacetVar1']]) != 'None' && shiny::isolate(input[['FacetVar2']]) != 'None') {
         if(Debug) print('Create Plot Objects 6a')
-        p1 <- p1 + ggplot2::facet_grid(get(shiny::isolate(input[['FacetRow']])) ~ get(shiny::isolate(input[['FacetCol']])))
-      } else if(shiny::isolate(input[['FacetRow']]) == 'None' && shiny::isolate(input[['FacetCol']] != 'None')) {
+        p1 <- p1 + ggplot2::facet_grid(get(shiny::isolate(input[['FacetVar1']])) ~ get(shiny::isolate(input[['FacetVar2']])))
+      } else if(shiny::isolate(input[['FacetVar1']]) == 'None' && shiny::isolate(input[['FacetVar2']] != 'None')) {
         if(Debug) print('Create Plot Objects 6b')
-        p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetCol']])))
-      } else if(shiny::isolate(input[['FacetRow']]) != 'None' && shiny::isolate(input[['FacetCol']]) == 'None') {
+        p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetVar2']])))
+      } else if(shiny::isolate(input[['FacetVar1']]) != 'None' && shiny::isolate(input[['FacetVar2']]) == 'None') {
         if(Debug) print('Create Plot Objects 6c')
-        p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetRow']])))
+        p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetVar1']])))
       }
       p1 <<- p1
 
@@ -1176,7 +1132,7 @@ server <- function(input, output, session) {
           data = data1,
           TargetVariable = shiny::isolate(YVar()),
           DateVariable = shiny::isolate(DateVar()),
-          GroupVariables = shiny::isolate(SelectedGroups()),
+          GroupVariables = if(shiny::isolate(SelectedGroups()) == 'None') NULL else shiny::isolate(SelectedGroups()),
           Aggregate = 'mean',
           NumberGroupsDisplay = input[['NumberGroupsDisplay']],
           LevelsToDisplay = NULL,
@@ -1185,7 +1141,7 @@ server <- function(input, output, session) {
           TextSize = input[['TextSize']],
           LineWidth = 0.5,
           Color = 'blue',
-          XTickMarks = input[['DateTicks']],
+          XTickMarks = if('Default' %in% input[['XTicks']]) NULL else input[['XTicks']],
           AngleX = input[['AngleX']],
           AngleY = input[['AngleY']],
           ChartColor = input[['ChartColor']],
@@ -1216,11 +1172,18 @@ server <- function(input, output, session) {
     } else if(shiny::isolate(input[['PlotType']] %chin% c('Scatter','Copula'))) {
 
       # Ensure variables are numeric
-      if(Debug) print(YVar())
-      if(Debug) print(XVar())
-      if(!any(c('numeric','integer') %chin% class(data1[[eval(YVar())]]))) {
+      if(Debug) {
+        print(YVar())
+        print(XVar())
+        print(data1)
+        print(class(data1[[eval(shiny::isolate(YVar()))]]))
+        print(!any(c('numeric','integer') %chin% class(data1[[eval(shiny::isolate(YVar()))]])))
+      }
+
+
+      if(!any(c('numeric','integer') %chin% class(data1[[eval(shiny::isolate(YVar()))]]))) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "Y needs to be a numeric variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-      } else if(!any(c('numeric','integer') %chin% class(data1[[eval(XVar())]]))) {
+      } else if(!any(c('numeric','integer') %chin% class(data1[[eval(shiny::isolate(XVar()))]]))) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "X needs to be a numeric variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else {
 
@@ -1230,6 +1193,7 @@ server <- function(input, output, session) {
         R2_Spearman <- c()
         yyy <- eval(shiny::isolate(YVar()))
         xxx <- eval(shiny::isolate(XVar()))
+        if(Debug) print(data1[,.N])
         if(data1[,.N] < 100000L) {
           for(zz in seq_len(30L)) {
             temp <- data1[order(runif(.N))][seq_len(floor(0.50 * .N))]
@@ -1246,17 +1210,20 @@ server <- function(input, output, session) {
         rm(temp)
 
         # Build plot objects
+        if(Debug) print('Build plot objects')
         Output <- RemixAutoML::ScatterCopula(
           data = data1,
           x_var = xxx,
           y_var = yyy,
-          FacetCol = if(shiny::isolate(input[['FacetCol']]) == 'None') NULL else shiny::isolate(input[['FacetCol']]),
-          FacetRow = if(shiny::isolate(input[['FacetRow']]) == 'None') NULL else shiny::isolate(input[['FacetRow']]),
-          GroupVariable = NULL,
+          GroupVariable = if(shiny::isolate(SelectedGroups())[1L] == 'None') NULL else shiny::isolate(SelectedGroups())[1L],
+          FacetCol = if(shiny::isolate(input[['FacetVar2']]) == 'None') NULL else shiny::isolate(input[['FacetVar2']]),
+          FacetRow = if(shiny::isolate(input[['FacetVar1']]) == 'None') NULL else shiny::isolate(input[['FacetVar1']]),
+          SizeVar1 = if(shiny::isolate(input[['SizeVar1']]) == 'None') NULL else shiny::isolate(input[['SizeVar1']]),
           SampleCount = 100000L,
           FitGam = as.logical(shiny::isolate(input[['GamFitScatter']])))
 
         # Modify by plot type
+        if(Debug) print('Modify by plot type')
         if(shiny::isolate(input[['PlotType']] %chin% c('Scatter'))) {
           p1 <- Output[["ScatterPlot"]]
           p1 <- p1 + ggplot2::labs(
@@ -1264,14 +1231,9 @@ server <- function(input, output, session) {
             subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
                               "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
           p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(
-            Size = input[['TextSize']],
-            AngleX = input[['AngleX']],
-            AngleY = input[['AngleY']],
-            ChartColor = input[['ChartColor']],
-            BorderColor = input[['BorderColor']],
-            TextColor = input[['TextColor']],
-            GridColor = input[['GridColor']],
-            BackGroundColor = input[['BackGroundColor']]))
+            Size = input[['TextSize']], AngleX = input[['AngleX']], AngleY = input[['AngleY']],
+            ChartColor = input[['ChartColor']], BorderColor = input[['BorderColor']], TextColor = input[['TextColor']],
+            GridColor = input[['GridColor']], BackGroundColor = input[['BackGroundColor']]))
           p1 <- p1 + ggplot2::ylim(as.numeric(eval(shiny::isolate(input[['YMin']]))), as.numeric(eval(shiny::isolate(input[['YMax']]))))
           p1 <- p1 + ggplot2::xlim(as.numeric(eval(shiny::isolate(input[['XMin']]))), as.numeric(eval(shiny::isolate(input[['XMax']]))))
 
@@ -1283,15 +1245,49 @@ server <- function(input, output, session) {
             subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
                               "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
           p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(
-            Size = input[['TextSize']],
-            AngleX = input[['AngleX']],
-            AngleY = input[['AngleY']],
-            ChartColor = input[['ChartColor']],
-            BorderColor = input[['BorderColor']],
-            TextColor = input[['TextColor']],
-            GridColor = input[['GridColor']],
-            BackGroundColor = input[['BackGroundColor']]))
+            Size = input[['TextSize']], AngleX = input[['AngleX']], AngleY = input[['AngleY']],
+            ChartColor = input[['ChartColor']], BorderColor = input[['BorderColor']], TextColor = input[['TextColor']],
+            GridColor = input[['GridColor']], BackGroundColor = input[['BackGroundColor']]))
         }
+
+        # Tick Marks
+        if('Percentiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        } else if('Every 5th percentile' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
+        } else if('Deciles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
+        } else if('Quantiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
+        } else if('Quartiles' %in% input[['YTicks']]) {
+          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
+        } else {
+          y_vals <- input[['YTicks']]
+        }
+        if('Percentiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(XVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        } else if('Every 5th percentile' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
+        } else if('Deciles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
+        } else if('Quantiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
+        } else if('Quartiles' %in% input[['XTicks']]) {
+          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+          x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
+        } else {
+          x_vals <- input[['XTicks']]
+        }
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
+        if(!'Default' %in% input[['YTicks']]) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+
         p1 <<- p1
       }
     }

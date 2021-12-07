@@ -188,6 +188,7 @@ PlotGUI <- function() {
 #' @param GroupVariable Color options
 #' @param FacetCol NULL or string
 #' @param FacetRow NULL or string
+#' @param SizeVar1 NULL. Use to size the dots by a variable
 #' @param SampleCount Number of randomized rows to utilize. For speedup and memory purposes
 #' @param FitGam Add gam fit to scatterplot and copula plot
 #' @param color = "darkblue"
@@ -202,6 +203,34 @@ PlotGUI <- function() {
 #' @param background_color = "gray95"
 #' @param legend_position = "bottom
 #'
+#' @examples
+#' \donerun{
+#' # Create data
+#' data <- RemixAutoML::FakeDataGenerator()
+#'
+#' # Build plot
+#' RemixAutoML::ScatterCopula(
+#'   data = data,
+#'   x_var = 'Independent_Variable1',
+#'   y_var = 'Independent_Variable2',
+#'   GroupVariable = NULL, #'Factor_1',
+#'   FacetCol = 'Factor_1',
+#'   FacetRow = NULL,
+#'   SizeVar1 = 'Independent_Variable1',
+#'   SampleCount = 100000L,
+#'   FitGam = FALSE,
+#'   color = "darkblue",
+#'   point_size = 0.50,
+#'   text_size = 12,
+#'   x_axis_text_angle = 35,
+#'   y_axis_text_angle = 0,
+#'   chart_color = "lightsteelblue1",
+#'   border_color = "darkblue",
+#'   text_color = "darkblue",
+#'   grid_color = "white",
+#'   background_color = "gray95",
+#'   legend_position = "bottom")
+#' }
 #' @export
 ScatterCopula <- function(data = NULL,
                           x_var = NULL,
@@ -209,6 +238,7 @@ ScatterCopula <- function(data = NULL,
                           GroupVariable = NULL,
                           FacetCol = NULL,
                           FacetRow = NULL,
+                          SizeVar1 = NULL,
                           SampleCount = 100000L,
                           FitGam = TRUE,
                           color = "darkblue",
@@ -224,7 +254,7 @@ ScatterCopula <- function(data = NULL,
                           legend_position = "bottom") {
 
   # Subset data
-  temp <- data[order(runif(.N))][seq_len(min(SampleCount, .N))][, .SD, .SDcols = c(y_var, x_var, GroupVariable, FacetRow, FacetCol)]
+  temp <- data[order(runif(.N))][seq_len(min(SampleCount, .N))][, .SD, .SDcols = unique(c(y_var, x_var, GroupVariable, FacetRow, FacetCol, SizeVar1))]
   temp[, Var1 := data.table::frank(get(y_var)) * (1 / 0.001) / .N * 0.001]
   temp[, Var2 := data.table::frank(get(x_var)) * (1 / 0.001) / .N * 0.001]
 
@@ -234,127 +264,81 @@ ScatterCopula <- function(data = NULL,
   cop_Pearson <- cor(x = temp[["Var1"]], y = temp[["Var2"]], method = "pearson")
   cop_Spearman <- cor(x = temp[["Var1"]], y = temp[["Var2"]], method = "spearman")
 
-  # Regular scatter plot
+  # Regular scatter plot ----
   if(is.null(GroupVariable)) {
-    original_scale_plot <- ggplot2::ggplot(
-      data = temp,
-      ggplot2::aes_string(x = x_var, y = y_var)) +
-      ggplot2::geom_point(size = point_size, color = color) +
-      ggplot2::ggtitle(paste0("ScatterPlot: Pearson Corr: ", round(OS_Pearson, 3L), " :: Spearman Corr: ", round(OS_Spearman, 3L))) +
-      ChartTheme(
-        Size = text_size,
-        AngleX = x_axis_text_angle,
-        AngleY = y_axis_text_angle,
-        ChartColor = chart_color,
-        BorderColor = border_color,
-        TextColor = text_color,
-        GridColor = grid_color,
-        BackGroundColor = background_color,
-        LegendPosition = legend_position)
-
-    # Add faceting if requested
-    if(!is.null(FacetRow) && !is.null(FacetCol)) {
-      original_scale_plot <- original_scale_plot + ggplot2::facet_grid(get(FacetRow) ~ get(FacetCol))
-    } else if(is.null(FacetRow) && !is.null(FacetCol)) {
-      original_scale_plot <- original_scale_plot + ggplot2::facet_wrap(~ get(FacetCol))
-    } else if(!is.null(FacetRow) && is.null(FacetCol)) {
-      original_scale_plot <- original_scale_plot + ggplot2::facet_wrap(~ get(FacetRow))
-    }
-
-    # Gam fit
-    if(FitGam) original_scale_plot <- original_scale_plot + ggplot2::geom_smooth(method='gam')
-
+    original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = x_var, y = y_var)))
   } else {
+    original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = x_var, y = y_var, colour = GroupVariable)))
+  }
+  if(!is.null(SizeVar1)) {
+    original_scale_plot <- original_scale_plot + ggplot2::geom_point(ggplot2::aes_string(size = eval(SizeVar1)))
+  } else {
+    original_scale_plot <- original_scale_plot + ggplot2::geom_point(size = point_size)
+  }
+  original_scale_plot <- original_scale_plot +
+    ggplot2::ggtitle(paste0("ScatterPlot: Pearson Corr: ", round(OS_Pearson, 3L), " :: Spearman Corr: ", round(OS_Spearman, 3L))) +
+    ChartTheme(
+      Size = text_size,
+      AngleX = x_axis_text_angle,
+      AngleY = y_axis_text_angle,
+      ChartColor = chart_color,
+      BorderColor = border_color,
+      TextColor = text_color,
+      GridColor = grid_color,
+      BackGroundColor = background_color,
+      LegendPosition = legend_position)
 
-    original_scale_plot <- eval(
-      ggplot2::ggplot(
-        data = temp,
-          ggplot2::aes_string(x = x_var, y = y_var, color = GroupVariable)) +
-          ggplot2::geom_point(size = point_size) +
-          ggplot2::ggtitle(paste0("ScatterPlot: Pearson Corr: ", round(OS_Pearson, 3L), " :: Spearman Corr: ", round(OS_Spearman, 3L))) +
-          ChartTheme(
-            Size = text_size,
-            AngleX = x_axis_text_angle,
-            AngleY = y_axis_text_angle,
-            ChartColor = chart_color,
-            BorderColor = border_color,
-            TextColor = text_color,
-            GridColor = grid_color,
-            BackGroundColor = background_color,
-            LegendPosition = legend_position))
-
-    # Add faceting if requested
-    if(!is.null(FacetRow) && !is.null(FacetCol)) {
-      original_scale_plot <- original_scale_plot + ggplot2::facet_grid(get(FacetRow) ~ get(FacetCol))
-    } else if(is.null(FacetRow) && !is.null(FacetCol)) {
-      original_scale_plot <- original_scale_plot + ggplot2::facet_wrap(~ get(FacetCol))
-    } else if(!is.null(FacetRow) && is.null(FacetCol)) {
-      original_scale_plot <- original_scale_plot + ggplot2::facet_wrap(~ get(FacetRow))
-    }
-
-    # Gam fit
-    if(FitGam) original_scale_plot <- original_scale_plot + ggplot2::geom_smooth(method='gam')
+  # Add faceting if requested
+  if(!is.null(FacetRow) && !is.null(FacetCol)) {
+    original_scale_plot <- original_scale_plot + ggplot2::facet_grid(get(FacetRow) ~ get(FacetCol))
+  } else if(is.null(FacetRow) && !is.null(FacetCol)) {
+    original_scale_plot <- original_scale_plot + ggplot2::facet_wrap(~ get(FacetCol))
+  } else if(!is.null(FacetRow) && is.null(FacetCol)) {
+    original_scale_plot <- original_scale_plot + ggplot2::facet_wrap(~ get(FacetRow))
   }
 
-  # Empirical Copula Scatter
+  # Gam fit
+  if(FitGam) original_scale_plot <- original_scale_plot + ggplot2::geom_smooth(method='gam')
+
+  # Empirical Copula Scatter ----
   if(is.null(GroupVariable)) {
-    copula_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1")) +
-      ggplot2::geom_point(size = point_size, color = color) +
-      ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 0.25) +
-      ggplot2::ggtitle(paste0("Copula: Pearson Corr: ", round(cop_Pearson, 3L), " :: Spearman Corr: ", round(cop_Spearman, 3L))) +
-      ggplot2::xlab(label = x_var) + ggplot2::ylab(label = y_var) +
-      ChartTheme(
-        Size = text_size,
-        AngleX = x_axis_text_angle,
-        AngleY = y_axis_text_angle,
-        ChartColor = chart_color,
-        BorderColor = border_color,
-        TextColor = text_color,
-        GridColor = grid_color,
-        BackGroundColor = background_color,
-        LegendPosition = legend_position))
-
-    # Add faceting if requested
-    if(!is.null(FacetRow) && !is.null(FacetCol)) {
-      copula_plot <- copula_plot + ggplot2::facet_grid(get(FacetRow) ~ get(FacetCol))
-    } else if(is.null(FacetRow) && !is.null(FacetCol)) {
-      copula_plot <- copula_plot + ggplot2::facet_wrap(~ get(FacetCol))
-    } else if(!is.null(FacetRow) && is.null(FacetCol)) {
-      copula_plot <- copula_plot + ggplot2::facet_wrap(~ get(FacetRow))
-    }
-
-    # Gam fit
-    if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method = "lm") + ggplot2::geom_smooth(method='gam')
+    copula_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1")))
   } else {
-    copula_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1", color = GroupVariable)) +
-        ggplot2::geom_point(size = point_size) +
-        ggplot2::geom_smooth(method = "lm") +
-        ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 1) +
-        ggplot2::ggtitle(paste0("Copula: Pearson Corr: ", round(cop_Pearson, 3L), " :: Spearman Corr: ", round(cop_Spearman, 3L))) +
-        ggplot2::xlab(label = x_var) + ggplot2::ylab(label = y_var) +
-        ChartTheme(
-          Size = text_size,
-          AngleX = x_axis_text_angle,
-          AngleY = y_axis_text_angle,
-          ChartColor = chart_color,
-          BorderColor = border_color,
-          TextColor = text_color,
-          GridColor = grid_color,
-          BackGroundColor = background_color,
-          LegendPosition = legend_position))
-
-    # Add faceting if requested
-    if(!is.null(FacetRow) && !is.null(FacetCol)) {
-      copula_plot <- copula_plot + ggplot2::facet_grid(get(FacetRow) ~ get(FacetCol))
-    } else if(is.null(FacetRow) && !is.null(FacetCol)) {
-      copula_plot <- copula_plot + ggplot2::facet_wrap(~ get(FacetCol))
-    } else if(!is.null(FacetRow) && is.null(FacetCol)) {
-      copula_plot <- copula_plot + ggplot2::facet_wrap(~ get(FacetRow))
-    }
-
-    # Gam fit
-    if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method = "lm") + ggplot2::geom_smooth(method='gam')
+    copula_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1", colour = GroupVariable)))
   }
+
+  if(!is.null(SizeVar1)) {
+    copula_plot <- copula_plot + ggplot2::geom_point(ggplot2::aes(size = get(SizeVar1)))
+  } else {
+    copula_plot <- copula_plot + ggplot2::geom_point(size = point_size)
+  }
+  copula_plot <- copula_plot +
+    #ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 0.25) +
+    ggplot2::ggtitle(paste0("Copula: Pearson Corr: ", round(cop_Pearson, 3L), " :: Spearman Corr: ", round(cop_Spearman, 3L))) +
+    ggplot2::labs(x = eval(x_var), y = eval(y_var), size = eval(SizeVar1), color = eval(GroupVariable)) +
+    #ggplot2::xlab(label = x_var) + ggplot2::ylab(label = y_var) +
+    ChartTheme(
+      Size = text_size,
+      AngleX = x_axis_text_angle,
+      AngleY = y_axis_text_angle,
+      ChartColor = chart_color,
+      BorderColor = border_color,
+      TextColor = text_color,
+      GridColor = grid_color,
+      BackGroundColor = background_color,
+      LegendPosition = legend_position)
+
+  # Add faceting if requested
+  if(!is.null(FacetRow) && !is.null(FacetCol)) {
+    copula_plot <- copula_plot + ggplot2::facet_grid(get(FacetRow) ~ get(FacetCol))
+  } else if(is.null(FacetRow) && !is.null(FacetCol)) {
+    copula_plot <- copula_plot + ggplot2::facet_wrap(~ get(FacetCol))
+  } else if(!is.null(FacetRow) && is.null(FacetCol)) {
+    copula_plot <- copula_plot + ggplot2::facet_wrap(~ get(FacetRow))
+  }
+
+  # Gam fit
+  if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method = "lm") + ggplot2::geom_smooth(method='gam')
 
   # Return
   return(list(ScatterPlot = original_scale_plot, CopulaPlot = copula_plot))

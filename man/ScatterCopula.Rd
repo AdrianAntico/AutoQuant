@@ -11,6 +11,7 @@ ScatterCopula(
   GroupVariable = NULL,
   FacetCol = NULL,
   FacetRow = NULL,
+  SizeVar1 = NULL,
   SampleCount = 100000L,
   FitGam = TRUE,
   color = "darkblue",
@@ -38,6 +39,8 @@ ScatterCopula(
 \item{FacetCol}{NULL or string}
 
 \item{FacetRow}{NULL or string}
+
+\item{SizeVar1}{NULL. Use to size the dots by a variable}
 
 \item{SampleCount}{Number of randomized rows to utilize. For speedup and memory purposes}
 
@@ -67,6 +70,35 @@ ScatterCopula(
 }
 \description{
 Dual plot. One on original scale and one using empirical copula data
+}
+\examples{
+\donerun{
+# Create data
+data <- RemixAutoML::FakeDataGenerator()
+
+# Build plot
+RemixAutoML::ScatterCopula(
+  data = data,
+  x_var = 'Independent_Variable1',
+  y_var = 'Independent_Variable2',
+  GroupVariable = NULL, #'Factor_1',
+  FacetCol = 'Factor_1',
+  FacetRow = NULL,
+  SizeVar1 = 'Independent_Variable1',
+  SampleCount = 100000L,
+  FitGam = FALSE,
+  color = "darkblue",
+  point_size = 0.50,
+  text_size = 12,
+  x_axis_text_angle = 35,
+  y_axis_text_angle = 0,
+  chart_color = "lightsteelblue1",
+  border_color = "darkblue",
+  text_color = "darkblue",
+  grid_color = "white",
+  background_color = "gray95",
+  legend_position = "bottom")
+}
 }
 \seealso{
 Other EDA: 
