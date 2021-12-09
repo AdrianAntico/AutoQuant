@@ -204,7 +204,7 @@ PlotGUI <- function() {
 #' @param legend_position = "bottom
 #'
 #' @examples
-#' \donerun{
+#' \dontrun{
 #' # Create data
 #' data <- RemixAutoML::FakeDataGenerator()
 #'

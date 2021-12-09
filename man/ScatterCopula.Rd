@@ -72,7 +72,7 @@ ScatterCopula(
 Dual plot. One on original scale and one using empirical copula data
 }
 \examples{
-\donerun{
+\dontrun{
 # Create data
 data <- RemixAutoML::FakeDataGenerator()
 

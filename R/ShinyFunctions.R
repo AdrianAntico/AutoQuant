@@ -1,3 +1,73 @@
+#' @importFrom rstudioapi isAvailable getSourceEditorContext
+GetData <- function(data = NULL, name = NULL) {
+  if(!is.null(data)) {
+    if(is.character(data)) {
+      remix_data <- try({
+        dat <- get(x = data, envir = globalenv())
+        if(inherits(dat, what = 'data.table')) {
+          dat
+        } else {
+          data.table::as.data.table(dat)
+        }
+      }, silent = TRUE)
+      remix_data_name <- data
+      if("try-error" %in% class(remix_data)) {
+        warning(paste0("'", data, "' not found"), call. = FALSE)
+        remix_data <- NULL
+        remix_data_name <- ""
+      }
+    } else if(inherits(x = data, what = 'data.table')) {
+      remix_data <- try({
+        if(inherits(data, what = 'data.table')) {
+          data
+        } else {
+          data.table::as.data.table(data)
+        }
+      }, silent = TRUE)
+      if("try-error" %in% class(remix_data)) {
+        warning(paste0("'", data, "' not found"), call. = FALSE)
+        remix_data <- NULL
+        remix_data_name <- ""
+      } else {
+        if(!is.null(name)) {
+          remix_data_name <- as.character(name)
+        } else {
+          remix_data_name <- deparse(substitute(data))
+        }
+      }
+    } else {
+      remix_data <- NULL
+      remix_data_name <- ""
+    }
+  } else {
+    if(rstudioapi::isAvailable()) {
+      context <- try(rstudioapi::getSourceEditorContext(), silent = TRUE)
+      if("try-error" %in% class(context) || is.null(context)) {
+        remix_data <- NULL
+        remix_data_name <- ""
+      } else {
+        context_select <- context$selection[[1]]$text
+        if(isTRUE(nzchar(context_select))) {
+          remix_data <- try(data.table::as.data.table(get(x = context_select, envir = globalenv())), silent = TRUE)
+          remix_data_name <- context_select
+          if("try-error" %in% class(remix_data)) {
+            warning(paste0("Failed to retrieve data from the selection"), call. = FALSE)
+            remix_data <- NULL
+            remix_data_name <- ""
+          }
+        } else {
+          remix_data <- NULL
+          remix_data_name <- ""
+        }
+      }
+    } else {
+      remix_data <- NULL
+      remix_data_name <- ""
+    }
+  }
+  list(remix_data = remix_data, remix_data_name = remix_data_name)
+}
+
 #' Search for object with specific class in an environment
 #'
 #' @param what a class to look for
@@ -19,18 +89,17 @@
 #' gg <- ggplot()
 #' search_obj("ggplot")
 #'
-search_obj <- function(what = "data.frame", env = globalenv()) {
+FindObject <- function(what = "data.table", env = globalenv()) {
   all <- ls(name = env)
   objs <- lapply(
     X = all,
     FUN = function(x) {
-      if (inherits(get(x, envir = env), what = what)) {
+      if(inherits(get(x, envir = env), what = what)) {
         x
       } else {
         NULL
       }
-    }
-  )
+    })
   objs <- unlist(objs)
   if (length(objs) == 1 && objs == "") {
     NULL
@@ -245,7 +314,7 @@ IntNull <- function(x) {
 #' @return the object
 #' @export
 AssignData <- function(data, env = globalenv()) {
-  if(data %in% ls(name = env)) {
+  if(deparse(substitute(data)) %in% ls(name = env)) {
     get(x = data, envir = env)
   } else {
     NULL

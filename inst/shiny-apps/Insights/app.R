@@ -6,6 +6,10 @@ data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
 options(shiny.maxRequestSize = 300000*1024^2)
 options(scipen = 999)
 
+# ----
+
+# ----
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Passthrough Args ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -17,6 +21,7 @@ YVariable <- shiny::getShinyOption('YVariable')
 DateName <- shiny::getShinyOption('DateName')
 GroupVariables <- shiny::getShinyOption('GroupVariables')
 FilterVariable <- shiny::getShinyOption('FilterVariable')
+ModelOutputList <- shiny::getShinyOption('ModelOutputList')
 
 # App and Plot related
 HeaderColor <- shiny::getShinyOption('HeaderColor')
@@ -31,6 +36,10 @@ CreatePlotButtonColor <- shiny::getShinyOption('CreatePlotButtonColor')
 UpdatePlotButtonColor <- shiny::getShinyOption('UpdatePlotButtonColor')
 ResetPlotButtonColor <- shiny::getShinyOption('ResetPlotButtonColor')
 Debug <- shiny::getShinyOption('Debug')
+
+# ----
+
+# ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Create ui ----
@@ -56,15 +65,13 @@ ui <- shinydashboard::dashboardPage(
     titleWidth = 190,
 
     #<img src='https://www.remixinstitute.com/wp-content/uploads/7b-Cheetah_Charcoal_Inline_No_Sub_No_BG.png' align = 'center' height = '20px'></img>
-    # Title ----
+    # Title
     title = HTML(
       "
       <div style = 'vertical-align:middle'>
       <img src='NewPackageLogo.png' align = 'center' height = '53px'></img>
       </div>
-      ")
-
-    ),
+      ")),
 
 
   # App Sidebar
@@ -89,31 +96,163 @@ ui <- shinydashboard::dashboardPage(
     # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Variables ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # X, Y, and Date Variables Box
+    # shiny::fluidRow(
+    #   shiny::column(
+    #     width = AppWidth,
+    #     shinyjs::useShinyjs(),
+    #     shinydashboard::box(
+    #       title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Plotting Variables'),
+    #       solidHeader = TRUE,
+    #       collapsible = TRUE,
+    #       collapsed = FALSE,
+    #       background = VarsBoxColor,
+    #       width = AppWidth,
+    #
+    #       # Select the Y-Variable
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('YVar')),
+    #         shiny::column(3L, shiny::uiOutput('YMin')),
+    #         shiny::column(3L, shiny::uiOutput('YMax'))),
+    #
+    #       # Select the X-Variable
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('XVar')),
+    #         shiny::column(3L, shiny::uiOutput('XMin')),
+    #         shiny::column(3L, shiny::uiOutput('XMax'))),
+    #
+    #       # Select the X-Variable
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('DateVar')),
+    #         shiny::column(3L, shiny::uiOutput('DateMin')),
+    #         shiny::column(3L, shiny::uiOutput('DateMax')))))),
+
+    shiny::column(
+      width = 3L,
+      tags$h3('Plotting Variables'),
+      shinyWidgets::dropdown(
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('YVar')),
+          shiny::column(3L, shiny::uiOutput('YMin')),
+          shiny::column(3L, shiny::uiOutput('YMax'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('XVar')),
+          shiny::column(3L, shiny::uiOutput('XMin')),
+          shiny::column(3L, shiny::uiOutput('XMax'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('DateVar')),
+          shiny::column(3L, shiny::uiOutput('DateMin')),
+          shiny::column(3L, shiny::uiOutput('DateMax'))),
+        circle = FALSE, tooltip = FALSE, status = "primary",
+        inputId = "PrimaryVariables",
+        icon = icon("gear"), width = LogoWidth)),
+
+    shiny::column(
+      width = 3L,
+      tags$h3('Data Filtering'),
+      shinyWidgets::dropdown(
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
+          shiny::column(3L, shiny::uiOutput('FilterLogic_1')),
+          shiny::column(3L, shiny::uiOutput('FilterValue_1a')),
+          shiny::column(3L, shiny::uiOutput('FilterValue_1b'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('FilterVariable_2')),
+          shiny::column(3L, shiny::uiOutput('FilterLogic_2')),
+          shiny::column(3L, shiny::uiOutput('FilterValue_2a')),
+          shiny::column(3L, shiny::uiOutput('FilterValue_2b'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('FilterVariable_3')),
+          shiny::column(3L, shiny::uiOutput('FilterLogic_3')),
+          shiny::column(3L, shiny::uiOutput('FilterValue_3a')),
+          shiny::column(3L, shiny::uiOutput('FilterValue_3b'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('FilterVariable_4')),
+          shiny::column(3L, shiny::uiOutput('FilterLogic_4')),
+          shiny::column(3L, shiny::uiOutput('FilterValue_4a')),
+          shiny::column(3L, shiny::uiOutput('FilterValue_4b'))),
+        circle = FALSE, tooltip = FALSE, status = "primary",
+        inputId = "DataFiltering",
+        icon = icon("gear"), width = LogoWidth)),
+
+    # Add Space
+    #RemixAutoML::BlankRow(AppWidth),
+
+    # Filter Variable Box
+    # shiny::fluidRow(
+    #   shiny::column(
+    #     width = AppWidth,
+    #     shinyjs::useShinyjs(),
+    #     shinydashboard::box(
+    #       title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Data Filtering'),
+    #       solidHeader = TRUE,
+    #       collapsible = TRUE,
+    #       collapsed = FALSE,
+    #       background = FilterBoxColor,
+    #       width = AppWidth,
+    #
+    #       # Select FilterVariable_1x
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
+    #         shiny::column(3L, shiny::uiOutput('FilterLogic_1')),
+    #         shiny::column(3L, shiny::uiOutput('FilterValue_1a')),
+    #         shiny::column(3L, shiny::uiOutput('FilterValue_1b'))),
+    #
+    #       # Select FilterVariable_1x
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('FilterVariable_2')),
+    #         shiny::column(3L, shiny::uiOutput('FilterLogic_2')),
+    #         shiny::column(3L, shiny::uiOutput('FilterValue_2a')),
+    #         shiny::column(3L, shiny::uiOutput('FilterValue_2b'))),
+    #
+    #       # Select FilterVariable_1x
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('FilterVariable_3')),
+    #         shiny::column(3L, shiny::uiOutput('FilterLogic_3')),
+    #         shiny::column(3L, shiny::uiOutput('FilterValue_3a')),
+    #         shiny::column(3L, shiny::uiOutput('FilterValue_3b'))),
+    #
+    #       # Select FilterVariable_1x
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('FilterVariable_4')),
+    #         shiny::column(3L, shiny::uiOutput('FilterLogic_4')),
+    #         shiny::column(3L, shiny::uiOutput('FilterValue_4a')),
+    #         shiny::column(3L, shiny::uiOutput('FilterValue_4b')))))),
+
+    # Add Space
+    # RemixAutoML::BlankRow(AppWidth),
+
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Group Variables and Levels Selection ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
-    # Group Variables Box
-    shiny::fluidRow(
-      shiny::column(
-        width = AppWidth,
-        shinyjs::useShinyjs(),
-        shinydashboard::box(
-          title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Group Variables, Facets, and Levels'),
-          solidHeader = TRUE,
-          collapsible = FALSE,
-          background = GroupVarsBoxColor,
+    shiny::column(
+      width = 3L,
+      tags$h3('Grouping Variables'),
+      shinyWidgets::dropdown(
+        right = TRUE,
+        shiny::fluidRow(
           width = AppWidth,
-
-          # Select GroupVariables
           shiny::column(3L, shiny::uiOutput('GroupVars')),
           shiny::column(3L, shiny::uiOutput('FacetVar1')),
           shiny::column(3L, shiny::uiOutput('FacetVar2')),
-          shiny::column(3L, shiny::uiOutput('SizeVar1')),
-
-          # Add Space
-          RemixAutoML::BlankRow(AppWidth),
-
-          # GroupVar1 level selection
+          shiny::column(3L, shiny::uiOutput('SizeVar1'))),
+        shiny::fluidRow(
+          width = AppWidth,
           shiny::column(
             width = 3L,
             shiny::conditionalPanel(
@@ -135,96 +274,58 @@ ui <- shinydashboard::dashboardPage(
             shiny::conditionalPanel(
               width = 3L,
               condition = "length(input['GroupVars']) >= 3",
-              shiny::uiOutput('Levels_3')))))),
+              shiny::uiOutput('Levels_3')))),
+        circle = FALSE, tooltip = FALSE, status = "primary",
+        inputId = "GroupVariablesUI",
+        icon = icon("gear"), width = LogoWidth)),
+
+    # Group Variables Box
+    # shiny::fluidRow(
+    #   shiny::column(
+    #     width = AppWidth,
+    #     shinyjs::useShinyjs(),
+    #     shinydashboard::box(
+    #       title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Group Variables, Facets, and Levels'),
+    #       solidHeader = TRUE,
+    #       collapsible = FALSE,
+    #       background = GroupVarsBoxColor,
+    #       width = AppWidth,
+    #
+    #       # Select GroupVariables
+    #       shiny::column(3L, shiny::uiOutput('GroupVars')),
+    #       shiny::column(3L, shiny::uiOutput('FacetVar1')),
+    #       shiny::column(3L, shiny::uiOutput('FacetVar2')),
+    #       shiny::column(3L, shiny::uiOutput('SizeVar1')),
+    #
+    #       # Add Space
+    #       RemixAutoML::BlankRow(AppWidth),
+    #
+    #       # GroupVar1 level selection
+    #       shiny::column(
+    #         width = 3L,
+    #         shiny::conditionalPanel(
+    #           width = 3L,
+    #           condition = "length(input['GroupVars']) >= 1",
+    #           shiny::uiOutput('Levels_1'))),
+    #
+    #       # GroupVar2 level selection
+    #       shiny::column(
+    #         width = 3L,
+    #         shiny::conditionalPanel(
+    #           width = 3L,
+    #           condition = "length(input['GroupVars']) >= 2",
+    #           shiny::uiOutput('Levels_2'))),
+    #
+    #       # GroupVar3 level selection
+    #       shiny::column(
+    #         width = 3L,
+    #         shiny::conditionalPanel(
+    #           width = 3L,
+    #           condition = "length(input['GroupVars']) >= 3",
+    #           shiny::uiOutput('Levels_3')))))),
 
     # Add Space
-    RemixAutoML::BlankRow(AppWidth),
-
-    # ----
-
-    # ----
-
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    # Variables ----
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-
-    # X, Y, and Date Variables Box
-    shiny::fluidRow(
-      shiny::column(
-        width = AppWidth,
-        shinyjs::useShinyjs(),
-        shinydashboard::box(
-          title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Plotting Variables'),
-          solidHeader = TRUE,
-          collapsible = TRUE,
-          collapsed = FALSE,
-          background = VarsBoxColor,
-          width = AppWidth,
-
-          # Select the Y-Variable
-          shiny::fluidRow(
-            shiny::column(3L, shiny::uiOutput('YVar')),
-            shiny::column(3L, shiny::uiOutput('YMin')),
-            shiny::column(3L, shiny::uiOutput('YMax'))),
-
-          # Select the X-Variable
-          shiny::fluidRow(
-            shiny::column(3L, shiny::uiOutput('XVar')),
-            shiny::column(3L, shiny::uiOutput('XMin')),
-            shiny::column(3L, shiny::uiOutput('XMax'))),
-
-          # Select the X-Variable
-          shiny::fluidRow(
-            shiny::column(3L, shiny::uiOutput('DateVar')),
-            shiny::column(3L, shiny::uiOutput('DateMin')),
-            shiny::column(3L, shiny::uiOutput('DateMax')))))),
-
-    # Add Space
-    RemixAutoML::BlankRow(AppWidth),
-
-    # Filter Variable Box
-    shiny::fluidRow(
-      shiny::column(
-        width = AppWidth,
-        shinyjs::useShinyjs(),
-        shinydashboard::box(
-          title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Data Filtering'),
-          solidHeader = TRUE,
-          collapsible = TRUE,
-          collapsed = FALSE,
-          background = FilterBoxColor,
-          width = AppWidth,
-
-    # Select FilterVariable_1x
-    shiny::fluidRow(
-      shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
-      shiny::column(3L, shiny::uiOutput('FilterLogic_1')),
-      shiny::column(3L, shiny::uiOutput('FilterValue_1a')),
-      shiny::column(3L, shiny::uiOutput('FilterValue_1b'))),
-
-    # Select FilterVariable_1x
-    shiny::fluidRow(
-      shiny::column(3L, shiny::uiOutput('FilterVariable_2')),
-      shiny::column(3L, shiny::uiOutput('FilterLogic_2')),
-      shiny::column(3L, shiny::uiOutput('FilterValue_2a')),
-      shiny::column(3L, shiny::uiOutput('FilterValue_2b'))),
-
-    # Select FilterVariable_1x
-    shiny::fluidRow(
-      shiny::column(3L, shiny::uiOutput('FilterVariable_3')),
-      shiny::column(3L, shiny::uiOutput('FilterLogic_3')),
-      shiny::column(3L, shiny::uiOutput('FilterValue_3a')),
-      shiny::column(3L, shiny::uiOutput('FilterValue_3b'))),
-
-    # Select FilterVariable_1x
-    shiny::fluidRow(
-      shiny::column(3L, shiny::uiOutput('FilterVariable_4')),
-      shiny::column(3L, shiny::uiOutput('FilterLogic_4')),
-      shiny::column(3L, shiny::uiOutput('FilterValue_4a')),
-      shiny::column(3L, shiny::uiOutput('FilterValue_4b')))))),
-
-    # Add Space
-    RemixAutoML::BlankRow(AppWidth),
+    # RemixAutoML::BlankRow(AppWidth),
 
     # ----
 
@@ -233,42 +334,74 @@ ui <- shinydashboard::dashboardPage(
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Plot Inputs ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    shiny::fluidRow(
-      shiny::column(
-        width = AppWidth,
-        shinyjs::useShinyjs(),
-        shinydashboard::box(
-          title = tagList(shiny::icon("database", lib = "font-awesome"), "Plot Options"),
-          solidHeader = TRUE,
-          collapsible = TRUE,
-          collapsed = FALSE,
-          background = PlotBoxColor,
+    shiny::column(
+      width = 3L,
+      tags$h3('Plotting Options'),
+      shinyWidgets::dropdown(
+        right = TRUE,
+        shiny::fluidRow(
           width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('PlotType')),
+          shiny::column(3L, shiny::uiOutput('NumberGroupsDisplay')),
+          shiny::column(3L, shiny::uiOutput('GamFitScatter'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('PlotWidth')),
+          shiny::column(3L, shiny::uiOutput('PlotHeight')),
+          shiny::column(3L, shiny::uiOutput('XTicks')),
+          shiny::column(3L, shiny::uiOutput('YTicks'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('AngleY')),
+          shiny::column(3L, shiny::uiOutput('TextSize')),
+          shiny::column(3L, shiny::uiOutput('TextColor')),
+          shiny::column(3L, shiny::uiOutput('ChartColor'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('AngleX')),
+          shiny::column(3L, shiny::uiOutput('GridColor')),
+          shiny::column(3L, shiny::uiOutput('BackGroundColor')),
+          shiny::column(3L, shiny::uiOutput('BorderColor'))),
+        circle = FALSE, tooltip = FALSE, status = "primary",
+        inputId = "PlotInputsUI",
+        icon = icon("gear"), width = LogoWidth)),
 
-          # UI Plot Options
-          # Select plot type
-          shiny::fluidRow(
-            shiny::column(3L, shiny::uiOutput('PlotType')),
-            shiny::column(3L, shiny::uiOutput('NumberGroupsDisplay')),
-            shiny::column(3L, shiny::uiOutput('GamFitScatter'))),
-          shiny::fluidRow(
-            shiny::column(3L, shiny::uiOutput('PlotWidth')),
-            shiny::column(3L, shiny::uiOutput('PlotHeight')),
-            shiny::column(3L, shiny::uiOutput('XTicks')),
-            shiny::column(3L, shiny::uiOutput('YTicks'))),
-          shiny::fluidRow(
-            shiny::column(3L, shiny::uiOutput('AngleY')),
-            shiny::column(3L, shiny::uiOutput('TextSize')),
-            shiny::column(3L, shiny::uiOutput('TextColor')),
-            shiny::column(3L, shiny::uiOutput('ChartColor'))),
-          shiny::fluidRow(
-            shiny::column(3L, shiny::uiOutput('AngleX')),
-            shiny::column(3L, shiny::uiOutput('GridColor')),
-            shiny::column(3L, shiny::uiOutput('BackGroundColor')),
-            shiny::column(3L, shiny::uiOutput('BorderColor')))))),
+    # shiny::fluidRow(
+    #   shiny::column(
+    #     width = AppWidth,
+    #     shinyjs::useShinyjs(),
+    #     shinydashboard::box(
+    #       title = tagList(shiny::icon("database", lib = "font-awesome"), "Plot Options"),
+    #       solidHeader = TRUE,
+    #       collapsible = TRUE,
+    #       collapsed = FALSE,
+    #       background = PlotBoxColor,
+    #       width = AppWidth,
+    #
+    #       # UI Plot Options
+    #       # Select plot type
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('PlotType')),
+    #         shiny::column(3L, shiny::uiOutput('NumberGroupsDisplay')),
+    #         shiny::column(3L, shiny::uiOutput('GamFitScatter'))),
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('PlotWidth')),
+    #         shiny::column(3L, shiny::uiOutput('PlotHeight')),
+    #         shiny::column(3L, shiny::uiOutput('XTicks')),
+    #         shiny::column(3L, shiny::uiOutput('YTicks'))),
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('AngleY')),
+    #         shiny::column(3L, shiny::uiOutput('TextSize')),
+    #         shiny::column(3L, shiny::uiOutput('TextColor')),
+    #         shiny::column(3L, shiny::uiOutput('ChartColor'))),
+    #       shiny::fluidRow(
+    #         shiny::column(3L, shiny::uiOutput('AngleX')),
+    #         shiny::column(3L, shiny::uiOutput('GridColor')),
+    #         shiny::column(3L, shiny::uiOutput('BackGroundColor')),
+    #         shiny::column(3L, shiny::uiOutput('BorderColor')))))),
 
-    # Add Space
-    RemixAutoML::BlankRow(AppWidth),
+    # # Add Space
+    # RemixAutoML::BlankRow(AppWidth),
 
     # ----
 
@@ -450,7 +583,7 @@ server <- function(input, output, session) {
 
   # PlotType
   output$PlotType <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('BoxPlotTS','ViolinPlotTS','Line','Scatter','Copula'), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('BoxPlotTS','ViolinPlotTS','Line','Scatter','Copula','PartialDependenceLine','PartialDependenceBox','EvaluationLine','EvaluationBox','VariableImportance','ROC','Lift','Gains','ResidualsHistogram','ResidualsOverTime'), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$NumberGroupsDisplay <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = '# of Levels', Step = 1L, Value = 5L, Min = 1L, Max = 100L)
@@ -1073,7 +1206,7 @@ server <- function(input, output, session) {
     if(Debug) print(data1)
     if(Debug) print(shiny::isolate(SelectedGroups()))
 
-    # Create Plot Object
+    # BoxPlotTS, ViolinPlotTS ----
     if(Debug) {
       print('Create Plot Object')
       print(input[['PlotType']])
@@ -1125,8 +1258,11 @@ server <- function(input, output, session) {
       }
       p1 <<- p1
 
-    } else if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
+    }
 
+
+    # Line Plot ----
+    if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
       if(!shiny::isolate(class(data1[[eval(DateVar())]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
         p1 <- RemixAutoML:::TimeSeriesPlotter(
           data = data1,
@@ -1169,7 +1305,10 @@ server <- function(input, output, session) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a Date, IDate, or Posix type", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       }
 
-    } else if(shiny::isolate(input[['PlotType']] %chin% c('Scatter','Copula'))) {
+    }
+
+    # Scatter, Copula ----
+    if(shiny::isolate(input[['PlotType']] %chin% c('Scatter','Copula'))) {
 
       # Ensure variables are numeric
       if(Debug) {
@@ -1292,6 +1431,36 @@ server <- function(input, output, session) {
       }
     }
 
+    # 'PartialDependenceLine'
+
+
+    # 'PartialDependenceBox'
+
+
+    # 'EvaluationLine'
+
+
+    # 'EvaluationBox'
+
+
+    # 'VariableImportance'
+
+
+    # 'ROC'
+
+
+    # 'Lift'
+
+
+    # 'Gains'
+
+
+    # 'ResidualsHistogram'
+
+
+    # 'ResidualsOverTime'
+
+
     # Return Plot to UI
     output$Trend <- shiny::renderPlot(width = shiny::isolate(input[['PlotWidth']]), height = shiny::isolate(input[['PlotHeight']]), {
       if(Debug) print('Create Plot output$Trend')
@@ -1311,6 +1480,5 @@ server <- function(input, output, session) {
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Run the application ----
-shinyApp(ui = ui, server = server)
-
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+shinyApp(ui = ui, server = server)

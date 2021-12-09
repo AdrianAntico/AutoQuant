@@ -11,6 +11,7 @@
 #' @param DateName Starter column name for date-variable
 #' @param GroupVariables Starter column name for group-variables
 #' @param FilterVariable Starter column name for filter-variable
+#' @param ModelOutputList ML output from RemixAutoML Auto___() SL functions
 #' @param HeaderColor 'black', 'blue', 'purple', 'green', 'red', 'yellow'
 #' @param AppWidth Width of boxes
 #' @param GroupVarsBoxColor Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
@@ -36,6 +37,7 @@
 #'   DateName = 'Date',
 #'   GroupVariables = names(data)[seq_len(3L)],
 #'   FilterVariable = 'XREG1',
+#'   ModelOutputList = NULL,
 #'   HeaderColor = 'black',
 #'   AppWidth = 12L,
 #'   LogoWidth = '1000px',
@@ -54,6 +56,7 @@
 #' # DateName = 'Date'
 #' # GroupVariables = names(data)[seq_len(3L)]
 #' # FilterVariable = 'XREG1'
+#' # ModelOutputList = NULL
 #' # Debug = TRUE
 #' # HeaderColor = 'black'
 #' # AppWidth = 12L,
@@ -76,6 +79,7 @@ AppsPlotting <- function(data,
                          DateName = NULL,
                          GroupVariables = NULL,
                          FilterVariable = NULL,
+                         ModelOutputList = NULL,
                          HeaderColor = 'black',
                          AppWidth = 12L,
                          LogoWidth = '1000px',
@@ -97,6 +101,7 @@ AppsPlotting <- function(data,
     DateName = DateName,
     GroupVariables = GroupVariables,
     FilterVariable = FilterVariable,
+    ModelOutputList = ModelOutputList,
     HeaderColor = HeaderColor,
     AppWidth = AppWidth,
     LogoWidth = LogoWidth,
@@ -111,7 +116,7 @@ AppsPlotting <- function(data,
     Debug = Debug)
 
   # Run shiny app
-  shiny::shinyAppDir(appDir = system.file('shiny-apps', 'TimeSeriesPlotting', package = 'RemixAutoML'))
+  shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'))
 }
 
 #' @title RunRemixAutoML

@@ -11,6 +11,7 @@ AppsPlotting(
   DateName = NULL,
   GroupVariables = NULL,
   FilterVariable = NULL,
+  ModelOutputList = NULL,
   HeaderColor = "black",
   AppWidth = 12L,
   LogoWidth = "1000px",
@@ -37,6 +38,8 @@ AppsPlotting(
 \item{GroupVariables}{Starter column name for group-variables}
 
 \item{FilterVariable}{Starter column name for filter-variable}
+
+\item{ModelOutputList}{ML output from RemixAutoML Auto___() SL functions}
 
 \item{HeaderColor}{'black', 'blue', 'purple', 'green', 'red', 'yellow'}
 
@@ -75,6 +78,7 @@ RemixAutoML::AppsPlotting(
   DateName = 'Date',
   GroupVariables = names(data)[seq_len(3L)],
   FilterVariable = 'XREG1',
+  ModelOutputList = NULL,
   HeaderColor = 'black',
   AppWidth = 12L,
   LogoWidth = '1000px',
@@ -93,6 +97,7 @@ RemixAutoML::AppsPlotting(
 # DateName = 'Date'
 # GroupVariables = names(data)[seq_len(3L)]
 # FilterVariable = 'XREG1'
+# ModelOutputList = NULL
 # Debug = TRUE
 # HeaderColor = 'black'
 # AppWidth = 12L,
