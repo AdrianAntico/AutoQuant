@@ -124,7 +124,7 @@ AppsPlotting <- function(data,
     Debug = Debug)
 
   # Run shiny app
-  if(Docker) {
+  if(!Docker) {
     shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'))
   } else {
     shiny::runApp(appDir, display.mode = "normal", launch.browser = TRUE)
