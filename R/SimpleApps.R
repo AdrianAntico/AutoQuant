@@ -21,6 +21,7 @@
 #' @param CreatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param UpdatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
+#' @param Browser FALSE
 #' @param Debug FALSE
 #'
 #' @examples
@@ -91,6 +92,7 @@ AppsPlotting <- function(data,
                          CreatePlotButtonColor = 'primary',
                          UpdatePlotButtonColor = 'primary',
                          ResetPlotButtonColor = 'primary',
+                         Browser = FALSE,
                          Debug = FALSE) {
 
   # Pass args to shiny app
@@ -116,7 +118,7 @@ AppsPlotting <- function(data,
     Debug = Debug)
 
   # Run shiny app
-  shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'))
+  shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'), launch.browser = Browser)
 }
 
 #' @title RunRemixAutoML

@@ -23,6 +23,7 @@ AppsPlotting(
   CreatePlotButtonColor = "primary",
   UpdatePlotButtonColor = "primary",
   ResetPlotButtonColor = "primary",
+  Browser = FALSE,
   Debug = FALSE
 )
 }
@@ -58,6 +59,8 @@ AppsPlotting(
 \item{UpdatePlotButtonColor}{Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'}
 
 \item{ResetPlotButtonColor}{Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'}
+
+\item{Browser}{FALSE}
 
 \item{Debug}{FALSE}
 }
