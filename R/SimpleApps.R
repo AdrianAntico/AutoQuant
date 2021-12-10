@@ -22,6 +22,7 @@
 #' @param UpdatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param Browser FALSE
+#' @param Docker FALSE
 #' @param Debug FALSE
 #'
 #' @examples
@@ -50,6 +51,8 @@
 #'   CreatePlotButtonColor = 'default',
 #'   UpdatePlotButtonColor = 'default',
 #'   ResetPlotButtonColor = 'default',
+#'   Docker = FALSE,
+#'   Browser = FALSE,
 #'   Debug = FALSE)
 #'
 #' # XVariable = 'Date'
@@ -70,6 +73,8 @@
 #' # CreatePlotButtonColor = 'default',
 #' # UpdatePlotButtonColor = 'default',
 #' # ResetPlotButtonColor = 'default',
+#' Docker = FALSE,
+#' Browser = FALSE,
 #' # Debug = TRUE
 #' }
 #'
@@ -93,6 +98,7 @@ AppsPlotting <- function(data,
                          UpdatePlotButtonColor = 'primary',
                          ResetPlotButtonColor = 'primary',
                          Browser = FALSE,
+                         Docker = FALSE,
                          Debug = FALSE) {
 
   # Pass args to shiny app
@@ -118,7 +124,11 @@ AppsPlotting <- function(data,
     Debug = Debug)
 
   # Run shiny app
-  shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'), launch.browser = Browser)
+  if(Docker) {
+    shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'))
+  } else {
+    shiny::runApp(appDir, display.mode = "normal", launch.browser = TRUE)
+  }
 }
 
 #' @title RunRemixAutoML

@@ -24,6 +24,7 @@ AppsPlotting(
   UpdatePlotButtonColor = "primary",
   ResetPlotButtonColor = "primary",
   Browser = FALSE,
+  Docker = FALSE,
   Debug = FALSE
 )
 }
@@ -62,6 +63,8 @@ AppsPlotting(
 
 \item{Browser}{FALSE}
 
+\item{Docker}{FALSE}
+
 \item{Debug}{FALSE}
 }
 \description{
@@ -93,6 +96,8 @@ RemixAutoML::AppsPlotting(
   CreatePlotButtonColor = 'default',
   UpdatePlotButtonColor = 'default',
   ResetPlotButtonColor = 'default',
+  Docker = FALSE,
+  Browser = FALSE,
   Debug = FALSE)
 
 # XVariable = 'Date'
@@ -113,6 +118,8 @@ RemixAutoML::AppsPlotting(
 # CreatePlotButtonColor = 'default',
 # UpdatePlotButtonColor = 'default',
 # ResetPlotButtonColor = 'default',
+Docker = FALSE,
+Browser = FALSE,
 # Debug = TRUE
 }
 
