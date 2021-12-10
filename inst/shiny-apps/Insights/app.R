@@ -130,60 +130,99 @@ ui <- shinydashboard::dashboardPage(
     #         shiny::column(3L, shiny::uiOutput('DateMin')),
     #         shiny::column(3L, shiny::uiOutput('DateMax')))))),
 
-    shiny::column(
-      width = 3L,
-      tags$h3('Plotting Variables'),
-      shinyWidgets::dropdown(
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('YVar')),
-          shiny::column(3L, shiny::uiOutput('YMin')),
-          shiny::column(3L, shiny::uiOutput('YMax'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('XVar')),
-          shiny::column(3L, shiny::uiOutput('XMin')),
-          shiny::column(3L, shiny::uiOutput('XMax'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('DateVar')),
-          shiny::column(3L, shiny::uiOutput('DateMin')),
-          shiny::column(3L, shiny::uiOutput('DateMax'))),
-        circle = FALSE, tooltip = FALSE, status = "primary",
-        inputId = "PrimaryVariables",
-        icon = icon("gear"), width = LogoWidth)),
+    shiny::fluidRow(
+      width = 6L,
+      shiny::column(
+        width = 2L,
+        tags$h3('Plotting Variables'),
+        shinyWidgets::dropdown(
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('YVar')),
+            shiny::column(3L, shiny::uiOutput('YMin')),
+            shiny::column(3L, shiny::uiOutput('YMax'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('XVar')),
+            shiny::column(3L, shiny::uiOutput('XMin')),
+            shiny::column(3L, shiny::uiOutput('XMax'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('DateVar')),
+            shiny::column(3L, shiny::uiOutput('DateMin')),
+            shiny::column(3L, shiny::uiOutput('DateMax'))),
+          circle = FALSE, tooltip = FALSE, status = "primary",
+          inputId = "PrimaryVariables",
+          icon = icon("gear"), width = LogoWidth)),
+      shiny::column(
+        width = 2L,
+        tags$h3('Data Filtering'),
+        shinyWidgets::dropdown(
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
+            shiny::column(3L, shiny::uiOutput('FilterLogic_1')),
+            shiny::column(3L, shiny::uiOutput('FilterValue_1a')),
+            shiny::column(3L, shiny::uiOutput('FilterValue_1b'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('FilterVariable_2')),
+            shiny::column(3L, shiny::uiOutput('FilterLogic_2')),
+            shiny::column(3L, shiny::uiOutput('FilterValue_2a')),
+            shiny::column(3L, shiny::uiOutput('FilterValue_2b'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('FilterVariable_3')),
+            shiny::column(3L, shiny::uiOutput('FilterLogic_3')),
+            shiny::column(3L, shiny::uiOutput('FilterValue_3a')),
+            shiny::column(3L, shiny::uiOutput('FilterValue_3b'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('FilterVariable_4')),
+            shiny::column(3L, shiny::uiOutput('FilterLogic_4')),
+            shiny::column(3L, shiny::uiOutput('FilterValue_4a')),
+            shiny::column(3L, shiny::uiOutput('FilterValue_4b'))),
+          circle = FALSE, tooltip = FALSE, status = "primary",
+          inputId = "DataFiltering",
+          icon = icon("gear"), width = LogoWidth)),
+      shiny::column(
+        width = 2L,
+        tags$h3('Grouping Variables'),
+        shinyWidgets::dropdown(
+          right = FALSE,
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('GroupVars')),
+            shiny::column(3L, shiny::uiOutput('FacetVar1')),
+            shiny::column(3L, shiny::uiOutput('FacetVar2')),
+            shiny::column(3L, shiny::uiOutput('SizeVar1'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(
+              width = 3L,
+              shiny::conditionalPanel(
+                width = 3L,
+                condition = "length(input['GroupVars']) >= 1",
+                shiny::uiOutput('Levels_1'))),
 
-    shiny::column(
-      width = 3L,
-      tags$h3('Data Filtering'),
-      shinyWidgets::dropdown(
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
-          shiny::column(3L, shiny::uiOutput('FilterLogic_1')),
-          shiny::column(3L, shiny::uiOutput('FilterValue_1a')),
-          shiny::column(3L, shiny::uiOutput('FilterValue_1b'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('FilterVariable_2')),
-          shiny::column(3L, shiny::uiOutput('FilterLogic_2')),
-          shiny::column(3L, shiny::uiOutput('FilterValue_2a')),
-          shiny::column(3L, shiny::uiOutput('FilterValue_2b'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('FilterVariable_3')),
-          shiny::column(3L, shiny::uiOutput('FilterLogic_3')),
-          shiny::column(3L, shiny::uiOutput('FilterValue_3a')),
-          shiny::column(3L, shiny::uiOutput('FilterValue_3b'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('FilterVariable_4')),
-          shiny::column(3L, shiny::uiOutput('FilterLogic_4')),
-          shiny::column(3L, shiny::uiOutput('FilterValue_4a')),
-          shiny::column(3L, shiny::uiOutput('FilterValue_4b'))),
-        circle = FALSE, tooltip = FALSE, status = "primary",
-        inputId = "DataFiltering",
-        icon = icon("gear"), width = LogoWidth)),
+            # GroupVar2 level selection
+            shiny::column(
+              width = 3L,
+              shiny::conditionalPanel(
+                width = 3L,
+                condition = "length(input['GroupVars']) >= 2",
+                shiny::uiOutput('Levels_2'))),
+
+            # GroupVar3 level selection
+            shiny::column(
+              width = 3L,
+              shiny::conditionalPanel(
+                width = 3L,
+                condition = "length(input['GroupVars']) >= 3",
+                shiny::uiOutput('Levels_3')))),
+          circle = FALSE, tooltip = FALSE, status = "primary",
+          inputId = "GroupVariablesUI",
+          icon = icon("gear"), width = LogoWidth))),
 
     # Add Space
     #RemixAutoML::BlankRow(AppWidth),
@@ -240,44 +279,6 @@ ui <- shinydashboard::dashboardPage(
     # Group Variables and Levels Selection ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
-    shiny::column(
-      width = 3L,
-      tags$h3('Grouping Variables'),
-      shinyWidgets::dropdown(
-        right = TRUE,
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('GroupVars')),
-          shiny::column(3L, shiny::uiOutput('FacetVar1')),
-          shiny::column(3L, shiny::uiOutput('FacetVar2')),
-          shiny::column(3L, shiny::uiOutput('SizeVar1'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(
-            width = 3L,
-            shiny::conditionalPanel(
-              width = 3L,
-              condition = "length(input['GroupVars']) >= 1",
-              shiny::uiOutput('Levels_1'))),
-
-          # GroupVar2 level selection
-          shiny::column(
-            width = 3L,
-            shiny::conditionalPanel(
-              width = 3L,
-              condition = "length(input['GroupVars']) >= 2",
-              shiny::uiOutput('Levels_2'))),
-
-          # GroupVar3 level selection
-          shiny::column(
-            width = 3L,
-            shiny::conditionalPanel(
-              width = 3L,
-              condition = "length(input['GroupVars']) >= 3",
-              shiny::uiOutput('Levels_3')))),
-        circle = FALSE, tooltip = FALSE, status = "primary",
-        inputId = "GroupVariablesUI",
-        icon = icon("gear"), width = LogoWidth)),
 
     # Group Variables Box
     # shiny::fluidRow(
@@ -325,7 +326,7 @@ ui <- shinydashboard::dashboardPage(
     #           shiny::uiOutput('Levels_3')))))),
 
     # Add Space
-    # RemixAutoML::BlankRow(AppWidth),
+    RemixAutoML::BlankRow(AppWidth),
 
     # ----
 
@@ -334,37 +335,40 @@ ui <- shinydashboard::dashboardPage(
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Plot Inputs ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    shiny::column(
-      width = 3L,
-      tags$h3('Plotting Options'),
-      shinyWidgets::dropdown(
-        right = TRUE,
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('PlotType')),
-          shiny::column(3L, shiny::uiOutput('NumberGroupsDisplay')),
-          shiny::column(3L, shiny::uiOutput('GamFitScatter'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('PlotWidth')),
-          shiny::column(3L, shiny::uiOutput('PlotHeight')),
-          shiny::column(3L, shiny::uiOutput('XTicks')),
-          shiny::column(3L, shiny::uiOutput('YTicks'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('AngleY')),
-          shiny::column(3L, shiny::uiOutput('TextSize')),
-          shiny::column(3L, shiny::uiOutput('TextColor')),
-          shiny::column(3L, shiny::uiOutput('ChartColor'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('AngleX')),
-          shiny::column(3L, shiny::uiOutput('GridColor')),
-          shiny::column(3L, shiny::uiOutput('BackGroundColor')),
-          shiny::column(3L, shiny::uiOutput('BorderColor'))),
-        circle = FALSE, tooltip = FALSE, status = "primary",
-        inputId = "PlotInputsUI",
-        icon = icon("gear"), width = LogoWidth)),
+    shiny::fluidRow(
+      shiny::column(
+        width = 3L,
+        tags$h3('Plotting Options'),
+        shinyWidgets::dropdown(
+          right = FALSE,
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('PlotType')),
+            shiny::column(3L, shiny::uiOutput('PDP_Variable')),
+            shiny::column(3L, shiny::uiOutput('NumberGroupsDisplay')),
+            shiny::column(3L, shiny::uiOutput('GamFitScatter'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('PlotWidth')),
+            shiny::column(3L, shiny::uiOutput('PlotHeight')),
+            shiny::column(3L, shiny::uiOutput('XTicks')),
+            shiny::column(3L, shiny::uiOutput('YTicks'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('AngleY')),
+            shiny::column(3L, shiny::uiOutput('TextSize')),
+            shiny::column(3L, shiny::uiOutput('TextColor')),
+            shiny::column(3L, shiny::uiOutput('ChartColor'))),
+          shiny::fluidRow(
+            width = AppWidth,
+            shiny::column(3L, shiny::uiOutput('AngleX')),
+            shiny::column(3L, shiny::uiOutput('GridColor')),
+            shiny::column(3L, shiny::uiOutput('BackGroundColor')),
+            shiny::column(3L, shiny::uiOutput('BorderColor'))),
+          circle = FALSE, tooltip = FALSE, status = "primary",
+          inputId = "PlotInputsUI",
+          icon = icon("gear"), width = LogoWidth))),
+
 
     # shiny::fluidRow(
     #   shiny::column(
@@ -401,7 +405,8 @@ ui <- shinydashboard::dashboardPage(
     #         shiny::column(3L, shiny::uiOutput('BorderColor')))))),
 
     # # Add Space
-    # RemixAutoML::BlankRow(AppWidth),
+    RemixAutoML::BlankRow(AppWidth),
+    RemixAutoML::BlankRow(AppWidth),
 
     # ----
 
@@ -583,7 +588,18 @@ server <- function(input, output, session) {
 
   # PlotType
   output$PlotType <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('BoxPlotTS','ViolinPlotTS','Line','Scatter','Copula','PartialDependenceLine','PartialDependenceBox','EvaluationLine','EvaluationBox','VariableImportance','ROC','Lift','Gains','ResidualsHistogram','ResidualsOverTime'), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    MONames <- tryCatch({names(ModelOutputList$PlotList)}, error = function(x) NULL)
+    RemixAutoML::PickerInput(InputID = 'PlotType', Label = 'Plot Type', Choices = c('BoxPlotTS','ViolinPlotTS','Line','Scatter','Copula', MONames), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$PDP_Variable <- shiny::renderUI({
+    if(!is.null(ModelOutputList)) {
+      vals <- names(ModelOutputList$PlotData$Test_ParDepPlots)
+      defa <- vals[1L]
+    } else {
+      vals <- NULL
+      defa <- NULL
+    }
+    RemixAutoML::PickerInput(InputID = 'PDP_Variable', Label = 'PDP Variable', Choices = vals, SelectedDefault = defa, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$NumberGroupsDisplay <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = '# of Levels', Step = 1L, Value = 5L, Min = 1L, Max = 100L)
@@ -904,6 +920,12 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['ResetPlotThemeElements']], {
 
+    if(Debug) {
+      print(!exists('p1') || !exists('data1'))
+      print(!exists('p1'))
+      print(!exists('data1'))
+    }
+
     if(!exists('p1') || !exists('data1')) {
 
       shinyWidgets::sendSweetAlert(session, title = NULL, text = "Try Create Plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -924,7 +946,7 @@ server <- function(input, output, session) {
 
       # Update labels
       if(input[['PlotType']] %chin% c('BoxPlotTS','ViolinTS')) {
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_date(date_breaks = as.numeric(input[['XTicks']]))
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = as.numeric(input[['XTicks']])))
         p1 <- p1 + ggplot2::labs(
           title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
           subtitle = 'Blue line = mean(Y)',
@@ -933,7 +955,7 @@ server <- function(input, output, session) {
           ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(DateVar()))
       } else if(input[['PlotType']] %chin% c('Line')) {
         if(!'Default' %in% input[['XTicks']]) {
-          p1 <- p1 + ggplot2::scale_x_date(date_breaks = as.numeric(input[['XTicks']]))
+          p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = as.numeric(input[['XTicks']])))
         }
         p1 <- p1 + ggplot2::labs(
           title = paste0(input[['PlotType']], ' Plot'),
@@ -984,8 +1006,8 @@ server <- function(input, output, session) {
         } else {
           x_vals <- input[['XTicks']]
         }
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
-        if(!'Default' %in% input[['YTicks']]) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_continuous(breaks = as.numeric(x_vals)))
+        if(!'Default' %in% input[['YTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_y_continuous(breaks = as.numeric(y_vals)))
       }
 
       # UI Plot Options ----
@@ -1059,7 +1081,7 @@ server <- function(input, output, session) {
 
       # Update labels
       if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS'))) {
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_date(date_breaks = input[['XTicks']])
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = input[['XTicks']]))
         p1 <- p1 + ggplot2::labs(
           title = paste0(input[['PlotType']], ' Plot'),
           subtitle = 'Blue line = mean(Y)',
@@ -1067,7 +1089,7 @@ server <- function(input, output, session) {
           ggplot2::ylim(as.numeric(input[['YMin']]), as.numeric(input[['YMax']])) +
           ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(DateVar()))
       } else if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_date(date_breaks = input[['XTicks']])
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = input[['XTicks']]))
         p1 <- p1 + ggplot2::labs(
           title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
           caption = 'by RemixAutoML') +
@@ -1115,8 +1137,8 @@ server <- function(input, output, session) {
         } else {
           x_vals <- input[['XTicks']]
         }
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
-        if(!'Default' %in% input[['YTicks']]) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_continuous(breaks = as.numeric(x_vals)))
+        if(!'Default' %in% input[['YTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_y_continuous(breaks = as.numeric(y_vals)))
       }
 
       # Return
@@ -1189,7 +1211,7 @@ server <- function(input, output, session) {
     if(Debug) print(shiny::isolate(DateVar()))
     if(Debug) print(data1)
     if(Debug) print(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS','Scatter','Copula'))
-    data1 <- RemixAutoML::PreparePlotData(
+    data1 <<- RemixAutoML::PreparePlotData(
       SubsetOnly = if(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS','Scatter','Copula')) TRUE else FALSE,
       input,
       PlotDataForecast = data1,
@@ -1207,10 +1229,7 @@ server <- function(input, output, session) {
     if(Debug) print(shiny::isolate(SelectedGroups()))
 
     # BoxPlotTS, ViolinPlotTS ----
-    if(Debug) {
-      print('Create Plot Object')
-      print(input[['PlotType']])
-    }
+    if(Debug) {print('Create Plot Object'); print(input[['PlotType']])}
     if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS'))) {
       if(Debug) print('Create Plot Objects 1')
       p1 <- ggplot2::ggplot(data = data1, ggplot2::aes(x = get(shiny::isolate(DateVar())), y = get(shiny::isolate(YVar())), group = get(shiny::isolate(DateVar()))))
@@ -1242,7 +1261,7 @@ server <- function(input, output, session) {
         ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(shiny::isolate(DateVar()))
       if(Debug) print('XTicks')
       if(Debug) print(input[['XTicks']])
-      if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_date(date_breaks = input[['XTicks']])
+      if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = input[['XTicks']]))
       if(Debug) print('XTicks end')
 
       # Add faceting (returns no faceting in none was requested)
@@ -1257,9 +1276,7 @@ server <- function(input, output, session) {
         p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetVar1']])))
       }
       p1 <<- p1
-
     }
-
 
     # Line Plot ----
     if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
@@ -1432,34 +1449,17 @@ server <- function(input, output, session) {
     }
 
     # 'PartialDependenceLine'
-
-
-    # 'PartialDependenceBox'
-
-
-    # 'EvaluationLine'
-
-
-    # 'EvaluationBox'
-
-
-    # 'VariableImportance'
-
-
-    # 'ROC'
-
-
-    # 'Lift'
-
-
-    # 'Gains'
-
-
-    # 'ResidualsHistogram'
-
-
-    # 'ResidualsOverTime'
-
+    if(!is.null(ModelOutputList) && shiny::isolate(input[['PlotType']] %like% c('ParDepPlots'))) {
+      if(Debug) {
+        print(names(ModelOutputList$PlotList[[input[['PlotType']]]]))
+      }
+      p1 <- ModelOutputList$PlotList[[input[['PlotType']]]][[input[['PDP_Variable']]]]
+    } else if(input[['PlotType']] %like% 'Test_' || input[['PlotType']] %like% 'Train_') {
+      if(Debug) {
+        print(names(ModelOutputList$PlotList))
+      }
+      p1 <- ModelOutputList$PlotList[[input[['PlotType']]]]
+    }
 
     # Return Plot to UI
     output$Trend <- shiny::renderPlot(width = shiny::isolate(input[['PlotWidth']]), height = shiny::isolate(input[['PlotHeight']]), {
@@ -1481,4 +1481,4 @@ server <- function(input, output, session) {
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Run the application ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-shinyApp(ui = ui, server = server)
+shiny::shinyApp(ui = ui, server = server)
