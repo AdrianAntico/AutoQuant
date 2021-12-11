@@ -698,7 +698,10 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                         Multiple = TRUE,
                         ActionBox = TRUE,
                         Debug = FALSE) {
-  Options <- list(`actions-box` = ActionBox, size = Size, `selected-text-format` = SelectedText)
+  Options <- list(
+    `actions-box` = ActionBox,
+    size = Size,
+    `selected-text-format` = SelectedText)
   return(if(exists("ProjectList")) {
     tryCatch({
       if(!is.null(ProjectList[[InputID]])) {
