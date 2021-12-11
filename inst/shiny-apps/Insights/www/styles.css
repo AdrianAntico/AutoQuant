@@ -22,3 +22,7 @@ body > div > div > section > div:nth-child(even) > div > div > button:hover{
 .fa-bolt {
 	color: yellow;
 }
+
+body {
+  color: blue;
+}

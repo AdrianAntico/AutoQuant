@@ -1503,6 +1503,10 @@ server <- function(input, output, session) {
 
   # ----
 
+  # Close app after closing browser
+  session$onSessionEnded(function() {
+    stopApp()
+  })
 }
 
 # ----
