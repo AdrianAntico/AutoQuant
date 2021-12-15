@@ -21,7 +21,7 @@ StoreArgs(input, ProjectList, VarName, Type, Default)
 Updates ProjectList inside function. Do not assign function to anything
 }
 \description{
-Automatically save VarNameuments to project list
+Automatically save arguments to project list
 }
 \examples{
 \dontrun{

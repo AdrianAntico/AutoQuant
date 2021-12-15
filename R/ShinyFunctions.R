@@ -208,7 +208,7 @@ FilterLogicData <- function(data1, input, FilterLogic = input[['FilterLogic']], 
 #'
 #' @export
 KeyVarsInit <- function(data, VarName = NULL, type = 1) {
-  if(!is.null(VarName) && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
+  if(!is.null(VarName) && tolower(VarName) != 'none' && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
     minn <- tryCatch({floor(data[, min(get(VarName), na.rm = TRUE)])}, error = function(x) NULL)
     maxx <- tryCatch({ceiling(data[, max(get(VarName), na.rm = TRUE)])}, error = function(x) NULL)
     UData <- tryCatch({data[, unique(get(VarName))]}, error = function(x) NULL)
@@ -219,7 +219,7 @@ KeyVarsInit <- function(data, VarName = NULL, type = 1) {
         tryCatch({UData}, error = NULL)
       })
     }
-  } else if(!is.null(VarName) && any(c('Date','IDate','POSIXct','POSIXt','character','factor') %chin% class(data[[(eval(VarName))]][[1L]]))) {
+  } else if(!is.null(VarName) && tolower(VarName) != 'none' && any(c('Date','IDate','POSIXct','POSIXt','character','factor') %chin% class(data[[(eval(VarName))]][[1L]]))) {
     choices <- tryCatch({unique(data[[eval(VarName)]])}, error = function(x) NULL)
     maxx <- tryCatch({data[, max(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
     minn <- tryCatch({data[, min(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
@@ -239,7 +239,7 @@ KeyVarsInit <- function(data, VarName = NULL, type = 1) {
 #'
 #' @export
 GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
-  if((!is.null(VarName) || tolower(VarName) != 'None') && !is.null(data)) {
+  if((!is.null(VarName) || tolower(VarName) != 'none') && !is.null(data)) {
     if(is.numeric(data[[eval(VarName)]])) {
       if(type == 1) x <- 'Min Value' else x <- 'Max Value'
     }  else {
@@ -259,7 +259,7 @@ GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
 #'
 #' @export
 GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
-  if((!is.null(VarName) || tolower(VarName) != 'None') && !is.null(data)) {
+  if((!is.null(VarName) || tolower(VarName) != 'none') && !is.null(data)) {
     if(!is.numeric(data[[eval(VarName)]])) x <- TRUE else x <- FALSE
   } else {
     x <- FALSE
@@ -273,7 +273,7 @@ GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
 #'
 #' @export
 CharNull <- function(x) {
-  if(!is.null(x)) {
+  if(exists('x') && length(x) != 0) {
     return(as.character(x))
   } else {
     return(NULL)
@@ -286,7 +286,7 @@ CharNull <- function(x) {
 #'
 #' @export
 NumNull <- function(x) {
-  if(!is.null(x)) {
+  if(exists('x') && length(x) != 0) {
     return(as.numeric(x))
   } else {
     return(NULL)
@@ -299,7 +299,7 @@ NumNull <- function(x) {
 #'
 #' @export
 IntNull <- function(x) {
-  if(!is.null(x)) {
+  if(exists('x') && length(x) != 0) {
     return(as.integer(x))
   } else {
     return(NULL)
@@ -386,7 +386,7 @@ ReactiveLoadCSV <- function(input, InputVal = NULL, ProjectList = NULL, DateUpda
 
 #' @title Store Args values within a project
 #'
-#' @description Automatically save VarNameuments to project list
+#' @description Automatically save arguments to project list
 #'
 #' @author Adrian Antico
 #' @family Shiny
@@ -895,17 +895,17 @@ PickerInput_GetLevels <- function(input,
     if(exists(eval(data))) {
       if(!is.null(input[[InputID2]])) {
         if(length(input[[InputID2]]) >= NumGroupVar && input[[InputID2]] != 'None') {
-          shinyWidgets::pickerInput(inputId = InputID, label = paste0(input[[InputID2]][[NumGroupVar]]," Levels"),
+          shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', paste0(input[[InputID2]][[NumGroupVar]]," Levels")),
                       choices = Choices, selected = SelectedDefault,
                       options = list(`actions-box` = TRUE, size = 10, `selected-text-format` = "count > 1"), multiple = TRUE, width = "100%")
         } else {
-          shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >", choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+          shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
         }
       } else {
-        shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >", choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+        shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
       }
     } else {
-      shinyWidgets::pickerInput(inputId = InputID, label = "< N/A >", choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+      shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
     }
   )
 }
@@ -1024,7 +1024,7 @@ PreparePlotData <- function(input,
     # None ----
     if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
       if(Debug) print('None ----')
-      if(!SubsetOnly) {
+      if(!SubsetOnly && !is.null(DateVariable)) {
         if(GroupVariables == 'None') GroupVariables <- NULL
         PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
       } else {
@@ -1076,7 +1076,7 @@ PreparePlotData <- function(input,
     # None ----
     if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]])) {
       if(Debug) print('None ----')
-      if(!SubsetOnly) {
+      if(!SubsetOnly && !is.null(DateVariable)) {
         if(GroupVariables == 'None') GroupVariables <- NULL
         PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
       } else {
@@ -1094,7 +1094,7 @@ PreparePlotData <- function(input,
     # None ----
     if(is.null(input[[G1Levels]])) {
       if(Debug) print('None ----')
-      if(!SubsetOnly) {
+      if(!SubsetOnly && !is.null(DateVariable)) {
         if(GroupVariables == 'None') GroupVariables <- NULL
         PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(GroupVariables), eval(DateVariable)), .SDcols = c(TargetVariable)]
       } else {
@@ -1115,7 +1115,7 @@ PreparePlotData <- function(input,
   # NO Grouping Variables ----
   if(is.null(GroupVariables)) {
     if(Debug) print('No Goruping Variables ----')
-    if(!SubsetOnly) {
+    if(!SubsetOnly && !is.null(DateVariable)) {
       PlotDataForecastFinal <- PlotDataForecast[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
       PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = eval(DateVariable), .SDcols = c(TargetVariable)]
     } else {
@@ -1129,7 +1129,7 @@ PreparePlotData <- function(input,
     if(Debug) print('None up till now ----')
     if(GroupVariables == 'None') GroupVariables <- NULL
     PlotDataForecastFinal <- PlotDataForecast[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
-    if(!SubsetOnly) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
+    if(!SubsetOnly && !is.null(DateVariable)) PlotDataForecastFinal <- PlotDataForecastFinal[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
     return(PlotDataForecastFinal)
   }
 }
