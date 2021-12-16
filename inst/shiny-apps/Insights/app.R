@@ -268,6 +268,7 @@ ui <- shinydashboard::dashboardPage(
                   tags$h3('Data Filtering'),
                   shinyWidgets::dropdown(
                     animate = TRUE,
+                    right = FALSE,
                     shiny::fluidRow(
                       width = AppWidth,
                       shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
@@ -828,7 +829,7 @@ server <- function(input, output, session) {
     } else {
       x <- 'Adrian'
     }
-    if(x %in% c('factor', 'character')) FL_Default <- '%chin%' else FL_Default <- '>='
+    if(any(x %in% c('factor', 'character'))) FL_Default <- '%chin%' else FL_Default <- '>='
     shiny::selectInput(inputId='FilterLogic_1', label = tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), selected=FL_Default, multiple=FALSE)
   })
 
@@ -839,7 +840,7 @@ server <- function(input, output, session) {
     } else {
       x <- 'Adrian'
     }
-    if(x %in% c('factor', 'character')) FL_Default <- '%chin%' else FL_Default <- '>='
+    if(any(x %in% c('factor', 'character'))) FL_Default <- '%chin%' else FL_Default <- '>='
     shiny::selectInput(inputId='FilterLogic_2', label = tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), selected=FL_Default, multiple=FALSE)
   })
 
@@ -850,7 +851,7 @@ server <- function(input, output, session) {
     } else {
       x <- 'Adrian'
     }
-    if(x %in% c('factor', 'character')) FL_Default <- '%chin%' else FL_Default <- '>='
+    if(any(x %in% c('factor', 'character'))) FL_Default <- '%chin%' else FL_Default <- '>='
     shiny::selectInput(inputId='FilterLogic_3', label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), selected=FL_Default, multiple=FALSE)
   })
 
@@ -861,7 +862,7 @@ server <- function(input, output, session) {
     } else {
       x <- 'Adrian'
     }
-    if(x %in% c('factor', 'character')) FL_Default <- '%chin%' else FL_Default <- '>='
+    if(any(x %in% c('factor', 'character'))) FL_Default <- '%chin%' else FL_Default <- '>='
     shiny::selectInput(inputId='FilterLogic_4', label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), selected=FL_Default, multiple=FALSE)
   })
 
@@ -1336,7 +1337,7 @@ server <- function(input, output, session) {
 
       # Line Plot ----
       if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
-        if(!shiny::isolate(class(data1[[eval(DateVar())]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
+        if(!any(class(data1[[eval(shiny::isolate(DateVar()))]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
           p1 <- RemixAutoML:::TimeSeriesPlotter(
             data = data1,
             TargetVariable = shiny::isolate(YVar()),
