@@ -23,6 +23,7 @@ AppsPlotting(
   CreatePlotButtonColor = "primary",
   UpdatePlotButtonColor = "primary",
   ResetPlotButtonColor = "primary",
+  AppTextColor = "white",
   Browser = FALSE,
   Docker = FALSE,
   UserName_Password_DT = NULL,
@@ -62,6 +63,8 @@ AppsPlotting(
 
 \item{ResetPlotButtonColor}{Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'}
 
+\item{AppTextColor}{'white'}
+
 \item{Browser}{FALSE}
 
 \item{Docker}{FALSE}
@@ -99,6 +102,7 @@ RemixAutoML::AppsPlotting(
   CreatePlotButtonColor = 'default',
   UpdatePlotButtonColor = 'default',
   ResetPlotButtonColor = 'default',
+  AppTextColor = 'white',
   Docker = FALSE,
   Browser = FALSE,
   UserName_Password_DT = NULL,
@@ -122,6 +126,7 @@ RemixAutoML::AppsPlotting(
 # CreatePlotButtonColor = 'default'
 # UpdatePlotButtonColor = 'default'
 # ResetPlotButtonColor = 'default'
+# AppTextColor = 'white'
 # Docker = FALSE
 # Browser = FALSE
 # UserName_Password_DT = NULL

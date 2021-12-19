@@ -21,6 +21,7 @@
 #' @param CreatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param UpdatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
+#' @param AppTextColor 'white'
 #' @param Browser FALSE
 #' @param Docker FALSE
 #' @param UserName_Password_DT NULL. In order to enforce authentication, supply a data.table with columns 'UserName' which contains the names of your users and 'Password' which contains the acceptable passwords. E.g. data.table::data.table(UserName = c('Adrian Antico', 'Guest'), Password = c('Password1', 'Password2')). Case sensitivity applies.
@@ -52,6 +53,7 @@
 #'   CreatePlotButtonColor = 'default',
 #'   UpdatePlotButtonColor = 'default',
 #'   ResetPlotButtonColor = 'default',
+#'   AppTextColor = 'white',
 #'   Docker = FALSE,
 #'   Browser = FALSE,
 #'   UserName_Password_DT = NULL,
@@ -75,6 +77,7 @@
 #' # CreatePlotButtonColor = 'default'
 #' # UpdatePlotButtonColor = 'default'
 #' # ResetPlotButtonColor = 'default'
+#' # AppTextColor = 'white'
 #' # Docker = FALSE
 #' # Browser = FALSE
 #' # UserName_Password_DT = NULL
@@ -100,6 +103,7 @@ AppsPlotting <- function(data,
                          CreatePlotButtonColor = 'primary',
                          UpdatePlotButtonColor = 'primary',
                          ResetPlotButtonColor = 'primary',
+                         AppTextColor = 'white',
                          Browser = FALSE,
                          Docker = FALSE,
                          UserName_Password_DT = NULL,
@@ -125,6 +129,7 @@ AppsPlotting <- function(data,
     CreatePlotButtonColor = 'default',
     UpdatePlotButtonColor = 'default',
     ResetPlotButtonColor = 'default',
+    AppTextColor = AppTextColor,
     UserName_Password_DT = UserName_Password_DT,
     Debug = Debug)
 
