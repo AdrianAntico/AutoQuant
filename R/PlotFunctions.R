@@ -1,3 +1,301 @@
+#' @title AutoPlotter
+#'
+#' @description Create plots
+#'
+#' @author Adrian Antico
+#' @family Graphics
+#'
+#' @param dt = NULL
+#' @param PlotType = input[['PlotType']]
+#' @param YVar = shiny::isolate(YVar())
+#' @param XVar = shiny::isolate(DateVar())
+#' @param YMin = input[['YMin']]
+#' @param YMax = input[['YMax']]
+#' @param XMin = input[['XMin']]
+#' @param XMax = input[['XMax']]
+#' @param ColorVariables = shiny::isolate(SelectedGroups())
+#' @param SizeVar1 = input[['SizeVar1']]
+#' @param FacetVar1 = shiny::isolate(input[['FacetVar1']])
+#' @param FacetVar2 = shiny::isolate(input[['FacetVar2']])
+#' @param YTicks = input[['YTicks']]
+#' @param XTicks = input[['XTicks']]
+#' @param OutlierSize = input[['OutlierSize']]
+#' @param OutlierColor = input[['OutlierColor']]
+#' @param BoxPlotFill = input[['BoxPlotFill']]
+#' @param GamFitScatter = input[['GamFitScatter']]
+#' @param TextSize = input[['TextSize']]
+#' @param AngleX = input[['AngleX']]
+#' @param AngleY = input[['AngleY']]
+#' @param ChartColor = input[['ChartColor']]
+#' @param BorderColor = input[['BorderColor']]
+#' @param TextColor = input[['TextColor']]
+#' @param GridColor = input[['GridColor']]
+#' @param BackGroundColor = input[['BackGroundColor']]
+#' @param Debug = FALSE
+#'
+#' @export
+AutoPlotter <- function(dt = NULL,
+                        PlotType = input[['PlotType']],
+                        YVar = shiny::isolate(YVar()),
+                        XVar = shiny::isolate(DateVar()),
+                        YMin = input[['YMin']],
+                        YMax = input[['YMax']],
+                        XMin = input[['XMin']],
+                        XMax = input[['XMax']],
+                        ColorVariables = shiny::isolate(SelectedGroups()),
+                        SizeVar1 = input[['SizeVar1']],
+                        FacetVar1 = shiny::isolate(input[['FacetVar1']]),
+                        FacetVar2 = shiny::isolate(input[['FacetVar2']]),
+                        YTicks = input[['YTicks']],
+                        XTicks = input[['XTicks']],
+                        OutlierSize = input[['OutlierSize']],
+                        OutlierColor = input[['OutlierColor']],
+                        BoxPlotFill = input[['BoxPlotFill']],
+                        GamFitScatter = input[['GamFitScatter']],
+                        TextSize = input[['TextSize']],
+                        AngleX = input[['AngleX']],
+                        AngleY = input[['AngleY']],
+                        ChartColor = input[['ChartColor']],
+                        BorderColor = input[['BorderColor']],
+                        TextColor = input[['TextColor']],
+                        GridColor = input[['GridColor']],
+                        BackGroundColor = input[['BackGroundColor']],
+                        Debug = FALSE) {
+
+  # Create BoxPlot or ViolinPlot
+  if(PlotType == 'BoxPlotTS') {
+
+    # Create base plot object
+    if(Debug) print('Create Plot with only data')
+    p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
+
+    # Box Plot
+    if(Debug) print('Create BoxPlot')
+    p1 <- p1 + ggplot2::geom_boxplot(outlier.size = OutlierSize, outlier.colour = OutlierColor, fill = BoxPlotFill)
+
+    # Add Horizontal Line for Mean Y
+    if(!PlotType %in% 'Line') {
+      if(Debug) print('Create Plot Horizontal Line')
+      p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
+    }
+
+    # Create Plot labs
+    if(Debug) print('Create Plot labs')
+    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    if(!'Default' %in% XTicks) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Axis Labels
+    p1 <- p1 + ggplot2::ylab(eval(YVar)) + ggplot2::xlab(XVar)
+
+    # Add faceting (returns no faceting in none was requested)
+    if(FacetVar1 != 'None' && FacetVar2 != 'None') {
+      if(Debug) print('FacetVar1 and FacetVar2')
+      p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
+    } else if(FacetVar1 == 'None' && FacetVar2 != 'None') {
+      if(Debug) print('FacetVar2')
+      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
+    } else if(FacetVar1 != 'None' && FacetVar2 == 'None') {
+      if(Debug) print('FacetVar1')
+      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
+    }
+
+  } else if(PlotType == 'ViolinPlotTS') {
+
+    # Create base plot object
+    if(Debug) print('Create Plot with only data')
+    p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
+
+    # Violine Plot
+    if(Debug) print('Create Violin Plot')
+    p1 <- p1 + ggplot2::geom_violin(draw_quantiles = TRUE)
+
+    # Add Horizontal Line for Mean Y
+    if(!PlotType %in% 'Line') {
+      if(Debug) print('Create Plot Horizontal Line')
+      p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
+    }
+
+    # Create Plot labs
+    if(Debug) print('Create Plot labs')
+    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    if(!'Default' %in% XTicks) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Axis Labels
+    p1 <- p1 + ggplot2::ylab(eval(YVar)) + ggplot2::xlab(XVar)
+
+    # Add faceting (returns no faceting in none was requested)
+    if(FacetVar1 != 'None' && FacetVar2 != 'None') {
+      if(Debug) print('FacetVar1 and FacetVar2')
+      p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
+    } else if(FacetVar1 == 'None' && FacetVar2 != 'None') {
+      if(Debug) print('FacetVar2')
+      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
+    } else if(FacetVar1 != 'None' && FacetVar2 == 'None') {
+      if(Debug) print('FacetVar1')
+      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
+    }
+
+  } else if(PlotType == 'Line') {
+
+    # TS Line Plot
+    p1 <- RemixAutoML:::TimeSeriesPlotter(
+      data = dt,
+      TargetVariable = YVar,
+      DateVariable = XVar,
+      GroupVariables = if(ColorVariables == 'None') NULL else ColorVariables,
+      Aggregate = 'mean',
+      NumberGroupsDisplay = NumberGroupsDisplay,
+      LevelsToDisplay = NULL,
+      OtherGroupLabel = "OtherGroups",
+      DisplayOtherGroup = TRUE,
+      TextSize = TextSize,
+      LineWidth = 0.5,
+      Color = 'blue',
+      XTickMarks = if('Default' %in% XTicks) NULL else XTicks,
+      AngleX = AngleX,
+      AngleY = AngleY,
+      ChartColor = ChartColor,
+      BorderColor = BorderColor,
+      TextColor = TextColor,
+      GridColor = GridColor,
+      BackGroundColor = BackGroundColor,
+      LegendPosition = 'bottom',
+      LegendTextColor = 'darkblue',
+      LegendTextSize = 10)
+
+    # Update labels
+    p1 <- p1 + ggplot2::labs(
+      title = 'Time Series Plot',
+      caption = 'by RemixAutoML') +
+      ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax))) +
+      ggplot2::ylab(eval(YVar)) + ggplot2::xlab(eval(DateVar)) +
+      ggplot2::theme(legend.title = ggplot2::element_blank())
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    if(!'Default' %in% XTicks) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+  } else if(PlotType %in% c('Scatter', 'Copula')) {
+
+    # Subset + Sample
+    R2_Pearson <- c()
+    R2_Spearman <- c()
+    yyy <- eval(YVar)
+    xxx <- eval(XVar)
+    if(Debug) print(dt[,.N])
+    if(dt[,.N] < 100000L) {
+      for(zz in seq_len(30L)) {
+        temp <- dt[order(runif(.N))][seq_len(floor(0.50 * .N))]
+        R2_Pearson <- c(R2_Pearson, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "pearson")) ^ 2)
+        R2_Spearman <- c(R2_Spearman, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "spearman")) ^ 2)
+      }
+    } else {
+      for(zz in seq_len(30L)) {
+        temp <- dt[order(runif(.N))][seq_len(100000L)]
+        R2_Pearson <- c(R2_Pearson, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "pearson")) ^ 2)
+        R2_Spearman <- c(R2_Spearman, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "spearman")) ^ 2)
+      }
+    }
+    rm(temp)
+
+    # Build plot objects
+    if(Debug) print('Build plot objects')
+    Output <- RemixAutoML::ScatterCopula(
+      data = dt,
+      x_var = xxx,
+      y_var = yyy,
+      GroupVariable = if(ColorVariables[1L] == 'None') NULL else ColorVariables[1L],
+      FacetCol = if(FacetVar2 == 'None') NULL else FacetVar2,
+      FacetRow = if(FacetVar1 == 'None') NULL else FacetVar1,
+      SizeVar1 = if(SizeVar1 == 'None') NULL else SizeVar1,
+      SampleCount = 100000L,
+      FitGam = as.logical(GamFitScatter))
+
+    # Modify by plot type
+    if(Debug) print('Modify by plot type')
+    if(PlotType %chin% 'Scatter') {
+      p1 <- Output[['ScatterPlot']]
+      p1 <- p1 + ggplot2::labs(
+        title = paste0('Scatter Plot'),
+        subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
+      p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor))
+      p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
+      p1 <- p1 + ggplot2::xlim(as.numeric(eval(XMin)), as.numeric(eval(XMax)))
+
+    } else if(PlotType %chin% 'Copula') {
+
+      p1 <- Output[['CopulaPlot']]
+      p1 <- p1 + ggplot2::labs(
+        title = paste0('Empirical Copula Plot'),
+        subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
+      p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor))
+    }
+
+    # Tick Marks
+    if(Debug) print('YTicks Update')
+    if('Percentiles' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    } else if('Every 5th percentile' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
+    } else if('Deciles' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
+    } else if('Quantiles' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
+    } else if('Quartiles' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
+    } else {
+      y_vals <- YTicks
+    }
+
+    if(Debug) print('XTicks Update')
+    if('Percentiles' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(XVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    } else if('Every 5th percentile' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
+    } else if('Deciles' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
+    } else if('Quantiles' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
+    } else if('Quartiles' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
+    } else {
+      x_vals <- XTicks
+    }
+
+    if(Debug) print('Update X and Y Ticks')
+    if(!'Default' %in% XTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
+    if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+  }
+
+  # Add ChartTheme
+  if(Debug) print('ChartTheme')
+  p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
+
+  # Limit Y
+  if(Debug) print('Limit Y')
+  if(PlotType == 'Scatter' && !is.null(YMin) && !is.null(YMax)) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
+
+  # Return plot
+  return(eval(p1))
+}
+
+
 #' @title multiplot
 #'
 #' @description Sick of copying this one into your code? Well, not anymore.

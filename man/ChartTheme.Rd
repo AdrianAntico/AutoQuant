@@ -59,6 +59,7 @@ p <- p + ChartTheme(Size = 12)
 }
 \seealso{
 Other Graphics: 
+\code{\link{AutoPlotter}()},
 \code{\link{multiplot}()}
 }
 \author{

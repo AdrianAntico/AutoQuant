@@ -48,6 +48,7 @@ RemixAutoML::multiplot(plotlist = list(p1,p2))
 }
 \seealso{
 Other Graphics: 
+\code{\link{AutoPlotter}()},
 \code{\link{ChartTheme}()}
 }
 \author{

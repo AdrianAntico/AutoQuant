@@ -59,7 +59,7 @@ if(!is.null(UserName_Password_DT)) {
 # ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-# Create ui                            ----
+# UI Code                              ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 ui <- shinydashboard::dashboardPage(
   title = 'Tablows',
@@ -87,20 +87,14 @@ ui <- shinydashboard::dashboardPage(
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Contents of side bar menu            ----
+  # Side bar menu                        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shinydashboard::dashboardSidebar(
 
     # Needed for authentication-related activities
     shinyjs::useShinyjs(),
 
-    # ----
-
-    # ----
-
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    # sidebarMenu                          ----
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Sidebar menu
     shinydashboard::sidebarMenu(
 
       # Sidebar for switching pages only (no other buttons will work. Ensures authentically)
@@ -144,11 +138,12 @@ ui <- shinydashboard::dashboardPage(
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # tabItems                             ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # ----
+
+    # ----
+
     shinydashboard::tabItems(
-
-      # ----
-
-      # ----
 
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Login Page                           ----
@@ -158,15 +153,11 @@ ui <- shinydashboard::dashboardPage(
         tabName = 'Login',
         shiny::fluidRow(
           shiny::column(
-            width = AppWidth,
-            shinyjs::useShinyjs(),
+            width = AppWidth, shinyjs::useShinyjs(),
             shinydashboard::box(
               title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Login Panel'),
-              solidHeader = TRUE,
-              collapsible = TRUE,
-              collapsed = FALSE,
-              background = GroupVarsBoxColor,
-              width = 9L,
+              solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+              background = GroupVarsBoxColor, width = 9L,
               shiny::selectInput(
                 inputId = "UserName",
                 label =  "Select from Names",
@@ -182,8 +173,7 @@ ui <- shinydashboard::dashboardPage(
         # Button to login and go to Load Data
         shiny::fluidRow(
           shiny::column(
-            width = 3L,
-            shinyjs::useShinyjs(),
+            width = 3L, shinyjs::useShinyjs(),
             shinyWidgets::actionBttn(
               inputId = 'Check_Credentials',
               label = 'Check Credentials',
@@ -200,25 +190,11 @@ ui <- shinydashboard::dashboardPage(
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       shinydashboard::tabItem(
         tabName = 'LoadDataPage',
-        # shiny::fluidRow(
-        #   shiny::column(
-        #     width = 3L,
-        #     shinyjs::useShinyjs(),
-        #     shinyWidgets::actionBttn(
-        #       inputId = 'LoadDataPage_2_LoginPage',
-        #       label = 'Login Page',
-        #       icon = shiny::icon('chevron-right', lib = 'font-awesome'),
-        #       style = 'gradient',
-        #       color = eval(CreatePlotButtonColor)))),
-        #
-        # # Add Space
-        # RemixAutoML::BlankRow(AppWidth),
 
         # Loaders
         shiny::fluidRow(
           shiny::column(
-            width = AppWidth,
-            shinyjs::useShinyjs(),
+            width = AppWidth, shinyjs::useShinyjs(),
             shinydashboard::box(
               title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Loading Objects'),
               solidHeader = TRUE,
@@ -240,24 +216,13 @@ ui <- shinydashboard::dashboardPage(
         # Go to Plotter
         shiny::fluidRow(
           shiny::column(
-            width = 3L,
-            shinyjs::useShinyjs(),
+            width = 3L, shinyjs::useShinyjs(),
             shinyWidgets::actionBttn(
               inputId = 'LoadDataButton',
               label = 'Load Objects',
               icon = shiny::icon('chevron-right', lib = 'font-awesome'),
               style = 'gradient',
-              color = eval(CreatePlotButtonColor)))
-          # shiny::column(
-          #   width = 3L,
-          #   shinyjs::useShinyjs(),
-          #   shinyWidgets::actionBttn(
-          #     inputId = 'LoadDataPage_2_PlotterPage',
-          #     label = 'Plotting Page',
-          #     icon = shiny::icon('chevron-right', lib = 'font-awesome'),
-          #     style = 'gradient',
-          #     color = eval(CreatePlotButtonColor)))
-          )),
+              color = eval(CreatePlotButtonColor))))),
 
         # ----
 
@@ -271,24 +236,6 @@ ui <- shinydashboard::dashboardPage(
         # -- TAB REFERENCE VALUE
         tabName = "Plotter",
 
-        # # Add Space
-        # RemixAutoML::BlankRow(AppWidth),
-        #
-        # # Button to go home
-        # shiny::fluidRow(
-        #   shiny::column(
-        #     width = 3L,
-        #     shinyjs::useShinyjs(),
-        #     shinyWidgets::actionBttn(
-        #       inputId = 'PlotterPage_2_LoadDataPage',
-        #       label = 'Load Data Page',
-        #       icon = shiny::icon('chevron-right', lib = 'font-awesome'),
-        #       style = 'gradient',
-        #       color = eval(CreatePlotButtonColor)))),
-        #
-        # # Add Space
-        # RemixAutoML::BlankRow(AppWidth),
-
         # ----
 
         # ----
@@ -298,33 +245,26 @@ ui <- shinydashboard::dashboardPage(
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         shiny::fluidRow(
           shiny::column(
-            width = AppWidth,
-            shinyjs::useShinyjs(),
+            width = AppWidth, shinyjs::useShinyjs(),
             shinydashboard::box(
               title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Plotting Variables'),
-              solidHeader = TRUE,
-              collapsible = TRUE,
-              collapsed = FALSE,
-              background = 'navy',
-              width = AppWidth,
+              solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE, background = 'navy', width = AppWidth,
               shiny::fluidRow(
                 width = AppWidth,
                 shiny::column(3L, shiny::uiOutput('YVar')),
-                shiny::column(3L, shiny::uiOutput('YMin')),
-                shiny::column(3L, shiny::uiOutput('YMax'))),
-              shiny::fluidRow(
-                width = AppWidth,
                 shiny::column(3L, shiny::uiOutput('XVar')),
-                shiny::column(3L, shiny::uiOutput('XMin')),
-                shiny::column(3L, shiny::uiOutput('XMax'))),
-              shiny::fluidRow(
-                width = AppWidth,
                 shiny::column(3L, shiny::uiOutput('DateVar')),
-                shiny::column(3L, shiny::uiOutput('DateMin')),
-                shiny::column(3L, shiny::uiOutput('DateMax'))),
+                shiny::column(3L, shiny::uiOutput('ScoreVar'))),
               shiny::fluidRow(
                 width = AppWidth,
-                shiny::column(3L, shiny::uiOutput('ScoreVar')))),
+                shiny::column(3L, shiny::uiOutput('YMin')),
+                shiny::column(3L, shiny::uiOutput('XMin')),
+                shiny::column(3L, shiny::uiOutput('DateMin'))),
+              shiny::fluidRow(
+                width = AppWidth,
+                shiny::column(3L, shiny::uiOutput('YMax')),
+                shiny::column(3L, shiny::uiOutput('XMax')),
+                shiny::column(3L, shiny::uiOutput('DateMax')))),
 
             # Add Space
             RemixAutoML::BlankRow(AppWidth),
@@ -332,19 +272,13 @@ ui <- shinydashboard::dashboardPage(
             # GroupVars,
             shinydashboard::box(
               title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Plotting Variables'),
-              solidHeader = TRUE,
-              collapsible = TRUE,
-              collapsed = FALSE,
-              background = VarsBoxColor,
-              width = AppWidth,
+              solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE, background = VarsBoxColor, width = AppWidth,
               shiny::fluidRow(
                 width = AppWidth,
                 shiny::column(
-                  width = 3L,
-                  tags$h3('Grouping Variables'),
+                  width = 3L, tags$h3('Grouping Variables'),
                   shinyWidgets::dropdown(
-                    animate = TRUE,
-                    right = FALSE,
+                    animate = TRUE, right = FALSE,
                     shiny::fluidRow(
                       width = AppWidth,
                       shiny::column(3L, shiny::uiOutput('GroupVars')),
@@ -384,11 +318,9 @@ ui <- shinydashboard::dashboardPage(
 
                 # Filter Vars
                 shiny::column(
-                  width = 3L,
-                  tags$h3('Data Filtering'),
+                  width = 3L, tags$h3('Data Filtering'),
                   shinyWidgets::dropdown(
-                    animate = TRUE,
-                    right = FALSE,
+                    animate = TRUE, right = FALSE,
                     shiny::fluidRow(
                       width = AppWidth,
                       shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
@@ -419,11 +351,9 @@ ui <- shinydashboard::dashboardPage(
 
                 # Plot Formatting bars
                 shiny::column(
-                  width = 3L,
-                  tags$h3('Plot Formatting'),
+                  width = 3L, tags$h3('Plot Formatting'),
                   shinyWidgets::dropdown(
-                    animate = TRUE,
-                    right = FALSE,
+                    animate = TRUE, right = TRUE,
                     shiny::fluidRow(
                       width = AppWidth,
                       shiny::column(3L, shiny::uiOutput('PlotWidth')),
@@ -442,6 +372,11 @@ ui <- shinydashboard::dashboardPage(
                       shiny::column(3L, shiny::uiOutput('GridColor')),
                       shiny::column(3L, shiny::uiOutput('BackGroundColor')),
                       shiny::column(3L, shiny::uiOutput('BorderColor'))),
+                    shiny::fluidRow(
+                      width = AppWidth,
+                      shiny::column(3L, shiny::uiOutput('OutlierSize')),
+                      shiny::column(3L, shiny::uiOutput('OutlierColor')),
+                      shiny::column(3L, shiny::uiOutput('BoxPlotFill'))),
                     circle = FALSE, tooltip = FALSE, status = "primary",
                     inputId = "PlotInputsUI",
                     icon = icon("gear"), width = LogoWidth)))))),
@@ -454,64 +389,16 @@ ui <- shinydashboard::dashboardPage(
         # ----
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        # Plot Inputs                          ----
+        # Plot Core Inputs                     ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-
-        # shiny::fluidRow(
-        #   shiny::column(
-        #     width = AppWidth,
-        #     shinyjs::useShinyjs(),
-        #     shinydashboard::box(
-        #       title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Plot Options'),
-        #       solidHeader = TRUE,
-        #       collapsible = TRUE,
-        #       collapsed = FALSE,
-        #       background = PlotBoxColor,
-        #       width = AppWidth,
-        #       shiny::fluidRow(
-        #         shiny::column(
-        #           width = 3L,
-        #           tags$h3('Plotting Options'),
-        #           shinyWidgets::dropdown(
-        #             animate = TRUE,
-        #             right = FALSE,
-        #             shiny::fluidRow(
-        #               width = AppWidth,
-        #               shiny::column(3L, shiny::uiOutput('PlotWidth')),
-        #               shiny::column(3L, shiny::uiOutput('PlotHeight')),
-        #               shiny::column(3L, shiny::uiOutput('XTicks')),
-        #               shiny::column(3L, shiny::uiOutput('YTicks'))),
-        #             shiny::fluidRow(
-        #               width = AppWidth,
-        #               shiny::column(3L, shiny::uiOutput('AngleY')),
-        #               shiny::column(3L, shiny::uiOutput('TextSize')),
-        #               shiny::column(3L, shiny::uiOutput('TextColor')),
-        #               shiny::column(3L, shiny::uiOutput('ChartColor'))),
-        #             shiny::fluidRow(
-        #               width = AppWidth,
-        #               shiny::column(3L, shiny::uiOutput('AngleX')),
-        #               shiny::column(3L, shiny::uiOutput('GridColor')),
-        #               shiny::column(3L, shiny::uiOutput('BackGroundColor')),
-        #               shiny::column(3L, shiny::uiOutput('BorderColor'))),
-        #             circle = FALSE, tooltip = FALSE, status = "primary",
-        #             inputId = "PlotInputsUI",
-        #             icon = icon("gear"), width = LogoWidth)))))),
-
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
 
         # Core Plot Inputs
         shiny::fluidRow(
           shiny::column(
-            width = AppWidth,
-            shinyjs::useShinyjs(),
+            width = AppWidth, shinyjs::useShinyjs(),
             shinydashboard::box(
               title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Plot Options'),
-              solidHeader = TRUE,
-              collapsible = TRUE,
-              collapsed = FALSE,
-              background = PlotBoxColor,
-              width = AppWidth,
+              solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE, background = PlotBoxColor, width = AppWidth,
               shiny::fluidRow(
                 width = AppWidth,
                 shiny::column(3L, shiny::uiOutput('GamFitScatter')),
@@ -536,8 +423,7 @@ ui <- shinydashboard::dashboardPage(
 
           # Create Plot!
           shiny::column(
-            width = 3L,
-            shinyjs::useShinyjs(),
+            width = 3L, shinyjs::useShinyjs(),
             shinyWidgets::actionBttn(
               inputId = 'TrendPlotExecute',
               label = 'Create Plot!',
@@ -547,8 +433,7 @@ ui <- shinydashboard::dashboardPage(
 
           # Update Theme!
           shiny::column(
-            width = 3L,
-            shinyjs::useShinyjs(),
+            width = 3L, shinyjs::useShinyjs(),
             shinyWidgets::actionBttn(
               inputId = 'UpdatePlotThemeElements',
               label = 'Update Theme!',
@@ -558,8 +443,7 @@ ui <- shinydashboard::dashboardPage(
 
           # Reset Theme!
           shiny::column(
-            width = 3L,
-            shinyjs::useShinyjs(),
+            width = 3L, shinyjs::useShinyjs(),
             shinyWidgets::actionBttn(
               inputId = 'ResetPlotThemeElements',
               label = 'Reset Theme!',
@@ -585,7 +469,7 @@ ui <- shinydashboard::dashboardPage(
 # ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-# Server Function                      ----
+# Server Code                          ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 server <- function(input, output, session) {
 
@@ -668,19 +552,18 @@ server <- function(input, output, session) {
 
   # YVar and XVar
   output$YVar <- shiny::renderUI({
-    # 'Y-Variable'
     RemixAutoML::PickerInput(InputID = 'YVar', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
+  # 'X-Variable'
   output$XVar <- shiny::renderUI({
-    # 'X-Variable'
     RemixAutoML::PickerInput(InputID = 'XVar', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
+  # 'Score-Variable'
   output$ScoreVar <- shiny::renderUI({
-    # 'Score-Variable'
     RemixAutoML::PickerInput(InputID = 'ScoreVar', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
+  # 'Date Variable'
   output$DateVar <- shiny::renderUI({
-    # 'Date Variable'
     RemixAutoML::PickerInput(InputID = 'DateVar', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
@@ -867,6 +750,15 @@ server <- function(input, output, session) {
   })
   output$BorderColor <- shiny::renderUI({
     RemixAutoML::PickerInput(InputID = 'BorderColor', Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$OutlierSize <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'OutlierSize', Label = tags$span(style='color: blue;', 'Border Color'), Choices = c(seq(0.01,2,0.01)), SelectedDefault = 0.01, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$OutlierColor <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'OutlierColor', Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+  })
+  output$BoxPlotFill <- shiny::renderUI({
+    RemixAutoML::PickerInput(InputID = 'BoxPlotFill', Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'gray', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ----
@@ -1444,24 +1336,13 @@ server <- function(input, output, session) {
       if(Debug) print('Subset Rows based on Filters')
       x <- tryCatch({shiny::isolate(SelectedGroups())}, error = function(e) NULL)
       if(Debug) print(x)
-      if(Debug) print(input$Levels_1)
-      if(Debug) print(input$Levels_2)
-      if(Debug) print(input$Levels_3)
-      if(Debug) print(shiny::isolate(YVar()))
-      if(Debug) print(shiny::isolate(DateVar()))
-      #if(Debug) print(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS','Scatter','Copula'))
+      if(Debug) {print(input$Levels_1); print(input$Levels_2); print(input$Levels_3)}
+      if(Debug) {print(shiny::isolate(YVar())); print(shiny::isolate(XVar())); print(shiny::isolate(DateVar()))}
       data1 <<- RemixAutoML::PreparePlotData(
         SubsetOnly = if(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS','Scatter','Copula')) TRUE else FALSE,
-        input,
-        PlotDataForecast = data1,
-        Aggregate = 'mean',
-        TargetVariable = shiny::isolate(YVar()),
-        DateVariable = if(shiny::isolate(DateVar()) == 'None') NULL else shiny::isolate(DateVar()),
-        GroupVariables = x,
-        G1Levels = 'Levels_1',
-        G2Levels = 'Levels_2',
-        G3Levels = 'Levels_3',
-        Debug = Debug)
+        input, PlotDataForecast = data1, Aggregate = 'mean', TargetVariable = shiny::isolate(YVar()),
+        DateVariable = if(shiny::isolate(DateVar()) == 'None') NULL else shiny::isolate(DateVar()), GroupVariables = x,
+        G1Levels = 'Levels_1', G2Levels = 'Levels_2', G3Levels = 'Levels_3', Debug = Debug)
 
       # Render Plot
       if(Debug) print(data1)
@@ -1479,220 +1360,33 @@ server <- function(input, output, session) {
 
       # ----
 
-      # BoxPlotTS, ViolinPlotTS ----
+      # BoxPlotTS, ViolinPlotTS, Line, Scatter, Copula ----
       if(Debug) {print('Create Plot Object'); print(input[['PlotType']])}
-      if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS'))) {
-        if(Debug) print('Create Plot Objects 1')
-        p1 <- ggplot2::ggplot(data = data1, ggplot2::aes(x = get(shiny::isolate(DateVar())), y = get(shiny::isolate(YVar())), group = get(shiny::isolate(DateVar()))))
-        if(input[['PlotType']] == 'BoxPlotTS') {
-          if(Debug) print('Create Plot Objects 2a')
-          p1 <- p1 + ggplot2::geom_boxplot(outlier.size = 0.1, outlier.colour = 'blue', fill = 'gray')
-        } else if(shiny::isolate(input[['PlotType']] == 'ViolinPlotTS')) {
-          if(Debug) print('Create Plot Objects 2b')
-          p1 <- p1 + ggplot2::geom_violin(draw_quantiles = TRUE)
-        }
-        if(Debug) print('Create Plot Objects 3')
-        p1 <- shiny::isolate(p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data1[[eval(shiny::isolate(YVar()))]], na.rm = TRUE))))
-        if(Debug) print('Create Plot Objects 4')
-        p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(
-          Size = input[['TextSize']],
-          AngleX = input[['AngleX']],
-          AngleY = input[['AngleY']],
-          ChartColor = input[['ChartColor']],
-          BorderColor = input[['BorderColor']],
-          TextColor = input[['TextColor']],
-          GridColor = input[['GridColor']],
-          BackGroundColor = input[['BackGroundColor']]))
-        if(Debug) print('Create Plot Objects 5')
-        p1 <- p1 + ggplot2::labs(
-          title = 'Distribution over Time',
-          subtitle = 'Blue line = mean(Y)',
-          caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(shiny::isolate(DateVar()))
-        if(Debug) print('XTicks')
-        if(Debug) print(input[['XTicks']])
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = input[['XTicks']]))
-        if(Debug) print('XTicks end')
+      if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS','Line','Scatter','Copula'))) {
 
-        # Add faceting (returns no faceting in none was requested)
-        if(shiny::isolate(input[['FacetVar1']]) != 'None' && shiny::isolate(input[['FacetVar2']]) != 'None') {
-          if(Debug) print('Create Plot Objects 6a')
-          p1 <- p1 + ggplot2::facet_grid(get(shiny::isolate(input[['FacetVar1']])) ~ get(shiny::isolate(input[['FacetVar2']])))
-        } else if(shiny::isolate(input[['FacetVar1']]) == 'None' && shiny::isolate(input[['FacetVar2']] != 'None')) {
-          if(Debug) print('Create Plot Objects 6b')
-          p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetVar2']])))
-        } else if(shiny::isolate(input[['FacetVar1']]) != 'None' && shiny::isolate(input[['FacetVar2']]) == 'None') {
-          if(Debug) print('Create Plot Objects 6c')
-          p1 <- p1 + ggplot2::facet_wrap(~ get(shiny::isolate(input[['FacetVar1']])))
-        }
-        p1 <<- p1
-      }
-
-      # ----
-
-      # Line Plot ----
-      if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
-        if(!any(class(data1[[eval(shiny::isolate(DateVar()))]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
-          p1 <- RemixAutoML:::TimeSeriesPlotter(
-            data = data1,
-            TargetVariable = shiny::isolate(YVar()),
-            DateVariable = shiny::isolate(DateVar()),
-            GroupVariables = if(shiny::isolate(SelectedGroups()) == 'None') NULL else shiny::isolate(SelectedGroups()),
-            Aggregate = 'mean',
-            NumberGroupsDisplay = input[['NumberGroupsDisplay']],
-            LevelsToDisplay = NULL,
-            OtherGroupLabel = "OtherGroups",
-            DisplayOtherGroup = TRUE,
-            TextSize = input[['TextSize']],
-            LineWidth = 0.5,
-            Color = 'blue',
-            XTickMarks = if('Default' %in% input[['XTicks']]) NULL else input[['XTicks']],
-            AngleX = input[['AngleX']],
-            AngleY = input[['AngleY']],
-            ChartColor = input[['ChartColor']],
-            BorderColor = input[['BorderColor']],
-            TextColor = input[['TextColor']],
-            GridColor = input[['GridColor']],
-            BackGroundColor = input[['BackGroundColor']],
-            LegendPosition = 'bottom',
-            LegendTextColor = 'darkblue',
-            LegendTextSize = 10)
-
-          # Update labels
-          p1 <- p1 + ggplot2::labs(
-            title = 'Time Series Plot',
-            caption = 'by RemixAutoML') +
-            ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-            ggplot2::ylab(eval(shiny::isolate(YVar()))) + ggplot2::xlab(eval(shiny::isolate(DateVar()))) +
-            ggplot2::theme(legend.title = ggplot2::element_blank())
-
-          # For renderPlot args
-          # Add faceting (returns no faceting in none was requested)
-          #p1 <- AddFaceting(p1, input)
-          p1 <<- p1
-        } else {
+        # Create Plot
+        if(input[['PlotType']] %chin% 'Line' && any(class(data1[[eval(shiny::isolate(DateVar()))]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
           shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a Date, IDate, or Posix type", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-        }
-      }
-
-      # ----
-
-      # Scatter, Copula ----
-      if(input[['PlotType']] %chin% c('Scatter','Copula')) {
-
-        # Ensure variables are numeric
-        if(Debug) {
-          print(YVar())
-          print(XVar())
-        }
-
-        if(!any(c('numeric','integer') %chin% class(data1[[eval(shiny::isolate(YVar()))]]))) {
-          shinyWidgets::sendSweetAlert(session, title = NULL, text = "Y needs to be a numeric variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-        } else if(!any(c('numeric','integer') %chin% class(data1[[eval(shiny::isolate(XVar()))]]))) {
-          shinyWidgets::sendSweetAlert(session, title = NULL, text = "X needs to be a numeric variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
         } else {
+          p1 <- RemixAutoML::AutoPlotter(
+            dt = data1,
+            PlotType = input[['PlotType']],
+            YVar = shiny::isolate(YVar()),
+            YMin = input[['YMin']], YMax = input[['YMax']],
+            XVar = if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlotTS','ViolinPlotTS','Line'))) shiny::isolate(DateVar()) else shiny::isolate(XVar()),
+            XMin = input[['XMin']], XMax = input[['XMax']],
+            ColorVariables = shiny::isolate(SelectedGroups()), SizeVar1 = input[['SizeVar1']],
+            FacetVar1 = shiny::isolate(input[['FacetVar1']]), FacetVar2 = shiny::isolate(input[['FacetVar2']]),
+            YTicks = input[['YTicks']], XTicks = input[['XTicks']],
+            OutlierSize = input[['OutlierSize']], OutlierColor = input[['OutlierColor']], BoxPlotFill = input[['BoxPlotFill']],
+            GamFitScatter = input[['GamFitScatter']],
+            TextSize = input[['TextSize']], TextColor = input[['TextColor']],
+            AngleX = input[['AngleX']], AngleY = input[['AngleY']],
+            ChartColor = input[['ChartColor']], BorderColor = input[['BorderColor']], GridColor = input[['GridColor']], BackGroundColor = input[['BackGroundColor']],
+            Debug = Debug)
 
-          # Generate plot
-          # Subset + Sample
-          R2_Pearson <- c()
-          R2_Spearman <- c()
-          yyy <- eval(shiny::isolate(YVar()))
-          xxx <- eval(shiny::isolate(XVar()))
-          if(Debug) print(data1[,.N])
-          if(data1[,.N] < 100000L) {
-            for(zz in seq_len(30L)) {
-              temp <- data1[order(runif(.N))][seq_len(floor(0.50 * .N))]
-              R2_Pearson <- c(R2_Pearson, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "pearson")) ^ 2)
-              R2_Spearman <- c(R2_Spearman, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "spearman")) ^ 2)
-            }
-          } else {
-            for(zz in seq_len(30L)) {
-              temp <- data1[order(runif(.N))][seq_len(100000L)]
-              R2_Pearson <- c(R2_Pearson, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "pearson")) ^ 2)
-              R2_Spearman <- c(R2_Spearman, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "spearman")) ^ 2)
-            }
-          }
-          rm(temp)
-
-          # Build plot objects
-          if(Debug) print('Build plot objects')
-          Output <- RemixAutoML::ScatterCopula(
-            data = data1,
-            x_var = xxx,
-            y_var = yyy,
-            GroupVariable = if(shiny::isolate(SelectedGroups())[1L] == 'None') NULL else shiny::isolate(SelectedGroups())[1L],
-            FacetCol = if(shiny::isolate(input[['FacetVar2']]) == 'None') NULL else shiny::isolate(input[['FacetVar2']]),
-            FacetRow = if(shiny::isolate(input[['FacetVar1']]) == 'None') NULL else shiny::isolate(input[['FacetVar1']]),
-            SizeVar1 = if(shiny::isolate(input[['SizeVar1']]) == 'None') NULL else shiny::isolate(input[['SizeVar1']]),
-            SampleCount = 100000L,
-            FitGam = as.logical(shiny::isolate(input[['GamFitScatter']])))
-
-          # Modify by plot type
-          if(Debug) print('Modify by plot type')
-          if(shiny::isolate(input[['PlotType']] %chin% c('Scatter'))) {
-            p1 <- Output[["ScatterPlot"]]
-            p1 <- p1 + ggplot2::labs(
-              title = paste0('Scatter Plot'),
-              subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
-                                "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
-            p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(
-              Size = input[['TextSize']], AngleX = input[['AngleX']], AngleY = input[['AngleY']],
-              ChartColor = input[['ChartColor']], BorderColor = input[['BorderColor']], TextColor = input[['TextColor']],
-              GridColor = input[['GridColor']], BackGroundColor = input[['BackGroundColor']]))
-            p1 <- p1 + ggplot2::ylim(as.numeric(eval(shiny::isolate(input[['YMin']]))), as.numeric(eval(shiny::isolate(input[['YMax']]))))
-            p1 <- p1 + ggplot2::xlim(as.numeric(eval(shiny::isolate(input[['XMin']]))), as.numeric(eval(shiny::isolate(input[['XMax']]))))
-
-          } else if(shiny::isolate(input[['PlotType']] %chin% c('Copula'))) {
-
-            p1 <- Output[["CopulaPlot"]]
-            p1 <- p1 + ggplot2::labs(
-              title = paste0('Empirical Copula Plot'),
-              subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
-                                "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
-            p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(
-              Size = input[['TextSize']], AngleX = input[['AngleX']], AngleY = input[['AngleY']],
-              ChartColor = input[['ChartColor']], BorderColor = input[['BorderColor']], TextColor = input[['TextColor']],
-              GridColor = input[['GridColor']], BackGroundColor = input[['BackGroundColor']]))
-          }
-
-          # Tick Marks
-          if('Percentiles' %in% input[['YTicks']]) {
-            y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          } else if('Every 5th percentile' %in% input[['YTicks']]) {
-            y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-            y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
-          } else if('Deciles' %in% input[['YTicks']]) {
-            y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-            y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
-          } else if('Quantiles' %in% input[['YTicks']]) {
-            y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-            y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
-          } else if('Quartiles' %in% input[['YTicks']]) {
-            y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-            y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
-          } else {
-            y_vals <- input[['YTicks']]
-          }
-          if('Percentiles' %in% input[['XTicks']]) {
-            x_vals <- data1[, quantile(round(get(XVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          } else if('Every 5th percentile' %in% input[['XTicks']]) {
-            x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-            x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
-          } else if('Deciles' %in% input[['XTicks']]) {
-            x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-            x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
-          } else if('Quantiles' %in% input[['XTicks']]) {
-            x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-            x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
-          } else if('Quartiles' %in% input[['XTicks']]) {
-            x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-            x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
-          } else {
-            x_vals <- input[['XTicks']]
-          }
-          if(!'Default' %in% input[['XTicks']]) p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
-          if(!'Default' %in% input[['YTicks']]) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+          # Make global
+          p1 <<- p1
         }
       }
 
@@ -1710,9 +1404,7 @@ server <- function(input, output, session) {
             data = data1,
             PredictionColName = isolate(ScoreVar()),
             TargetColName = shiny::isolate(YVar()),
-            GraphType = "calibration",
-            PercentileBucket = 1/input$Percentile_Buckets,
-            aggrfun = function(x) mean(x, na.rm = TRUE))
+            GraphType = "calibration", PercentileBucket = 1/input$Percentile_Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
         }
       }
 
@@ -1742,8 +1434,7 @@ server <- function(input, output, session) {
             data = data1,
             PredictionColName = isolate(ScoreVar()),
             TargetColName = shiny::isolate(YVar()),
-            GraphType = "boxplot",
-            PercentileBucket = 1/input$Percentile_Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
+            GraphType = "boxplot", PercentileBucket = 1/input$Percentile_Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
         }
       }
 
@@ -1769,10 +1460,7 @@ server <- function(input, output, session) {
           p1 <- RemixAutoML::ROCPlot(
             data = data1,
             TargetName = shiny::isolate(YVar()),
-            SavePlot = FALSE,
-            Name = NULL,
-            metapath = NULL,
-            modelpath = NULL)
+            SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)
         }
       }
 
@@ -1799,10 +1487,7 @@ server <- function(input, output, session) {
             data = data1,
             TargetColumnName = shiny::isolate(YVar()),
             PredictedColumnName = isolate(ScoreVar()),
-            SavePlot = FALSE,
-            Name = NULL,
-            metapath = NULL,
-            modelpath = NULL)$GainsPlot
+            SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
         }
       }
 
@@ -1829,10 +1514,7 @@ server <- function(input, output, session) {
             data = data1,
             TargetColumnName = shiny::isolate(YVar()),
             PredictedColumnName = isolate(ScoreVar()),
-            SavePlot = FALSE,
-            Name = NULL,
-            metapath = NULL,
-            modelpath = NULL)$LiftPlot
+            SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$LiftPlot
         }
       }
 
@@ -1857,10 +1539,8 @@ server <- function(input, output, session) {
           if(Debug) print('Test_ScatterPlot ! !Subsetcheck')
           p1 <- RemixAutoML::ResidualPlots(
             TestData = data1,
-            Target = shiny::isolate(YVar()),
-            Predicted = isolate(ScoreVar()),
-            DateColumnName = input$ModelInsights_DateVariable,
-            Gam_Fit = FALSE)$ScatterPlot
+            Target = shiny::isolate(YVar()), Predicted = isolate(ScoreVar()),
+            DateColumnName = input$ModelInsights_DateVariable, Gam_Fit = FALSE)$ScatterPlot
         }
       }
 
@@ -1885,10 +1565,8 @@ server <- function(input, output, session) {
           if(Debug) print('Test_CopulaPlot ! !Subsetcheck')
           p1 <- RemixAutoML::ResidualPlots(
             TestData = data1,
-            Target = shiny::isolate(YVar()),
-            Predicted = isolate(ScoreVar()),
-            DateColumnName = input$ModelInsights_DateVariable,
-            Gam_Fit = FALSE)$CopulaPlot
+            Target = shiny::isolate(YVar()), Predicted = isolate(ScoreVar()),
+            DateColumnName = input$ModelInsights_DateVariable, Gam_Fit = FALSE)$CopulaPlot
         }
       }
 
@@ -1913,10 +1591,8 @@ server <- function(input, output, session) {
           if(Debug) print('Test_ResidualsHistogram ! !Subsetcheck')
           p1 <- RemixAutoML::ResidualPlots(
             TestData = data1,
-            Target = shiny::isolate(YVar()),
-            Predicted = shiny::isolate(ScoreVar()),
-            DateColumnName = input$ModelInsights_DateVariable,
-            Gam_Fit = FALSE)$ResidualsHistogram
+            Target = shiny::isolate(YVar()), Predicted = shiny::isolate(ScoreVar()),
+            DateColumnName = input$ModelInsights_DateVariable, Gam_Fit = FALSE)$ResidualsHistogram
         }
       }
 
@@ -1962,10 +1638,7 @@ server <- function(input, output, session) {
             PredictionColName = isolate(ScoreVar()),
             TargetColName = shiny::isolate(YVar()),
             IndepVar = input[['PDP_Variable']],
-            GraphType = 'calibration',
-            PercentileBucket = 1 / input$Percentile_Buckets,
-            FactLevels = 10,
-            Function = function(x) mean(x, na.rm = TRUE))
+            GraphType = 'calibration', PercentileBucket = 1 / input$Percentile_Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
           if(!is.null(input[['XMin']]) && !is.null(input[['XMax']])) p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
           p1$layers[[6L]] <- NULL
           p1$layers[[5L]] <- NULL
@@ -1989,10 +1662,7 @@ server <- function(input, output, session) {
             PredictionColName = isolate(ScoreVar()),
             TargetColName = shiny::isolate(YVar()),
             IndepVar = input[['PDP_Variable']],
-            GraphType = 'calibration',
-            PercentileBucket = 1 / input$Percentile_Buckets,
-            FactLevels = 10,
-            Function = function(x) mean(x, na.rm = TRUE))
+            GraphType = 'calibration', PercentileBucket = 1 / input$Percentile_Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
           if(!is.null(input[['XMin']]) && !is.null(input[['XMax']])) p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
           p1$layers[[6L]] <- NULL
           p1$layers[[5L]] <- NULL
@@ -2014,10 +1684,7 @@ server <- function(input, output, session) {
             PredictionColName = isolate(ScoreVar()),
             TargetColName = shiny::isolate(YVar()),
             IndepVar = input[['PDP_Variable']],
-            GraphType = "boxplot",
-            PercentileBucket = 1 / input$Percentile_Buckets,
-            FactLevels = 10,
-            Function = function(x) mean(x, na.rm = TRUE))
+            GraphType = "boxplot", PercentileBucket = 1 / input$Percentile_Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
           if(!is.null(input[['XMin']]) && !is.null(input[['XMax']])) p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
           p1$layers[[6L]] <- NULL
           p1$layers[[5L]] <- NULL
@@ -2038,10 +1705,7 @@ server <- function(input, output, session) {
             PredictionColName = isolate(ScoreVar()),
             TargetColName = shiny::isolate(YVar()),
             IndepVar = input[['PDP_Variable']],
-            GraphType = "boxplot",
-            PercentileBucket = 1 / input$Percentile_Buckets,
-            FactLevels = 10,
-            Function = function(x) mean(x, na.rm = TRUE))
+            GraphType = "boxplot", PercentileBucket = 1 / input$Percentile_Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
           if(!is.null(input[['XMin']]) && !is.null(input[['XMax']])) p1 <- p1 + ggplot2::xlim(as.numeric(eval(input[['XMin']])), as.numeric(eval(input[['XMax']])))
           p1$layers[[6L]] <- NULL
           p1$layers[[5L]] <- NULL
@@ -2089,6 +1753,6 @@ server <- function(input, output, session) {
 # ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ----
-# Run the application                    ----
+# Run App                                ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ----
 shiny::shinyApp(ui = ui, server = server)
