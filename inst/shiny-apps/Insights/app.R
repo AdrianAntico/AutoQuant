@@ -93,6 +93,7 @@ ui <- shinydashboard::dashboardPage(
   # shinydashboard::dashboardSidebar(disable = TRUE),
   shinydashboard::dashboardSidebar(
 
+    # Needed for authentication-related activities
     shinyjs::useShinyjs(),
 
     # ----
@@ -104,6 +105,7 @@ ui <- shinydashboard::dashboardPage(
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     shinydashboard::sidebarMenu(
 
+      # Sidebar for switching pages only (no other buttons will work. Ensures authentically)
       id = "sidebar",
       tags$head(tags$style(".inactiveLink {
                             pointer-events: none;
@@ -174,7 +176,7 @@ ui <- shinydashboard::dashboardPage(
               shiny::textInput(
                 inputId = "Password",
                 label =  "Input Password",
-                value = if(Credentials[UserName == 'Adrian Antico', .N] > 0) Credentials$Password else NULL)))),
+                value = if(Credentials[UserName == 'Adrian Antico', .N] > 0) Credentials$Password[[1L]] else 'Password')))),
 
         # Add Space
         RemixAutoML::BlankRow(AppWidth),
@@ -189,17 +191,7 @@ ui <- shinydashboard::dashboardPage(
               label = 'Check Credentials',
               icon = shiny::icon('chevron-right', lib = 'font-awesome'),
               style = 'gradient',
-              color = eval(CreatePlotButtonColor)))
-          # shiny::column(
-          #   width = 3L,
-          #   shinyjs::useShinyjs(),
-          #   shinyWidgets::actionBttn(
-          #     inputId = 'LoginPage_2_LoadDataPage',
-          #     label = 'Load Data Page',
-          #     icon = shiny::icon('chevron-right', lib = 'font-awesome'),
-          #     style = 'gradient',
-          #     color = eval(CreatePlotButtonColor)))
-          )),
+              color = eval(CreatePlotButtonColor))))),
 
         # ----
 
