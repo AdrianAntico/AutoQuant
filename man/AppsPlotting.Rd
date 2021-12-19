@@ -25,6 +25,7 @@ AppsPlotting(
   ResetPlotButtonColor = "primary",
   Browser = FALSE,
   Docker = FALSE,
+  UserName_Password_DT = NULL,
   Debug = FALSE
 )
 }
@@ -65,6 +66,8 @@ AppsPlotting(
 
 \item{Docker}{FALSE}
 
+\item{UserName_Password_DT}{NULL. In order to enforce authentication, supply a data.table with columns 'UserName' which contains the names of your users and 'Password' which contains the acceptable passwords. E.g. data.table::data.table(UserName = c('Adrian Antico', 'Guest'), Password = c('Password1', 'Password2')). Case sensitivity applies.}
+
 \item{Debug}{FALSE}
 }
 \description{
@@ -98,6 +101,7 @@ RemixAutoML::AppsPlotting(
   ResetPlotButtonColor = 'default',
   Docker = FALSE,
   Browser = FALSE,
+  UserName_Password_DT = NULL,
   Debug = FALSE)
 
 # XVariable = 'Date'
@@ -108,18 +112,19 @@ RemixAutoML::AppsPlotting(
 # ModelOutputList = NULL
 # Debug = TRUE
 # HeaderColor = 'black'
-# AppWidth = 12L,
-# LogoWidth = '1000px',
-# LogoHeight = '100px',
-# GroupVarsBoxColor = 'navy',
-# VarsBoxColor = 'purple',
+# AppWidth = 12L
+# LogoWidth = '1000px'
+# LogoHeight = '100px'
+# GroupVarsBoxColor = 'navy'
+# VarsBoxColor = 'purple'
 # FilterBoxColor = 'blue'
-# PlotBoxColor = 'aqua',
-# CreatePlotButtonColor = 'default',
-# UpdatePlotButtonColor = 'default',
-# ResetPlotButtonColor = 'default',
-Docker = FALSE,
-Browser = FALSE,
+# PlotBoxColor = 'aqua'
+# CreatePlotButtonColor = 'default'
+# UpdatePlotButtonColor = 'default'
+# ResetPlotButtonColor = 'default'
+# Docker = FALSE
+# Browser = FALSE
+# UserName_Password_DT = NULL
 # Debug = TRUE
 }
 

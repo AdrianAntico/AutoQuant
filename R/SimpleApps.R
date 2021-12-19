@@ -23,6 +23,7 @@
 #' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param Browser FALSE
 #' @param Docker FALSE
+#' @param UserName_Password_DT NULL. In order to enforce authentication, supply a data.table with columns 'UserName' which contains the names of your users and 'Password' which contains the acceptable passwords. E.g. data.table::data.table(UserName = c('Adrian Antico', 'Guest'), Password = c('Password1', 'Password2')). Case sensitivity applies.
 #' @param Debug FALSE
 #'
 #' @examples
@@ -53,6 +54,7 @@
 #'   ResetPlotButtonColor = 'default',
 #'   Docker = FALSE,
 #'   Browser = FALSE,
+#'   UserName_Password_DT = NULL,
 #'   Debug = FALSE)
 #'
 #' # XVariable = 'Date'
@@ -63,18 +65,19 @@
 #' # ModelOutputList = NULL
 #' # Debug = TRUE
 #' # HeaderColor = 'black'
-#' # AppWidth = 12L,
-#' # LogoWidth = '1000px',
-#' # LogoHeight = '100px',
-#' # GroupVarsBoxColor = 'navy',
-#' # VarsBoxColor = 'purple',
+#' # AppWidth = 12L
+#' # LogoWidth = '1000px'
+#' # LogoHeight = '100px'
+#' # GroupVarsBoxColor = 'navy'
+#' # VarsBoxColor = 'purple'
 #' # FilterBoxColor = 'blue'
-#' # PlotBoxColor = 'aqua',
-#' # CreatePlotButtonColor = 'default',
-#' # UpdatePlotButtonColor = 'default',
-#' # ResetPlotButtonColor = 'default',
-#' Docker = FALSE,
-#' Browser = FALSE,
+#' # PlotBoxColor = 'aqua'
+#' # CreatePlotButtonColor = 'default'
+#' # UpdatePlotButtonColor = 'default'
+#' # ResetPlotButtonColor = 'default'
+#' # Docker = FALSE
+#' # Browser = FALSE
+#' # UserName_Password_DT = NULL
 #' # Debug = TRUE
 #' }
 #'
@@ -99,6 +102,7 @@ AppsPlotting <- function(data,
                          ResetPlotButtonColor = 'primary',
                          Browser = FALSE,
                          Docker = FALSE,
+                         UserName_Password_DT = NULL,
                          Debug = FALSE) {
 
   # Pass args to shiny app
@@ -121,6 +125,7 @@ AppsPlotting <- function(data,
     CreatePlotButtonColor = 'default',
     UpdatePlotButtonColor = 'default',
     ResetPlotButtonColor = 'default',
+    UserName_Password_DT = UserName_Password_DT,
     Debug = Debug)
 
   # Run shiny app

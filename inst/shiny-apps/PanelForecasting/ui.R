@@ -17,16 +17,13 @@ shinydashboard::dashboardPage(
   # Title of App ----
   # how to add logo to header: https://stackoverflow.com/questions/48978648/align-header-elements-in-shiny-dashboard
   shinydashboard::dashboardHeader(
-
     htmltools::tags$li(class = "dropdown",
             htmltools::tags$style(".main-header {max-height: 55px}"),
             htmltools::tags$style(".main-header .logo {height: 55px;}"),
             htmltools::tags$style(".sidebar-toggle {height: 20px; padding-top: 1px !important;}"),
-            htmltools::tags$style(".navbar {min-height:55px !important}")
-    ),
+            htmltools::tags$style(".navbar {min-height:55px !important}")),
     titleWidth = 190,
 
-    #<img src='https://www.remixinstitute.com/wp-content/uploads/7b-Cheetah_Charcoal_Inline_No_Sub_No_BG.png' align = 'center' height = '20px'></img>
     # Title ----
     title = HTML(
       "
@@ -35,23 +32,6 @@ shinydashboard::dashboardPage(
       </div>
       ")
 
-    # Dropdown Menu ----
-    # shinydashboard::dropdownMenu(
-    #   type = "messages",
-    #   badgeStatus = "warning",
-    #   messageItem(
-    #     from = "Marketing Department",
-    #     message = "Ready to begin forecasting"),
-    #   messageItem(
-    #     from = "New User",
-    #     message = "How do I register?",
-    #     icon = icon("question"),
-    #     time = "13:45"),
-    #   messageItem(
-    #     from = "Support",
-    #     message = "The new version is ready.",
-    #     icon = icon("life-ring"),
-    #     time = as.character(Sys.time())))
   ),
 
   # . ----

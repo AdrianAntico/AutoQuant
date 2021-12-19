@@ -1,5 +1,5 @@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-# Environment Setup ----
+# Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 library(data.table)
 data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
@@ -11,7 +11,7 @@ options(scipen = 999)
 # ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-# Passthrough Args ----
+# Passthrough Args                     ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
 # data related
@@ -37,14 +37,33 @@ UpdatePlotButtonColor <- shiny::getShinyOption('UpdatePlotButtonColor')
 ResetPlotButtonColor <- shiny::getShinyOption('ResetPlotButtonColor')
 Debug <- shiny::getShinyOption('Debug')
 
+# Usernames and Passwords
+UserName_Password_DT <- shiny::getShinyOption('UserName_Password_DT')
+if(!is.null(UserName_Password_DT)) {
+  if('UserName' %in% names(UserName_Password_DT) && 'Password' %in% names(UserName_Password_DT)) {
+    Credentials <- UserName_Password_DT
+  } else {
+    Credentials <- data.table::data.table(
+      UserName = c('Guest'),
+      Password = c('Password'))
+  }
+} else {
+  Credentials <- data.table::data.table(
+    UserName = c('Guest'),
+    Password = c('Password'))
+}
+
+
+
 # ----
 
 # ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-# Create ui ----
+# Create ui                            ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 ui <- shinydashboard::dashboardPage(
+  title = 'Tablows',
 
   # Top of page color
   skin = HeaderColor,
@@ -52,62 +71,160 @@ ui <- shinydashboard::dashboardPage(
   # App Header
   shinydashboard::dashboardHeader(
     htmltools::tags$li(class = "dropdown",
-                       htmltools::tags$style(".main-header {max-height: 55px}"),
-                       htmltools::tags$style(".main-header .logo {height: 55px;}"),
+                       htmltools::tags$style(".main-header {max-height: 57px}"),
+                       htmltools::tags$style(".main-header .logo {height: 57px;}"),
                        htmltools::tags$style(".sidebar-toggle {height: 20px; padding-top: 1px !important;}"),
                        htmltools::tags$style(".navbar {min-height:55px !important}")),
     titleWidth = 190,
     title = htmltools::HTML(
       "
       <div style = 'vertical-align:middle'>
-      <img src='NewPackageLogo.png' align = 'center' height = '53px'></img>
+      <img src='NewPackageLogo.png' align = 'center' height = '54px'></img>
       </div>
       ")),
 
-  # Contents of side bar menu ----
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Contents of side bar menu            ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # shinydashboard::dashboardSidebar(disable = TRUE),
   shinydashboard::dashboardSidebar(
+
+    shinyjs::useShinyjs(),
+
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # sidebarMenu                          ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     shinydashboard::sidebarMenu(
-      id = "modelMenu",
 
-      # Home Page ----
-      shinydashboard::menuItem(text="Load Data", tabName="LoadDataPage", icon=shiny::icon("fort-awesome")),
+      id = "sidebar",
+      tags$head(tags$style(".inactiveLink {
+                            pointer-events: none;
+                           cursor: default;
+                           }")),
 
-      # -- ADD SPACE ----
-      RemixAutoML::BlankRow(12),
+      # -- ADD SPACE
+      RemixAutoML::BlankRow(AppWidth),
 
-      # Home Page ----
-      shinydashboard::menuItem(text="Create Plots", tabName="Plotter", icon=shiny::icon("fort-awesome")))),
+      # Home Page
+      shinydashboard::menuItem(text="Login", tabName="Login", icon=shiny::icon("fort-awesome"), selected = TRUE),
 
-  # App Body
+      # -- ADD SPACE
+      RemixAutoML::BlankRow(AppWidth),
+
+      # Home Page
+      shinydashboard::menuItem(text="Import Data", tabName='LoadDataPage', icon=shiny::icon("fort-awesome")),
+
+      # -- ADD SPACE
+      RemixAutoML::BlankRow(AppWidth),
+
+      # Home Page
+      shinydashboard::menuItem(text="Create Plots", tabName='Plotter', icon=shiny::icon("fort-awesome")))),
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # dashboardBody                        ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shinydashboard::dashboardBody(
 
-    # Module Body UI Elements Go Here ----
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # tabItems                             ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     shinydashboard::tabItems(
 
       # ----
 
       # ----
 
-      # HOME PAGE
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      # Login Page                           ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       shinydashboard::tabItem(
+        selected = TRUE,
+        tabName = 'Login',
+        shiny::fluidRow(
+          shiny::column(
+            width = AppWidth,
+            shinyjs::useShinyjs(),
+            shinydashboard::box(
+              title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Login Panel'),
+              solidHeader = TRUE,
+              collapsible = TRUE,
+              collapsed = FALSE,
+              background = GroupVarsBoxColor,
+              width = 9L,
+              shiny::selectInput(
+                inputId = "UserName",
+                label =  "Select from Names",
+                choices = Credentials[['UserName']]),
+              shiny::textInput(
+                inputId = "Password",
+                label =  "Input Password",
+                value = if(Credentials[UserName == 'Adrian Antico', .N] > 0) Credentials$Password else NULL)))),
 
-        # ----
-
-        # ----
-
-        # -- TAB REFERENCE VALUE
-        tabName = "LoadDataPage",
-
-        # -- ADD SPACE ----
+        # Add Space
         RemixAutoML::BlankRow(AppWidth),
 
-        # ----
+        # Button to login and go to Load Data
+        shiny::fluidRow(
+          shiny::column(
+            width = 3L,
+            shinyjs::useShinyjs(),
+            shinyWidgets::actionBttn(
+              inputId = 'Check_Credentials',
+              label = 'Check Credentials',
+              icon = shiny::icon('chevron-right', lib = 'font-awesome'),
+              style = 'gradient',
+              color = eval(CreatePlotButtonColor)))
+          # shiny::column(
+          #   width = 3L,
+          #   shinyjs::useShinyjs(),
+          #   shinyWidgets::actionBttn(
+          #     inputId = 'LoginPage_2_LoadDataPage',
+          #     label = 'Load Data Page',
+          #     icon = shiny::icon('chevron-right', lib = 'font-awesome'),
+          #     style = 'gradient',
+          #     color = eval(CreatePlotButtonColor)))
+          )),
 
         # ----
 
-        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        # Load Data ----
-        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+        # ----
+
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      # Load Data Page                       ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      shinydashboard::tabItem(
+        tabName = 'LoadDataPage',
+        # shiny::fluidRow(
+        #   shiny::column(
+        #     width = 3L,
+        #     shinyjs::useShinyjs(),
+        #     shinyWidgets::actionBttn(
+        #       inputId = 'LoadDataPage_2_LoginPage',
+        #       label = 'Login Page',
+        #       icon = shiny::icon('chevron-right', lib = 'font-awesome'),
+        #       style = 'gradient',
+        #       color = eval(CreatePlotButtonColor)))),
+        #
+        # # Add Space
+        # RemixAutoML::BlankRow(AppWidth),
+
+        # Loaders
         shiny::fluidRow(
           shiny::column(
             width = AppWidth,
@@ -130,56 +247,64 @@ ui <- shinydashboard::dashboardPage(
         # Add Space
         RemixAutoML::BlankRow(AppWidth),
 
-        # Create Plot!
-        shiny::fluidRow(
-          shiny::column(
-          width = 3L,
-          shinyjs::useShinyjs(),
-          shinyWidgets::actionBttn(
-            inputId = 'LoadDataButton',
-            label = 'Load Model Output Object',
-            icon = shiny::icon('chevron-right', lib = 'font-awesome'),
-            style = 'gradient',
-            color = eval(CreatePlotButtonColor))))),
-
-
-        # ----
-
-        # ----
-
-      # Go to Home Page ----
-      shinydashboard::tabItem(
-
-        # ----
-
-        # ----
-
-        # -- TAB REFERENCE VALUE ----
-        tabName = "Plotter",
-
-        # -- PAGE TITLE ----
-        #htmltools::tags$h1("Plot Data"),
-
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
-
-        # Button to go home
+        # Go to Plotter
         shiny::fluidRow(
           shiny::column(
             width = 3L,
             shinyjs::useShinyjs(),
             shinyWidgets::actionBttn(
-              inputId = 'link_LoadDataPage',
-              label = 'Load Data Page',
+              inputId = 'LoadDataButton',
+              label = 'Load Objects',
               icon = shiny::icon('chevron-right', lib = 'font-awesome'),
               style = 'gradient',
-              color = eval(CreatePlotButtonColor)))),
+              color = eval(CreatePlotButtonColor)))
+          # shiny::column(
+          #   width = 3L,
+          #   shinyjs::useShinyjs(),
+          #   shinyWidgets::actionBttn(
+          #     inputId = 'LoadDataPage_2_PlotterPage',
+          #     label = 'Plotting Page',
+          #     icon = shiny::icon('chevron-right', lib = 'font-awesome'),
+          #     style = 'gradient',
+          #     color = eval(CreatePlotButtonColor)))
+          )),
 
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
+        # ----
+
+        # ----
+
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      # Plotter Page                         ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      shinydashboard::tabItem(
+
+        # -- TAB REFERENCE VALUE
+        tabName = "Plotter",
+
+        # # Add Space
+        # RemixAutoML::BlankRow(AppWidth),
+        #
+        # # Button to go home
+        # shiny::fluidRow(
+        #   shiny::column(
+        #     width = 3L,
+        #     shinyjs::useShinyjs(),
+        #     shinyWidgets::actionBttn(
+        #       inputId = 'PlotterPage_2_LoadDataPage',
+        #       label = 'Load Data Page',
+        #       icon = shiny::icon('chevron-right', lib = 'font-awesome'),
+        #       style = 'gradient',
+        #       color = eval(CreatePlotButtonColor)))),
+        #
+        # # Add Space
+        # RemixAutoML::BlankRow(AppWidth),
+
+        # ----
+
+        # ----
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        # Variables ----
+        # Variables                            ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         shiny::fluidRow(
           shiny::column(
@@ -268,7 +393,7 @@ ui <- shinydashboard::dashboardPage(
                   tags$h3('Data Filtering'),
                   shinyWidgets::dropdown(
                     animate = TRUE,
-                    right = FALSE,
+                    right = TRUE,
                     shiny::fluidRow(
                       width = AppWidth,
                       shiny::column(3L, shiny::uiOutput('FilterVariable_1')),
@@ -305,7 +430,7 @@ ui <- shinydashboard::dashboardPage(
         # ----
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        # Plot Inputs ----
+        # Plot Inputs                          ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         shiny::fluidRow(
           shiny::column(
@@ -362,7 +487,7 @@ ui <- shinydashboard::dashboardPage(
         # ----
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        # Buttons to build plot ----
+        # Buttons to build plot                ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         shiny::fluidRow(
 
@@ -407,7 +532,7 @@ ui <- shinydashboard::dashboardPage(
         # ----
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        # Show Plot ----
+        # Show Plot                            ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend')))))))
 
@@ -417,16 +542,66 @@ ui <- shinydashboard::dashboardPage(
 # ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-# Server Function ----
+# Server Function                      ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 server <- function(input, output, session) {
 
+  # ----
+
+  # ----
+
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Load Data and ModelOutputList ----
+  # Enable Page Load                     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  shiny::observeEvent(eventExpr = input$link_LoadDataPage, {
+
+  # Button to disable / enable Data Load Page
+  shinyjs::addCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
+  shinyjs::addCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Login and Page Navigation            ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  UserName <- shiny::reactive({input$UserName})
+  Password <- shiny::reactive({input$Password})
+  shiny::observeEvent(eventExpr = input$Check_Credentials, {
+    if(UserName() %in% Credentials$UserName && Password() %in% Credentials[UserName == eval(UserName())]$Password) {
+      shinyjs::removeCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
+      shinyjs::removeCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Success', type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    } else {
+      shinyjs::addCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
+      shinyjs::addCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Username and / or password is wrong, jackass.', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    }
+  })
+  shiny::observeEvent(eventExpr = input$LoginPage_2_LoadDataPage, {
+    print('Go to Load Data Page')
     shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "LoadDataPage")
   })
+  shiny::observeEvent(eventExpr = input$LoadDataPage_2_LoginPage, {
+    print('Go to Login Page')
+    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "Login")
+  })
+  shiny::observeEvent(eventExpr = input$LoadDataPage_2_PlotterPage, {
+    print('Go to Plotter Page')
+    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "Plotter")
+  })
+  shiny::observeEvent(eventExpr = input$PlotterPage_2_LoadDataPage, {
+    print('Go to Load Data Page')
+    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "LoadDataPage")
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Load Data and ModelOutputList        ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input$LoadDataButton, {
     data <<- RemixAutoML::ReactiveLoadCSV(input, InputVal = "DataLoad", ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL)
     inFile <- input$ModelObjectLoad
@@ -437,11 +612,15 @@ server <- function(input, output, session) {
     } else {
       ModelOutputList <<- NULL
     }
-    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "Plotter")
+    shinyWidgets::sendSweetAlert(session, title = NULL, text = "Success", type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
   })
 
+  # ----
+
+  # ----
+
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Variables ----
+  # Variables                            ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # YVar and XVar
@@ -589,12 +768,20 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Plotting MetaData ----
+  # Plotting MetaData                    ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # PlotType
   output$PlotType <- shiny::renderUI({
-    MONames <- tryCatch({names(ModelOutputList$PlotList)}, error = function(x) NULL)
+    if(!is.null(ModelOutputList)) {
+      MONames <- c(
+        "Train_EvaluationPlot", "Train_EvaluationBoxPlot", "Train_ParDepPlots", "Train_ParDepBoxPlots", "Train_ResidualsHistogram",
+        "Train_ScatterPlot", "Train_CopulaPlot", "Train_VariableImportance", "Validation_VariableImportance", "Test_EvaluationPlot",
+        "Test_EvaluationBoxPlot", "Test_ParDepPlots", "Test_ParDepBoxPlots", "Test_ResidualsHistogram", "Test_ScatterPlot",
+        "Test_CopulaPlot", "Test_VariableImportance")
+    } else {
+      MONames <- NULL
+    }
     RemixAutoML::PickerInput(InputID = 'PlotType', Label = tags$span(style='color: blue;', 'Plot Type'), Choices = c('BoxPlotTS','ViolinPlotTS','Line','Scatter','Copula', MONames), SelectedDefault = 'box', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
   output$PDP_Variable <- shiny::renderUI({
@@ -687,7 +874,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Group Variables ----
+  # Group Variables                      ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Select GroupVars
@@ -791,7 +978,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Filter Variables ----
+  # Filter Variables                     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Filter Variable 1
@@ -819,7 +1006,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Filter Logic ----
+  # Filter Logic                         ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Filter Logic 1
@@ -871,7 +1058,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Filter Values ----
+  # Filter Values                        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Filter Values 1a
@@ -953,7 +1140,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Reset Plot Format Only ----
+  # Reset Plot Format Only               ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['ResetPlotThemeElements']], {
 
@@ -1094,7 +1281,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Update Plot Format Only ----
+  # Update Plot Format Only              ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['UpdatePlotThemeElements']], {
 
@@ -1191,7 +1378,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Create Plot ----
+  # Create Plot                          ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['TrendPlotExecute']], {
     x1 <- tryCatch({input[['YMin']]}, error = function(x) NULL)
@@ -1203,6 +1390,9 @@ server <- function(input, output, session) {
       shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to expand each dropdown menu at least once to initialize variables before creating plots. I am too lazy to predefine args, currently', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     } else {
 
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      # Prepare data for plotting            ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Remove NA's
       if(Debug) print('remove NA')
       if(shiny::isolate(YVar()) != 'None') {
@@ -1277,13 +1467,17 @@ server <- function(input, output, session) {
       if(Debug) print(data1)
       if(Debug) print(shiny::isolate(SelectedGroups()))
 
-      # Subsetcheck ----
+      # Subsetcheck
       if(Debug) print('Subset check ----')
       Subsetcheck <- !is.null(x) && (!is.null(RemixAutoML::CharNull(input$Levels_1)) || !is.null(RemixAutoML::CharNull(input$Levels_2)) || !is.null(RemixAutoML::CharNull(input$Levels_3)))
 
       # PlotBuckets check
       if(Debug) print('PlotBuckets check')
       Check2 <- input$Percentile_Buckets == 20
+
+      # ----
+
+      # ----
 
       # BoxPlotTS, ViolinPlotTS ----
       if(Debug) {print('Create Plot Object'); print(input[['PlotType']])}
@@ -1335,6 +1529,8 @@ server <- function(input, output, session) {
         p1 <<- p1
       }
 
+      # ----
+
       # Line Plot ----
       if(shiny::isolate(input[['PlotType']] %chin% c('Line'))) {
         if(!any(class(data1[[eval(shiny::isolate(DateVar()))]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
@@ -1378,8 +1574,9 @@ server <- function(input, output, session) {
         } else {
           shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a Date, IDate, or Posix type", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
         }
-
       }
+
+      # ----
 
       # Scatter, Copula ----
       if(input[['PlotType']] %chin% c('Scatter','Copula')) {
@@ -1499,6 +1696,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Test Evaluation Plot ----
       if(any(input[['PlotType']] %chin% "Test_EvaluationPlot")) {
         if(Debug) print('Evaluation Plot')
@@ -1517,6 +1716,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Train Evaluation Plot ----
       if(any(input[['PlotType']] %chin% "Train_EvaluationPlot")) {
         if(Debug) print('Evaluation Plot')
@@ -1527,6 +1728,8 @@ server <- function(input, output, session) {
           p1 <- ModelOutputList$PlotList[['Train_EvaluationPlot']]
         }
       }
+
+      # ----
 
       # Evaluation BoxPlot ----
       if(any(input[['PlotType']] %chin% "Test_EvaluationBoxPlot")) {
@@ -1544,6 +1747,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Evaluation BoxPlot Train ----
       if(any(input[['PlotType']] %chin% "Train_EvaluationBoxPlot")) {
         if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Train_EvaluationBoxPlot']])) {
@@ -1551,6 +1756,8 @@ server <- function(input, output, session) {
           p1 <- ModelOutputList$PlotList[['Train_EvaluationBoxPlot']]
         }
       }
+
+      # ----
 
       # ROC Plot ----
       if(any(input[['PlotType']] %chin% "Test_ROC_Plot")) {
@@ -1569,6 +1776,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # ROC Plot Train ----
       if(any(input[['PlotType']] %chin% "Train_ROC_Plot")) {
         if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ROC_Plot']])) {
@@ -1576,6 +1785,8 @@ server <- function(input, output, session) {
           p1 <- ModelOutputList$PlotList[['Train_ROC_Plot']]
         }
       }
+
+      # ----
 
       # Gains Plot ----
       if(any(input[['PlotType']] %chin% "Test_GainsPlot")) {
@@ -1595,6 +1806,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Gains Plot Train ----
       if(any(input[['PlotType']] %chin% "Train_GainsPlot")) {
         if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_GainsPlot']])) {
@@ -1602,6 +1815,8 @@ server <- function(input, output, session) {
           p1 <- ModelOutputList$PlotList[['Train_GainsPlot']]
         }
       }
+
+      # ----
 
       # Lift Plot Test ----
       if(any(input[['PlotType']] %chin% "Test_LiftPlot")) {
@@ -1621,6 +1836,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Lift Plot Train ----
       if(any(input[['PlotType']] %chin% "Train_LiftPlot")) {
         if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_LiftPlot']])) {
@@ -1628,6 +1845,8 @@ server <- function(input, output, session) {
           p1 <- ModelOutputList$PlotList[['Train_LiftPlot']]
         }
       }
+
+      # ----
 
       # Scatter Plot Test ----
       if(any(input[['PlotType']] %chin% "Test_ScatterPlot")) {
@@ -1645,6 +1864,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Scatter Plot Train ----
       if(any(input[['PlotType']] %chin% "Train_ScatterPlot")) {
         if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ScatterPlot']])) {
@@ -1652,6 +1873,8 @@ server <- function(input, output, session) {
           p1 <- ModelOutputList$PlotList[['Train_ScatterPlot']]
         }
       }
+
+      # ----
 
       # Copula Plot Test ----
       if(any(input[['PlotType']] %chin% "Test_CopulaPlot")) {
@@ -1669,6 +1892,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Copula Plot Train ----
       if(any(input[['PlotType']] %chin% "Train_CopulaPlot")) {
         if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_CopulaPlot']])) {
@@ -1676,6 +1901,8 @@ server <- function(input, output, session) {
           p1 <- ModelOutputList$PlotList[['Train_CopulaPlot']]
         }
       }
+
+      # ----
 
       # Residuals Histogram Plot Test ----
       if(any(input[['PlotType']] %chin% "Test_ResidualsHistogram")) {
@@ -1693,6 +1920,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Residuals Histogram Plot Train ----
       if(any(input[['PlotType']] %chin% "Train_ResidualsHistogram")) {
         if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ResidualsHistogram']])) {
@@ -1701,17 +1930,23 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Variable Importance Plot Test ----
       if(any(input[['PlotType']] %chin% "Test_Importance")) {
         if(Debug) print('Test_Importance ! !Subsetcheck')
         p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Test_Importance']], TopN = 25)
       }
 
+      # ----
+
       # Variable Importance Plot Train ----
       if(any(input[['PlotType']] %chin% 'Train_Importance')) {
         if(Debug) print('Train_Importance ! !Subsetcheck')
         p1 <- RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = ModelOutputList$VariableImportance[['Train_Importance']], TopN = 25)
       }
+
+      # ----
 
       # Partial Dependence Plot Test ----
       if(any(input[['PlotType']] %chin% 'Test_ParDepPlots') && !is.null(input[['PDP_Variable']])) {
@@ -1738,6 +1973,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Partial Dependence Plot Train ----
       if(any(input[['PlotType']] %chin% 'Train_ParDepPlots') && !is.null(input[['PDP_Variable']])) {
         if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Train_ParDepPlots[[eval(input[['PDP_Variable']])]])) {
@@ -1763,6 +2000,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Partial Dependence Box Plot Test ----
       if(any(input[['PlotType']] %chin% 'Test_ParDepBoxPlots') && !is.null(input[['PDP_Variable']])) {
         if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Test_ParDepBoxPlots[[eval(input[['PDP_Variable']])]])) {
@@ -1786,6 +2025,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Partial Dependence Box Plot Train ----
       if(any(input[['PlotType']] %chin% 'Train_ParDepBoxPlots') && !is.null(input[['PDP_Variable']])) {
         if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Train_ParDepBoxPlots[[eval(input[['PDP_Variable']])]])) {
@@ -1808,6 +2049,8 @@ server <- function(input, output, session) {
         }
       }
 
+      # ----
+
       # Shap Table Variable Importance ----
       if(any(input[['PlotType']] %chin% "ShapPlot")) {
         if(!Subsetcheck && data.table::is.data.table(ML_ShapTable)) {
@@ -1819,6 +2062,8 @@ server <- function(input, output, session) {
           p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ML_ShapTable2, TopN = 25)
         }
       }
+
+      # ----
 
       # Return Plot to UI
       p1 <<- p1
@@ -1843,7 +2088,7 @@ server <- function(input, output, session) {
 
 # ----
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-# Run the application ----
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ----
+# Run the application                    ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ----
 shiny::shinyApp(ui = ui, server = server)
