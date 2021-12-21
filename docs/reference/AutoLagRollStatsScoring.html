@@ -300,6 +300,7 @@
 <span class='co'># Create ID columns to know which records to score</span>
 <span class='va'>data</span><span class='op'>[</span>, <span class='va'>ID</span> <span class='op'>:=</span> <span class='va'>.N</span><span class='op'>:</span><span class='fl'>1L</span>, by <span class='op'>=</span> <span class='st'>"Factor1"</span><span class='op'>]</span>
 </div><div class='output co'>#&gt;             Adrian Independent_Variable1 Independent_Variable2
+#&gt;              &lt;num&gt;                 &lt;num&gt;                 &lt;num&gt;
 #&gt;      1: 0.92028606           -0.05287617             0.9484975
 #&gt;      2: 0.59456676           -1.33106358             0.2641961
 #&gt;      3: 0.81580387           -0.35187512             0.7033680
@@ -312,6 +313,7 @@
 #&gt; 649999: 0.82401290           -1.12104584             0.3259387
 #&gt; 650000: 0.61609174           -0.79273006             0.4526075
 #&gt;         Independent_Variable3 Independent_Variable4 Independent_Variable5
+#&gt;                         &lt;num&gt;                 &lt;num&gt;                 &lt;num&gt;
 #&gt;      1:              2.581827             13.221277             0.9739083
 #&gt;      2:              1.302384              3.678053             0.5140001
 #&gt;      3:              2.020546              7.542445             0.8386703
@@ -324,6 +326,7 @@
 #&gt; 649999:              1.385330              3.996146             0.5709104
 #&gt; 650000:              1.572407              4.818231             0.6727611
 #&gt;         Independent_Variable6 Independent_Variable7 Independent_Variable8
+#&gt;                         &lt;num&gt;                 &lt;num&gt;                 &lt;num&gt;
 #&gt;      1:             0.9947263             0.9868679             0.9611189
 #&gt;      2:             0.8753720             0.7169380             0.3685062
 #&gt;      3:             0.9654244             0.9157895             0.7680455
@@ -336,17 +339,18 @@
 #&gt; 649999:             0.8939508             0.7555862             0.4313720
 #&gt; 650000:             0.9237877             0.8202201             0.5518122
 #&gt;         Independent_Variable9 Independent_Variable10   DateTime Factor1    ID
-#&gt;      1:            0.89964743            0.809365497 1953-05-31       A 25000
-#&gt;      2:            0.06979959            0.004871983 1953-06-01       A 24999
-#&gt;      3:            0.49472648            0.244754290 1953-06-02       A 24998
-#&gt;      4:            0.04994850            0.002494852 1953-06-03       A 24997
-#&gt;      5:            0.46966061            0.220581091 1953-06-04       A 24996
+#&gt;                         &lt;num&gt;                  &lt;num&gt;     &lt;Date&gt;  &lt;char&gt; &lt;int&gt;
+#&gt;      1:            0.89964743            0.809365497 1953-07-11       A 25000
+#&gt;      2:            0.06979959            0.004871983 1953-07-12       A 24999
+#&gt;      3:            0.49472648            0.244754290 1953-07-13       A 24998
+#&gt;      4:            0.04994850            0.002494852 1953-07-14       A 24997
+#&gt;      5:            0.46966061            0.220581091 1953-07-15       A 24996
 #&gt;     ---                                                                      
-#&gt; 649996:            0.41478702            0.172048268 2021-11-05       Z     5
-#&gt; 649997:            0.36998530            0.136889121 2021-11-06       Z     4
-#&gt; 649998:            0.03932492            0.001546450 2021-11-07       Z     3
-#&gt; 649999:            0.10623606            0.011286100 2021-11-08       Z     2
-#&gt; 650000:            0.20485352            0.041964963 2021-11-09       Z     1</div><div class='input'><span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/assign.html'>set</a></span><span class='op'>(</span><span class='va'>data</span>, i <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='st'>"ID"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>==</span> <span class='fl'>2L</span><span class='op'>)</span>, j <span class='op'>=</span> <span class='st'>"ID"</span>, value <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
+#&gt; 649996:            0.41478702            0.172048268 2021-12-16       Z     5
+#&gt; 649997:            0.36998530            0.136889121 2021-12-17       Z     4
+#&gt; 649998:            0.03932492            0.001546450 2021-12-18       Z     3
+#&gt; 649999:            0.10623606            0.011286100 2021-12-19       Z     2
+#&gt; 650000:            0.20485352            0.041964963 2021-12-20       Z     1</div><div class='input'><span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/assign.html'>set</a></span><span class='op'>(</span><span class='va'>data</span>, i <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='st'>"ID"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>==</span> <span class='fl'>2L</span><span class='op'>)</span>, j <span class='op'>=</span> <span class='st'>"ID"</span>, value <span class='op'>=</span> <span class='fl'>1L</span><span class='op'>)</span>
 
 <span class='co'># Score records</span>
 <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'>AutoLagRollStatsScoring</span><span class='op'>(</span>

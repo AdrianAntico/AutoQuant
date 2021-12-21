@@ -132,6 +132,9 @@
   x_var <span class='op'>=</span> <span class='cn'>NULL</span>,
   y_var <span class='op'>=</span> <span class='cn'>NULL</span>,
   GroupVariable <span class='op'>=</span> <span class='cn'>NULL</span>,
+  FacetCol <span class='op'>=</span> <span class='cn'>NULL</span>,
+  FacetRow <span class='op'>=</span> <span class='cn'>NULL</span>,
+  SizeVar1 <span class='op'>=</span> <span class='cn'>NULL</span>,
   SampleCount <span class='op'>=</span> <span class='fl'>100000L</span>,
   FitGam <span class='op'>=</span> <span class='cn'>TRUE</span>,
   color <span class='op'>=</span> <span class='st'>"darkblue"</span>,
@@ -165,6 +168,18 @@
     <tr>
       <th>GroupVariable</th>
       <td><p>Color options</p></td>
+    </tr>
+    <tr>
+      <th>FacetCol</th>
+      <td><p>NULL or string</p></td>
+    </tr>
+    <tr>
+      <th>FacetRow</th>
+      <td><p>NULL or string</p></td>
+    </tr>
+    <tr>
+      <th>SizeVar1</th>
+      <td><p>NULL. Use to size the dots by a variable</p></td>
     </tr>
     <tr>
       <th>SampleCount</th>
@@ -232,6 +247,35 @@
 
     <p>Adrian Antico</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='co'># Create data</span>
+<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'><a href='FakeDataGenerator.html'>FakeDataGenerator</a></span><span class='op'>(</span><span class='op'>)</span>
+
+<span class='co'># Build plot</span>
+<span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'>ScatterCopula</span><span class='op'>(</span>
+  data <span class='op'>=</span> <span class='va'>data</span>,
+  x_var <span class='op'>=</span> <span class='st'>'Independent_Variable1'</span>,
+  y_var <span class='op'>=</span> <span class='st'>'Independent_Variable2'</span>,
+  GroupVariable <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='co'>#'Factor_1',</span>
+  FacetCol <span class='op'>=</span> <span class='st'>'Factor_1'</span>,
+  FacetRow <span class='op'>=</span> <span class='cn'>NULL</span>,
+  SizeVar1 <span class='op'>=</span> <span class='st'>'Independent_Variable1'</span>,
+  SampleCount <span class='op'>=</span> <span class='fl'>100000L</span>,
+  FitGam <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  color <span class='op'>=</span> <span class='st'>"darkblue"</span>,
+  point_size <span class='op'>=</span> <span class='fl'>0.50</span>,
+  text_size <span class='op'>=</span> <span class='fl'>12</span>,
+  x_axis_text_angle <span class='op'>=</span> <span class='fl'>35</span>,
+  y_axis_text_angle <span class='op'>=</span> <span class='fl'>0</span>,
+  chart_color <span class='op'>=</span> <span class='st'>"lightsteelblue1"</span>,
+  border_color <span class='op'>=</span> <span class='st'>"darkblue"</span>,
+  text_color <span class='op'>=</span> <span class='st'>"darkblue"</span>,
+  grid_color <span class='op'>=</span> <span class='st'>"white"</span>,
+  background_color <span class='op'>=</span> <span class='st'>"gray95"</span>,
+  legend_position <span class='op'>=</span> <span class='st'>"bottom"</span><span class='op'>)</span>
+<span class='op'>}</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

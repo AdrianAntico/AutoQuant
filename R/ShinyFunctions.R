@@ -1186,30 +1186,6 @@ GenerateEvaluationMetrics <- function(EvalData = NULL,
 #'
 #' @param containerId Passthrough
 #' @param expr Code
-#'
-#' @examples
-#' \dontrun{
-#' library(shiny)
-#' Example usage
-#'
-#' ui <- fluidPage(
-#'   pre(id = "console")
-#' )
-#'
-#' server <- function(input, output, session) {
-#'   observe({
-#'     invalidateLater(1)
-#'
-#'     withConsoleRedirect("console", {
-#'       str(cars)
-#'     })
-#'   })
-#' }
-#'
-#' shinyApp(ui, server)
-#' }
-#'
-#' @export
 withConsoleRedirect <- function(containerId, expr) {
   # Change type="output" to type="message" to catch stderr
   # (messages, warnings, and errors) instead of stdout.

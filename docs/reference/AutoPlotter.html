@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>PreparePlotData — PreparePlotData • RemixAutoML</title>
+<title>AutoPlotter — AutoPlotter • RemixAutoML</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="PreparePlotData — PreparePlotData" />
-<meta property="og:description" content="PreparePlotData automatically builds a picker input with tryCatch's and ProjectList argument usage if it exists" />
+<meta property="og:title" content="AutoPlotter — AutoPlotter" />
+<meta property="og:description" content="Create plots" />
 
 
 
@@ -118,26 +118,46 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>PreparePlotData</h1>
-    <small class="dont-index">Source: <a href='https://github.com/AdrianAntico/RemixAutoML/blob/master/R/ShinyFunctions.R'><code>R/ShinyFunctions.R</code></a></small>
-    <div class="hidden name"><code>PreparePlotData.Rd</code></div>
+    <h1>AutoPlotter</h1>
+    <small class="dont-index">Source: <a href='https://github.com/AdrianAntico/RemixAutoML/blob/master/R/PlotFunctions.R'><code>R/PlotFunctions.R</code></a></small>
+    <div class="hidden name"><code>AutoPlotter.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>PreparePlotData automatically builds a picker input with tryCatch's and ProjectList argument usage if it exists</p>
+    <p>Create plots</p>
     </div>
 
-    <pre class="usage"><span class='fu'>PreparePlotData</span><span class='op'>(</span>
-  <span class='va'>input</span>,
-  <span class='va'>PlotDataForecast</span>,
-  SubsetOnly <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  Aggregate <span class='op'>=</span> <span class='cn'>NULL</span>,
-  TargetVariable <span class='op'>=</span> <span class='cn'>NULL</span>,
-  DateVariable <span class='op'>=</span> <span class='cn'>NULL</span>,
-  GroupVariables <span class='op'>=</span> <span class='cn'>NULL</span>,
-  G1Levels <span class='op'>=</span> <span class='cn'>NULL</span>,
-  G2Levels <span class='op'>=</span> <span class='cn'>NULL</span>,
-  G3Levels <span class='op'>=</span> <span class='cn'>NULL</span>,
+    <pre class="usage"><span class='fu'>AutoPlotter</span><span class='op'>(</span>
+  dt <span class='op'>=</span> <span class='cn'>NULL</span>,
+  PlotType <span class='op'>=</span> <span class='st'>"Scatter"</span>,
+  YVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  XVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  YMin <span class='op'>=</span> <span class='cn'>NULL</span>,
+  YMax <span class='op'>=</span> <span class='cn'>NULL</span>,
+  XMin <span class='op'>=</span> <span class='cn'>NULL</span>,
+  XMax <span class='op'>=</span> <span class='cn'>NULL</span>,
+  ColorVariables <span class='op'>=</span> <span class='st'>"None"</span>,
+  SizeVar1 <span class='op'>=</span> <span class='st'>"None"</span>,
+  FacetVar1 <span class='op'>=</span> <span class='st'>"None"</span>,
+  FacetVar2 <span class='op'>=</span> <span class='st'>"None"</span>,
+  YTicks <span class='op'>=</span> <span class='st'>"Default"</span>,
+  XTicks <span class='op'>=</span> <span class='st'>"Default"</span>,
+  OutlierSize <span class='op'>=</span> <span class='fl'>0.1</span>,
+  OutlierColor <span class='op'>=</span> <span class='st'>"blue"</span>,
+  BoxPlotFill <span class='op'>=</span> <span class='st'>"gray"</span>,
+  GamFitScatter <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  TextSize <span class='op'>=</span> <span class='fl'>12</span>,
+  AngleX <span class='op'>=</span> <span class='fl'>90</span>,
+  AngleY <span class='op'>=</span> <span class='fl'>0</span>,
+  ChartColor <span class='op'>=</span> <span class='st'>"lightsteelblue1"</span>,
+  BorderColor <span class='op'>=</span> <span class='st'>"darkblue"</span>,
+  TextColor <span class='op'>=</span> <span class='st'>"darkblue"</span>,
+  GridColor <span class='op'>=</span> <span class='st'>"white"</span>,
+  BackGroundColor <span class='op'>=</span> <span class='st'>"gray95"</span>,
+  SubTitleColor <span class='op'>=</span> <span class='st'>"blue"</span>,
+  LegendPosition <span class='op'>=</span> <span class='st'>"bottom"</span>,
+  LegendBorderSize <span class='op'>=</span> <span class='fl'>0.5</span>,
+  LegendLineType <span class='op'>=</span> <span class='st'>"solid"</span>,
   Debug <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
 
@@ -145,89 +165,141 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>input</th>
-      <td><p>input object within shiny context</p></td>
+      <th>dt</th>
+      <td><p>= NULL</p></td>
     </tr>
     <tr>
-      <th>PlotDataForecast</th>
-      <td><p>Source data in shiny app</p></td>
+      <th>PlotType</th>
+      <td><p>= input[['PlotType']]</p></td>
     </tr>
     <tr>
-      <th>SubsetOnly</th>
-      <td><p>Set to TRUE to only subset data</p></td>
+      <th>YVar</th>
+      <td><p>= shiny::isolate(YVar())</p></td>
     </tr>
     <tr>
-      <th>Aggregate</th>
-      <td><p>Session object indicating whether to use mean or sum</p></td>
+      <th>XVar</th>
+      <td><p>= shiny::isolate(DateVar())</p></td>
     </tr>
     <tr>
-      <th>TargetVariable</th>
-      <td><p>Target variable name</p></td>
+      <th>YMin</th>
+      <td><p>= input[['YMin']]</p></td>
     </tr>
     <tr>
-      <th>DateVariable</th>
-      <td><p>Date variable name</p></td>
+      <th>YMax</th>
+      <td><p>= input[['YMax']]</p></td>
     </tr>
     <tr>
-      <th>GroupVariables</th>
-      <td><p>Group variable names</p></td>
+      <th>XMin</th>
+      <td><p>= input[['XMin']]</p></td>
     </tr>
     <tr>
-      <th>G1Levels</th>
-      <td><p>Name of group 1 levels list element</p></td>
+      <th>XMax</th>
+      <td><p>= input[['XMax']]</p></td>
     </tr>
     <tr>
-      <th>G2Levels</th>
-      <td><p>Name of group 2 levels list element</p></td>
+      <th>ColorVariables</th>
+      <td><p>= shiny::isolate(SelectedGroups())</p></td>
     </tr>
     <tr>
-      <th>G3Levels</th>
-      <td><p>Name of group 3 levels list element</p></td>
+      <th>SizeVar1</th>
+      <td><p>= input[['SizeVar1']]</p></td>
+    </tr>
+    <tr>
+      <th>FacetVar1</th>
+      <td><p>= shiny::isolate(input[['FacetVar1']])</p></td>
+    </tr>
+    <tr>
+      <th>FacetVar2</th>
+      <td><p>= shiny::isolate(input[['FacetVar2']])</p></td>
+    </tr>
+    <tr>
+      <th>YTicks</th>
+      <td><p>= input[['YTicks']]</p></td>
+    </tr>
+    <tr>
+      <th>XTicks</th>
+      <td><p>= input[['XTicks']]</p></td>
+    </tr>
+    <tr>
+      <th>OutlierSize</th>
+      <td><p>= input[['OutlierSize']]</p></td>
+    </tr>
+    <tr>
+      <th>OutlierColor</th>
+      <td><p>= input[['OutlierColor']]</p></td>
+    </tr>
+    <tr>
+      <th>BoxPlotFill</th>
+      <td><p>= input[['BoxPlotFill']]</p></td>
+    </tr>
+    <tr>
+      <th>GamFitScatter</th>
+      <td><p>= input[['GamFitScatter']]</p></td>
+    </tr>
+    <tr>
+      <th>TextSize</th>
+      <td><p>= input[['TextSize']]</p></td>
+    </tr>
+    <tr>
+      <th>AngleX</th>
+      <td><p>= input[['AngleX']]</p></td>
+    </tr>
+    <tr>
+      <th>AngleY</th>
+      <td><p>= input[['AngleY']]</p></td>
+    </tr>
+    <tr>
+      <th>ChartColor</th>
+      <td><p>= input[['ChartColor']]</p></td>
+    </tr>
+    <tr>
+      <th>BorderColor</th>
+      <td><p>= input[['BorderColor']]</p></td>
+    </tr>
+    <tr>
+      <th>TextColor</th>
+      <td><p>= input[['TextColor']]</p></td>
+    </tr>
+    <tr>
+      <th>GridColor</th>
+      <td><p>= input[['GridColor']]</p></td>
+    </tr>
+    <tr>
+      <th>BackGroundColor</th>
+      <td><p>= input[['BackGroundColor']]</p></td>
+    </tr>
+    <tr>
+      <th>SubTitleColor</th>
+      <td><p>= input[['SubTitleColor']]</p></td>
+    </tr>
+    <tr>
+      <th>LegendPosition</th>
+      <td><p>= input[['LegendPosition']]</p></td>
+    </tr>
+    <tr>
+      <th>LegendBorderSize</th>
+      <td><p>= as.numeric(input[['LegendBorderSize']])</p></td>
+    </tr>
+    <tr>
+      <th>LegendLineType</th>
+      <td><p>= input[['LegendLineType']]</p></td>
     </tr>
     <tr>
       <th>Debug</th>
-      <td><p>FALSE</p></td>
+      <td><p>= FALSE</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>PreparePlotData object for server.R to</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>Other Shiny: 
-<code><a href='ArgNullCheck2.html'>ArgNullCheck2</a>()</code>,
-<code><a href='ArgNullCheck.html'>ArgNullCheck</a>()</code>,
-<code><a href='BlankRow.html'>BlankRow</a>()</code>,
-<code><a href='DateInput.html'>DateInput</a>()</code>,
-<code><a href='GenerateEvaluationMetrics.html'>GenerateEvaluationMetrics</a>()</code>,
-<code><a href='NumericInput.html'>NumericInput</a>()</code>,
-<code><a href='PickerInput_GetLevels.html'>PickerInput_GetLevels</a>()</code>,
-<code><a href='PickerInput.html'>PickerInput</a>()</code>,
-<code><a href='ReactiveLoadCSV.html'>ReactiveLoadCSV</a>()</code>,
-<code><a href='ReturnParam.html'>ReturnParam</a>()</code>,
-<code><a href='StoreArgs.html'>StoreArgs</a>()</code>,
-<code><a href='TextInput.html'>TextInput</a>()</code>,
-<code><a href='observeEventLoad.html'>observeEventLoad</a>()</code></p></div>
+    <div class='dont-index'><p>Other Graphics: 
+<code><a href='AppModelInsights.html'>AppModelInsights</a>()</code>,
+<code><a href='ChartTheme.html'>ChartTheme</a>()</code>,
+<code><a href='multiplot.html'>multiplot</a>()</code></p></div>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Adrian Antico</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-  <span class='va'>PlotData</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'>PreparePlotData</span><span class='op'>(</span>
-    <span class='va'>input</span>,
-    <span class='va'>PlotDataForecast</span>,
-    SubsetOnly <span class='op'>=</span> <span class='cn'>FALSE</span>,
-    Aggregate <span class='op'>=</span> <span class='st'>"mean"</span>,
-    TargetVariable <span class='op'>=</span> <span class='st'>"TargetVariables"</span>,
-    DateVariable <span class='op'>=</span> <span class='st'>"DateVariables"</span>,
-    GroupVariables <span class='op'>=</span> <span class='va'>GroupVariables</span>,
-    G1Levels <span class='op'>=</span> <span class='st'>"TS_Group1Levels"</span>,
-    G2Levels <span class='op'>=</span> <span class='st'>"TS_Group2Levels"</span>,
-    G3Levels <span class='op'>=</span> <span class='st'>"TS_Group3Levels"</span><span class='op'>)</span>
-<span class='op'>}</span>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

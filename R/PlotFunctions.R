@@ -31,38 +31,44 @@
 #' @param TextColor = input[['TextColor']]
 #' @param GridColor = input[['GridColor']]
 #' @param BackGroundColor = input[['BackGroundColor']]
+#' @param SubTitleColor = input[['SubTitleColor']]
+#' @param LegendPosition = input[['LegendPosition']]
+#' @param LegendBorderSize = as.numeric(input[['LegendBorderSize']])
+#' @param LegendLineType = input[['LegendLineType']]
 #' @param Debug = FALSE
-#'
-#' @export
 AutoPlotter <- function(dt = NULL,
-                        PlotType = input[['PlotType']],
-                        YVar = shiny::isolate(YVar()),
-                        XVar = shiny::isolate(DateVar()),
-                        YMin = input[['YMin']],
-                        YMax = input[['YMax']],
-                        XMin = input[['XMin']],
-                        XMax = input[['XMax']],
-                        ColorVariables = shiny::isolate(SelectedGroups()),
-                        SizeVar1 = input[['SizeVar1']],
-                        FacetVar1 = shiny::isolate(input[['FacetVar1']]),
-                        FacetVar2 = shiny::isolate(input[['FacetVar2']]),
-                        YTicks = input[['YTicks']],
-                        XTicks = input[['XTicks']],
-                        OutlierSize = input[['OutlierSize']],
-                        OutlierColor = input[['OutlierColor']],
-                        BoxPlotFill = input[['BoxPlotFill']],
-                        GamFitScatter = input[['GamFitScatter']],
-                        TextSize = input[['TextSize']],
-                        AngleX = input[['AngleX']],
-                        AngleY = input[['AngleY']],
-                        ChartColor = input[['ChartColor']],
-                        BorderColor = input[['BorderColor']],
-                        TextColor = input[['TextColor']],
-                        GridColor = input[['GridColor']],
-                        BackGroundColor = input[['BackGroundColor']],
+                        PlotType = 'Scatter',
+                        YVar = NULL,
+                        XVar = NULL,
+                        YMin = NULL,
+                        YMax = NULL,
+                        XMin = NULL,
+                        XMax = NULL,
+                        ColorVariables = 'None',
+                        SizeVar1 = 'None',
+                        FacetVar1 = 'None',
+                        FacetVar2 = 'None',
+                        YTicks = 'Default',
+                        XTicks = 'Default',
+                        OutlierSize = 0.10,
+                        OutlierColor = 'blue',
+                        BoxPlotFill = 'gray',
+                        GamFitScatter = FALSE,
+                        TextSize = 12,
+                        AngleX = 90,
+                        AngleY = 0,
+                        ChartColor = 'lightsteelblue1',
+                        BorderColor = 'darkblue',
+                        TextColor = 'darkblue',
+                        GridColor = 'white',
+                        BackGroundColor = 'gray95',
+                        SubTitleColor = 'blue',
+                        LegendPosition = 'bottom',
+                        LegendBorderSize = 0.50,
+                        LegendLineType = 'solid',
                         Debug = FALSE) {
 
-  # Create BoxPlot or ViolinPlot
+  # BoxPlot
   if(PlotType == 'BoxPlotTS') {
 
     # Create base plot object
@@ -102,7 +108,10 @@ AutoPlotter <- function(dt = NULL,
       p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
     }
 
-  } else if(PlotType == 'ViolinPlotTS') {
+  }
+
+  # ViolinPlot
+  if(PlotType == 'ViolinPlotTS') {
 
     # Create base plot object
     if(Debug) print('Create Plot with only data')
@@ -141,7 +150,10 @@ AutoPlotter <- function(dt = NULL,
       p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
     }
 
-  } else if(PlotType == 'Line') {
+  }
+
+  # Line
+  if(PlotType == 'Line') {
 
     # TS Line Plot
     p1 <- RemixAutoML:::TimeSeriesPlotter(
@@ -181,13 +193,26 @@ AutoPlotter <- function(dt = NULL,
     if(Debug) {print('XTicks'); print(XTicks)}
     if(!'Default' %in% XTicks) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
 
-  } else if(PlotType %in% c('Scatter', 'Copula')) {
+  }
+
+  # Scatter or Copula
+  if(PlotType %in% c('Scatter', 'Copula')) {
 
     # Subset + Sample
     R2_Pearson <- c()
     R2_Spearman <- c()
     yyy <- eval(YVar)
     xxx <- eval(XVar)
+    if(is.null(xxx) || is.null(yyy)) {
+      print('XVar is NULL')
+      return(NULL)
+    }
+    if(Debug) print(class(dt[[eval(xxx)]]))
+    if(Debug) print(!any(class(dt[[eval(xxx)]]) %chin% c('numeric', 'integer')) && !any(class(dt[[eval(yyy)]]) %chin% c('numeric', 'integer')))
+    if(!any(class(dt[[eval(xxx)]]) %chin% c('numeric', 'integer')) || !any(class(dt[[eval(yyy)]]) %chin% c('numeric', 'integer'))) {
+      print('XVar and / or YVar is not numeric nor integer')
+      return(NULL)
+    }
     if(Debug) print(dt[,.N])
     if(dt[,.N] < 100000L) {
       for(zz in seq_len(30L)) {
@@ -285,7 +310,7 @@ AutoPlotter <- function(dt = NULL,
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
-  p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
+  p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
 
   # Limit Y
   if(Debug) print('Limit Y')
@@ -295,6 +320,390 @@ AutoPlotter <- function(dt = NULL,
   return(eval(p1))
 }
 
+#' @title AppModelInsights
+#'
+#' @description Plot model insights in app
+#'
+#' @author Adrian Antico
+#' @family Graphics
+#'
+#' @param dt = NULL,
+#' @param PlotType = NULL,
+#' @param ModelOutputList = NULL,
+#' @param TargetVar = isolate(YVar()),
+#' @param PredictVar = isolate(ScoreVar()),
+#' @param PDPVar = NULL,
+#' @param DateVar = isolate(DateVar()),
+#' @param GamFit = FALSE,
+#' @param Buckets = 20,
+#' @param Subsetcheck = FALSE,
+#' @param Check2 = FALSE,
+#' @param Debug = FALSE
+AppModelInsights <- function(dt = NULL,
+                             PlotType = NULL,
+                             ModelOutputList = NULL,
+                             TargetVar = NULL,
+                             PredictVar = NULL,
+                             PDPVar = NULL,
+                             DateVar = NULL,
+                             GamFit = FALSE,
+                             Buckets = 20,
+                             Subsetcheck = FALSE,
+                             Check2 = FALSE,
+                             Debug = FALSE) {
+
+  if(Debug) {
+    print('Running AppModelInsights')
+    print(paste0('Subsetcheck = ', Subsetcheck))
+    print(paste0('Check2 = ', Check2))
+  }
+
+  # Test Evaluation Plot ----
+  if(any(PlotType %chin% "Test_EvaluationPlot")) {
+    if(Debug) print('Evaluation Plot')
+    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Test_EvaluationPlot']])) {
+      if(Debug) print('!Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Test_EvaluationPlot']]
+    } else {
+      if(Debug) {
+        print('! !Subsetcheck')
+        print(paste0('Names in dt = ', names(dt)))
+        print(paste0('PredictionColName = ', PredictVar))
+        print(paste0('TargetVar = ', TargetVar))
+        print(paste0('Buckets = ', Buckets))
+      }
+
+      p1 <- RemixAutoML::EvalPlot(
+        data = dt,
+        PredictionColName = PredictVar,
+        TargetColName = TargetVar,
+        GraphType = "calibration", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
+    }
+  }
+
+  # ----
+
+  # Train Evaluation Plot ----
+  if(any(PlotType %chin% "Train_EvaluationPlot")) {
+    if(Debug) print('Evaluation Plot')
+    if(Debug) print(Subsetcheck)
+    if(Debug) print(Check2)
+    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Train_EvaluationPlot']])) {
+      if(Debug) print('!Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Train_EvaluationPlot']]
+    }
+  }
+
+  # ----
+
+  # Evaluation BoxPlot ----
+  if(any(PlotType %chin% "Test_EvaluationBoxPlot")) {
+    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Test_EvaluationBoxPlot']])) {
+      if(Debug) print('EvalBoxPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Test_EvaluationBoxPlot']]
+    } else {
+      if(Debug) print('EvalBoxPlot ! !Subsetcheck')
+      p1 <- RemixAutoML::EvalPlot(
+        data = dt,
+        PredictionColName = PredictVar,
+        TargetColName = TargetVar,
+        GraphType = "boxplot", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
+    }
+  }
+
+  # ----
+
+  # Evaluation BoxPlot Train ----
+  if(any(PlotType %chin% "Train_EvaluationBoxPlot")) {
+    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Train_EvaluationBoxPlot']])) {
+      if(Debug) print('EvalBoxPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Train_EvaluationBoxPlot']]
+    }
+  }
+
+  # ----
+
+  # ROC Plot ----
+  if(any(PlotType %chin% "Test_ROC_Plot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_ROC_Plot']])) {
+      if(Debug) print('ROC !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Test_ROC_Plot']]
+    } else {
+      if(Debug) print('Test_ROC_Plot ! !Subsetcheck')
+      p1 <- RemixAutoML::ROCPlot(
+        data = dt,
+        TargetName = TargetVar,
+        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)
+    }
+  }
+
+  # ----
+
+  # ROC Plot Train ----
+  if(any(PlotType %chin% "Train_ROC_Plot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ROC_Plot']])) {
+      if(Debug) print('Train_ROC_Plot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Train_ROC_Plot']]
+    }
+  }
+
+  # ----
+
+  # Gains Plot ----
+  if(any(PlotType %chin% "Test_GainsPlot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['GainsPlot']])) {
+      if(Debug) print('Test_GainsPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Test_GainsPlot']]
+    } else {
+      if(Debug) print('Gains Plot ! !Subsetcheck')
+      p1 <- RemixAutoML::CumGainsChart(
+        data = dt,
+        TargetColumnName = TargetVar,
+        PredictedColumnName = PredictVar,
+        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
+    }
+  }
+
+  # ----
+
+  # Gains Plot Train ----
+  if(any(PlotType %chin% "Train_GainsPlot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_GainsPlot']])) {
+      if(Debug) print('Gains Plot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Train_GainsPlot']]
+    }
+  }
+
+  # ----
+
+  # Lift Plot Test ----
+  if(any(PlotType %chin% "Test_LiftPlot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_LiftPlot']])) {
+      if(Debug) print('Test_LiftPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Test_LiftPlot']]
+    } else {
+      if(Debug) print('Test_LiftPlot ! !Subsetcheck')
+      p1 <- RemixAutoML::CumGainsChart(
+        data = dt,
+        TargetColumnName = TargetVar,
+        PredictedColumnName = PredictVar,
+        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$LiftPlot
+    }
+  }
+
+  # ----
+
+  # Lift Plot Train ----
+  if(any(PlotType %chin% "Train_LiftPlot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_LiftPlot']])) {
+      if(Debug) print('Train_LiftPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Train_LiftPlot']]
+    }
+  }
+
+  # ----
+
+  # Scatter Plot Test ----
+  if(any(PlotType %chin% "Test_ScatterPlot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_ScatterPlot']])) {
+      if(Debug) print('Test_ScatterPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Test_ScatterPlot']]
+    } else {
+      if(Debug) print('Test_ScatterPlot ! !Subsetcheck')
+      p1 <- RemixAutoML::ResidualPlots(
+        TestData = dt,
+        Target = TargetVar, Predicted = PredictVar,
+        DateColumnName = DateVar, Gam_Fit = GamFit)$ScatterPlot
+    }
+  }
+
+  # ----
+
+  # Scatter Plot Train ----
+  if(any(PlotType %chin% "Train_ScatterPlot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ScatterPlot']])) {
+      if(Debug) print('Train_ScatterPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Train_ScatterPlot']]
+    }
+  }
+
+  # ----
+
+  # Copula Plot Test ----
+  if(any(PlotType %chin% "Test_CopulaPlot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_CopulaPlot']])) {
+      if(Debug) print('Test_CopulaPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Test_CopulaPlot']]
+    } else {
+      if(Debug) print('Test_CopulaPlot ! !Subsetcheck')
+      p1 <- RemixAutoML::ResidualPlots(
+        TestData = dt,
+        Target = TargetVar, Predicted = PredictVar,
+        DateColumnName = DateVar, Gam_Fit = GamFit)$CopulaPlot
+    }
+  }
+
+  # ----
+
+  # Copula Plot Train ----
+  if(any(PlotType %chin% "Train_CopulaPlot")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_CopulaPlot']])) {
+      if(Debug) print('Train_CopulaPlot !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Train_CopulaPlot']]
+    }
+  }
+
+  # ----
+
+  # Residuals Histogram Plot Test ----
+  if(any(PlotType %chin% "Test_ResidualsHistogram")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_ResidualsHistogram']])) {
+      if(Debug) print('Test_ResidualsHistogram !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Test_ResidualsHistogram']]
+    } else {
+      if(Debug) print('Test_ResidualsHistogram ! !Subsetcheck')
+      p1 <- RemixAutoML::ResidualPlots(
+        TestData = dt,
+        Target = TargetVar, Predicted = shiny::PredictVar,
+        DateColumnName = DateVar, Gam_Fit = GamFit)$ResidualsHistogram
+    }
+  }
+
+  # ----
+
+  # Residuals Histogram Plot Train ----
+  if(any(PlotType %chin% "Train_ResidualsHistogram")) {
+    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ResidualsHistogram']])) {
+      if(Debug) print('Train_ResidualsHistogram !Subsetcheck')
+      p1 <- ModelOutputList$PlotList[['Train_ResidualsHistogram']]
+    }
+  }
+
+  # ----
+
+  # Variable Importance Plot Test ----
+  if(any(PlotType %chin% "Test_VariableImportance")) {
+    if(Debug) print('Test_Importance ! !Subsetcheck')
+    if(Debug) print(ModelOutputList$VariableImportance[['Test_Importance']])
+    p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Test_Importance']], TopN = 25)
+  }
+
+  # ----
+
+  # Variable Importance Plot Train ----
+  if(any(PlotType %chin% 'Train_VariableImportance')) {
+    if(Debug) print('Train_Importance ! !Subsetcheck')
+    if(Debug) print(ModelOutputList$VariableImportance[['Train_Importance']])
+    p1 <- RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = ModelOutputList$VariableImportance[['Train_Importance']], TopN = 25)
+  }
+
+  # ----
+
+  # Partial Dependence Plot Test ----
+  if(any(PlotType %chin% 'Test_ParDepPlots') && !is.null(PDPVar)) {
+    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Test_ParDepPlots[[eval(PDPVar)]])) {
+      p1 <- p1 <- ModelOutputList$PlotList$Test_ParDepPlots[[eval(PDPVar)]]
+      p1$layers[[6L]] <- NULL
+      p1$layers[[5L]] <- NULL
+      p1$layers[[4L]] <- NULL
+    } else {
+      p1 <- RemixAutoML::ParDepCalPlots(
+        data = dt,
+        PredictionColName = PredictVar,
+        TargetColName = TargetVar,
+        IndepVar = PDPVar,
+        GraphType = 'calibration', PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+      p1$layers[[6L]] <- NULL
+      p1$layers[[5L]] <- NULL
+      p1$layers[[4L]] <- NULL
+    }
+  }
+
+  # ----
+
+  # Partial Dependence Plot Train ----
+  if(any(PlotType %chin% 'Train_ParDepPlots') && !is.null(PDPVar)) {
+    if(Debug) print('Partial Dependence Plot Train')
+    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Train_ParDepPlots[[eval(PDPVar)]])) {
+      p1 <- ModelOutputList$PlotList$Train_ParDepPlots[[eval(PDPVar)]]
+      p1$layers[[6L]] <- NULL
+      p1$layers[[5L]] <- NULL
+      p1$layers[[4L]] <- NULL
+    } else {
+      if(Debug) print('Partial Dependence Plot Train else')
+      p1 <- RemixAutoML::ParDepCalPlots(
+        data = dt,
+        PredictionColName = PredictVar,
+        TargetColName = TargetVar,
+        IndepVar = PDPVar,
+        GraphType = 'calibration', PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+      p1$layers[[6L]] <- NULL
+      p1$layers[[5L]] <- NULL
+      p1$layers[[4L]] <- NULL
+    }
+  }
+
+  # ----
+
+  # Partial Dependence Box Plot Test ----
+  if(any(PlotType %chin% 'Test_ParDepBoxPlots') && !is.null(PDPVar)) {
+    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Test_ParDepBoxPlots[[eval(PDPVar)]])) {
+      p1 <- ModelOutputList$PlotList$Test_ParDepBoxPlots[[eval(PDPVar)]]
+      p1$layers[[6L]] <- NULL
+      p1$layers[[5L]] <- NULL
+      p1$layers[[4L]] <- NULL
+    } else {
+      p1 <- RemixAutoML::ParDepCalPlots(
+        data = dt,
+        PredictionColName = PredictVar,
+        TargetColName = TargetVar,
+        IndepVar = PDPVar,
+        GraphType = "boxplot", PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+      p1$layers[[6L]] <- NULL
+      p1$layers[[5L]] <- NULL
+      p1$layers[[4L]] <- NULL
+    }
+  }
+
+  # ----
+
+  # Partial Dependence Box Plot Train ----
+  if(any(PlotType %chin% 'Train_ParDepBoxPlots') && !is.null(PDPVar)) {
+    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Train_ParDepBoxPlots[[eval(PDPVar)]])) {
+      p1 <- ModelOutputList$PlotList$Train_ParDepBoxPlots[[eval(PDPVar)]]
+      p1$layers[[6L]] <- NULL
+      p1$layers[[5L]] <- NULL
+      p1$layers[[4L]] <- NULL
+    } else {
+      p1 <- RemixAutoML::ParDepCalPlots(
+        data = dt,
+        PredictionColName = PredictVar,
+        TargetColName = TargetVar,
+        IndepVar = PDPVar,
+        GraphType = "boxplot", PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+      p1$layers[[6L]] <- NULL
+      p1$layers[[5L]] <- NULL
+      p1$layers[[4L]] <- NULL
+    }
+  }
+
+  # ----
+
+  # Shap Table Variable Importance ----
+  # if(any(PlotType %chin% "ShapPlot")) {
+  #   if(!Subsetcheck && data.table::is.data.table(ML_ShapTable)) {
+  #     ML_ShapTable2 <- ML_ShapTable[, list(Importance = mean(ShapValue, na.rm = TRUE)), by = "Variable"]
+  #     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ML_ShapTable2, TopN = 25)
+  #   } else {
+  #     ML_ShapTable1 <- RemixAutoML::AutoShapeShap(ScoringData = dt, Threads = parallel::detectCores(), DateColumnName = DateVar, ByVariableName = NULL)
+  #     ML_ShapTable2 <- ML_ShapTable1[, list(Importance = mean(ShapValue, na.rm = TRUE)), by = "Variable"]
+  #     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ML_ShapTable2, TopN = 25)
+  #   }
+  # }
+
+  if(!exists('p1')) p1 <- NULL
+  return(p1)
+}
 
 #' @title multiplot
 #'
@@ -419,11 +828,14 @@ RemixTheme <- function() {
 #' @param AngleX The angle of the x axis labels
 #' @param AngleY The angle of the Y axis labels
 #' @param ChartColor "lightsteelblue1",
-#' @param BorderColor "darkblue",
-#' @param TextColor "darkblue",
-#' @param GridColor "white",
-#' @param BackGroundColor "gray95",
+#' @param BorderColor "darkblue"
+#' @param SubTitleColor 'blue'
+#' @param TextColor "darkblue"
+#' @param GridColor "white"
+#' @param BackGroundColor "gray95"
 #' @param LegendPosition Where to place legend
+#' @param LegendBorderSize 0.50
+#' @param LegendLineType 'solid'
 #' @examples
 #' \dontrun{
 #' data <- data.table::data.table(DateTime = as.Date(Sys.time()),
@@ -442,25 +854,28 @@ RemixTheme <- function() {
 #' @return An object to pass along to ggplot objects following the "+" sign
 #' @export
 ChartTheme <- function(Size = 12,
-                       AngleX = 35,
+                       AngleX = 90,
                        AngleY = 0,
-                       ChartColor = "lightsteelblue1",
-                       BorderColor = "darkblue",
-                       TextColor = "darkblue",
-                       GridColor = "white",
-                       BackGroundColor = "gray95",
-                       LegendPosition = "bottom") {
+                       ChartColor = 'lightsteelblue1',
+                       BorderColor = 'darkblue',
+                       TextColor = 'darkblue',
+                       SubTitleColor = 'blue',
+                       GridColor = 'white',
+                       BackGroundColor = 'gray95',
+                       LegendPosition = 'bottom',
+                       LegendBorderSize = 0.50,
+                       LegendLineType = 'solid') {
   chart_theme <- ggplot2::theme(
     plot.background = ggplot2::element_rect(fill = BackGroundColor),
     panel.background = ggplot2::element_rect(fill = ChartColor, colour = BorderColor, size = 0.25, color = BorderColor),
     panel.grid.major = ggplot2::element_line(colour = BorderColor, size = 0.01, color = GridColor, linetype = 1),
     panel.grid.minor = ggplot2::element_line(colour = BorderColor, size = 0.01, color = GridColor, linetype = 1),
     legend.position = LegendPosition,
-    legend.title = ggplot2::element_text(color = BorderColor, size = Size, face = "bold"),
-    plot.subtitle = ggplot2::element_text(color = "darkred", size = max(1,floor(Size*5/6)), face = "bold"),
-    legend.background = ggplot2::element_rect(fill = BackGroundColor, size = 1, linetype = "solid", color = BorderColor),
-    plot.title = ggplot2::element_text(color = TextColor, size = Size, face = "bold"),
-    axis.title = ggplot2::element_text(color = TextColor, size = Size, face = "bold"),
+    legend.title = ggplot2::element_text(color = BorderColor, size = Size, face = 'bold'),
+    plot.subtitle = ggplot2::element_text(color = SubTitleColor, size = max(1,floor(Size * 5 / 6)), face = 'bold'),
+    legend.background = ggplot2::element_rect(fill = BackGroundColor, size = LegendBorderSize, linetype = LegendLineType, color = BorderColor),
+    plot.title = ggplot2::element_text(color = TextColor, size = Size, face = 'bold'),
+    axis.title = ggplot2::element_text(color = TextColor, size = Size, face = 'bold'),
     axis.text.x = ggplot2::element_text(colour = TextColor, face = "bold", angle = AngleX),
     axis.text.y = ggplot2::element_text(colour = TextColor, face = "bold", angle = AngleY),
     axis.title.x = ggplot2::element_text(margin = ggplot2::margin(t = 20, r = 20, b = 20, l = 20)),

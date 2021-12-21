@@ -79,35 +79,35 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 \examples{
 \dontrun{
 # Pull Data
-data <- data.table::fread(system.file('tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv', package = "RemixAutoML"))
-data[, Date := as.Date(Date)]
+# data <- data.table::fread(system.file('tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv', package = "RemixAutoML"))
+# data[, Date := as.Date(Date)]
 
 # Run App
-RemixAutoML::AppsPlotting(
-  data,
-  XVariable = NULL,
-  YVariable = 'XREG1',
-  DateName = 'Date',
-  GroupVariables = names(data)[seq_len(3L)],
-  FilterVariable = 'XREG1',
-  ModelOutputList = NULL,
-  HeaderColor = 'black',
-  AppWidth = 12L,
-  LogoWidth = '1000px',
-  LogoHeight = '100px',
-  GroupVarsBoxColor = 'navy',
-  VarsBoxColor = 'purple',
-  FilterBoxColor = 'blue',
-  PlotBoxColor = 'aqua',
-  CreatePlotButtonColor = 'default',
-  UpdatePlotButtonColor = 'default',
-  ResetPlotButtonColor = 'default',
-  AppTextColor = 'white',
-  Docker = FALSE,
-  Browser = FALSE,
-  UserName_Password_DT = NULL,
-  Debug = FALSE)
-
+# RemixAutoML::AppsPlotting(
+#   data,
+#   XVariable = NULL,
+#   YVariable = 'XREG1',
+#   DateName = 'Date',
+#   GroupVariables = names(data)[seq_len(3L)],
+#   FilterVariable = 'XREG1',
+#   ModelOutputList = NULL,
+#   HeaderColor = 'black',
+#   AppWidth = 12L,
+#   LogoWidth = '1000px',
+#   LogoHeight = '100px',
+#   GroupVarsBoxColor = 'navy',
+#   VarsBoxColor = 'purple',
+#   FilterBoxColor = 'blue',
+#   PlotBoxColor = 'aqua',
+#   CreatePlotButtonColor = 'default',
+#   UpdatePlotButtonColor = 'default',
+#   ResetPlotButtonColor = 'default',
+#   AppTextColor = 'white',
+#   Docker = FALSE,
+#   Browser = FALSE,
+#   UserName_Password_DT = NULL,
+#   Debug = FALSE)
+#
 # XVariable = 'Date'
 # YVariable = 'XREG1'
 # DateName = 'Date'

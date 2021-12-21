@@ -55,6 +55,16 @@
 <![endif]-->
 
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9FSKBWGTJ3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9FSKBWGTJ3');
+</script>
+
 
   </head>
 
@@ -72,7 +82,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">RemixAutoML</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.6.0</span>
       </span>
     </div>
 
@@ -119,6 +129,7 @@
 
     <pre class="usage"><span class='fu'>PickerInput_GetLevels</span><span class='op'>(</span>
   <span class='va'>input</span>,
+  data <span class='op'>=</span> <span class='st'>"SourceData"</span>,
   NumGroupVar <span class='op'>=</span> <span class='fl'>3</span>,
   InputID <span class='op'>=</span> <span class='st'>"TS_CARMA_HolidayMovingAverages"</span>,
   InputID2 <span class='op'>=</span> <span class='st'>"timeSeriesGroupVars"</span>,
@@ -136,6 +147,10 @@
     <tr>
       <th>input</th>
       <td><p>input object within shiny context</p></td>
+    </tr>
+    <tr>
+      <th>data</th>
+      <td><p>'SourceData' or whatever the name of your data is</p></td>
     </tr>
     <tr>
       <th>NumGroupVar</th>

@@ -6,31 +6,35 @@
 \usage{
 AutoPlotter(
   dt = NULL,
-  PlotType = input[["PlotType"]],
-  YVar = shiny::isolate(YVar()),
-  XVar = shiny::isolate(DateVar()),
-  YMin = input[["YMin"]],
-  YMax = input[["YMax"]],
-  XMin = input[["XMin"]],
-  XMax = input[["XMax"]],
-  ColorVariables = shiny::isolate(SelectedGroups()),
-  SizeVar1 = input[["SizeVar1"]],
-  FacetVar1 = shiny::isolate(input[["FacetVar1"]]),
-  FacetVar2 = shiny::isolate(input[["FacetVar2"]]),
-  YTicks = input[["YTicks"]],
-  XTicks = input[["XTicks"]],
-  OutlierSize = input[["OutlierSize"]],
-  OutlierColor = input[["OutlierColor"]],
-  BoxPlotFill = input[["BoxPlotFill"]],
-  GamFitScatter = input[["GamFitScatter"]],
-  TextSize = input[["TextSize"]],
-  AngleX = input[["AngleX"]],
-  AngleY = input[["AngleY"]],
-  ChartColor = input[["ChartColor"]],
-  BorderColor = input[["BorderColor"]],
-  TextColor = input[["TextColor"]],
-  GridColor = input[["GridColor"]],
-  BackGroundColor = input[["BackGroundColor"]],
+  PlotType = "Scatter",
+  YVar = NULL,
+  XVar = NULL,
+  YMin = NULL,
+  YMax = NULL,
+  XMin = NULL,
+  XMax = NULL,
+  ColorVariables = "None",
+  SizeVar1 = "None",
+  FacetVar1 = "None",
+  FacetVar2 = "None",
+  YTicks = "Default",
+  XTicks = "Default",
+  OutlierSize = 0.1,
+  OutlierColor = "blue",
+  BoxPlotFill = "gray",
+  GamFitScatter = FALSE,
+  TextSize = 12,
+  AngleX = 90,
+  AngleY = 0,
+  ChartColor = "lightsteelblue1",
+  BorderColor = "darkblue",
+  TextColor = "darkblue",
+  GridColor = "white",
+  BackGroundColor = "gray95",
+  SubTitleColor = "blue",
+  LegendPosition = "bottom",
+  LegendBorderSize = 0.5,
+  LegendLineType = "solid",
   Debug = FALSE
 )
 }
@@ -87,6 +91,14 @@ AutoPlotter(
 
 \item{BackGroundColor}{= input[['BackGroundColor']]}
 
+\item{SubTitleColor}{= input[['SubTitleColor']]}
+
+\item{LegendPosition}{= input[['LegendPosition']]}
+
+\item{LegendBorderSize}{= as.numeric(input[['LegendBorderSize']])}
+
+\item{LegendLineType}{= input[['LegendLineType']]}
+
 \item{Debug}{= FALSE}
 }
 \description{
@@ -94,6 +106,7 @@ Create plots
 }
 \seealso{
 Other Graphics: 
+\code{\link{AppModelInsights}()},
 \code{\link{ChartTheme}()},
 \code{\link{multiplot}()}
 }

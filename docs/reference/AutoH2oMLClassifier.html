@@ -314,14 +314,14 @@
 </div><div class='output co'>#&gt;  Connection successful!
 #&gt; 
 #&gt; R is connected to the H2O cluster: 
-#&gt;     H2O cluster uptime:         45 seconds 841 milliseconds 
+#&gt;     H2O cluster uptime:         59 seconds 393 milliseconds 
 #&gt;     H2O cluster timezone:       America/Phoenix 
 #&gt;     H2O data parsing timezone:  UTC 
 #&gt;     H2O cluster version:        3.32.1.4 
-#&gt;     H2O cluster version age:    4 months and 1 day !!! 
+#&gt;     H2O cluster version age:    5 months and 12 days !!! 
 #&gt;     H2O cluster name:           H2O_started_from_R_Bizon_ktw237 
 #&gt;     H2O cluster total nodes:    1 
-#&gt;     H2O cluster total memory:   254.00 GB 
+#&gt;     H2O cluster total memory:   243.00 GB 
 #&gt;     H2O cluster total cores:    64 
 #&gt;     H2O cluster allowed cores:  62 
 #&gt;     H2O cluster healthy:        TRUE 
@@ -331,15 +331,13 @@
 #&gt;     H2O Internal Security:      FALSE 
 #&gt;     H2O API Extensions:         Amazon S3, Algos, AutoML, Core V3, TargetEncoder, Core V4 
 #&gt;     R Version:                  R version 4.1.0 (2021-05-18) </div><div class='output co'>#&gt; <span class='warning'>Warning: </span>
-#&gt; <span class='warning'>Your H2O cluster version is too old (4 months and 1 day)!</span>
+#&gt; <span class='warning'>Your H2O cluster version is too old (5 months and 12 days)!</span>
 #&gt; <span class='warning'>Please download and install the latest version from http://h2o.ai/download/</span></div><div class='output co'>#&gt; 
 #&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
 #&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
 #&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#&gt; [1] "Cannot build a XGboost model - no backend found."
-#&gt;   |                                                                              |                                                                      |   0%Error in .h2o.doSafeREST(h2oRestApiVersion = h2oRestApiVersion, urlSuffix = urlSuffix,  : 
-#&gt;   Unexpected CURL error: Failed to connect to localhost port 54321: Connection refused</div><div class='output co'>#&gt; <span class='error'>Error in h2o.get_job(job_key, jobPollSuccess, jobIsRecoverable): Error in .h2o.doSafeREST(h2oRestApiVersion = h2oRestApiVersion, urlSuffix = urlSuffix,  : </span>
-#&gt; <span class='error'>  Unexpected CURL error: Failed to connect to localhost port 54321: Connection refused</span></div><div class='input'><span class='co'># }</span>
+#&gt; [1] "Cannot build a XGboost model - no backend found."</div><div class='output co'>#&gt; <span class='error'>Error in .h2o.__checkConnectionHealth(): H2O connection has been severed. Cannot connect to instance at http://localhost:54321/</span>
+#&gt; <span class='error'>Failed to connect to localhost port 54321: Connection refused</span></div><div class='input'><span class='co'># }</span>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

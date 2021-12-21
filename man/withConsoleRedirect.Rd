@@ -14,26 +14,3 @@ withConsoleRedirect(containerId, expr)
 \description{
 withConsoleRedirect
 }
-\examples{
-\dontrun{
-library(shiny)
-Example usage
-
-ui <- fluidPage(
-  pre(id = "console")
-)
-
-server <- function(input, output, session) {
-  observe({
-    invalidateLater(1)
-
-    withConsoleRedirect("console", {
-      str(cars)
-    })
-  })
-}
-
-shinyApp(ui, server)
-}
-
-}

@@ -6,14 +6,17 @@
 \usage{
 ChartTheme(
   Size = 12,
-  AngleX = 35,
+  AngleX = 90,
   AngleY = 0,
   ChartColor = "lightsteelblue1",
   BorderColor = "darkblue",
   TextColor = "darkblue",
+  SubTitleColor = "blue",
   GridColor = "white",
   BackGroundColor = "gray95",
-  LegendPosition = "bottom"
+  LegendPosition = "bottom",
+  LegendBorderSize = 0.5,
+  LegendLineType = "solid"
 )
 }
 \arguments{
@@ -25,15 +28,21 @@ ChartTheme(
 
 \item{ChartColor}{"lightsteelblue1",}
 
-\item{BorderColor}{"darkblue",}
+\item{BorderColor}{"darkblue"}
 
-\item{TextColor}{"darkblue",}
+\item{TextColor}{"darkblue"}
 
-\item{GridColor}{"white",}
+\item{SubTitleColor}{'blue'}
 
-\item{BackGroundColor}{"gray95",}
+\item{GridColor}{"white"}
+
+\item{BackGroundColor}{"gray95"}
 
 \item{LegendPosition}{Where to place legend}
+
+\item{LegendBorderSize}{0.50}
+
+\item{LegendLineType}{'solid'}
 }
 \value{
 An object to pass along to ggplot objects following the "+" sign
@@ -59,6 +68,7 @@ p <- p + ChartTheme(Size = 12)
 }
 \seealso{
 Other Graphics: 
+\code{\link{AppModelInsights}()},
 \code{\link{AutoPlotter}()},
 \code{\link{multiplot}()}
 }
