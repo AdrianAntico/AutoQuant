@@ -62,6 +62,14 @@ if(!is.null(UserName_Password_DT)) {
 # UI Code                              ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 ui <- shinydashboard::dashboardPage(
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Header                               ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   title = 'Tablows',
 
   # Top of page color
@@ -87,7 +95,7 @@ ui <- shinydashboard::dashboardPage(
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Side bar menu                        ----
+  # Side Bar Menu                        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shinydashboard::dashboardSidebar(
 
@@ -127,7 +135,7 @@ ui <- shinydashboard::dashboardPage(
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # dashboardBody                        ----
+  # DashboardBody                        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shinydashboard::dashboardBody(
 
@@ -136,7 +144,7 @@ ui <- shinydashboard::dashboardPage(
     # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    # tabItems                             ----
+    # TabItems                             ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
     # ----
@@ -419,7 +427,7 @@ ui <- shinydashboard::dashboardPage(
         # ----
 
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        # Buttons to build plot                ----
+        # Buttons to Build Plot                ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         shiny::fluidRow(
 
@@ -1335,7 +1343,7 @@ server <- function(input, output, session) {
     BoxPlotFill <<- RemixAutoML::ReturnParam(input, VarName = 'BoxPlotFill', Type = 'character', Default = 'gray', Switch = TRUE)
     SubTitleColor <<- RemixAutoML::ReturnParam(input, VarName = 'SubTitleColor', Type = 'character', Default = 'blue', Switch = TRUE)
 
-    # Select GroupVars
+    # Grouping Variable Management
     if(!exists('RunNumber')) {
       SubsetList <- list()
       SubsetList[['RunNumber']] <- 1L
@@ -1365,6 +1373,7 @@ server <- function(input, output, session) {
       SubsetList[['FilterValue_4a']] <- RemixAutoML::ReturnParam(input, VarName = 'FilterValue_4a', Type = 'character', Default = NULL, Switch = TRUE)
       SubsetList[['FilterValue_4b']] <- RemixAutoML::ReturnParam(input, VarName = 'FilterValue_4b', Type = 'character', Default = NULL, Switch = TRUE)
       assign(x = 'SubsetList', value = SubsetList, envir = .GlobalEnv)
+
     } else {
 
       # MetaData
@@ -1503,7 +1512,8 @@ server <- function(input, output, session) {
         SubsetList[['SelectedGroupss']] <- NULL
       }
 
-      # Remove NA's
+      # DataPrep
+      if(Debug) for(zzzz in 1:4) print(':: :: DataPrep :: ::')
       if(!SubsetList[['DataPrep']]) {
         data1 <- data
       } else {
@@ -1559,13 +1569,10 @@ server <- function(input, output, session) {
           G1Levels = 'Levels_1', G2Levels = 'Levels_2', G3Levels = 'Levels_3', Debug = Debug)
       }
 
-      # Render Plot
-      if(Debug) {print(data1); print(SubsetList[['SelectedGroupss']])}
-
-      # Rebuild Model Eval Plots
-      # Rebuild needs ScoreVar to not be null, # Rebuild if PDP Var in names(dt)
+      # Rebuild Model Eval Plots; # Rebuild needs ScoreVar to not be null, # Rebuild if PDP Var in names(dt)
       # Rebuild if Percentile_Buckets changed from default, # Rebuild if Subsetting is desired
       # x4:Rebuild if PDP_Variable not in names of PlotList
+      if(Debug) {print(data1); print(SubsetList[['SelectedGroupss']])}
       x1 <- is.null(ScoreVar)
       x2 <- !input$PDP_Variable %in% names(data1)
       x3 <- input$Percentile_Buckets == 20
@@ -1580,7 +1587,11 @@ server <- function(input, output, session) {
 
       # ----
 
+      # ----
+
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # BoxPlot, ViolinPlot, Line, Scatter, Copula ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       if(Debug) {print('Create Plot Object'); print(input[['PlotType']])}
       if(input[['PlotType']] %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula')) {
 
@@ -1601,6 +1612,7 @@ server <- function(input, output, session) {
           xvar <- shiny::isolate(XVar())
         }
 
+        # AutoPlotter()
         if(Debug) print('Run AutoPlotter')
         p1 <- RemixAutoML:::AutoPlotter(
           dt = data1,
@@ -1619,6 +1631,8 @@ server <- function(input, output, session) {
           GridColor = GridColor, BackGroundColor = BackGroundColor, Debug = Debug)
 
       } else if(!input[['PlotType']] %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula')) {
+
+        # AppModelInsights()
         if(Debug) print(paste0('PDPVar = ', input[['PDP_Variable']]))
         p1 <- RemixAutoML:::AppModelInsights(
           dt = data1,
@@ -1643,7 +1657,11 @@ server <- function(input, output, session) {
 
       # ----
 
-      # Return Plot to UI ----
+      # ----
+
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      # Return Plot to UI                          ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       if(Debug) {print('Return Plot to UI'); print(exists('p1'))}
       if(exists('p1')) {
         if(Debug) print('Convert p1 to global env')
