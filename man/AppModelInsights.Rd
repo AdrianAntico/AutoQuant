@@ -14,7 +14,7 @@ AppModelInsights(
   DateVar = NULL,
   GamFit = FALSE,
   Buckets = 20,
-  Subsetcheck = FALSE,
+  Rebuild = FALSE,
   Check2 = FALSE,
   Debug = FALSE
 )
@@ -38,7 +38,7 @@ AppModelInsights(
 
 \item{Buckets}{= 20,}
 
-\item{Subsetcheck}{= FALSE,}
+\item{Rebuild}{= FALSE,}
 
 \item{Check2}{= FALSE,}
 

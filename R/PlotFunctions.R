@@ -44,7 +44,7 @@ AutoPlotter <- function(dt = NULL,
                         YMax = NULL,
                         XMin = NULL,
                         XMax = NULL,
-                        ColorVariables = 'None',
+                        ColorVariables = NULL,
                         SizeVar1 = 'None',
                         FacetVar1 = 'None',
                         FacetVar2 = 'None',
@@ -68,99 +68,77 @@ AutoPlotter <- function(dt = NULL,
                         LegendLineType = 'solid',
                         Debug = FALSE) {
 
-  # BoxPlot
-  if(PlotType == 'BoxPlotTS') {
+  if(Debug) print(PlotType)
+
+  # BoxPlot or ViolinPlot or Bar
+  if(Debug) print(paste0('BoxPlot or ViolinPlot or Bar', PlotType %in% c('BoxPlot','ViolinPlot','Bar')))
+  if(PlotType %in% c('BoxPlot','ViolinPlot','Bar')) {
 
     # Create base plot object
     if(Debug) print('Create Plot with only data')
-    p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
+    if(!is.null(XVar)) {
+      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
+    } else {
+      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = "", y = get(YVar)))
+    }
 
     # Box Plot
-    if(Debug) print('Create BoxPlot')
-    p1 <- p1 + ggplot2::geom_boxplot(outlier.size = OutlierSize, outlier.colour = OutlierColor, fill = BoxPlotFill)
+    if(PlotType == 'BoxPlot') {
+      if(Debug) print('Create BoxPlot')
+      p1 <- p1 + ggplot2::geom_boxplot(outlier.size = OutlierSize, outlier.colour = OutlierColor, fill = BoxPlotFill)
+    } else if(PlotType == 'ViolinPlot') {
+      if(Debug) print('Create ViolinPlot')
+      p1 <- p1 + ggplot2::geom_violin(fill = BoxPlotFill)
+    } else if(PlotType == 'Bar') {
+      if(Debug) print('Create Bar')
+      p1 <- p1 + ggplot2::geom_bar(stat = 'identity')
+    }
 
     # Add Horizontal Line for Mean Y
-    if(!PlotType %in% 'Line') {
-      if(Debug) print('Create Plot Horizontal Line')
-      p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
-    }
+    if(Debug) print('Create Plot Horizontal Line')
+    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
 
     # Create Plot labs
     if(Debug) print('Create Plot labs')
     p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
 
-    # Modify x-axis scale
+    # Modify x-axis scale; if the length > 1 then it is a categorical variable
     if(Debug) {print('XTicks'); print(XTicks)}
-    if(!'Default' %in% XTicks) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(!is.null(XVar)) if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(!is.null(XVar)) if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
 
     # Axis Labels
-    p1 <- p1 + ggplot2::ylab(eval(YVar)) + ggplot2::xlab(XVar)
+    p1 <- p1 + ggplot2::ylab(eval(YVar))
+    if(!is.null(XVar)) p1 <- p1 + ggplot2::xlab(XVar)
 
     # Add faceting (returns no faceting in none was requested)
-    if(FacetVar1 != 'None' && FacetVar2 != 'None') {
+    if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
       if(Debug) print('FacetVar1 and FacetVar2')
       p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-    } else if(FacetVar1 == 'None' && FacetVar2 != 'None') {
+    } else if(!is.null(FacetVar1) && FacetVar1 == 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
       if(Debug) print('FacetVar2')
       p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-    } else if(FacetVar1 != 'None' && FacetVar2 == 'None') {
+    } else if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 == 'None') {
       if(Debug) print('FacetVar1')
       p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
     }
-
-  }
-
-  # ViolinPlot
-  if(PlotType == 'ViolinPlotTS') {
-
-    # Create base plot object
-    if(Debug) print('Create Plot with only data')
-    p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
-
-    # Violine Plot
-    if(Debug) print('Create Violin Plot')
-    p1 <- p1 + ggplot2::geom_violin(draw_quantiles = TRUE)
-
-    # Add Horizontal Line for Mean Y
-    if(!PlotType %in% 'Line') {
-      if(Debug) print('Create Plot Horizontal Line')
-      p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
-    }
-
-    # Create Plot labs
-    if(Debug) print('Create Plot labs')
-    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
-
-    # Modify x-axis scale
-    if(Debug) {print('XTicks'); print(XTicks)}
-    if(!'Default' %in% XTicks) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
-
-    # Axis Labels
-    p1 <- p1 + ggplot2::ylab(eval(YVar)) + ggplot2::xlab(XVar)
-
-    # Add faceting (returns no faceting in none was requested)
-    if(FacetVar1 != 'None' && FacetVar2 != 'None') {
-      if(Debug) print('FacetVar1 and FacetVar2')
-      p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-    } else if(FacetVar1 == 'None' && FacetVar2 != 'None') {
-      if(Debug) print('FacetVar2')
-      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-    } else if(FacetVar1 != 'None' && FacetVar2 == 'None') {
-      if(Debug) print('FacetVar1')
-      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
-    }
-
   }
 
   # Line
   if(PlotType == 'Line') {
+
+    if(Debug) print('Line Plot Here')
+    if(Debug) print(paste0('ColorVariables: ', ColorVariables))
+    if(Debug) print(paste0('XTicks: ', XTicks))
+    if(Debug) print(paste0('XVar: ', XVar))
 
     # TS Line Plot
     p1 <- RemixAutoML:::TimeSeriesPlotter(
       data = dt,
       TargetVariable = YVar,
       DateVariable = XVar,
-      GroupVariables = if(ColorVariables == 'None') NULL else ColorVariables,
+      GroupVariables = ColorVariables,
       Aggregate = 'mean',
       NumberGroupsDisplay = NumberGroupsDisplay,
       LevelsToDisplay = NULL,
@@ -177,26 +155,29 @@ AutoPlotter <- function(dt = NULL,
       TextColor = TextColor,
       GridColor = GridColor,
       BackGroundColor = BackGroundColor,
-      LegendPosition = 'bottom',
+      LegendPosition = LegendPosition,
       LegendTextColor = 'darkblue',
-      LegendTextSize = 10)
+      LegendTextSize = max(1, floor(TextSize * 2 / 3)))
 
     # Update labels
     p1 <- p1 + ggplot2::labs(
       title = 'Time Series Plot',
       caption = 'by RemixAutoML') +
       ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax))) +
-      ggplot2::ylab(eval(YVar)) + ggplot2::xlab(eval(DateVar)) +
+      ggplot2::ylab(eval(YVar)) + ggplot2::xlab(eval(XVar)) +
       ggplot2::theme(legend.title = ggplot2::element_blank())
 
     # Modify x-axis scale
     if(Debug) {print('XTicks'); print(XTicks)}
-    if(!'Default' %in% XTicks) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
-
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
   }
 
   # Scatter or Copula
   if(PlotType %in% c('Scatter', 'Copula')) {
+
+    if(Debug) print('Scatter or Copula Plot Here')
 
     # Subset + Sample
     R2_Pearson <- c()
@@ -235,7 +216,7 @@ AutoPlotter <- function(dt = NULL,
       data = dt,
       x_var = xxx,
       y_var = yyy,
-      GroupVariable = if(ColorVariables[1L] == 'None') NULL else ColorVariables[1L],
+      GroupVariable = ColorVariables,
       FacetCol = if(FacetVar2 == 'None') NULL else FacetVar2,
       FacetRow = if(FacetVar1 == 'None') NULL else FacetVar1,
       SizeVar1 = if(SizeVar1 == 'None') NULL else SizeVar1,
@@ -336,7 +317,7 @@ AutoPlotter <- function(dt = NULL,
 #' @param DateVar = isolate(DateVar()),
 #' @param GamFit = FALSE,
 #' @param Buckets = 20,
-#' @param Subsetcheck = FALSE,
+#' @param Rebuild = FALSE,
 #' @param Check2 = FALSE,
 #' @param Debug = FALSE
 AppModelInsights <- function(dt = NULL,
@@ -348,31 +329,29 @@ AppModelInsights <- function(dt = NULL,
                              DateVar = NULL,
                              GamFit = FALSE,
                              Buckets = 20,
-                             Subsetcheck = FALSE,
+                             Rebuild = FALSE,
                              Check2 = FALSE,
                              Debug = FALSE) {
 
   if(Debug) {
     print('Running AppModelInsights')
-    print(paste0('Subsetcheck = ', Subsetcheck))
-    print(paste0('Check2 = ', Check2))
+    print(paste0('Rebuild = ', Rebuild))
   }
 
   # Test Evaluation Plot ----
   if(any(PlotType %chin% "Test_EvaluationPlot")) {
     if(Debug) print('Evaluation Plot')
-    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Test_EvaluationPlot']])) {
-      if(Debug) print('!Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('!Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_EvaluationPlot']]
     } else {
       if(Debug) {
-        print('! !Subsetcheck')
+        print('! !Rebuild')
         print(paste0('Names in dt = ', names(dt)))
         print(paste0('PredictionColName = ', PredictVar))
         print(paste0('TargetVar = ', TargetVar))
         print(paste0('Buckets = ', Buckets))
       }
-
       p1 <- RemixAutoML::EvalPlot(
         data = dt,
         PredictionColName = PredictVar,
@@ -384,12 +363,11 @@ AppModelInsights <- function(dt = NULL,
   # ----
 
   # Train Evaluation Plot ----
-  if(any(PlotType %chin% "Train_EvaluationPlot")) {
+  if(any(PlotType %chin% 'Train_EvaluationPlot')) {
     if(Debug) print('Evaluation Plot')
-    if(Debug) print(Subsetcheck)
-    if(Debug) print(Check2)
-    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Train_EvaluationPlot']])) {
-      if(Debug) print('!Subsetcheck')
+    if(Debug) print(Rebuild)
+    if(!Rebuild) {
+      if(Debug) print('!Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_EvaluationPlot']]
     }
   }
@@ -398,11 +376,11 @@ AppModelInsights <- function(dt = NULL,
 
   # Evaluation BoxPlot ----
   if(any(PlotType %chin% "Test_EvaluationBoxPlot")) {
-    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Test_EvaluationBoxPlot']])) {
-      if(Debug) print('EvalBoxPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('EvalBoxPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_EvaluationBoxPlot']]
     } else {
-      if(Debug) print('EvalBoxPlot ! !Subsetcheck')
+      if(Debug) print('EvalBoxPlot ! !Rebuild')
       p1 <- RemixAutoML::EvalPlot(
         data = dt,
         PredictionColName = PredictVar,
@@ -415,8 +393,8 @@ AppModelInsights <- function(dt = NULL,
 
   # Evaluation BoxPlot Train ----
   if(any(PlotType %chin% "Train_EvaluationBoxPlot")) {
-    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList[['Train_EvaluationBoxPlot']])) {
-      if(Debug) print('EvalBoxPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('EvalBoxPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_EvaluationBoxPlot']]
     }
   }
@@ -425,11 +403,11 @@ AppModelInsights <- function(dt = NULL,
 
   # ROC Plot ----
   if(any(PlotType %chin% "Test_ROC_Plot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_ROC_Plot']])) {
-      if(Debug) print('ROC !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('ROC !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_ROC_Plot']]
     } else {
-      if(Debug) print('Test_ROC_Plot ! !Subsetcheck')
+      if(Debug) print('Test_ROC_Plot ! !Rebuild')
       p1 <- RemixAutoML::ROCPlot(
         data = dt,
         TargetName = TargetVar,
@@ -441,8 +419,8 @@ AppModelInsights <- function(dt = NULL,
 
   # ROC Plot Train ----
   if(any(PlotType %chin% "Train_ROC_Plot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ROC_Plot']])) {
-      if(Debug) print('Train_ROC_Plot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Train_ROC_Plot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_ROC_Plot']]
     }
   }
@@ -451,11 +429,11 @@ AppModelInsights <- function(dt = NULL,
 
   # Gains Plot ----
   if(any(PlotType %chin% "Test_GainsPlot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['GainsPlot']])) {
-      if(Debug) print('Test_GainsPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Test_GainsPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_GainsPlot']]
     } else {
-      if(Debug) print('Gains Plot ! !Subsetcheck')
+      if(Debug) print('Gains Plot ! !Rebuild')
       p1 <- RemixAutoML::CumGainsChart(
         data = dt,
         TargetColumnName = TargetVar,
@@ -468,8 +446,8 @@ AppModelInsights <- function(dt = NULL,
 
   # Gains Plot Train ----
   if(any(PlotType %chin% "Train_GainsPlot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_GainsPlot']])) {
-      if(Debug) print('Gains Plot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Gains Plot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_GainsPlot']]
     }
   }
@@ -478,11 +456,11 @@ AppModelInsights <- function(dt = NULL,
 
   # Lift Plot Test ----
   if(any(PlotType %chin% "Test_LiftPlot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_LiftPlot']])) {
-      if(Debug) print('Test_LiftPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Test_LiftPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_LiftPlot']]
     } else {
-      if(Debug) print('Test_LiftPlot ! !Subsetcheck')
+      if(Debug) print('Test_LiftPlot ! !Rebuild')
       p1 <- RemixAutoML::CumGainsChart(
         data = dt,
         TargetColumnName = TargetVar,
@@ -495,8 +473,8 @@ AppModelInsights <- function(dt = NULL,
 
   # Lift Plot Train ----
   if(any(PlotType %chin% "Train_LiftPlot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_LiftPlot']])) {
-      if(Debug) print('Train_LiftPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Train_LiftPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_LiftPlot']]
     }
   }
@@ -505,11 +483,11 @@ AppModelInsights <- function(dt = NULL,
 
   # Scatter Plot Test ----
   if(any(PlotType %chin% "Test_ScatterPlot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_ScatterPlot']])) {
-      if(Debug) print('Test_ScatterPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Test_ScatterPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_ScatterPlot']]
     } else {
-      if(Debug) print('Test_ScatterPlot ! !Subsetcheck')
+      if(Debug) print('Test_ScatterPlot ! !Rebuild')
       p1 <- RemixAutoML::ResidualPlots(
         TestData = dt,
         Target = TargetVar, Predicted = PredictVar,
@@ -521,8 +499,8 @@ AppModelInsights <- function(dt = NULL,
 
   # Scatter Plot Train ----
   if(any(PlotType %chin% "Train_ScatterPlot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ScatterPlot']])) {
-      if(Debug) print('Train_ScatterPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Train_ScatterPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_ScatterPlot']]
     }
   }
@@ -531,11 +509,11 @@ AppModelInsights <- function(dt = NULL,
 
   # Copula Plot Test ----
   if(any(PlotType %chin% "Test_CopulaPlot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_CopulaPlot']])) {
-      if(Debug) print('Test_CopulaPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Test_CopulaPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_CopulaPlot']]
     } else {
-      if(Debug) print('Test_CopulaPlot ! !Subsetcheck')
+      if(Debug) print('Test_CopulaPlot ! !Rebuild')
       p1 <- RemixAutoML::ResidualPlots(
         TestData = dt,
         Target = TargetVar, Predicted = PredictVar,
@@ -547,8 +525,8 @@ AppModelInsights <- function(dt = NULL,
 
   # Copula Plot Train ----
   if(any(PlotType %chin% "Train_CopulaPlot")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_CopulaPlot']])) {
-      if(Debug) print('Train_CopulaPlot !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Train_CopulaPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_CopulaPlot']]
     }
   }
@@ -557,11 +535,11 @@ AppModelInsights <- function(dt = NULL,
 
   # Residuals Histogram Plot Test ----
   if(any(PlotType %chin% "Test_ResidualsHistogram")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Test_ResidualsHistogram']])) {
-      if(Debug) print('Test_ResidualsHistogram !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Test_ResidualsHistogram !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_ResidualsHistogram']]
     } else {
-      if(Debug) print('Test_ResidualsHistogram ! !Subsetcheck')
+      if(Debug) print('Test_ResidualsHistogram ! !Rebuild')
       p1 <- RemixAutoML::ResidualPlots(
         TestData = dt,
         Target = TargetVar, Predicted = shiny::PredictVar,
@@ -573,8 +551,8 @@ AppModelInsights <- function(dt = NULL,
 
   # Residuals Histogram Plot Train ----
   if(any(PlotType %chin% "Train_ResidualsHistogram")) {
-    if(!Subsetcheck && !is.null(ModelOutputList$PlotList[['Train_ResidualsHistogram']])) {
-      if(Debug) print('Train_ResidualsHistogram !Subsetcheck')
+    if(!Rebuild) {
+      if(Debug) print('Train_ResidualsHistogram !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_ResidualsHistogram']]
     }
   }
@@ -583,7 +561,7 @@ AppModelInsights <- function(dt = NULL,
 
   # Variable Importance Plot Test ----
   if(any(PlotType %chin% "Test_VariableImportance")) {
-    if(Debug) print('Test_Importance ! !Subsetcheck')
+    if(Debug) print('Test_Importance ! !Rebuild')
     if(Debug) print(ModelOutputList$VariableImportance[['Test_Importance']])
     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Test_Importance']], TopN = 25)
   }
@@ -592,7 +570,7 @@ AppModelInsights <- function(dt = NULL,
 
   # Variable Importance Plot Train ----
   if(any(PlotType %chin% 'Train_VariableImportance')) {
-    if(Debug) print('Train_Importance ! !Subsetcheck')
+    if(Debug) print('Train_Importance ! !Rebuild')
     if(Debug) print(ModelOutputList$VariableImportance[['Train_Importance']])
     p1 <- RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = ModelOutputList$VariableImportance[['Train_Importance']], TopN = 25)
   }
@@ -601,8 +579,9 @@ AppModelInsights <- function(dt = NULL,
 
   # Partial Dependence Plot Test ----
   if(any(PlotType %chin% 'Test_ParDepPlots') && !is.null(PDPVar)) {
-    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Test_ParDepPlots[[eval(PDPVar)]])) {
+    if(!Rebuild) {
       p1 <- p1 <- ModelOutputList$PlotList$Test_ParDepPlots[[eval(PDPVar)]]
+      p1 <- p1 + ggplot2::labs(subtitle = NULL)
       p1$layers[[6L]] <- NULL
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
@@ -613,6 +592,7 @@ AppModelInsights <- function(dt = NULL,
         TargetColName = TargetVar,
         IndepVar = PDPVar,
         GraphType = 'calibration', PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+      p1 <- p1 + ggplot2::labs(subtitle = NULL)
       p1$layers[[6L]] <- NULL
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
@@ -624,7 +604,7 @@ AppModelInsights <- function(dt = NULL,
   # Partial Dependence Plot Train ----
   if(any(PlotType %chin% 'Train_ParDepPlots') && !is.null(PDPVar)) {
     if(Debug) print('Partial Dependence Plot Train')
-    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Train_ParDepPlots[[eval(PDPVar)]])) {
+    if(!Rebuild && !is.null(ModelOutputList$PlotList$Train_ParDepPlots[[eval(PDPVar)]])) {
       p1 <- ModelOutputList$PlotList$Train_ParDepPlots[[eval(PDPVar)]]
       p1$layers[[6L]] <- NULL
       p1$layers[[5L]] <- NULL
@@ -647,8 +627,9 @@ AppModelInsights <- function(dt = NULL,
 
   # Partial Dependence Box Plot Test ----
   if(any(PlotType %chin% 'Test_ParDepBoxPlots') && !is.null(PDPVar)) {
-    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Test_ParDepBoxPlots[[eval(PDPVar)]])) {
+    if(!Rebuild && !is.null(ModelOutputList$PlotList$Test_ParDepBoxPlots[[eval(PDPVar)]])) {
       p1 <- ModelOutputList$PlotList$Test_ParDepBoxPlots[[eval(PDPVar)]]
+      p1 <- p1 + ggplot2::labs(subtitle = NULL)
       p1$layers[[6L]] <- NULL
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
@@ -659,6 +640,7 @@ AppModelInsights <- function(dt = NULL,
         TargetColName = TargetVar,
         IndepVar = PDPVar,
         GraphType = "boxplot", PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+      p1 <- p1 + ggplot2::labs(subtitle = NULL)
       p1$layers[[6L]] <- NULL
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
@@ -669,8 +651,9 @@ AppModelInsights <- function(dt = NULL,
 
   # Partial Dependence Box Plot Train ----
   if(any(PlotType %chin% 'Train_ParDepBoxPlots') && !is.null(PDPVar)) {
-    if(!Subsetcheck && Check2 && !is.null(ModelOutputList$PlotList$Train_ParDepBoxPlots[[eval(PDPVar)]])) {
+    if(!Rebuild && !is.null(ModelOutputList$PlotList$Train_ParDepBoxPlots[[eval(PDPVar)]])) {
       p1 <- ModelOutputList$PlotList$Train_ParDepBoxPlots[[eval(PDPVar)]]
+      p1 <- p1 + ggplot2::labs(subtitle = NULL)
       p1$layers[[6L]] <- NULL
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
@@ -681,6 +664,7 @@ AppModelInsights <- function(dt = NULL,
         TargetColName = TargetVar,
         IndepVar = PDPVar,
         GraphType = "boxplot", PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+      p1 <- p1 + ggplot2::labs(subtitle = NULL)
       p1$layers[[6L]] <- NULL
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
@@ -691,7 +675,7 @@ AppModelInsights <- function(dt = NULL,
 
   # Shap Table Variable Importance ----
   # if(any(PlotType %chin% "ShapPlot")) {
-  #   if(!Subsetcheck && data.table::is.data.table(ML_ShapTable)) {
+  #   if(!Rebuild && data.table::is.data.table(ML_ShapTable)) {
   #     ML_ShapTable2 <- ML_ShapTable[, list(Importance = mean(ShapValue, na.rm = TRUE)), by = "Variable"]
   #     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ML_ShapTable2, TopN = 25)
   #   } else {
@@ -981,8 +965,8 @@ TimeSeriesPlotter <- function(data = data,
 
     # Groupvariables
     if(length(dataSubset[[eval(DateVariable)]]) != length(unique(dataSubset[[eval(DateVariable)]]))) {
-      dataSubset <- dataSubset[, .(temp1 = mean(get(TargetVariable),na.rm = TRUE),
-                                   Forecast = mean(Forecast,na.rm = TRUE)),
+      dataSubset <- dataSubset[, list(temp1 = mean(get(TargetVariable),na.rm = TRUE),
+                                      Forecast = mean(Forecast,na.rm = TRUE)),
                                by = eval(DateVariable)]
       data.table::setnames(dataSubset, "temp1", eval(TargetVariable[1L]))
     }
@@ -1002,10 +986,12 @@ TimeSeriesPlotter <- function(data = data,
         GridColor = GridColor,
         BackGroundColor = BackGroundColor,
         LegendPosition = LegendPosition)
-    if(!is.null(XTickMarks)) {
-      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-    } else {
-      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+
+    # Update axis lables
+    if(!is.null(XTickMarks) && class(dataSubset[[eval(DateVariable)]])[1L] == 'Date') {
+      Plot <- Plot + ggplot2::scale_x_date(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+    } else if(!is.null(XTickMarks) && class(dataSubset[[eval(DateVariable)]])[1L] == 'POSIXct') {
+      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
     }
 
     # Prediction Intervals
@@ -1054,8 +1040,8 @@ TimeSeriesPlotter <- function(data = data,
 
   # Subset columns for plotting----
   if(!is.null(GroupVariables)) {
-    if("Forecast" %chin% names(PlotData)) {
-      PlotData <- PlotData[, .SD, .SDcols = c("Forecast", eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
+    if('Forecast' %chin% names(PlotData)) {
+      PlotData <- PlotData[, .SD, .SDcols = c('Forecast', eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
     } else {
       PlotData <- PlotData[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable), eval(GroupVariables))]
     }
@@ -1064,7 +1050,9 @@ TimeSeriesPlotter <- function(data = data,
   }
 
   # Ensure DateVariable is date type----
-  PlotData[, eval(DateVariable) := as.POSIXct(get(DateVariable))]
+  if(class(PlotData[[eval(DateVariable)]])[1L] != 'Date') {
+    PlotData[, eval(DateVariable) := as.POSIXct(get(DateVariable))]
+  }
 
   # Evaluate mode ----
   if(EvaluationMode) {
@@ -1102,10 +1090,10 @@ TimeSeriesPlotter <- function(data = data,
         LegendPosition = LegendPosition)
 
     # Update axis lables
-    if(!is.null(XTickMarks)) {
-      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-    } else {
-      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+    if(!is.null(XTickMarks) && class(PlotData[[eval(DateVariable)]])[1L] == 'Date') {
+      Plot <- Plot + ggplot2::scale_x_date(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+    } else if(!is.null(XTickMarks) && class(PlotData[[eval(DateVariable)]])[1L] == 'POSIXct') {
+      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
     }
 
     # Return
@@ -1181,11 +1169,12 @@ TimeSeriesPlotter <- function(data = data,
         ggplot2::theme(legend.title = ggplot2::element_blank()) +
         ggplot2::theme(legend.text = ggplot2::element_text(
           colour = LegendTextColor,
-          size = LegendTextSize))
-      if(!is.null(XTickMarks)) {
-        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-      } else {
-        Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+          size = LegendTextSize)) +
+        ggplot2::labs(fill = 'GroupVars')
+      if(!is.null(XTickMarks) && class(tempData2[[eval(DateVariable)]])[1L] == 'Date') {
+        Plot <- Plot + ggplot2::scale_x_date(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+      } else if(!is.null(XTickMarks) && class(tempData2[[eval(DateVariable)]])[1L] == 'POSIXct') {
+        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
       }
 
     } else if(length(unique(PlotData[, get(GroupVariables)])) > 1) {
@@ -1239,11 +1228,12 @@ TimeSeriesPlotter <- function(data = data,
         ggplot2::theme(legend.title = ggplot2::element_blank()) +
         ggplot2::theme(legend.text = ggplot2::element_text(
           colour = LegendTextColor,
-          size = LegendTextSize))
-      if(!is.null(XTickMarks)) {
-        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-      } else {
-        Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+          size = LegendTextSize)) +
+        ggplot2::labs(fill = 'GroupVars')
+      if(!is.null(XTickMarks) && class(tempData2[[eval(DateVariable)]])[1L] == 'Date') {
+        Plot <- Plot + ggplot2::scale_x_date(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+      } else if(!is.null(XTickMarks) && class(tempData2[[eval(DateVariable)]])[1L] == 'POSIXct') {
+        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
       }
     } else {
       Plot <- ggplot2::ggplot(
@@ -1261,11 +1251,10 @@ TimeSeriesPlotter <- function(data = data,
           GridColor = GridColor,
           BackGroundColor = BackGroundColor,
           LegendPosition = LegendPosition)
-      if(!is.null(XTickMarks)) {
-        Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-      } else {
-        Plot <- Plot +
-          ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+      if(!is.null(XTickMarks) && class(PlotData[[eval(DateVariable)]])[1L] == 'Date') {
+        Plot <- Plot + ggplot2::scale_x_date(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+      } else if(!is.null(XTickMarks) && class(PlotData[[eval(DateVariable)]])[1L] == 'POSIXct') {
+        Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
       }
     }
   } else {
@@ -1286,10 +1275,10 @@ TimeSeriesPlotter <- function(data = data,
         GridColor = GridColor,
         BackGroundColor = BackGroundColor,
         LegendPosition = LegendPosition)
-    if(!is.null(XTickMarks)) {
-      Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
-    } else {
-      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d"))
+    if(!is.null(XTickMarks) && class(PlotData[[eval(DateVariable)]])[1L] == 'Date') {
+      Plot <- Plot + ggplot2::scale_x_date(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d"))
+    } else if(!is.null(XTickMarks) && class(PlotData[[eval(DateVariable)]])[1L] == 'POSIXct') {
+      Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
     }
   }
 

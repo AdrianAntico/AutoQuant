@@ -13,7 +13,7 @@ AutoPlotter(
   YMax = NULL,
   XMin = NULL,
   XMax = NULL,
-  ColorVariables = "None",
+  ColorVariables = NULL,
   SizeVar1 = "None",
   FacetVar1 = "None",
   FacetVar2 = "None",

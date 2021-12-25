@@ -50,6 +50,7 @@ Other Shiny:
 \code{\link{BlankRow}()},
 \code{\link{DateInput}()},
 \code{\link{GenerateEvaluationMetrics}()},
+\code{\link{PickerInput_GetLevels2}()},
 \code{\link{PickerInput_GetLevels}()},
 \code{\link{PickerInput}()},
 \code{\link{PreparePlotData}()},

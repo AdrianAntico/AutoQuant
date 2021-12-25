@@ -37,6 +37,7 @@ Other Shiny:
 \code{\link{DateInput}()},
 \code{\link{GenerateEvaluationMetrics}()},
 \code{\link{NumericInput}()},
+\code{\link{PickerInput_GetLevels2}()},
 \code{\link{PickerInput_GetLevels}()},
 \code{\link{PickerInput}()},
 \code{\link{PreparePlotData}()},

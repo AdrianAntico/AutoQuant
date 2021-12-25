@@ -253,7 +253,7 @@ ParseOptParse <- function(x) {
 #' @noRd
 ColTypes <- function(data) {
   CT <- c()
-  for(Col in names(data)) CT <- c(CT, class( data[[Col]] )[[1L]], length(class( data[[Col]] )))
+  for(Col in names(data)) CT <- c(CT, class(data[[Col]])[[1L]])
   CT
 }
 
