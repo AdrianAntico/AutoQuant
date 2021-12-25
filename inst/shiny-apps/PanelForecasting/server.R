@@ -1948,7 +1948,7 @@ server <- shiny::shinyServer(function(input, output, session) {
         # Create data for plotting ----
         PlotDataForecastFinal <- RemixAutoML::PreparePlotData(
           input,
-          PlotDataForecast,
+          data = PlotDataForecast,
           Aggregate = Aggregate,
           TargetVariable = TargetVariable,
           DateVariable = DateVariable,
@@ -4441,7 +4441,7 @@ server <- shiny::shinyServer(function(input, output, session) {
       print("here motherfucker")
       PlotDataForecastFinal <- RemixAutoML::PreparePlotData(
         input,
-        PlotDataForecastFinal,
+        data = PlotDataForecastFinal,
         Aggregate = Aggregate,
         TargetVariable = c("Forecast", targetvariables),
         DateVariable = datevariables,

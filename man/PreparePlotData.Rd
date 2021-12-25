@@ -6,7 +6,7 @@
 \usage{
 PreparePlotData(
   input,
-  PlotDataForecast,
+  data,
   SubsetOnly = FALSE,
   Aggregate = NULL,
   TargetVariable = NULL,
@@ -21,7 +21,7 @@ PreparePlotData(
 \arguments{
 \item{input}{input object within shiny context}
 
-\item{PlotDataForecast}{Source data in shiny app}
+\item{data}{Source data in shiny app}
 
 \item{SubsetOnly}{Set to TRUE to only subset data}
 
@@ -51,7 +51,7 @@ PreparePlotData automatically builds a picker input with tryCatch's and ProjectL
 \dontrun{
   PlotData <- RemixAutoML::PreparePlotData(
     input,
-    PlotDataForecast,
+    data,
     SubsetOnly = FALSE,
     Aggregate = "mean",
     TargetVariable = "TargetVariables",

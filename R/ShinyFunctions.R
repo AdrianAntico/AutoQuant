@@ -988,7 +988,7 @@ PickerInput_GetLevels2 <- function(input,
 #' @family Shiny
 #'
 #' @param input input object within shiny context
-#' @param PlotDataForecast Source data in shiny app
+#' @param data Source data in shiny app
 #' @param SubsetOnly Set to TRUE to only subset data
 #' @param Aggregate Session object indicating whether to use mean or sum
 #' @param TargetVariable Target variable name
@@ -1003,7 +1003,7 @@ PickerInput_GetLevels2 <- function(input,
 #' \dontrun{
 #'   PlotData <- RemixAutoML::PreparePlotData(
 #'     input,
-#'     PlotDataForecast,
+#'     data,
 #'     SubsetOnly = FALSE,
 #'     Aggregate = "mean",
 #'     TargetVariable = "TargetVariables",
@@ -1016,7 +1016,7 @@ PickerInput_GetLevels2 <- function(input,
 #' @return PreparePlotData object for server.R to
 #' @export
 PreparePlotData <- function(input,
-                            PlotDataForecast,
+                            data,
                             SubsetOnly = FALSE,
                             Aggregate = NULL,
                             TargetVariable = NULL,
@@ -1034,7 +1034,7 @@ PreparePlotData <- function(input,
     Agg <- as.function(x = , sum)
   }
 
-  AggFun <- function(dt = PlotDataForecast, A = Agg, S = SubsetOnly, t = TargetVariable, G = GroupVariables, D = DateVariable) {
+  AggFun <- function(dt = data, A = Agg, S = SubsetOnly, t = TargetVariable, G = GroupVariables, D = DateVariable) {
     if(!S && !is.null(G) && !is.null(D)) {
       dt <- dt[, lapply(.SD, A), by = c(eval(G), eval(D)), .SDcols = c(t)]
     } else if(!S && is.null(G) && !is.null(D)) {
@@ -1049,73 +1049,70 @@ PreparePlotData <- function(input,
   if(!is.null(GroupVariables[1L]) && !is.null(GroupVariables[2L]) && !is.null(GroupVariables[3L])) {
 
     if(Debug) print('G1 & G2 & G3 ----')
-    if(Debug) print(input[[G1Levels]])
-    if(Debug) print(input[[G2Levels]])
-    if(Debug) print(input[[G3Levels]])
-
+    if(Debug) {print(input[[G1Levels]]); print(input[[G2Levels]]); print(input[[G3Levels]])}
 
     # G2 & G3 ----
     if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
       if(Debug) print('G2 & G3 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # G1 & G3 ----
     if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
       if(Debug) print('G1 & G3 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # G1 & G2 ----
     if(!is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
       if(Debug) print('G1 & G2 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # G3 ----
     if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
       if(Debug) print('G3 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # G2 ----
     if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
       if(Debug) print('G2 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # G1 ----
     if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
       if(Debug) print('G1 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # None ----
     if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
       if(Debug) print('None ----')
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecast, A = Agg, S = SubsetOnly)
-      if(Debug) print(PlotDataForecastFinal)
-      return(PlotDataForecastFinal)
+      x <- AggFun(dt = data, A = Agg, S = SubsetOnly)
+      if(Debug) print(x)
+      return(x)
     }
 
     # G1 & G2 & G3 ----
     if(!is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
       if(Debug) print('# G1 & G2 & G3 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
   }
 
@@ -1127,25 +1124,25 @@ PreparePlotData <- function(input,
     # G2 ----
     if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]])) {
       if(Debug) print('G2 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # G1 ----
     if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]])) {
       if(Debug) print('G1 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # G1 & G2 ----
     if(!is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]])) {
       if(Debug) print('G1 & G2 ----')
-      PlotDataForecast <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
-      if(!SubsetOnly) PlotDataForecast <- PlotDataForecast[, .SD, .SDcols = c(eval(TargetVariable), eval(GroupVariables), eval(DateVariable))]
-      return(PlotDataForecast)
+      data <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
+      if(!SubsetOnly) data <- data[, .SD, .SDcols = c(eval(TargetVariable), eval(GroupVariables), eval(DateVariable))]
+      return(data)
     }
 
     # None ----
@@ -1153,11 +1150,11 @@ PreparePlotData <- function(input,
       if(Debug) print('None ----')
       if(!SubsetOnly && !is.null(DateVariable)) {
         if(GroupVariables == 'None') GroupVariables <- NULL
-        PlotDataForecastFinal <- PlotDataForecast[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
+        x <- data[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
       } else {
-        PlotDataForecastFinal <- PlotDataForecast
+        x <- data
       }
-      return(PlotDataForecastFinal)
+      return(x)
     }
   }
 
@@ -1169,16 +1166,16 @@ PreparePlotData <- function(input,
     # None ----
     if(is.null(input[[G1Levels]])) {
       if(Debug) print('None ----')
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecast, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- AggFun(dt = data, A = Agg, S = SubsetOnly)
+      return(x)
     }
 
     # G1 ----
     if(!is.null(input[[G1Levels]])) {
       if(Debug) print('G1 ----')
-      PlotDataForecastFinal <- PlotDataForecast[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
-      return(PlotDataForecastFinal)
+      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      return(x)
     }
   }
 
@@ -1186,18 +1183,18 @@ PreparePlotData <- function(input,
   if(is.null(GroupVariables)) {
     if(Debug) print('No Goruping Variables ----')
     if(!SubsetOnly && !is.null(DateVariable)) {
-      PlotDataForecastFinal <- PlotDataForecast[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
-      PlotDataForecastFinal <- AggFun(dt = PlotDataForecastFinal, A = Agg, S = SubsetOnly)
+      x <- data[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
+      x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
     } else {
-      PlotDataForecastFinal <- PlotDataForecast
+      x <- data
     }
-    return(PlotDataForecastFinal)
+    return(x)
   }
 
   # None up till now ----
-  if(!exists("PlotDataForecastFinal")) {
-    PlotDataForecastFinal <- AggFun(dt = PlotDataForecast, A = Agg, S = SubsetOnly)
-    return(PlotDataForecastFinal)
+  if(!exists("x")) {
+    x <- AggFun(dt = data, A = Agg, S = SubsetOnly)
+    return(x)
   }
 
   # Return

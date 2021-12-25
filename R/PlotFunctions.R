@@ -369,6 +369,19 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('!Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_EvaluationPlot']]
+    } else {
+      if(Debug) {
+        print('! !Rebuild')
+        print(paste0('Names in dt = ', names(dt)))
+        print(paste0('PredictionColName = ', PredictVar))
+        print(paste0('TargetVar = ', TargetVar))
+        print(paste0('Buckets = ', Buckets))
+      }
+      p1 <- RemixAutoML::EvalPlot(
+        data = dt,
+        PredictionColName = PredictVar,
+        TargetColName = TargetVar,
+        GraphType = "calibration", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
     }
   }
 
@@ -396,6 +409,19 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('EvalBoxPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_EvaluationBoxPlot']]
+    } else {
+      if(Debug) {
+        print('! !Rebuild')
+        print(paste0('Names in dt = ', names(dt)))
+        print(paste0('PredictionColName = ', PredictVar))
+        print(paste0('TargetVar = ', TargetVar))
+        print(paste0('Buckets = ', Buckets))
+      }
+      p1 <- RemixAutoML::EvalPlot(
+        data = dt,
+        PredictionColName = PredictVar,
+        TargetColName = TargetVar,
+        GraphType = "boxplot", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
     }
   }
 
@@ -422,6 +448,13 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('Train_ROC_Plot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_ROC_Plot']]
+    } else {
+      if(Debug) print('Gains Plot ! !Rebuild')
+      p1 <- RemixAutoML::CumGainsChart(
+        data = dt,
+        TargetColumnName = TargetVar,
+        PredictedColumnName = PredictVar,
+        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
     }
   }
 
@@ -449,6 +482,13 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('Gains Plot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_GainsPlot']]
+    } else {
+      if(Debug) print('Train_LiftPlot ! !Rebuild')
+      p1 <- RemixAutoML::CumGainsChart(
+        data = dt,
+        TargetColumnName = TargetVar,
+        PredictedColumnName = PredictVar,
+        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
     }
   }
 
@@ -476,6 +516,13 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('Train_LiftPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_LiftPlot']]
+    } else {
+      if(Debug) print('Test_LiftPlot ! !Rebuild')
+      p1 <- RemixAutoML::CumGainsChart(
+        data = dt,
+        TargetColumnName = TargetVar,
+        PredictedColumnName = PredictVar,
+        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$LiftPlot
     }
   }
 
@@ -502,6 +549,12 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('Train_ScatterPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_ScatterPlot']]
+    } else {
+      if(Debug) print('Train_ScatterPlot ! !Rebuild')
+      p1 <- RemixAutoML::ResidualPlots(
+        TestData = dt,
+        Target = TargetVar, Predicted = PredictVar,
+        DateColumnName = DateVar, Gam_Fit = GamFit)$ScatterPlot
     }
   }
 
@@ -528,6 +581,12 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('Train_CopulaPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_CopulaPlot']]
+    } else {
+      if(Debug) print('Train_CopulaPlot ! !Rebuild')
+      p1 <- RemixAutoML::ResidualPlots(
+        TestData = dt,
+        Target = TargetVar, Predicted = PredictVar,
+        DateColumnName = DateVar, Gam_Fit = GamFit)$CopulaPlot
     }
   }
 
@@ -542,7 +601,7 @@ AppModelInsights <- function(dt = NULL,
       if(Debug) print('Test_ResidualsHistogram ! !Rebuild')
       p1 <- RemixAutoML::ResidualPlots(
         TestData = dt,
-        Target = TargetVar, Predicted = shiny::PredictVar,
+        Target = TargetVar, Predicted = PredictVar,
         DateColumnName = DateVar, Gam_Fit = GamFit)$ResidualsHistogram
     }
   }
@@ -554,6 +613,12 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('Train_ResidualsHistogram !Rebuild')
       p1 <- ModelOutputList$PlotList[['Train_ResidualsHistogram']]
+    } else {
+      if(Debug) print('Train_ResidualsHistogram ! !Rebuild')
+      p1 <- RemixAutoML::ResidualPlots(
+        TestData = dt,
+        Target = TargetVar, Predicted = PredictVar,
+        DateColumnName = DateVar, Gam_Fit = GamFit)$ResidualsHistogram
     }
   }
 

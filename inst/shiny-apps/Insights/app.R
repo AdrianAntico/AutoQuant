@@ -1058,17 +1058,15 @@ server <- function(input, output, session) {
   # Reset Plot Format Only               ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['ResetPlotThemeElements']], {
-
     if(Debug) for(zzzz in 1:4) print(':: :: RESET PLOTS :: ::')
-
     if(Debug) {
       print(!exists('p1') || !exists('data1'))
       print(!exists('p1'))
       print(!exists('data1'))
     }
 
+    # Stop if p1 or data1 doesn't exist
     if(!exists('p1') || !exists('data1')) {
-
       shinyWidgets::sendSweetAlert(session, title = NULL, text = "Try Create Plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
 
     } else {
@@ -1093,7 +1091,6 @@ server <- function(input, output, session) {
       # Update labels
       if(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot','Bar')) {
         if(Debug) print('BoxPlot or ViolinPlot reset labs')
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = input[['XTicks']]))
         p1 <- p1 + ggplot2::labs(
           title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
           subtitle = 'Blue line = mean(Y)',
@@ -1103,9 +1100,6 @@ server <- function(input, output, session) {
 
       } else if(input[['PlotType']] %chin% c('Line')) {
         if(Debug) print('Line reset labs')
-        if(!'Default' %in% input[['XTicks']]) {
-          p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = input[['XTicks']]))
-        }
         p1 <- p1 + ggplot2::labs(
           title = paste0(input[['PlotType']], ' Plot'),
           caption = 'by RemixAutoML') +
@@ -1114,9 +1108,8 @@ server <- function(input, output, session) {
 
       } else if(input[['PlotType']] %chin% c('Scatter','Copula')) {
 
-        if(Debug) print('Scatter or Copula reset labs')
-
         # Labs
+        if(Debug) print('Scatter or Copula reset labs')
         p1 <- p1 + ggplot2::labs(
           title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
           caption = 'by RemixAutoML') +
@@ -1221,7 +1214,7 @@ server <- function(input, output, session) {
     } else {
 
       # Update chart theme elements
-      p1 <- shiny::isolate(p1 + RemixAutoML::ChartTheme(
+      p1 <- p1 + RemixAutoML::ChartTheme(
         Size = input[['TextSize']],
         AngleX = input[['AngleX']],
         AngleY = input[['AngleY']],
@@ -1234,11 +1227,10 @@ server <- function(input, output, session) {
         LegendPosition = input[['LegendPosition']],
         LegendBorderSize = as.numeric(input[['LegendBorderSize']]),
         LegendLineType = input[['LegendLineType']]) +
-          ggplot2::theme(legend.title = ggplot2::element_blank()))
+          ggplot2::theme(legend.title = ggplot2::element_blank())
 
       # Update labels
-      if(shiny::isolate(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot'))) {
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = input[['XTicks']]))
+      if(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot')) {
         p1 <- p1 + ggplot2::labs(
           title = paste0(input[['PlotType']], ' Plot'),
           subtitle = 'Blue line = mean(Y)',
@@ -1564,7 +1556,7 @@ server <- function(input, output, session) {
         if(Debug) {print('  Checking YVar(), XVar(), and DateVar()'); print(shiny::isolate(YVar())); print(shiny::isolate(XVar())); print(shiny::isolate(DateVar()))}
         data1 <- RemixAutoML::PreparePlotData(
           SubsetOnly = if(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot','Scatter','Copula','Train_ParDepPlots','Test_ParDepPlots','Train_ParDepBoxPlots','Test_ParDepBoxPlots','Test__EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot')) TRUE else FALSE,
-          input, PlotDataForecast = data1, Aggregate = 'mean', TargetVariable = shiny::isolate(YVar()),
+          input, data = data1, Aggregate = 'mean', TargetVariable = shiny::isolate(YVar()),
           DateVariable = if(shiny::isolate(DateVar()) == 'None') NULL else shiny::isolate(DateVar()), GroupVariables = SubsetList[['SelectedGroupss']],
           G1Levels = 'Levels_1', G2Levels = 'Levels_2', G3Levels = 'Levels_3', Debug = Debug)
       }
@@ -1573,13 +1565,13 @@ server <- function(input, output, session) {
       # Rebuild if Percentile_Buckets changed from default, # Rebuild if Subsetting is desired
       # x4:Rebuild if PDP_Variable not in names of PlotList
       if(Debug) {print(data1); print(SubsetList[['SelectedGroupss']])}
-      x1 <- is.null(ScoreVar)
-      x2 <- !input$PDP_Variable %in% names(data1)
-      x3 <- input$Percentile_Buckets == 20
+      x1 <- !is.null(ScoreVar)
+      x2 <- input$PDP_Variable %in% names(data1)
+      x3 <- input$Percentile_Buckets != 20
       x4 <- !is.null(SubsetList[['SelectedGroupss']]) && (!is.null(RemixAutoML::CharNull(SubsetList[['Levels_1']])) || !is.null(RemixAutoML::CharNull(SubsetList[['Levels_2']])) || !is.null(RemixAutoML::CharNull(SubsetList[['Levels_3']])))
-      x5 <- any(c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots','Test_EvaluationPlot','Test_EvaluationBoxPlot','Test_GainsPlot','Test_LiftPlot','Test_ScatterPlot','Test_CopulaPlot','Test_ResidualsHistogram') %in% input$PlotType)
-      Blocker <- x1 || x2
-      if(x5 || x4 || (x3 && !input[['PlotType']] %in% c('Scatter','Copula','Bar','Line','BoxPlot','ViolinPlot'))) {
+      x5 <- any(c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots','Test_EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot','Test_GainsPlot','Train_GainsPlot','Test_LiftPlot','Train_LiftPlot','Test_ScatterPlot','Train_ScatterPlot','Test_CopulaPlot','Train_CopulaPlot','Test_ResidualsHistogram','Train_ResidualsHistogram') %in% input$PlotType)
+      Blocker <- !x1 || (!x2 && input$PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots'))
+      if(x5 || x4 || (x3 && input$PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots'))) {
         if(Blocker) Rebuild <- FALSE else Rebuild <- TRUE
       } else {
         Rebuild <- FALSE
@@ -1679,7 +1671,9 @@ server <- function(input, output, session) {
 
   # ----
 
-  # Close app after closing browser
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Close app after closing browser            ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   session$onSessionEnded(function() {
     stopApp()
   })
