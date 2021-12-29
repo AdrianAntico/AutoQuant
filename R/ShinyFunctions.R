@@ -156,20 +156,19 @@ FilterValues <- function(data, VarName = input[['FilterVariable_1']], type = 1) 
 #' @title FilterLogicData
 #'
 #' @param data1 data.table
-#' @param input passthrough
 #' @param FilterLogic passthrough
 #' @param FilterVariable passthrough
 #' @param FilterValue passthrough
 #' @param FilterValue2 passthrough
 #'
 #' @export
-FilterLogicData <- function(data1, input, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
+FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
   if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character') || FilterLogic %in% c('%in%', '%like')) {
     if(Debug) print('FilterLogicData else if')
     if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character'))
     if(FilterLogic == '%in%') {
       data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
-    } else if(input[[eval(FilterLogic)]] == '%like%') {
+    } else if(FilterLogic == '%like%') {
       data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
     }
   } else if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
@@ -987,7 +986,6 @@ PickerInput_GetLevels2 <- function(input,
 #' @author Adrian Antico
 #' @family Shiny
 #'
-#' @param input input object within shiny context
 #' @param data Source data in shiny app
 #' @param SubsetOnly Set to TRUE to only subset data
 #' @param Aggregate Session object indicating whether to use mean or sum
@@ -1002,7 +1000,6 @@ PickerInput_GetLevels2 <- function(input,
 #' @examples
 #' \dontrun{
 #'   PlotData <- RemixAutoML::PreparePlotData(
-#'     input,
 #'     data,
 #'     SubsetOnly = FALSE,
 #'     Aggregate = "mean",
@@ -1015,8 +1012,7 @@ PickerInput_GetLevels2 <- function(input,
 #' }
 #' @return PreparePlotData object for server.R to
 #' @export
-PreparePlotData <- function(input,
-                            data,
+PreparePlotData <- function(data,
                             SubsetOnly = FALSE,
                             Aggregate = NULL,
                             TargetVariable = NULL,
@@ -1049,58 +1045,58 @@ PreparePlotData <- function(input,
   if(!is.null(GroupVariables[1L]) && !is.null(GroupVariables[2L]) && !is.null(GroupVariables[3L])) {
 
     if(Debug) print('G1 & G2 & G3 ----')
-    if(Debug) {print(input[[G1Levels]]); print(input[[G2Levels]]); print(input[[G3Levels]])}
+    if(Debug) {print(G1Levels); print(G2Levels); print(G3Levels)}
 
     # G2 & G3 ----
-    if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
+    if(is.null(G1Levels) && !is.null(G2Levels) && !is.null(G3Levels)) {
       if(Debug) print('G2 & G3 ----')
-      x <- data[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
+      x <- data[get(GroupVariables[2L]) %in% c(eval(G2Levels)) & get(GroupVariables[3L]) %in% c(eval(G3Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # G1 & G3 ----
-    if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
+    if(!is.null(G1Levels) && is.null(G2Levels) && !is.null(G3Levels)) {
       if(Debug) print('G1 & G3 ----')
-      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
+      x <- data[get(GroupVariables[1L]) %in% c(eval(G1Levels)) & get(GroupVariables[3L]) %in% c(eval(G3Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # G1 & G2 ----
-    if(!is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
+    if(!is.null(G1Levels) && !is.null(G2Levels) && is.null(G3Levels)) {
       if(Debug) print('G1 & G2 ----')
-      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
+      x <- data[get(GroupVariables[1L]) %in% c(eval(G1Levels)) & get(GroupVariables[2L]) %in% c(eval(G2Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # G3 ----
-    if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
+    if(is.null(G1Levels) && is.null(G2Levels) && !is.null(G3Levels)) {
       if(Debug) print('G3 ----')
-      x <- data[get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
+      x <- data[get(GroupVariables[3L]) %in% c(eval(G3Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # G2 ----
-    if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
+    if(is.null(G1Levels) && !is.null(G2Levels) && is.null(G3Levels)) {
       if(Debug) print('G2 ----')
-      x <- data[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
+      x <- data[get(GroupVariables[2L]) %in% c(eval(G2Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # G1 ----
-    if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
+    if(!is.null(G1Levels) && is.null(G2Levels) && is.null(G3Levels)) {
       if(Debug) print('G1 ----')
-      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
+      x <- data[get(GroupVariables[1L]) %in% c(eval(G1Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # None ----
-    if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]]) && is.null(input[[G3Levels]])) {
+    if(is.null(G1Levels) && is.null(G2Levels) && is.null(G3Levels)) {
       if(Debug) print('None ----')
       x <- AggFun(dt = data, A = Agg, S = SubsetOnly)
       if(Debug) print(x)
@@ -1108,9 +1104,9 @@ PreparePlotData <- function(input,
     }
 
     # G1 & G2 & G3 ----
-    if(!is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]]) && !is.null(input[[G3Levels]])) {
+    if(!is.null(G1Levels) && !is.null(G2Levels) && !is.null(G3Levels)) {
       if(Debug) print('# G1 & G2 & G3 ----')
-      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]])) & get(GroupVariables[3L]) %in% c(eval(input[[G3Levels]]))]
+      x <- data[get(GroupVariables[1L]) %in% c(eval(G1Levels)) & get(GroupVariables[2L]) %in% c(eval(G2Levels)) & get(GroupVariables[3L]) %in% c(eval(G3Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
@@ -1122,31 +1118,31 @@ PreparePlotData <- function(input,
     if(Debug) print('G1 & G2 Top ----')
 
     # G2 ----
-    if(is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]])) {
+    if(is.null(G1Levels) && !is.null(G2Levels)) {
       if(Debug) print('G2 ----')
-      x <- data[get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
+      x <- data[get(GroupVariables[2L]) %in% c(eval(G2Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # G1 ----
-    if(!is.null(input[[G1Levels]]) && is.null(input[[G2Levels]])) {
+    if(!is.null(G1Levels) && is.null(G2Levels)) {
       if(Debug) print('G1 ----')
-      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
+      x <- data[get(GroupVariables[1L]) %in% c(eval(G1Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # G1 & G2 ----
-    if(!is.null(input[[G1Levels]]) && !is.null(input[[G2Levels]])) {
+    if(!is.null(G1Levels) && !is.null(G2Levels)) {
       if(Debug) print('G1 & G2 ----')
-      data <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]])) & get(GroupVariables[2L]) %in% c(eval(input[[G2Levels]]))]
+      data <- data[get(GroupVariables[1L]) %in% c(G1Levels) & get(GroupVariables[2L]) %in% c(G2Levels)]
       if(!SubsetOnly) data <- data[, .SD, .SDcols = c(eval(TargetVariable), eval(GroupVariables), eval(DateVariable))]
       return(data)
     }
 
     # None ----
-    if(is.null(input[[G1Levels]]) && is.null(input[[G2Levels]])) {
+    if(is.null(G1Levels) && is.null(G2Levels)) {
       if(Debug) print('None ----')
       if(!SubsetOnly && !is.null(DateVariable)) {
         if(GroupVariables == 'None') GroupVariables <- NULL
@@ -1164,16 +1160,16 @@ PreparePlotData <- function(input,
     if(Debug) print('G1 Tope ----')
 
     # None ----
-    if(is.null(input[[G1Levels]])) {
+    if(is.null(G1Levels)) {
       if(Debug) print('None ----')
       x <- AggFun(dt = data, A = Agg, S = SubsetOnly)
       return(x)
     }
 
     # G1 ----
-    if(!is.null(input[[G1Levels]])) {
+    if(!is.null(G1Levels)) {
       if(Debug) print('G1 ----')
-      x <- data[get(GroupVariables[1L]) %in% c(eval(input[[G1Levels]]))]
+      x <- data[get(GroupVariables[1L]) %in% c(eval(G1Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
       return(x)
     }

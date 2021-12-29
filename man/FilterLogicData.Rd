@@ -6,7 +6,6 @@
 \usage{
 FilterLogicData(
   data1,
-  input,
   FilterLogic = input[["FilterLogic"]],
   FilterVariable = input[["FilterVariable_1"]],
   FilterValue = input[["FilterValue_1a"]],
@@ -16,8 +15,6 @@ FilterLogicData(
 }
 \arguments{
 \item{data1}{data.table}
-
-\item{input}{passthrough}
 
 \item{FilterLogic}{passthrough}
 
