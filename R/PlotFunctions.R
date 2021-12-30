@@ -309,16 +309,20 @@ AutoPlotter <- function(dt = NULL,
   if(PlotType %chin% 'Histogram') {
 
     # Check
-    if(!is.null(YVar) && is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(XVar)) {
+    if(!is.null(YVar) && is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(dt[[eval(XVar)]])) {
+      if(Debug) print('Histogram: here 1')
       XVar <- NULL
-    } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(XVar)) {
+    } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(dt[[eval(XVar)]])) {
+      if(Debug) print('Histogram: here 2')
       tempy <- XVar
       tempx <- YVar
       YVar <- tempy
       XVar <- tempx
-    } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && !is.numeric(XVar)) {
+    } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && !is.numeric(dt[[eval(XVar)]])) {
+      if(Debug) print('Histogram: here 3')
       return(NULL)
-    } else if(is.null(YVar) && !is.null(XVar) && !is.numeric(XVar)) {
+    } else if(is.null(YVar) && !is.null(XVar) && !is.numeric(dt[[eval(XVar)]])) {
+      if(Debug) print('Histogram: here 4')
       return(NULL)
     }
 

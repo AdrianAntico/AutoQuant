@@ -1898,6 +1898,7 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['TrendPlotExecute']], {
 
+    # Debug
     if(Debug) for(zzzz in 1:4) print(':: :: CREATE PLOTS :: ::')
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -2116,16 +2117,10 @@ server <- function(input, output, session) {
       if(!SubsetList[['DataPrep']]) {
         data1 <- data
       } else {
-
         if(Debug) print('remove NA')
         if(shiny::isolate(YVar()) != 'None') {
-
-          # Remove NA's
           data1 <- data[!is.na(get(shiny::isolate(YVar())))]
-
-          # Date Check to avoid subsetting every time
-          if(Debug) print('data1 <- data[!is.na(get(shiny::isolate(YVar())))]')
-          if(Debug) print(data1[])
+          if(Debug) {print('data1 <- data[!is.na(get(shiny::isolate(YVar())))]');print(data1[])}
           CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- data[!is.na(", eval(shiny::isolate(YVar())),")]")
         } else {
           data1 <- data
@@ -2136,14 +2131,7 @@ server <- function(input, output, session) {
         if(Debug) print('Filter by Date')
         if(shiny::isolate(DateVar()) != 'None') {
           if(Debug) print('here 1')
-          if(Debug) {
-            print('Date Checking Here')
-            print(exists('temp'))
-            print(exists('DateVariableCheck'))
-            if(exists('DateVariableCheck')) print(DateVariableCheck == shiny::isolate(DateVar()))
-            print(exists('YVariableCheck'))
-            if(exists('YVariableCheck')) print(YVariableCheck == shiny::isolate(YVar()))
-          }
+          if(Debug) {print('Date Checking Here');print(exists('temp'));print(exists('DateVariableCheck'));if(exists('DateVariableCheck')) print(DateVariableCheck == shiny::isolate(DateVar()));print(exists('YVariableCheck'));if(exists('YVariableCheck')) print(YVariableCheck == shiny::isolate(YVar()))}
           if(!(exists('temp') && exists('DateVariableCheck') && DateVariableCheck == shiny::isolate(DateVar()) && exists('YVariableCheck') && YVariableCheck == shiny::isolate(YVar()))) {
             YVariableCheck <- shiny::isolate(YVar())
             DateVariableCheck <- shiny::isolate(DateVar())
@@ -2160,20 +2148,10 @@ server <- function(input, output, session) {
             assign(x = 'InputDateMin', value = InputDateMin, envir = .GlobalEnv)
             assign(x = 'InputDateMax', value = InputDateMax, envir = .GlobalEnv)
           }
-          if(Debug) {
-            print('Debug Date Checks')
-            print(DataDateMin)
-            print(InputDateMin)
-            print(DataDateMax)
-            print(InputDateMax)
-          }
+          if(Debug) {print('Debug Date Checks');print(DataDateMin);print(InputDateMin);print(DataDateMax);print(InputDateMax)}
           if(DataDateMin != InputDateMin || DataDateMax != InputDateMax) {
             data1 <- data1[get(shiny::isolate(DateVar())) <= eval(input[['DateMax']]) & get(shiny::isolate(DateVar())) >= eval(input[['DateMin']])]
-            if(Debug) print('here 2')
-            if(Debug) print(paste0("data1 <- data1[", shiny::isolate(DateVar())))
-            if(Debug) print(input[['DateMax']])
-            if(Debug) print(RemixAutoML:::CEP(input[['DateMax']]))
-            if(Debug) print(RemixAutoML:::CEP(input[['DateMin']]))
+            if(Debug){print('here 2');print(paste0("data1 <- data1[", shiny::isolate(DateVar())));print(input[['DateMax']]);print(RemixAutoML:::CEP(input[['DateMax']]));print(RemixAutoML:::CEP(input[['DateMin']]))}
             CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- data1[", shiny::isolate(DateVar())," <= ", RemixAutoML:::CEP(input[['DateMax']])," & ", shiny::isolate(DateVar())," >= ", RemixAutoML:::CEP(input[['DateMin']]),"]")
             if(Debug) print('here 3')
           }
@@ -2279,8 +2257,7 @@ server <- function(input, output, session) {
         }
 
         # AutoPlotter()
-        if(Debug) print('Run AutoPlotter')
-        if(Debug) {print(input[['XMin']]); print(input[['XMax']])}
+        if(Debug) {print('Run AutoPlotter');print(input[['XMin']]); print(input[['XMax']])}
         p1 <- RemixAutoML:::AutoPlotter(
           dt = data1,
           PlotType = input[['PlotType']],
