@@ -81,10 +81,12 @@ AutoPlotter <- function(dt = NULL,
 
     # Create base plot object
     if(Debug) print('Create Plot with only data')
-    if(!is.null(XVar)) {
+    if(!is.null(XVar) && !is.null(YVar)) {
       p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
-    } else {
+    } else if(is.null(XVar) && !is.null(YVar)) {
       p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = "", y = get(YVar)))
+    } else if(!is.null(XVar) && is.null(YVar)) {
+      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = "", y = get(XVar)))
     }
 
     # Box Plot
@@ -101,7 +103,11 @@ AutoPlotter <- function(dt = NULL,
 
     # Add Horizontal Line for Mean Y
     if(Debug) print('Create Plot Horizontal Line')
-    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
+    if(!is.null(YVar)) {
+      p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
+    } else if(!is.null(XVar)) {
+      p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(XVar)]], na.rm = TRUE)))
+    }
 
     # Create Plot labs
     if(Debug) print('Create Plot labs')
@@ -114,8 +120,12 @@ AutoPlotter <- function(dt = NULL,
     if(!is.null(XVar)) if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
 
     # Axis Labels
-    p1 <- p1 + ggplot2::ylab(eval(YVar))
-    if(!is.null(XVar)) p1 <- p1 + ggplot2::xlab(XVar)
+    if(!is.null(YVar)) {
+      p1 <- p1 + ggplot2::ylab(eval(YVar))
+      if(!is.null(XVar)) p1 <- p1 + ggplot2::xlab(XVar)
+    } else if(!is.null(XVar)) {
+      p1 <- p1 + ggplot2::ylab(eval(XVar))
+    }
 
     # Add faceting (returns no faceting in none was requested)
     if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
@@ -298,27 +308,55 @@ AutoPlotter <- function(dt = NULL,
 
   if(PlotType %chin% 'Histogram') {
 
+    # Check
+    if(!is.null(YVar) && is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(XVar)) {
+      XVar <- NULL
+    } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(XVar)) {
+      tempy <- XVar
+      tempx <- YVar
+      YVar <- tempy
+      XVar <- tempx
+    } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && !is.numeric(XVar)) {
+      return(NULL)
+    } else if(is.null(YVar) && !is.null(XVar) && !is.numeric(XVar)) {
+      return(NULL)
+    }
+
     # Cap number of records----
     if(dt[,.N] > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
 
     # Create base plot object
     if(Debug) print('Create Plot with only data')
-    p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(YVar)))
+    if(!is.null(YVar)) {
+      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(y = get(YVar)))
+    } else if(!is.null(XVar)) {
+      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar)))
+    } else {
+      return(NULL)
+    }
 
     # Histogram
-    if(Debug) print('Create Bar')
+    if(Debug) print('Create Histogram')
     p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
 
     # Add Horizontal Line for Mean Y
     if(Debug) print('Create Plot Vertical Line')
-    p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
+    if(!is.null(YVar)) {
+      p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
+    } else {
+      p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(XVar)]], na.rm = TRUE)))
+    }
 
     # Create Plot labs
     if(Debug) print('Create Plot labs')
     p1 <- p1 + ggplot2::labs(title = 'Distribution', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
 
     # Axis Labels
-    p1 <- p1 + ggplot2::xlab(label = eval(YVar))
+    if(!is.null(YVar)) {
+      p1 <- p1 + ggplot2::xlab(label = eval(YVar))
+    } else {
+      p1 <- p1 + ggplot2::xlab(label = eval(XVar))
+    }
 
     # Add faceting (returns no faceting in none was requested)
     if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {

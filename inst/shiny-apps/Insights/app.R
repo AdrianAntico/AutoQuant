@@ -586,11 +586,19 @@ server <- function(input, output, session) {
     }
     CodeCollection <<- CodeCollection
 
-    # EXACT COPIES FROM THE SET BELOW ----
+    # ----
+
+    # ----
 
     # EXACT COPIES FROM THE SET BELOW ----
 
     # EXACT COPIES FROM THE SET BELOW ----
+
+    # EXACT COPIES FROM THE SET BELOW ----
+
+    # ----
+
+    # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Variables                            ----
@@ -2067,11 +2075,12 @@ server <- function(input, output, session) {
 
     # Check Logic before proceeding
     x1 <- tryCatch({input[['YMin']]}, error = function(x) NULL)
+    x1a <- tryCatch({input[['XMin']]}, error = function(x) NULL)
     x2 <- tryCatch({SubsetList[['FilterLogic_1']]}, error = function(x) NULL)
     x3 <- tryCatch({SubsetList[['SelectedGroupss']]}, error = function(x) NULL)
     x4 <- tryCatch({input[['PlotType']]}, error = function(x) NULL)
-    if(Debug) {print(x1); print(x2); print(x3); print(x4)}
-    if(any(is.null(x1), is.null(x2), is.null(x3), is.null(x4))) {
+    if(Debug) {print(x1); print(x1a); print(x2); print(x3); print(x4)}
+    if(any((is.null(x1) && is.null(x1a)), is.null(x2), is.null(x3), is.null(x4))) {
       shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to expand each dropdown menu at least once to initialize variables before creating plots. I am too lazy to predefine args, currently', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     } else if(input[['PlotType']] %chin% 'Line' && any(class(data[[eval(shiny::isolate(DateVar()))]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
       shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a Date, IDate, or Posix type", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -2262,13 +2271,20 @@ server <- function(input, output, session) {
           xvar <- shiny::isolate(XVar())
         }
 
+        # YVar
+        if(shiny::isolate(YVar()) == 'None') {
+          yvar <- NULL
+        } else {
+          yvar <- shiny::isolate(YVar())
+        }
+
         # AutoPlotter()
         if(Debug) print('Run AutoPlotter')
         if(Debug) {print(input[['XMin']]); print(input[['XMax']])}
         p1 <- RemixAutoML:::AutoPlotter(
           dt = data1,
           PlotType = input[['PlotType']],
-          YVar = shiny::isolate(YVar()),
+          YVar = yvar,
           YMin = input[['YMin']], YMax = input[['YMax']],
           XVar = xvar,
           XMin = input[['XMin']], XMax = input[['XMax']],
@@ -2319,8 +2335,8 @@ server <- function(input, output, session) {
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Return Plot to UI                          ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-      if(Debug) {print('Return Plot to UI'); print(exists('p1'))}
-      if(exists('p1')) {
+      if(Debug) {print('Return Plot to UI'); print(exists('p1')); print(class(p1))}
+      if(exists('p1') && !is.null(p1)) {
         if(Debug) print('Convert p1 to global env')
         data1 <<- data1
         p1 <<- p1
@@ -2328,6 +2344,8 @@ server <- function(input, output, session) {
           if(Debug) print('Create Plot output$Trend')
           p1
         })
+      } else {
+        shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Plot could not build', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       }
     }
   })
