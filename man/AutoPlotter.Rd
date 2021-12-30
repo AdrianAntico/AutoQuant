@@ -19,6 +19,7 @@ AutoPlotter(
   FacetVar2 = "None",
   YTicks = "Default",
   XTicks = "Default",
+  Bins = 30,
   OutlierSize = 0.1,
   OutlierColor = "blue",
   BoxPlotFill = "gray",
@@ -66,6 +67,8 @@ AutoPlotter(
 \item{YTicks}{= input[['YTicks']]}
 
 \item{XTicks}{= input[['XTicks']]}
+
+\item{Bins}{= 30}
 
 \item{OutlierSize}{= input[['OutlierSize']]}
 

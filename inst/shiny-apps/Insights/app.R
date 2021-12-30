@@ -54,9 +54,6 @@ if(!is.null(UserName_Password_DT)) {
     Password = c('Password'))
 }
 
-#' @noRd
-CEP <- function(x) if(is.null(x)) "NULL" else if(identical(x, character(0))) NULL else if(identical(x, numeric(0))) NULL else if(identical(x, integer(0))) NULL else if(identical(x, logical(0))) NULL else if(is.numeric(x)) x else if(length(x) > 1) paste0("c(", noquote(paste0("'", x, "'", collapse = ',')), ")") else paste0("'", x, "'")
-
 # ----
 
 # ----
@@ -158,9 +155,9 @@ ui <- shinydashboard::dashboardPage(
     shinydashboard::tabItems(
 
 
-    # ----
+      # ----
 
-    # ----
+      # ----
 
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Login Page                           ----
@@ -416,6 +413,7 @@ ui <- shinydashboard::dashboardPage(
               shiny::fluidRow(
                 width = AppWidth,
                 shiny::column(3L, shiny::uiOutput('GamFitScatter')),
+                shiny::column(3L, shiny::uiOutput('NumberBins')),
                 shiny::column(3L, shiny::uiOutput('PDP_Variable')),
                 shiny::column(3L, shiny::uiOutput('Percentile_Buckets'))),
 
@@ -482,6 +480,10 @@ ui <- shinydashboard::dashboardPage(
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend')))),
 
+      # ----
+
+      # ----
+
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Code Print                           ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -527,6 +529,7 @@ server <- function(input, output, session) {
   # Button to disable / enable Data Load Page
   shinyjs::addCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
   shinyjs::addCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
+  shinyjs::addCssClass(selector = "a[data-value='CodePrint']", class = "inactiveLink")
 
   # ----
 
@@ -535,8 +538,12 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Login and Page Navigation            ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Inputs
   UserName <- shiny::reactive({input$UserName})
   Password <- shiny::reactive({input$Password})
+
+  # Login
   shiny::observeEvent(eventExpr = input$Check_Credentials, {
     if(UserName() %in% Credentials$UserName && Password() %in% Credentials[UserName == eval(UserName())]$Password) {
       shinyjs::removeCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
@@ -550,35 +557,19 @@ server <- function(input, output, session) {
       shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Username and / or password is incorrect', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
   })
-  shiny::observeEvent(eventExpr = input$LoginPage_2_LoadDataPage, {
-    print('Go to Load Data Page')
-    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "LoadDataPage")
-  })
-  shiny::observeEvent(eventExpr = input$LoadDataPage_2_LoginPage, {
-    print('Go to Login Page')
-    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "Login")
-  })
-  shiny::observeEvent(eventExpr = input$LoadDataPage_2_PlotterPage, {
-    print('Go to Plotter Page')
-    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "Plotter")
-  })
-  shiny::observeEvent(eventExpr = input$PlotterPage_2_LoadDataPage, {
-    print('Go to Load Data Page')
-    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "LoadDataPage")
-  })
-  shiny::observeEvent(eventExpr = input$LoadDataPage_2_PlotterPage, {
-    print('Go to Code Print Page')
-    shinydashboard::updateTabItems(session, inputId = "modelMenu", selected = "CodePrint")
-  })
 
   # ----
 
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Load Data and ModelOutputList        ----
+  # Load Data and Initialize Vars        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input$LoadDataButton, {
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Load Data Sets and Rdata             ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     if(Debug) print('data check 1')
     CodeCollection <- list()
     data <<- RemixAutoML::ReactiveLoadCSV(input, InputVal = "DataLoad", ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL)
@@ -594,6 +585,513 @@ server <- function(input, output, session) {
       ModelOutputList <<- NULL
     }
     CodeCollection <<- CodeCollection
+
+    # EXACT COPIES FROM THE SET BELOW ----
+
+    # EXACT COPIES FROM THE SET BELOW ----
+
+    # EXACT COPIES FROM THE SET BELOW ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Variables                            ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # YVar and XVar
+    output$YVar <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'YVar', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    # 'X-Variable'
+    output$XVar <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'XVar', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    # 'Score-Variable'
+    output$ScoreVar <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'ScoreVar', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    # 'Date Variable'
+    output$DateVar <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'DateVar', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+
+    # Reactives References
+    YVar <- shiny::reactive({shiny::req(input[['YVar']])})
+    XVar <- shiny::reactive({shiny::req(input[['XVar']])})
+    ScoreVar <- shiny::reactive({shiny::req(input[['ScoreVar']])})
+    DateVar <- shiny::reactive({shiny::req(input[['DateVar']])})
+
+    # YMin
+    output$YMin <- shiny::renderUI({
+      if(Debug) print('YMin  PickerInput')
+      outvals1 <- RemixAutoML::KeyVarsInit(data, VarName = eval(YVar()))
+      minn <- outvals1[['MinVal']]
+      choices <- outvals1[['ChoiceInput']]
+      RemixAutoML::PickerInput(
+        InputID = 'YMin', Multiple = FALSE, Debug = Debug,
+        Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y-Value'),
+        Choices = RemixAutoML::CharNull(choices),
+        SelectedDefault = RemixAutoML::CharNull(choices[1L]))
+    })
+
+    # XMin
+    output$XMin <- shiny::renderUI({
+      if(Debug) print('XMin  PickerInput')
+      outvals2 <- RemixAutoML::KeyVarsInit(data, VarName = eval(XVar()))
+      choices <- outvals2[['ChoiceInput']]
+      RemixAutoML::PickerInput(
+        InputID = 'XMin', Multiple = FALSE, Debug = Debug,
+        Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X-Value'),
+        Choices = RemixAutoML::CharNull(choices),
+        SelectedDefault = RemixAutoML::CharNull(choices[1L]))
+    })
+
+    # YMax
+    output$YMax <- shiny::renderUI({
+      if(Debug) print('YMax  PickerInput')
+      outvals3 <- RemixAutoML::KeyVarsInit(data, VarName = eval(YVar()))
+      maxxy <- outvals3[['MaxVal']]
+      choices <- outvals3[['ChoiceInput']]
+      if(Debug) print(maxxy)
+      RemixAutoML::PickerInput(
+        InputID = 'YMax', Multiple = FALSE, Debug = Debug,
+        Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y-Value'),
+        Choices = RemixAutoML::CharNull(choices),
+        SelectedDefault = RemixAutoML::CharNull(choices[length(choices)]))
+    })
+
+    # XMax
+    output$XMax <- shiny::renderUI({
+      if(Debug) print('XMax  PickerInput')
+      outvals4 <- RemixAutoML::KeyVarsInit(data, VarName = eval(XVar()))
+      choices <- outvals4[['ChoiceInput']]
+      RemixAutoML::PickerInput(
+        InputID = 'XMax', Multiple = FALSE, Debug = Debug,
+        Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X-Value'),
+        Choices = RemixAutoML::CharNull(choices),
+        SelectedDefault = RemixAutoML::CharNull(choices[length(choices)]))
+    })
+
+    # DateMin
+    output$DateMin <- shiny::renderUI({
+      if(Debug) print('DateMin  PickerInput')
+      outvals5 <- RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar()))
+      choices <- outvals5[['ChoiceInput']]
+      RemixAutoML::PickerInput(
+        InputID = 'DateMin', Multiple = FALSE, Debug = Debug,
+        Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value'),
+        Choices = RemixAutoML::CharNull(choices),
+        SelectedDefault = RemixAutoML::CharNull(choices[1L]))
+    })
+
+    # DateMax
+    output$DateMax <- shiny::renderUI({
+      if(Debug) print('DateMax PickerInput')
+      outvals6 <- RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar()))
+      choices <- outvals6[['ChoiceInput']]
+      RemixAutoML::PickerInput(
+        InputID = 'DateMax', Multiple = FALSE, Debug = Debug,
+        Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value'),
+        Choices = RemixAutoML::CharNull(choices),
+        SelectedDefault = RemixAutoML::CharNull(choices[length(choices)]))
+    })
+
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Plotting MetaData                    ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # Plot Box Shown
+    output$PlotType <- shiny::renderUI({
+      if(!is.null(ModelOutputList)) {
+        MONames <- c(
+          "Train_EvaluationPlot", "Train_EvaluationBoxPlot", "Train_ParDepPlots", "Train_ParDepBoxPlots", "Train_ResidualsHistogram",
+          "Train_ScatterPlot", "Train_CopulaPlot", "Train_VariableImportance", "Validation_VariableImportance", "Test_EvaluationPlot",
+          "Test_EvaluationBoxPlot", "Test_ParDepPlots", "Test_ParDepBoxPlots", "Test_ResidualsHistogram", "Test_ScatterPlot",
+          "Test_CopulaPlot", "Test_VariableImportance")
+      } else {
+        MONames <- NULL
+      }
+      if(DateVar() != 'None') {
+        StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','Histogram')
+      } else {
+        StandardPlots <- c('Scatter','Copula','BoxPlot','ViolinPlot','Bar','Histogram')
+      }
+      RemixAutoML::PickerInput(InputID = 'PlotType', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Type'), Choices = c(StandardPlots, MONames), SelectedDefault = 'BoxPlot', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$PDP_Variable <- shiny::renderUI({
+      if(!is.null(ModelOutputList)) {
+        vals <- names(ModelOutputList$PlotList$Test_ParDepPlots)
+        defa <- vals[1L]
+      } else {
+        vals <- NULL
+        defa <- NULL
+      }
+      RemixAutoML::PickerInput(InputID = 'PDP_Variable', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'PDP Variable'), Choices = vals, SelectedDefault = defa, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$Percentile_Buckets <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'Percentile_Buckets', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Percentile Buckets'), Choices = 1:100, SelectedDefault = 20, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$GamFitScatter <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'GamFitScatter', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Fit Gam on Scatter or Copula'), Choices = c('TRUE', 'FALSE'), SelectedDefault = FALSE, Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$NumberBins <- shiny::renderUI({
+      RemixAutoML::NumericInput(InputID = 'NumberBins', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), '# of Bins for Histogram'), Min = 1, Max = 1000, Step = 5,Value = 30)
+    })
+
+
+    # UI Plot Options
+    output$NumberGroupsDisplay <- shiny::renderUI({
+      RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = tags$span(style='color: blue;', 'Dispay N Levels'), Step = 1L, Value = 5L, Min = 1L, Max = 100L)
+    })
+    output$PlotWidth <- shiny::renderUI({
+      RemixAutoML::NumericInput(InputID = "PlotWidth", Label = tags$span(style='color: blue;', 'Plot Width'), Step = 50, Min = 800, Max = 1800, Value = 1600)
+    })
+    output$PlotHeight <- shiny::renderUI({
+      RemixAutoML::NumericInput(InputID = "PlotHeight", Label = tags$span(style='color: blue;', 'Plot Height'), Step = 25, Min = 350, Max = 350*10, Value = 500)
+    })
+    output$YTicks <- shiny::renderUI({
+      Uniques <- tryCatch({data[, unique(get(YVar()))]}, error = function(x) NULL)
+      if(!is.null(Uniques)) {
+        if(any(class(data[[eval(YVar())]]) %in% c('numeric','integer')) && Uniques > 10L) {
+          choices <- c('Default', 'percentiles', '5th-tiles', 'Deciles', 'Quantiles', 'Quartiles', as.character(data[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]))
+        } else {
+          choices <- c('Default', Uniques)
+        }
+      } else {
+        choices <- 'Default'
+      }
+      RemixAutoML::PickerInput(InputID = 'YTicks', Label = tags$span(style='color: blue;', 'Y-Axis Ticks'), Choices = choices, SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    })
+    output$XTicks <- shiny::renderUI({
+      if(XVar() != 'None') {
+        Uniques <- tryCatch({data[, unique(get(XVar()))]}, error = function(x) NULL)
+        x <- class(data[[eval(XVar())]])[1L]
+        if(x %chin% c('numeric','integer') && length(Uniques) > 10L) {
+          choices <- c('Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles', as.character(data[, quantile(round(get(XVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]))
+        } else if(x %chin% c('Date')) {
+          choices <- c('Default', '1 year', '1 day', '1 week', '1 month', '3 day', '2 week', '3 month', '6 month', '2 year', '5 year', '10 year')
+        } else if(x %like% c('POSIX')) {
+          choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
+        } else if(x %like% c('character','numeric','integer')) {
+          choices <- c('Default', Uniques)
+        } else {
+          choices <- c('Default', Uniques)
+        }
+      } else if(DateVar() != 'None') {
+        Uniques <- tryCatch({data[, unique(get(DateVar()))]}, error = function(x) NULL)
+        x <- class(data[[eval(DateVar())]])[1L]
+        if(x %chin% c('Date')) {
+          choices <- c('Default', '1 year', '1 day', '1 week', '1 month', '3 day', '2 week', '3 month', '6 month', '2 year', '5 year', '10 year')
+        } else if(x %like% c('POSIX')) {
+          choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
+        } else {
+          choices <- c('Default', Uniques)
+        }
+      }
+      RemixAutoML::PickerInput(InputID = 'XTicks', Label = tags$span(style='color: blue;', 'X-Axis Ticks'), Choices = choices, SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    })
+    output$AngleY <- shiny::renderUI({
+      RemixAutoML::NumericInput(InputID = 'AngleY', Label = tags$span(style='color: blue;', 'Y-axis text angle'), Step = 5, Min = 0, Max = 360, Value = 0)
+    })
+    output$AngleX <- shiny::renderUI({
+      RemixAutoML::NumericInput(InputID = 'AngleX', Label = tags$span(style='color: blue;', 'X-axis text angle'), Step = 5, Min = 0, Max = 360, Value = 90)
+    })
+    output$TextSize <- shiny::renderUI({
+      RemixAutoML::NumericInput(InputID = 'TextSize', Label = tags$span(style='color: blue;', 'Text Size'), Step = 1, Min = 1, Max = 50, Value = 12)
+    })
+    output$OutlierSize <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'OutlierSize', Label = tags$span(style='color: blue;', 'Outlier Size'), Choices = c(seq(0.01,2,0.01)), SelectedDefault = 0.01, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$LegendPosition <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'LegendPosition', Label = tags$span(style='color: blue;', 'Legend Position'), Choices = c('bottom','left','right','top'), SelectedDefault = 'bottom', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$LegendBorderSize <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'LegendBorderSize', Label = tags$span(style='color: blue;', 'Legend Border Size'), Choices = c(as.character(seq(0.01,2,0.01))), SelectedDefault = as.character(0.01), Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$LegendLineType <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'LegendLineType', Label = tags$span(style='color: blue;', 'Legend Border Type'), Choices = c('solid','blank','dashed','dotdash','dotted','longlash','twodash'), SelectedDefault = 'solid', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+
+    # Color boxes
+    output$TextColor <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'TextColor', Label = tags$span(style='color: blue;', 'Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$ChartColor <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'ChartColor', Label = tags$span(style='color: blue;', 'Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$GridColor <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'GridColor', Label = tags$span(style='color: blue;', 'Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'white', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$BackGroundColor <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'BackGroundColor', Label = tags$span(style='color: blue;', 'Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$BorderColor <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'BorderColor', Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$OutlierColor <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'OutlierColor', Label = tags$span(style='color: blue;', 'Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$BoxPlotFill <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'BoxPlotFill', Label = tags$span(style='color: blue;', 'BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$SubTitleColor <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'SubTitleColor', Label = tags$span(style='color: blue;', 'Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Group Variables                      ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # Select GroupVars
+    output$GroupVars <- shiny::renderUI({
+      if(Debug) print('PickerInput GroupVars')
+      RemixAutoML::PickerInput(
+        InputID = 'GroupVars', Label = tags$span(style='color: blue;', 'Select Group Variables'),
+        Choices = c('None', names(data)), SelectedDefault = if(!is.null(GroupVariables)) GroupVariables else 'None',
+        SelectedText = 'count > 1', Multiple = TRUE, ActionBox = TRUE)
+    })
+
+    # Reactive Group Variables
+    SelectedGroups <- shiny::reactive({
+      g <- tryCatch({input$GroupVars}, error = function(x) NULL)
+      RemixAutoML::ReturnParam(input, VarName = 'GroupVars', Default = if(!is.null(GroupVariables)) GroupVariables else 'None', Switch = TRUE, Type = 'character')
+    })
+
+    # Levels
+    output$Levels_1 <- shiny::renderUI({
+      if(Debug) print('PickerInput_GetLevels 1')
+      if(Debug) print(SelectedGroups())
+      if(Debug) print(length(SelectedGroups()))
+      if(Debug) print('here')
+      if(Debug) print(RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=SelectedGroups()))
+      if(Debug) print('here 1')
+      sgs <- SelectedGroups()
+      if(Debug) print('None' %in% sgs)
+      if(Debug) print(length(sgs) != 1)
+      if('None' %in% sgs && length(sgs) != 1) {
+        sgs <- sgs[!sgs %in% 'None']
+      }
+      if(Debug) print(sgs)
+      if(Debug) print(RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs))
+      RemixAutoML::PickerInput_GetLevels2(
+        input, data = 'data', NumGroupVar = 1L, Size = 9, SelectedText = 'count > 1', Multiple = TRUE, ActionBox = TRUE,
+        InputID = 'Levels_1', InputID2 = sgs,
+        Choices = RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), SelectedDefault = NULL)
+    })
+
+    # Levels
+    output$Levels_2 <- shiny::renderUI({
+      if(Debug) print('PickerInput_GetLevels 2')
+      if('None' %chin% SelectedGroups() && length(SelectedGroups()) != 1) {
+        sgs <- SelectedGroups()[!SelectedGroups() %in% 'None']
+      } else {
+        sgs <- SelectedGroups()
+      }
+      RemixAutoML::PickerInput_GetLevels2(
+        input, data = 'data', NumGroupVar = 2L, Size = 9, SelectedText = 'count > 1', Multiple = TRUE, ActionBox = TRUE,
+        InputID = 'Levels_2', InputID2 = sgs,
+        Choices = RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), SelectedDefault = NULL)
+    })
+
+    # Levels
+    output$Levels_3 <- shiny::renderUI({
+      if(Debug) print('PickerInput_GetLevels 3')
+      if('None' %chin% SelectedGroups() && length(SelectedGroups()) != 1) {
+        sgs <- SelectedGroups()[!SelectedGroups() %in% 'None']
+      } else {
+        sgs <- SelectedGroups()
+      }
+      RemixAutoML::PickerInput_GetLevels2(
+        input, data = 'data', NumGroupVar = 3L, Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE,
+        InputID = 'Levels_3', InputID2 = sgs,
+        Choices = RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), SelectedDefault = NULL)
+    })
+
+    # Faceting
+    output$FacetVar1 <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'FacetVar1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+    output$FacetVar2 <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'FacetVar2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+
+    # Sizing
+    output$SizeVar1 <- shiny::renderUI({
+      RemixAutoML::PickerInput(InputID = 'SizeVar1', Label = tags$span(style='color: blue;', 'Size Variable'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    })
+
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Filter Variables                     ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # Filter Variable 1
+    output$FilterVariable_1 <- shiny::renderUI({
+      shiny::selectInput(inputId='FilterVariable_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data)), selected='None')
+    })
+
+    # Filter Variable 2
+    output$FilterVariable_2 <- shiny::renderUI({
+      shiny::selectInput(inputId='FilterVariable_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data)), selected='None')
+    })
+
+    # Filter Variable 3
+    output$FilterVariable_3 <- shiny::renderUI({
+      shiny::selectInput(inputId='FilterVariable_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data)), selected='None')
+    })
+
+    # Filter Variable 4
+    output$FilterVariable_4 <- shiny::renderUI({
+      shiny::selectInput(inputId='FilterVariable_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data)), selected='None')
+    })
+
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Filter Logic                         ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # Filter Logic 1
+    output$FilterLogic_1 <- shiny::renderUI({
+      if(input[['FilterVariable_1']] != 'None') {
+        x <- class(data[[eval(input[['FilterVariable_1']])]])
+      } else {
+        x <- 'Adrian'
+      }
+      if(any(x %in% c('factor', 'character'))) FL_Default <- '%chin%' else FL_Default <- '>='
+      shiny::selectInput(inputId='FilterLogic_1', label = tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), selected=FL_Default, multiple=FALSE)
+    })
+
+    # Filter Logic 2
+    output$FilterLogic_2 <- shiny::renderUI({
+      if(input[['FilterVariable_2']] != 'None') {
+        x <- class(data[[eval(input[['FilterVariable_2']])]])
+      } else {
+        x <- 'Adrian'
+      }
+      if(any(x %in% c('factor', 'character'))) FL_Default <- '%chin%' else FL_Default <- '>='
+      shiny::selectInput(inputId='FilterLogic_2', label = tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), selected=FL_Default, multiple=FALSE)
+    })
+
+    # Filter Logic 3
+    output$FilterLogic_3 <- shiny::renderUI({
+      if(input[['FilterVariable_3']] != 'None') {
+        x <- class(data[[eval(input[['FilterVariable_3']])]])
+      } else {
+        x <- 'Adrian'
+      }
+      if(any(x %in% c('factor', 'character'))) FL_Default <- '%chin%' else FL_Default <- '>='
+      shiny::selectInput(inputId='FilterLogic_3', label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), selected=FL_Default, multiple=FALSE)
+    })
+
+    # Filter Logic 4
+    output$FilterLogic_4 <- shiny::renderUI({
+      if(input[['FilterVariable_4']] != 'None') {
+        x <- class(data[[eval(input[['FilterVariable_4']])]])
+      } else {
+        x <- 'Adrian'
+      }
+      if(any(x %in% c('factor', 'character'))) FL_Default <- '%chin%' else FL_Default <- '>='
+      shiny::selectInput(inputId='FilterLogic_4', label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), selected=FL_Default, multiple=FALSE)
+    })
+
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Filter Values                        ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # Filter Values 1a
+    output$FilterValue_1a <- shiny::renderUI({
+      params <- list(data=data, VarName = input[['FilterVariable_1']], type = 1)
+      Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+      if(Debug) {print('Here 1111'); print(do.call(RemixAutoML::GetFilterValueLabel, params))}
+      Lab <- tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params))
+      if(Debug) print(Lab)
+      FilterUnique <- do.call(RemixAutoML::FilterValues, params)
+      RemixAutoML::PickerInput(InputID='FilterValue_1a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
+    })
+
+    # Filter Values 1b
+    output$FilterValue_1b <- shiny::renderUI({
+      params <- list(data=data, VarName = input[['FilterVariable_1']], type = 2)
+      Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+      Lab <- tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params))
+      FilterUnique <- do.call(RemixAutoML::FilterValues, params)
+      RemixAutoML::PickerInput(InputID='FilterValue_1b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
+    })
+
+    # Filter Values 2a
+    output$FilterValue_2a <- shiny::renderUI({
+      params <- list(data=data, VarName = input[['FilterVariable_2']], type = 1)
+      Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+      Lab <- tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params))
+      FilterUnique <- do.call(RemixAutoML::FilterValues, params)
+      RemixAutoML::PickerInput(InputID='FilterValue_2a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
+    })
+
+    # Filter Values 2b
+    output$FilterValue_2b <- shiny::renderUI({
+      params <- list(data=data, VarName = input[['FilterVariable_2']], type = 2)
+      Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+      Lab <- tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params))
+      FilterUnique <- do.call(RemixAutoML::FilterValues, params)
+      RemixAutoML::PickerInput(InputID='FilterValue_2b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
+    })
+
+    # Filter Values 3a
+    output$FilterValue_3a <- shiny::renderUI({
+      params <- list(data=data, VarName = input[['FilterVariable_3']], type = 1)
+      Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+      Lab <- tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params))
+      FilterUnique <- do.call(RemixAutoML::FilterValues, params)
+      RemixAutoML::PickerInput(InputID='FilterValue_3a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
+    })
+
+    # Filter Values 3b
+    output$FilterValue_3b <- shiny::renderUI({
+      params <- list(data=data, VarName = input[['FilterVariable_3']], type = 2)
+      Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+      Lab <- tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params))
+      FilterUnique <- do.call(RemixAutoML::FilterValues, params)
+      RemixAutoML::PickerInput(InputID='FilterValue_3b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
+    })
+
+    # Filter Values 4a
+    output$FilterValue_4a <- shiny::renderUI({
+      params <- list(data=data, VarName = input[['FilterVariable_4']], type = 1)
+      Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+      Lab <- tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params))
+      FilterUnique <- do.call(RemixAutoML::FilterValues, params)
+      RemixAutoML::PickerInput(InputID='FilterValue_4a', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[1L], Multiple=Mult, ActionBox=TRUE)
+    })
+
+    # Filter Values 4b
+    output$FilterValue_4b <- shiny::renderUI({
+      params <- list(data=data, VarName = input[['FilterVariable_4']], type = 2)
+      Mult <- do.call(RemixAutoML::GetFilterValueMultiple, params)
+      Lab <- tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params))
+      FilterUnique <- do.call(RemixAutoML::FilterValues, params)
+      RemixAutoML::PickerInput(InputID='FilterValue_4b', Label=Lab, Choices=FilterUnique, SelectedDefault=FilterUnique[length(FilterUnique)], Multiple=Mult, ActionBox=TRUE)
+    })
+
+
+
+
+
     shinyWidgets::sendSweetAlert(session, title = NULL, text = "Success", type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
   })
 
@@ -723,9 +1221,9 @@ server <- function(input, output, session) {
       MONames <- NULL
     }
     if(DateVar() != 'None') {
-      StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula')
+      StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','Histogram')
     } else {
-      StandardPlots <- c('Scatter','Copula','BoxPlot','ViolinPlot','Bar')
+      StandardPlots <- c('Scatter','Copula','BoxPlot','ViolinPlot','Bar','Histogram')
     }
     RemixAutoML::PickerInput(InputID = 'PlotType', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Type'), Choices = c(StandardPlots, MONames), SelectedDefault = 'BoxPlot', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
@@ -745,6 +1243,10 @@ server <- function(input, output, session) {
   output$GamFitScatter <- shiny::renderUI({
     RemixAutoML::PickerInput(InputID = 'GamFitScatter', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Fit Gam on Scatter or Copula'), Choices = c('TRUE', 'FALSE'), SelectedDefault = FALSE, Multiple = FALSE, ActionBox = TRUE)
   })
+  output$NumberBins <- shiny::renderUI({
+    RemixAutoML::NumericInput(InputID = 'NumberBins', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), '# of Bins for Histogram'), Min = 1, Max = 1000, Step = 5,Value = 30)
+  })
+
 
   # UI Plot Options
   output$NumberGroupsDisplay <- shiny::renderUI({
@@ -1097,9 +1599,9 @@ server <- function(input, output, session) {
 
   # ----
 
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Print Code to UI                           ----
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----
+  # Print Code to UI                     ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----
   shiny::observeEvent(input$PrintCodeButton, {
     if(Debug) print('Print Code UI Begin')
     if(Debug) print(paste0('Check if CodeCollection exists: exists = ', exists('CodeCollection')))
@@ -1605,9 +2107,14 @@ server <- function(input, output, session) {
       if(!SubsetList[['DataPrep']]) {
         data1 <- data
       } else {
+
         if(Debug) print('remove NA')
         if(shiny::isolate(YVar()) != 'None') {
+
+          # Remove NA's
           data1 <- data[!is.na(get(shiny::isolate(YVar())))]
+
+          # Date Check to avoid subsetting every time
           if(Debug) print('data1 <- data[!is.na(get(shiny::isolate(YVar())))]')
           if(Debug) print(data1[])
           CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- data[!is.na(", eval(shiny::isolate(YVar())),")]")
@@ -1620,14 +2127,47 @@ server <- function(input, output, session) {
         if(Debug) print('Filter by Date')
         if(shiny::isolate(DateVar()) != 'None') {
           if(Debug) print('here 1')
-          data1 <- data1[get(shiny::isolate(DateVar())) <= eval(input[['DateMax']]) & get(shiny::isolate(DateVar())) >= eval(input[['DateMin']])]
-          if(Debug) print('here 2')
-          if(Debug) print(paste0("data1 <- data1[", shiny::isolate(DateVar())))
-          if(Debug) print(input[['DateMax']])
-          if(Debug) print(CEP(input[['DateMax']]))
-          if(Debug) print(CEP(input[['DateMin']]))
-          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- data1[", shiny::isolate(DateVar())," <= ", CEP(input[['DateMax']])," & ", shiny::isolate(DateVar())," >= ", CEP(input[['DateMin']]),"]")
-          if(Debug) print('here 3')
+          if(Debug) {
+            print('Date Checking Here')
+            print(exists('temp'))
+            print(exists('DateVariableCheck'))
+            if(exists('DateVariableCheck')) print(DateVariableCheck == shiny::isolate(DateVar()))
+            print(exists('YVariableCheck'))
+            if(exists('YVariableCheck')) print(YVariableCheck == shiny::isolate(YVar()))
+          }
+          if(!(exists('temp') && exists('DateVariableCheck') && DateVariableCheck == shiny::isolate(DateVar()) && exists('YVariableCheck') && YVariableCheck == shiny::isolate(YVar()))) {
+            YVariableCheck <- shiny::isolate(YVar())
+            DateVariableCheck <- shiny::isolate(DateVar())
+            temp <- data1[, list(MinDate = min(get(shiny::isolate(DateVar())), na.rm = TRUE), MaxDate = max(get(shiny::isolate(DateVar())), na.rm = TRUE))]
+            DataDateMin <- temp[['MinDate']]
+            DataDateMax <- temp[['MaxDate']]
+            InputDateMin <-input[['DateMin']]
+            InputDateMax <- input[['DateMax']]
+            assign(x = 'YVariableCheck', value = YVariableCheck, envir = .GlobalEnv)
+            assign(x = 'DateVariableCheck', value = DateVariableCheck, envir = .GlobalEnv)
+            assign(x = 'temp', value = temp, envir = .GlobalEnv)
+            assign(x = 'DataDateMin', value = DataDateMin, envir = .GlobalEnv)
+            assign(x = 'DataDateMax', value = DataDateMax, envir = .GlobalEnv)
+            assign(x = 'InputDateMin', value = InputDateMin, envir = .GlobalEnv)
+            assign(x = 'InputDateMax', value = InputDateMax, envir = .GlobalEnv)
+          }
+          if(Debug) {
+            print('Debug Date Checks')
+            print(DataDateMin)
+            print(InputDateMin)
+            print(DataDateMax)
+            print(InputDateMax)
+          }
+          if(DataDateMin != InputDateMin || DataDateMax != InputDateMax) {
+            data1 <- data1[get(shiny::isolate(DateVar())) <= eval(input[['DateMax']]) & get(shiny::isolate(DateVar())) >= eval(input[['DateMin']])]
+            if(Debug) print('here 2')
+            if(Debug) print(paste0("data1 <- data1[", shiny::isolate(DateVar())))
+            if(Debug) print(input[['DateMax']])
+            if(Debug) print(RemixAutoML:::CEP(input[['DateMax']]))
+            if(Debug) print(RemixAutoML:::CEP(input[['DateMin']]))
+            CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- data1[", shiny::isolate(DateVar())," <= ", RemixAutoML:::CEP(input[['DateMax']])," & ", shiny::isolate(DateVar())," >= ", RemixAutoML:::CEP(input[['DateMin']]),"]")
+            if(Debug) print('here 3')
+          }
         }
 
         # Subset by FilterVariable_1
@@ -1635,7 +2175,7 @@ server <- function(input, output, session) {
         if(SubsetList[['FilterVariable_1']] != 'None') {
           fv <- SubsetList[['FilterValue_1b']]
           data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=SubsetList[['FilterLogic_1']], FilterVariable=SubsetList[['FilterVariable_1']], FilterValue=SubsetList[['FilterValue_1a']], FilterValue2=fv, Debug = Debug)
-          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", CEP(SubsetList[['FilterLogic_1']]),", FilterVariable=", CEP(SubsetList[['FilterVariable_1']]),", FilterValue=", CEP(SubsetList[['FilterValue_1a']]),", FilterValue2=", CEP(fv),"))")
+          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(SubsetList[['FilterLogic_1']]),", FilterVariable=", RemixAutoML:::CEP(SubsetList[['FilterVariable_1']]),", FilterValue=", RemixAutoML:::CEP(SubsetList[['FilterValue_1a']]),", FilterValue2=", RemixAutoML:::CEP(fv),"))")
           if(Debug) print(data1)
         }
 
@@ -1644,7 +2184,7 @@ server <- function(input, output, session) {
         if(SubsetList[['FilterVariable_2']] != 'None') {
           fv <- FilterValue_2b
           data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=SubsetList[['FilterLogic_2']], FilterVariable=SubsetList[['FilterVariable_2']], FilterValue=SubsetList[['FilterValue_2a']], FilterValue2=fv)
-          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", CEP(SubsetList[['FilterLogic_2']]),", FilterVariable=", CEP(SubsetList[['FilterVariable_2']]),", FilterValue=", CEP(SubsetList[['FilterValue_2a']]),", FilterValue2=", CEP(fv),"))")
+          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(SubsetList[['FilterLogic_2']]),", FilterVariable=", RemixAutoML:::CEP(SubsetList[['FilterVariable_2']]),", FilterValue=", RemixAutoML:::CEP(SubsetList[['FilterValue_2a']]),", FilterValue2=", RemixAutoML:::CEP(fv),"))")
         }
 
         # Subset by FilterVariable_3
@@ -1652,7 +2192,7 @@ server <- function(input, output, session) {
         if(SubsetList[['FilterVariable_3']] != 'None') {
           fv <- SubsetList[['FilterValue_3b']]
           data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=SubsetList[['FilterLogic_3']], FilterVariable=SubsetList[['FilterVariable_3']], FilterValue=SubsetList[['FilterValue_3a']], FilterValue2=fv)
-          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", CEP(SubsetList[['FilterLogic_3']]),", FilterVariable=", CEP(SubsetList[['FilterVariable_3']]),", FilterValue=", CEP(SubsetList[['FilterValue_3a']]),", FilterValue2=", CEP(fv),"))")
+          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(SubsetList[['FilterLogic_3']]),", FilterVariable=", RemixAutoML:::CEP(SubsetList[['FilterVariable_3']]),", FilterValue=", RemixAutoML:::CEP(SubsetList[['FilterValue_3a']]),", FilterValue2=", RemixAutoML:::CEP(fv),"))")
         }
 
         # Subset by FilterVariable_4
@@ -1660,18 +2200,18 @@ server <- function(input, output, session) {
         if(SubsetList[['FilterVariable_4']] != 'None') {
           fv <- SubsetList[['FilterValue_4b']]
           data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=SubsetList[['FilterLogic_4']], FilterVariable=SubsetList[['FilterVariable_4']], FilterValue=SubsetList[['FilterValue_4a']], FilterValue2=fv)
-          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", CEP(SubsetList[['FilterLogic_4']]),", FilterVariable=", CEP(SubsetList[['FilterVariable_4']]),", FilterValue=", CEP(SubsetList[['FilterValue_4a']]),", FilterValue2=", CEP(fv),"))")
+          CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(SubsetList[['FilterLogic_4']]),", FilterVariable=", RemixAutoML:::CEP(SubsetList[['FilterVariable_4']]),", FilterValue=", RemixAutoML:::CEP(SubsetList[['FilterValue_4a']]),", FilterValue2=", RemixAutoML:::CEP(fv),"))")
         }
 
         # Subset Rows based on Filters
-        if(Debug) {print('  Checking SelectedGroupss, Levels_1, Levels_2, and Levels_3'); print(SubsetList[['SelectedGroupss']]); print(SubsetList[['Levels_1']]); print(SubsetList[['Levels_2']]); print(SubsetList[['Levels_3']])}
-        if(Debug) {print('  Checking YVar(), XVar(), and DateVar()'); print(shiny::isolate(YVar())); print(shiny::isolate(XVar())); print(shiny::isolate(DateVar()))}
+        if(Debug) {print('Checking SelectedGroupss, Levels_1, Levels_2, and Levels_3'); print(SubsetList[['SelectedGroupss']]); print(SubsetList[['Levels_1']]); print(SubsetList[['Levels_2']]); print(SubsetList[['Levels_3']])}
+        if(Debug) {print('Checking YVar(), XVar(), and DateVar()'); print(shiny::isolate(YVar())); print(shiny::isolate(XVar())); print(shiny::isolate(DateVar()))}
         data1 <- RemixAutoML::PreparePlotData(
-          SubsetOnly = if(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot','Scatter','Copula','Train_ParDepPlots','Test_ParDepPlots','Train_ParDepBoxPlots','Test_ParDepBoxPlots','Test__EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot')) TRUE else FALSE,
+          SubsetOnly = if(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot','Scatter','Copula','Histogram','Train_ParDepPlots','Test_ParDepPlots','Train_ParDepBoxPlots','Test_ParDepBoxPlots','Test__EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot')) TRUE else FALSE,
           data = data1, Aggregate = 'mean', TargetVariable = shiny::isolate(YVar()),
           DateVariable = if(shiny::isolate(DateVar()) == 'None') NULL else shiny::isolate(DateVar()), GroupVariables = SubsetList[['SelectedGroupss']],
           G1Levels = input[['Levels_1']], G2Levels = input[['Levels_2']], G3Levels = input[['Levels_3']], Debug = Debug)
-        CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::PreparePlotData(SubsetOnly = ", if(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot','Scatter','Copula','Train_ParDepPlots','Test_ParDepPlots','Train_ParDepBoxPlots','Test_ParDepBoxPlots','Test__EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot')) TRUE else FALSE,", data=data1, Aggregate='mean', TargetVariable=", CEP(shiny::isolate(YVar())),", DateVariable=", CEP(shiny::isolate(DateVar())), ", GroupVariables=", CEP(SubsetList[['SelectedGroupss']]),", G1Levels=", CEP(input[['Levels_1']]),", G2Levels=", CEP(input[['Levels_2']]),", G3Levels=", CEP(input[['Levels_3']]),")")
+        CodeCollection[[length(CodeCollection)+1L]] <- paste0("data1 <- RemixAutoML::PreparePlotData(SubsetOnly = ", if(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot','Scatter','Copula','Histogram','Train_ParDepPlots','Test_ParDepPlots','Train_ParDepBoxPlots','Test_ParDepBoxPlots','Test__EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot')) TRUE else FALSE,", data=data1, Aggregate='mean', TargetVariable=", RemixAutoML:::CEP(shiny::isolate(YVar())),", DateVariable=", RemixAutoML:::CEP(shiny::isolate(DateVar())), ", GroupVariables=", RemixAutoML:::CEP(SubsetList[['SelectedGroupss']]),", G1Levels=", RemixAutoML:::CEP(input[['Levels_1']]),", G2Levels=", RemixAutoML:::CEP(input[['Levels_2']]),", G3Levels=", RemixAutoML:::CEP(input[['Levels_3']]),")")
       }
 
       # ----
@@ -1706,10 +2246,10 @@ server <- function(input, output, session) {
       # Create Plots                               ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       if(Debug) {print('Create Plot Object'); print(input[['PlotType']])}
-      if(input[['PlotType']] %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula')) {
+      if(input[['PlotType']] %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula', 'Histogram')) {
 
         # Debug
-        if(Debug) {print(paste0('PlotType print: ', input[['PlotType']])); print(input[['PlotType']] %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula'))}
+        if(Debug) {print(paste0('PlotType print: ', input[['PlotType']])); print(input[['PlotType']] %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula', 'Histogram'))}
 
         # XVar
         if(shiny::isolate(XVar()) == 'None') {
@@ -1724,6 +2264,7 @@ server <- function(input, output, session) {
 
         # AutoPlotter()
         if(Debug) print('Run AutoPlotter')
+        if(Debug) {print(input[['XMin']]); print(input[['XMax']])}
         p1 <- RemixAutoML:::AutoPlotter(
           dt = data1,
           PlotType = input[['PlotType']],
@@ -1739,11 +2280,11 @@ server <- function(input, output, session) {
           TextSize = TextSize, TextColor = TextColor,
           AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor,
           GridColor = GridColor, BackGroundColor = BackGroundColor, Debug = Debug)
-        CodeCollection[[length(CodeCollection)+1L]] <- paste0("RemixAutoML:::AutoPlotter(dt = data1, PlotType = ", CEP(input[['PlotType']]),", YVar=", CEP(shiny::isolate(YVar())),", YMin=", CEP(as.numeric(input[['YMin']])),", YMax=", CEP(as.numeric(input[['YMax']])),", XVar=", CEP(xvar),", XMin=", CEP(as.numeric(input[['XMin']])),", XMax=", CEP(as.numeric(input[['XMax']])),", ColorVariables=", CEP(SubsetList[['SelectedGroupss']]),", SizeVar1=", CEP(SubsetList[['SizeVar1']]),", FacetVar1=", CEP(SubsetList[['FacetVar1']]), ", FacetVar2=", CEP(SubsetList[['FacetVar2']]),", YTicks=", CEP(YTicks),", XTicks=", CEP(XTicks),", OutlierSize=", CEP(OutlierSize),", OutlierColor=", CEP(OutlierColor), ", BoxPlotFill=", CEP(BoxPlotFill),", GamFitScatter=", input[['GamFitScatter']],", TextSize=", CEP(TextSize), ", TextColor=", CEP(TextColor),", AngleX=", CEP(AngleX), ", AngleY=", CEP(AngleY),", ChartColor=", CEP(ChartColor), ", BorderColor=", CEP(BorderColor),", GridColor=", CEP(GridColor),", BackGroundColor=", CEP(BackGroundColor), ")")
+        CodeCollection[[length(CodeCollection)+1L]] <- paste0("RemixAutoML:::AutoPlotter(dt = data1, PlotType = ", RemixAutoML:::CEP(input[['PlotType']]),", YVar=", RemixAutoML:::CEP(shiny::isolate(YVar())),", YMin=", RemixAutoML:::CEP(as.numeric(input[['YMin']])),", YMax=", RemixAutoML:::CEP(as.numeric(input[['YMax']])),", XVar=", RemixAutoML:::CEP(xvar),", XMin=", RemixAutoML:::CEP(as.numeric(input[['XMin']])),", XMax=", RemixAutoML:::CEP(as.numeric(input[['XMax']])),", ColorVariables=", RemixAutoML:::CEP(SubsetList[['SelectedGroupss']]),", SizeVar1=", RemixAutoML:::CEP(SubsetList[['SizeVar1']]),", FacetVar1=", RemixAutoML:::CEP(SubsetList[['FacetVar1']]), ", FacetVar2=", RemixAutoML:::CEP(SubsetList[['FacetVar2']]),", YTicks=", RemixAutoML:::CEP(YTicks),", XTicks=", RemixAutoML:::CEP(XTicks),", OutlierSize=", RemixAutoML:::CEP(OutlierSize),", OutlierColor=", RemixAutoML:::CEP(OutlierColor), ", BoxPlotFill=", RemixAutoML:::CEP(BoxPlotFill),", GamFitScatter=", input[['GamFitScatter']],", TextSize=", RemixAutoML:::CEP(TextSize), ", TextColor=", RemixAutoML:::CEP(TextColor),", AngleX=", RemixAutoML:::CEP(AngleX), ", AngleY=", RemixAutoML:::CEP(AngleY),", ChartColor=", RemixAutoML:::CEP(ChartColor), ", BorderColor=", RemixAutoML:::CEP(BorderColor),", GridColor=", RemixAutoML:::CEP(GridColor),", BackGroundColor=", RemixAutoML:::CEP(BackGroundColor), ")")
         CodeCollection <<- CodeCollection
         if(Debug) print(unlist(CodeCollection))
 
-      } else if(!input[['PlotType']] %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula')) {
+      } else if(!input[['PlotType']] %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula', 'Histogram')) {
 
         # AppModelInsights()
         if(Debug) print(paste0('PDPVar = ', input[['PDP_Variable']]))
@@ -1758,7 +2299,7 @@ server <- function(input, output, session) {
           GamFit = input[['GamFitScatter']],
           Buckets = as.numeric(input[['Percentile_Buckets']]),
           Rebuild = Rebuild, Debug = Debug)
-        CodeCollection[[length(CodeCollection)+1L]] <- paste0("RemixAutoML:::AppModelInsights(dt=data1, PlotType=", CEP(input[['PlotType']]), ", ModelOutputList=ModelOutputList, TargetVar=", CEP(shiny::isolate(YVar())), ", PredictVar=", if(shiny::isolate(ScoreVar()) != 'None') CEP(shiny::isolate(ScoreVar())) else NULL, ", PDPVar=", if(!is.null(input[['PDP_Variable']])) CEP(input[['PDP_Variable']]) else NULL, ", DateVar=", if(shiny::isolate(DateVar()) != 'None') CEP(shiny::isolate(DateVar())) else NULL, ", GamFit=", CEP(input[['GamFitScatter']]), ", Buckets=", CEP(as.numeric(input[['Percentile_Buckets']])), ",Rebuild=", CEP(Rebuild), ")")
+        CodeCollection[[length(CodeCollection)+1L]] <- paste0("RemixAutoML:::AppModelInsights(dt=data1, PlotType=", RemixAutoML:::CEP(input[['PlotType']]), ", ModelOutputList=ModelOutputList, TargetVar=", RemixAutoML:::CEP(shiny::isolate(YVar())), ", PredictVar=", if(shiny::isolate(ScoreVar()) != 'None') RemixAutoML:::CEP(shiny::isolate(ScoreVar())) else NULL, ", PDPVar=", if(!is.null(input[['PDP_Variable']])) RemixAutoML:::CEP(input[['PDP_Variable']]) else NULL, ", DateVar=", if(shiny::isolate(DateVar()) != 'None') RemixAutoML:::CEP(shiny::isolate(DateVar())) else NULL, ", GamFit=", RemixAutoML:::CEP(input[['GamFitScatter']]), ", Buckets=", RemixAutoML:::CEP(as.numeric(input[['Percentile_Buckets']])), ",Rebuild=", RemixAutoML:::CEP(Rebuild), ")")
         if(!is.null(p1)) {
           p1 <- p1 + RemixAutoML::ChartTheme(
             Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor,
@@ -1766,7 +2307,7 @@ server <- function(input, output, session) {
             BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor,
             LegendPosition = LegendPosition, LegendBorderSize = as.numeric(LegendBorderSize),
             LegendLineType = LegendLineType)
-          CodeCollection[[length(CodeCollection)+1L]] <- paste0("RemixAutoML::ChartTheme(Size=", CEP(TextSize), ", AngleX=", CEP(AngleX), ", AngleY=", CEP(AngleY), ", ChartColor=", CEP(ChartColor), ", BorderColor=", CEP(BorderColor), ", TextColor=", CEP(TextColor), ", GridColor=", CEP(GridColor), ", BackGroundColor=", CEP(BackGroundColor), ", SubTitleColor=", CEP(SubTitleColor), ", LegendPosition=", CEP(LegendPosition), ", LegendBorderSize=", CEP(as.numeric(LegendBorderSize)), ", LegendLineType=", CEP(LegendLineType), ")")
+          CodeCollection[[length(CodeCollection)+1L]] <- paste0("RemixAutoML::ChartTheme(Size=", RemixAutoML:::CEP(TextSize), ", AngleX=", RemixAutoML:::CEP(AngleX), ", AngleY=", RemixAutoML:::CEP(AngleY), ", ChartColor=", RemixAutoML:::CEP(ChartColor), ", BorderColor=", RemixAutoML:::CEP(BorderColor), ", TextColor=", RemixAutoML:::CEP(TextColor), ", GridColor=", RemixAutoML:::CEP(GridColor), ", BackGroundColor=", RemixAutoML:::CEP(BackGroundColor), ", SubTitleColor=", RemixAutoML:::CEP(SubTitleColor), ", LegendPosition=", RemixAutoML:::CEP(LegendPosition), ", LegendBorderSize=", RemixAutoML:::CEP(as.numeric(LegendBorderSize)), ", LegendLineType=", RemixAutoML:::CEP(LegendLineType), ")")
         }
         CodeCollection <<- CodeCollection
       }

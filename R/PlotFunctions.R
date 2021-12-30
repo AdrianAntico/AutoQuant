@@ -19,6 +19,7 @@
 #' @param FacetVar2 = shiny::isolate(input[['FacetVar2']])
 #' @param YTicks = input[['YTicks']]
 #' @param XTicks = input[['XTicks']]
+#' @param Bins = 30
 #' @param OutlierSize = input[['OutlierSize']]
 #' @param OutlierColor = input[['OutlierColor']]
 #' @param BoxPlotFill = input[['BoxPlotFill']]
@@ -50,6 +51,7 @@ AutoPlotter <- function(dt = NULL,
                         FacetVar2 = 'None',
                         YTicks = 'Default',
                         XTicks = 'Default',
+                        Bins = 30,
                         OutlierSize = 0.10,
                         OutlierColor = 'blue',
                         BoxPlotFill = 'gray',
@@ -73,6 +75,9 @@ AutoPlotter <- function(dt = NULL,
   # BoxPlot or ViolinPlot or Bar
   if(Debug) print(paste0('BoxPlot or ViolinPlot or Bar', PlotType %in% c('BoxPlot','ViolinPlot','Bar')))
   if(PlotType %in% c('BoxPlot','ViolinPlot','Bar')) {
+
+    # Cap number of records----
+    if(dt[,.N] > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
 
     # Create base plot object
     if(Debug) print('Create Plot with only data')
@@ -177,7 +182,9 @@ AutoPlotter <- function(dt = NULL,
   # Scatter or Copula
   if(PlotType %in% c('Scatter', 'Copula')) {
 
+    # Cap number of records----
     if(Debug) print('Scatter or Copula Plot Here')
+    if(dt[,.N] > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
 
     # Subset + Sample
     R2_Pearson <- c()
@@ -287,6 +294,43 @@ AutoPlotter <- function(dt = NULL,
     if(Debug) print('Update X and Y Ticks')
     if(!'Default' %in% XTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
     if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+  }
+
+  if(PlotType %chin% 'Histogram') {
+
+    # Cap number of records----
+    if(dt[,.N] > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
+
+    # Create base plot object
+    if(Debug) print('Create Plot with only data')
+    p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(YVar)))
+
+    # Histogram
+    if(Debug) print('Create Bar')
+    p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
+
+    # Add Horizontal Line for Mean Y
+    if(Debug) print('Create Plot Vertical Line')
+    p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
+
+    # Create Plot labs
+    if(Debug) print('Create Plot labs')
+    p1 <- p1 + ggplot2::labs(title = 'Distribution', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
+
+    # Axis Labels
+    p1 <- p1 + ggplot2::xlab(label = eval(YVar))
+
+    # Add faceting (returns no faceting in none was requested)
+    if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
+      if(Debug) print('FacetVar1 and FacetVar2')
+      p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
+    } else if(!is.null(FacetVar1) && FacetVar1 == 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
+      if(Debug) print('FacetVar2')
+      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
+    } else if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 == 'None') {
+      if(Debug) print('FacetVar1')
+      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
+    }
   }
 
   # Add ChartTheme

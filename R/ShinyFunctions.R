@@ -118,6 +118,9 @@ rCodeContainer <- function(...) {
   htmltools::tags$div(htmltools::tags$pre(code))
 }
 
+#' @noRd
+CEP <- function(x) if(is.null(x)) "NULL" else if(identical(x, character(0))) "NULL" else if(identical(x, numeric(0))) "NULL" else if(identical(x, integer(0))) "NULL" else if(identical(x, logical(0))) "NULL" else if(is.numeric(x)) x else if(length(x) > 1) paste0("c(", noquote(paste0("'", x, "'", collapse = ',')), ")") else paste0("'", x, "'")
+
 #' @title UniqueLevels
 #'
 #' @param input passthrough
