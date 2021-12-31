@@ -6,6 +6,7 @@
 #' @family GUI
 #'
 #' @param data Source data.table
+#' @param BlobStorageURL is the URL path that leads up to the file name. E.g. 'http://localhost:5000/BlobFiles/ViewFile?name='
 #' @param XVariable Starter column name for x-variable. Not needed if x-axis is the DateName column
 #' @param YVariable Starter column name for y-variable
 #' @param DateName Starter column name for date-variable
@@ -36,6 +37,8 @@
 #' # Run App
 #' # RemixAutoML::AppsPlotting(
 #' #   data,
+#' #   BlobStorageURL = NULL,
+#' #   IFrameLocation = NULL,
 #' #   XVariable = NULL,
 #' #   YVariable = 'XREG1',
 #' #   DateName = 'Date',
@@ -86,6 +89,8 @@
 #'
 #' @export
 AppsPlotting <- function(data,
+                         BlobStorageURL = 'https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=',
+                         IFrameLocation = 'http://127.0.0.1:5000/BlobFiles',
                          XVariable = NULL,
                          YVariable = NULL,
                          DateName = NULL,
@@ -112,6 +117,8 @@ AppsPlotting <- function(data,
   # Pass args to shiny app
   shiny::shinyOptions(
     data = data,
+    BlobStorageURL = BlobStorageURL,
+    IFrameLocation = IFrameLocation,
     XVariable = XVariable,
     YVariable = YVariable,
     DateName = DateName,

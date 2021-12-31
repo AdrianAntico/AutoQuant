@@ -6,6 +6,8 @@
 \usage{
 AppsPlotting(
   data,
+  BlobStorageURL = "https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=",
+  IFrameLocation = "http://127.0.0.1:5000/BlobFiles",
   XVariable = NULL,
   YVariable = NULL,
   DateName = NULL,
@@ -32,6 +34,8 @@ AppsPlotting(
 }
 \arguments{
 \item{data}{Source data.table}
+
+\item{BlobStorageURL}{is the URL path that leads up to the file name. E.g. 'http://localhost:5000/BlobFiles/ViewFile?name='}
 
 \item{XVariable}{Starter column name for x-variable. Not needed if x-axis is the DateName column}
 
@@ -85,6 +89,8 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 # Run App
 # RemixAutoML::AppsPlotting(
 #   data,
+#   BlobStorageURL = NULL,
+#   IFrameLocation = NULL,
 #   XVariable = NULL,
 #   YVariable = 'XREG1',
 #   DateName = 'Date',

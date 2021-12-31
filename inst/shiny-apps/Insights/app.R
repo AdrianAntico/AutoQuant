@@ -16,6 +16,8 @@ options(scipen = 999)
 
 # data related
 data <- shiny::getShinyOption('data')
+BlobStorageURL <- shiny::getShinyOption('BlobStorageURL')
+IFrameLocation <- shiny::getShinyOption('IFrameLocation')
 XVariable <- shiny::getShinyOption('XVariable')
 YVariable <- shiny::getShinyOption('YVariable')
 DateName <- shiny::getShinyOption('DateName')
@@ -227,6 +229,34 @@ ui <- shinydashboard::dashboardPage(
         # Add Space
         RemixAutoML::BlankRow(AppWidth),
 
+        # Azure loader
+        shinydashboard::box(
+          title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Azure Blob Objects'),
+          solidHeader = TRUE,
+          collapsible = TRUE,
+          collapsed = FALSE,
+          background = 'purple',
+          width = 9L,
+
+          # Add Space
+          RemixAutoML::BlankRow(AppWidth),
+
+          # Local Data
+          shiny::fluidRow(
+            shiny::column(
+              width = AppWidth, shinyjs::useShinyjs(),
+              shiny::textInput(
+                inputId = 'blob',
+                label = 'Upload data from Azure',
+                value = 'Data Summary',
+                placeholder = 'Nothing loaded asshole')))),
+
+        # Add Space
+        RemixAutoML::BlankRow(AppWidth),
+
+        # Add Space
+        RemixAutoML::BlankRow(AppWidth),
+
         # Go to Plotter
         shiny::fluidRow(
           shiny::column(
@@ -236,7 +266,16 @@ ui <- shinydashboard::dashboardPage(
               label = 'Load Objects',
               icon = shiny::icon('chevron-right', lib = 'font-awesome'),
               style = 'gradient',
-              color = eval(CreatePlotButtonColor))))),
+              color = eval(CreatePlotButtonColor)))),
+
+        # Add Space
+        RemixAutoML::BlankRow(AppWidth),
+
+        # Azure Blob Data
+        shiny::fluidRow(
+          shiny::column(
+            width = 12L,
+            shiny::htmlOutput('IFrame')))),
 
         # ----
 
@@ -565,11 +604,20 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Load Data and Initialize Vars        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # IFrame holder of C# app
+  output$IFrame <- renderUI({
+    tags$iframe(src=IFrameLocation, style='width:67vw;height:50vh;')
+  })
+
+  # Load data event
   shiny::observeEvent(eventExpr = input$LoadDataButton, {
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Load Data Sets and Rdata             ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # Local data loading
     if(Debug) print('data check 1')
     CodeCollection <- list()
     data <<- RemixAutoML::ReactiveLoadCSV(input, InputVal = "DataLoad", ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL)
@@ -583,6 +631,20 @@ server <- function(input, output, session) {
       ModelOutputList <<- e[[name]]
     } else {
       ModelOutputList <<- NULL
+    }
+
+    # Azure data loading
+    inFile <- input$blob
+    if(!is.null(infile)) {
+      if(grepl(pattern = '.csv', x = infile)) {
+        download.file(url=paste0(BlobStorageURL, infile), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
+        data <<- data.table::fread(file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
+      } else {
+        download.file(url=paste0(BlobStorageURL, infile), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.Rdata'))
+        e <- new.env()
+        name <- load(file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.Rdata'), e)
+        ModelOutputList <<- e[[name]]
+      }
     }
     CodeCollection <<- CodeCollection
 
