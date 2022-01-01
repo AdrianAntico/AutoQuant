@@ -7,7 +7,7 @@
 AppsPlotting(
   data,
   BlobStorageURL = "https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=",
-  IFrameLocation = "http://127.0.0.1:5000/BlobFiles",
+  IFrameLocation = "https://middlewarehouse.azurewebsites.net/BlobFiles",
   XVariable = NULL,
   YVariable = NULL,
   DateName = NULL,

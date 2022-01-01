@@ -26,3 +26,157 @@ body > div > div > section > div:nth-child(even) > div > div > button:hover{
 body {
   color: blue;
 }
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.left {
+  float: left;
+  position: relative;
+  width: 50%;
+  height: 100%;
+}
+
+.right {
+  float: left;
+  position: relative;
+  width: 40%;
+  margin-left: 5%;
+  height: 100%;
+}
+
+#display {
+  background: #2d2d2d;
+  border: 10px solid #000000;
+  border-radius: 5px;
+  font-size: 2em;
+  color: white;
+  height: 100px;
+  min-width: 200px;
+  text-align: center;
+  padding: 1em;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+#drag-elements {
+  display: block;
+  background-color: #dfdfdf;
+  border-radius: 5px;
+  min-height: 50px;
+  margin: 0 auto;
+  padding: 2em;
+}
+
+#drag-elements > div {
+  text-align: center;
+  float: left;
+  padding: 1em;
+  margin: 0 1em 1em 0;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+  border-radius: 100px;
+  border: 2px solid #ececec;
+  background: #f7f7f7;
+  transition: all 0.5s ease;
+}
+
+#drag-elements > div:active {
+  -webkit-animation: wiggle 0.3s 0s infinite ease-in;
+  animation: wiggle 0.3s 0s infinite ease-in;
+  opacity: 0.6;
+  border: 2px solid #000;
+}
+
+#drag-elements > div:hover {
+  border: 2px solid gray;
+  background-color: #e5e5e5;
+}
+
+#drop-target {
+  border: 2px dashed #d9d9d9;
+  border-radius: 5px;
+  min-height: 50px;
+  margin: 0 auto;
+  margin-top: 10px;
+  padding: 2em;
+  display: block;
+  text-align: center;
+}
+
+#drop-target > div {
+  transition: all 0.5s;
+  text-align: center;
+  float: left;
+  padding: 1em;
+  margin: 0 1em 1em 0;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  border: 2px solid skyblue;
+  background: #f7f7f7;
+  transition: all 0.5s ease;
+}
+
+#drop-target > div:active {
+  -webkit-animation: wiggle 0.3s 0s infinite ease-in;
+  animation: wiggle 0.3s 0s infinite ease-in;
+  opacity: 0.6;
+  border: 2px solid #000;
+}
+
+@-webkit-keyframes wiggle {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  25% {
+    -webkit-transform: rotate(2deg);
+  }
+  75% {
+    -webkit-transform: rotate(-2deg);
+  }
+  100% {
+    -webkit-transform: rotate(0deg);
+  }
+}
+
+@keyframes wiggle {
+  0% {
+    transform: rotate(-2deg);
+  }
+  25% {
+    transform: rotate(2deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.gu-mirror {
+  position: fixed !important;
+  margin: 0 !important;
+  z-index: 9999 !important;
+  padding: 1em;
+}
+.gu-hide {
+  display: none !important;
+}
+.gu-unselectable {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+.gu-transit {
+  opacity: 0.5;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+  filter: alpha(opacity=50);
+}
+.gu-mirror {
+  opacity: 0.5;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+  filter: alpha(opacity=50);
+}

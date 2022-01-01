@@ -219,9 +219,9 @@ ui <- shinydashboard::dashboardPage(
               background = GroupVarsBoxColor,
               width = 9L,
               shiny::fileInput(
-                inputId = "DataLoad",
-                label =  "Choose CSV File",
-                accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv")),
+                inputId = 'DataLoad',
+                label =  'Choose CSV File',
+                accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
               shiny::fileInput(
                 inputId = "ModelObjectLoad",
                 label =  "Load Model Output Object")))),
@@ -248,11 +248,8 @@ ui <- shinydashboard::dashboardPage(
               shiny::textInput(
                 inputId = 'blob',
                 label = 'Upload data from Azure',
-                value = 'Data Summary',
-                placeholder = 'Nothing loaded asshole')))),
-
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
+                value = NULL,
+                placeholder = 'Load')))),
 
         # Add Space
         RemixAutoML::BlankRow(AppWidth),
@@ -462,10 +459,22 @@ ui <- shinydashboard::dashboardPage(
               # Plot Type
               shiny::fluidRow(
                 width = AppWidth,
-                shiny::column(3L, shiny::uiOutput('PlotType')))))),
+                shiny::column(
+                  3L,
+                  shiny::uiOutput('PlotType')))
+              ,
+
+              # # Add Space
+              # RemixAutoML::BlankRow(AppWidth),
+              #
+              # # Plot Type
+              # shiny::fluidRow(
+              #   width = AppWidth,
+              #   shiny::column(
+              #     3L, shiny::uiOutput('PlotTypeDragula')))
+              ))),
 
         # # Add Space
-        RemixAutoML::BlankRow(AppWidth),
         RemixAutoML::BlankRow(AppWidth),
 
         # ----
@@ -621,9 +630,8 @@ server <- function(input, output, session) {
     if(Debug) print('data check 1')
     CodeCollection <- list()
     data <<- RemixAutoML::ReactiveLoadCSV(input, InputVal = "DataLoad", ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL)
-    # TODO Issue: input$DataLoad not returning temp directory path instead of actual path
-    # CodeCollection[[1L]] <- paste0("data.table::data.table(file = ", input[['DataLoad']], ")")
-    if(Debug) print('data check 2')
+    # (path returned is a temp path) CodeCollection[[1L]] <- paste0("data.table::data.table(file = ", input[['DataLoad']], ")")
+    if(Debug) {print('data check 2'); print(input$ModelObjectLoad)}
     inFile <- input$ModelObjectLoad
     if(!is.null(inFile)) {
       e <- new.env()
@@ -634,16 +642,19 @@ server <- function(input, output, session) {
     }
 
     # Azure data loading
-    inFile <- input$blob
-    if(!is.null(infile)) {
-      if(grepl(pattern = '.csv', x = infile)) {
-        download.file(url=paste0(BlobStorageURL, infile), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
-        data <<- data.table::fread(file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
-      } else {
-        download.file(url=paste0(BlobStorageURL, infile), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.Rdata'))
-        e <- new.env()
-        name <- load(file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.Rdata'), e)
-        ModelOutputList <<- e[[name]]
+    if(input$blob != "") {
+      if(Debug) {print('data check 3'); print(input$blob)}
+      inFile <- input$blob
+      if(!is.null(infile)) {
+        if(grepl(pattern = '.csv', x = infile)) {
+          download.file(url=paste0(BlobStorageURL, infile), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
+          data <<- data.table::fread(file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
+        } else {
+          download.file(url=paste0(BlobStorageURL, infile), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.Rdata'))
+          e <- new.env()
+          name <- load(file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.Rdata'), e)
+          ModelOutputList <<- e[[name]]
+        }
       }
     }
     CodeCollection <<- CodeCollection
@@ -1278,6 +1289,44 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Plotting MetaData                    ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Dragula for PlotType
+  output$PlotTypeDragula <- shiny::renderUI({
+    if(!is.null(ModelOutputList)) {
+      MONames <- c(
+        "Train_EvaluationPlot", "Train_EvaluationBoxPlot", "Train_ParDepPlots", "Train_ParDepBoxPlots", "Train_ResidualsHistogram",
+        "Train_ScatterPlot", "Train_CopulaPlot", "Train_VariableImportance", "Validation_VariableImportance", "Test_EvaluationPlot",
+        "Test_EvaluationBoxPlot", "Test_ParDepPlots", "Test_ParDepBoxPlots", "Test_ResidualsHistogram", "Test_ScatterPlot",
+        "Test_CopulaPlot", "Test_VariableImportance")
+    } else {
+      MONames <- NULL
+    }
+    if(DateVar() != 'None') {
+      StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','Histogram')
+    } else {
+      StandardPlots <- c('Scatter','Copula','BoxPlot','ViolinPlot','Bar','Histogram')
+    }
+    esquisse::dragulaInput(
+      inputId = 'PlotTypeDragula',
+      label = 'Drag and Drop Plot Types',
+      sourceLabel = 'Plots',
+      targetsLabels = c('Upper Left', 'Upper Right', 'Bottom Left', 'Bottom Right'),
+      targetsIds = ,
+      choices = c(StandardPlots, MONames),
+      # choiceNames = ,
+      # choiceValues = ,
+      # selected = ,
+      # status = ,
+      # replace = ,
+      # copySource = ,
+      # badge = ,
+      # ncolSource = ,
+      # ncolGrid = ,
+      # dragulaOpts = ,
+      # boxStyle = ,
+      width = "100%",
+      height = "50%")
+  })
 
   # Plot Box Shown
   output$PlotType <- shiny::renderUI({
