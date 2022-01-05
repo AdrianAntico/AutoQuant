@@ -5,23 +5,25 @@
 \title{ReactiveLoadCSV}
 \usage{
 ReactiveLoadCSV(
-  input,
-  InputVal = NULL,
+  Infile = input[[eval(InputVal)]],
   ProjectList = NULL,
   DateUpdateName = NULL,
-  RemoveObjects = NULL
+  RemoveObjects = NULL,
+  Debug = FALSE
 )
 }
 \arguments{
-\item{input}{Passthrough}
-
-\item{InputVal}{Values that follows input$}
-
 \item{ProjectList}{Supply the project list if available. NULL otherwise}
 
 \item{DateUpdateName}{Supply the name for the ProjectList to store the import time}
 
 \item{RemoveObjects}{List of objects to remove}
+
+\item{Debug}{FALSE}
+
+\item{input}{Passthrough}
+
+\item{InputVal}{Values that follows input$}
 }
 \description{
 Use this function to import csv's, track the time it was imported, and remove other objects

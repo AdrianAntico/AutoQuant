@@ -26,7 +26,7 @@ AppsPlotting(
   UpdatePlotButtonColor = "primary",
   ResetPlotButtonColor = "primary",
   H3Color = "darkblue",
-  H5Color = "blue",
+  H4Color = "blue",
   AppTextColor = "white",
   Browser = FALSE,
   Docker = FALSE,
@@ -71,7 +71,7 @@ AppsPlotting(
 
 \item{H3Color}{Header colors 'darkblue'}
 
-\item{H5Color}{Text below headers but not the input cells; 'blue2'}
+\item{H4Color}{Text below headers but not the input cells; 'blue2'}
 
 \item{AppTextColor}{'white'}
 
@@ -141,7 +141,7 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 # UpdatePlotButtonColor = 'default'
 # ResetPlotButtonColor = 'default'
 # H3Color = 'darkblue'
-# H5Color = 'blue2'
+# H4Color = 'blue2'
 # AppTextColor = 'white'
 # Docker = FALSE
 # Browser = FALSE

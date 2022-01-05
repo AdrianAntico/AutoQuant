@@ -23,7 +23,7 @@
 #' @param UpdatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param H3Color Header colors 'darkblue'
-#' @param H5Color Text below headers but not the input cells; 'blue2'
+#' @param H4Color Text below headers but not the input cells; 'blue2'
 #' @param AppTextColor 'white'
 #' @param Browser FALSE
 #' @param Docker FALSE
@@ -85,7 +85,7 @@
 #' # UpdatePlotButtonColor = 'default'
 #' # ResetPlotButtonColor = 'default'
 #' # H3Color = 'darkblue'
-#' # H5Color = 'blue2'
+#' # H4Color = 'blue2'
 #' # AppTextColor = 'white'
 #' # Docker = FALSE
 #' # Browser = FALSE
@@ -115,7 +115,7 @@ AppsPlotting <- function(data,
                          UpdatePlotButtonColor = 'primary',
                          ResetPlotButtonColor = 'primary',
                          H3Color = 'darkblue',
-                         H5Color = 'blue',
+                         H4Color = 'blue',
                          AppTextColor = 'white',
                          Browser = FALSE,
                          Docker = FALSE,
@@ -145,7 +145,7 @@ AppsPlotting <- function(data,
     UpdatePlotButtonColor = 'default',
     ResetPlotButtonColor = 'default',
     H3Color = H3Color,
-    H5Color = H5Color,
+    H4Color = H4Color,
     AppTextColor = AppTextColor,
     UserName_Password_DT = UserName_Password_DT,
     Debug = Debug)

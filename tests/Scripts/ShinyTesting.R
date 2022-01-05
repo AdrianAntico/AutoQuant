@@ -102,7 +102,7 @@ RemixAutoML::AppsPlotting(
   FilterBoxColor = 'blue',
   PlotBoxColor = 'aqua',
   H3Color = 'darkblue',
-  H5Color = 'darkblue',
+  H4Color = 'darkblue',
   AppTextColor = 'blue',
   CreatePlotButtonColor = 'primary',
   UpdatePlotButtonColor = 'primary',
