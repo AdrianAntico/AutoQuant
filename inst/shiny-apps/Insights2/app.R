@@ -182,7 +182,8 @@ ui <- shinydashboard::dashboardPage(
               shiny::selectInput(
                 inputId = "UserName",
                 label =  "Select from Names",
-                choices = Credentials[['UserName']]),
+                choices = Credentials[['UserName']],
+                selected = 'UserName'),
               shiny::textInput(
                 inputId = "Password",
                 label =  "Input Password",
