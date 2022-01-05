@@ -5,7 +5,7 @@
 \title{AppsPlotting}
 \usage{
 AppsPlotting(
-  data,
+  data = NULL,
   BlobStorageURL = "https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=",
   IFrameLocation = "https://middlewarehouse.azurewebsites.net/BlobFiles",
   XVariable = NULL,
@@ -22,12 +22,12 @@ AppsPlotting(
   VarsBoxColor = "purple",
   FilterBoxColor = "blue",
   PlotBoxColor = "aqua",
-  CreatePlotButtonColor = "primary",
-  UpdatePlotButtonColor = "primary",
-  ResetPlotButtonColor = "primary",
+  CreatePlotButtonColor = "royal",
+  UpdatePlotButtonColor = "default",
+  ResetPlotButtonColor = "default",
   H3Color = "darkblue",
-  H4Color = "blue",
-  AppTextColor = "white",
+  H4Color = "darkblue",
+  AppTextColor = "blue",
   Browser = FALSE,
   Docker = FALSE,
   UserName_Password_DT = NULL,
