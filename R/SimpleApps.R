@@ -95,8 +95,8 @@
 #'
 #' @export
 AppsPlotting <- function(data = NULL,
-                         BlobStorageURL = 'https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=',
-                         IFrameLocation = 'https://middlewarehouse.azurewebsites.net/BlobFiles', #'http://127.0.0.1:5000/BlobFiles',
+                         BlobStorageURL = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=',
+                         IFrameLocation = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles', #'http://127.0.0.1:5000/BlobFiles',
                          XVariable = NULL,
                          YVariable = NULL,
                          DateName = NULL,

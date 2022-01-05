@@ -6,8 +6,8 @@
 \usage{
 AppsPlotting(
   data = NULL,
-  BlobStorageURL = "https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=",
-  IFrameLocation = "https://middlewarehouse.azurewebsites.net/BlobFiles",
+  BlobStorageURL = NULL,
+  IFrameLocation = NULL,
   XVariable = NULL,
   YVariable = NULL,
   DateName = NULL,
