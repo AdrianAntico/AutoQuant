@@ -4,7 +4,7 @@
 \alias{CharNull}
 \title{CharNull}
 \usage{
-CharNull(x)
+CharNull(x, Char = FALSE)
 }
 \arguments{
 \item{x}{Value}

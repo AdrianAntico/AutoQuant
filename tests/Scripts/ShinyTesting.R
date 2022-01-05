@@ -101,6 +101,9 @@ RemixAutoML::AppsPlotting(
   VarsBoxColor = 'purple',
   FilterBoxColor = 'blue',
   PlotBoxColor = 'aqua',
+  H3Color = 'darkblue',
+  H5Color = 'darkblue',
+  AppTextColor = 'blue',
   CreatePlotButtonColor = 'primary',
   UpdatePlotButtonColor = 'primary',
   ResetPlotButtonColor = 'primary',
@@ -108,6 +111,14 @@ RemixAutoML::AppsPlotting(
   Docker = FALSE,
   Debug = TRUE)
 
+
+data <- RemixAutoML::FakeDataGenerator(N = 10000)
+p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = Adrian)) + ggplot2::geom_histogram()
+p2 <- ggplot2::ggplot(data = data, ggplot2::aes(x = Adrian)) + ggplot2::geom_histogram()
+p3 <- ggplot2::ggplot(data = data, ggplot2::aes(x = Adrian)) + ggplot2::geom_histogram()
+p4 <- ggplot2::ggplot(data = data, ggplot2::aes(x = Adrian)) + ggplot2::geom_histogram()
+
+gridExtra::grid.arrange(p1,p2,p3,p4, ncol=2)
 
 
 # install.packages("https://github.com/AdrianAntico/RemixAutoML/raw/master/RemixAutoML_0.6.0.tar.gz", repos = NULL, type = "source", INSTALL_opts = c("--no-multiarch", "--no-test-load"))

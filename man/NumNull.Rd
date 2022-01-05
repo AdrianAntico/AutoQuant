@@ -4,7 +4,7 @@
 \alias{NumNull}
 \title{NumNull}
 \usage{
-NumNull(x)
+NumNull(x, Char = FALSE)
 }
 \arguments{
 \item{x}{value}

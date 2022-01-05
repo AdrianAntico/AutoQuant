@@ -70,10 +70,9 @@ AutoPlotter <- function(dt = NULL,
                         LegendLineType = 'solid',
                         Debug = FALSE) {
 
-  if(Debug) print(PlotType)
+  if(Debug) print(paste0('AutoPlotter() begin, PlotType = ', PlotType))
 
   # BoxPlot or ViolinPlot or Bar
-  if(Debug) print(paste0('BoxPlot or ViolinPlot or Bar', PlotType %in% c('BoxPlot','ViolinPlot','Bar')))
   if(PlotType %in% c('BoxPlot','ViolinPlot','Bar')) {
 
     # Cap number of records----
@@ -147,6 +146,7 @@ AutoPlotter <- function(dt = NULL,
     if(Debug) print(paste0('ColorVariables: ', ColorVariables))
     if(Debug) print(paste0('XTicks: ', XTicks))
     if(Debug) print(paste0('XVar: ', XVar))
+    if(Debug) print(paste0('names(dt): ', names(dt)))
 
     # TS Line Plot
     p1 <- RemixAutoML:::TimeSeriesPlotter(
@@ -306,60 +306,42 @@ AutoPlotter <- function(dt = NULL,
     if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
   }
 
+  # Histogram
   if(PlotType %chin% 'Histogram') {
 
-    # Check
-    if(!is.null(YVar) && is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(dt[[eval(XVar)]])) {
+    # Cap number of records
+    if(dt[,.N] > 1000000L) dt <- dt[order(runif(.N))][seq_len(1000000L)]
+
+    # Start plot
+    if(!is.null(YVar) && is.numeric(dt[[eval(YVar)]])) {
+
       if(Debug) print('Histogram: here 1')
-      XVar <- NULL
+      if(!is.null(ColorVariables)) {
+        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(YVar), color = get(ColorVariables)))
+      } else {
+        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(YVar)))
+      }
+      p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
+      p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
+      p1 <- p1 + ggplot2::xlab(label = eval(YVar))
+      p1 <- p1 + ggplot2::labs(title = 'Distribution', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
+
     } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(dt[[eval(XVar)]])) {
+
       if(Debug) print('Histogram: here 2')
-      tempy <- XVar
-      tempx <- YVar
-      YVar <- tempy
-      XVar <- tempx
-    } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && !is.numeric(dt[[eval(XVar)]])) {
+      if(!is.null(ColorVariables)) {
+        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), color = get(ColorVariables)))
+      } else {
+        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar)))
+      }
+      p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
+      p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(XVar)]], na.rm = TRUE)))
+      p1 <- p1 + ggplot2::xlab(label = eval(XVar))
+      p1 <- p1 + ggplot2::labs(title = 'Distribution', subtitle = 'Blue line = mean(X)', caption = 'by RemixAutoML')
+
+    } else {
       if(Debug) print('Histogram: here 3')
       return(NULL)
-    } else if(is.null(YVar) && !is.null(XVar) && !is.numeric(dt[[eval(XVar)]])) {
-      if(Debug) print('Histogram: here 4')
-      return(NULL)
-    }
-
-    # Cap number of records----
-    if(dt[,.N] > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
-
-    # Create base plot object
-    if(Debug) print('Create Plot with only data')
-    if(!is.null(YVar)) {
-      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(y = get(YVar)))
-    } else if(!is.null(XVar)) {
-      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar)))
-    } else {
-      return(NULL)
-    }
-
-    # Histogram
-    if(Debug) print('Create Histogram')
-    p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
-
-    # Add Horizontal Line for Mean Y
-    if(Debug) print('Create Plot Vertical Line')
-    if(!is.null(YVar)) {
-      p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
-    } else {
-      p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(XVar)]], na.rm = TRUE)))
-    }
-
-    # Create Plot labs
-    if(Debug) print('Create Plot labs')
-    p1 <- p1 + ggplot2::labs(title = 'Distribution', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
-
-    # Axis Labels
-    if(!is.null(YVar)) {
-      p1 <- p1 + ggplot2::xlab(label = eval(YVar))
-    } else {
-      p1 <- p1 + ggplot2::xlab(label = eval(XVar))
     }
 
     # Add faceting (returns no faceting in none was requested)
@@ -380,8 +362,8 @@ AutoPlotter <- function(dt = NULL,
   p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
 
   # Limit Y
-  if(Debug) print('Limit Y')
-  if(PlotType == 'Scatter' && !is.null(YMin) && !is.null(YMax)) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
+  if(Debug) print('Limit Y'); print(PlotType)
+  if(PlotType == 'Scatter' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
 
   # Return plot
   return(eval(p1))

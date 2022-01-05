@@ -1,3 +1,107 @@
+#' @noRd
+AvailableAppInsightsPlots <- function(x = ModelOutputList) {
+  if(!is.null(x)) {
+    MONames <- c("Train_EvaluationPlot","Train_EvaluationBoxPlot","Train_ParDepPlots","Train_ParDepBoxPlots","Train_ResidualsHistogram","Train_ScatterPlot","Train_CopulaPlot","Train_VariableImportance","Validation_VariableImportance","Test_EvaluationPlot","Test_EvaluationBoxPlot", "Test_ParDepPlots","Test_ParDepBoxPlots","Test_ResidualsHistogram","Test_ScatterPlot","Test_CopulaPlot","Test_VariableImportance")
+  } else {
+    MONames <- NULL
+  }
+  StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','Histogram')
+  return(c(StandardPlots, MONames))
+}
+
+#' @noRd
+FL_Default <- function(data, x=input[['FilterVariable_1_1']]) {
+  if(x != 'None') {
+    z <- class(data[[eval(x)]])
+  } else {
+    z <- 'Adrian'
+  }
+  if(any(z %in% c('factor', 'character'))) return('%chin%') else return('>=')
+}
+
+#' @noRd
+LevelValues <- function(x) {
+  if(missing(x)) {
+    print('LevelValues x is missing')
+    return(NULL)
+  } else if(!exists('x')) {
+    print('LevelValues x does not exist')
+    return(NULL)
+  } else if(length(x) == 0) {
+    print('LevelValues x has length 0')
+    return(NULL)
+  } else if(!'None' %in% x && length(x) >= 1L) {
+    return(x)
+  } else if('None' %in% x && length(x) >= 1L) {
+    return(x[!x %in% 'None'])
+  } else {
+    return(NULL)
+  }
+}
+
+#' @noRd
+PDPVar <- function(ModelOutputList) {
+  if(!is.null(ModelOutputList)) {
+    x <- names(ModelOutputList$PlotList$Test_ParDepPlots)
+    y <- x[1L]
+  } else {
+    x <- NULL
+    y <- NULL
+  }
+  return(list(Names = x, Default = y))
+}
+
+#' @noRd
+YTicks <- function(data, yvar = 'None') {
+  if(yvar != 'None') {
+    Uniques <- tryCatch({data[, unique(get(yvar))]}, error = function(x) NULL)
+    if(!is.null(Uniques) && all(Uniques != 'Default')) {
+      if(any(class(data[[eval(yvar)]]) %in% c('numeric','integer')) && Uniques > 10L) {
+        x <- c('Default', 'percentiles', '5th-tiles', 'Deciles', 'Quantiles', 'Quartiles', as.character(data[, quantile(round(get(yvar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]))
+      } else {
+        x <- c('Default', Uniques)
+      }
+    } else {
+      x <- 'Default'
+    }
+  } else {
+    x <- 'Default'
+  }
+  return(x)
+}
+
+#' @noRd
+XTicks <- function(data, xvar='None',datevar='None') {
+  if(xvar != 'None') {
+    Uniques <- tryCatch({data[, unique(get(xvar))]}, error = function(x) NULL)
+    x <- class(data[[eval(xvar)]])[1L]
+    if(x %chin% c('numeric','integer') && length(Uniques) > 10L) {
+      choices <- c('Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles', as.character(data[, quantile(round(get(xvar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]))
+    } else if(x %chin% c('Date')) {
+      choices <- c('Default', '1 year', '1 day', '1 week', '1 month', '3 day', '2 week', '3 month', '6 month', '2 year', '5 year', '10 year')
+    } else if(x %like% c('POSIX')) {
+      choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
+    } else if(x %like% c('character','numeric','integer')) {
+      choices <- c('Default', Uniques)
+    } else {
+      choices <- c('Default', Uniques)
+    }
+  } else if(datevar != 'None') {
+    Uniques <- tryCatch({data[, unique(get(datevar))]}, error = function(x) NULL)
+    x <- class(data[[eval(datevar)]])[1L]
+    if(x %chin% c('Date')) {
+      choices <- c('Default', '1 year', '1 day', '1 week', '1 month', '3 day', '2 week', '3 month', '6 month', '2 year', '5 year', '10 year')
+    } else if(x %like% c('POSIX')) {
+      choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
+    } else {
+      choices <- c('Default', Uniques)
+    }
+  } else {
+    choices <- 'Default'
+  }
+  return(choices)
+}
+
 #' @importFrom rstudioapi isAvailable getSourceEditorContext
 GetData <- function(data = NULL, name = NULL) {
   if(!is.null(data)) {
@@ -119,7 +223,10 @@ rCodeContainer <- function(...) {
 }
 
 #' @noRd
-CEP <- function(x) if(is.null(x)) "NULL" else if(identical(x, character(0))) "NULL" else if(identical(x, numeric(0))) "NULL" else if(identical(x, integer(0))) "NULL" else if(identical(x, logical(0))) "NULL" else if(is.numeric(x)) x else if(length(x) > 1) paste0("c(", noquote(paste0("'", x, "'", collapse = ',')), ")") else paste0("'", x, "'")
+CEP <- function(x) if(missing(x)) 'NULL' else if(!exists('x')) 'NULL' else if(is.null(x)) "NULL" else if(identical(x, character(0))) "NULL" else if(identical(x, numeric(0))) "NULL" else if(identical(x, integer(0))) "NULL" else if(identical(x, logical(0))) "NULL" else if(x == "") "NULL" else if(is.na(x)) "NULL" else if(x == 'None') "NULL" else if(is.numeric(x)) x else if(length(x) > 1) paste0("c(", noquote(paste0("'", x, "'", collapse = ',')), ")") else paste0("'", x, "'")
+
+#' @noRd
+CEPP <- function(x, Default = NULL, Type = 'character') if(missing(x)) Default else if(!exists('x')) Default else if(is.null(x)) Default else if(identical(x, character(0))) Default else if(identical(x, numeric(0))) Default else if(identical(x, integer(0))) Default else if(identical(x, logical(0))) Default else if(is.na(x)) NULL else if(x == "") Default else if(Type == 'numeric') RemixAutoML:::NumNull(x) else if(Type == 'character') RemixAutoML:::CharNull(x)
 
 #' @title UniqueLevels
 #'
@@ -129,13 +236,11 @@ CEP <- function(x) if(is.null(x)) "NULL" else if(identical(x, character(0))) "NU
 #'
 #' @export
 UniqueLevels <- function(input, data, n, GroupVars=NULL) {
-  if(is.null(GroupVars[[n]]) || is.na(GroupVars[[n]])) {
-    x <- NULL
+  if(missing(n) || missing(GroupVars) && is.null(GroupVars[[n]]) || is.na(GroupVars[[n]])) {
+    return(NULL)
   } else {
-    x <- tryCatch({
-      c(sort(unique(data[[eval(GroupVars[[n]])]])))}, error = function(x)  NULL)
+    return(tryCatch({c(sort(as.character(unique(data[[eval(GroupVars[[n]])]]))))}, error = function(x)  NULL))
   }
-  x
 }
 
 #' @title FilterValues
@@ -166,10 +271,15 @@ FilterValues <- function(data, VarName = input[['FilterVariable_1']], type = 1) 
 #'
 #' @export
 FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
-  if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character') || FilterLogic %in% c('%in%', '%like')) {
+
+  if(missing(data1)) {
+    return(NULL)
+  }
+
+  if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character') || FilterLogic %in% c('%in%', '%chin%', '%like')) {
     if(Debug) print('FilterLogicData else if')
     if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character'))
-    if(FilterLogic == '%in%') {
+    if(FilterLogic %in% c('%in%','%chin%')) {
       data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
     } else if(FilterLogic == '%like%') {
       data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
@@ -210,6 +320,10 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
 #'
 #' @export
 KeyVarsInit <- function(data, VarName = NULL, type = 1) {
+  if(missing(data)) {
+    return(list(MinVal = NULL, MaxVal = NULL, ChoiceInput = NULL))
+  }
+  VarName <- RemixAutoML:::CEPP(VarName, Default = NULL)
   if(!is.null(VarName) && tolower(VarName) != 'none' && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
     minn <- tryCatch({floor(data[, min(get(VarName), na.rm = TRUE)])}, error = function(x) NULL)
     maxx <- tryCatch({ceiling(data[, max(get(VarName), na.rm = TRUE)])}, error = function(x) NULL)
@@ -274,11 +388,47 @@ GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
 #' @param x Value
 #'
 #' @export
-CharNull <- function(x) {
-  if(exists('x') && length(x) != 0) {
-    return(as.character(x))
-  } else {
+CharNull <- function(x, Char = FALSE) {
+
+  if(missing(x)) {
+    print('CharNull: missing x')
     return(NULL)
+  }
+
+  if(!exists('x')) {
+    print('CharNull: x does not exist')
+    return(NULL)
+  }
+
+  if(length(x) == 0) {
+    print('CharNull: length(x) == 0')
+  }
+
+  if(all(is.na(suppressWarnings(as.character(x))))) {
+
+    return(NULL)
+
+  } else if(any(is.na(suppressWarnings(as.character(x)))) && length(x) > 1) {
+
+    x <- x[!is.na(x)]
+    x <- suppressWarnings(as.character(x))
+    return(x)
+
+  } else if(any(is.na(suppressWarnings(as.character(x)))) && length(x) == 1) {
+
+    return(NULL)
+
+  } else {
+
+    x <- suppressWarnings(as.character(x))
+    return(x)
+
+  }
+
+  if(!Char) {
+    return(NULL)
+  } else {
+    return("NULL")
   }
 }
 
@@ -287,11 +437,47 @@ CharNull <- function(x) {
 #' @param x value
 #'
 #' @export
-NumNull <- function(x) {
-  if(exists('x') && length(x) != 0) {
-    return(as.numeric(x))
-  } else {
+NumNull <- function(x, Char = FALSE) {
+
+  if(missing(x)) {
+    print('NumNull: missing x')
     return(NULL)
+  }
+
+  if(!exists('x')) {
+    print('NumNull: x does not exist')
+    return(NULL)
+  }
+
+  if(length(x) == 0) {
+    print('NumNull: length(x) == 0')
+  }
+
+  if(all(is.na(suppressWarnings(as.numeric(x))))) {
+
+    return(NULL)
+
+  } else if(any(is.na(suppressWarnings(as.numeric(x)))) && length(x) > 1) {
+
+    x <- x[!is.na(x)]
+    x <- suppressWarnings(as.numeric(x))
+    return(x)
+
+  } else if(any(is.na(suppressWarnings(as.numeric(x)))) && length(x) == 1) {
+
+    return(NULL)
+
+  } else {
+
+    x <- suppressWarnings(as.numeric(x))
+    return(x)
+
+  }
+
+  if(!Char) {
+    return(NULL)
+  } else {
+    return("NULL")
   }
 }
 
@@ -300,11 +486,47 @@ NumNull <- function(x) {
 #' @param x value
 #'
 #' @export
-IntNull <- function(x) {
-  if(exists('x') && length(x) != 0) {
-    return(as.integer(x))
-  } else {
+IntNull <- function(x, Char = FALSE) {
+
+  if(missing(x)) {
+    print('IntNull: missing x')
     return(NULL)
+  }
+
+  if(!exists('x')) {
+    print('IntNull: x does not exist')
+    return(NULL)
+  }
+
+  if(length(x) == 0) {
+    print('IntNull: length(x) == 0')
+  }
+
+  if(all(is.na(suppressWarnings(as.integer(x))))) {
+
+    return(NULL)
+
+  } else if(any(is.na(suppressWarnings(as.integer(x)))) && length(x) > 1) {
+
+    x <- x[!is.na(x)]
+    x <- suppressWarnings(as.integer(x))
+    return(x)
+
+  } else if(any(is.na(suppressWarnings(as.integer(x)))) && length(x) == 1) {
+
+    return(NULL)
+
+  } else {
+
+    x <- suppressWarnings(as.integer(x))
+    return(x)
+
+  }
+
+  if(!Char) {
+    return(NULL)
+  } else {
+    return("NULL")
   }
 }
 
@@ -375,21 +597,30 @@ observeEventLoad <- function(input, InputVal = NULL, ObjectName = NULL) {
 #' @param ProjectList Supply the project list if available. NULL otherwise
 #' @param DateUpdateName Supply the name for the ProjectList to store the import time
 #' @param RemoveObjects List of objects to remove
+#' @param Debug FALSE
 #'
 #' @export
-ReactiveLoadCSV <- function(input, InputVal = NULL, ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL) {
-  inFile <- input[[eval(InputVal)]]
-  if(is.null(inFile)) return(NULL)
+ReactiveLoadCSV <- function(Infile = input[[eval(InputVal)]], ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = FALSE) {
+  if(Debug) print('ReactiveLoadCSV 1')
+  if(is.null(Infile)) return(NULL)
+  if(Debug) print('ReactiveLoadCSV 2')
   if(!is.null(ProjectList)) ProjectList[[eval(DateUpdateName)]] <<- Sys.Date()
+  if(Debug) print('ReactiveLoadCSV 3')
   if(!is.null(RemoveObjects)) for(i in seq_along(RemoveObjects)) if(exists(RemoveObjects[i])) rm(RemoveObjects[i])
-  x <- data.table::fread(file = inFile$datapath)
+  if(Debug) print('ReactiveLoadCSV 4')
+  x <- data.table::fread(file = Infile$datapath)
+  if(Debug) print('ReactiveLoadCSV 5')
   g <- RemixAutoML:::ColTypes(x)
+  if(Debug) print('ReactiveLoadCSV 6')
   print(x)
   print(g)
   print(any('IDate' %in% g))
   if(any('IDate' %in% g)) {
+    if(Debug) print('ReactiveLoadCSV 7')
     for(zz in seq_along(x)) {
+      if(Debug) print(paste0('ReactiveLoadCSV ', zz))
       if(class(x[[names(x)[zz]]])[1L] == 'IDate') {
+        if(Debug) print(class(x[[names(x)[zz]]])[1L] == 'IDate')
         print(class(x[[names(x)[zz]]])[1L] == 'IDate')
         x[, eval(names(x)[zz]) := as.Date(get(names(x)[zz]))]
       }
@@ -932,7 +1163,7 @@ PickerInput_GetLevels <- function(input,
 #' @family Shiny
 #'
 #' @param input input object within shiny context
-#' @param data 'SourceData' or whatever the name of your data is
+#' @param DataExist Logical
 #' @param NumGroupVar Which group var to select
 #' @param InputID Feeds ProjectList and inputId. Argument saved in ProjectList
 #' @param InputID2 Values from input2. In first version the input is referenced inside function
@@ -953,33 +1184,49 @@ PickerInput_GetLevels <- function(input,
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
 #' @export
 PickerInput_GetLevels2 <- function(input,
-                                  data = 'SourceData',
-                                  NumGroupVar = 3,
-                                  InputID = "TS_CARMA_HolidayMovingAverages",
-                                  InputID2 = "timeSeriesGroupVars",
-                                  Choices = as.character(0:50),
-                                  SelectedDefault = as.character(c(1,2)),
-                                  Size = 10,
-                                  SelectedText = "count > 1",
-                                  Multiple = TRUE,
-                                  ActionBox = TRUE) {
+                                   DataExist = TRUE,
+                                   NumGroupVar = 3,
+                                   InputID = "TS_CARMA_HolidayMovingAverages",
+                                   InputID2 = "timeSeriesGroupVars",
+                                   Choices = as.character(0:50),
+                                   SelectedDefault = as.character(c(1,2)),
+                                   Size = 10,
+                                   SelectedText = "count > 1",
+                                   Multiple = TRUE,
+                                   ActionBox = TRUE) {
   return(
-    if(exists(eval(data))) {
+
+    if(DataExist) {
+
       if(!is.null(InputID2)) {
+
         if(length(InputID2) >= NumGroupVar && !'None' %in% InputID2) {
-          shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', paste0(InputID2[[NumGroupVar]]," Levels")),
-                                    choices = Choices, selected = SelectedDefault,
-                                    options = list(`actions-box` = TRUE, size = 10, `selected-text-format` = "count > 1"), multiple = TRUE, width = "100%")
+
+          shinyWidgets::pickerInput(
+            inputId = InputID, label = tags$span(style='color: blue;', paste0(InputID2[[NumGroupVar]]," Levels")),
+            choices = Choices, selected = SelectedDefault,
+            options = list(`actions-box` = TRUE, size = 10, `selected-text-format` = "count > 1"), multiple = TRUE, width = "100%")
+
         } else {
+
           shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+
         }
+
       } else {
+
         shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+
       }
+
     } else {
+
       shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+
     }
+
   )
+
 }
 
 #' @title PreparePlotData

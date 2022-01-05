@@ -22,6 +22,8 @@
 #' @param CreatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param UpdatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
+#' @param H3Color Header colors 'darkblue'
+#' @param H5Color Text below headers but not the input cells; 'blue2'
 #' @param AppTextColor 'white'
 #' @param Browser FALSE
 #' @param Docker FALSE
@@ -56,6 +58,8 @@
 #' #   CreatePlotButtonColor = 'default',
 #' #   UpdatePlotButtonColor = 'default',
 #' #   ResetPlotButtonColor = 'default',
+#' #   H3Color = 'darkblue',
+#' #   H5Color = 'blue2',
 #' #   AppTextColor = 'white',
 #' #   Docker = FALSE,
 #' #   Browser = FALSE,
@@ -80,6 +84,8 @@
 #' # CreatePlotButtonColor = 'default'
 #' # UpdatePlotButtonColor = 'default'
 #' # ResetPlotButtonColor = 'default'
+#' # H3Color = 'darkblue'
+#' # H5Color = 'blue2'
 #' # AppTextColor = 'white'
 #' # Docker = FALSE
 #' # Browser = FALSE
@@ -108,6 +114,8 @@ AppsPlotting <- function(data,
                          CreatePlotButtonColor = 'primary',
                          UpdatePlotButtonColor = 'primary',
                          ResetPlotButtonColor = 'primary',
+                         H3Color = 'darkblue',
+                         H5Color = 'blue',
                          AppTextColor = 'white',
                          Browser = FALSE,
                          Docker = FALSE,
@@ -136,13 +144,15 @@ AppsPlotting <- function(data,
     CreatePlotButtonColor = 'default',
     UpdatePlotButtonColor = 'default',
     ResetPlotButtonColor = 'default',
+    H3Color = H3Color,
+    H5Color = H5Color,
     AppTextColor = AppTextColor,
     UserName_Password_DT = UserName_Password_DT,
     Debug = Debug)
 
   # Run shiny app
   if(!Docker) {
-    shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'))
+    shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights2', package = 'RemixAutoML'))
   } else {
     shiny::runApp(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'), display.mode = "normal", launch.browser = TRUE)
   }
