@@ -576,7 +576,7 @@ ui <- shinydashboard::dashboardPage(
 
             # Plot Colors (col 3)
             shiny::column(
-              width = 1L,
+              width = 5L,
               tags$h4('Colors'),
               shinyWidgets::dropdown(
                 right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", icon = icon("gear"), width = LogoWidth,
@@ -600,7 +600,7 @@ ui <- shinydashboard::dashboardPage(
               width = 1L,
               tags$h4('Filters P1'),
               shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "success", icon = icon("gear"), width = LogoWidth,
+                right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "success", icon = icon("gear"), width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filter Variables, Logic, and Values')),
                 tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Filter Information for Plot 1')),
                 RemixAutoML::BlankRow(AppWidth),
@@ -634,7 +634,7 @@ ui <- shinydashboard::dashboardPage(
               width = 1L,
               tags$h4('Filters P2'),
               shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "success", icon = icon("gear"), width = LogoWidth,
+                right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "success", icon = icon("gear"), width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filter Variables, Logic, and Values')),
                 tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Filter Information for Plot 2')),
                 RemixAutoML::BlankRow(AppWidth),
@@ -3986,22 +3986,23 @@ server <- function(input, output, session) {
 
     PlotCollectionList <- list()
 
-    if(Debug) {print(names(YVarList));print(names(XVarList))}
+    if(Debug) {print(tryCatch({names(YVarList)}, error = function(x) NULL));print(tryCatch({names(XVarList)}, error = function(x) NULL))}
 
     YVarListCount <- 0
-    for(i in names(YVarList)[!names(YVarList) %in% 'None']) {
-      if(Debug) print(YVarList[[i]])
-      if(YVarList[[i]] != 'None') YVarListCount <- YVarListCount + 1L
+    vals <- tryCatch({names(YVarList)[!names(YVarList) %in% 'None']}, error = function(x) NULL)
+    if(!is.null(vals)) {
+      for(i in vals) {
+        if(Debug) print(YVarList[[i]])
+        if(YVarList[[i]] != 'None') YVarListCount <- YVarListCount + 1L
+      }
     }
 
     XVarListCount <- 0
-    for(i in names(XVarList)[!names(XVarList) %in% 'None']) {
-      if(XVarList[[i]] != 'None') XVarListCount <- XVarListCount + 1L
-    }
-
-    if(Debug) {
-      for(i in 1:10) print('Here 100');print(YVarList);print(YVarList[!names(YVarList) %in% 'None']);print(XVarList);print(XVarList[!names(XVarList) %in% 'None']);print(length(YVarList))
-      print(length(XVarList));print(max(length(YVarList)));print(max(length(XVarList)));print(seq_len(max(length(YVarList), length(XVarList))))
+    vals <- tryCatch({names(XVarList)[!names(XVarList) %in% 'None']}, error = function(x) NULL)
+    if(!is.null(vals)) {
+      for(i in names(XVarList)[!names(XVarList) %in% 'None']) {
+        if(XVarList[[i]] != 'None') XVarListCount <- XVarListCount + 1L
+      }
     }
 
     # PlotType Determination
@@ -4069,10 +4070,10 @@ server <- function(input, output, session) {
       x4 <- PlotType
       if(Debug) {print(x1); print(x1a); print(x2); print(x3); print(x4)}
       if(any((is.null(x1) && is.null(x1a)), is.null(x2), is.null(x4))) {
-        shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to expand each dropdown menu at least once to initialize variables before creating plots. I am too lazy to predefine args, currently', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-      } else if(PlotType %chin% 'Line' && any(class(data[[eval(DateVarList[[run]])]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
+        shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to specify additional variables to generate additional plots', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      } else if(PlotType %chin% 'Line' && any(class(data[[eval(tryCatch({DateVarList[[run]]}, error = function(x) 'None'))]]) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a Date, IDate, or Posix type", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-      } else if(PlotType %chin% c('Scatter','Copula') && !any(class(data[[eval(XVarList[[run]])]]) %chin% c('numeric','integer'))) {
+      } else if(PlotType %chin% c('Scatter','Copula') && !any(class(data[[eval(tryCatch({XVarList[[run]]}, error = function(x) 'None'))]]) %chin% c('numeric','integer'))) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a numeric or integer variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else {
 
@@ -4273,7 +4274,7 @@ server <- function(input, output, session) {
           if(Debug) print('Here 18 b')
 
           if(Debug) print('remove NA')
-          if(YVarList[[run]] != 'None') {
+          if(tryCatch({YVarList[[run]]}, error = function(x) 'None') != 'None') {
             data1 <- data[!is.na(get(YVarList[[run]]))]
             if(Debug) {print('data1 <- data[!is.na(get(YVarList[[run]]))]');print(data1[])}
             CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- data[!is.na(", YVarList[[run]], ")]")
@@ -4546,7 +4547,7 @@ server <- function(input, output, session) {
             GamFit = GamFitScatterList[[run]],
             Buckets = as.numeric(Percentile_BucketsList[[run]]),
             Rebuild = Rebuild, Debug = Debug)
-          CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("RemixAutoML:::AppModelInsights(dt=data1, PlotType=", RemixAutoML:::CEP(PlotType), ", ModelOutputList=ModelOutputList, TargetVar=", RemixAutoML:::CEP(yvar), ", PredictVar=", if(ScoreVarList[[run]] != 'None') RemixAutoML:::CEP(ScoreVarList[[run]]) else NULL, ", PDPVar=", if(!is.null(PDP_VariableList[[run]])) RemixAutoML:::CEP(PDP_VariableList[[run]]) else NULL, ", DateVar=", if(DateVarList[[run]] != 'None') RemixAutoML:::CEP(DateVarList[[run]]) else NULL, ", GamFit=", RemixAutoML:::CEP(GamFitScatterList[[run]]), ", Buckets=", RemixAutoML:::CEP(as.numeric(Percentile_BucketsList[[run]])), ",Rebuild=", RemixAutoML:::CEP(Rebuild), ")")
+          CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("RemixAutoML:::AppModelInsights(dt=data1, PlotType=", RemixAutoML:::CEP(PlotType), ", ModelOutputList=ModelOutputList, TargetVar=", RemixAutoML:::CEP(yvar), ", PredictVar=", if(ScoreVarList[[run]] != 'None') RemixAutoML:::CEP(ScoreVarList[[run]]) else NULL, ", PDPVar=", if(!is.null(PDP_VariableList[[run]])) RemixAutoML:::CEP(PDP_VariableList[[run]]) else NULL, ", DateVar=", if(tryCatch({DateVarList[[run]]}, error = function(x) 'None') != 'None') RemixAutoML:::CEP(tryCatch({DateVarList[[run]]}, error = function(x) 'None')) else NULL, ", GamFit=", RemixAutoML:::CEP(GamFitScatterList[[run]]), ", Buckets=", RemixAutoML:::CEP(as.numeric(Percentile_BucketsList[[run]])), ",Rebuild=", RemixAutoML:::CEP(Rebuild), ")")
           if(!is.null(PlotCollectionList[[paste0('p', run)]])) {
             PlotCollectionList[[paste0('p', run)]] <- PlotCollectionList[[paste0('p', run)]] + RemixAutoML::ChartTheme(
               Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor,
@@ -4640,7 +4641,7 @@ server <- function(input, output, session) {
         })
       }
     } else {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Plot could not build', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Plot could not build. Check for missing variables, such as Date Variables.', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
   })
 
