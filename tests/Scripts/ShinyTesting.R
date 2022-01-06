@@ -84,6 +84,8 @@ data.table::fwrite(data, file = 'C:/Users/Bizon/Documents/GitHub/AppTesting.csv'
 #data <- data.table::fread(system.file('tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv', package = "RemixAutoML"))
 #data[, Date := as.Date(Date)]
 
+RemixAutoML::AppsPlotting()
+
 # Run App
 RemixAutoML::AppsPlotting(
   data = NULL, #data, #data.table::fread(system.file('tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv', package = "RemixAutoML")),

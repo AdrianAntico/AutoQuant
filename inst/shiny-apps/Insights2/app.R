@@ -3,11 +3,8 @@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 library(data.table)
 data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
-options(shiny.maxRequestSize = 10000000*1024^2)
+options(shiny.maxRequestSize = 100000000*1024^2)
 options(scipen = 999)
-
-
-
 
 # ----
 
