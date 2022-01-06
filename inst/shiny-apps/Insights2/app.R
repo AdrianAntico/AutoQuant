@@ -18,15 +18,15 @@ options(scipen = 999)
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
 # data related
-data <- shiny::getShinyOption('data')
-BlobStorageURL <- shiny::getShinyOption('BlobStorageURL')
-IFrameLocation <- shiny::getShinyOption('IFrameLocation')
-XVariable <- shiny::getShinyOption('XVariable')
-YVariable <- shiny::getShinyOption('YVariable')
-DateName <- shiny::getShinyOption('DateName')
-GroupVariables <- shiny::getShinyOption('GroupVariables')
-FilterVariable <- shiny::getShinyOption('FilterVariable')
-ModelOutputList <- shiny::getShinyOption('ModelOutputList')
+data <- shiny::getShinyOption(name = 'data', default = NULL)
+BlobStorageURL <- shiny::getShinyOption('BlobStorageURL', default = NULL)
+IFrameLocation <- shiny::getShinyOption('IFrameLocation', default = NULL)
+XVariable <- shiny::getShinyOption('XVariable', default = NULL)
+YVariable <- shiny::getShinyOption('YVariable', default = NULL)
+DateName <- shiny::getShinyOption('DateName', default = NULL)
+GroupVariables <- shiny::getShinyOption('GroupVariables', default = NULL)
+FilterVariable <- shiny::getShinyOption('FilterVariable', default = NULL)
+ModelOutputList <- shiny::getShinyOption('ModelOutputList', default = NULL)
 
 # App and Plot related
 HeaderColor <- shiny::getShinyOption('HeaderColor')
@@ -46,7 +46,7 @@ AppTextColor <- shiny::getShinyOption('AppTextColor')
 Debug <- shiny::getShinyOption('Debug')
 
 # Usernames and Passwords
-UserName_Password_DT <- shiny::getShinyOption('UserName_Password_DT')
+UserName_Password_DT <- shiny::getShinyOption(name = 'UserName_Password_DT', default = NULL)
 if(!is.null(UserName_Password_DT)) {
   if('UserName' %in% names(UserName_Password_DT) && 'Password' %in% names(UserName_Password_DT)) {
     Credentials <- UserName_Password_DT
