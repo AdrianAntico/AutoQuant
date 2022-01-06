@@ -4,7 +4,7 @@
 \alias{FilterValues}
 \title{FilterValues}
 \usage{
-FilterValues(data, VarName = input[["FilterVariable_1"]], type = 1)
+FilterValues(data, VarName = NULL, type = 1)
 }
 \arguments{
 \item{data}{data.table}

@@ -11,6 +11,22 @@ AvailableAppInsightsPlots <- function(x = ModelOutputList) {
 
 #' @noRd
 FL_Default <- function(data, x=input[['FilterVariable_1_1']]) {
+  if(missing(data)) {
+    print('FL_Default: data is missing')
+    return('>=')
+  }
+  if(is.null(data)) {
+    print('FL_Default: data is NULL')
+    return('>=')
+  }
+  if(missing(x)) {
+    print('FL_Default: x is missing')
+    return('>=')
+  }
+  if(length(x) == 0) {
+    print('FL_Default: x is NULL')
+    return('>=')
+  }
   if(x != 'None') {
     z <- class(data[[eval(x)]])
   } else {
@@ -75,13 +91,13 @@ XTicks <- function(data, xvar='None',datevar='None') {
   if(xvar != 'None') {
     Uniques <- tryCatch({data[, unique(get(xvar))]}, error = function(x) NULL)
     x <- class(data[[eval(xvar)]])[1L]
-    if(x %chin% c('numeric','integer') && length(Uniques) > 10L) {
+    if(any(x %chin% c('numeric','integer')) && length(Uniques) > 10L) {
       choices <- c('Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles', as.character(data[, quantile(round(get(xvar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]))
-    } else if(x %chin% c('Date')) {
+    } else if(any(x %chin% c('Date'))) {
       choices <- c('Default', '1 year', '1 day', '1 week', '1 month', '3 day', '2 week', '3 month', '6 month', '2 year', '5 year', '10 year')
-    } else if(x %like% c('POSIX')) {
+    } else if(any(x %like% c('POSIX'))) {
       choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
-    } else if(x %like% c('character','numeric','integer')) {
+    } else if(any(x %like% c('character','numeric','integer'))) {
       choices <- c('Default', Uniques)
     } else {
       choices <- c('Default', Uniques)
@@ -89,9 +105,9 @@ XTicks <- function(data, xvar='None',datevar='None') {
   } else if(datevar != 'None') {
     Uniques <- tryCatch({data[, unique(get(datevar))]}, error = function(x) NULL)
     x <- class(data[[eval(datevar)]])[1L]
-    if(x %chin% c('Date')) {
+    if(any(x %chin% c('Date'))) {
       choices <- c('Default', '1 year', '1 day', '1 week', '1 month', '3 day', '2 week', '3 month', '6 month', '2 year', '5 year', '10 year')
-    } else if(x %like% c('POSIX')) {
+    } else if(any(x %like% c('POSIX'))) {
       choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
     } else {
       choices <- c('Default', Uniques)
@@ -250,11 +266,33 @@ UniqueLevels <- function(input, data, n, GroupVars=NULL) {
 #' @param type 1 for min, 2 for max
 #'
 #' @export
-FilterValues <- function(data, VarName = input[['FilterVariable_1']], type = 1) {
-  if(tolower(class(data[[eval(VarName)]]) %chin% c('numeric', 'integer'))) {
-    x <- unique(as.numeric(sort(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])))
-  } else if(tolower(class(data[[eval(VarName)]])) %chin% c('factor', 'character')) {
-    x <- sort(data[, unique(get(VarName))])
+FilterValues <- function(data, VarName = NULL, type = 1) {
+
+  if(missing(data)) {
+    print('FilterValues(): data was missing')
+    x <- NULL
+  } else if(is.null(data)) {
+    print('FilterValues(): data was NULL')
+    x <- NULL
+  } else if(length(VarName) == 0) {
+    print('FilterValues(): VarName was length 0')
+    x <- NULL
+  } else if(tolower(VarName) != 'none') {
+    if(any(tolower(class(data[[eval(VarName)]])) %chin% c('numeric', 'integer'))) {
+      if(type == 1) {
+        x <- sort(decreasing = FALSE, unique(as.numeric(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])))
+      } else {
+        x <- sort(decreasing = TRUE, unique(as.numeric(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])))
+      }
+    } else if(any(tolower(class(data[[eval(VarName)]])) %chin% c('factor','character'))) {
+      if(type == 1) {
+        x <- sort(decreasing = FALSE, data[, unique(get(VarName))])
+      } else {
+        x <- sort(decreasing = TRUE, data[, unique(get(VarName))])
+      }
+    } else {
+      x <- NULL
+    }
   } else {
     x <- NULL
   }
@@ -276,15 +314,15 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
     return(NULL)
   }
 
-  if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character') || FilterLogic %in% c('%in%', '%chin%', '%like')) {
+  if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')) || FilterLogic %in% c('%in%', '%chin%', '%like')) {
     if(Debug) print('FilterLogicData else if')
-    if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character'))
+    if(Debug) print(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')))
     if(FilterLogic %in% c('%in%','%chin%')) {
       data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
     } else if(FilterLogic == '%like%') {
       data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
     }
-  } else if(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix')) {
+  } else if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))) {
     if(Debug) print('FilterLogicData else if')
     if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))
     if(FilterLogic == '>') {
@@ -321,22 +359,27 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
 #' @export
 KeyVarsInit <- function(data, VarName = NULL, type = 1) {
   if(missing(data)) {
+    print('KeyVarsInit: data is missing')
     return(list(MinVal = NULL, MaxVal = NULL, ChoiceInput = NULL))
   }
   VarName <- RemixAutoML:::CEPP(VarName, Default = NULL)
-  if(!is.null(VarName) && tolower(VarName) != 'none' && any(c('numeric','integer') %chin% class(data[[eval(VarName)]]))) {
+  if(length(VarName) == 0) {
+    print('KeyVarsInit: VarName is length 0')
+    return(list(MinVal = NULL, MaxVal = NULL, ChoiceInput = NULL))
+  }
+  if(tolower(VarName) != 'none' && any(class(data[[eval(VarName)]]) %chin% c('numeric','integer','double','float'))) {
     minn <- tryCatch({floor(data[, min(get(VarName), na.rm = TRUE)])}, error = function(x) NULL)
     maxx <- tryCatch({ceiling(data[, max(get(VarName), na.rm = TRUE)])}, error = function(x) NULL)
-    UData <- tryCatch({data[, unique(get(VarName))]}, error = function(x) NULL)
+    UData <- tryCatch({sort(data[, unique(get(VarName))])}, error = function(x) NULL)
     if(!is.null(UData) && length(UData) <= 10L) {
       choices <- UData
     } else {
-      choices <- tryCatch({unique(as.character(round(as.numeric(sort(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])), 5L)))}, error = function(x) {
+      choices <- tryCatch({unique(as.character(sort(round(as.numeric(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])), 5L)))}, error = function(x) {
         tryCatch({UData}, error = NULL)
       })
     }
-  } else if(!is.null(VarName) && tolower(VarName) != 'none' && any(c('Date','IDate','POSIXct','POSIXt','character','factor') %chin% class(data[[(eval(VarName))]][[1L]]))) {
-    choices <- tryCatch({unique(data[[eval(VarName)]])}, error = function(x) NULL)
+  } else if(!is.null(VarName) && tolower(VarName) != 'none' && any(tolower(class(data[[(eval(VarName))]])) %chin% c('date','idate','date','posixct','posixt','character','factor'))) {
+    choices <- tryCatch({sort(unique(data[[eval(VarName)]]))}, error = function(x) NULL)
     maxx <- tryCatch({data[, max(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
     minn <- tryCatch({data[, min(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
   } else {
@@ -355,8 +398,17 @@ KeyVarsInit <- function(data, VarName = NULL, type = 1) {
 #'
 #' @export
 GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
-  if((!is.null(VarName) || tolower(VarName) != 'none') && !is.null(data)) {
-    if(is.numeric(data[[eval(VarName)]])) {
+  if(missing(data)) {
+    print('GetFilterValueLabel(): data was missing')
+    x <- 'N/A'
+  } else if(is.null(data)) {
+    print('GetFilterValueLabel(): data was NULL')
+    x <- 'N/A'
+  } else if(length(VarName) == 0) {
+    print('GetFilterValueLabel(): VarName was length 0')
+    x <- 'N/A'
+  } else if(tolower(VarName) != 'none') {
+    if(any(tolower(class(data[[eval(VarName)]])) %chin% c('numeric', 'integer', 'float', 'double', 'date', 'idate', 'posixct'))) {
       if(type == 1) x <- 'Min Value' else x <- 'Max Value'
     }  else {
       x <- 'Select Levels'
@@ -375,8 +427,21 @@ GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
 #'
 #' @export
 GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
-  if((!is.null(VarName) || tolower(VarName) != 'none') && !is.null(data)) {
-    if(!is.numeric(data[[eval(VarName)]])) x <- TRUE else x <- FALSE
+  if(missing(data)) {
+    print('GetFilterValueMultiple(): data was missing')
+    x <- FALSE
+  } else if(is.null(data)) {
+    print('GetFilterValueMultiple(): data was NULL')
+    x <- FALSE
+  } else if(length(VarName) == 0) {
+    print('GetFilterValueMultiple(): VarName was length 0')
+    x <- FALSE
+  } else if(tolower(VarName) != 'none') {
+    if(any(tolower(class(data[[eval(VarName)]])) %in% c('numeric', 'integer', 'float', 'double', 'date', 'idate', 'posixct'))) {
+      x <- TRUE
+    } else {
+      x <- FALSE
+    }
   } else {
     x <- FALSE
   }
@@ -619,9 +684,8 @@ ReactiveLoadCSV <- function(Infile = input[[eval(InputVal)]], ProjectList = NULL
     if(Debug) print('ReactiveLoadCSV 7')
     for(zz in seq_along(x)) {
       if(Debug) print(paste0('ReactiveLoadCSV ', zz))
-      if(class(x[[names(x)[zz]]])[1L] == 'IDate') {
-        if(Debug) print(class(x[[names(x)[zz]]])[1L] == 'IDate')
-        print(class(x[[names(x)[zz]]])[1L] == 'IDate')
+      if(any(class(x[[names(x)[zz]]]) == 'IDate')) {
+        if(Debug) print(class(x[[names(x)[zz]]]))
         x[, eval(names(x)[zz]) := as.Date(get(names(x)[zz]))]
       }
     }
@@ -655,21 +719,21 @@ StoreArgs <- function(input,
                       Type,
                       Default) {
   if(Type == "character") {
-    tryCatch({if(class(input[[VarName]]) != "NULL") {
+    tryCatch({if(any(class(input[[VarName]]) != "NULL")) {
       ProjectList[[VarName]] <<- as.character(input[[VarName]])
     } else {
       ProjectList[[VarName]] <<- Default
     }}, error = function(x) Default)
 
   } else if(Type == "numeric") {
-    tryCatch({if(class(input[[VarName]]) != "NULL") {
+    tryCatch({if(any(class(input[[VarName]]) != "NULL")) {
       ProjectList[[VarName]] <<- as.numeric(input[[VarName]])
     } else {
       ProjectList[[VarName]] <<- Default
     }}, error = function(x) Default)
 
   } else if(Type == "logical") {
-    tryCatch({if(class(input[[VarName]]) != "NULL") {
+    tryCatch({if(any(class(input[[VarName]]) != "NULL")) {
       ProjectList[[VarName]] <<- as.logical(input[[VarName]])
     } else {
       ProjectList[[VarName]] <<- Default
@@ -706,12 +770,12 @@ ReturnParam <- function(input,
   # Type == numeric
   if(Switch) {
     if(Type == "numeric") {
-      if(class(input[[VarName]]) != "NULL") {
+      if(any(class(input[[VarName]]) != "NULL")) {
         return(as.numeric(input[[VarName]]))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(class(input[[VarName]]) != "NULL") {
+        } else if(any(class(input[[VarName]]) != "NULL")) {
           return(as.numeric(input[[VarName]]))
         } else {
           return(Default)
@@ -725,12 +789,12 @@ ReturnParam <- function(input,
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(class(input[[VarName]]) != "NULL") {
+        } else if(any(class(input[[VarName]]) != "NULL")) {
           return(as.numeric(input[[VarName]]))
         } else {
           return(Default)
         }
-      } else if(class(input[[VarName]]) != "NULL") {
+      } else if(any(class(input[[VarName]]) != "NULL")) {
         return(as.numeric(input[[VarName]]))
       } else {
         return(Default)
@@ -741,12 +805,12 @@ ReturnParam <- function(input,
   # Type == logical
   if(Switch) {
     if(Type == "logical") {
-      if(class(input[[VarName]]) != "NULL") {
+      if(any(class(input[[VarName]]) != "NULL")) {
         return(as.logical(input[[VarName]]))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(class(input[[VarName]]) != "NULL") {
+        } else if(any(class(input[[VarName]]) != "NULL")) {
           return(as.logical(input[[VarName]]))
         } else {
           return(Default)
@@ -760,12 +824,12 @@ ReturnParam <- function(input,
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(class(input[[VarName]]) != "NULL") {
+        } else if(any(class(input[[VarName]]) != "NULL")) {
           return(as.logical(input[[VarName]]))
         } else {
           return(Default)
         }
-      } else if(class(input[[VarName]]) != "NULL") {
+      } else if(any(class(input[[VarName]]) != "NULL")) {
         return(as.logical(input[[VarName]]))
       } else {
         return(Default)
@@ -776,12 +840,12 @@ ReturnParam <- function(input,
   # Type == character
   if(Switch) {
     if(Type == "character") {
-      if(class(input[[VarName]]) != "NULL") {
+      if(any(class(input[[VarName]]) != "NULL")) {
         return(as.character(input[[VarName]]))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(class(input[[VarName]]) != "NULL") {
+        } else if(any(class(input[[VarName]]) != "NULL")) {
           return(as.character(input[[VarName]]))
         } else {
           return(Default)
@@ -795,12 +859,12 @@ ReturnParam <- function(input,
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(class(input[[VarName]]) != "NULL") {
+        } else if(any(class(input[[VarName]]) != "NULL")) {
           return(as.character(input[[VarName]]))
         } else {
           return(Default)
         }
-      } else if(class(input[[VarName]]) != "NULL") {
+      } else if(any(class(input[[VarName]]) != "NULL")) {
         return(as.character(input[[VarName]]))
       } else {
         return(Default)
@@ -861,12 +925,12 @@ ArgNullCheck2 <- function(Input,
       if(exists("ProjectList")) {
         if(InputID %chin% names(ProjectList)) {
           return(ProjectList[[InputID]])
-        } else if(class(Input[[InputID]]) != "NULL") {
+        } else if(any(class(Input[[InputID]]) != "NULL")) {
           return(as.numeric(Input[[InputID]]))
         } else {
           return(Default)
         }
-      } else if(class(Input[[InputID]]) != "NULL") {
+      } else if(any(class(Input[[InputID]]) != "NULL")) {
         return(as.numeric(Input[[InputID]]))
       } else {
         return(Default)
@@ -879,12 +943,12 @@ ArgNullCheck2 <- function(Input,
     if(exists("ProjectList")) {
       if(InputID %chin% names(ProjectList)) {
         return(ProjectList[[InputID]])
-      } else if(class(Input[[InputID]]) != "NULL") {
+      } else if(any(class(Input[[InputID]]) != "NULL")) {
         return(as.character(Input[[InputID]]))
       } else {
         return(Default)
       }
-    } else if(class(Input[[InputID]]) != "NULL") {
+    } else if(any(class(Input[[InputID]]) != "NULL")) {
       return(as.character(Input[[InputID]]))
     } else {
       return(Default)
@@ -896,12 +960,12 @@ ArgNullCheck2 <- function(Input,
     if(exists("ProjectList")) {
       if(InputID %chin% names(ProjectList)) {
         return(ProjectList[[InputID]])
-      } else if(class(Input[[InputID]]) != "NULL") {
+      } else if(any(class(Input[[InputID]]) != "NULL")) {
         return(as.logical(Input[[InputID]]))
       } else {
         return(Default)
       }
-    } else if(class(Input[[InputID]]) != "NULL") {
+    } else if(any(class(Input[[InputID]]) != "NULL")) {
       return(as.logical(Input[[InputID]]))
     } else {
       return(Default)
@@ -1292,7 +1356,7 @@ PreparePlotData <- function(data,
   }
 
   # G1 & G2 & G3 ----
-  if(!is.null(GroupVariables[1L]) && !is.null(GroupVariables[2L]) && !is.null(GroupVariables[3L])) {
+  if(!is.null(GroupVariables[1L]) && !is.na(GroupVariables[1L]) && !is.null(GroupVariables[2L]) && !is.na(GroupVariables[2L]) && !is.null(GroupVariables[3L]) && !is.na(GroupVariables[3L])) {
 
     if(Debug) print('G1 & G2 & G3 ----')
     if(Debug) {print(G1Levels); print(G2Levels); print(G3Levels)}
@@ -1363,7 +1427,7 @@ PreparePlotData <- function(data,
   }
 
   # G1 & G2 Top ----
-  if(!is.null(GroupVariables[1L]) && !is.null(GroupVariables[2L]) && is.null(GroupVariables[3L])) {
+  if(!is.null(GroupVariables[1L]) && !is.na(GroupVariables[1L]) && !is.null(GroupVariables[2L]) && !is.na(GroupVariables[2L]) && (is.null(GroupVariables[3L]) || is.na(GroupVariables[3L]))) {
 
     if(Debug) print('G1 & G2 Top ----')
 
@@ -1405,7 +1469,7 @@ PreparePlotData <- function(data,
   }
 
   # G1 ----
-  if(!is.null(GroupVariables[1L]) && is.null(GroupVariables[2L])) {
+  if(!is.null(GroupVariables[1L]) && !is.na(GroupVariables[1L]) && (is.null(GroupVariables[2L]) || is.na(GroupVariables[2L]))) {
 
     if(Debug) print('G1 Tope ----')
 
@@ -1426,7 +1490,7 @@ PreparePlotData <- function(data,
   }
 
   # NO Grouping Variables ----
-  if(is.null(GroupVariables)) {
+  if(is.null(GroupVariables) || is.na(GroupVariables)) {
     if(Debug) print('No Goruping Variables ----')
     if(!SubsetOnly && !is.null(DateVariable)) {
       x <- data[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]

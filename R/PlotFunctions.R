@@ -155,7 +155,7 @@ AutoPlotter <- function(dt = NULL,
       DateVariable = XVar,
       GroupVariables = ColorVariables,
       Aggregate = 'mean',
-      NumberGroupsDisplay = NumberGroupsDisplay,
+      NumberGroupsDisplay = 5,
       LevelsToDisplay = NULL,
       OtherGroupLabel = "OtherGroups",
       DisplayOtherGroup = TRUE,
@@ -1050,7 +1050,7 @@ TimeSeriesPlotter <- function(data = data,
                               NumberGroupsDisplay = 5,
                               LevelsToDisplay = NULL,
                               OtherGroupLabel = "Other",
-                              DisplayOtherGroup = FALSE,
+                              DisplayOtherGroup = TRUE,
                               TextSize = 12,
                               LineWidth = 1,
                               Color = "blue",
@@ -1183,7 +1183,7 @@ TimeSeriesPlotter <- function(data = data,
   }
 
   # Ensure DateVariable is date type----
-  if(class(PlotData[[eval(DateVariable)]])[1L] != 'Date') {
+  if(all(class(PlotData[[eval(DateVariable)]])[1L] != 'Date')) {
     PlotData[, eval(DateVariable) := as.POSIXct(get(DateVariable))]
   }
 
@@ -1247,7 +1247,7 @@ TimeSeriesPlotter <- function(data = data,
       # Collapse groups----
       SumTable <- PlotData[, sum(get(TargetVariable), na.rm = TRUE), by = "GroupVars"][order(-V1)]
       if(is.null(LevelsToDisplay)) {
-        Levels <- as.character(SumTable[1:NumberGroupsDisplay, .SD, .SDcols = "GroupVars"][[1]])
+        Levels <- as.character(SumTable[seq_len(min(SumTable[, .N], NumberGroupsDisplay)), .SD, .SDcols = "GroupVars"][[1]])
         tempData <- PlotData[GroupVars %chin% Levels]
       } else {
         tempData <- PlotData[GroupVars %chin% LevelsToDisplay]
@@ -1316,7 +1316,7 @@ TimeSeriesPlotter <- function(data = data,
       SumTable <- PlotData[, sum(get(TargetVariable)), by = eval(GroupVariables)][order(-V1)]
 
       # Single group treatment----
-      Levels <- as.character(SumTable[1:NumberGroupsDisplay][[1]])
+      Levels <- as.character(SumTable[seq_len(min(NumberGroupsDisplay, SumTable[, .N]))])
       tempData <- PlotData[get(GroupVariables) %chin% Levels]
 
       # Other groups----
