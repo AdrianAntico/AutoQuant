@@ -4107,18 +4107,23 @@ server <- function(input, output, session) {
       x1a <- tryCatch({XMinList[[paste0('XMin', run)]]}, error = function(x) NULL)
       print('Here 15.3')
       print(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None'))
-      x3 <- tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL)
+      x3 <- tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None')
+      if(!is.null(x3) && x3 == 'None') x3 <- NULL
       #x2 <- RemixAutoML::ReturnParam(input, VarName=paste0('FilterVariable_', run, '_1'), Type='character', Default='None', Switch=TRUE)
       print('Here 15.4')
       x4 <- PlotType
       if(Debug) {print(x1); print(x1a); print(x4)} # ; print(x2)
       if(any((is.null(x1) && is.null(x1a)), is.null(x4))) { # is.null(x2),
         shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to specify additional variables to generate additional plots', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-      } else if(PlotType %chin% 'Line' && !is.null(x3) && any(tolower(class(data[[eval(x3)]])) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))) {
-        shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a Date, IDate, or Posix type", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      } else if(PlotType == 'Line' && (is.null(x3) || any(tolower(class(data[[eval(x3)]])) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL')))) {
+        shinyWidgets::sendSweetAlert(session, title = NULL, text = "Date Variable needs defined and of any of the following types: Date, IDate, or Posix type", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else if(PlotType %chin% c('Scatter','Copula') && !any(tolower(class(data[[eval(tryCatch({XVarList[[paste0('XVar', run)]]}, error = function(x) 'None'))]])) %chin% c('numeric','integer'))) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a numeric or integer variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else {
+
+
+
+
 
         if(Debug) print('Here 133')
 
@@ -4137,9 +4142,12 @@ server <- function(input, output, session) {
           }
 
           SubsetList[[paste0('GroupVars', run)]] <- tryCatch({GroupVarsList[[paste0('GroupVars', run)]]}, error = function(x) NULL) #RemixAutoML::ReturnParam(input, VarName=paste0('GroupVars', run), Type='character', Default='None', Switch=TRUE)
-          SubsetList[[paste0('Levels_', run, '_1')]] <- RemixAutoML::ReturnParam(input, VarName=paste0('Levels_', run, '_1'), Type='character', Default='None', Switch=TRUE)
-          SubsetList[[paste0('Levels_', run, '_2')]] <- RemixAutoML::ReturnParam(input, VarName=paste0('Levels_', run, '_2'), Type='character', Default='None', Switch=TRUE)
-          SubsetList[[paste0('Levels_', run, '_3')]] <- RemixAutoML::ReturnParam(input, VarName=paste0('Levels_', run, '_3'), Type='character', Default='None', Switch=TRUE)
+          gg <- RemixAutoML::ReturnParam(input, VarName=paste0('Levels_', run, '_1'), Type='character', Default='None', Switch=TRUE)
+          SubsetList[[paste0('Levels_', run, '_1')]] <- RemixAutoML:::CEPP(gg[!gg %in% 'None'])
+          gg <- RemixAutoML::ReturnParam(input, VarName=paste0('Levels_', run, '_2'), Type='character', Default='None', Switch=TRUE)
+          SubsetList[[paste0('Levels_', run, '_2')]] <- RemixAutoML:::CEPP(gg[!gg %in% gg])
+          gg <- RemixAutoML::ReturnParam(input, VarName=paste0('Levels_', run, '_3'), Type='character', Default='None', Switch=TRUE)
+          SubsetList[[paste0('Levels_', run, '_3')]] <- RemixAutoML:::CEPP(gg[!gg %in% gg])
           SubsetList[[paste0('FacetVar_', run, '_1')]] <- RemixAutoML::ReturnParam(input, VarName=paste0('FacetVar_', run, '_1'), Type='character', Default='None', Switch=TRUE)
           SubsetList[[paste0('FacetVar_', run, '_2')]] <- RemixAutoML::ReturnParam(input, VarName=paste0('FacetVar_', run, '_2'), Type='character', Default='None', Switch=TRUE)
           SubsetList[[paste0('SizeVar', run)]] <- tryCatch({SizeVarList[[paste0('SizeVar', run)]]}, error = function(x) NULL)
@@ -4171,22 +4179,38 @@ server <- function(input, output, session) {
 
           # Group Variables
           if(Debug) print('# Group Variables')
+
+          if(Debug) print('GROUP VARIABLE CHECK HERE :::::::::::::::::::::')
+
+          if(Debug) {
+            print(SubsetList[[paste0('GroupVars', run)]])
+            print(RemixAutoML::ReturnParam(input, VarName=paste0('GroupVars', run), Type='character', Default='None', Switch=TRUE))
+            print(!all(SubsetList[[paste0('GroupVars', run)]] == RemixAutoML::ReturnParam(input, VarName=paste0('GroupVars', run), Type='character', Default='None', Switch=TRUE)))
+          }
+
+
           if(!all(SubsetList[[paste0('GroupVars', run)]] == RemixAutoML::ReturnParam(input, VarName=paste0('GroupVars', run), Type='character', Default='None', Switch=TRUE))) {
             if(Debug) print(RemixAutoML::ReturnParam(input, VarName=paste0('GroupVars', run), Type='character', Default='None', Switch=TRUE))
             SubsetList[[paste0('GroupVars', run)]] <- RemixAutoML::ReturnParam(input, VarName=paste0('GroupVars', run), Type='character', Default='None', Switch=TRUE)
             SubsetList[[paste0('DataPrep', run)]] <- TRUE
           }
           if(Debug) print('# Levels 1 1')
-          if(!all(SubsetList[[paste0('Levels_', run, '_1')]] == RemixAutoML::ReturnParam(input, VarName= paste0('Levels_', run, '_1'), Type='character', Default='None', Switch=TRUE))) {
+          gg <- RemixAutoML::ReturnParam(input, VarName= paste0('Levels_', run, '_1'), Type='character', Default='None', Switch=TRUE)
+          gg <- RemixAutoML:::CEPP(gg[!gg %in% 'None'])
+          if(!all(SubsetList[[paste0('Levels_', run, '_1')]] == gg)) {
             if(Debug) print(RemixAutoML::ReturnParam(input, VarName=paste0('Levels_', run, '_1'), Type='character', Default='None', Switch=TRUE))
-            SubsetList[[paste0('Levels_', run, '_1')]] <- RemixAutoML::ReturnParam(input, VarName=paste0('Levels_', run, '_1'), Type='character', Default='None', Switch=TRUE)
+            SubsetList[[paste0('Levels_', run, '_1')]] <- gg
             SubsetList[[paste0('DataPrep', run)]] <- TRUE
           }
-          if(!all(SubsetList[[paste0('Levels_', run, '_2')]] == RemixAutoML::ReturnParam(input, VarName = paste0('Levels_', run, '_2'), Type = 'character', Default = 'None', Switch = TRUE))) {
-            SubsetList[[paste0('Levels_', run, '_2')]] <- RemixAutoML::ReturnParam(input, VarName = paste0('Levels_', run, '_2'), Type = 'character', Default = 'None', Switch = TRUE)
+          gg <- RemixAutoML::ReturnParam(input, VarName = paste0('Levels_', run, '_2'), Type = 'character', Default = 'None', Switch = TRUE)
+          gg <- RemixAutoML:::CEPP(gg[!gg %in% 'None'])
+          if(!all(SubsetList[[paste0('Levels_', run, '_2')]] == gg)) {
+            SubsetList[[paste0('Levels_', run, '_2')]] <- gg
             SubsetList[[paste0('DataPrep', run)]] <- TRUE
           }
-          if(!all(SubsetList[[paste0('Levels_', run, '_3')]] == RemixAutoML::ReturnParam(input, VarName = paste0('Levels_', run, '_3'), Type = 'character', Default = 'None', Switch = TRUE))) {
+          gg <- RemixAutoML::ReturnParam(input, VarName = paste0('Levels_', run, '_3'), Type = 'character', Default = 'None', Switch = TRUE)
+          gg <- RemixAutoML:::CEPP(gg[!gg %in% 'None'])
+          if(!all(SubsetList[[paste0('Levels_', run, '_3')]] == gg)) {
             SubsetList[[paste0('Levels_', run, '_3')]] <- RemixAutoML::ReturnParam(input, VarName = paste0('Levels_', run, '_3'), Type = 'character', Default = 'None', Switch = TRUE)
             SubsetList[[paste0('DataPrep', run)]] <- TRUE
           }
@@ -4287,7 +4311,10 @@ server <- function(input, output, session) {
           } else if('None' %in% SubsetList[[paste0('GroupVars', run)]]) {
             if(Debug) print('There groupvars')
             zz <- SubsetList[[paste0('GroupVars', run)]]
+            if(Debug) print(zz)
+            if(Debug) print(zz[!zz %in% 'None'])
             GroupVars <- zz[!zz %in% 'None']
+            if(Debug) print(GroupVars)
           } else {
             if(Debug) print('Standard groupvars')
             GroupVars <- SubsetList[[paste0('GroupVars', run)]]
@@ -4387,8 +4414,8 @@ server <- function(input, output, session) {
           if(Debug) print('Here 22')
 
           # Subset by FilterVariable_1
-          if(Debug) print('Subset by FilterVariable_1')
           if(SubsetList[[paste0('FilterVariable_', run, '_1')]] != 'None') {
+            if(Debug) print('Subset by FilterVariable_1')
             fv <- SubsetList[[paste0('FilterValue_', run, '_1_2')]]
             data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=SubsetList[[paste0('FilterLogic_', run, '_1')]], FilterVariable=SubsetList[[paste0('FilterVariable_', run, '_1')]], FilterValue=SubsetList[[paste0('FilterValue_', run, '_1_1')]], FilterValue2=fv, Debug = Debug)
             CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(SubsetList[[paste0('FilterLogic_', run, '_1')]]),", FilterVariable=", RemixAutoML:::CEP(SubsetList[[paste0('FilterVariable_', run, '_1')]]),", FilterValue=", RemixAutoML:::CEP(SubsetList[[paste0('FilterValue_', run, '_1_1')]]),", FilterValue2=", RemixAutoML:::CEP(fv),"))")
@@ -4398,8 +4425,8 @@ server <- function(input, output, session) {
           if(Debug) print('Here 23')
 
           # Subset by FilterVariable_2
-          if(Debug) print('Subset by FilterVariable_2')
           if(SubsetList[[paste0('FilterVariable_', run, '_2')]] != 'None') {
+            if(Debug) print('Subset by FilterVariable_2')
             fv <- SubsetList[[paste0('FilterValue_', run, '_2_2')]]
             data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=SubsetList[[paste0('FilterLogic_', run, '_2')]], FilterVariable=SubsetList[[paste0('FilterVariable_', run, '_2')]], FilterValue=SubsetList[[paste0('FilterValue_', run, '_2_1')]], FilterValue2=fv)
             CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(SubsetList[[paste0('FilterLogic_', run, '_2')]]),", FilterVariable=", RemixAutoML:::CEP(SubsetList[[paste0('FilterVariable_', run, '_2')]]),", FilterValue=", RemixAutoML:::CEP(SubsetList[[paste0('FilterValue_', run, '_2_1')]]),", FilterValue2=", RemixAutoML:::CEP(fv),"))")
@@ -4408,8 +4435,8 @@ server <- function(input, output, session) {
           if(Debug) print('Here 24')
 
           # Subset by FilterVariable_3
-          if(Debug) print('Subset by FilterVariable_3')
           if(SubsetList[[paste0('FilterVariable_', run, '_3')]] != 'None') {
+            if(Debug) print('Subset by FilterVariable_3')
             fv <- SubsetList[[paste0('FilterValue_', run, '_3_2')]]
             data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=SubsetList[[paste0('FilterLogic_', run, '_3')]], FilterVariable=SubsetList[[paste0('FilterVariable_', run, '_3')]], FilterValue=SubsetList[[paste0('FilterValue_', run, '_3_1')]], FilterValue2=fv)
             CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(SubsetList[[paste0('FilterLogic_', run, '_3')]]),", FilterVariable=", RemixAutoML:::CEP(SubsetList[[paste0('FilterVariable_', run, '_3')]]),", FilterValue=", RemixAutoML:::CEP(SubsetList[[paste0('FilterValue_', run, '_3_1')]]),", FilterValue2=", RemixAutoML:::CEP(fv),"))")
@@ -4418,8 +4445,8 @@ server <- function(input, output, session) {
           if(Debug) print('Here 25')
 
           # Subset by FilterVariable_4
-          if(Debug) {print('Subset by FilterVariable_4')}
           if(SubsetList[[paste0('FilterVariable_', run, '_4')]] != 'None') {
+            if(Debug) {print('Subset by FilterVariable_4')}
             fv <- SubsetList[[paste0('FilterValue_', run, '_4_2')]]
             data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=SubsetList[[paste0('FilterLogic_', run, '_4')]], FilterVariable=SubsetList[[paste0('FilterVariable_', run, '_4')]], FilterValue=SubsetList[[paste0('FilterValue_', run, '_4_1')]], FilterValue2=fv)
             CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(SubsetList[[paste0('FilterLogic_', run, '_4')]]),", FilterVariable=", RemixAutoML:::CEP(SubsetList[[paste0('FilterVariable_', run, '_4')]]),", FilterValue=", RemixAutoML:::CEP(SubsetList[[paste0('FilterValue_', run, '_4_1')]]),", FilterValue2=", RemixAutoML:::CEP(fv),"))")
@@ -4427,13 +4454,17 @@ server <- function(input, output, session) {
 
           if(Debug) print('Here 26')
 
+          if(!is.null(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL)) && tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None') == 'None') NULL else tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL),
+
           # Subset Rows based on Filters
+          if(Debug) print(tryCatch({PlotType}, error = function(x) print('PlotType caused an error'))) # Is PlotType coming in as NULL or logical(0) or character(0) etc.?
           if(Debug) {print('Checking Levels_1, Levels_2, and Levels_3'); print(SubsetList[[paste0('Levels_', run, '_1')]]); print(SubsetList[[paste0('Levels_', run, '_2')]]); print(SubsetList[[paste0('Levels_', run, '_3')]])}
           if(Debug) {print('Checking YVar(), XVar(), and DateVar()'); print(tryCatch({YVarList[[paste0('YVar', run)]]}, error = function(x) NULL)); print(tryCatch({XVarList[[paste0('XVar', run)]]}, error = function(x) NULL)); print(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL)); print(tryCatch({GroupVars}, error = function(x) NULL))}
           data1 <- RemixAutoML::PreparePlotData(
-            SubsetOnly = if(PlotType %chin% c('BoxPlot','ViolinPlot','Scatter','Copula','Histogram','Train_ParDepPlots','Test_ParDepPlots','Train_ParDepBoxPlots','Test_ParDepBoxPlots','Test__EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot')) TRUE else FALSE,
+            SubsetOnly = if(PlotType %in% c('BoxPlot','ViolinPlot','Scatter','Copula','Histogram','Train_ParDepPlots','Test_ParDepPlots','Train_ParDepBoxPlots','Test_ParDepBoxPlots','Test__EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot')) TRUE else FALSE,
             data = data1, Aggregate = 'mean', TargetVariable = tryCatch({YVarList[[paste0('YVar', run)]]}, error = function(x) NULL),
-            DateVariable = if(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None') == 'None') NULL else tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL), GroupVariables = GroupVars,
+            DateVariable = DateVarTemp
+            GroupVariables = tryCatch({GroupVars}, error = function(x) NULL),
             G1Levels = SubsetList[[paste0('Levels_', run, '_1')]], G2Levels = SubsetList[[paste0('Levels_', run, '_2')]], G3Levels = SubsetList[[paste0('Levels_', run, '_3')]], Debug = Debug)
           CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML::PreparePlotData(SubsetOnly = ", if(PlotType %chin% c('BoxPlot','ViolinPlot','Scatter','Copula','Histogram','Train_ParDepPlots','Test_ParDepPlots','Train_ParDepBoxPlots','Test_ParDepBoxPlots','Test__EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot')) TRUE else FALSE,", data=data1, Aggregate='mean', TargetVariable=", RemixAutoML:::CEP(tryCatch({YVarList[[paste0('YVar', run)]]}, error = function(x) NULL)),", DateVariable=", if(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None') == 'None') NULL else tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL), ", GroupVariables=", RemixAutoML:::CEP(GroupVars),", G1Levels=", RemixAutoML:::CEP(SubsetList[[paste0('Levels_', run, '_1')]]),", G2Levels=", RemixAutoML:::CEP(SubsetList[[paste0('Levels_', run, '_2')]]),", G3Levels=", RemixAutoML:::CEP(SubsetList[[paste0('Levels_', run, '_3')]]),")")
         }
@@ -4551,11 +4582,29 @@ server <- function(input, output, session) {
 
           if(Debug) {print('Here sucka5')}
 
+          # SizeVar
+          sizevar1 <- tryCatch({RemixAutoML:::CEPP(SubsetList[[paste0('SizeVar', run)]])}, error = function(x) NULL)
+          if(!is.null(sizevar1) && sizevar1 == 'None') sizevar1 <- NULL
+
+          if(Debug) {print('Here sucka6')}
+
+          # FacetVar1
+          facetvar1 <- tryCatch({RemixAutoML:::CEPP(SubsetList[[paste0('FacetVar_', run, '_1')]])}, error = function(x) NULL)
+          if(!is.null(facetvar1) && facetvar1 == 'None') facetvar1 <- NULL
+
+          if(Debug) {print('Here sucka7')}
+
+          # FacetVar2
+          facetvar2 <- tryCatch({RemixAutoML:::CEPP(SubsetList[[paste0('FacetVar_', run, '_2')]])}, error = function(x) NULL)
+          if(!is.null(facetvar2) && facetvar2 == 'None') facetvar2 <- NULL
+
+          if(Debug) {print('Here sucka8')}
+
           if(RemixAutoML:::CEPP(tryCatch({XTicksList[[run]]}, error = function(x) 'No Data Loaded !!')) == 'No Data Loaded !!') {
             XTicksList[[run]] <- 'Default'
           }
 
-          if(Debug) {print('Here sucka6')}
+          if(Debug) {print('Here sucka9')}
 
           # AutoPlotter()
           if(Debug) print('Run AutoPlotter')
@@ -4569,9 +4618,9 @@ server <- function(input, output, session) {
             XMin = tryCatch({RemixAutoML:::CEPP(XMinList[[paste0('XMin', run)]])}, error = function(x) NULL),
             XMax = tryCatch({RemixAutoML:::CEPP(XMaxList[[paste0('XMax', run)]])}, error = function(x) NULL),
             ColorVariables = tryCatch({GroupVars}, error = function(x) NULL),
-            SizeVar1 = tryCatch({RemixAutoML:::CEPP(SubsetList[[paste0('SizeVar', run)]])}, error = function(x) NULL),
-            FacetVar1 = tryCatch({RemixAutoML:::CEPP(SubsetList[[paste0('FacetVar_', run, '_1')]])}, error = function(x) NULL),
-            FacetVar2 = tryCatch({RemixAutoML:::CEPP(SubsetList[[paste0('FacetVar_', run, '_2')]])}, error = function(x) NULL),
+            SizeVar1 = sizevar1,
+            FacetVar1 = facetvar1,
+            FacetVar2 = facetvar2,
             YTicks = tryCatch({RemixAutoML:::CEPP(YTicksList[[run]])}, error = function(x) 'Default'),
             XTicks = tryCatch({RemixAutoML:::CEPP(XTicksList[[run]])}, error = function(x) 'Default'),
             OutlierSize = OutlierSize,
@@ -4638,12 +4687,12 @@ server <- function(input, output, session) {
             ModelOutputList = ModelOutputList,
             TargetVar = yvar,
             PredictVar = if(ScoreVarList[[paste0('ScoreVar', run)]] != 'None') ScoreVarList[[paste0('ScoreVar', run)]] else NULL,
-            PDPVar = if(!is.null(PDP_VariableList[[run]])) PDP_VariableList[[run]] else NULL,
+            PDPVar = if(tryCatch({PDP_VariableList[[run]]}, error = function(x) 'None') != 'None') PDP_VariableList[[run]] else NULL,
             DateVar = if(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None') != 'None') tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL) else NULL,
             GamFit = GamFitScatterList[[run]],
             Buckets = as.numeric(Percentile_BucketsList[[run]]),
             Rebuild = Rebuild, Debug = Debug)
-          CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("RemixAutoML:::AppModelInsights(dt=data1, PlotType=", RemixAutoML:::CEP(PlotType), ", ModelOutputList=ModelOutputList, TargetVar=", RemixAutoML:::CEP(yvar), ", PredictVar=", if(ScoreVarList[[paste0('ScoreVar', run)]] != 'None') RemixAutoML:::CEP(ScoreVarList[[paste0('ScoreVar', run)]]) else NULL, ", PDPVar=", if(!is.null(PDP_VariableList[[run]])) RemixAutoML:::CEP(PDP_VariableList[[run]]) else NULL, ", DateVar=", if(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None') != 'None') tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL) else NULL, ", GamFit=", RemixAutoML:::CEP(GamFitScatterList[[run]]), ", Buckets=", RemixAutoML:::CEP(as.numeric(Percentile_BucketsList[[run]])), ",Rebuild=", RemixAutoML:::CEP(Rebuild), ")")
+          CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("RemixAutoML:::AppModelInsights(dt=data1, PlotType=", RemixAutoML:::CEP(PlotType), ", ModelOutputList=ModelOutputList, TargetVar=", RemixAutoML:::CEP(yvar), ", PredictVar=", if(ScoreVarList[[paste0('ScoreVar', run)]] != 'None') RemixAutoML:::CEP(ScoreVarList[[paste0('ScoreVar', run)]]) else NULL, ", PDPVar=", if(tryCatch({PDP_VariableList[[run]]}, error = function(x) 'None') != 'None') PDP_VariableList[[run]] else NULL, ", DateVar=", if(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None') != 'None') tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) NULL) else NULL, ", GamFit=", RemixAutoML:::CEP(GamFitScatterList[[run]]), ", Buckets=", RemixAutoML:::CEP(as.numeric(Percentile_BucketsList[[run]])), ",Rebuild=", RemixAutoML:::CEP(Rebuild), ")")
           if(!is.null(PlotCollectionList[[paste0('p', run)]])) {
             PlotCollectionList[[paste0('p', run)]] <- PlotCollectionList[[paste0('p', run)]] + RemixAutoML::ChartTheme(
               Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor,
@@ -4656,120 +4705,120 @@ server <- function(input, output, session) {
           CodeCollection <<- CodeCollection
         }
 
-        # ----
+        # Store globally
+        data1 <<- data1
+        assign(x = 'PlotCollectionList', value = PlotCollectionList)
 
         # ----
 
+        # ----
+
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+        # Return Plot to UI                          ----
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+        if(run == max(counter)) {
+
+          if(Debug) {print('Return Plot to UI'); print(exists("PlotCollectionList")); print(class(PlotCollectionList[[paste0('p', 1)]]))}
+
+          if(exists("PlotCollectionList") && !is.null(PlotCollectionList[[paste0('p', 1)]])) {
+
+            if(Debug) print(tryCatch({input[['AutoGridHorizontal']]}, error = function(x) 'Not NULL'))
+            AutoGridHorizontal <- tryCatch({input[['AutoGridHorizontal']]}, error = function(x) TRUE)
+            if(is.null(AutoGridHorizontal)) AutoGridHorizontal <- TRUE
+            if(Debug) print(paste0('FINAL ERROR =' , AutoGridHorizontal))
+
+            if(Debug) print('Convert p1 to global env')
+            if(Debug) {
+              print(paste0('Length of PlotCollectionList = ', length(PlotCollectionList)))
+              print(paste0('Names of PlotCollectionList = ', names(PlotCollectionList)))
+              print(for(i in names(PlotCollectionList)) paste0('Names of PlotCollectionList = ', class(PlotCollectionList[[i]])))
+              print('Create Plot output$Trend')
+            }
+            CodeCollection[[length(CodeCollection)+1L]] <- 'gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))'
+            # Didnt work right away: gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))
+
+            N <- length(PlotCollectionList)
+            if(Debug) print(paste0('Length of N = ', N))
+
+            if(N == 1L) {
+              if(Debug) print('N == 1L case')
+              p1 <- PlotCollectionList[['p1']]
+              if(Debug) print(paste0('Class of p1 is :: ', class(p1)))
+
+              # Ouput Plot for 1 single plot request
+              output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                gridExtra::grid.arrange(p1, ncol=1)
+              })
+            } else if(N == 2L) {
+              if(Debug) print('N == 2L case')
+              p1 <- PlotCollectionList[['p1']]
+              p2 <- PlotCollectionList[['p2']]
+              if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
+              if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
+
+              # Ouput Plot for 2 plot requests
+              if(AutoGridHorizontal) {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
+                  gridExtra::grid.arrange(p1,p2, ncol=1)
+                })
+              } else {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                  gridExtra::grid.arrange(p1,p2, ncol=1)
+                })
+              }
+            } else if(N == 3L) {
+              if(Debug) print('N == 3L case')
+              p1 <- PlotCollectionList[['p1']]
+              p2 <- PlotCollectionList[['p2']]
+              p3 <- PlotCollectionList[['p3']]
+              if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
+              if(Debug) print(paste0('Class of p2 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
+              if(Debug) print(paste0('Class of p3 is :: ', tryCatch({class(p3)}, error = function(x) NULL)))
+
+              # Ouput Plot for 3 plot requests
+              if(AutoGridHorizontal) {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
+                  gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
+                                                                          c(3, 3)))
+                })
+              } else {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                  gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
+                                                                          c(3, 3)))
+                })
+              }
+
+            } else if(N == 4L) {
+              if(Debug) print('N == 4L case')
+              p1 <- PlotCollectionList[['p1']]
+              p2 <- PlotCollectionList[['p2']]
+              p3 <- PlotCollectionList[['p3']]
+              p4 <- PlotCollectionList[['p4']]
+              if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
+              if(Debug) print(paste0('Class of p2 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
+              if(Debug) print(paste0('Class of p3 is :: ', tryCatch({class(p3)}, error = function(x) NULL)))
+              if(Debug) print(paste0('Class of p4 is :: ', tryCatch({class(p4)}, error = function(x) NULL)))
+
+              # Ouput Plot for 4 plot requests
+              if(AutoGridHorizontal) {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
+                  gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
+                })
+              } else {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                  gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
+                })
+              }
+
+            }
+
+          } else {
+            shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Plot could not build. Check for missing variables, such as Date Variables.', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+          }
+
+        }
       }
-
-      data1 <<- data1
       assign(x = 'PlotCollectionList', value = PlotCollectionList)
-    }
-
-    assign(x = 'PlotCollectionList', value = PlotCollectionList)
-
-    # ----
-
-    # ----
-
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    # Return Plot to UI                          ----
-    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    if(Debug) {print('Return Plot to UI'); print(exists("PlotCollectionList")); print(class(PlotCollectionList[[paste0('p', 1)]]))}
-
-    if(exists("PlotCollectionList") && !is.null(PlotCollectionList[[paste0('p', 1)]])) {
-
-      if(Debug) print(tryCatch({input[['AutoGridHorizontal']]}, error = function(x) 'Not NULL'))
-      AutoGridHorizontal <- tryCatch({input[['AutoGridHorizontal']]}, error = function(x) TRUE)
-      if(is.null(AutoGridHorizontal)) AutoGridHorizontal <- TRUE
-      if(Debug) print(paste0('FINAL ERROR =' , AutoGridHorizontal))
-
-      if(Debug) print('Convert p1 to global env')
-      if(Debug) {
-        print(paste0('Length of PlotCollectionList = ', length(PlotCollectionList)))
-        print(paste0('Names of PlotCollectionList = ', names(PlotCollectionList)))
-        print(for(i in names(PlotCollectionList)) paste0('Names of PlotCollectionList = ', class(PlotCollectionList[[i]])))
-        print('Create Plot output$Trend')
-      }
-      CodeCollection[[length(CodeCollection)+1L]] <- 'gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))'
-      # Didnt work right away: gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))
-
-      N <- length(PlotCollectionList)
-      if(Debug) print(paste0('Length of N = ', N))
-
-      if(N == 1L) {
-        if(Debug) print('N == 1L case')
-        p1 <- PlotCollectionList[['p1']]
-        if(Debug) print(paste0('Class of p1 is :: ', class(p1)))
-
-        # Ouput Plot for 1 single plot request
-        output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
-          gridExtra::grid.arrange(p1, ncol=1)
-        })
-      } else if(N == 2L) {
-        if(Debug) print('N == 2L case')
-        p1 <- PlotCollectionList[['p1']]
-        p2 <- PlotCollectionList[['p2']]
-        if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
-        if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
-
-        # Ouput Plot for 2 plot requests
-        if(AutoGridHorizontal) {
-          output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
-            gridExtra::grid.arrange(p1,p2, ncol=1)
-          })
-        } else {
-          output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
-            gridExtra::grid.arrange(p1,p2, ncol=1)
-          })
-        }
-      } else if(N == 3L) {
-        if(Debug) print('N == 3L case')
-        p1 <- PlotCollectionList[['p1']]
-        p2 <- PlotCollectionList[['p2']]
-        p3 <- PlotCollectionList[['p3']]
-        if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
-        if(Debug) print(paste0('Class of p2 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
-        if(Debug) print(paste0('Class of p3 is :: ', tryCatch({class(p3)}, error = function(x) NULL)))
-
-        # Ouput Plot for 3 plot requests
-        if(AutoGridHorizontal) {
-          output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
-            gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
-                                                                    c(3, 3)))
-          })
-        } else {
-          output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
-            gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
-                                                                    c(3, 3)))
-          })
-        }
-
-      } else if(N == 4L) {
-        if(Debug) print('N == 4L case')
-        p1 <- PlotCollectionList[['p1']]
-        p2 <- PlotCollectionList[['p2']]
-        p3 <- PlotCollectionList[['p3']]
-        p4 <- PlotCollectionList[['p4']]
-        if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
-        if(Debug) print(paste0('Class of p2 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
-        if(Debug) print(paste0('Class of p3 is :: ', tryCatch({class(p3)}, error = function(x) NULL)))
-        if(Debug) print(paste0('Class of p4 is :: ', tryCatch({class(p4)}, error = function(x) NULL)))
-
-        # Ouput Plot for 4 plot requests
-        if(AutoGridHorizontal) {
-          output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
-            gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
-          })
-        } else {
-          output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
-            gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
-          })
-        }
-
-      }
-    } else {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Plot could not build. Check for missing variables, such as Date Variables.', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
   })
 

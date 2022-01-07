@@ -1490,9 +1490,9 @@ PreparePlotData <- function(data,
   }
 
   # NO Grouping Variables ----
-  if(is.null(GroupVariables) || is.na(GroupVariables)) {
+  if(is.null(GroupVariables) || is.na(GroupVariables) || !exists(DateVariable)) {
     if(Debug) print('No Goruping Variables ----')
-    if(!SubsetOnly && !is.null(DateVariable)) {
+    if(!SubsetOnly && length(DateVariable) != 0) {
       x <- data[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
     } else {

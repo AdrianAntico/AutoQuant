@@ -81,11 +81,11 @@ AutoPlotter <- function(dt = NULL,
     # Create base plot object
     if(Debug) print('Create Plot with only data')
     if(!is.null(XVar) && !is.null(YVar)) {
-      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
+      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(XVar), y = eval(YVar), group = eval(XVar)))
     } else if(is.null(XVar) && !is.null(YVar)) {
-      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = "", y = get(YVar)))
+      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = "", y = eval(YVar)))
     } else if(!is.null(XVar) && is.null(YVar)) {
-      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = "", y = get(XVar)))
+      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = "", y = eval(XVar)))
     }
 
     # Box Plot
@@ -150,7 +150,8 @@ AutoPlotter <- function(dt = NULL,
 
     # TS Line Plot
     p1 <- RemixAutoML:::TimeSeriesPlotter(
-      data = dt,
+      Debug = Debug,
+      dt = dt,
       TargetVariable = YVar,
       DateVariable = XVar,
       GroupVariables = ColorVariables,
@@ -192,9 +193,11 @@ AutoPlotter <- function(dt = NULL,
   # Scatter or Copula
   if(PlotType %in% c('Scatter', 'Copula')) {
 
+    N <- dt[,.N]
+
     # Cap number of records----
     if(Debug) print('Scatter or Copula Plot Here')
-    if(dt[,.N] > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
+    if(N > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
 
     # Subset + Sample
     R2_Pearson <- c()
@@ -211,8 +214,8 @@ AutoPlotter <- function(dt = NULL,
       print('XVar and / or YVar is not numeric nor integer')
       return(NULL)
     }
-    if(Debug) print(dt[,.N])
-    if(dt[,.N] < 100000L) {
+    if(Debug) print(N)
+    if(N < 100000L) {
       for(zz in seq_len(30L)) {
         temp <- dt[order(runif(.N))][seq_len(floor(0.50 * .N))]
         R2_Pearson <- c(R2_Pearson, (cor(x = temp[[yyy]], y = temp[[xxx]], method = "pearson")) ^ 2)
@@ -234,9 +237,9 @@ AutoPlotter <- function(dt = NULL,
       x_var = xxx,
       y_var = yyy,
       GroupVariable = ColorVariables,
-      FacetCol = if(FacetVar2 == 'None') NULL else FacetVar2,
-      FacetRow = if(FacetVar1 == 'None') NULL else FacetVar1,
-      SizeVar1 = if(SizeVar1 == 'None') NULL else SizeVar1,
+      FacetCol = FacetVar2,
+      FacetRow = FacetVar1,
+      SizeVar1 = SizeVar1,
       SampleCount = 100000L,
       FitGam = as.logical(GamFitScatter))
 
@@ -317,22 +320,22 @@ AutoPlotter <- function(dt = NULL,
 
       if(Debug) print('Histogram: here 1')
       if(!is.null(ColorVariables)) {
-        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(YVar), color = get(ColorVariables)))
+        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(YVar), fill = eval(ColorVariables)))
       } else {
-        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(YVar)))
+        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(YVar)))
       }
       p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
       p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
       p1 <- p1 + ggplot2::xlab(label = eval(YVar))
       p1 <- p1 + ggplot2::labs(title = 'Distribution', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
 
-    } else if(!is.null(YVar) && !is.numeric(dt[[eval(YVar)]]) && !is.null(XVar) && is.numeric(dt[[eval(XVar)]])) {
+    } else if(!is.null(XVar) && is.numeric(dt[[eval(XVar)]])) {
 
       if(Debug) print('Histogram: here 2')
       if(!is.null(ColorVariables)) {
-        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar), color = get(ColorVariables)))
+        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(XVar), color = eval(ColorVariables)))
       } else {
-        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes(x = get(XVar)))
+        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(XVar)))
       }
       p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
       p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(XVar)]], na.rm = TRUE)))
@@ -1039,11 +1042,12 @@ ChartTheme <- function(Size = 12,
 #' @param SSForecast Default FALSE. Set to TRUE for single series models
 #' @param PredictionIntervalColorInner Fills 20th to 80th percentiles
 #' @param PredictionIntervalColorOuter Fills 5th to 20th and 80th to 95th percentiles
+#' @param Debug = FALSE
 #' @noRd
-TimeSeriesPlotter <- function(data = data,
-                              TargetVariable = "TargetVariableName",
-                              DateVariable = "DateVariableName",
-                              GroupVariables = "GroupVariableName",
+TimeSeriesPlotter <- function(dt = NULL,
+                              TargetVariable = NULL,
+                              DateVariable = NULL,
+                              GroupVariables = NULL,
                               EvaluationMode = FALSE,
                               VLineDate = NULL,
                               Aggregate = NULL,
@@ -1070,30 +1074,33 @@ TimeSeriesPlotter <- function(data = data,
                               TS_ModelID = NULL,
                               SSForecast = FALSE,
                               PredictionIntervalColorInner = "aquamarine1",
-                              PredictionIntervalColorOuter = "peachpuff1") {
+                              PredictionIntervalColorOuter = "peachpuff1",
+                              Debug = FALSE) {
 
   # No scientific notation----
   options(scipen = FALSE)
   options(warn = -1)
 
-  # Ensure data is data.table----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(is.null(dt)) stop('dt is NULL')
+
+  # Ensure dt is data.table----
+  if(!data.table::is.data.table(dt)) data.table::setDT(dt)
 
   # Ensure arguments are correct----
   if(!is.null(TargetVariable)) if(!is.character(TargetVariable)) stop("TargetVariable did not pass through as string")
   if(!is.null(DateVariable)) if(!is.character(DateVariable)) stop("DateVariable did not pass through as string")
   if(!is.null(Aggregate)) if(!is.character(Aggregate)) stop("Aggregate did not pass through as string")
-  if(!is.null(NumberGroupsDisplay)) if(is.character(NumberGroupsDisplay) | is.factor(NumberGroupsDisplay)) stop("NumberGroupsDisplay needs to be a number")
+  if(!is.null(NumberGroupsDisplay)) if(is.character(NumberGroupsDisplay) || is.factor(NumberGroupsDisplay)) stop("NumberGroupsDisplay needs to be a number")
   if(!is.null(OtherGroupLabel)) if(!is.character(OtherGroupLabel)) stop("OtherGroupLabel did not pass through as string")
 
   # Forecast----
   if(SSForecast) {
 
-    # Subset data----
-    if("ModelID" %chin% names(data)) {
-      dataSubset <- data[ModelID == eval(TS_ModelID)]
+    # Subset dt----
+    if("ModelID" %chin% names(dt)) {
+      dataSubset <- dt[ModelID == eval(TS_ModelID)]
     } else {
-      dataSubset <- data
+      dataSubset <- dt
     }
 
     # Groupvariables
@@ -1104,7 +1111,7 @@ TimeSeriesPlotter <- function(data = data,
       data.table::setnames(dataSubset, "temp1", eval(TargetVariable[1L]))
     }
 
-    # Plot data----
+    # Plot dt----
     Plot <- ggplot2::ggplot(dataSubset, ggplot2::aes(as.POSIXct(get(DateVariable)))) +
       ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[2L]), color = "Forecast")) +
       ggplot2::geom_line(ggplot2::aes(y = get(TargetVariable[1L]), color = "Actuals")) +
@@ -1152,24 +1159,24 @@ TimeSeriesPlotter <- function(data = data,
   }
 
   # Melt if multiple targets----
-  if("ModelID" %chin% names(data)) data <- data[ModelID == eval(TS_ModelID)]
+  if("ModelID" %chin% names(dt)) dt <- dt[ModelID == eval(TS_ModelID)]
   if(length(TargetVariable) > 1 && !EvaluationMode) {
     if(!is.null(GroupVariables)) {
-      data <- TimeSeriesMelt(data = data, TargetVariable = TargetVariable, DateVariable = DateVariable, GroupVariables = c(GroupVariables))
+      dt <- TimeSeriesMelt(data = dt, TargetVariable = TargetVariable, DateVariable = DateVariable, GroupVariables = c(GroupVariables))
       TargetVariable <- "TargetSeries"
       GroupVariables <- c("GroupVar", GroupVariables)
     } else {
-      data <- TimeSeriesMelt(data = data, TargetVariable = TargetVariable, DateVariable = DateVariable)
+      dt <- TimeSeriesMelt(data = dt, TargetVariable = TargetVariable, DateVariable = DateVariable)
       TargetVariable <- "TargetSeries"
       GroupVariables <- "GroupVar"
     }
   }
 
   # Ensure GroupVariables are character type----
-  if(!is.null(GroupVariables)) data[, eval(GroupVariables) := lapply(.SD, as.character), .SDcols = c(eval(GroupVariables))]
+  if(!is.null(GroupVariables)) dt[, eval(GroupVariables) := lapply(.SD, as.character), .SDcols = c(eval(GroupVariables))]
 
-  # Make copy of data----
-  PlotData <- data.table::copy(data)
+  # Make copy of dt ----
+  PlotData <- data.table::copy(dt)
 
   # Subset columns for plotting----
   if(!is.null(GroupVariables)) {
@@ -1233,21 +1240,42 @@ TimeSeriesPlotter <- function(data = data,
     return(Plot)
   }
 
-  # Plot data----
+  # Plot dt----
+  if(Debug) print(GroupVariables)
   if(!is.null(GroupVariables)) {
+
+    # App issue here
+    if(Debug) {
+
+      print('TimeSeriesPlotter is here 0 :::::::  ')
+
+      print(paste0('GroupVariables length > 1 = ', length(GroupVariables) > 1L))
+
+      print(PlotData[, .SD, .SDcols = c(GroupVariables)])
+      print(unique(PlotData[, .SD, .SDcols = c(GroupVariables)]))
+      print(paste0('length of unique levels = ', length(unique(PlotData[, .SD, .SDcols = c(GroupVariables)][[1L]]))))
+
+    }
+
+
+
+
+    if(Debug) print('TimeSeriesPlotter is here 1 :::::::  ')
 
     # If more than 1 grouping variable----
     if(length(GroupVariables) > 1L) {
 
-      # Combine Group Variables----
-      for(i in seq_len(length(GroupVariables))) PlotData[, eval(GroupVariables[i]) := paste0(eval(GroupVariables[i]),"_", get(GroupVariables[i]))]
+      if(Debug) print('TimeSeriesPlotter is here 2 :::::::  ')
+
+      # Combine Group Variables ----
+      for(i in seq_along(GroupVariables)) PlotData[, eval(GroupVariables[i]) := paste0(eval(GroupVariables[i]),"_", get(GroupVariables[i]))]
       PlotData[, GroupVars := do.call(paste, c(.SD, sep = "_")), .SDcols = c(eval(GroupVariables))]
       PlotData[, paste0(eval(GroupVariables)) := NULL]
 
-      # Collapse groups----
+      # Aggregate by groups ----
       SumTable <- PlotData[, sum(get(TargetVariable), na.rm = TRUE), by = "GroupVars"][order(-V1)]
       if(is.null(LevelsToDisplay)) {
-        Levels <- as.character(SumTable[seq_len(min(SumTable[, .N], NumberGroupsDisplay)), .SD, .SDcols = "GroupVars"][[1]])
+        Levels <- as.character(SumTable[seq_len(min(SumTable[, .N], NumberGroupsDisplay)), .SD, .SDcols = "GroupVars"][[1L]])
         tempData <- PlotData[GroupVars %chin% Levels]
       } else {
         tempData <- PlotData[GroupVars %chin% LevelsToDisplay]
@@ -1310,25 +1338,46 @@ TimeSeriesPlotter <- function(data = data,
         Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
       }
 
-    } else if(length(unique(PlotData[, get(GroupVariables)])) > 1) {
+    } else if(length(unique(PlotData[, .SD, .SDcols = c(GroupVariables)][[1L]])) > 1L) {
+
+      if(Debug) print('TimeSeriesPlotter is here 3 :::::::  ')
 
       # Collapse groups----
       SumTable <- PlotData[, sum(get(TargetVariable)), by = eval(GroupVariables)][order(-V1)]
 
+      if(Debug) print(SumTable)
+
       # Single group treatment----
-      Levels <- as.character(SumTable[seq_len(min(NumberGroupsDisplay, SumTable[, .N]))])
+      Levels <- as.character(SumTable[seq_len(min(NumberGroupsDisplay, SumTable[, .N]))][, .SD, .SDcols = eval(GroupVariables)][[1L]])
+
+      if(Debug) print(Levels)
+
       tempData <- PlotData[get(GroupVariables) %chin% Levels]
 
+      if(Debug) print(tempData)
+
       # Other groups----
-      if(DisplayOtherGroup) {
+      if(DisplayOtherGroup && length(Levels) > NumberGroupsDisplay) {
+
+        if(Debug) print('TimeSeriesPlotter is here 4 :::::::  ')
+
         tempData2 <- PlotData[!(get(GroupVariables) %chin% Levels)]
+
+        if(Debug) print(tempData2)
+
         tempData2 <- tempData2[, eval(GroupVariables) := eval(OtherGroupLabel)]
+
+        if(Debug) print(tempData2)
+
         if(tolower(Aggregate) == "sum") {
           tempData2 <- tempData2[, sum(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
           tempData <- tempData[, sum(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
           data.table::setnames(tempData2, "V1", eval(TargetVariable))
           data.table::setnames(tempData, "V1", eval(TargetVariable))
         } else if(tolower(Aggregate) == "mean") {
+
+          if(Debug) print('TimeSeriesPlotter is here 5 :::::::  ')
+
           tempData2 <- tempData2[, mean(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
           tempData <- tempData[, mean(get(TargetVariable), na.rm = TRUE), by = c(eval(GroupVariables), eval(DateVariable))]
           data.table::setnames(tempData2, "V1", eval(TargetVariable))
@@ -1337,14 +1386,17 @@ TimeSeriesPlotter <- function(data = data,
 
         # Combine data
         tempData2 <- data.table::rbindlist(list(tempData,tempData2))
+
       } else {
         tempData2 <- tempData
       }
 
+      if(Debug) print('TimeSeriesPlotter is here 6 :::::::  ')
+
       # Grouping variables----
       Plot <- ggplot2::ggplot(
         tempData2,
-        ggplot2::aes(x = get(DateVariable), y = get(TargetVariable), color = get(GroupVariables))) +
+        ggplot2::aes_string(x = eval(DateVariable), y = eval(TargetVariable), color = eval(GroupVariables))) +
         ggplot2::geom_line() +
         ggplot2::theme(legend.title=ggplot2::element_blank()) +
         ggplot2::xlab(DateVariable) + ggplot2::ylab(TargetVariable) +
@@ -1369,6 +1421,9 @@ TimeSeriesPlotter <- function(data = data,
         Plot <- Plot + ggplot2::scale_x_datetime(date_breaks = XTickMarks, labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
       }
     } else {
+
+      if(Debug) print('TimeSeriesPlotter is here 7 :::::::  ')
+
       Plot <- ggplot2::ggplot(
         PlotData,
         ggplot2::aes(x = PlotData[, get(DateVariable)])) +
@@ -1392,6 +1447,8 @@ TimeSeriesPlotter <- function(data = data,
     }
   } else {
 
+    if(Debug) print('TimeSeriesPlotter is here 8 :::::::  ')
+
     # No grouping variables----
     Plot <- ggplot2::ggplot(
       PlotData,
@@ -1414,6 +1471,8 @@ TimeSeriesPlotter <- function(data = data,
       Plot <- Plot + ggplot2::scale_x_datetime(labels = scales::date_format("%Y-%m-%d HH:MM:SS"))
     }
   }
+
+  if(Debug) print('TimeSeriesPlotter is here 9 :::::::  ')
 
   # Return plot object----
   return(Plot)
