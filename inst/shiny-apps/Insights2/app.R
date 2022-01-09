@@ -490,7 +490,6 @@ ui <- shinydashboard::dashboardPage(
             shiny::column(
               width = 2L,
               tags$h4(tags$b('Global Vals')),
-              # tags$h4(tags$span(style='color: blue;', 'Global Vals')),
               shinyWidgets::dropdown(
                 right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "danger", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Global Settings')),
@@ -504,40 +503,10 @@ ui <- shinydashboard::dashboardPage(
                   shiny::column(3L, shiny::uiOutput('SampleSize'))))),
 
 
-            # Plot Enhancements (col 1)
-            shiny::column(
-              width = 1L,
-              tags$h4(tags$b('Plot Extras')),
-              # tags$h4(tags$span(style='color: blue;', 'Plot Extras')),
-              shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", inputId = "By-Variables", width = LogoWidth,
-                tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Enhancements')),
-                tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Additional MetaData Selection for Plot Enhancements')),
-                RemixAutoML::BlankRow(AppWidth),
-                shiny::fluidRow(
-                  width = AppWidth,
-                  shiny::column(3L, shiny::uiOutput('GamFitScatter1')),
-                  shiny::column(3L, shiny::uiOutput('GamFitScatter2')),
-                  shiny::column(3L, shiny::uiOutput('GamFitScatter3')),
-                  shiny::column(3L, shiny::uiOutput('GamFitScatter4'))),
-                shiny::fluidRow(
-                  width = AppWidth,
-                  shiny::column(3L, shiny::uiOutput('NumberBins1')),
-                  shiny::column(3L, shiny::uiOutput('NumberBins2')),
-                  shiny::column(3L, shiny::uiOutput('NumberBins3')),
-                  shiny::column(3L, shiny::uiOutput('NumberBins4'))),
-                shiny::fluidRow(
-                  width = AppWidth,
-                  shiny::column(3L, shiny::uiOutput('Percentile_Buckets1')),
-                  shiny::column(3L, shiny::uiOutput('Percentile_Buckets2')),
-                  shiny::column(3L, shiny::uiOutput('Percentile_Buckets3')),
-                  shiny::column(3L, shiny::uiOutput('Percentile_Buckets4'))))), # column end
-
-            # Plot Formatting (col 2)
+            # Plot Formatting
             shiny::column(
               width = 1L,
               tags$h4(tags$b('Formatting')),
-              # tags$h4(tags$span(style='color: blue;', 'Formatting')),
               shinyWidgets::dropdown(
                 right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Formatting')),
@@ -611,7 +580,6 @@ ui <- shinydashboard::dashboardPage(
             shiny::column(
               width = 2L,
               tags$h4(tags$b('Colors')),
-              # tags$h4(tags$span(style='color: blue;', 'Colors')),
               shinyWidgets::dropdown(
                 right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Coloring')),
@@ -629,11 +597,38 @@ ui <- shinydashboard::dashboardPage(
                   shiny::column(3L, shiny::uiOutput('OutlierColor')),
                   shiny::column(3L, shiny::uiOutput('GridColor'))))), # column end
 
+            # Plot Enhancements
+            shiny::column(
+              width = 1L,
+              tags$h4(tags$b('Plot Extras')),
+              shinyWidgets::dropdown(
+                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", inputId = "By-Variables", width = LogoWidth,
+                tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Enhancements')),
+                tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Additional MetaData Selection for Plot Enhancements')),
+                RemixAutoML::BlankRow(AppWidth),
+                shiny::fluidRow(
+                  width = AppWidth,
+                  shiny::column(3L, shiny::uiOutput('GamFitScatter1')),
+                  shiny::column(3L, shiny::uiOutput('GamFitScatter2')),
+                  shiny::column(3L, shiny::uiOutput('GamFitScatter3')),
+                  shiny::column(3L, shiny::uiOutput('GamFitScatter4'))),
+                shiny::fluidRow(
+                  width = AppWidth,
+                  shiny::column(3L, shiny::uiOutput('NumberBins1')),
+                  shiny::column(3L, shiny::uiOutput('NumberBins2')),
+                  shiny::column(3L, shiny::uiOutput('NumberBins3')),
+                  shiny::column(3L, shiny::uiOutput('NumberBins4'))),
+                shiny::fluidRow(
+                  width = AppWidth,
+                  shiny::column(3L, shiny::uiOutput('Percentile_Buckets1')),
+                  shiny::column(3L, shiny::uiOutput('Percentile_Buckets2')),
+                  shiny::column(3L, shiny::uiOutput('Percentile_Buckets3')),
+                  shiny::column(3L, shiny::uiOutput('Percentile_Buckets4'))))), # column end
+
             # Plot 1 Filter Variables (col 4)
             shiny::column(
               width = 1L,
               tags$h4(tags$b('Filters 1')),
-              # tags$h4(tags$span(style='color: blue;', 'Filters P1')),
               shinyWidgets::dropdown(
                 right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "success", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filter Variables, Logic, and Values')),
@@ -668,7 +663,6 @@ ui <- shinydashboard::dashboardPage(
             shiny::column(
               width = 1L,
               tags$h4(tags$b('Filters 2')),
-              # tags$h4(tags$span(style='color: blue;', 'Filters P2')),
               shinyWidgets::dropdown(
                 right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "success", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filter Variables, Logic, and Values')),
@@ -703,7 +697,6 @@ ui <- shinydashboard::dashboardPage(
             shiny::column(
               width = 1L,
               tags$h4(tags$b('Filters 3')),
-              # tags$h4(tags$span(style='color: blue;', 'Filters P3')),
               shinyWidgets::dropdown(
                 right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "success", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filter Variables, Logic, and Values')),
@@ -738,7 +731,6 @@ ui <- shinydashboard::dashboardPage(
             shiny::column(
               width = 1L,
               tags$h4(tags$b('Filters 4')),
-              # tags$h4(tags$span(style='color: blue;', 'Filters P4')),
               shinyWidgets::dropdown(
                 right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "success", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filter Variables, Logic, and Values')),
@@ -2685,7 +2677,6 @@ server <- function(input, output, session) {
   # Auto SCaling of Plot Grid: doubles the size in the event of more than 1 plot
   output$AutoGridHorizontal <-  shiny::renderUI({
     shinyWidgets::materialSwitch(inputId = "AutoGridHorizontal", label = "Auto Grid Scale", status = "danger", value = TRUE, inline = TRUE, width = '100%')
-    #shinyWidgets::switchInput(inputId = 'AutoGridHorizontal', label = 'Auto Size Grid', value = TRUE, onLabel = 'On', offLabel = 'Off', onStatus = 'green', offStatus = 'red', size = 'default')
   })
 
   if(Debug) print("Here qq")
@@ -3020,7 +3011,10 @@ server <- function(input, output, session) {
 
   # ----
 
-  # FINISH UP NEXT: reactive plot updates
+  #       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  #       TODO: reactive theme elements        ----
+  #       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
 
   # YTicks1 <- shiny::reactive({input[['YTicks1']]})
   # if(Debug) print("Here lll44")
@@ -3106,7 +3100,9 @@ server <- function(input, output, session) {
 
 
 
+  # ----
 
+  # ----
 
   # ----
 
