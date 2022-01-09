@@ -5,9 +5,9 @@
 \title{AppModelInsights}
 \usage{
 AppModelInsights(
+  ModelOutputList,
   dt = NULL,
   PlotType = NULL,
-  ModelOutputList = NULL,
   TargetVar = NULL,
   PredictVar = NULL,
   PDPVar = NULL,
@@ -20,11 +20,11 @@ AppModelInsights(
 )
 }
 \arguments{
+\item{ModelOutputList}{output list}
+
 \item{dt}{= NULL,}
 
 \item{PlotType}{= NULL,}
-
-\item{ModelOutputList}{= NULL,}
 
 \item{TargetVar}{= isolate(YVar()),}
 

@@ -1,6 +1,6 @@
 #' @noRd
-AvailableAppInsightsPlots <- function(x = ModelOutputList) {
-  if(!is.null(x)) {
+AvailableAppInsightsPlots <- function(x = 'bla') {
+  if(length(x) != 0) {
     MONames <- c("Train_EvaluationPlot","Train_EvaluationBoxPlot","Train_ParDepPlots","Train_ParDepBoxPlots","Train_ResidualsHistogram","Train_ScatterPlot","Train_CopulaPlot","Train_VariableImportance","Validation_VariableImportance","Test_EvaluationPlot","Test_EvaluationBoxPlot", "Test_ParDepPlots","Test_ParDepBoxPlots","Test_ResidualsHistogram","Test_ScatterPlot","Test_CopulaPlot","Test_VariableImportance")
   } else {
     MONames <- NULL
@@ -255,7 +255,11 @@ UniqueLevels <- function(input, data, n, GroupVars=NULL) {
   if(missing(n) || missing(GroupVars) && is.null(GroupVars[[n]]) || is.na(GroupVars[[n]])) {
     return(NULL)
   } else {
-    return(tryCatch({c(sort(as.character(unique(data[[eval(GroupVars[[n]])]]))))}, error = function(x)  NULL))
+    if(any(class(data[[GroupVars[[n]]]]) %in% c('factor'))) {
+      return(tryCatch({c(sort(as.character(unique(data[[eval(GroupVars[[n]])]]))))}, error = function(x)  NULL))
+    } else {
+      return(tryCatch({c(sort(unique(data[[eval(GroupVars[[n]])]])))}, error = function(x)  NULL))
+    }
   }
 }
 
@@ -277,18 +281,28 @@ FilterValues <- function(data, VarName = NULL, type = 1) {
   } else if(length(VarName) == 0) {
     print('FilterValues(): VarName was length 0')
     x <- NULL
-  } else if(tolower(VarName) != 'none') {
-    if(any(tolower(class(data[[eval(VarName)]])) %chin% c('numeric', 'integer'))) {
+  }
+  gg <- tolower(class(data[[eval(VarName)]]))
+  if(tolower(VarName) != 'none') {
+    if(any(gg %chin% c('numeric', 'integer'))) {
       if(type == 1) {
         x <- sort(decreasing = FALSE, unique(as.numeric(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])))
       } else {
         x <- sort(decreasing = TRUE, unique(as.numeric(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])))
       }
-    } else if(any(tolower(class(data[[eval(VarName)]])) %chin% c('factor','character'))) {
+    } else if(any(gg %chin% c('factor','character','date','idate','posixct'))) {
       if(type == 1) {
-        x <- sort(decreasing = FALSE, data[, unique(get(VarName))])
+        if(lubridate::is.Date(data[[eval(VarName)]])) {
+          x <- as.Date(sort(decreasing = FALSE, data[, unique(get(VarName))]))
+        } else {
+          x <- sort(decreasing = FALSE, data[, unique(get(VarName))])
+        }
       } else {
-        x <- sort(decreasing = TRUE, data[, unique(get(VarName))])
+        if(lubridate::is.Date(data[[eval(VarName)]])) {
+          x <- as.Date(sort(decreasing = TRUE, data[, unique(get(VarName))]))
+        } else {
+          x <- sort(decreasing = TRUE, data[, unique(get(VarName))])
+        }
       }
     } else {
       x <- NULL
@@ -467,6 +481,7 @@ CharNull <- function(x, Char = FALSE) {
 
   if(length(x) == 0) {
     print('CharNull: length(x) == 0')
+    return(NULL)
   }
 
   if(all(is.na(suppressWarnings(as.character(x))))) {
@@ -676,10 +691,7 @@ ReactiveLoadCSV <- function(Infile = input[[eval(InputVal)]], ProjectList = NULL
   x <- data.table::fread(file = Infile$datapath)
   if(Debug) print('ReactiveLoadCSV 5')
   g <- RemixAutoML:::ColTypes(x)
-  if(Debug) print('ReactiveLoadCSV 6')
-  print(x)
-  print(g)
-  print(any('IDate' %in% g))
+  if(Debug) {print('ReactiveLoadCSV 6'); print(x); print(g); print(any('IDate' %in% g))}
   if(any('IDate' %in% g)) {
     if(Debug) print('ReactiveLoadCSV 7')
     for(zz in seq_along(x)) {
@@ -750,7 +762,7 @@ StoreArgs <- function(input,
 #'
 #' @param input This is the input value within a Shiny context
 #' @param VarName The name of the VarNameument you want to store
-#' @param Type "character" "numeric" "logical"
+#' @param Type 'character' 'numeric' 'logical' 'date'
 #' @param Default default value
 #' @param Switch = FALSE
 #'
@@ -761,21 +773,21 @@ StoreArgs <- function(input,
 #'
 #' @return Updates ProjectList inside function
 #' @export
-ReturnParam <- function(input,
-                        VarName,
-                        Type,
-                        Default,
-                        Switch = FALSE) {
+ReturnParam <- function(input = NULL,
+                        VarName = 'bla',
+                        Type = 'numeric',
+                        Default = 1,
+                        Switch = TRUE) {
 
   # Type == numeric
-  if(Switch) {
-    if(Type == "numeric") {
-      if(any(class(input[[VarName]]) != "NULL")) {
+  if(Type == "numeric") {
+    if(Switch) {
+      if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
         return(as.numeric(input[[VarName]]))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL")) {
+        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
           return(as.numeric(input[[VarName]]))
         } else {
           return(Default)
@@ -783,18 +795,16 @@ ReturnParam <- function(input,
       } else {
         return(Default)
       }
-    }
-  } else {
-    if(Type == "numeric") {
+    } else {
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL")) {
+        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
           return(as.numeric(input[[VarName]]))
         } else {
           return(Default)
         }
-      } else if(any(class(input[[VarName]]) != "NULL")) {
+      } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
         return(as.numeric(input[[VarName]]))
       } else {
         return(Default)
@@ -803,14 +813,14 @@ ReturnParam <- function(input,
   }
 
   # Type == logical
-  if(Switch) {
-    if(Type == "logical") {
-      if(any(class(input[[VarName]]) != "NULL")) {
+  if(Type == "logical") {
+    if(Switch) {
+      if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
         return(as.logical(input[[VarName]]))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL")) {
+        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
           return(as.logical(input[[VarName]]))
         } else {
           return(Default)
@@ -818,18 +828,16 @@ ReturnParam <- function(input,
       } else {
         return(Default)
       }
-    }
-  } else {
-    if(Type == "logical") {
+    } else {
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL")) {
+        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
           return(as.logical(input[[VarName]]))
         } else {
           return(Default)
         }
-      } else if(any(class(input[[VarName]]) != "NULL")) {
+      } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
         return(as.logical(input[[VarName]]))
       } else {
         return(Default)
@@ -838,14 +846,14 @@ ReturnParam <- function(input,
   }
 
   # Type == character
-  if(Switch) {
-    if(Type == "character") {
-      if(any(class(input[[VarName]]) != "NULL")) {
+  if(Type == "character") {
+    if(Switch) {
+      if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
         return(as.character(input[[VarName]]))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL")) {
+        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
           return(as.character(input[[VarName]]))
         } else {
           return(Default)
@@ -853,19 +861,50 @@ ReturnParam <- function(input,
       } else {
         return(Default)
       }
-    }
-  } else {
-    if(Type == "character") {
+    } else {
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL")) {
+        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
           return(as.character(input[[VarName]]))
         } else {
           return(Default)
         }
-      } else if(any(class(input[[VarName]]) != "NULL")) {
+      } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
         return(as.character(input[[VarName]]))
+      } else {
+        return(Default)
+      }
+    }
+  }
+
+  # Type == date
+  if(Type == "date") {
+    if(Switch) {
+      if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
+        return(as.character(input[[VarName]]))
+      } else if(exists("ProjectList")) {
+        if(!is.null(ProjectList[[VarName]])) {
+          return(ProjectList[[VarName]])
+        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
+          return(input[[VarName]])
+        } else {
+          return(Default)
+        }
+      } else {
+        return(Default)
+      }
+    } else {
+      if(exists("ProjectList")) {
+        if(!is.null(ProjectList[[VarName]])) {
+          return(ProjectList[[VarName]])
+        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
+          return(input[[VarName]])
+        } else {
+          return(Default)
+        }
+      } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
+        return(input[[VarName]])
       } else {
         return(Default)
       }
@@ -1469,7 +1508,7 @@ PreparePlotData <- function(data,
   }
 
   # G1 ----
-  if(!is.null(GroupVariables[1L]) && !is.na(GroupVariables[1L]) && (is.null(GroupVariables[2L]) || is.na(GroupVariables[2L]))) {
+  if(!is.null(GroupVariables[1L]) && !is.na(GroupVariables[1L]) && (is.null(GroupVariables[2L]) || (!is.null(GroupVariables[2L]) && is.na(GroupVariables[2L])))) {
 
     if(Debug) print('G1 Tope ----')
 
@@ -1490,7 +1529,8 @@ PreparePlotData <- function(data,
   }
 
   # NO Grouping Variables ----
-  if(is.null(GroupVariables) || is.na(GroupVariables) || !exists(DateVariable)) {
+  if(Debug) {print('No Grouping Variables'); print(GroupVariables); print(DateVariable); print(SubsetOnly)}
+  if(is.null(GroupVariables) || (!is.null(GroupVariables) && is.na(GroupVariables)) || !exists('DateVariable')) {
     if(Debug) print('No Goruping Variables ----')
     if(!SubsetOnly && length(DateVariable) != 0) {
       x <- data[, .SD, .SDcols = c(eval(TargetVariable), eval(DateVariable))]
@@ -1502,10 +1542,13 @@ PreparePlotData <- function(data,
   }
 
   # None up till now ----
-  if(!exists("x")) {
+  if(Debug) print('PreparePlotData final check')
+  if(!exists('x')) {
     x <- AggFun(dt = data, A = Agg, S = SubsetOnly)
     return(x)
   }
+
+  if(Debug) print('PreparePlotData return')
 
   # Return
   return(NULL)

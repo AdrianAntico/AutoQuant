@@ -32,10 +32,14 @@ This function creates a table of user counts over time for accumulated unique us
 \seealso{
 Other EDA: 
 \code{\link{AutoWordFreq}()},
+\code{\link{BarPlot}()},
+\code{\link{BoxPlot}()},
 \code{\link{EDA_Histograms}()},
+\code{\link{HistPlot}()},
 \code{\link{Mode}()},
 \code{\link{PlotGUI}()},
-\code{\link{ScatterCopula}()}
+\code{\link{ScatterCopula}()},
+\code{\link{ViolinPlot}()}
 }
 \author{
 Adrian Antico

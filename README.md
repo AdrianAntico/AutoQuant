@@ -146,6 +146,10 @@ if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate
 if(!("tsoutliers" %in% rownames(installed.packages()))) install.packages("tsoutliers"); print("tsoutliers")
 if(!("xgboost" %in% rownames(installed.packages()))) install.packages("xgboost"); print("xgboost")
 if(!("lightgbm" %in% rownames(installed.packages()))) install.packages("lightgbm"); print("lightgbm")
+if(!("shinydashboard" %in% rownames(installed.packages()))) install.packages("shinydashboard"); print("shinydashboard")
+if(!("shinyWidgets" %in% rownames(installed.packages()))) install.packages("shinyWidgets"); print("shinyWidgets")
+if(!("htmltools" %in% rownames(installed.packages()))) install.packages("htmltools"); print("htmltools")
+if(!("shinyjs" %in% rownames(installed.packages()))) install.packages("shinyjs"); print("shinyjs")
 for (pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
 install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))
 devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')

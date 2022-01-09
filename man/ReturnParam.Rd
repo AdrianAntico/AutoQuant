@@ -4,14 +4,20 @@
 \alias{ReturnParam}
 \title{Save VarName values within a project}
 \usage{
-ReturnParam(input, VarName, Type, Default, Switch = FALSE)
+ReturnParam(
+  input = NULL,
+  VarName = "bla",
+  Type = "numeric",
+  Default = 1,
+  Switch = TRUE
+)
 }
 \arguments{
 \item{input}{This is the input value within a Shiny context}
 
 \item{VarName}{The name of the VarNameument you want to store}
 
-\item{Type}{"character" "numeric" "logical"}
+\item{Type}{'character' 'numeric' 'logical' 'date'}
 
 \item{Default}{default value}
 

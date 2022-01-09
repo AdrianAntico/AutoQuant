@@ -15,7 +15,7 @@ ChartTheme(
   GridColor = "white",
   BackGroundColor = "gray95",
   LegendPosition = "bottom",
-  LegendBorderSize = 0.5,
+  LegendBorderSize = 0.01,
   LegendLineType = "solid"
 )
 }

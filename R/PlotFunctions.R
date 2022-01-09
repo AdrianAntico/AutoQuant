@@ -1,3 +1,669 @@
+#' @title ViolinPlot
+#'
+#' @description Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
+#'
+#' @family EDA
+#'
+#' @author Adrian Antico
+#'
+#' @param data Source data.table
+#' @param XVar Column name of X-Axis variable. If NULL then ignored
+#' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
+#' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
+#' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
+#' @param FillColor 'gray'
+#' @param YTicks Choose from 'Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles'
+#' @param XTicks Choose from 'Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'
+#' @param TextSize 14
+#' @param AngleX 90
+#' @param AngleY 0
+#' @param ChartColor 'lightsteelblue'
+#' @param BorderColor 'darkblue'
+#' @param TextColor 'darkblue'
+#' @param GridColor 'white'
+#' @param BackGroundColor 'gray95'
+#' @param SubTitleColor 'darkblue'
+#' @param LegendPosition 'bottom'
+#' @param LegendBorderSize 0.50
+#' @param LegendLineType 'solid'
+#' @param Debug FALSE
+#'
+#' @export
+ViolinPlot <- function(data = NULL,
+                       XVar = NULL,
+                       YVar = NULL,
+                       FacetVar1 = NULL,
+                       FacetVar2 = NULL,
+                       SampleSize = 1000000L,
+                       FillColor = 'gray',
+                       YTicks = 'Default',
+                       XTicks = 'Default',
+                       TextSize = 12,
+                       AngleX = 90,
+                       AngleY = 0,
+                       ChartColor = 'lightsteelblue1',
+                       BorderColor = 'darkblue',
+                       TextColor = 'darkblue',
+                       GridColor = 'white',
+                       BackGroundColor = 'gray95',
+                       SubTitleColor = 'blue',
+                       LegendPosition = 'bottom',
+                       LegendBorderSize = 0.50,
+                       LegendLineType = 'solid',
+                       Debug = FALSE) {
+
+  # Cap number of records
+  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+
+  # Used multiple times
+  check1 <- length(XVar) != 0 && length(YVar) != 0 && (lubridate::is.Date(data[['XVar']]) || lubridate::is.POSIXct(data[['XVar']]))
+
+  # Create base plot object
+  if(Debug) print('Create Plot with only data')
+  if(check1) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
+  } else if(length(YVar) != 0) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(YVar), x = ""))
+  } else if(length(XVar) != 0) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(XVar), x = ""))
+  } else {
+    stop('XVar and YVar cannot both be NULL')
+  }
+
+  # Violin Plot Call
+  if(Debug) print('Create ViolinPlot')
+  p1 <- p1 + ggplot2::geom_violin(fill = FillColor)
+
+  # Add Horizontal Line for Mean Y
+  if(Debug) print('Create Plot Horizontal Line')
+  if(!is.null(YVar)) {
+    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data[[eval(YVar)]], na.rm = TRUE)))
+  } else {
+    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data[[eval(XVar)]], na.rm = TRUE)))
+  }
+
+  # Create Plot labs
+  if(Debug) print('Create Plot labs')
+  if(check1) {
+    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+  } else {
+    p1 <- p1 + ggplot2::labs(title = 'ViolinPlot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+  }
+
+  # Labels
+  if(check1) {
+    p1 <- p1 + ggplot2::ylab(YVar)
+    p1 <- p1 + ggplot2::xlab(XVar)
+  } else if(length(YVar) != 0) {
+    p1 <- p1 + ggplot2::ylab(NULL)
+    p1 <- p1 + ggplot2::xlab(YVar)
+  } else {
+    p1 <- p1 + ggplot2::ylab(NULL)
+    p1 <- p1 + ggplot2::xlab(XVar)
+  }
+
+  # Add faceting (returns no faceting in none was requested)
+  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
+    if(Debug) print('FacetVar1 and FacetVar2')
+    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
+  } else if(length(FacetVar1) != 0 && FacetVar1 == 'None') {
+    if(Debug) print('FacetVar1')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
+  } else if(length(FacetVar2) != 0 && FacetVar2 == 'None') {
+    if(Debug) print('FacetVar2')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
+  }
+
+  # Add ChartTheme
+  if(Debug) print('ChartTheme')
+  p1 <- p1 + RemixAutoML::ChartTheme(
+    Size = TextSize,
+    AngleX = AngleX,
+    AngleY = AngleY,
+    ChartColor = ChartColor,
+    BorderColor = BorderColor,
+    TextColor = TextColor,
+    GridColor = GridColor,
+    BackGroundColor = BackGroundColor,
+    SubTitleColor = SubTitleColor,
+    LegendPosition = LegendPosition,
+    LegendBorderSize = LegendBorderSize,
+    LegendLineType = LegendLineType)
+
+  # Define Tick Marks
+  if(Debug) print('YTicks Update')
+  if('Percentiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+  } else if('Every 5th percentile' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(6L, length(YTicks)-1L, 5L))]
+  } else if('Deciles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(11L, length(YTicks)-1L, 10L))]
+  } else if('Quantiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(21L, length(YTicks)-1L, 20L))]
+  } else if('Quartiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(26L, length(YTicks)-1L, 25L))]
+  } else {
+    YTicks <- NULL
+  }
+
+  # Add tick marks
+  if(length(YTicks) != 0) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(YTicks))
+
+  # Add XTicks for Date Case
+  if(check1) {
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(length(XTicks) > 1L) XTicks <- XTicks[1L]
+    if(XTicks %in% date_check) {
+      p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+    }
+  }
+
+  # Return plot
+  return(eval(p1))
+}
+
+#' @title BoxPlot
+#'
+#' @description Build a box plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
+#'
+#' @family EDA
+#'
+#' @author Adrian Antico
+#'
+#' @param data Source data.table
+#' @param XVar Column name of X-Axis variable. If NULL then ignored
+#' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
+#' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
+#' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
+#' @param FillColor 'gray'
+#' @param OutlierSize 0.10
+#' @param OutlierColor 'blue'
+#' @param YTicks Choose from 'Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles'
+#' @param XTicks Choose from 'Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'
+#' @param TextSize 14
+#' @param AngleX 90
+#' @param AngleY 0
+#' @param ChartColor 'lightsteelblue'
+#' @param BorderColor 'darkblue'
+#' @param TextColor 'darkblue'
+#' @param GridColor 'white'
+#' @param BackGroundColor 'gray95'
+#' @param SubTitleColor 'darkblue'
+#' @param LegendPosition 'bottom'
+#' @param LegendBorderSize 0.50
+#' @param LegendLineType 'solid'
+#' @param Debug FALSE
+#'
+#' @export
+BoxPlot <- function(data = NULL,
+                    XVar = NULL,
+                    YVar = NULL,
+                    FacetVar1 = NULL,
+                    FacetVar2 = NULL,
+                    SampleSize = 1000000L,
+                    FillColor = 'gray',
+                    OutlierSize = 0.10,
+                    OutlierColor = 'blue',
+                    YTicks = 'Default',
+                    XTicks = 'Default',
+                    TextSize = 12,
+                    AngleX = 90,
+                    AngleY = 0,
+                    ChartColor = 'lightsteelblue1',
+                    BorderColor = 'darkblue',
+                    TextColor = 'darkblue',
+                    GridColor = 'white',
+                    BackGroundColor = 'gray95',
+                    SubTitleColor = 'blue',
+                    LegendPosition = 'bottom',
+                    LegendBorderSize = 0.50,
+                    LegendLineType = 'solid',
+                    Debug = FALSE) {
+
+  # Cap number of records
+  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+
+  # Used multiple times
+  check1 <- length(XVar) != 0 && length(YVar) != 0 && (lubridate::is.Date(data[['XVar']]) || lubridate::is.POSIXct(data[['XVar']]))
+
+  # Create base plot object
+  if(Debug) print('Create Plot with only data')
+  if(check1) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
+  } else if(length(YVar) != 0) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(YVar)))
+  } else if(length(XVar) != 0) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(XVar)))
+  } else {
+    stop('XVar and YVar cannot both be NULL')
+  }
+
+  # Box Plot Call
+  if(Debug) print('Create BoxPlot')
+  p1 <- p1 + ggplot2::geom_boxplot(outlier.size = OutlierSize, outlier.colour = OutlierColor, fill = FillColor)
+
+  # Add Horizontal Line for Mean Y
+  if(Debug) print('Create Plot Horizontal Line')
+  if(!is.null(YVar)) {
+    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data[[eval(YVar)]], na.rm = TRUE)))
+  } else {
+    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data[[eval(XVar)]], na.rm = TRUE)))
+  }
+
+  # Create Plot labs
+  if(Debug) print('Create Plot labs')
+  if(check1) {
+    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+  } else {
+    p1 <- p1 + ggplot2::labs(title = 'BoxPlot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+  }
+
+  # Labels
+  if(check1) {
+    p1 <- p1 + ggplot2::ylab(YVar)
+    p1 <- p1 + ggplot2::xlab(XVar)
+  } else if(length(YVar) != 0) {
+    p1 <- p1 + ggplot2::ylab(NULL)
+    p1 <- p1 + ggplot2::xlab(YVar)
+  } else {
+    p1 <- p1 + ggplot2::ylab(NULL)
+    p1 <- p1 + ggplot2::xlab(XVar)
+  }
+
+  # Add faceting (returns no faceting in none was requested)
+  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
+    if(Debug) print('FacetVar1 and FacetVar2')
+    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
+  } else if(length(FacetVar1) != 0 && FacetVar1 == 'None') {
+    if(Debug) print('FacetVar1')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
+  } else if(length(FacetVar2) != 0 && FacetVar2 == 'None') {
+    if(Debug) print('FacetVar2')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
+  }
+
+  # Add ChartTheme
+  if(Debug) print('ChartTheme')
+  p1 <- p1 + RemixAutoML::ChartTheme(
+    Size = TextSize,
+    AngleX = AngleX,
+    AngleY = AngleY,
+    ChartColor = ChartColor,
+    BorderColor = BorderColor,
+    TextColor = TextColor,
+    GridColor = GridColor,
+    BackGroundColor = BackGroundColor,
+    SubTitleColor = SubTitleColor,
+    LegendPosition = LegendPosition,
+    LegendBorderSize = LegendBorderSize,
+    LegendLineType = LegendLineType)
+
+  # Define Tick Marks
+  if(Debug) print('YTicks Update')
+  if('Percentiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+  } else if('Every 5th percentile' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(6L, length(YTicks)-1L, 5L))]
+  } else if('Deciles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(11L, length(YTicks)-1L, 10L))]
+  } else if('Quantiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(21L, length(YTicks)-1L, 20L))]
+  } else if('Quartiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(26L, length(YTicks)-1L, 25L))]
+  } else {
+    YTicks <- NULL
+  }
+
+  # Add tick marks
+  if(length(YTicks) != 0) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(YTicks))
+
+  # Add XTicks for Date Case
+  if(check1) {
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(length(XTicks) > 1L) XTicks <- XTicks[1L]
+    if(XTicks %in% date_check) {
+      p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+    }
+  }
+
+  # Return plot
+  return(eval(p1))
+}
+
+#' @title BarPlot
+#'
+#' @description Build a bar plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
+#'
+#' @family EDA
+#'
+#' @author Adrian Antico
+#'
+#' @param data Source data.table
+#' @param XVar Column name of X-Axis variable. If NULL then ignored
+#' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
+#' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
+#' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
+#' @param FillColor 'gray'
+#' @param OutlierSize 0.10
+#' @param OutlierColor 'blue'
+#' @param YTicks Choose from 'Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles'
+#' @param XTicks Choose from 'Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'
+#' @param TextSize 14
+#' @param AngleX 90
+#' @param AngleY 0
+#' @param ChartColor 'lightsteelblue'
+#' @param BorderColor 'darkblue'
+#' @param TextColor 'darkblue'
+#' @param GridColor 'white'
+#' @param BackGroundColor 'gray95'
+#' @param SubTitleColor 'darkblue'
+#' @param LegendPosition 'bottom'
+#' @param LegendBorderSize 0.50
+#' @param LegendLineType 'solid'
+#' @param Debug FALSE
+#'
+#' @export
+BarPlot <- function(data = NULL,
+                    XVar = NULL,
+                    YVar = NULL,
+                    ColorVar = NULL,
+                    FacetVar1 = NULL,
+                    FacetVar2 = NULL,
+                    SampleSize = 1000000L,
+                    FillColor = 'gray',
+                    YTicks = 'Default',
+                    XTicks = 'Default',
+                    TextSize = 12,
+                    AngleX = 90,
+                    AngleY = 0,
+                    ChartColor = 'lightsteelblue1',
+                    BorderColor = 'darkblue',
+                    TextColor = 'darkblue',
+                    GridColor = 'white',
+                    BackGroundColor = 'gray95',
+                    SubTitleColor = 'blue',
+                    LegendPosition = 'bottom',
+                    LegendBorderSize = 0.50,
+                    LegendLineType = 'solid',
+                    Debug = FALSE) {
+
+  # Cap number of records
+  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+
+  # Used multiple times
+  check1 <- length(XVar) != 0 && length(YVar) != 0
+  check2 <- length(XVar) == 0 && length(YVar) != 0
+  check3 <- length(XVar) != 0 && length(YVar) == 0
+
+  # Create base plot object
+  if(Debug) print('Create Plot with only data')
+  if(check1) {
+    if(length(ColorVar) != 0) {
+      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), fill = as.factor(get(ColorVar))))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'identity')
+      p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
+      p1 <- p1 + ggplot2::xlab(eval(YVar)) + ggplot2::ylab(eval(YVar))
+    } else {
+      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar)))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'identity', fill = FillColor)
+      p1 <- p1 + ggplot2::xlab(eval(YVar)) + ggplot2::ylab(eval(YVar))
+    }
+  } else if(check2) {
+    if(length(ColorVar) != 0) {
+      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar), fill = as.factor(get(ColorVar))))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'bin')
+      p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
+      p1 <- p1 + ggplot2::xlab(eval(YVar))
+    } else {
+      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar)))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'bin', fill = FillColor)
+      p1 <- p1 + ggplot2::xlab(eval(YVar))
+    }
+  } else if(check3) {
+    if(length(ColorVar) != 0) {
+      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), fill = as.factor(get(ColorVar))))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'bin')
+      p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
+      p1 <- p1 + ggplot2::xlab(eval(XVar))
+    } else {
+      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar)))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'bin', fill = FillColor)
+      p1 <- p1 + ggplot2::xlab(eval(XVar))
+    }
+  } else {
+    stop('XVar and YVar cannot both be NULL')
+  }
+
+  # Create Plot labs
+  if(Debug) print('Create Plot labs')
+  p1 <- p1 + ggplot2::labs(title = 'Bar Plot', caption = 'RemixAutoML')
+
+  # Add faceting (returns no faceting in none was requested)
+  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
+    if(Debug) print('FacetVar1 and FacetVar2')
+    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
+  } else if(length(FacetVar1) != 0 && FacetVar1 != 'None') {
+    if(Debug) print('FacetVar1')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
+  } else if(length(FacetVar2) != 0 && FacetVar2 != 'None') {
+    if(Debug) print('FacetVar2')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
+  }
+
+  # Add ChartTheme
+  if(Debug) print('ChartTheme')
+  p1 <- p1 + RemixAutoML::ChartTheme(
+    Size = TextSize,
+    AngleX = AngleX,
+    AngleY = AngleY,
+    ChartColor = ChartColor,
+    BorderColor = BorderColor,
+    TextColor = TextColor,
+    GridColor = GridColor,
+    BackGroundColor = BackGroundColor,
+    SubTitleColor = SubTitleColor,
+    LegendPosition = LegendPosition,
+    LegendBorderSize = LegendBorderSize,
+    LegendLineType = LegendLineType)
+
+  # Define Tick Marks
+  if(Debug) print('YTicks Update')
+  if('Percentiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+  } else if('Every 5th percentile' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(6L, length(YTicks)-1L, 5L))]
+  } else if('Deciles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(11L, length(YTicks)-1L, 10L))]
+  } else if('Quantiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(21L, length(YTicks)-1L, 20L))]
+  } else if('Quartiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(26L, length(YTicks)-1L, 25L))]
+  } else {
+    YTicks <- NULL
+  }
+
+  # Add tick marks
+  if(length(YTicks) != 0) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(YTicks))
+
+  # Add XTicks for Date Case
+  if(check1) {
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(length(XTicks) > 1L) XTicks <- XTicks[1L]
+    if(XTicks %in% date_check) {
+      p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+    }
+  }
+
+  # Return plot
+  return(eval(p1))
+}
+
+#' @title HistPlot
+#'
+#' @description Build a histogram plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
+#'
+#' @family EDA
+#'
+#' @author Adrian Antico
+#'
+#' @param data Source data.table
+#' @param XVar Column name of X-Axis variable. If NULL then ignored
+#' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
+#' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
+#' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
+#' @param FillColor 'gray'
+#' @param OutlierSize 0.10
+#' @param OutlierColor 'blue'
+#' @param YTicks Choose from 'Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles'
+#' @param XTicks Choose from 'Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'
+#' @param TextSize 14
+#' @param AngleX 90
+#' @param AngleY 0
+#' @param ChartColor 'lightsteelblue'
+#' @param BorderColor 'darkblue'
+#' @param TextColor 'darkblue'
+#' @param GridColor 'white'
+#' @param BackGroundColor 'gray95'
+#' @param SubTitleColor 'darkblue'
+#' @param LegendPosition 'bottom'
+#' @param LegendBorderSize 0.50
+#' @param LegendLineType 'solid'
+#' @param Debug FALSE
+#'
+#' @export
+HistPlot <- function(data = NULL,
+                     XVar = NULL,
+                     YVar = NULL,
+                     FacetVar1 = NULL,
+                     FacetVar2 = NULL,
+                     SampleSize = 1000000L,
+                     FillColor = 'gray',
+                     OutlierSize = 0.10,
+                     OutlierColor = 'blue',
+                     YTicks = 'Default',
+                     XTicks = 'Default',
+                     TextSize = 12,
+                     AngleX = 90,
+                     AngleY = 0,
+                     ChartColor = 'lightsteelblue1',
+                     BorderColor = 'darkblue',
+                     TextColor = 'darkblue',
+                     GridColor = 'white',
+                     BackGroundColor = 'gray95',
+                     SubTitleColor = 'blue',
+                     LegendPosition = 'bottom',
+                     LegendBorderSize = 0.50,
+                     LegendLineType = 'solid',
+                     Debug = FALSE) {
+
+  # Cap number of records
+  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+
+  # Define Plotting Variable
+  if(Debug) print('YTicks Update')
+  if(length(YVar) == 0) YVar <- XVar
+  if(length(YVar) == 0) stop('XVar and YVar cannot both be NULL')
+
+  # Create base plot object
+  if(Debug) print('Create Plot with only data')
+  p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar)))
+
+  # Box Plot Call
+  if(Debug) print('Create Histogram')
+  p1 <- p1 + ggplot2::geom_histogram(bin = Bins)
+
+  # Add Horizontal Line for Mean Y
+  if(Debug) print('Create Plot Horizontal Line')
+  p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(data[[eval(YVar)]], na.rm = TRUE)))
+
+  # Create Plot labs
+  if(Debug) print('Create Plot labs')
+  p1 <- p1 + ggplot2::labs(title = 'Histogram', subtitle = 'Blue line = mean(X)', caption = 'RemixAutoML')
+
+  # Labels
+  p1 <- p1 + ggplot2::ylab(NULL)
+  p1 <- p1 + ggplot2::xlab(YVar)
+
+  # Add faceting (returns no faceting in none was requested)
+  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
+    if(Debug) print('FacetVar1 and FacetVar2')
+    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
+  } else if(length(FacetVar1) != 0 && FacetVar1 == 'None') {
+    if(Debug) print('FacetVar1')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
+  } else if(length(FacetVar2) != 0 && FacetVar2 == 'None') {
+    if(Debug) print('FacetVar2')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
+  }
+
+  # Add ChartTheme
+  if(Debug) print('ChartTheme')
+  p1 <- p1 + RemixAutoML::ChartTheme(
+    Size = TextSize,
+    AngleX = AngleX,
+    AngleY = AngleY,
+    ChartColor = ChartColor,
+    BorderColor = BorderColor,
+    TextColor = TextColor,
+    GridColor = GridColor,
+    BackGroundColor = BackGroundColor,
+    SubTitleColor = SubTitleColor,
+    LegendPosition = LegendPosition,
+    LegendBorderSize = LegendBorderSize,
+    LegendLineType = LegendLineType)
+
+  # Define Tick Marks
+  if(Debug) print('YTicks Update')
+  if(length(YTicks) == 0) YTicks <- XTicks
+  if(length(YTicks) != 0) {
+    if('Percentiles' %in% YTicks) {
+      YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    } else if('Every 5th percentile' %in% YTicks) {
+      YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      YTicks <- YTicks[c(seq(6L, length(YTicks)-1L, 5L))]
+    } else if('Deciles' %in% YTicks) {
+      YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      YTicks <- YTicks[c(seq(11L, length(YTicks)-1L, 10L))]
+    } else if('Quantiles' %in% YTicks) {
+      YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      YTicks <- YTicks[c(seq(21L, length(YTicks)-1L, 20L))]
+    } else if('Quartiles' %in% YTicks) {
+      YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      YTicks <- YTicks[c(seq(26L, length(YTicks)-1L, 25L))]
+    } else {
+      YTicks <- NULL
+    }
+  }
+
+  # Add tick marks
+  if(length(YTicks) != 0) p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(YTicks))
+
+  # Return plot
+  return(eval(p1))
+}
+
 #' @title AutoPlotter
 #'
 #' @description Create plots
@@ -7,6 +673,7 @@
 #'
 #' @param dt = NULL
 #' @param PlotType = input[['PlotType']]
+#' @param SampleSize = input[['SampleSize']]
 #' @param YVar = shiny::isolate(YVar())
 #' @param XVar = shiny::isolate(DateVar())
 #' @param YMin = input[['YMin']]
@@ -22,7 +689,7 @@
 #' @param Bins = 30
 #' @param OutlierSize = input[['OutlierSize']]
 #' @param OutlierColor = input[['OutlierColor']]
-#' @param BoxPlotFill = input[['BoxPlotFill']]
+#' @param FillColor = input[['BoxPlotFill']]
 #' @param GamFitScatter = input[['GamFitScatter']]
 #' @param TextSize = input[['TextSize']]
 #' @param AngleX = input[['AngleX']]
@@ -39,6 +706,7 @@
 #' @param Debug = FALSE
 AutoPlotter <- function(dt = NULL,
                         PlotType = 'Scatter',
+                        SampleSize = 100000L,
                         YVar = NULL,
                         XVar = NULL,
                         YMin = NULL,
@@ -54,7 +722,7 @@ AutoPlotter <- function(dt = NULL,
                         Bins = 30,
                         OutlierSize = 0.10,
                         OutlierColor = 'blue',
-                        BoxPlotFill = 'gray',
+                        FillColor = 'gray',
                         GamFitScatter = FALSE,
                         TextSize = 12,
                         AngleX = 90,
@@ -70,77 +738,123 @@ AutoPlotter <- function(dt = NULL,
                         LegendLineType = 'solid',
                         Debug = FALSE) {
 
+  # Debug
   if(Debug) print(paste0('AutoPlotter() begin, PlotType = ', PlotType))
 
-  # BoxPlot or ViolinPlot or Bar
-  if(PlotType %in% c('BoxPlot','ViolinPlot','Bar')) {
+  # Box Plot
+  if(tolower(PlotType) == 'boxplot') {
+    p1 <- RemixAutoML::BoxPlot(
+      data = dt,
+      XVar = XVar,
+      YVar = YVar,
+      FacetVar1 = FacetVar1,
+      FacetVar2 = FacetVar2,
+      SampleSize = SampleSize,
+      FillColor = FillColor,
+      OutlierSize = OutlierSize,
+      OutlierColor = OutlierColor,
+      YTicks = YTicks,
+      XTicks = XTicks,
+      TextSize = TextSize,
+      AngleX = AngleX,
+      AngleY = AngleY,
+      ChartColor = ChartColor,
+      BorderColor = BorderColor,
+      TextColor = TextColor,
+      GridColor = GridColor,
+      BackGroundColor = BackGroundColor,
+      SubTitleColor = SubTitleColor,
+      LegendPosition = LegendPosition,
+      LegendBorderSize = LegendBorderSize,
+      LegendLineType = LegendLineType,
+      Debug = Debug)
+  }
 
-    # Cap number of records----
-    if(dt[,.N] > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
+  # Violin Plot
+  if(tolower(PlotType) == 'violinplot') {
+    p1 <- RemixAutoML::ViolinPlot(
+      data = dt,
+      XVar = XVar,
+      YVar = YVar,
+      FacetVar1 = FacetVar1,
+      FacetVar2 = FacetVar2,
+      SampleSize = SampleSize,
+      FillColor = FillColor,
+      YTicks = YTicks,
+      XTicks = XTicks,
+      TextSize = TextSize,
+      AngleX = AngleX,
+      AngleY = AngleY,
+      ChartColor = ChartColor,
+      BorderColor = BorderColor,
+      TextColor = TextColor,
+      GridColor = GridColor,
+      BackGroundColor = BackGroundColor,
+      SubTitleColor = SubTitleColor,
+      LegendPosition = LegendPosition,
+      LegendBorderSize = LegendBorderSize,
+      LegendLineType = LegendLineType,
+      Debug = Debug)
+  }
 
-    # Create base plot object
-    if(Debug) print('Create Plot with only data')
-    if(!is.null(XVar) && !is.null(YVar)) {
-      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(XVar), y = eval(YVar), group = eval(XVar)))
-    } else if(is.null(XVar) && !is.null(YVar)) {
-      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = "", y = eval(YVar)))
-    } else if(!is.null(XVar) && is.null(YVar)) {
-      p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = "", y = eval(XVar)))
-    }
+  # Bar Plot
+  if(tolower(PlotType) == 'bar') {
+    p1 <- RemixAutoML::BarPlot(
+      data = dt,
+      XVar = XVar,
+      YVar = YVar,
+      FacetVar1 = FacetVar1,
+      FacetVar2 = FacetVar2,
+      ColorVar = ColorVariables,
+      SampleSize = SampleSize,
+      FillColor = FillColor,
+      YTicks = YTicks,
+      XTicks = XTicks,
+      TextSize = TextSize,
+      AngleX = AngleX,
+      AngleY = AngleY,
+      ChartColor = ChartColor,
+      BorderColor = BorderColor,
+      TextColor = TextColor,
+      GridColor = GridColor,
+      BackGroundColor = BackGroundColor,
+      SubTitleColor = SubTitleColor,
+      LegendPosition = LegendPosition,
+      LegendBorderSize = LegendBorderSize,
+      LegendLineType = LegendLineType,
+      Debug = Debug)
+  }
 
-    # Box Plot
-    if(PlotType == 'BoxPlot') {
-      if(Debug) print('Create BoxPlot')
-      p1 <- p1 + ggplot2::geom_boxplot(outlier.size = OutlierSize, outlier.colour = OutlierColor, fill = BoxPlotFill)
-    } else if(PlotType == 'ViolinPlot') {
-      if(Debug) print('Create ViolinPlot')
-      p1 <- p1 + ggplot2::geom_violin(fill = BoxPlotFill)
-    } else if(PlotType == 'Bar') {
-      if(Debug) print('Create Bar')
-      p1 <- p1 + ggplot2::geom_bar(stat = 'identity')
-    }
-
-    # Add Horizontal Line for Mean Y
-    if(Debug) print('Create Plot Horizontal Line')
-    if(!is.null(YVar)) {
-      p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
-    } else if(!is.null(XVar)) {
-      p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(dt[[eval(XVar)]], na.rm = TRUE)))
-    }
-
-    # Create Plot labs
-    if(Debug) print('Create Plot labs')
-    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
-
-    # Modify x-axis scale; if the length > 1 then it is a categorical variable
-    if(Debug) {print('XTicks'); print(XTicks)}
-    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
-    if(!is.null(XVar)) if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
-    if(!is.null(XVar)) if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
-
-    # Axis Labels
-    if(!is.null(YVar)) {
-      p1 <- p1 + ggplot2::ylab(eval(YVar))
-      if(!is.null(XVar)) p1 <- p1 + ggplot2::xlab(XVar)
-    } else if(!is.null(XVar)) {
-      p1 <- p1 + ggplot2::ylab(eval(XVar))
-    }
-
-    # Add faceting (returns no faceting in none was requested)
-    if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
-      if(Debug) print('FacetVar1 and FacetVar2')
-      p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-    } else if(!is.null(FacetVar1) && FacetVar1 == 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
-      if(Debug) print('FacetVar2')
-      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-    } else if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 == 'None') {
-      if(Debug) print('FacetVar1')
-      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
-    }
+  # Histogram
+  if(tolower(PlotType) %chin% 'histogram') {
+    p1 <- RemixAutoML::BarPlot(
+      data = dt,
+      XVar = XVar,
+      YVar = YVar,
+      FacetVar1 = FacetVar1,
+      FacetVar2 = FacetVar2,
+      ColorVar = ColorVariables,
+      SampleSize = SampleSize,
+      FillColor = FillColor,
+      YTicks = YTicks,
+      XTicks = XTicks,
+      TextSize = TextSize,
+      AngleX = AngleX,
+      AngleY = AngleY,
+      ChartColor = ChartColor,
+      BorderColor = BorderColor,
+      TextColor = TextColor,
+      GridColor = GridColor,
+      BackGroundColor = BackGroundColor,
+      SubTitleColor = SubTitleColor,
+      LegendPosition = LegendPosition,
+      LegendBorderSize = LegendBorderSize,
+      LegendLineType = LegendLineType,
+      Debug = Debug)
   }
 
   # Line
-  if(PlotType == 'Line') {
+  if(tolower(PlotType) == 'line') {
 
     if(Debug) print('Line Plot Here')
     if(Debug) print(paste0('ColorVariables: ', ColorVariables))
@@ -178,7 +892,7 @@ AutoPlotter <- function(dt = NULL,
     # Update labels
     p1 <- p1 + ggplot2::labs(
       title = 'Time Series Plot',
-      caption = 'by RemixAutoML') +
+      caption = 'RemixAutoML') +
       ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax))) +
       ggplot2::ylab(eval(YVar)) + ggplot2::xlab(eval(XVar)) +
       ggplot2::theme(legend.title = ggplot2::element_blank())
@@ -191,7 +905,7 @@ AutoPlotter <- function(dt = NULL,
   }
 
   # Scatter or Copula
-  if(PlotType %in% c('Scatter', 'Copula')) {
+  if(tolower(PlotType) %in% c('scatter', 'copula')) {
 
     N <- dt[,.N]
 
@@ -250,7 +964,8 @@ AutoPlotter <- function(dt = NULL,
       p1 <- p1 + ggplot2::labs(
         title = paste0('Scatter Plot'),
         subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
-                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
+                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
+        caption = 'RemixAutoML')
       p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor))
       p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
       p1 <- p1 + ggplot2::xlim(as.numeric(eval(XMin)), as.numeric(eval(XMax)))
@@ -261,7 +976,8 @@ AutoPlotter <- function(dt = NULL,
       p1 <- p1 + ggplot2::labs(
         title = paste0('Empirical Copula Plot'),
         subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
-                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)))
+                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
+        caption = 'RemixAutoML')
       p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor))
     }
 
@@ -309,57 +1025,6 @@ AutoPlotter <- function(dt = NULL,
     if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
   }
 
-  # Histogram
-  if(PlotType %chin% 'Histogram') {
-
-    # Cap number of records
-    if(dt[,.N] > 1000000L) dt <- dt[order(runif(.N))][seq_len(1000000L)]
-
-    # Start plot
-    if(!is.null(YVar) && is.numeric(dt[[eval(YVar)]])) {
-
-      if(Debug) print('Histogram: here 1')
-      if(!is.null(ColorVariables)) {
-        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(YVar), fill = eval(ColorVariables)))
-      } else {
-        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(YVar)))
-      }
-      p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
-      p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(YVar)]], na.rm = TRUE)))
-      p1 <- p1 + ggplot2::xlab(label = eval(YVar))
-      p1 <- p1 + ggplot2::labs(title = 'Distribution', subtitle = 'Blue line = mean(Y)', caption = 'by RemixAutoML')
-
-    } else if(!is.null(XVar) && is.numeric(dt[[eval(XVar)]])) {
-
-      if(Debug) print('Histogram: here 2')
-      if(!is.null(ColorVariables)) {
-        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(XVar), color = eval(ColorVariables)))
-      } else {
-        p1 <- ggplot2::ggplot(data = dt, ggplot2::aes_string(x = eval(XVar)))
-      }
-      p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
-      p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(dt[[eval(XVar)]], na.rm = TRUE)))
-      p1 <- p1 + ggplot2::xlab(label = eval(XVar))
-      p1 <- p1 + ggplot2::labs(title = 'Distribution', subtitle = 'Blue line = mean(X)', caption = 'by RemixAutoML')
-
-    } else {
-      if(Debug) print('Histogram: here 3')
-      return(NULL)
-    }
-
-    # Add faceting (returns no faceting in none was requested)
-    if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
-      if(Debug) print('FacetVar1 and FacetVar2')
-      p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-    } else if(!is.null(FacetVar1) && FacetVar1 == 'None' && !is.null(FacetVar2) && FacetVar2 != 'None') {
-      if(Debug) print('FacetVar2')
-      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-    } else if(!is.null(FacetVar1) && FacetVar1 != 'None' && !is.null(FacetVar2) && FacetVar2 == 'None') {
-      if(Debug) print('FacetVar1')
-      p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
-    }
-  }
-
   # Add ChartTheme
   if(Debug) print('ChartTheme')
   p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
@@ -379,9 +1044,9 @@ AutoPlotter <- function(dt = NULL,
 #' @author Adrian Antico
 #' @family Graphics
 #'
+#' @param ModelOutputList output list
 #' @param dt = NULL,
 #' @param PlotType = NULL,
-#' @param ModelOutputList = NULL,
 #' @param TargetVar = isolate(YVar()),
 #' @param PredictVar = isolate(ScoreVar()),
 #' @param PDPVar = NULL,
@@ -391,9 +1056,9 @@ AutoPlotter <- function(dt = NULL,
 #' @param Rebuild = FALSE,
 #' @param Check2 = FALSE,
 #' @param Debug = FALSE
-AppModelInsights <- function(dt = NULL,
+AppModelInsights <- function(ModelOutputList,
+                             dt = NULL,
                              PlotType = NULL,
-                             ModelOutputList = NULL,
                              TargetVar = NULL,
                              PredictVar = NULL,
                              PDPVar = NULL,
@@ -604,6 +1269,8 @@ AppModelInsights <- function(dt = NULL,
     if(!Rebuild) {
       if(Debug) print('Test_ScatterPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_ScatterPlot']]
+      if(Debug) print(class(p1))
+      if(Debug) print('Extracted the Test_ScatterPlot from ModelOutputList')
     } else {
       if(Debug) print('Test_ScatterPlot ! !Rebuild')
       p1 <- RemixAutoML::ResidualPlots(
@@ -822,7 +1489,7 @@ AppModelInsights <- function(dt = NULL,
   # }
 
   if(!exists('p1')) p1 <- NULL
-  return(p1)
+  return(eval(p1))
 }
 
 #' @title multiplot
@@ -983,7 +1650,7 @@ ChartTheme <- function(Size = 12,
                        GridColor = 'white',
                        BackGroundColor = 'gray95',
                        LegendPosition = 'bottom',
-                       LegendBorderSize = 0.50,
+                       LegendBorderSize = 0.01,
                        LegendLineType = 'solid') {
   chart_theme <- ggplot2::theme(
     plot.background = ggplot2::element_rect(fill = BackGroundColor),

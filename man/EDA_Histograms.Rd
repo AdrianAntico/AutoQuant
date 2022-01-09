@@ -62,10 +62,14 @@ Creates histograms
 \seealso{
 Other EDA: 
 \code{\link{AutoWordFreq}()},
+\code{\link{BarPlot}()},
+\code{\link{BoxPlot}()},
+\code{\link{HistPlot}()},
 \code{\link{Mode}()},
 \code{\link{PlotGUI}()},
 \code{\link{ScatterCopula}()},
-\code{\link{UserBaseEvolution}()}
+\code{\link{UserBaseEvolution}()},
+\code{\link{ViolinPlot}()}
 }
 \author{
 Adrian Antico

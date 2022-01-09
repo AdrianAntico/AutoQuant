@@ -7,6 +7,7 @@
 AutoPlotter(
   dt = NULL,
   PlotType = "Scatter",
+  SampleSize = 100000L,
   YVar = NULL,
   XVar = NULL,
   YMin = NULL,
@@ -22,7 +23,7 @@ AutoPlotter(
   Bins = 30,
   OutlierSize = 0.1,
   OutlierColor = "blue",
-  BoxPlotFill = "gray",
+  FillColor = "gray",
   GamFitScatter = FALSE,
   TextSize = 12,
   AngleX = 90,
@@ -43,6 +44,8 @@ AutoPlotter(
 \item{dt}{= NULL}
 
 \item{PlotType}{= input[['PlotType']]}
+
+\item{SampleSize}{= input[['SampleSize']]}
 
 \item{YVar}{= shiny::isolate(YVar())}
 
@@ -74,7 +77,7 @@ AutoPlotter(
 
 \item{OutlierColor}{= input[['OutlierColor']]}
 
-\item{BoxPlotFill}{= input[['BoxPlotFill']]}
+\item{FillColor}{= input[['BoxPlotFill']]}
 
 \item{GamFitScatter}{= input[['GamFitScatter']]}
 
