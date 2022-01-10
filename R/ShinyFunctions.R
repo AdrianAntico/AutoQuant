@@ -324,12 +324,20 @@ FilterValues <- function(data, VarName = NULL, type = 1) {
 #' @export
 FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
 
+  if(Debug) {
+    print(data1)
+    print(FilterLogic)
+    print(FilterVariable)
+    print(FilterValue)
+    print(FilterValue2)
+  }
+
   if(missing(data1)) {
     return(NULL)
   }
 
   if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')) || FilterLogic %in% c('%in%', '%chin%', '%like')) {
-    if(Debug) print('FilterLogicData else if')
+    if(Debug) print('FilterLogicData else if 1')
     if(Debug) print(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')))
     if(FilterLogic %in% c('%in%','%chin%')) {
       data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
@@ -337,14 +345,14 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
       data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
     }
   } else if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))) {
-    if(Debug) print('FilterLogicData else if')
+    if(Debug) print('FilterLogicData else if 2')
     if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))
     if(FilterLogic == '>') {
-      data1 <- data1[get(FilterVariable) > eval(as.numeric(FilterValue))]
+      data1 <- data1[get(FilterVariable) > eval(FilterValue)]
     } else if(FilterLogic == '>=') {
-      data1 <- data1[get(FilterVariable) >= eval(as.numeric(FilterValue))]
+      data1 <- data1[get(FilterVariable) >= eval(FilterValue)]
     } else if(FilterLogic == '<') {
-      data1 <- data1[get(FilterVariable) < eval(as.numeric(FilterValue2))]
+      data1 <- data1[get(FilterVariable) < eval(FilterValue2)]
     } else if(FilterLogic == '%between%') {
       if(Debug) print('At %between% section')
       if(Debug) print(as.numeric(FilterVariable))
@@ -352,13 +360,13 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
       if(Debug) print(as.numeric(FilterValue2))
       if(Debug) print(data1)
       if(Debug) print('Run data.table operation')
-      data1 <- data1[get(FilterVariable) >= eval(as.numeric(FilterValue)) & get(FilterVariable) <= eval(as.numeric(FilterValue2))]
+      data1 <- data1[get(FilterVariable) >= eval(FilterValue) & get(FilterVariable) <= eval(FilterValue2)]
       if(Debug) print('Done with data.table operation')
       if(Debug) print(data1)
     } else if(FilterLogic == 'not %between%') {
-      data1 <- data1[get(FilterVariable) < eval(as.numeric(FilterValue)) | get(FilterVariable) > eval(as.numeric(FilterValue2))]
+      data1 <- data1[get(FilterVariable) < eval(FilterValue) | get(FilterVariable) > eval(FilterValue2)]
     } else {
-      data1 <- data1[get(FilterVariable) <= eval(as.numeric(FilterValue2))]
+      data1 <- data1[get(FilterVariable) <= eval(FilterValue2)]
     }
   }
   data1
