@@ -478,7 +478,7 @@ ui <- shinydashboard::dashboardPage(
             shiny::column(
               width = 2L, shinyjs::useShinyjs(),
               tags$h4(tags$b('Build Plot')), # tags$h4(tags$span(style='color: blue;', 'Build Plot')),
-              shinyWidgets::actionBttn(inputId='TrendPlotExecute', label='Build', style='gradient', color='royal')), # eval(CreatePlotButtonColor)
+              shinyWidgets::actionBttn(inputId='TrendPlotExecute', label='Build Plot', style='gradient', color='royal')), # eval(CreatePlotButtonColor)
 
             # Reset Theme!
             # shiny::column(
@@ -508,7 +508,7 @@ ui <- shinydashboard::dashboardPage(
               width = 1L,
               tags$h4(tags$b('Formatting')),
               shinyWidgets::dropdown(
-                right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", width = LogoWidth,
+                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Formatting')),
                 tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'For color options, see Plot Colors')),
                 RemixAutoML::BlankRow(AppWidth),
@@ -578,7 +578,7 @@ ui <- shinydashboard::dashboardPage(
 
             # Plot Colors (col 3)
             shiny::column(
-              width = 2L,
+              width = 1L,
               tags$h4(tags$b('Colors')),
               shinyWidgets::dropdown(
                 right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", width = LogoWidth,
@@ -599,10 +599,10 @@ ui <- shinydashboard::dashboardPage(
 
             # Plot Enhancements
             shiny::column(
-              width = 1L,
+              width = 2L,
               tags$h4(tags$b('Plot Extras')),
               shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", inputId = "By-Variables", width = LogoWidth,
+                right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", inputId = "By-Variables", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Enhancements')),
                 tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Additional MetaData Selection for Plot Enhancements')),
                 RemixAutoML::BlankRow(AppWidth),
@@ -883,17 +883,13 @@ server <- function(input, output, session) {
     if(Debug) print('data check 1')
     CodeCollection <- list()
     data <<- RemixAutoML::ReactiveLoadCSV(Infile = input[['DataLoad']], ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
-    # (path returned is a temp path) CodeCollection[[1L]] <- paste0("data.table::data.table(file = ", input[['DataLoad']], ")")
 
     # Load ModelOutputList
-    #if(Debug)
-    print('data check 2')
+    if(Debug) print('data check 2')
     inFile1 <- tryCatch({input[['ModelObjectLoad']]}, error = function(x) NULL)
-    #if(Debug)
-    print(inFile1)
+    if(Debug) print(inFile1)
     if(!is.null(inFile1)) {
-      #if(Debug)
-      print('loading .Rdata')
+      if(Debug) print('loading .Rdata')
       e <- new.env()
       name <- load(inFile1[['datapath']], e)
       if(Debug) print('store ModelOutputList globally')
@@ -913,7 +909,6 @@ server <- function(input, output, session) {
     if(Debug) print(inFile2)
     if(length(inFile2) != 0 && inFile2 != "Load" && inFile2 != "") {
       if(Debug) {print('data check 3'); print(input[['blob']])}
-      #inFile2 <- input[['blob']]
       if(!is.null(inFile2)) {
         if(grepl(pattern = '.csv', x = inFile2)) {
           download.file(url=paste0(BlobStorageURL, inFile2), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
@@ -3005,109 +3000,6 @@ server <- function(input, output, session) {
 
   # ----
 
-  # ----
-
-  # ----
-
-  # ----
-
-  #       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  #       TODO: reactive theme elements        ----
-  #       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-
-
-  # YTicks1 <- shiny::reactive({input[['YTicks1']]})
-  # if(Debug) print("Here lll44")
-  # YTicks2 <- shiny::reactive({input[['YTicks2']]})
-  # if(Debug) print("Here mmm44")
-  #
-  # YTicks3 <- shiny::reactive({input[['YTicks3']]})
-  # if(Debug) print("Here nnn44")
-  #
-  # YTicks4 <- shiny::reactive({input[['YTicks4']]})
-  # if(Debug) print("Here ooo44")
-  #
-  # XTicks1 <- shiny::reactive({input[['XTicks1']]})
-  # if(Debug) print("Here ppp44")
-  #
-  # XTicks2 <- shiny::reactive({input[['XTicks2']]})
-  # if(Debug) print("Here qqq44")
-  #
-  # XTicks3 <- shiny::reactive({input[['XTicks3']]})
-  # if(Debug) print("Here rrr44")
-  #
-  # XTicks4 <- shiny::reactive({input[['XTicks4']]})
-  # if(Debug) print("Here sss44")
-  #
-  # SampleSize <- shiny::reactive({input[['SampleSize']]})
-  # if(Debug) print("Here sssa44")
-  #
-  # AngleY <- shiny::reactive({input[['AngleY']]})
-  # if(Debug) print("Here ttt44")
-  #
-  # AngleX <- shiny::reactive({input[['AngleX']]})
-  # if(Debug) print("Here uuu44")
-  #
-  # TextSize <- shiny::reactive({input[['TextSize']]})
-  # if(Debug) print("Here vvv44")
-  #
-  # OutlierSize <- shiny::reactive({input[['OutlierSize']]})
-  # if(Debug) print("Here www44")
-  #
-  # LegendPosition <- shiny::reactive({input[['LegendPosition']]})
-  # if(Debug) print("Here xxx44")
-  #
-  # LegendBorderSize <- shiny::reactive({input[['LegendBorderSize']]})
-  # if(Debug) print("Here yyy44")
-  #
-  # LegendLineType <- shiny::reactive({input[['LegendLineType']]})
-  # if(Debug) print("Here zzz44")
-  #
-  # TextColor <- shiny::reactive({input[['TextColor']]})
-  # if(Debug) print("Here aaaa44")
-  #
-  # ChartColor <- shiny::reactive({input[['ChartColor']]})
-  # if(Debug) print("Here bbbb44")
-  #
-  # GridColor <- shiny::reactive({input[['GridColor']]})
-  # if(Debug) print("Here cccc44")
-  #
-  # BackGroundColor <- shiny::reactive({input[['BackGroundColor']]})
-  # if(Debug) print("Here dddd44")
-  #
-  # BorderColor <- shiny::reactive({input[['BorderColor']]})
-  # if(Debug) print("Here eeee44")
-  #
-  # OutlierColor <- shiny::reactive({input[['OutlierColor']]})
-  # if(Debug) print("Here ffff44")
-  #
-  # FillColor <- shiny::reactive({input[['FillColor']]})
-  # if(Debug) print("Here gggg44")
-  #
-  # SubTitleColor <- shiny::reactive({input[['SubTitleColor']]})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  # ----
-
-  # ----
-
-  # ----
-
-  # ----
-
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Group Variables                      ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -3858,149 +3750,24 @@ server <- function(input, output, session) {
 
   # ----
 
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Reset Plot Format                    ----
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  shiny::observeEvent(eventExpr = input[['ResetPlotThemeElements']], {
+  # Save Plot to File
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----
+  # Downloadable csv of selected dataset ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----
 
-    if(Debug) for(zzzz in 1:4) print(':: :: RESET PLOTS :: ::')
-    if(Debug) {
-      print(!exists('p1') || !exists('data1'))
-      print(!exists('p1'))
-      print(!exists('data1'))
-    }
-
-    # Stop if p1 or data1 doesn't exist
-    if(!exists('p1') || !exists('data1')) {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = "Try Create Plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-
-    } else {
-
-      # Update chart theme elements
-      if(Debug) print('Update ChartTheme()')
-      p1 <- p1 + RemixAutoML::ChartTheme(
-        Size = 12,
-        AngleX = 90,
-        AngleY = 0,
-        ChartColor = 'lightsteelblue1',
-        BorderColor = 'darkblue',
-        TextColor = 'darkblue',
-        GridColor = 'white',
-        BackGroundColor = 'gray95',
-        SubTitleColor = 'blue',
-        LegendPosition = 'bottom',
-        LegendBorderSize = 0.5,
-        LegendLineType = 'solid') +
-        ggplot2::theme(legend.title = ggplot2::element_blank())
-
-      # Update labels
-      if(input[['PlotType']] %chin% c('BoxPlot','ViolinPlot','Bar')) {
-        if(Debug) print('BoxPlot or ViolinPlot reset labs')
-        p1 <- p1 + ggplot2::labs(
-          title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
-          subtitle = 'Blue line = mean(Y)',
-          caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(DateVar()))
-
-      } else if(input[['PlotType']] %chin% c('Line')) {
-        if(Debug) print('Line reset labs')
-        p1 <- p1 + ggplot2::labs(
-          title = paste0(input[['PlotType']], ' Plot'),
-          caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(eval(input[['YMin']])), as.numeric(eval(input[['YMax']]))) +
-          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(DateVar()))
-
-      } else if(input[['PlotType']] %chin% c('Scatter','Copula')) {
-
-        # Labs
-        if(Debug) print('Scatter or Copula reset labs')
-        p1 <- p1 + ggplot2::labs(
-          title = paste0(shiny::isolate(input[['PlotType']]), ' Plot'),
-          caption = 'by RemixAutoML') +
-          ggplot2::ylim(as.numeric(input[['YMin']]), as.numeric(input[['YMax']])) +
-          ggplot2::ylab(shiny::isolate(YVar())) + ggplot2::xlab(shiny::isolate(XVar()))
-
-        # Tick Marks
-        if('Percentiles' %in% input[['YTicks']]) {
-          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        } else if('Every 5th percentile' %in% input[['YTicks']]) {
-          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
-        } else if('Deciles' %in% input[['YTicks']]) {
-          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
-        } else if('Quantiles' %in% input[['YTicks']]) {
-          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
-        } else if('Quartiles' %in% input[['YTicks']]) {
-          y_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
-        } else {
-          y_vals <- input[['YTicks']]
-        }
-        if('Percentiles' %in% input[['XTicks']]) {
-          x_vals <- data1[, quantile(round(get(XVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        } else if('Every 5th percentile' %in% input[['XTicks']]) {
-          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
-        } else if('Deciles' %in% input[['XTicks']]) {
-          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
-        } else if('Quantiles' %in% input[['XTicks']]) {
-          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
-        } else if('Quartiles' %in% input[['XTicks']]) {
-          x_vals <- data1[, quantile(round(get(YVar()), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-          x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
-        } else {
-          x_vals <- input[['XTicks']]
-        }
-        if(!'Default' %in% input[['XTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_x_continuous(breaks = as.numeric(x_vals)))
-        if(!'Default' %in% input[['YTicks']]) p1 <- p1 + suppressMessages(ggplot2::scale_y_continuous(breaks = as.numeric(y_vals)))
-      }
-
-      # UI Plot Options ----
-      output$PlotWidth <- shiny::renderUI({
-        RemixAutoML::NumericInput(InputID = "PlotWidth", Label = tags$span(style='color: blue;', 'Plot Width'), Step = 50, Min = 800, Max = 1800, Value = 1600)
-      })
-      output$PlotHeight <- shiny::renderUI({
-        RemixAutoML::NumericInput(InputID = "PlotHeight", Label = tags$span(style='color: blue;', 'Plot Height'), Step = 25, Min = 350, Max = 350*10, Value = 500)
-      })
-      output$AngleY <- shiny::renderUI({
-        RemixAutoML::NumericInput(InputID = "AngleY", Label = tags$span(style='color: blue;', 'Y-axis text angle'), Step = 5, Min = 0, Max = 360, Value = 0)
-      })
-      output$AngleX <- shiny::renderUI({
-        RemixAutoML::NumericInput(InputID = "AngleX", Label = tags$span(style='color: blue;', 'X-axis text angle'), Step = 5, Min = 0, Max = 360, Value = 90)
-      })
-      output$TextSize <- shiny::renderUI({
-        RemixAutoML::PickerInput(InputID = 'TextSize', Label = tags$span(style='color: blue;', 'Text Size'),Choices = c(as.character(seq(1,100,1))), SelectedDefault = '14', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-      })
-
-      # Color boxes ----
-      output$TextColor <- shiny::renderUI({
-        RemixAutoML::PickerInput(InputID = "TextColor", Label = tags$span(style='color: blue;', 'Text color'), Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-      })
-      output$ChartColor <- shiny::renderUI({
-        RemixAutoML::PickerInput(InputID = "ChartColor", Label = tags$span(style='color: blue;', 'Chart color'), Choices = grDevices::colors(), SelectedDefault = "lightsteelblue1", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-      })
-      output$GridColor <- shiny::renderUI({
-        RemixAutoML::PickerInput(InputID = "GridColor", Label = tags$span(style='color: blue;', 'Grid lines color'), Choices = grDevices::colors(), SelectedDefault = "white", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-      })
-      output$BackGroundColor <- shiny::renderUI({
-        RemixAutoML::PickerInput(InputID = "BackGroundColor", Label = tags$span(style='color: blue;', 'Background color'), Choices = grDevices::colors(), SelectedDefault = "gray95", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-      })
-      output$BorderColor <- shiny::renderUI({
-        RemixAutoML::PickerInput(InputID = "BorderColor", Label = tags$span(style='color: blue;', 'Border color'), Choices = grDevices::colors(), SelectedDefault = "darkblue", Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
-      })
-
-      # Return
-      p1 <<- p1
-      output$Trend <- shiny::renderPlot(width = input[['PlotWidth']], height = input[['PlotHeight']], {
-        p1
-      })
-    }
-  })
+  # shiny::observeEvent(input$SavePlot, {
+  #
+  #   # Check if plot exists and is valid
+  #
+  #   # Then Save
+  #   output$SavePlot <- shiny::downloadHandler(
+  #     filename = function() {
+  #       paste(data, ".csv", sep = "")
+  #     },
+  #     content = function(file) {
+  #       data.table::fwrite(datasetInput(), file, row.names = FALSE)
+  #     })
+  # })
 
   # ----
 
@@ -4312,9 +4079,7 @@ server <- function(input, output, session) {
 
           # Group Variables
           if(Debug) print('# Group Variables')
-
           if(Debug) print('GROUP VARIABLE CHECK HERE :::::::::::::::::::::')
-
           if(Debug) {
             print(SubsetList[[paste0('GroupVars', run)]])
             print(RemixAutoML::ReturnParam(input, VarName=paste0('GroupVars', run), Type='character', Default='None', Switch=TRUE))
@@ -4921,10 +4686,13 @@ server <- function(input, output, session) {
             CodeCollection[[length(CodeCollection)+1L]] <- 'gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))'
             # Didnt work right away: gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))
 
+            # Number of plots
             N <- length(PlotCollectionList)
             if(Debug) print(paste0('Length of N = ', N))
 
+            # Build Plots
             if(N == 1L) {
+
               if(Debug) print('N == 1L case')
               p1 <- PlotCollectionList[['p1']]
               if(Debug) print(paste0('Class of p1 is :: ', class(p1)))
@@ -4933,7 +4701,9 @@ server <- function(input, output, session) {
               output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
                 gridExtra::grid.arrange(p1, ncol=1)
               })
+
             } else if(N == 2L) {
+
               if(Debug) print('N == 2L case')
               p1 <- PlotCollectionList[['p1']]
               p2 <- PlotCollectionList[['p2']]
@@ -4950,7 +4720,9 @@ server <- function(input, output, session) {
                   gridExtra::grid.arrange(p1,p2, ncol=1)
                 })
               }
+
             } else if(N == 3L) {
+
               if(Debug) print('N == 3L case')
               p1 <- PlotCollectionList[['p1']]
               p2 <- PlotCollectionList[['p2']]
@@ -4973,6 +4745,7 @@ server <- function(input, output, session) {
               }
 
             } else if(N == 4L) {
+
               if(Debug) print('N == 4L case')
               p1 <- PlotCollectionList[['p1']]
               p2 <- PlotCollectionList[['p2']]
@@ -4997,9 +4770,10 @@ server <- function(input, output, session) {
             }
 
           } else {
-            shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Plot could not build. Check for missing variables, such as Date Variables.', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-          }
 
+            shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Plot could not build. Check for missing variables, such as Date Variables.', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+
+          }
         }
       }
       assign(x = 'PlotCollectionList', value = PlotCollectionList)
