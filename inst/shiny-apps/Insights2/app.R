@@ -2674,18 +2674,18 @@ server <- function(input, output, session) {
       if(Debug)print('Here 15.33')
 
       # Date Assumptions Check
-      if(Debug)print(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None'))
+      if(Debug) print(tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None'))
       x3 <- tryCatch({DateVarList[[paste0('DateVar', run)]]}, error = function(x) 'None')
       if(length(x3) != 0 && x3 == 'None') x3 <- NULL
       if(length(x3) != 0) {
-        x4 <- any(tolower(class(data[[eval(x3)]])) %chin% c('numeric','integer','factor','character','logical','integer64', 'NULL'))
+        x4 <- !any(tolower(class(data[[eval(x3)]])) %chin% c('numeric','integer','factor','character','logical','integer64', 'null'))
       } else {
         x4 <- FALSE
       }
-      if(Debug) print(x4)
+      if(Debug) {print(x4); print(tryCatch({class(data[[eval(x3)]])}, error = function(x) 'NULL'))}
 
       # Debug
-      if(Debug) {print('Here 15.4'); print('Args for first if condition :::: ::::'); print(x1); print(x1a); print(PlotType); print('Args for 2nd if condition :::: ::::'); print(x3)}
+      if(Debug) {print('Here 15.4'); print('Args for first if condition :::: ::::'); print(x1); print(x1a); print(PlotType); print('Args for 2nd if condition :::: ::::'); print(x3); print(x4)}
 
       if(length(x1) == 0 && length(x1a) == 0 && x1b) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to specify additional variables to generate additional plots', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
