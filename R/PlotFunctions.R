@@ -1,3 +1,181 @@
+#' @title CorrMatrixPlot
+#'
+#' @description Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
+#'
+#' @family EDA
+#'
+#' @author Adrian Antico
+#'
+#' @param data Source data.table
+#' @param CorrVars Column names of variables you want included in the correlation matrix
+#' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
+#' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
+#' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
+#' @param FillColor 'gray'
+#' @param YTicks Choose from 'Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles'
+#' @param XTicks Choose from 'Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'
+#' @param TextSize 14
+#' @param AngleX 90
+#' @param AngleY 0
+#' @param ChartColor 'lightsteelblue'
+#' @param BorderColor 'darkblue'
+#' @param TextColor 'darkblue'
+#' @param GridColor 'white'
+#' @param BackGroundColor 'gray95'
+#' @param SubTitleColor 'darkblue'
+#' @param LegendPosition 'bottom'
+#' @param LegendBorderSize 0.50
+#' @param LegendLineType 'solid'
+#' @param Debug FALSE
+#'
+#' @noRd
+CorrMatrixPlot <- function(data = NULL,
+                           CorrVars = NULL,
+                           FacetVar1 = NULL,
+                           FacetVar2 = NULL,
+                           SampleSize = 1000000L,
+                           FillColor = 'gray',
+                           YTicks = 'Default',
+                           XTicks = 'Default',
+                           TextSize = 12,
+                           AngleX = 90,
+                           AngleY = 0,
+                           ChartColor = 'lightsteelblue1',
+                           BorderColor = 'darkblue',
+                           TextColor = 'darkblue',
+                           GridColor = 'white',
+                           BackGroundColor = 'gray95',
+                           SubTitleColor = 'blue',
+                           LegendPosition = 'bottom',
+                           LegendBorderSize = 0.50,
+                           LegendLineType = 'solid',
+                           Debug = FALSE) {
+
+  # Cap number of records
+  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+
+  # Used multiple times
+  check1 <- length(CorrVars)
+  check2 <- which(RemixAutoML:::ColTypes(data = data) %in% c('numeric','integer'))
+
+  # Check for unique vals > 3
+
+  # Create base plot object
+  if(Debug) print('Create Plot with only data')
+  if(check1) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
+  } else if(length(YVar) != 0) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(YVar), x = ""))
+  } else if(length(XVar) != 0) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(XVar), x = ""))
+  } else {
+    stop('XVar and YVar cannot both be NULL')
+  }
+
+  # Violin Plot Call
+  if(Debug) print('Create ViolinPlot')
+  p1 <- p1 + ggplot2::geom_violin(fill = FillColor)
+
+  # Add Horizontal Line for Mean Y
+  if(Debug) print('Create Plot Horizontal Line')
+  if(!is.null(YVar)) {
+    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data[[eval(YVar)]], na.rm = TRUE)))
+  } else {
+    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data[[eval(XVar)]], na.rm = TRUE)))
+  }
+
+  # Create Plot labs
+  if(Debug) print('Create Plot labs')
+  if(check1) {
+    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+  } else {
+    p1 <- p1 + ggplot2::labs(title = 'ViolinPlot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+  }
+
+  # Labels
+  if(check1) {
+    p1 <- p1 + ggplot2::ylab(YVar)
+    p1 <- p1 + ggplot2::xlab(XVar)
+  } else if(length(YVar) != 0) {
+    p1 <- p1 + ggplot2::ylab(NULL)
+    p1 <- p1 + ggplot2::xlab(YVar)
+  } else {
+    p1 <- p1 + ggplot2::ylab(NULL)
+    p1 <- p1 + ggplot2::xlab(XVar)
+  }
+
+  # Add faceting (returns no faceting in none was requested)
+  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
+    if(Debug) print('FacetVar1 and FacetVar2')
+    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
+  } else if(length(FacetVar1) != 0 && FacetVar1 == 'None') {
+    if(Debug) print('FacetVar1')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
+  } else if(length(FacetVar2) != 0 && FacetVar2 == 'None') {
+    if(Debug) print('FacetVar2')
+    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
+  }
+
+  # Add ChartTheme
+  if(Debug) print('ChartTheme')
+  p1 <- p1 + RemixAutoML::ChartTheme(
+    Size = TextSize,
+    AngleX = AngleX,
+    AngleY = AngleY,
+    ChartColor = ChartColor,
+    BorderColor = BorderColor,
+    TextColor = TextColor,
+    GridColor = GridColor,
+    BackGroundColor = BackGroundColor,
+    SubTitleColor = SubTitleColor,
+    LegendPosition = LegendPosition,
+    LegendBorderSize = LegendBorderSize,
+    LegendLineType = LegendLineType)
+
+  # Define Tick Marks
+  if(Debug) print('YTicks Update')
+  if('Percentiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+  } else if('Every 5th percentile' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(6L, length(YTicks)-1L, 5L))]
+  } else if('Deciles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(11L, length(YTicks)-1L, 10L))]
+  } else if('Quantiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(21L, length(YTicks)-1L, 20L))]
+  } else if('Quartiles' %in% YTicks) {
+    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    YTicks <- YTicks[c(seq(26L, length(YTicks)-1L, 25L))]
+  } else {
+    YTicks <- NULL
+  }
+
+  # Add tick marks
+  if(length(YTicks) != 0) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(YTicks))
+
+  # Add XTicks for Date Case
+  if(check1) {
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(length(XTicks) > 1L) XTicks <- XTicks[1L]
+    if(XTicks %in% date_check) {
+      p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+    }
+  }
+
+  # Return plot
+  return(eval(p1))
+}
+
+
+
+
+
+
 #' @title ViolinPlot
 #'
 #' @description Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.

@@ -1,3 +1,29 @@
+
+# Creates two small text inputs for min and max
+# div(style='display:inline-block', textInput3(inputId="xlimitsmin", label="x-min", value = 0.0, class="input-small")),
+# div(style='display:inline-block', textInput3(inputId="xlimitsmax", label="x-max", value = 0.5, class="input-small")),
+textInput2 <- function(inputId, label, value = "", ...) {
+  tagList(
+    tags$label(
+      label, `for` = inputId),
+    tags$input(
+      id = inputId,
+      type = "text",
+      value = value,...))
+}
+textInput3<-function (inputId, label, value = "", ...) {
+  div(
+    style="display:inline-block",
+    tags$label(
+      label,
+      `for` = inputId),
+    tags$input(
+      id = inputId,
+      type = "text",
+      value = value,
+      ...))
+}
+
 #' @noRd
 AvailableAppInsightsPlots <- function(x = 'bla') {
   if(length(x) != 0) {
@@ -5,7 +31,7 @@ AvailableAppInsightsPlots <- function(x = 'bla') {
   } else {
     MONames <- NULL
   }
-  StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','Histogram')
+  StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')
   return(c(StandardPlots, MONames))
 }
 
