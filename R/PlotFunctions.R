@@ -756,6 +756,7 @@ BarPlot <- function(data = NULL,
 #' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
 #' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
 #' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
+#' @param Bins = 30
 #' @param FillColor 'gray'
 #' @param OutlierSize 0.10
 #' @param OutlierColor 'blue'
@@ -782,6 +783,7 @@ HistPlot <- function(data = NULL,
                      FacetVar1 = NULL,
                      FacetVar2 = NULL,
                      SampleSize = 1000000L,
+                     Bins = 30,
                      FillColor = 'gray',
                      OutlierSize = 0.10,
                      OutlierColor = 'blue',
@@ -966,7 +968,6 @@ AutoPlotter <- function(dt = NULL,
 
   if(tolower(PlotType) == 'shapelyImportance') {
 
-
     # Where does filtering take place?
     vals <- names(dt)[which(names(dt) %like% 'Shap_')]
     p1 <- RemixAutoML::ShapImportancePlot(dt, ShapColNames = vals, AggMethod = 'mean', TopN = 25)
@@ -1058,14 +1059,14 @@ AutoPlotter <- function(dt = NULL,
 
   # Histogram
   if(tolower(PlotType) %chin% 'histogram') {
-    p1 <- RemixAutoML::BarPlot(
+    p1 <- RemixAutoML::HistPlot(
       data = dt,
       XVar = XVar,
       YVar = YVar,
       FacetVar1 = FacetVar1,
       FacetVar2 = FacetVar2,
-      ColorVar = ColorVariables,
       SampleSize = SampleSize,
+      Bins = Bins,
       FillColor = FillColor,
       YTicks = YTicks,
       XTicks = XTicks,

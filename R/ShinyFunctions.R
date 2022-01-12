@@ -46,26 +46,16 @@ textInput3<-function (inputId, label, value = "", ...) {
       ...))
 }
 
-# PlotNamesLookup <- list()
-# PlotNamesLookup[['Test_EvaluationPlot']] <- c('Test_EvaluationPlot', 'CalibrationPlot_Test')
-# PlotNamesLookup[['Train_EvaluationPlot']] <- c('Train_EvaluationPlot', 'Calibration_Train')
-# PlotNamesLookup[['Train_EvaluationBoxPlot']] <- c('Train_EvaluationBoxPlot', 'CalibrationBox_Train')
-# PlotNamesLookup[['Test_EvaluationBoxPlot']] <- c('Test_EvaluationBoxPlot', 'CalibrationBox_Test')
-# PlotNamesLookup[['Train_ParDepPlots']] <- c('Train_ParDepPlots', 'PartialDep_Train')
-# PlotNamesLookup[['Test_ParDepPlots']] <- c('Test_ParDepPlots', 'PartialDep_Test')
-#
-# c("","Train_ParDepBoxPlots","Train_ResidualsHistogram","Train_ScatterPlot","Train_CopulaPlot","Train_VariableImportance","Validation_VariableImportance","Test_EvaluationPlot","Test_EvaluationBoxPlot", "Test_ParDepPlots","Test_ParDepBoxPlots","Test_ResidualsHistogram","Test_ScatterPlot","Test_CopulaPlot","Test_VariableImportance")
-
-
 #' @noRd
-AvailableAppInsightsPlots <- function(x = 'bla') {
-  if(length(x) != 0) {
-    MONames <- c("EvaluationPlot","Train_EvaluationBoxPlot","Train_ParDepPlots","Train_ParDepBoxPlots","Train_ResidualsHistogram","Train_ScatterPlot","Train_CopulaPlot","Train_VariableImportance","Validation_VariableImportance","Test_EvaluationPlot","Test_EvaluationBoxPlot", "Test_ParDepPlots","Test_ParDepBoxPlots","Test_ResidualsHistogram","Test_ScatterPlot","Test_CopulaPlot","Test_VariableImportance")
+AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL) {
+  if(!length(x)) {
+    x <- NULL
   } else {
-    MONames <- NULL
+    for(i in seq_along(x)) x[i] <- PlotNamesLookup[[x[i]]]
   }
   StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')
-  return(c(StandardPlots, MONames))
+  for(i in seq_along(StandardPlots)) StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
+  return(c(StandardPlots, x))
 }
 
 #' @noRd

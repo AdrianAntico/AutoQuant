@@ -6,6 +6,70 @@ data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
 options(shiny.maxRequestSize = 100000000*1024^2)
 options(scipen = 999)
 
+PlotNamesLookup <- list()
+PlotNamesLookup[['Test_EvaluationPlot']] <- c('CalibrationPlot_Test')
+PlotNamesLookup[['Train_EvaluationPlot']] <- c('Calibration_Train')
+PlotNamesLookup[['Train_EvaluationBoxPlot']] <- c('CalibrationBox_Train')
+PlotNamesLookup[['Test_EvaluationBoxPlot']] <- c('CalibrationBox_Test')
+PlotNamesLookup[['Train_ParDepPlots']] <- c('PartialDep_Train')
+PlotNamesLookup[['Test_ParDepPlots']] <- c('PartialDep_Test')
+PlotNamesLookup[['Test_ParDepBoxPlots']] <- c('PartialDepBox_Test')
+PlotNamesLookup[['Train_ParDepBoxPlots']] <- c('PartialDepBox_Train')
+PlotNamesLookup[['Test_ResidualsHistogram']] <- c('ResidualsHist_Test')
+PlotNamesLookup[['Train_ResidualsHistogram']] <- c('ResidualsHist_Train')
+PlotNamesLookup[['Test_ScatterPlot']] <- c('Scatter_Test')
+PlotNamesLookup[['Train_ScatterPlot']] <- c('Scatter_Train')
+PlotNamesLookup[['Test_CopulaPlot']] <- c('Copula_Test')
+PlotNamesLookup[['Train_CopulaPlot']] <- c('Copula_Train')
+PlotNamesLookup[['Test_VariableImportance']] <- c('VarImp_Test')
+PlotNamesLookup[['Validation_VariableImportance']] <- c('VarImp_Validation')
+PlotNamesLookup[['Train_VariableImportance']] <- c('VarImp_Train')
+PlotNamesLookup[['Test_GainsPlot']] <- c('Gains_Test')
+PlotNamesLookup[['Train_GainsPlot']] <- c('Gains_Train')
+PlotNamesLookup[['Test_LiftPlot']] <- c('Lift_Test')
+PlotNamesLookup[['Train_LiftPlot']] <- c('Lift_Train')
+PlotNamesLookup[['Test_ROC_Plot']] <- c('ROC_Test')
+PlotNamesLookup[['Train_ROC_Plot']] <- c('ROC_Train')
+PlotNamesLookup[['Scatter']] <- c('Scatter')
+PlotNamesLookup[['Copula']] <- c('Copula')
+PlotNamesLookup[['Line']] <- c('Line')
+PlotNamesLookup[['CorrMatrix']] <- c('Corr')
+PlotNamesLookup[['Bar']] <- c('Bar')
+PlotNamesLookup[['BoxPlot']] <- c('Box')
+PlotNamesLookup[['ViolinPlot']] <- c('Violin')
+PlotNamesLookup[['Histogram']] <- c('Hist')
+PlotNamesLookup[['CalibrationPlot_Test']] <- c('Test_EvaluationPlot')
+PlotNamesLookup[['Calibration_Train']] <- c('Train_EvaluationPlot')
+PlotNamesLookup[['CalibrationBox_Train']] <- c('Train_EvaluationBoxPlot')
+PlotNamesLookup[['CalibrationBox_Test']] <- c('Test_EvaluationBoxPlot')
+PlotNamesLookup[['PartialDep_Train']] <- c('Train_ParDepPlots')
+PlotNamesLookup[['PartialDep_Test']] <- c('Test_ParDepPlots')
+PlotNamesLookup[['PartialDepBox_Test']] <- c('Test_ParDepBoxPlots')
+PlotNamesLookup[['PartialDepBox_Train']] <- c('Train_ParDepBoxPlots')
+PlotNamesLookup[['ResidualsHist_Test']] <- c('Test_ResidualsHistogram')
+PlotNamesLookup[['ResidualsHist_Train']] <- c('Train_ResidualsHistogram')
+PlotNamesLookup[['Scatter_Test']] <- c('Test_ScatterPlot')
+PlotNamesLookup[['Scatter_Train']] <- c('Train_ScatterPlot')
+PlotNamesLookup[['Copula_Test']] <- c('Test_CopulaPlot')
+PlotNamesLookup[['Copula_Train']] <- c('Train_CopulaPlot')
+PlotNamesLookup[['VarImp_Test']] <- c('Test_VariableImportance')
+PlotNamesLookup[['VarImp_Validation']] <- c('Validation_VariableImportance')
+PlotNamesLookup[['VarImp_Train']] <- c('Train_VariableImportance')
+PlotNamesLookup[['Gains_Test']] <- c('Test_GainsPlot')
+PlotNamesLookup[['Gains_Train']] <- c('Train_GainsPlot')
+PlotNamesLookup[['Lift_Test']] <- c('Test_LiftPlot')
+PlotNamesLookup[['Lift_Train']] <- c('Train_LiftPlot')
+PlotNamesLookup[['ROC_Test']] <- c('Test_ROC_Plot')
+PlotNamesLookup[['ROC_Train']] <- c('Train_ROC_Plot')
+PlotNamesLookup[['Scatter']] <- c('Scatter')
+PlotNamesLookup[['Copula']] <- c('Copula')
+PlotNamesLookup[['Line']] <- c('Line')
+PlotNamesLookup[['Corr']] <- c('CorrMatrix')
+PlotNamesLookup[['Bar']] <- c('Bar')
+PlotNamesLookup[['Box']] <- c('BoxPlot')
+PlotNamesLookup[['Violin']] <- c('ViolinPlot')
+PlotNamesLookup[['Hist']] <- c('Histogram')
+
 # ----
 
 # ----
@@ -1338,12 +1402,8 @@ server <- function(input, output, session) {
 
     # Dragula for PlotType
     output$PlotTypeDragula <- shiny::renderUI({
-      if(exists('ModelOutputList') && length(ModelOutputList) != 0) {
-        bla <- 'asdf'
-      } else {
-        bla <- NULL
-      }
-      x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla)
+      if(exists('ModelOutputList') && length(ModelOutputList) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+      x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup)
       dragheight <- '75px'
       esquisse::dragulaInput(
         height = dragheight,
@@ -2866,12 +2926,8 @@ server <- function(input, output, session) {
 
   # Dragula for PlotType
   output$PlotTypeDragula <- shiny::renderUI({
-    if(exists('ModelOutputList') && length(ModelOutputList) != 0) {
-      bla <- 'asdf'
-    } else {
-      bla <- NULL
-    }
-    x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla)
+    if(exists('ModelOutputList') && length(ModelOutputList) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+    x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup)
     dragheight <- '75px'
     esquisse::dragulaInput(
       height = dragheight,
@@ -3983,9 +4039,9 @@ server <- function(input, output, session) {
 
   # ----
 
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Print Code to UI                     ----
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$PrintCodeButton, {
     if(Debug) print('Print Code UI Begin')
     if(Debug) print(paste0('Check if CodeCollection exists: exists = ', exists('CodeCollection')))
@@ -4011,9 +4067,9 @@ server <- function(input, output, session) {
   # ----
 
   # Save Plot to File
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Downloadable csv of selected dataset ----
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # shiny::observeEvent(input$SavePlot, {
   #
@@ -4246,6 +4302,9 @@ server <- function(input, output, session) {
       # Define PlotType
       if(Debug) print(DragulaList[[run]])
       PlotType <- DragulaList[[run]]
+
+      # Convert back to original plottype name
+      PlotType <- PlotNamesLookup[[PlotType]]
 
       if(Debug) {
         print('Here 15')

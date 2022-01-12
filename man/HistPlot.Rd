@@ -11,6 +11,7 @@ HistPlot(
   FacetVar1 = NULL,
   FacetVar2 = NULL,
   SampleSize = 1000000L,
+  Bins = 30,
   FillColor = "gray",
   OutlierSize = 0.1,
   OutlierColor = "blue",
@@ -43,6 +44,8 @@ HistPlot(
 \item{FacetVar2}{Column name of facet variable 2. If NULL then ignored}
 
 \item{SampleSize}{An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored}
+
+\item{Bins}{= 30}
 
 \item{FillColor}{'gray'}
 

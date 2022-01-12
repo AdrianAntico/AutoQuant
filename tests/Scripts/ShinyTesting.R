@@ -1,3 +1,78 @@
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 10000,
+  ID = 2,
+  ZIP = 0,
+  AddDate = FALSE,
+  Classification = TRUE,
+  MultiClass = FALSE)
+
+# Run function
+TestModel <- RemixAutoML::AutoCatBoostClassifier(
+
+  # GPU or CPU and the number of available GPUs
+  task_type = 'GPU',
+  NumGPUs = 1,
+  TrainOnFull = FALSE,
+  DebugMode = FALSE,
+
+  # Metadata args
+  OutputSelection = c('Score_TrainData', 'Importances', 'EvalPlots', 'EvalMetrics'),
+  ModelID = 'Test_Model_1',
+  model_path = normalizePath('./'),
+  metadata_path = normalizePath('./'),
+  SaveModelObjects = FALSE,
+  ReturnModelObjects = TRUE,
+  SaveInfoToPDF = FALSE,
+
+  # Data args
+  data = data,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = 'Adrian',
+  FeatureColNames = names(data)[!names(data) %in%
+     c('IDcol_1','IDcol_2','Adrian')],
+  PrimaryDateColumn = NULL,
+  WeightsColumnName = NULL,
+  IDcols = c('IDcol_1','IDcol_2'),
+
+  # Evaluation args
+  ClassWeights = c(1L,1L),
+  CostMatrixWeights = c(1,0,0,1),
+  EvalMetric = 'AUC',
+  grid_eval_metric = 'MCC',
+  LossFunction = 'Logloss',
+  MetricPeriods = 10L,
+  NumOfParDepPlots = ncol(data)-1L-2L,
+
+  # Grid tuning args
+  PassInGrid = NULL,
+  GridTune = FALSE,
+  MaxModelsInGrid = 30L,
+  MaxRunsWithoutNewWinner = 20L,
+  MaxRunMinutes = 24L*60L,
+  BaselineComparison = 'default',
+
+  # ML args
+  Trees = 1000,
+  Depth = 9,
+  LearningRate = NULL,
+  L2_Leaf_Reg = NULL,
+  model_size_reg = 0.5,
+  langevin = FALSE,
+  diffusion_temperature = 10000,
+  RandomStrength = 1,
+  BorderCount = 128,
+  RSM = 1,
+  BootStrapType = 'Bayesian',
+  GrowPolicy = 'SymmetricTree',
+  feature_border_type = 'GreedyLogSum',
+  sampling_unit = 'Object',
+  subsample = NULL,
+  score_function = 'Cosine',
+  min_data_in_leaf = 1)
+
+
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
   Correlation = 0.85,
