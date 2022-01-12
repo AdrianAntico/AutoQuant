@@ -33,6 +33,7 @@ Other Shiny:
 \code{\link{PreparePlotData}()},
 \code{\link{ReactiveLoadCSV}()},
 \code{\link{ReturnParam}()},
+\code{\link{SelectizeInput}()},
 \code{\link{StoreArgs}()},
 \code{\link{TextInput}()},
 \code{\link{observeEventLoad}()}

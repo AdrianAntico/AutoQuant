@@ -1,3 +1,25 @@
+#' @title PlotLimits
+#'
+#' @param p data.table
+#' @param YMin Y Min Value
+#' @param YMax Y Max Value
+#' @param XMin X Min Value
+#' @param XMax X Max Value
+#'
+#' @export
+PlotLimits <- function(p, YMin, YMax, XMin, XMax) {
+  if(missing(p) || !length(p)) return(NULL)
+  if(missing(YMin)) YMin <- NA else if(!length(YMin)) YMin <- NA else if(YMin == "") YMin <- NA
+  if(missing(YMax)) YMin <- NA else if(!length(YMax)) YMax <- NA else if(YMax == "") YMax <- NA
+  if(missing(XMin)) YMin <- NA else if(!length(XMin)) XMin <- NA else if(XMin == "") XMin <- NA
+  if(missing(XMax)) YMin <- NA else if(!length(XMax)) XMax <- NA else if(XMax == "") XMax <- NA
+  if(!all(is.na(YMin), is.na(YMax), is.na(XMin), is.na(XMax))) {
+    p <- p + ggplot2::coord_cartesian(xlim = c(as.numeric(XMin), as.numeric(XMax)), ylim = c(as.numeric(YMin), as.numeric(YMax)))
+    return(eval(p))
+  } else {
+    return(eval(p))
+  }
+}
 
 # Creates two small text inputs for min and max
 # div(style='display:inline-block', textInput3(inputId="xlimitsmin", label="x-min", value = 0.0, class="input-small")),
@@ -24,10 +46,21 @@ textInput3<-function (inputId, label, value = "", ...) {
       ...))
 }
 
+# PlotNamesLookup <- list()
+# PlotNamesLookup[['Test_EvaluationPlot']] <- c('Test_EvaluationPlot', 'CalibrationPlot_Test')
+# PlotNamesLookup[['Train_EvaluationPlot']] <- c('Train_EvaluationPlot', 'Calibration_Train')
+# PlotNamesLookup[['Train_EvaluationBoxPlot']] <- c('Train_EvaluationBoxPlot', 'CalibrationBox_Train')
+# PlotNamesLookup[['Test_EvaluationBoxPlot']] <- c('Test_EvaluationBoxPlot', 'CalibrationBox_Test')
+# PlotNamesLookup[['Train_ParDepPlots']] <- c('Train_ParDepPlots', 'PartialDep_Train')
+# PlotNamesLookup[['Test_ParDepPlots']] <- c('Test_ParDepPlots', 'PartialDep_Test')
+#
+# c("","Train_ParDepBoxPlots","Train_ResidualsHistogram","Train_ScatterPlot","Train_CopulaPlot","Train_VariableImportance","Validation_VariableImportance","Test_EvaluationPlot","Test_EvaluationBoxPlot", "Test_ParDepPlots","Test_ParDepBoxPlots","Test_ResidualsHistogram","Test_ScatterPlot","Test_CopulaPlot","Test_VariableImportance")
+
+
 #' @noRd
 AvailableAppInsightsPlots <- function(x = 'bla') {
   if(length(x) != 0) {
-    MONames <- c("Train_EvaluationPlot","Train_EvaluationBoxPlot","Train_ParDepPlots","Train_ParDepBoxPlots","Train_ResidualsHistogram","Train_ScatterPlot","Train_CopulaPlot","Train_VariableImportance","Validation_VariableImportance","Test_EvaluationPlot","Test_EvaluationBoxPlot", "Test_ParDepPlots","Test_ParDepBoxPlots","Test_ResidualsHistogram","Test_ScatterPlot","Test_CopulaPlot","Test_VariableImportance")
+    MONames <- c("EvaluationPlot","Train_EvaluationBoxPlot","Train_ParDepPlots","Train_ParDepBoxPlots","Train_ResidualsHistogram","Train_ScatterPlot","Train_CopulaPlot","Train_VariableImportance","Validation_VariableImportance","Test_EvaluationPlot","Test_EvaluationBoxPlot", "Test_ParDepPlots","Test_ParDepBoxPlots","Test_ResidualsHistogram","Test_ScatterPlot","Test_CopulaPlot","Test_VariableImportance")
   } else {
     MONames <- NULL
   }
@@ -1084,28 +1117,93 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
     `actions-box` = ActionBox,
     size = Size,
     `selected-text-format` = SelectedText)
-  return(if(exists("ProjectList")) {
-    tryCatch({
-      if(!is.null(ProjectList[[InputID]])) {
-        shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
-      } else {
-        shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)
-      }}, error = function(x) shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple))
-  } else {
-    if(Debug) {
-      print(InputID)
-      print(Label)
-      print(Choices)
-      print(SelectedDefault)
-      print(Options)
-      print(Multiple)
-    }
-    tryCatch({
-      shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)},
-      error = function(x) {
-        shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
+  return(
+    if(exists("ProjectList")) {
+      tryCatch({
+        if(!is.null(ProjectList[[InputID]])) {
+          shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
+        } else {
+          shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)
+        }}, error = function(x) shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple))
+    } else {
+      if(Debug) {
+        print(InputID)
+        print(Label)
+        print(Choices)
+        print(SelectedDefault)
+        print(Options)
+        print(Multiple)
+      }
+      tryCatch({
+        shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)},
+        error = function(x) {
+          shinyWidgets::pickerInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
+        })
     })
-  })
+}
+
+#' @title SelectizeInput
+#'
+#' @description SelectizeInput automatically builds a picker input with tryCatch's and ProjectList argument usage if it exists
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param InputID Feeds ProjectList and inputId. Argument saved in ProjectList
+#' @param Label Feeds label
+#' @param Choices Feeds choices
+#' @param SelectedDefault Feeds selected for cases where ProjectList has a null element
+#' @param Size Feeds size in the options list
+#' @param SelectedText Feeds selected-text-format in options list
+#' @param Multiple Feeds multiple for enabling selecting more than one element from list
+#' @param ActionBox Feeds actions-box for option list
+#' @param Debug FALSE
+#'
+#' @examples
+#' \dontrun{
+#' output$TS_CARMA_HolidayMovingAverages <- renderUI({
+#'   RemixAutoML::SelectizeInput(InputID = "TS_CARMA_HolidayMovingAverages", Label = "Select Holiday Count MA's", Choices = as.character(0:50),
+#'                            SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
+#' }
+#' @return SelectizeInput object for server.R to go into renderUI({SelectizeInput()})
+#' @export
+SelectizeInput <- function(InputID = "",
+                        Label = "",
+                        Choices = NULL,
+                        SelectedDefault = NULL,
+                        Size = 10,
+                        SelectedText = "count > 1",
+                        Multiple = TRUE,
+                        ActionBox = TRUE,
+                        Debug = FALSE) {
+  Options <- list(
+    `allowEmptyOption` = TRUE,
+    `actions-box` = ActionBox,
+    size = Size,
+    `selected-text-format` = SelectedText)
+  return(
+    if(exists("ProjectList")) {
+      tryCatch({
+        if(!is.null(ProjectList[[InputID]])) {
+          shiny::selectizeInput(inputId = InputID, label = Label, choices = Choices, selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
+        } else {
+          shiny::selectizeInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)
+        }}, error = function(x) shiny::selectizeInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple))
+    } else {
+      if(Debug) {
+        print(InputID)
+        print(Label)
+        print(Choices)
+        print(SelectedDefault)
+        print(Options)
+        print(Multiple)
+      }
+      tryCatch({
+        shiny::selectizeInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)},
+        error = function(x) {
+          shiny::selectizeInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
+        })
+    })
 }
 
 #' @title NumericInput

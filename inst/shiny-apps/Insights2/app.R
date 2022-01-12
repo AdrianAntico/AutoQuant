@@ -521,6 +521,44 @@ ui <- shinydashboard::dashboardPage(
                   shiny::column(3L, shiny::uiOutput('SampleSize'))))),
 
 
+
+            # Plot Axis Limits
+            shiny::column(
+              width = 1L,
+              tags$h4(tags$b('Axis Limits')),
+              shinyWidgets::dropdown(
+                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", width = LogoWidth,
+                tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Limits')),
+                tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Alter the min and max limits for the Y and X Axes')),
+                RemixAutoML::BlankRow(AppWidth),
+                shiny::fluidRow(
+                  width = AppWidth,
+                  shiny::column(3L, shiny::uiOutput('YLimMin1')),
+                  shiny::column(3L, shiny::uiOutput('YLimMax1')),
+                  shiny::column(3L, shiny::uiOutput('XLimMin1')),
+                  shiny::column(3L, shiny::uiOutput('XLimMax1'))),
+                shiny::fluidRow(
+                  width = AppWidth,
+                  shiny::column(3L, shiny::uiOutput('YLimMin2')),
+                  shiny::column(3L, shiny::uiOutput('YLimMax2')),
+                  shiny::column(3L, shiny::uiOutput('XLimMin2')),
+                  shiny::column(3L, shiny::uiOutput('XLimMax2'))),
+                shiny::fluidRow(
+                  width = AppWidth,
+                  shiny::column(3L, shiny::uiOutput('YLimMin3')),
+                  shiny::column(3L, shiny::uiOutput('YLimMax3')),
+                  shiny::column(3L, shiny::uiOutput('XLimMin3')),
+                  shiny::column(3L, shiny::uiOutput('XLimMax3'))),
+                shiny::fluidRow(
+                  width = AppWidth,
+                  shiny::column(3L, shiny::uiOutput('YLimMin4')),
+                  shiny::column(3L, shiny::uiOutput('YLimMax4')),
+                  shiny::column(3L, shiny::uiOutput('XLimMin4')),
+                  shiny::column(3L, shiny::uiOutput('XLimMax4'))),
+
+              )), # column end
+
+
             # Plot Formatting
             shiny::column(
               width = 1L,
@@ -616,7 +654,7 @@ ui <- shinydashboard::dashboardPage(
 
             # Plot Enhancements
             shiny::column(
-              width = 2L,
+              width = 1L,
               tags$h4(tags$b('Plot Extras')),
               shinyWidgets::dropdown(
                 right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "primary", inputId = "By-Variables", width = LogoWidth,
@@ -966,100 +1004,100 @@ server <- function(input, output, session) {
 
     # YVars
     output$YVar1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'YVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 1'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'YVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 1'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here b")
 
     output$YVar2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'YVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 2'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'YVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 2'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here c")
 
     output$YVar3 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'YVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 3'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'YVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 3'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here d")
 
     output$YVar4 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'YVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 4'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'YVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 4'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here e")
 
     # 'X-Variables'
     output$XVar1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'XVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 1'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'XVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 1'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here f")
 
     output$XVar2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'XVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 2'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'XVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 2'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here g")
 
     output$XVar3 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'XVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 3'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'XVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 3'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here h")
 
     output$XVar4 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'XVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 4'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'XVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 4'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here i")
 
     # 'Score-Variables'
     output$ScoreVar1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'ScoreVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 1'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'ScoreVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 1'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here j")
 
     output$ScoreVar2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'ScoreVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 2'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'ScoreVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 2'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here k")
 
     output$ScoreVar3 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'ScoreVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 3'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'ScoreVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 3'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here l")
 
     output$ScoreVar4 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'ScoreVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 4'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'ScoreVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 4'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here m")
 
     # 'Date Variables'
     output$DateVar1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'DateVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 1'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'DateVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 1'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here n")
 
     output$DateVar2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'DateVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 2'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'DateVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 2'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here o")
 
     output$DateVar3 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'DateVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 3'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'DateVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 3'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here p")
 
     output$DateVar4 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'DateVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 4'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'DateVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 4'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here q")
@@ -1086,199 +1124,199 @@ server <- function(input, output, session) {
 
     # Y-Mins
     output$YMin1 <- shiny::renderUI({
-      if(Debug) print('YMin 1 PickerInput');
+      if(Debug) print('YMin 1 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar1()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='YMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='YMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here s")
 
     output$YMin2 <- shiny::renderUI({
-      if(Debug) print('YMin 2 PickerInput');
+      if(Debug) print('YMin 2 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar2()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='YMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='YMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here t")
 
     output$YMin3 <- shiny::renderUI({
-      if(Debug) print('YMin 3 PickerInput');
+      if(Debug) print('YMin 3 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar3()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='YMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='YMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here u")
 
     output$YMin4 <- shiny::renderUI({
-      if(Debug) print('YMin 4 PickerInput');
+      if(Debug) print('YMin 4 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar4()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='YMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='YMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here v")
 
     # X-Mins
     output$XMin1 <- shiny::renderUI({
-      if(Debug) print('XMin 1 PickerInput');
+      if(Debug) print('XMin 1 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar1()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='XMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='XMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here w")
 
     output$XMin2 <- shiny::renderUI({
-      if(Debug) print('XMin 2 PickerInput');
+      if(Debug) print('XMin 2 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar2()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='XMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='XMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here x")
 
     output$XMin3 <- shiny::renderUI({
-      if(Debug) print('XMin 3 PickerInput');
+      if(Debug) print('XMin 3 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar3()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='XMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='XMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here y")
 
     output$XMin4 <- shiny::renderUI({
-      if(Debug) print('XMin 4 PickerInput');
+      if(Debug) print('XMin 4 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar4()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='XMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='XMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here z")
 
     # Y-Maxs
     output$YMax1 <- shiny::renderUI({
-      if(Debug) print('YMax 1 PickerInput');
+      if(Debug) print('YMax 1 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar1()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='YMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='YMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here aa")
 
     output$YMax2 <- shiny::renderUI({
-      if(Debug) print('YMax 2 PickerInput');
+      if(Debug) print('YMax 2 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar2()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='YMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='YMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here bb")
 
     output$YMax3 <- shiny::renderUI({
-      if(Debug) print('YMax 3 PickerInput');
+      if(Debug) print('YMax 3 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar3()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='YMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='YMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here cc")
 
     output$YMax4 <- shiny::renderUI({
-      if(Debug) print('YMax 4 PickerInput');
+      if(Debug) print('YMax 4 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar4()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='YMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='YMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here dd")
 
     # X-Maxs
     output$XMax1 <- shiny::renderUI({
-      if(Debug) print('XMax 1 PickerInput');
+      if(Debug) print('XMax 1 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar1()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='XMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='XMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here ee")
 
     output$XMax2 <- shiny::renderUI({
-      if(Debug) print('XMax 2 PickerInput');
+      if(Debug) print('XMax 2 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar2()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='XMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='XMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here ff")
 
     output$XMax3 <- shiny::renderUI({
-      if(Debug) print('XMax 3 PickerInput');
+      if(Debug) print('XMax 3 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar3()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='XMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='XMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here gg")
 
     output$XMax4 <- shiny::renderUI({
-      if(Debug) print('XMax 4 PickerInput');
+      if(Debug) print('XMax 4 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar4()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='XMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='XMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here hh")
 
     # Date-Mins
     output$DateMin1 <- shiny::renderUI({
-      if(Debug) print('DateMin 1 PickerInput');
+      if(Debug) print('DateMin 1 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar1()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='DateMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 1'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='DateMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 1'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here ii")
 
     output$DateMin2 <- shiny::renderUI({
-      if(Debug) print('DateMin 2 PickerInput');
+      if(Debug) print('DateMin 2 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar2()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='DateMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 2'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='DateMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 2'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here jj")
 
     output$DateMin3 <- shiny::renderUI({
-      if(Debug) print('DateMin 3 PickerInput');
+      if(Debug) print('DateMin 3 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar3()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='DateMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 3'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='DateMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 3'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here kk")
 
     output$DateMin4 <- shiny::renderUI({
-      if(Debug) print('DateMin 4 PickerInput');
+      if(Debug) print('DateMin 4 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar4()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='DateMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 4'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(InputID='DateMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 4'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here ll")
 
     # Date-Maxs
     output$DateMax1 <- shiny::renderUI({
-      if(Debug) print('DateMax 1 PickerInput');
+      if(Debug) print('DateMax 1 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar1()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='DateMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 1'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='DateMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 1'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here mm")
 
     output$DateMax2 <- shiny::renderUI({
-      if(Debug) print('DateMax 2 PickerInput');
+      if(Debug) print('DateMax 2 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar2()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='DateMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 2'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='DateMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 2'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here oo")
 
     output$DateMax3 <- shiny::renderUI({
-      if(Debug) print('DateMax 3 PickerInput');
+      if(Debug) print('DateMax 3 SelectizeInput');
       if(Debug) print('DateVar3')
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar3()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='DateMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 3'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='DateMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 3'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here pp")
 
     output$DateMax4 <- shiny::renderUI({
-      if(Debug) print('DateMax 4 PickerInput');
+      if(Debug) print('DateMax 4 SelectizeInput');
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar4()))$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(InputID='DateMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 4'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(InputID='DateMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 4'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     # ----
@@ -1324,6 +1362,55 @@ server <- function(input, output, session) {
     if(Debug) print("Here rr")
 
     # UI Plot Options
+    output$YLimMin1 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'YLimMin1', Label = tags$span(style='color: blue;', 'Y Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$YLimMax1 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'YLimMax1', Label = tags$span(style='color: blue;', 'Y Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$YLimMin2 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'YLimMin2', Label = tags$span(style='color: blue;', 'Y Min Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$YLimMax2 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'YLimMax2', Label = tags$span(style='color: blue;', 'Y Max Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$YLimMin3 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'YLimMin3', Label = tags$span(style='color: blue;', 'Y Min Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$YLimMax3 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'YLimMax3', Label = tags$span(style='color: blue;', 'Y Max Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$YLimMin4 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'YLimMin4', Label = tags$span(style='color: blue;', 'Y Min Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$YLimMax4 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'YLimMax4', Label = tags$span(style='color: blue;', 'Y Max Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$XLimMin1 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'XLimMin1', Label = tags$span(style='color: blue;', 'X Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$XLimMax1 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'XLimMax1', Label = tags$span(style='color: blue;', 'X Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$XLimMin2 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'XLimMin2', Label = tags$span(style='color: blue;', 'X Min Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$XLimMax2 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'XLimMax2', Label = tags$span(style='color: blue;', 'X Max Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$XLimMin3 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'XLimMin3', Label = tags$span(style='color: blue;', 'X Min Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$XLimMax3 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'XLimMax3', Label = tags$span(style='color: blue;', 'X Max Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$XLimMin4 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'XLimMin4', Label = tags$span(style='color: blue;', 'X Min Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+    })
+    output$XLimMax4 <- shiny::renderUI({
+      RemixAutoML::TextInput(InputID = 'XLimMax4', Label = tags$span(style='color: blue;', 'X Max Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+    })
+
     output$NumberGroupsDisplay <- shiny::renderUI({
       RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = tags$span(style='color: blue;', 'Dispay N Levels'), Step = 1L, Value = 5L, Min = 1L, Max = 100L)
     })
@@ -1345,28 +1432,28 @@ server <- function(input, output, session) {
     # Correlation Variables
     output$Cor_Variable1 <- shiny::renderUI({
       pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::PickerInput(InputID='Cor_Variable1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 1'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='Cor_Variable1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 1'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here vv")
 
     output$Cor_Variable2 <- shiny::renderUI({
       pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::PickerInput(InputID='Cor_Variable2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 2'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='Cor_Variable2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 2'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here ww")
 
     output$Cor_Variable3 <- shiny::renderUI({
       pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::PickerInput(InputID='Cor_Variable3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 3'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='Cor_Variable3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 3'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here xx")
 
     output$Cor_Variable4 <- shiny::renderUI({
       pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::PickerInput(InputID='Cor_Variable4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 4'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='Cor_Variable4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 4'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here yy")
@@ -1374,78 +1461,78 @@ server <- function(input, output, session) {
     # PDP Variables
     output$PDP_Variable1 <- shiny::renderUI({
       pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::PickerInput(InputID='PDP_Variable1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 1'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='PDP_Variable1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 1'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here vv")
 
     output$PDP_Variable2 <- shiny::renderUI({
       pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::PickerInput(InputID='PDP_Variable2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 2'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='PDP_Variable2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 2'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here ww")
 
     output$PDP_Variable3 <- shiny::renderUI({
       pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::PickerInput(InputID='PDP_Variable3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 3'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='PDP_Variable3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 3'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here xx")
 
     output$PDP_Variable4 <- shiny::renderUI({
       pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::PickerInput(InputID='PDP_Variable4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 4'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='PDP_Variable4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 4'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here yy")
 
     # Percentile Buckets
     output$Percentile_Buckets1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='Percentile_Buckets1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 1'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='Percentile_Buckets1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 1'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here zz")
 
     output$Percentile_Buckets2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='Percentile_Buckets2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 2'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='Percentile_Buckets2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 2'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here aaa")
 
     output$Percentile_Buckets3 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='Percentile_Buckets3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 3'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='Percentile_Buckets3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 3'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here bbb")
 
     output$Percentile_Buckets4 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='Percentile_Buckets4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 4'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='Percentile_Buckets4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 4'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here ccc")
 
     # Add GAM Fit to Plot
     output$GamFitScatter1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='GamFitScatter1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 1'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='GamFitScatter1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 1'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here ddd")
 
     output$GamFitScatter2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='GamFitScatter2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 2'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='GamFitScatter2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 2'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here eee")
 
     output$GamFitScatter3 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='GamFitScatter3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 3'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='GamFitScatter3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 3'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here fff")
 
     output$GamFitScatter4 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='GamFitScatter4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 4'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
+      RemixAutoML::SelectizeInput(InputID='GamFitScatter4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 4'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here ggg")
@@ -1479,7 +1566,7 @@ server <- function(input, output, session) {
     output$YTicks1 <- shiny::renderUI({
       yy <- tryCatch({YVar1()}, error = function(x) 'None')
       if(Debug) print(RemixAutoML:::XTicks(data, xvar=yy))
-      RemixAutoML::PickerInput(InputID = 'YTicks1', Label = tags$span(style='color: blue;', 'Y-Axis 1 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'YTicks1', Label = tags$span(style='color: blue;', 'Y-Axis 1 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here lll")
@@ -1487,7 +1574,7 @@ server <- function(input, output, session) {
     output$YTicks2 <- shiny::renderUI({
       yy <- tryCatch({YVar2()}, error = function(x) 'None')
       if(Debug) print(RemixAutoML:::XTicks(data, xvar=yy))
-      RemixAutoML::PickerInput(InputID = 'YTicks2', Label = tags$span(style='color: blue;', 'Y-Axis 2 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'YTicks2', Label = tags$span(style='color: blue;', 'Y-Axis 2 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here mmm")
@@ -1495,7 +1582,7 @@ server <- function(input, output, session) {
     output$YTicks3 <- shiny::renderUI({
       yy <- tryCatch({YVar3()}, error = function(x) 'None')
       if(Debug) print(RemixAutoML:::XTicks(data, xvar=yy))
-      RemixAutoML::PickerInput(InputID = 'YTicks3', Label = tags$span(style='color: blue;', 'Y-Axis 3 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'YTicks3', Label = tags$span(style='color: blue;', 'Y-Axis 3 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here nnn")
@@ -1503,7 +1590,7 @@ server <- function(input, output, session) {
     output$YTicks4 <- shiny::renderUI({
       yy <- tryCatch({YVar4()}, error = function(x) 'None')
       if(Debug) print(RemixAutoML:::XTicks(data, xvar=yy))
-      RemixAutoML::PickerInput(InputID = 'YTicks4', Label = tags$span(style='color: blue;', 'Y-Axis 4 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'YTicks4', Label = tags$span(style='color: blue;', 'Y-Axis 4 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here ooo")
@@ -1513,7 +1600,7 @@ server <- function(input, output, session) {
       xx <- tryCatch({XVar1()}, error = function(x) 'None')
       dd <- tryCatch({DateVar1()}, error = function(x) 'None')
       if(Debug) print(RemixAutoML:::XTicks(data, xvar=xx,datevar=dd))
-      RemixAutoML::PickerInput(InputID = 'XTicks1', Label = tags$span(style='color: blue;', 'X-Axis 1 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'XTicks1', Label = tags$span(style='color: blue;', 'X-Axis 1 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here ppp")
@@ -1522,7 +1609,7 @@ server <- function(input, output, session) {
       xx <- tryCatch({XVar2()}, error = function(x) 'None')
       dd <- tryCatch({DateVar2()}, error = function(x) 'None')
       if(Debug) print(RemixAutoML:::XTicks(data, xvar=xx,datevar=dd))
-      RemixAutoML::PickerInput(InputID = 'XTicks2', Label = tags$span(style='color: blue;', 'X-Axis 2 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'XTicks2', Label = tags$span(style='color: blue;', 'X-Axis 2 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here qqq")
@@ -1531,7 +1618,7 @@ server <- function(input, output, session) {
       xx <- tryCatch({XVar3()}, error = function(x) 'None')
       dd <- tryCatch({DateVar3()}, error = function(x) 'None')
       if(Debug) print(RemixAutoML:::XTicks(data, xvar=xx,datevar=dd))
-      RemixAutoML::PickerInput(InputID = 'XTicks3', Label = tags$span(style='color: blue;', 'X-Axis 3 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'XTicks3', Label = tags$span(style='color: blue;', 'X-Axis 3 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here rrr")
@@ -1540,7 +1627,7 @@ server <- function(input, output, session) {
       xx <- tryCatch({XVar4()}, error = function(x) 'None')
       dd <- tryCatch({DateVar4()}, error = function(x) 'None')
       if(Debug) print(RemixAutoML:::XTicks(data, xvar=xx,datevar=dd))
-      RemixAutoML::PickerInput(InputID = 'XTicks4', Label = tags$span(style='color: blue;', 'X-Axis 4 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'XTicks4', Label = tags$span(style='color: blue;', 'X-Axis 4 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here sss")
@@ -1565,80 +1652,80 @@ server <- function(input, output, session) {
     if(Debug) print("Here uuu")
 
     output$TextSize <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'TextSize', Label = tags$span(style='color: blue;', 'Text Size'),Choices = c(as.character(seq(1,100,1))), SelectedDefault = '14', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'TextSize', Label = tags$span(style='color: blue;', 'Text Size'),Choices = c(as.character(seq(1,100,1))), SelectedDefault = '14', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here vvv")
 
     output$OutlierSize <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'OutlierSize', Label = tags$span(style='color: blue;', 'Outlier Size'), Choices = c(seq(0.01,2,0.01)), SelectedDefault = 0.01, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'OutlierSize', Label = tags$span(style='color: blue;', 'Outlier Size'), Choices = c(seq(0.01,2,0.01)), SelectedDefault = 0.01, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here www")
 
     output$LegendPosition <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'LegendPosition', Label = tags$span(style='color: blue;', 'Legend Position'), Choices = c('bottom','left','right','top'), SelectedDefault = 'bottom', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'LegendPosition', Label = tags$span(style='color: blue;', 'Legend Position'), Choices = c('bottom','left','right','top'), SelectedDefault = 'bottom', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here xxx")
 
     output$LegendBorderSize <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'LegendBorderSize', Label = tags$span(style='color: blue;', 'Legend Border Size'), Choices = c(as.character(seq(0.01,2,0.01))), SelectedDefault = as.character(0.01), Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'LegendBorderSize', Label = tags$span(style='color: blue;', 'Legend Border Size'), Choices = c(as.character(seq(0.01,2,0.01))), SelectedDefault = as.character(0.01), Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here yyy")
 
     output$LegendLineType <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'LegendLineType', Label = tags$span(style='color: blue;', 'Legend Border Type'), Choices = c('solid','blank','dashed','dotdash','dotted','longlash','twodash'), SelectedDefault = 'solid', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'LegendLineType', Label = tags$span(style='color: blue;', 'Legend Border Type'), Choices = c('solid','blank','dashed','dotdash','dotted','longlash','twodash'), SelectedDefault = 'solid', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here zzz")
 
     # Color boxes
     output$TextColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'TextColor', Label = tags$span(style='color: blue;', 'Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'TextColor', Label = tags$span(style='color: blue;', 'Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here aaaa")
 
     output$ChartColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'ChartColor', Label = tags$span(style='color: blue;', 'Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'ChartColor', Label = tags$span(style='color: blue;', 'Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here bbbb")
 
     output$GridColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'GridColor', Label = tags$span(style='color: blue;', 'Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'white', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'GridColor', Label = tags$span(style='color: blue;', 'Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'white', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here cccc")
 
     output$BackGroundColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'BackGroundColor', Label = tags$span(style='color: blue;', 'Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'BackGroundColor', Label = tags$span(style='color: blue;', 'Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here dddd")
 
     output$BorderColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'BorderColor', Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'BorderColor', Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here eeee")
 
     output$OutlierColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'OutlierColor', Label = tags$span(style='color: blue;', 'Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'OutlierColor', Label = tags$span(style='color: blue;', 'Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here ffff")
 
     output$FillColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'FillColor', Label = tags$span(style='color: blue;', 'BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'FillColor', Label = tags$span(style='color: blue;', 'BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here gggg")
 
     output$SubTitleColor <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'SubTitleColor', Label = tags$span(style='color: blue;', 'Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'SubTitleColor', Label = tags$span(style='color: blue;', 'Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     # ----
@@ -1653,29 +1740,29 @@ server <- function(input, output, session) {
 
     # Select GroupVars
     output$GroupVars1 <- shiny::renderUI({
-      if(Debug) print('PickerInput GroupVars1')
-      RemixAutoML::PickerInput(InputID='GroupVars1', Label=tags$span(style='color: blue;', 'Select Group Variables 1'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
+      if(Debug) print('SelectizeInput GroupVars1')
+      RemixAutoML::SelectizeInput(InputID='GroupVars1', Label=tags$span(style='color: blue;', 'Select Group Variables 1'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here iiii")
 
     output$GroupVars2 <- shiny::renderUI({
-      if(Debug) print('PickerInput GroupVars2')
-      RemixAutoML::PickerInput(InputID='GroupVars2', Label=tags$span(style='color: blue;', 'Select Group Variables 2'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
+      if(Debug) print('SelectizeInput GroupVars2')
+      RemixAutoML::SelectizeInput(InputID='GroupVars2', Label=tags$span(style='color: blue;', 'Select Group Variables 2'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here jjjj")
 
     output$GroupVars3 <- shiny::renderUI({
-      if(Debug) print('PickerInput GroupVars3')
-      RemixAutoML::PickerInput(InputID='GroupVars3', Label=tags$span(style='color: blue;', 'Select Group Variables 3'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
+      if(Debug) print('SelectizeInput GroupVars3')
+      RemixAutoML::SelectizeInput(InputID='GroupVars3', Label=tags$span(style='color: blue;', 'Select Group Variables 3'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here kkkk")
 
     output$GroupVars4 <- shiny::renderUI({
-      if(Debug) print('PickerInput GroupVars4')
-      RemixAutoML::PickerInput(InputID='GroupVars4', Label=tags$span(style='color: blue;', 'Select Group Variables 4'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
+      if(Debug) print('SelectizeInput GroupVars4')
+      RemixAutoML::SelectizeInput(InputID='GroupVars4', Label=tags$span(style='color: blue;', 'Select Group Variables 4'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here llll")
@@ -1792,74 +1879,74 @@ server <- function(input, output, session) {
 
     # Faceting
     output$FacetVar_1_1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='FacetVar_1_1', Label = tags$span(style='color: blue;', 'Facet Variable 1 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID='FacetVar_1_1', Label = tags$span(style='color: blue;', 'Facet Variable 1 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here ccccc")
 
     output$FacetVar_1_2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='FacetVar_1_2', Label = tags$span(style='color: blue;', 'Facet Variable 1 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID='FacetVar_1_2', Label = tags$span(style='color: blue;', 'Facet Variable 1 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here ddddd")
 
     output$FacetVar_2_1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='FacetVar_2_1', Label = tags$span(style='color: blue;', 'Facet Variable 2 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID='FacetVar_2_1', Label = tags$span(style='color: blue;', 'Facet Variable 2 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here eeeee")
 
     output$FacetVar_2_2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='FacetVar_2_2', Label = tags$span(style='color: blue;', 'Facet Variable 2 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID='FacetVar_2_2', Label = tags$span(style='color: blue;', 'Facet Variable 2 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here fffff")
 
     output$FacetVar_3_1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='FacetVar_3_1', Label = tags$span(style='color: blue;', 'Facet Variable 3 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID='FacetVar_3_1', Label = tags$span(style='color: blue;', 'Facet Variable 3 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here ggggg")
 
     output$FacetVar_3_2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='FacetVar_3_2', Label = tags$span(style='color: blue;', 'Facet Variable 3 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID='FacetVar_3_2', Label = tags$span(style='color: blue;', 'Facet Variable 3 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here hhhhh")
 
     output$FacetVar_4_1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='FacetVar_4_1', Label = tags$span(style='color: blue;', 'Facet Variable 4 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID='FacetVar_4_1', Label = tags$span(style='color: blue;', 'Facet Variable 4 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here iiiii")
 
     output$FacetVar_4_2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID='FacetVar_4_2', Label = tags$span(style='color: blue;', 'Facet Variable 4 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID='FacetVar_4_2', Label = tags$span(style='color: blue;', 'Facet Variable 4 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here jjjjj")
 
     # Sizing
     output$SizeVar1 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'SizeVar1', Label = tags$span(style='color: blue;', 'Size Variable 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'SizeVar1', Label = tags$span(style='color: blue;', 'Size Variable 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here kkkkk")
 
     output$SizeVar2 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'SizeVar2', Label = tags$span(style='color: blue;', 'Size Variable 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'SizeVar2', Label = tags$span(style='color: blue;', 'Size Variable 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here lllll")
 
     output$SizeVar3 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'SizeVar3', Label = tags$span(style='color: blue;', 'Size Variable 3'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'SizeVar3', Label = tags$span(style='color: blue;', 'Size Variable 3'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     if(Debug) print("Here mmmmm")
 
     output$SizeVar4 <- shiny::renderUI({
-      RemixAutoML::PickerInput(InputID = 'SizeVar4', Label = tags$span(style='color: blue;', 'Size Variable 4'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+      RemixAutoML::SelectizeInput(InputID = 'SizeVar4', Label = tags$span(style='color: blue;', 'Size Variable 4'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
     })
 
     # ----
@@ -2109,7 +2196,7 @@ server <- function(input, output, session) {
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_1']])$ChoiceInput}, error = function(x) NULL)
       print(choices)
       print(do.call(RemixAutoML::GetFilterValueLabel, params))
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here tttttt")
@@ -2117,7 +2204,7 @@ server <- function(input, output, session) {
     output$FilterValue_1_1_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_1']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here uuuuuu")
@@ -2125,7 +2212,7 @@ server <- function(input, output, session) {
     output$FilterValue_1_2_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_2']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here vvvvvv")
@@ -2133,7 +2220,7 @@ server <- function(input, output, session) {
     output$FilterValue_1_2_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_2']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here wwwwww")
@@ -2141,7 +2228,7 @@ server <- function(input, output, session) {
     output$FilterValue_1_3_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_3']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here xxxxxx")
@@ -2149,7 +2236,7 @@ server <- function(input, output, session) {
     output$FilterValue_1_3_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_3']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here yyyyyy")
@@ -2157,7 +2244,7 @@ server <- function(input, output, session) {
     output$FilterValue_1_4_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_4']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here zzzzzz")
@@ -2165,7 +2252,7 @@ server <- function(input, output, session) {
     output$FilterValue_1_4_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_4']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here aaaaaaa")
@@ -2174,7 +2261,7 @@ server <- function(input, output, session) {
     output$FilterValue_2_1_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_1']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here bbbbbbb")
@@ -2182,7 +2269,7 @@ server <- function(input, output, session) {
     output$FilterValue_2_1_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_1']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here ccccccc")
@@ -2190,7 +2277,7 @@ server <- function(input, output, session) {
     output$FilterValue_2_2_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_2']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here ddddddd")
@@ -2198,7 +2285,7 @@ server <- function(input, output, session) {
     output$FilterValue_2_2_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_2']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here eeeeeee")
@@ -2206,7 +2293,7 @@ server <- function(input, output, session) {
     output$FilterValue_2_3_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_3']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here fffffff")
@@ -2214,7 +2301,7 @@ server <- function(input, output, session) {
     output$FilterValue_2_3_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_3']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here ggggggg")
@@ -2222,7 +2309,7 @@ server <- function(input, output, session) {
     output$FilterValue_2_4_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_4']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here hhhhhhh")
@@ -2230,7 +2317,7 @@ server <- function(input, output, session) {
     output$FilterValue_2_4_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_4']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here qqqqqqq")
@@ -2239,7 +2326,7 @@ server <- function(input, output, session) {
     output$FilterValue_3_1_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_1']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here rrrrrrr")
@@ -2247,7 +2334,7 @@ server <- function(input, output, session) {
     output$FilterValue_3_1_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_1']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here sssssss")
@@ -2255,7 +2342,7 @@ server <- function(input, output, session) {
     output$FilterValue_3_2_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_2']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here ttttttt")
@@ -2263,7 +2350,7 @@ server <- function(input, output, session) {
     output$FilterValue_3_2_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_2']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here uuuuuuu")
@@ -2271,7 +2358,7 @@ server <- function(input, output, session) {
     output$FilterValue_3_3_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_3']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here vvvvvvv")
@@ -2279,7 +2366,7 @@ server <- function(input, output, session) {
     output$FilterValue_3_3_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_3']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here wwwwwww")
@@ -2287,7 +2374,7 @@ server <- function(input, output, session) {
     output$FilterValue_3_4_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_4']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here xxxxxxx")
@@ -2295,7 +2382,7 @@ server <- function(input, output, session) {
     output$FilterValue_3_4_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_4']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here yyyyyyy")
@@ -2304,7 +2391,7 @@ server <- function(input, output, session) {
     output$FilterValue_4_1_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_1']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here zzzzzzz")
@@ -2312,7 +2399,7 @@ server <- function(input, output, session) {
     output$FilterValue_4_1_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_1']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here aaaaaaaa")
@@ -2320,7 +2407,7 @@ server <- function(input, output, session) {
     output$FilterValue_4_2_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_2']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here bbbbbbbb")
@@ -2328,7 +2415,7 @@ server <- function(input, output, session) {
     output$FilterValue_4_2_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_2']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here cccccccc")
@@ -2336,7 +2423,7 @@ server <- function(input, output, session) {
     output$FilterValue_4_3_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_3']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here dddddddd")
@@ -2344,7 +2431,7 @@ server <- function(input, output, session) {
     output$FilterValue_4_3_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_3']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     if(Debug) print("Here eeeeeeee")
@@ -2352,7 +2439,7 @@ server <- function(input, output, session) {
     output$FilterValue_4_4_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_4']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
 
     if(Debug) print("Here ffffffff")
@@ -2360,7 +2447,7 @@ server <- function(input, output, session) {
     output$FilterValue_4_4_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_4']])$ChoiceInput}, error = function(x) NULL)
-      RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
 
     # ----
@@ -2445,100 +2532,100 @@ server <- function(input, output, session) {
 
   # YVars
   output$YVar1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'YVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 1'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'YVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 1'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here b")
 
   output$YVar2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'YVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 2'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'YVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 2'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here c")
 
   output$YVar3 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'YVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 3'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'YVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 3'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here d")
 
   output$YVar4 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'YVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 4'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'YVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable 4'), Choices = c('None', names(data)), SelectedDefault = YVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here e")
 
   # 'X-Variables'
   output$XVar1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'XVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 1'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'XVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 1'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here f")
 
   output$XVar2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'XVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 2'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'XVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 2'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here g")
 
   output$XVar3 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'XVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 3'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'XVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 3'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here h")
 
   output$XVar4 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'XVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 4'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'XVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable 4'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here i")
 
   # 'Score-Variables'
   output$ScoreVar1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'ScoreVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 1'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'ScoreVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 1'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here j")
 
   output$ScoreVar2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'ScoreVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 2'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'ScoreVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 2'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here k")
 
   output$ScoreVar3 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'ScoreVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 3'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'ScoreVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 3'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here l")
 
   output$ScoreVar4 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'ScoreVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 4'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'ScoreVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Scoring-Variable 4'), Choices = c('None', names(data)), SelectedDefault = XVariable, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here m")
 
   # 'Date Variables'
   output$DateVar1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'DateVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 1'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'DateVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 1'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here n")
 
   output$DateVar2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'DateVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 2'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'DateVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 2'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here o")
 
   output$DateVar3 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'DateVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 3'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'DateVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 3'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here p")
 
   output$DateVar4 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'DateVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 4'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'DateVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Date-Variable 4'), Choices = c('None', names(data)), SelectedDefault = DateName, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here q")
@@ -2565,199 +2652,199 @@ server <- function(input, output, session) {
 
   # Y-Mins
   output$YMin1 <- shiny::renderUI({
-    if(Debug) print('YMin 1 PickerInput');
+    if(Debug) print('YMin 1 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar1()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='YMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='YMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here s")
 
   output$YMin2 <- shiny::renderUI({
-    if(Debug) print('YMin 2 PickerInput');
+    if(Debug) print('YMin 2 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar2()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='YMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='YMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here t")
 
   output$YMin3 <- shiny::renderUI({
-    if(Debug) print('YMin 3 PickerInput');
+    if(Debug) print('YMin 3 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar3()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='YMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='YMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here u")
 
   output$YMin4 <- shiny::renderUI({
-    if(Debug) print('YMin 4 PickerInput');
+    if(Debug) print('YMin 4 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar4()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='YMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='YMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Y4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here v")
 
   # X-Mins
   output$XMin1 <- shiny::renderUI({
-    if(Debug) print('XMin 1 PickerInput');
+    if(Debug) print('XMin 1 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar1()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='XMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='XMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here w")
 
   output$XMin2 <- shiny::renderUI({
-    if(Debug) print('XMin 2 PickerInput');
+    if(Debug) print('XMin 2 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar2()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='XMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='XMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here x")
 
   output$XMin3 <- shiny::renderUI({
-    if(Debug) print('XMin 3 PickerInput');
+    if(Debug) print('XMin 3 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar3()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='XMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='XMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here y")
 
   output$XMin4 <- shiny::renderUI({
-    if(Debug) print('XMin 4 PickerInput');
+    if(Debug) print('XMin 4 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar4()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='XMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='XMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min X4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here z")
 
   # Y-Maxs
   output$YMax1 <- shiny::renderUI({
-    if(Debug) print('YMax 1 PickerInput');
+    if(Debug) print('YMax 1 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar1()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='YMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='YMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here aa")
 
   output$YMax2 <- shiny::renderUI({
-    if(Debug) print('YMax 2 PickerInput');
+    if(Debug) print('YMax 2 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar2()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='YMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='YMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here bb")
 
   output$YMax3 <- shiny::renderUI({
-    if(Debug) print('YMax 3 PickerInput');
+    if(Debug) print('YMax 3 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar3()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='YMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='YMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here cc")
 
   output$YMax4 <- shiny::renderUI({
-    if(Debug) print('YMax 4 PickerInput');
+    if(Debug) print('YMax 4 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(YVar4()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='YMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='YMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Y4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here dd")
 
   # X-Maxs
   output$XMax1 <- shiny::renderUI({
-    if(Debug) print('XMax 1 PickerInput');
+    if(Debug) print('XMax 1 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar1()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='XMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='XMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X1-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here ee")
 
   output$XMax2 <- shiny::renderUI({
-    if(Debug) print('XMax 2 PickerInput');
+    if(Debug) print('XMax 2 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar2()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='XMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='XMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X2-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here ff")
 
   output$XMax3 <- shiny::renderUI({
-    if(Debug) print('XMax 3 PickerInput');
+    if(Debug) print('XMax 3 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar3()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='XMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='XMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X3-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here gg")
 
   output$XMax4 <- shiny::renderUI({
-    if(Debug) print('XMax 4 PickerInput');
+    if(Debug) print('XMax 4 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(XVar4()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='XMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='XMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max X4-Value'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here hh")
 
   # Date-Mins
   output$DateMin1 <- shiny::renderUI({
-    if(Debug) print('DateMin 1 PickerInput');
+    if(Debug) print('DateMin 1 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar1()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='DateMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 1'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='DateMin1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 1'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here ii")
 
   output$DateMin2 <- shiny::renderUI({
-    if(Debug) print('DateMin 2 PickerInput');
+    if(Debug) print('DateMin 2 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar2()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='DateMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 2'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='DateMin2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 2'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here jj")
 
   output$DateMin3 <- shiny::renderUI({
-    if(Debug) print('DateMin 3 PickerInput');
+    if(Debug) print('DateMin 3 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar3()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='DateMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 3'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='DateMin3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 3'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here kk")
 
   output$DateMin4 <- shiny::renderUI({
-    if(Debug) print('DateMin 4 PickerInput');
+    if(Debug) print('DateMin 4 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar4()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='DateMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 4'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(InputID='DateMin4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Min Date-Value 4'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here ll")
 
   # Date-Maxs
   output$DateMax1 <- shiny::renderUI({
-    if(Debug) print('DateMax 1 PickerInput');
+    if(Debug) print('DateMax 1 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar1()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='DateMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 1'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='DateMax1', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 1'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here mm")
 
   output$DateMax2 <- shiny::renderUI({
-    if(Debug) print('DateMax 2 PickerInput');
+    if(Debug) print('DateMax 2 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar2()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='DateMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 2'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='DateMax2', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 2'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here oo")
 
   output$DateMax3 <- shiny::renderUI({
-    if(Debug) print('DateMax 3 PickerInput');
+    if(Debug) print('DateMax 3 SelectizeInput');
     if(Debug) print('DateVar3')
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar3()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='DateMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 3'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='DateMax3', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 3'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here pp")
 
   output$DateMax4 <- shiny::renderUI({
-    if(Debug) print('DateMax 4 PickerInput');
+    if(Debug) print('DateMax 4 SelectizeInput');
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = eval(DateVar4()))$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(InputID='DateMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 4'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(InputID='DateMax4', Multiple=FALSE, Debug=Debug, Label=tags$span(style=paste0('color: ', AppTextColor, ';'), 'Max Date-Value 4'), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   # ----
@@ -2803,6 +2890,56 @@ server <- function(input, output, session) {
   if(Debug) print("Here rr")
 
   # UI Plot Options
+  output$YLimMin1 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'YLimMin1', Label = tags$span(style='color: blue;', 'Y Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$YLimMax1 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'YLimMax1', Label = tags$span(style='color: blue;', 'Y Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$YLimMin2 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'YLimMin2', Label = tags$span(style='color: blue;', 'Y Min Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$YLimMax2 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'YLimMax2', Label = tags$span(style='color: blue;', 'Y Max Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$YLimMin3 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'YLimMin3', Label = tags$span(style='color: blue;', 'Y Min Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$YLimMax3 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'YLimMax3', Label = tags$span(style='color: blue;', 'Y Max Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$YLimMin4 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'YLimMin4', Label = tags$span(style='color: blue;', 'Y Min Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$YLimMax4 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'YLimMax4', Label = tags$span(style='color: blue;', 'Y Max Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$XLimMin1 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'XLimMin1', Label = tags$span(style='color: blue;', 'X Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$XLimMax1 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'XLimMax1', Label = tags$span(style='color: blue;', 'X Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$XLimMin2 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'XLimMin2', Label = tags$span(style='color: blue;', 'X Min Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$XLimMax2 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'XLimMax2', Label = tags$span(style='color: blue;', 'X Max Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$XLimMin3 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'XLimMin3', Label = tags$span(style='color: blue;', 'X Min Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$XLimMax3 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'XLimMax3', Label = tags$span(style='color: blue;', 'X Max Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$XLimMin4 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'XLimMin4', Label = tags$span(style='color: blue;', 'X Min Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+  })
+  output$XLimMax4 <- shiny::renderUI({
+    RemixAutoML::TextInput(InputID = 'XLimMax4', Label = tags$span(style='color: blue;', 'X Max Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+  })
+
+
   output$NumberGroupsDisplay <- shiny::renderUI({
     RemixAutoML::NumericInput(InputID = 'NumberGroupsDisplay', Label = tags$span(style='color: blue;', 'Dispay N Levels'), Step = 1L, Value = 5L, Min = 1L, Max = 100L)
   })
@@ -2824,28 +2961,28 @@ server <- function(input, output, session) {
   # Correlation Variables
   output$Cor_Variable1 <- shiny::renderUI({
     pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::PickerInput(InputID='Cor_Variable1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 1'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='Cor_Variable1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 1'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here vv")
 
   output$Cor_Variable2 <- shiny::renderUI({
     pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::PickerInput(InputID='Cor_Variable2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 2'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='Cor_Variable2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 2'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here ww")
 
   output$Cor_Variable3 <- shiny::renderUI({
     pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::PickerInput(InputID='Cor_Variable3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 3'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='Cor_Variable3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 3'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here xx")
 
   output$Cor_Variable4 <- shiny::renderUI({
     pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::PickerInput(InputID='Cor_Variable4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 4'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='Cor_Variable4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variable 4'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here yy")
@@ -2853,78 +2990,78 @@ server <- function(input, output, session) {
   # PDP Variables
   output$PDP_Variable1 <- shiny::renderUI({
     pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::PickerInput(InputID='PDP_Variable1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 1'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='PDP_Variable1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 1'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here vv")
 
   output$PDP_Variable2 <- shiny::renderUI({
     pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::PickerInput(InputID='PDP_Variable2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 2'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='PDP_Variable2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 2'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here ww")
 
   output$PDP_Variable3 <- shiny::renderUI({
     pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::PickerInput(InputID='PDP_Variable3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 3'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='PDP_Variable3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 3'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here xx")
 
   output$PDP_Variable4 <- shiny::renderUI({
     pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::PickerInput(InputID='PDP_Variable4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 4'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='PDP_Variable4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'PDP Variable 4'), Choices=pdp$Names, SelectedDefault=pdp$Default, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here yy")
 
   # Percentile Buckets
   output$Percentile_Buckets1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='Percentile_Buckets1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 1'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='Percentile_Buckets1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 1'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText="count > 1", Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here zz")
 
   output$Percentile_Buckets2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='Percentile_Buckets2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 2'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='Percentile_Buckets2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 2'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here aaa")
 
   output$Percentile_Buckets3 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='Percentile_Buckets3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 3'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='Percentile_Buckets3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 3'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here bbb")
 
   output$Percentile_Buckets4 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='Percentile_Buckets4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 4'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='Percentile_Buckets4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Percentile Buckets 4'), Choices=1:100, SelectedDefault=20, Size=10, SelectedText= "count > 1", Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here ccc")
 
   # Add GAM Fit to Plot
   output$GamFitScatter1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='GamFitScatter1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 1'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='GamFitScatter1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 1'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here ddd")
 
   output$GamFitScatter2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='GamFitScatter2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 2'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='GamFitScatter2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 2'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here eee")
 
   output$GamFitScatter3 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='GamFitScatter3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 3'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='GamFitScatter3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 3'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here fff")
 
   output$GamFitScatter4 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='GamFitScatter4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 4'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
+    RemixAutoML::SelectizeInput(InputID='GamFitScatter4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Fit Gam on Scatter or Copula 4'), Choices=c('TRUE','FALSE'), SelectedDefault=FALSE, Multiple=FALSE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here ggg")
@@ -2958,7 +3095,7 @@ server <- function(input, output, session) {
   output$YTicks1 <- shiny::renderUI({
     yy <- tryCatch({YVar1()}, error = function(x) 'None')
     if(Debug) print(RemixAutoML:::XTicks(data, xvar=yy))
-    RemixAutoML::PickerInput(InputID = 'YTicks1', Label = tags$span(style='color: blue;', 'Y-Axis 1 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'YTicks1', Label = tags$span(style='color: blue;', 'Y-Axis 1 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here lll")
@@ -2966,7 +3103,7 @@ server <- function(input, output, session) {
   output$YTicks2 <- shiny::renderUI({
     yy <- tryCatch({YVar2()}, error = function(x) 'None')
     if(Debug) print(RemixAutoML:::XTicks(data, xvar=yy))
-    RemixAutoML::PickerInput(InputID = 'YTicks2', Label = tags$span(style='color: blue;', 'Y-Axis 2 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'YTicks2', Label = tags$span(style='color: blue;', 'Y-Axis 2 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here mmm")
@@ -2974,7 +3111,7 @@ server <- function(input, output, session) {
   output$YTicks3 <- shiny::renderUI({
     yy <- tryCatch({YVar3()}, error = function(x) 'None')
     if(Debug) print(RemixAutoML:::XTicks(data, xvar=yy))
-    RemixAutoML::PickerInput(InputID = 'YTicks3', Label = tags$span(style='color: blue;', 'Y-Axis 3 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'YTicks3', Label = tags$span(style='color: blue;', 'Y-Axis 3 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here nnn")
@@ -2982,7 +3119,7 @@ server <- function(input, output, session) {
   output$YTicks4 <- shiny::renderUI({
     yy <- tryCatch({YVar4()}, error = function(x) 'None')
     if(Debug) print(RemixAutoML:::XTicks(data, xvar=yy))
-    RemixAutoML::PickerInput(InputID = 'YTicks4', Label = tags$span(style='color: blue;', 'Y-Axis 4 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'YTicks4', Label = tags$span(style='color: blue;', 'Y-Axis 4 Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here ooo")
@@ -2992,7 +3129,7 @@ server <- function(input, output, session) {
     xx <- tryCatch({XVar1()}, error = function(x) 'None')
     dd <- tryCatch({DateVar1()}, error = function(x) 'None')
     if(Debug) print(RemixAutoML:::XTicks(data, xvar=xx,datevar=dd))
-    RemixAutoML::PickerInput(InputID = 'XTicks1', Label = tags$span(style='color: blue;', 'X-Axis 1 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'XTicks1', Label = tags$span(style='color: blue;', 'X-Axis 1 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here ppp")
@@ -3001,7 +3138,7 @@ server <- function(input, output, session) {
     xx <- tryCatch({XVar2()}, error = function(x) 'None')
     dd <- tryCatch({DateVar2()}, error = function(x) 'None')
     if(Debug) print(RemixAutoML:::XTicks(data, xvar=xx,datevar=dd))
-    RemixAutoML::PickerInput(InputID = 'XTicks2', Label = tags$span(style='color: blue;', 'X-Axis 2 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'XTicks2', Label = tags$span(style='color: blue;', 'X-Axis 2 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here qqq")
@@ -3010,7 +3147,7 @@ server <- function(input, output, session) {
     xx <- tryCatch({XVar3()}, error = function(x) 'None')
     dd <- tryCatch({DateVar3()}, error = function(x) 'None')
     if(Debug) print(RemixAutoML:::XTicks(data, xvar=xx,datevar=dd))
-    RemixAutoML::PickerInput(InputID = 'XTicks3', Label = tags$span(style='color: blue;', 'X-Axis 3 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'XTicks3', Label = tags$span(style='color: blue;', 'X-Axis 3 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here rrr")
@@ -3019,7 +3156,7 @@ server <- function(input, output, session) {
     xx <- tryCatch({XVar4()}, error = function(x) 'None')
     dd <- tryCatch({DateVar4()}, error = function(x) 'None')
     if(Debug) print(RemixAutoML:::XTicks(data, xvar=xx,datevar=dd))
-    RemixAutoML::PickerInput(InputID = 'XTicks4', Label = tags$span(style='color: blue;', 'X-Axis 4 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'XTicks4', Label = tags$span(style='color: blue;', 'X-Axis 4 Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here sss")
@@ -3044,80 +3181,80 @@ server <- function(input, output, session) {
   if(Debug) print("Here uuu")
 
   output$TextSize <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'TextSize', Label = tags$span(style='color: blue;', 'Text Size'),Choices = c(as.character(seq(1,100,1))), SelectedDefault = '14', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'TextSize', Label = tags$span(style='color: blue;', 'Text Size'),Choices = c(as.character(seq(1,100,1))), SelectedDefault = '14', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here vvv")
 
   output$OutlierSize <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'OutlierSize', Label = tags$span(style='color: blue;', 'Outlier Size'), Choices = c(seq(0.01,2,0.01)), SelectedDefault = 0.01, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'OutlierSize', Label = tags$span(style='color: blue;', 'Outlier Size'), Choices = c(seq(0.01,2,0.01)), SelectedDefault = 0.01, Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here www")
 
   output$LegendPosition <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'LegendPosition', Label = tags$span(style='color: blue;', 'Legend Position'), Choices = c('bottom','left','right','top'), SelectedDefault = 'bottom', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'LegendPosition', Label = tags$span(style='color: blue;', 'Legend Position'), Choices = c('bottom','left','right','top'), SelectedDefault = 'bottom', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here xxx")
 
   output$LegendBorderSize <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'LegendBorderSize', Label = tags$span(style='color: blue;', 'Legend Border Size'), Choices = c(as.character(seq(0.01,2,0.01))), SelectedDefault = as.character(0.01), Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'LegendBorderSize', Label = tags$span(style='color: blue;', 'Legend Border Size'), Choices = c(as.character(seq(0.01,2,0.01))), SelectedDefault = as.character(0.01), Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here yyy")
 
   output$LegendLineType <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'LegendLineType', Label = tags$span(style='color: blue;', 'Legend Border Type'), Choices = c('solid','blank','dashed','dotdash','dotted','longlash','twodash'), SelectedDefault = 'solid', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'LegendLineType', Label = tags$span(style='color: blue;', 'Legend Border Type'), Choices = c('solid','blank','dashed','dotdash','dotted','longlash','twodash'), SelectedDefault = 'solid', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here zzz")
 
   # Color boxes
   output$TextColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'TextColor', Label = tags$span(style='color: blue;', 'Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'TextColor', Label = tags$span(style='color: blue;', 'Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here aaaa")
 
   output$ChartColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'ChartColor', Label = tags$span(style='color: blue;', 'Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'ChartColor', Label = tags$span(style='color: blue;', 'Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here bbbb")
 
   output$GridColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'GridColor', Label = tags$span(style='color: blue;', 'Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'white', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'GridColor', Label = tags$span(style='color: blue;', 'Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'white', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here cccc")
 
   output$BackGroundColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'BackGroundColor', Label = tags$span(style='color: blue;', 'Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'BackGroundColor', Label = tags$span(style='color: blue;', 'Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here dddd")
 
   output$BorderColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'BorderColor', Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'BorderColor', Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here eeee")
 
   output$OutlierColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'OutlierColor', Label = tags$span(style='color: blue;', 'Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'OutlierColor', Label = tags$span(style='color: blue;', 'Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here ffff")
 
   output$FillColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'FillColor', Label = tags$span(style='color: blue;', 'BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'FillColor', Label = tags$span(style='color: blue;', 'BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here gggg")
 
   output$SubTitleColor <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'SubTitleColor', Label = tags$span(style='color: blue;', 'Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'SubTitleColor', Label = tags$span(style='color: blue;', 'Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ----
@@ -3132,29 +3269,29 @@ server <- function(input, output, session) {
 
   # Select GroupVars
   output$GroupVars1 <- shiny::renderUI({
-    if(Debug) print('PickerInput GroupVars1')
-    RemixAutoML::PickerInput(InputID='GroupVars1', Label=tags$span(style='color: blue;', 'Select Group Variables 1'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
+    if(Debug) print('SelectizeInput GroupVars1')
+    RemixAutoML::SelectizeInput(InputID='GroupVars1', Label=tags$span(style='color: blue;', 'Select Group Variables 1'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here iiii")
 
   output$GroupVars2 <- shiny::renderUI({
-    if(Debug) print('PickerInput GroupVars2')
-    RemixAutoML::PickerInput(InputID='GroupVars2', Label=tags$span(style='color: blue;', 'Select Group Variables 2'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
+    if(Debug) print('SelectizeInput GroupVars2')
+    RemixAutoML::SelectizeInput(InputID='GroupVars2', Label=tags$span(style='color: blue;', 'Select Group Variables 2'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here jjjj")
 
   output$GroupVars3 <- shiny::renderUI({
-    if(Debug) print('PickerInput GroupVars3')
-    RemixAutoML::PickerInput(InputID='GroupVars3', Label=tags$span(style='color: blue;', 'Select Group Variables 3'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
+    if(Debug) print('SelectizeInput GroupVars3')
+    RemixAutoML::SelectizeInput(InputID='GroupVars3', Label=tags$span(style='color: blue;', 'Select Group Variables 3'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here kkkk")
 
   output$GroupVars4 <- shiny::renderUI({
-    if(Debug) print('PickerInput GroupVars4')
-    RemixAutoML::PickerInput(InputID='GroupVars4', Label=tags$span(style='color: blue;', 'Select Group Variables 4'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
+    if(Debug) print('SelectizeInput GroupVars4')
+    RemixAutoML::SelectizeInput(InputID='GroupVars4', Label=tags$span(style='color: blue;', 'Select Group Variables 4'), Choices=c('None',names(data)), SelectedDefault=if(!is.null(GroupVariables)) GroupVariables else 'None', SelectedText='count > 1', Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here llll")
@@ -3271,74 +3408,74 @@ server <- function(input, output, session) {
 
   # Faceting
   output$FacetVar_1_1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='FacetVar_1_1', Label = tags$span(style='color: blue;', 'Facet Variable 1 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID='FacetVar_1_1', Label = tags$span(style='color: blue;', 'Facet Variable 1 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here ccccc")
 
   output$FacetVar_1_2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='FacetVar_1_2', Label = tags$span(style='color: blue;', 'Facet Variable 1 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID='FacetVar_1_2', Label = tags$span(style='color: blue;', 'Facet Variable 1 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here ddddd")
 
   output$FacetVar_2_1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='FacetVar_2_1', Label = tags$span(style='color: blue;', 'Facet Variable 2 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID='FacetVar_2_1', Label = tags$span(style='color: blue;', 'Facet Variable 2 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here eeeee")
 
   output$FacetVar_2_2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='FacetVar_2_2', Label = tags$span(style='color: blue;', 'Facet Variable 2 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID='FacetVar_2_2', Label = tags$span(style='color: blue;', 'Facet Variable 2 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here fffff")
 
   output$FacetVar_3_1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='FacetVar_3_1', Label = tags$span(style='color: blue;', 'Facet Variable 3 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID='FacetVar_3_1', Label = tags$span(style='color: blue;', 'Facet Variable 3 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here ggggg")
 
   output$FacetVar_3_2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='FacetVar_3_2', Label = tags$span(style='color: blue;', 'Facet Variable 3 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID='FacetVar_3_2', Label = tags$span(style='color: blue;', 'Facet Variable 3 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here hhhhh")
 
   output$FacetVar_4_1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='FacetVar_4_1', Label = tags$span(style='color: blue;', 'Facet Variable 4 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID='FacetVar_4_1', Label = tags$span(style='color: blue;', 'Facet Variable 4 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here iiiii")
 
   output$FacetVar_4_2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID='FacetVar_4_2', Label = tags$span(style='color: blue;', 'Facet Variable 4 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID='FacetVar_4_2', Label = tags$span(style='color: blue;', 'Facet Variable 4 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here jjjjj")
 
   # Sizing
   output$SizeVar1 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'SizeVar1', Label = tags$span(style='color: blue;', 'Size Variable 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'SizeVar1', Label = tags$span(style='color: blue;', 'Size Variable 1'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here kkkkk")
 
   output$SizeVar2 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'SizeVar2', Label = tags$span(style='color: blue;', 'Size Variable 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'SizeVar2', Label = tags$span(style='color: blue;', 'Size Variable 2'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here lllll")
 
   output$SizeVar3 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'SizeVar3', Label = tags$span(style='color: blue;', 'Size Variable 3'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'SizeVar3', Label = tags$span(style='color: blue;', 'Size Variable 3'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   if(Debug) print("Here mmmmm")
 
   output$SizeVar4 <- shiny::renderUI({
-    RemixAutoML::PickerInput(InputID = 'SizeVar4', Label = tags$span(style='color: blue;', 'Size Variable 4'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
+    RemixAutoML::SelectizeInput(InputID = 'SizeVar4', Label = tags$span(style='color: blue;', 'Size Variable 4'), Choices = c('None', names(data)), SelectedDefault = 'None', Size = 10, SelectedText = "count > 1", Multiple = FALSE, ActionBox = TRUE)
   })
 
   # ----
@@ -3588,7 +3725,7 @@ server <- function(input, output, session) {
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_1']])$ChoiceInput}, error = function(x) NULL)
     print(choices)
     print(do.call(RemixAutoML::GetFilterValueLabel, params))
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here tttttt")
@@ -3596,7 +3733,7 @@ server <- function(input, output, session) {
   output$FilterValue_1_1_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_1']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_1']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here uuuuuu")
@@ -3604,7 +3741,7 @@ server <- function(input, output, session) {
   output$FilterValue_1_2_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_2']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_2']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here vvvvvv")
@@ -3612,7 +3749,7 @@ server <- function(input, output, session) {
   output$FilterValue_1_2_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_2']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_2']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here wwwwww")
@@ -3620,7 +3757,7 @@ server <- function(input, output, session) {
   output$FilterValue_1_3_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_3']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_3']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here xxxxxx")
@@ -3628,7 +3765,7 @@ server <- function(input, output, session) {
   output$FilterValue_1_3_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_3']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_3']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here yyyyyy")
@@ -3636,7 +3773,7 @@ server <- function(input, output, session) {
   output$FilterValue_1_4_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_4']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_4']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here zzzzzz")
@@ -3644,7 +3781,7 @@ server <- function(input, output, session) {
   output$FilterValue_1_4_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_1_4']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_1_4']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_1_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_1_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here aaaaaaa")
@@ -3653,7 +3790,7 @@ server <- function(input, output, session) {
   output$FilterValue_2_1_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_1']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_1']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here bbbbbbb")
@@ -3661,7 +3798,7 @@ server <- function(input, output, session) {
   output$FilterValue_2_1_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_1']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_1']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here ccccccc")
@@ -3669,7 +3806,7 @@ server <- function(input, output, session) {
   output$FilterValue_2_2_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_2']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_2']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here ddddddd")
@@ -3677,7 +3814,7 @@ server <- function(input, output, session) {
   output$FilterValue_2_2_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_2']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_2']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here eeeeeee")
@@ -3685,7 +3822,7 @@ server <- function(input, output, session) {
   output$FilterValue_2_3_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_3']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_3']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here fffffff")
@@ -3693,7 +3830,7 @@ server <- function(input, output, session) {
   output$FilterValue_2_3_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_3']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_3']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here ggggggg")
@@ -3701,7 +3838,7 @@ server <- function(input, output, session) {
   output$FilterValue_2_4_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_4']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_4']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here hhhhhhh")
@@ -3709,7 +3846,7 @@ server <- function(input, output, session) {
   output$FilterValue_2_4_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_4']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_2_4']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_2_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_2_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here qqqqqqq")
@@ -3718,7 +3855,7 @@ server <- function(input, output, session) {
   output$FilterValue_3_1_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_1']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_1']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here rrrrrrr")
@@ -3726,7 +3863,7 @@ server <- function(input, output, session) {
   output$FilterValue_3_1_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_1']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_1']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here sssssss")
@@ -3734,7 +3871,7 @@ server <- function(input, output, session) {
   output$FilterValue_3_2_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_2']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_2']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here ttttttt")
@@ -3742,7 +3879,7 @@ server <- function(input, output, session) {
   output$FilterValue_3_2_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_2']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_2']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here uuuuuuu")
@@ -3750,7 +3887,7 @@ server <- function(input, output, session) {
   output$FilterValue_3_3_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_3']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_3']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here vvvvvvv")
@@ -3758,7 +3895,7 @@ server <- function(input, output, session) {
   output$FilterValue_3_3_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_3']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_3']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here wwwwwww")
@@ -3766,7 +3903,7 @@ server <- function(input, output, session) {
   output$FilterValue_3_4_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_4']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_4']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here xxxxxxx")
@@ -3774,7 +3911,7 @@ server <- function(input, output, session) {
   output$FilterValue_3_4_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_4']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_3_4']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_3_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_3_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here yyyyyyy")
@@ -3783,7 +3920,7 @@ server <- function(input, output, session) {
   output$FilterValue_4_1_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_1']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_1']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here zzzzzzz")
@@ -3791,7 +3928,7 @@ server <- function(input, output, session) {
   output$FilterValue_4_1_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_1']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_1']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here aaaaaaaa")
@@ -3799,7 +3936,7 @@ server <- function(input, output, session) {
   output$FilterValue_4_2_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_2']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_2']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here bbbbbbbb")
@@ -3807,7 +3944,7 @@ server <- function(input, output, session) {
   output$FilterValue_4_2_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_2']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_2']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here cccccccc")
@@ -3815,7 +3952,7 @@ server <- function(input, output, session) {
   output$FilterValue_4_3_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_3']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_3']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here dddddddd")
@@ -3823,7 +3960,7 @@ server <- function(input, output, session) {
   output$FilterValue_4_3_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_3']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_3']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   if(Debug) print("Here eeeeeeee")
@@ -3831,7 +3968,7 @@ server <- function(input, output, session) {
   output$FilterValue_4_4_1 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_4']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_4']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
   })
 
   if(Debug) print("Here ffffffff")
@@ -3839,7 +3976,7 @@ server <- function(input, output, session) {
   output$FilterValue_4_4_2 <- shiny::renderUI({
     params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_4']]}, error = function(x) NULL), type=2)
     choices <- tryCatch({RemixAutoML::KeyVarsInit(data, VarName = input[['FilterVariable_4_4']])$ChoiceInput}, error = function(x) NULL)
-    RemixAutoML::PickerInput(Multiple = FALSE, InputID='FilterValue_4_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+    RemixAutoML::SelectizeInput(Multiple = FALSE, InputID='FilterValue_4_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
   })
 
   # ----
@@ -4842,7 +4979,19 @@ server <- function(input, output, session) {
             if(N == 1L) {
 
               if(Debug) print('N == 1L case')
+              if(Debug) print(tryCatch({input[['YLimMin1']]}, error = function(x) ""))
               p1 <- PlotCollectionList[['p1']]
+
+              # Update axis limits
+              if(Debug) {print(input$YLimMin1);print(input$YLimMax1);print(input$XLimMin1);print(input$XLimMax1)}
+              #if(any(length(input[['YLimMin1']])))
+              p1 <- RemixAutoML::PlotLimits(
+                p1,
+                YMin=tryCatch({input[['YLimMin1']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax1']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin1']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax1']]}, error = function(x) ""))
+
               if(Debug) print(paste0('Class of p1 is :: ', class(p1)))
 
               # Ouput Plot for 1 single plot request
@@ -4857,6 +5006,20 @@ server <- function(input, output, session) {
               p2 <- PlotCollectionList[['p2']]
               if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
               if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
+
+              # Update axis limits
+              p1 <- RemixAutoML::PlotLimits(
+                p1,
+                YMin=tryCatch({input[['YLimMin1']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax1']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin1']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax1']]}, error = function(x) ""))
+              p2 <- RemixAutoML::PlotLimits(
+                p2,
+                YMin=tryCatch({input[['YLimMin2']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax2']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin2']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax2']]}, error = function(x) ""))
 
               # Ouput Plot for 2 plot requests
               if(AutoGridHorizontal) {
@@ -4878,6 +5041,26 @@ server <- function(input, output, session) {
               if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
               if(Debug) print(paste0('Class of p2 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
               if(Debug) print(paste0('Class of p3 is :: ', tryCatch({class(p3)}, error = function(x) NULL)))
+
+              # Update axis limits
+              p1 <- RemixAutoML::PlotLimits(
+                p1,
+                YMin=tryCatch({input[['YLimMin1']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax1']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin1']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax1']]}, error = function(x) ""))
+              p2 <- RemixAutoML::PlotLimits(
+                p2,
+                YMin=tryCatch({input[['YLimMin2']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax2']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin2']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax2']]}, error = function(x) ""))
+              p3 <- RemixAutoML::PlotLimits(
+                p3,
+                YMin=tryCatch({input[['YLimMin3']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax3']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin3']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax3']]}, error = function(x) ""))
 
               # Ouput Plot for 3 plot requests
               if(AutoGridHorizontal) {
@@ -4903,6 +5086,32 @@ server <- function(input, output, session) {
               if(Debug) print(paste0('Class of p2 is :: ', tryCatch({class(p2)}, error = function(x) NULL)))
               if(Debug) print(paste0('Class of p3 is :: ', tryCatch({class(p3)}, error = function(x) NULL)))
               if(Debug) print(paste0('Class of p4 is :: ', tryCatch({class(p4)}, error = function(x) NULL)))
+
+              # Update axis limits
+              p1 <- RemixAutoML::PlotLimits(
+                p1,
+                YMin=tryCatch({input[['YLimMin1']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax1']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin1']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax1']]}, error = function(x) ""))
+              p2 <- RemixAutoML::PlotLimits(
+                p2,
+                YMin=tryCatch({input[['YLimMin2']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax2']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin2']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax2']]}, error = function(x) ""))
+              p3 <- RemixAutoML::PlotLimits(
+                p3,
+                YMin=tryCatch({input[['YLimMin3']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax3']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin3']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax3']]}, error = function(x) ""))
+              p4 <- RemixAutoML::PlotLimits(
+                p4,
+                YMin=tryCatch({input[['YLimMin4']]}, error = function(x) ""),
+                YMax=tryCatch({input[['YLimMax4']]}, error = function(x) ""),
+                XMin=tryCatch({input[['XLimMin4']]}, error = function(x) ""),
+                XMax=tryCatch({input[['XLimMax4']]}, error = function(x) ""))
 
               # Ouput Plot for 4 plot requests
               if(AutoGridHorizontal) {

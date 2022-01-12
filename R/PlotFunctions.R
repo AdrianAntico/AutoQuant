@@ -1,3 +1,26 @@
+#' @title ShapImportancePlot
+#'
+#' @description Generate Variable Importance Plots using Shapely Values of given data set
+#'
+#' @author Adrian Antico
+#' @family Model Insights
+#'
+#' @param data Source data.table
+#' @param ShapColNames Names of the columns that contain shap values you want included
+#' @param AggMethod A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'geomean', 'harmmean', 'sd', 'median'
+#' @param TopN The number of variables to plot
+#'
+#' @export
+ShapImportancePlot <- function(data, ShapColNames = NULL, AggMethod = 'mean', TopN = 25) {
+  temp <- data[, .SD, .SDcols = c(ShapColNames)]
+  temp[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(ShapColNames)]
+  temp1 <- data.table::transpose(temp)
+  temp1[order(-V1)]
+  data.table::setnames(temp1, c('V1','V2'), c('Variable', 'Importance'))
+  p <- RemixAutoML:::VI_Plot(VI_Data = temp1, Type = 'catboost', TopN = TopN)
+  return(eval(p))
+}
+
 #' @title CorrMatrixPlot
 #'
 #' @description Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
@@ -58,6 +81,33 @@ CorrMatrixPlot <- function(data = NULL,
   # Used multiple times
   check1 <- length(CorrVars)
   check2 <- which(RemixAutoML:::ColTypes(data = data) %in% c('numeric','integer'))
+
+  ggcorrplot::ggcorrplot(
+    corr = ,
+    method = ,
+    type = ,
+    ggtheme = ,
+    title = ,
+    show.legend = ,
+    legend.title = ,
+    show.diag = ,
+    colors = ,
+    outline.color = ,
+    hc.order = ,
+    hc.method = ,
+    lab = ,
+    lab_col = ,
+    lab_size = ,
+    p.mat = ,
+    sig.level = ,
+    insig = ,
+    pch = ,
+    pch.col = ,
+    pch.cex = ,
+    tl.cex = ,
+    tl.col = ,
+    tl.srt = ,
+    digits = )
 
   # Check for unique vals > 3
 
@@ -170,11 +220,6 @@ CorrMatrixPlot <- function(data = NULL,
   # Return plot
   return(eval(p1))
 }
-
-
-
-
-
 
 #' @title ViolinPlot
 #'
@@ -918,6 +963,14 @@ AutoPlotter <- function(dt = NULL,
 
   # Debug
   if(Debug) print(paste0('AutoPlotter() begin, PlotType = ', PlotType))
+
+  if(tolower(PlotType) == 'shapelyImportance') {
+
+
+    # Where does filtering take place?
+    vals <- names(dt)[which(names(dt) %like% 'Shap_')]
+    p1 <- RemixAutoML::ShapImportancePlot(dt, ShapColNames = vals, AggMethod = 'mean', TopN = 25)
+  }
 
   # Box Plot
   if(tolower(PlotType) == 'boxplot') {

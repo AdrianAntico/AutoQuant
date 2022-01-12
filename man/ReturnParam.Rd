@@ -48,6 +48,7 @@ Other Shiny:
 \code{\link{PickerInput}()},
 \code{\link{PreparePlotData}()},
 \code{\link{ReactiveLoadCSV}()},
+\code{\link{SelectizeInput}()},
 \code{\link{StoreArgs}()},
 \code{\link{TextInput}()},
 \code{\link{observeEventLoad}()}
