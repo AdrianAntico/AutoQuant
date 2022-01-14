@@ -755,23 +755,39 @@ BarPlot <- function(data = NULL,
   } else if(check2) {
     if(length(ColorVar) != 0) {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar), fill = as.factor(get(ColorVar))))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'bin')
+      if(length(unique(data[[eval(YVar)]])) <= 10L) {
+        p1 <- p1 + ggplot2::geom_bar(stat = 'count')
+      } else {
+        p1 <- p1 + ggplot2::geom_bar(stat = 'bin')
+      }
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(YVar))
     } else {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar)))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'bin', fill = FillColor)
+      if(length(unique(data[[eval(YVar)]])) <= 10L) {
+        p1 <- p1 + ggplot2::geom_bar(stat = 'count', fill = FillColor)
+      } else {
+        p1 <- p1 + ggplot2::geom_bar(stat = 'bin', fill = FillColor)
+      }
       p1 <- p1 + ggplot2::xlab(eval(YVar))
     }
   } else if(check3) {
     if(length(ColorVar) != 0) {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), fill = as.factor(get(ColorVar))))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'bin')
+      if(length(unique(data[[eval(XVar)]])) <= 10L) {
+        p1 <- p1 + ggplot2::geom_bar(stat = 'count')
+      } else {
+        p1 <- p1 + ggplot2::geom_bar(stat = 'bin')
+      }
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(XVar))
     } else {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar)))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'bin', fill = FillColor)
+      if(length(unique(data[[eval(XVar)]])) <= 10L) {
+        p1 <- p1 + ggplot2::geom_bar(stat = 'count', fill = FillColor)
+      } else {
+        p1 <- p1 + ggplot2::geom_bar(stat = 'bin', fill = FillColor)
+      }
       p1 <- p1 + ggplot2::xlab(eval(XVar))
     }
   } else {
