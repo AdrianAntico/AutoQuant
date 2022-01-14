@@ -78,18 +78,17 @@ ViolinPlot(
 Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
 }
 \seealso{
-Other EDA: 
-\code{\link{AutoWordFreq}()},
+Other Graphics: 
+\code{\link{AddFacet}()},
+\code{\link{AppModelInsights}()},
+\code{\link{AutoPlotter}()},
 \code{\link{BarPlot}()},
 \code{\link{BoxPlot}()},
-\code{\link{EDA_Histograms}()},
+\code{\link{ChartTheme}()},
 \code{\link{HistPlot}()},
-\code{\link{Mode}()},
-\code{\link{PlotGUI}()},
-\code{\link{ScatterCopula}()},
-\code{\link{UserBaseEvolution}()}
+\code{\link{multiplot}()}
 }
 \author{
 Adrian Antico
 }
-\concept{EDA}
+\concept{Graphics}

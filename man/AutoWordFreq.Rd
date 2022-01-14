@@ -64,15 +64,11 @@ data <- AutoWordFreq(
 }
 \seealso{
 Other EDA: 
-\code{\link{BarPlot}()},
-\code{\link{BoxPlot}()},
 \code{\link{EDA_Histograms}()},
-\code{\link{HistPlot}()},
 \code{\link{Mode}()},
 \code{\link{PlotGUI}()},
 \code{\link{ScatterCopula}()},
-\code{\link{UserBaseEvolution}()},
-\code{\link{ViolinPlot}()}
+\code{\link{UserBaseEvolution}()}
 }
 \author{
 Adrian Antico

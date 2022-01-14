@@ -112,8 +112,13 @@ Create plots
 }
 \seealso{
 Other Graphics: 
+\code{\link{AddFacet}()},
 \code{\link{AppModelInsights}()},
+\code{\link{BarPlot}()},
+\code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
+\code{\link{HistPlot}()},
+\code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
 }
 \author{

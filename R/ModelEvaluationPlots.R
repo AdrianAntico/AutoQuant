@@ -432,7 +432,7 @@ ROCPlot <- function(data = ValidationData,
   ROC_Plot <- eval(ggplot2::ggplot(AUC_Data, ggplot2::aes(x = 1 - Specificity)) +
     ggplot2::geom_line(ggplot2::aes(y = AUC_Data[["Sensitivity"]]), color = "blue") +
     ggplot2::geom_abline(slope = 1, color = "black") +
-    ggplot2::ggtitle(paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%")) +
+    ggplot2::labs(title = paste0("Catboost AUC: ", 100 * round(AUC_Metrics$auc, 3), "%"), caption = 'RemixAutoML') +
     ChartTheme() + ggplot2::xlab("Specificity") +
     ggplot2::ylab("Sensitivity"))
 
@@ -573,7 +573,7 @@ CumGainsChart <- function(data = NULL,
       ggplot2::ylim(0,110) +
       ggplot2::guides(fill = "none") +
       ggplot2::scale_colour_continuous(breaks = c(0, seq(10, 100, 10))) +
-      ChartTheme() + ggplot2::theme(legend.position = "none"))
+      ChartTheme(LegendPosition = 'none') + ggplot2::theme(legend.position = "none"))
 
   # Create Lift Chart
   p_lift <- eval(ggplot2::ggplot(
@@ -602,7 +602,7 @@ CumGainsChart <- function(data = NULL,
       ggplot2::guides(fill = "none") +
       ggplot2::scale_colour_continuous(guide = FALSE) +
       ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10))) +
-      ChartTheme() + ggplot2::theme(legend.position = "none"))
+      RemixAutoML::ChartTheme() + ggplot2::theme(legend.position = "none"))
 
   # Save plot
   if(SavePlot) {
@@ -614,6 +614,10 @@ CumGainsChart <- function(data = NULL,
       ggplot2::ggsave(plot = p_lift, filename = paste0(Name, "_Lift_Plot.png"), path = file.path(modelpath))
     }
   }
+
+  # Add titles and caption
+  p_gain <- p_gain + ggplot2::labs(title = 'Cumulative Gains %', caption = 'RemixAutoML')
+  p_lift <- p_lift + ggplot2::labs(title = 'Lift Plot', caption = 'RemixAutoML')
 
   # Return
   return(list(GainsPlot = p_gain, LiftPlot = p_lift))

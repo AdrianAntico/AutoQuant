@@ -1,3 +1,33 @@
+#' @title AddFacet
+#'
+#' @description Add up to two facet variables for plots
+#'
+#' @author Adrian Antico
+#' @family Graphics
+#'
+#' @param data Source data.table
+#' @param ShapColNames Names of the columns that contain shap values you want included
+#' @param FacetVar1 Column name
+#' @param FacetVar2 Column name
+#' @param AggMethod A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'sd', 'median', 'absmedian', 'medianabs'
+#' @param TopN The number of variables to plot
+#' @param Debug = FALSE
+#'
+#' @export
+AddFacet <- function(p, fv1=NULL, fv2=NULL, Exclude = 'None', Debug = FALSE) {
+  if(length(fv1) != 0 && fv1 != Exclude && length(fv2) != 0 && fv2 != Exclude) {
+    if(Debug) print('FacetVar1 and FacetVar2')
+    p <- p + ggplot2::facet_grid(get(fv1) ~ get(fv2))
+  } else if(length(fv1) != 0 && fv1 == Exclude) {
+    if(Debug) print('FacetVar1')
+    p <- p + ggplot2::facet_wrap(~ get(fv1))
+  } else if(length(fv2) != 0 && fv2 == Exclude) {
+    if(Debug) print('FacetVar2')
+    p <- p + ggplot2::facet_wrap(~ get(fv2))
+  }
+  return(eval(p))
+}
+
 #' @title ShapImportancePlot
 #'
 #' @description Generate Variable Importance Plots using Shapely Values of given data set
@@ -7,17 +37,111 @@
 #'
 #' @param data Source data.table
 #' @param ShapColNames Names of the columns that contain shap values you want included
-#' @param AggMethod A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'geomean', 'harmmean', 'sd', 'median'
+#' @param FacetVar1 Column name
+#' @param FacetVar2 Column name
+#' @param AggMethod A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'sd', 'median', 'absmedian', 'medianabs'
 #' @param TopN The number of variables to plot
+#' @param Debug = FALSE
 #'
 #' @export
-ShapImportancePlot <- function(data, ShapColNames = NULL, AggMethod = 'mean', TopN = 25) {
-  temp <- data[, .SD, .SDcols = c(ShapColNames)]
-  temp[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(ShapColNames)]
-  temp1 <- data.table::transpose(temp)
-  temp1[order(-V1)]
-  data.table::setnames(temp1, c('V1','V2'), c('Variable', 'Importance'))
+ShapImportancePlot <- function(data,
+                               ShapColNames = NULL,
+                               FacetVar1=NULL,
+                               FacetVar2=NULL,
+                               AggMethod = 'mean',
+                               TopN = 25,
+                               Debug = FALSE) {
+
+  # Debug
+  if(Debug) {
+    print(paste0('AggMethod = ', AggMethod))
+    print('Starting ShapImportancePlot')
+    print(paste0('is data missing? ', missing(data)))
+    if(!missing(data)) print(paste0(' and is null? ', is.null(data)))
+    print('ShapColNames Next')
+    print(ShapColNames)
+  }
+
+  # Arg checks
+  if(length(ShapColNames) == 0) stop('ShapColNames cannot be NULL nor zero-length vectors')
+  if(length(FacetVar1) != 0 && !FacetVar1 %in% names(data)) stop('FacetVar1 not in names(data)')
+  if(length(FacetVar2) != 0 && !FacetVar2 %in% names(data)) stop('FacetVar2 not in names(data)')
+  if(!AggMethod %in% c('mean', 'absmean', 'meanabs', 'sd', 'median', 'absmedian', 'medianabs')) stop("AggMethod must be in c('mean', 'absmean', 'meanabs', 'sd', 'median', 'absmedian', 'medianabs')")
+  if(TopN < 1) stop('TopN cannot be less than 1')
+
+  # Subset columns
+  temp <- data[, .SD, .SDcols = c(ShapColNames, FacetVar1, FacetVar2)]
+
+  # Aggregate; Melt; Subset to TopN count
+  #
+  #   TopN rows: half from highest shap values, remainder from lowest negative shap values
+  if(AggMethod == 'mean') {
+    temp <- temp[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(ShapColNames)]
+    temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    gg <- temp1[, .N]
+    if(gg > TopN) {
+      temp1 <- temp1[c(1:13, (gg - 13L):gg)]
+    }
+  } else if(AggMethod == 'median') {
+    temp <- temp[, lapply(.SD, median, na.rm = TRUE), .SDcols = c(ShapColNames)]
+    temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    gg <- temp1[, .N]
+    if(gg > TopN) {
+      temp1 <- temp1[c(1:13, (gg - 13L):gg)]
+    }
+
+  # TopN rows: since abs(), doesn't matter
+  } else if(AggMethod == 'sd') {
+    temp <- temp[, lapply(.SD, sd, na.rm = TRUE), .SDcols = c(ShapColNames)]
+    temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+  } else if(AggMethod == 'absmean') {
+    temp <- temp[, lapply(.SD, function(x) {
+      return(abs(mean(x[which(!is.na(x))])))
+    }), .SDcols = c(ShapColNames)]
+    temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+  } else if(AggMethod == 'meanabs') {
+    temp <- temp[, lapply(.SD, function(x) {
+      return(mean(abs(x[which(!is.na(x))])))
+    }), .SDcols = c(ShapColNames)]
+    temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+  } else if(AggMethod == 'medianabs') {
+    temp <- temp[, lapply(.SD, function(x) {
+      return(median(abs(x[which(!is.na(x))])))
+    }), .SDcols = c(ShapColNames)]
+    temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+  } else if(AggMethod == 'absmedian') {
+    temp <- temp[, lapply(.SD, function(x) {
+      return(abs(median(x[which(!is.na(x))])))
+    }), .SDcols = c(ShapColNames)]
+    temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+  }
+
+  # Build VI Plot
   p <- RemixAutoML:::VI_Plot(VI_Data = temp1, Type = 'catboost', TopN = TopN)
+  p <- p + ggplot2::labs(title = 'Shapely Variable Importance', caption = 'RemixAutoML')
+
+
+  # Y-Axis Label (its the Y-Axis because of coord_flip() in the VI_Plot() function
+  if(AggMethod == 'mean') {
+    p <- p + ggplot2::ylab(paste0('Mean(shapley values)'))
+  } else if(AggMethod == 'absmean') {
+    p <- p + ggplot2::ylab(paste0('Abs[mean(shapely values)]'))
+  } else if(AggMethod == 'meanabs') {
+    p <- p + ggplot2::ylab('Mean[abs(shapley values)]')
+  } else if(AggMethod == 'sd') {
+    p <- p + ggplot2::ylab('StDev(shapley values)')
+  } else if(AggMethod == 'median') {
+    p <- p + ggplot2::ylab('Median(shapley values)')
+  } else if(AggMethod == 'absmedian') {
+    p <- p + ggplot2::ylab('Abs[median(shapley values)]')
+  } else if(AggMethod == 'medianabs') {
+    p <- p + ggplot2::ylab('Median[abs(shapley values)]')
+  }
+
+  # TODO: Add faceting (returns no faceting in none was requested)
+  # p <- AddFacet(p, fv1=FacetVar1, fv2=FacetVar2, Exclude = 'None', Debug = FALSE)
+
+  # eval(p) to ensure it can save in list
   return(eval(p))
 }
 
@@ -25,7 +149,7 @@ ShapImportancePlot <- function(data, ShapColNames = NULL, AggMethod = 'mean', To
 #'
 #' @description Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
 #'
-#' @family EDA
+#' @family Graphics
 #'
 #' @author Adrian Antico
 #'
@@ -82,32 +206,32 @@ CorrMatrixPlot <- function(data = NULL,
   check1 <- length(CorrVars)
   check2 <- which(RemixAutoML:::ColTypes(data = data) %in% c('numeric','integer'))
 
-  ggcorrplot::ggcorrplot(
-    corr = ,
-    method = ,
-    type = ,
-    ggtheme = ,
-    title = ,
-    show.legend = ,
-    legend.title = ,
-    show.diag = ,
-    colors = ,
-    outline.color = ,
-    hc.order = ,
-    hc.method = ,
-    lab = ,
-    lab_col = ,
-    lab_size = ,
-    p.mat = ,
-    sig.level = ,
-    insig = ,
-    pch = ,
-    pch.col = ,
-    pch.cex = ,
-    tl.cex = ,
-    tl.col = ,
-    tl.srt = ,
-    digits = )
+  # ggcorrplot::ggcorrplot(
+  #   corr = ,
+  #   method = ,
+  #   type = ,
+  #   ggtheme = ,
+  #   title = ,
+  #   show.legend = ,
+  #   legend.title = ,
+  #   show.diag = ,
+  #   colors = ,
+  #   outline.color = ,
+  #   hc.order = ,
+  #   hc.method = ,
+  #   lab = ,
+  #   lab_col = ,
+  #   lab_size = ,
+  #   p.mat = ,
+  #   sig.level = ,
+  #   insig = ,
+  #   pch = ,
+  #   pch.col = ,
+  #   pch.cex = ,
+  #   tl.cex = ,
+  #   tl.col = ,
+  #   tl.srt = ,
+  #   digits = )
 
   # Check for unique vals > 3
 
@@ -225,7 +349,7 @@ CorrMatrixPlot <- function(data = NULL,
 #'
 #' @description Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
 #'
-#' @family EDA
+#' @family Graphics
 #'
 #' @author Adrian Antico
 #'
@@ -327,16 +451,7 @@ ViolinPlot <- function(data = NULL,
   }
 
   # Add faceting (returns no faceting in none was requested)
-  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
-    if(Debug) print('FacetVar1 and FacetVar2')
-    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-  } else if(length(FacetVar1) != 0 && FacetVar1 == 'None') {
-    if(Debug) print('FacetVar1')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
-  } else if(length(FacetVar2) != 0 && FacetVar2 == 'None') {
-    if(Debug) print('FacetVar2')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-  }
+  p1 <- AddFacet(p1, fv1=FacetVar1, fv2=FacetVar2, Exclude = 'None', Debug = FALSE)
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
@@ -396,7 +511,7 @@ ViolinPlot <- function(data = NULL,
 #'
 #' @description Build a box plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
 #'
-#' @family EDA
+#' @family Graphics
 #'
 #' @author Adrian Antico
 #'
@@ -502,16 +617,7 @@ BoxPlot <- function(data = NULL,
   }
 
   # Add faceting (returns no faceting in none was requested)
-  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
-    if(Debug) print('FacetVar1 and FacetVar2')
-    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-  } else if(length(FacetVar1) != 0 && FacetVar1 == 'None') {
-    if(Debug) print('FacetVar1')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
-  } else if(length(FacetVar2) != 0 && FacetVar2 == 'None') {
-    if(Debug) print('FacetVar2')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-  }
+  p1 <- AddFacet(p1, fv1=FacetVar1, fv2=FacetVar2, Exclude = 'None', Debug = FALSE)
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
@@ -571,7 +677,7 @@ BoxPlot <- function(data = NULL,
 #'
 #' @description Build a bar plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
 #'
-#' @family EDA
+#' @family Graphics
 #'
 #' @author Adrian Antico
 #'
@@ -677,16 +783,7 @@ BarPlot <- function(data = NULL,
   p1 <- p1 + ggplot2::labs(title = 'Bar Plot', caption = 'RemixAutoML')
 
   # Add faceting (returns no faceting in none was requested)
-  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
-    if(Debug) print('FacetVar1 and FacetVar2')
-    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-  } else if(length(FacetVar1) != 0 && FacetVar1 != 'None') {
-    if(Debug) print('FacetVar1')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
-  } else if(length(FacetVar2) != 0 && FacetVar2 != 'None') {
-    if(Debug) print('FacetVar2')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-  }
+  p1 <- AddFacet(p1, fv1=FacetVar1, fv2=FacetVar2, Exclude = 'None', Debug = FALSE)
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
@@ -746,7 +843,7 @@ BarPlot <- function(data = NULL,
 #'
 #' @description Build a histogram plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
 #'
-#' @family EDA
+#' @family Graphics
 #'
 #' @author Adrian Antico
 #'
@@ -832,16 +929,7 @@ HistPlot <- function(data = NULL,
   p1 <- p1 + ggplot2::xlab(YVar)
 
   # Add faceting (returns no faceting in none was requested)
-  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
-    if(Debug) print('FacetVar1 and FacetVar2')
-    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-  } else if(length(FacetVar1) != 0 && FacetVar1 == 'None') {
-    if(Debug) print('FacetVar1')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
-  } else if(length(FacetVar2) != 0 && FacetVar2 == 'None') {
-    if(Debug) print('FacetVar2')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-  }
+  p1 <- AddFacet(p1, fv1=FacetVar1, fv2=FacetVar2, Exclude = 'None', Debug = FALSE)
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
@@ -965,13 +1053,6 @@ AutoPlotter <- function(dt = NULL,
 
   # Debug
   if(Debug) print(paste0('AutoPlotter() begin, PlotType = ', PlotType))
-
-  if(tolower(PlotType) == 'shapelyImportance') {
-
-    # Where does filtering take place?
-    vals <- names(dt)[which(names(dt) %like% 'Shap_')]
-    p1 <- RemixAutoML::ShapImportancePlot(dt, ShapColNames = vals, AggMethod = 'mean', TopN = 25)
-  }
 
   # Box Plot
   if(tolower(PlotType) == 'boxplot') {
@@ -1283,8 +1364,11 @@ AutoPlotter <- function(dt = NULL,
 #' @param PredictVar = isolate(ScoreVar()),
 #' @param PDPVar = NULL,
 #' @param DateVar = isolate(DateVar()),
+#' @param FacetVar1 = NULL
+#' @param FacetVar2 = NULL
 #' @param GamFit = FALSE,
 #' @param Buckets = 20,
+#' @param ShapAgg A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'geomean', 'harmmean', 'sd', 'median', 'absmedian', 'medianabs'
 #' @param Rebuild = FALSE,
 #' @param Check2 = FALSE,
 #' @param Debug = FALSE
@@ -1295,15 +1379,40 @@ AppModelInsights <- function(ModelOutputList,
                              PredictVar = NULL,
                              PDPVar = NULL,
                              DateVar = NULL,
+                             FacetVar1 = NULL,
+                             FacetVar2 = NULL,
                              GamFit = FALSE,
                              Buckets = 20,
+                             ShapAgg = 'mean',
                              Rebuild = FALSE,
                              Check2 = FALSE,
                              Debug = FALSE) {
 
-  if(Debug) {
-    print('Running AppModelInsights')
-    print(paste0('Rebuild = ', Rebuild))
+  # Debugging
+  if(Debug) {print('Running AppModelInsights'); print(paste0('Rebuild = ', Rebuild))}
+
+  # Shap VI
+  if(tolower(PlotType) == 'shapelyvarimp') {
+
+    # Debugging
+    if(Debug) {print(dt); print(names(dt)); print(dt[, .N]); print(names(dt)[which(names(dt) %like% 'Shap_')]); print(length(names(dt)[which(names(dt) %like% 'Shap_')]))}
+
+    # Prepare info
+    vals <- names(dt)[which(names(dt) %like% 'Shap_')]
+    if(length(vals) != 0) {
+      p1 <- RemixAutoML::ShapImportancePlot(dt, ShapColNames = vals, FacetVar1 = FacetVar1, FacetVar2 = FacetVar2, AggMethod = ShapAgg, TopN = 25)
+    } else {
+      p1 <- NULL
+    }
+
+    # Set to NULL if not built for some reason
+    if(!exists('p1')) p1 <- NULL
+
+    # Debugging
+    if(Debug) {print(exists('p1')); if(exists('p1')) print(is.null('p1'))}
+
+    # return
+    return(eval(p1))
   }
 
   # Test Evaluation Plot ----
@@ -1326,6 +1435,8 @@ AppModelInsights <- function(ModelOutputList,
         TargetColName = TargetVar,
         GraphType = "calibration", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1351,6 +1462,8 @@ AppModelInsights <- function(ModelOutputList,
         TargetColName = TargetVar,
         GraphType = "calibration", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1368,6 +1481,8 @@ AppModelInsights <- function(ModelOutputList,
         TargetColName = TargetVar,
         GraphType = "boxplot", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1391,6 +1506,8 @@ AppModelInsights <- function(ModelOutputList,
         TargetColName = TargetVar,
         GraphType = "boxplot", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1407,6 +1524,8 @@ AppModelInsights <- function(ModelOutputList,
         TargetName = TargetVar,
         SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1441,6 +1560,8 @@ AppModelInsights <- function(ModelOutputList,
         PredictedColumnName = PredictVar,
         SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1458,6 +1579,8 @@ AppModelInsights <- function(ModelOutputList,
         PredictedColumnName = PredictVar,
         SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1467,6 +1590,7 @@ AppModelInsights <- function(ModelOutputList,
     if(!Rebuild) {
       if(Debug) print('Test_LiftPlot !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_LiftPlot']]
+      if(Debug) print('You Are Inside AppModelInsights 1')
     } else {
       if(Debug) print('Test_LiftPlot ! !Rebuild')
       p1 <- RemixAutoML::CumGainsChart(
@@ -1475,6 +1599,8 @@ AppModelInsights <- function(ModelOutputList,
         PredictedColumnName = PredictVar,
         SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$LiftPlot
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1492,6 +1618,8 @@ AppModelInsights <- function(ModelOutputList,
         PredictedColumnName = PredictVar,
         SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$LiftPlot
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1510,6 +1638,8 @@ AppModelInsights <- function(ModelOutputList,
         Target = TargetVar, Predicted = PredictVar,
         DateColumnName = DateVar, Gam_Fit = GamFit)$ScatterPlot
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1526,6 +1656,8 @@ AppModelInsights <- function(ModelOutputList,
         Target = TargetVar, Predicted = PredictVar,
         DateColumnName = DateVar, Gam_Fit = GamFit)$ScatterPlot
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1542,6 +1674,8 @@ AppModelInsights <- function(ModelOutputList,
         Target = TargetVar, Predicted = PredictVar,
         DateColumnName = DateVar, Gam_Fit = GamFit)$CopulaPlot
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1558,6 +1692,8 @@ AppModelInsights <- function(ModelOutputList,
         Target = TargetVar, Predicted = PredictVar,
         DateColumnName = DateVar, Gam_Fit = GamFit)$CopulaPlot
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1574,6 +1710,8 @@ AppModelInsights <- function(ModelOutputList,
         Target = TargetVar, Predicted = PredictVar,
         DateColumnName = DateVar, Gam_Fit = GamFit)$ResidualsHistogram
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1590,6 +1728,8 @@ AppModelInsights <- function(ModelOutputList,
         Target = TargetVar, Predicted = PredictVar,
         DateColumnName = DateVar, Gam_Fit = GamFit)$ResidualsHistogram
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1599,6 +1739,29 @@ AppModelInsights <- function(ModelOutputList,
     if(Debug) print('Test_Importance ! !Rebuild')
     if(Debug) print(ModelOutputList$VariableImportance[['Test_Importance']])
     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Test_Importance']], TopN = 25)
+    if(!exists('p1')) p1 <- NULL
+    if(!is.null(p1)) {
+      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: test data', caption = 'RemixAutoML')
+      p1 <- p1 + ggplot2::ylab('ML-Algo-Generated Variable Importance')
+    }
+    return(eval(p1))
+
+  }
+
+  # ----
+
+  # Variable Importance Plot Validation ----
+  if(any(PlotType %chin% "Validation_VariableImportance")) {
+    if(Debug) print('Validation_Importance ! !Rebuild')
+    if(Debug) print(ModelOutputList$VariableImportance[['Validation_Importance']])
+    p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Validation_Importance']], TopN = 25)
+    if(!exists('p1')) p1 <- NULL
+    if(!is.null(p1)) {
+      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: Validation data', caption = 'RemixAutoML')
+      p1 <- p1 + ggplot2::ylab('ML-Algo-Generated Variable Importance')
+    }
+    return(eval(p1))
+
   }
 
   # ----
@@ -1608,6 +1771,12 @@ AppModelInsights <- function(ModelOutputList,
     if(Debug) print('Train_Importance ! !Rebuild')
     if(Debug) print(ModelOutputList$VariableImportance[['Train_Importance']])
     p1 <- RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = ModelOutputList$VariableImportance[['Train_Importance']], TopN = 25)
+    if(!exists('p1')) p1 <- NULL
+    if(!is.null(p1)) {
+      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: training data', caption = 'RemixAutoML')
+      p1 <- p1 + ggplot2::ylab('ML-Algo-Generated Variable Importance')
+    }
+    return(eval(p1))
   }
 
   # ----
@@ -1632,6 +1801,8 @@ AppModelInsights <- function(ModelOutputList,
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1656,6 +1827,8 @@ AppModelInsights <- function(ModelOutputList,
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1680,6 +1853,8 @@ AppModelInsights <- function(ModelOutputList,
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----
@@ -1704,6 +1879,8 @@ AppModelInsights <- function(ModelOutputList,
       p1$layers[[5L]] <- NULL
       p1$layers[[4L]] <- NULL
     }
+    if(!exists('p1')) p1 <- NULL
+    return(eval(p1))
   }
 
   # ----

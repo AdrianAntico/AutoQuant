@@ -68,8 +68,13 @@ p <- p + ChartTheme(Size = 12)
 }
 \seealso{
 Other Graphics: 
+\code{\link{AddFacet}()},
 \code{\link{AppModelInsights}()},
 \code{\link{AutoPlotter}()},
+\code{\link{BarPlot}()},
+\code{\link{BoxPlot}()},
+\code{\link{HistPlot}()},
+\code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
 }
 \author{

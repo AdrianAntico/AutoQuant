@@ -72,6 +72,9 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   score_function = 'Cosine',
   min_data_in_leaf = 1)
 
+TestModel$Model <- NULL
+save(TestModel, file = file.choose())
+
 
 # Create some dummy correlated data
 data <- RemixAutoML::FakeDataGenerator(
@@ -160,6 +163,8 @@ data.table::fwrite(data, file = 'C:/Users/Bizon/Documents/GitHub/AppTesting.csv'
 #data[, Date := as.Date(Date)]
 
 RemixAutoML::AppsPlotting(Debug = TRUE)
+
+RemixAutoML::AppsPlotting(Debug = FALSE)
 
 # Run App
 RemixAutoML::AppsPlotting(

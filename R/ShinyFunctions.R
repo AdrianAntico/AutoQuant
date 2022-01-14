@@ -52,6 +52,7 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL) {
     x <- NULL
   } else {
     for(i in seq_along(x)) x[i] <- PlotNamesLookup[[x[i]]]
+    x[length(x)+1L] <- 'ShapelyVarImp'
   }
   StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')
   for(i in seq_along(StandardPlots)) StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
@@ -429,27 +430,51 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
 #'
 #' @export
 KeyVarsInit <- function(data, VarName = NULL, type = 1) {
+
+  # Return of data is missing altogether
   if(missing(data)) {
     print('KeyVarsInit: data is missing')
     return(list(MinVal = NULL, MaxVal = NULL, ChoiceInput = NULL))
   }
+
+  # Run VarName through function to NULL it out if any issues
   VarName <- RemixAutoML:::CEPP(VarName, Default = NULL)
+
+  # Return if VarName is NULL or if some sort of character(0) slipped through the cracks
   if(length(VarName) == 0) {
     print('KeyVarsInit: VarName is length 0')
     return(list(MinVal = NULL, MaxVal = NULL, ChoiceInput = NULL))
   }
-  if(tolower(VarName) != 'none' && any(class(data[[eval(VarName)]]) %chin% c('numeric','integer','double','float'))) {
+
+  # If data doesnt have VarName in it, the next check will be ModelData
+  if(!VarName %in% names(data)) {
+    minn <- NULL
+    maxx <- NULL
+    choices <- NULL
+    return(list(MinVal = minn, MaxVal = maxx, ChoiceInput = choices))
+  }
+
+  # If VarName is set to 'None' then just return NULLs for list values
+  if(tolower(VarName) == 'none') {
+    minn <- NULL
+    maxx <- NULL
+    choices <- NULL
+    return(list(MinVal = minn, MaxVal = maxx, ChoiceInput = choices))
+  }
+
+  # If VarName is
+  if(any(class(data[[eval(VarName)]]) %chin% c('numeric','integer','double','float'))) {
     minn <- tryCatch({floor(data[, min(get(VarName), na.rm = TRUE)])}, error = function(x) NULL)
     maxx <- tryCatch({ceiling(data[, max(get(VarName), na.rm = TRUE)])}, error = function(x) NULL)
     UData <- tryCatch({sort(data[, unique(get(VarName))])}, error = function(x) NULL)
     if(!is.null(UData) && length(UData) <= 10L) {
       choices <- UData
     } else {
-      choices <- tryCatch({unique(as.character(sort(round(as.numeric(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)])), 5L)))}, error = function(x) {
+      choices <- tryCatch({unique(sort(round(as.numeric(data[, quantile(get(VarName), probs = c(seq(0, 1, 0.05)), na.rm = TRUE)]), 5L)))}, error = function(x) {
         tryCatch({UData}, error = NULL)
       })
     }
-  } else if(!is.null(VarName) && tolower(VarName) != 'none' && any(tolower(class(data[[(eval(VarName))]])) %chin% c('date','idate','date','posixct','posixt','character','factor'))) {
+  } else if(any(tolower(class(data[[(eval(VarName))]])) %chin% c('date','idate','date','posixct','posixt','character','factor'))) {
     choices <- tryCatch({sort(unique(data[[eval(VarName)]]))}, error = function(x) NULL)
     maxx <- tryCatch({data[, max(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
     minn <- tryCatch({data[, min(get(VarName), na.rm = TRUE)]}, error = function(x) NULL)
@@ -508,7 +533,7 @@ GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
     print('GetFilterValueMultiple(): VarName was length 0')
     x <- FALSE
   } else if(tolower(VarName) != 'none') {
-    if(any(tolower(class(data[[eval(VarName)]])) %in% c('numeric', 'integer', 'float', 'double', 'date', 'idate', 'posixct'))) {
+    if(any(tolower(class(data[[eval(VarName)]])) %in% c('character', 'factor', 'date', 'idate', 'posixct'))) {
       x <- TRUE
     } else {
       x <- FALSE

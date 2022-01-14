@@ -12,13 +12,9 @@ Spin up the esquisse plotting gui
 \seealso{
 Other EDA: 
 \code{\link{AutoWordFreq}()},
-\code{\link{BarPlot}()},
-\code{\link{BoxPlot}()},
 \code{\link{EDA_Histograms}()},
-\code{\link{HistPlot}()},
 \code{\link{Mode}()},
 \code{\link{ScatterCopula}()},
-\code{\link{UserBaseEvolution}()},
-\code{\link{ViolinPlot}()}
+\code{\link{UserBaseEvolution}()}
 }
 \concept{EDA}

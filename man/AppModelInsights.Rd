@@ -12,8 +12,11 @@ AppModelInsights(
   PredictVar = NULL,
   PDPVar = NULL,
   DateVar = NULL,
+  FacetVar1 = NULL,
+  FacetVar2 = NULL,
   GamFit = FALSE,
   Buckets = 20,
+  ShapAgg = "mean",
   Rebuild = FALSE,
   Check2 = FALSE,
   Debug = FALSE
@@ -34,9 +37,15 @@ AppModelInsights(
 
 \item{DateVar}{= isolate(DateVar()),}
 
+\item{FacetVar1}{= NULL}
+
+\item{FacetVar2}{= NULL}
+
 \item{GamFit}{= FALSE,}
 
 \item{Buckets}{= 20,}
+
+\item{ShapAgg}{A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'geomean', 'harmmean', 'sd', 'median', 'absmedian', 'medianabs'}
 
 \item{Rebuild}{= FALSE,}
 
@@ -49,8 +58,13 @@ Plot model insights in app
 }
 \seealso{
 Other Graphics: 
+\code{\link{AddFacet}()},
 \code{\link{AutoPlotter}()},
+\code{\link{BarPlot}()},
+\code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
+\code{\link{HistPlot}()},
+\code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
 }
 \author{

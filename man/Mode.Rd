@@ -15,14 +15,10 @@ Statistical mode. Only returns the first mode if there are many
 \seealso{
 Other EDA: 
 \code{\link{AutoWordFreq}()},
-\code{\link{BarPlot}()},
-\code{\link{BoxPlot}()},
 \code{\link{EDA_Histograms}()},
-\code{\link{HistPlot}()},
 \code{\link{PlotGUI}()},
 \code{\link{ScatterCopula}()},
-\code{\link{UserBaseEvolution}()},
-\code{\link{ViolinPlot}()}
+\code{\link{UserBaseEvolution}()}
 }
 \author{
 Adrian Antico
