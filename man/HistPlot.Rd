@@ -94,6 +94,7 @@ Other Graphics:
 \code{\link{BarPlot}()},
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
+\code{\link{CorrMatrixPlot}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
 }

@@ -33,7 +33,6 @@ PlotNamesLookup[['Train_ROC_Plot']] <- c('ROC_Train')
 PlotNamesLookup[['Scatter']] <- c('Scatter')
 PlotNamesLookup[['Copula']] <- c('Copula')
 PlotNamesLookup[['Line']] <- c('Line')
-PlotNamesLookup[['CorrMatrix']] <- c('Corr')
 PlotNamesLookup[['Bar']] <- c('Bar')
 PlotNamesLookup[['BoxPlot']] <- c('Box')
 PlotNamesLookup[['ViolinPlot']] <- c('Violin')
@@ -65,11 +64,11 @@ PlotNamesLookup[['ROC_Train']] <- c('Train_ROC_Plot')
 PlotNamesLookup[['Scatter']] <- c('Scatter')
 PlotNamesLookup[['Copula']] <- c('Copula')
 PlotNamesLookup[['Line']] <- c('Line')
-PlotNamesLookup[['Corr']] <- c('CorrMatrix')
 PlotNamesLookup[['Bar']] <- c('Bar')
 PlotNamesLookup[['Box']] <- c('BoxPlot')
 PlotNamesLookup[['Violin']] <- c('ViolinPlot')
 PlotNamesLookup[['Hist']] <- c('Histogram')
+PlotNamesLookup[['CorrMatrix']] <- c('CorrMatrix')
 PlotNamesLookup[['ShapelyVarImp']] <- c('ShapelyVarImp')
 
 # ----
@@ -847,7 +846,7 @@ ui <- shinydashboard::dashboardPage(
                   # Plot 2 By-Variables
                   shiny::column(
                     width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot 4'))),
+                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot 2'))),
                     shinyWidgets::dropdown(
                       right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "info", width = LogoWidth,
                       tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'By-Variables for Plot 2')),
@@ -904,8 +903,7 @@ ui <- shinydashboard::dashboardPage(
                       shiny::fluidRow(width=AppWidth, shiny::column(12L, shiny::uiOutput('SizeVar4')))
 
 
-                      )), # end column plot 4
-
+                      )) # end column plot 4
 
                 ))), # End By Variables Column
 
@@ -921,12 +919,12 @@ ui <- shinydashboard::dashboardPage(
                 RemixAutoML::BlankRow(AppWidth),
                 shiny::fluidRow(
                   width = AppWidth,
-                  shiny::column(6L, shiny::uiOutput('Cor_Variable1')),
-                  shiny::column(6L, shiny::uiOutput('Cor_Variable2'))),
+                  shiny::column(6L, shiny::uiOutput('CorVariables1')),
+                  shiny::column(6L, shiny::uiOutput('CorVariables2'))),
                 RemixAutoML::BlankRow(AppWidth),
                 shiny::fluidRow(
-                  shiny::column(6L, shiny::uiOutput('Cor_Variable3')),
-                  shiny::column(6L, shiny::uiOutput('Cor_Variable4'))))),
+                  shiny::column(6L, shiny::uiOutput('CorVariables3')),
+                  shiny::column(6L, shiny::uiOutput('CorVariables4'))))),
 
             # Score Variables
             shiny::column(
@@ -1978,27 +1976,50 @@ server <- function(input, output, session) {
 
     # Correlation Variables
     if(Debug) print("Here uu")
-    output$Cor_Variable1 <- shiny::renderUI({
-      pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::SelectizeInput(InputID='Cor_Variables1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 1'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+    output$CorVariables1 <- shiny::renderUI({
+      if(Debug) {
+        print('::::::::::::::::::::::::::::::::::: THIS IS THE NEW PLACE TO LOOK :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+        print(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer')))
+        print(!is.null(data))
+        print(RemixAutoML:::ColTypes(data))
+        print(names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))])
+      }
+      if(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))) {
+        cor_choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+      } else {
+        cor_choices <- NULL
+      }
+      RemixAutoML::SelectizeInput(InputID='CorVariables1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 1'), Choices=c(cor_choices), SelectedDefault=NULL, Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here vv")
-    output$Cor_Variable2 <- shiny::renderUI({
-      pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::SelectizeInput(InputID='Cor_Variables2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 2'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+    output$CorVariables2 <- shiny::renderUI({
+      if(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))) {
+        cor_choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+      } else {
+        cor_choices <- NULL
+      }
+      RemixAutoML::SelectizeInput(InputID='CorVariables2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 2'), Choices=c(cor_choices), SelectedDefault=NULL, Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here ww")
-    output$Cor_Variable3 <- shiny::renderUI({
-      pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::SelectizeInput(InputID='Cor_Variables3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 3'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+    output$CorVariables3 <- shiny::renderUI({
+      if(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))) {
+        cor_choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+      } else {
+        cor_choices <- NULL
+      }
+      RemixAutoML::SelectizeInput(InputID='CorVariables3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 3'), Choices=c(cor_choices), SelectedDefault=NULL, Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
     })
 
     if(Debug) print("Here xx")
-    output$Cor_Variable4 <- shiny::renderUI({
-      pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-      RemixAutoML::SelectizeInput(InputID='Cor_Variables4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 4'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+    output$CorVariables4 <- shiny::renderUI({
+      if(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))) {
+        cor_choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+      } else {
+        cor_choices <- NULL
+      }
+      RemixAutoML::SelectizeInput(InputID='CorVariables4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 4'), Choices=c(cor_choices), SelectedDefault=NULL, Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
     })
 
     # PDP Variables
@@ -2882,7 +2903,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_1_3']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -2920,7 +2941,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_1_4']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -2959,7 +2980,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_2_1']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -2997,7 +3018,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_2_2']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3035,7 +3056,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_2_3']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3073,7 +3094,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_2_4']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3112,7 +3133,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_3_1']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3150,7 +3171,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_3_2']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3188,7 +3209,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_3_3']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3226,7 +3247,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_3_4']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3265,7 +3286,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_4_1']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3303,7 +3324,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_4_2']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3341,7 +3362,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_4_3']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3379,7 +3400,7 @@ server <- function(input, output, session) {
       if(length(choices) == 0) {
         if(length(ModelData) != 0) {
           vname <- tryCatch({stringr::str_remove(input[['FilterVariable_4_4']], 'ModelVar-')}, error = function(x) NULL)
-          params <- list(data=ModelData, VarName=vname, type=2)
+          params <- list(data=ModelData, VarName=vname, type=1)
           choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
           Mult <- RemixAutoML:::GetFilterValueMultiple(ModelData, VarName=vname)
         }
@@ -3890,30 +3911,61 @@ server <- function(input, output, session) {
     RemixAutoML::NumericInput(InputID = "PlotHeight", Label=tags$span(style='color: blue;', 'Plot Height'), Step = 25, Min = 350, Max = 350*10, Value = 500)
   })
 
+  print(':::::::: DATA NULL TESTING 7.1 ::::::::')
+  print(data)
+
+
   # Correlation Variables
   if(Debug) print("Here uu")
-  output$Cor_Variable1 <- shiny::renderUI({
-    pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::SelectizeInput(InputID='Cor_Variables1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 1'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+  output$CorVariables1 <- shiny::renderUI({
+    if(Debug) {
+      print('::::::::::::::::::::::::::::::::::: THIS IS THE NEW PLACE TO LOOK :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
+      print(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer')))
+      print(!is.null(data))
+      print(RemixAutoML:::ColTypes(data))
+      print(names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))])
+    }
+    if(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))) {
+      cor_choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+    } else {
+      cor_choices <- NULL
+    }
+    RemixAutoML::SelectizeInput(InputID='CorVariables1', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 1'), Choices=c(cor_choices), SelectedDefault=NULL, Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here vv")
-  output$Cor_Variable2 <- shiny::renderUI({
-    pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::SelectizeInput(InputID='Cor_Variables2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 2'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+  output$CorVariables2 <- shiny::renderUI({
+    if(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))) {
+      cor_choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+    } else {
+      cor_choices <- NULL
+    }
+    RemixAutoML::SelectizeInput(InputID='CorVariables2', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 2'), Choices=c(cor_choices), SelectedDefault=NULL, Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here ww")
-  output$Cor_Variable3 <- shiny::renderUI({
-    pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::SelectizeInput(InputID='Cor_Variables3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 3'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+  output$CorVariables3 <- shiny::renderUI({
+    if(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))) {
+      cor_choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+    } else {
+      cor_choices <- NULL
+    }
+    RemixAutoML::SelectizeInput(InputID='CorVariables3', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 3'), Choices=c(cor_choices), SelectedDefault=NULL, Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
   })
 
   if(Debug) print("Here xx")
-  output$Cor_Variable4 <- shiny::renderUI({
-    pdp <- RemixAutoML:::PDPVar(ModelOutputList)
-    RemixAutoML::SelectizeInput(InputID='Cor_Variables4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 4'), Choices=c('None', names(data1)), SelectedDefault='None', Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
+  output$CorVariables4 <- shiny::renderUI({
+    if(!is.null(data) && any(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))) {
+      cor_choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+    } else {
+      cor_choices <- NULL
+    }
+    RemixAutoML::SelectizeInput(InputID='CorVariables4', Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Corr Variables 4'), Choices=c(cor_choices), SelectedDefault=NULL, Size=10, SelectedText="count > 1", Multiple=TRUE, ActionBox=TRUE)
   })
+
+  if(Debug) print("Here yy")
+  print(':::::::: DATA NULL TESTING 7.2 ::::::::')
+  print(data)
 
   # PDP Variables
   if(Debug) print("Here yy")
@@ -4744,7 +4796,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_1_1']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -4781,7 +4833,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_1_2']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -4815,7 +4867,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_1_3']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -4849,7 +4901,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_1_4']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -4884,7 +4936,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_2_1']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -4918,7 +4970,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_2_2']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -4952,7 +5004,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_2_3']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -4986,7 +5038,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_2_4']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5021,7 +5073,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_3_1']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5055,7 +5107,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_3_2']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5089,7 +5141,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_3_3']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5123,7 +5175,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_3_4']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5158,7 +5210,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_4_1']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5192,7 +5244,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_4_2']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5226,7 +5278,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_4_3']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5260,7 +5312,7 @@ server <- function(input, output, session) {
     if(all(length(choices) == 0, length(choices$MinVal) == 0, length(choices$MaxVal) == 0, length(choices$ChoiceInput) == 0)) {
       if(length(ModelData) != 0) {
         vname <- tryCatch({stringr::str_remove(input[['FilterVariable_4_4']], 'ModelVar-')}, error = function(x) NULL)
-        params <- list(data=ModelData, VarName=vname, type=2)
+        params <- list(data=ModelData, VarName=vname, type=1)
         choices <- tryCatch({RemixAutoML::KeyVarsInit(ModelData, VarName = vname)$ChoiceInput}, error = function(x) NULL)
       }
     }
@@ -5408,6 +5460,19 @@ server <- function(input, output, session) {
     assign(x = 'DateMinList', value = DateMinList, envir = .GlobalEnv)
     DateMaxList <- list(); for(i in seq_len(4L)) DateMaxList[[paste0('DateMax', i)]] <- RemixAutoML:::CEPP(input[[paste0('DateMax', i)]])
     assign(x = 'DateMaxList', value = DateMaxList, envir = .GlobalEnv)
+
+    if(Debug) print('Here 3.1')
+
+    CorVarList <- list()
+    CorVarList[['CorVariables1']] <- RemixAutoML:::CEPP(input[['CorVariables1']])
+    CorVarList[['CorVariables2']] <- RemixAutoML:::CEPP(input[['CorVariables2']])
+    CorVarList[['CorVariables3']] <- RemixAutoML:::CEPP(input[['CorVariables3']])
+    CorVarList[['CorVariables4']] <- RemixAutoML:::CEPP(input[['CorVariables4']])
+    assign(x = 'CorVarList', value = CorVarList, envir = .GlobalEnv)
+
+    print('::::::::::::::::::::::::::::::: LOOK OVER HERE ::::::::::::::::::::::::::::::::::::::::::::::::')
+    print(CorVarList)
+    print(input[['CorVariable1']])
 
     if(Debug) print('Here 4')
 
@@ -5590,7 +5655,7 @@ server <- function(input, output, session) {
       if(Debug)print('Here 15.2')
       x1a <- tryCatch({XMinList[[paste0('XMin', run)]]}, error = function(x) NULL)
       if(Debug)print('Here 15.3')
-      x1b <- PlotType %in% c('Scatter','Copula','Line','CorrMatrix','Bar','BoxPlot','ViolinPlot','Histogram')
+      x1b <- PlotType %in% c('Scatter','Copula','Line','Bar','BoxPlot','ViolinPlot','Histogram')
       if(Debug)print('Here 15.33')
 
       # Date Assumptions Check
@@ -5604,9 +5669,18 @@ server <- function(input, output, session) {
       }
       if(Debug) {print(x4); print(tryCatch({class(data[[eval(x3)]])}, error = function(x) 'NULL'))}
 
+      # Correlation Variables check
+      x5 <- tryCatch({CorVarList[[paste0('CorVariables', run)]]}, error = NULL)
+      #if(Debug)
+      print('here yo yo')
+      print(CorVarList)
+      print(CorVarList[[paste0('CorVariables', run)]])
+      print(x5)
+      print(PlotType %in% 'CorrMatrix')
+      print(length(x5) == 0 || all(x5 %in% "") || all(x5 %in% 'None'))
+
       # Debug
       if(Debug) {print('Here 15.4'); print('Args for first if condition :::: ::::'); print(x1); print(x1a); print(PlotType); print('Args for 2nd if condition :::: ::::'); print(x3); print(x4)}
-
       if(Debug) {print('First IF condition check'); print(x1); print(x1a); print(x1b)}
       if(Debug) {print('Second IF condition check'); print(PlotType); print(x3); print(x4)}
       if(Debug) {print('Third IF condition check'); print(PlotType); print(!any(tryCatch({tolower(class(data[[eval(tryCatch({XVarList[[paste0('XVar', run)]]}, error = function(x) 'None'))]]))}, error = function(x) 'bla') %in% c('numeric','integer')))}
@@ -5614,13 +5688,21 @@ server <- function(input, output, session) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to specify additional variables to generate additional plots', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else if(PlotType == 'Line' && (is.null(x3) || !x4)) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "Date Variable needs to be defined as any of the following types: Date, IDate, or Posix type", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-      } else if(PlotType %chin% c('Scatter','Copula','CorrMatrix') && !any(tryCatch({tolower(class(data[[eval(tryCatch({XVarList[[paste0('XVar', run)]]}, error = function(x) 'None'))]]))}, error = function(x) 'bla') %in% c('numeric','integer'))) {
+      } else if(PlotType %chin% c('Scatter','Copula') && !any(tryCatch({tolower(class(data[[eval(tryCatch({XVarList[[paste0('XVar', run)]]}, error = function(x) 'None'))]]))}, error = function(x) 'bla') %in% c('numeric','integer'))) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "X-Variable needs to be a numeric or integer variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      } else if(PlotType %in% 'CorrMatrix' && (length(x5) == 0 || all(x5 %in% "") || all(x5 %in% 'None'))) {
+        shinyWidgets::sendSweetAlert(session, title = NULL, text = "CorrVars needs to be selected to build this plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else {
 
         if(Debug) print('Here 133')
 
-        # Grouping Variable Management
+        # ----
+
+        # ----
+
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+        # Grouping Variable Management         ----
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         if(!(exists('SubsetList') && !is.null(SubsetList[['RunNumber']]) && SubsetList[['RunNumber']] >= 1)) {
 
           if(Debug) print('Here 14 a')
@@ -5807,9 +5889,20 @@ server <- function(input, output, session) {
 
         if(Debug) print('Here 16')
 
+        # ----
+
+        # ----
+
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         # Prepare data for plotting            ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+        # CorrVars
+        if(length(x5) == 0 || all(x5 %in% "") || all(x5 %in% 'None')) {
+          CorrVars <- NULL
+        } else {
+          if(any(x5 %in% c("", 'None'))) CorrVars <- x5[!x5 %in% c("", 'None')] else CorrVars <- x5
+        }
 
         # GroupVars creation
         if(Debug) print('Get GroupVars set up correctly')
@@ -5848,22 +5941,37 @@ server <- function(input, output, session) {
 
           if(Debug) print('remove NA')
           if(length(tryCatch({YVarList[[paste0('YVar', run)]]}, error = function(x) 'None')) != 0  && tryCatch({YVarList[[paste0('YVar', run)]]}, error = function(x) 'None') != 'None') {
-            if(!PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')) {
+            if(Debug) print('here 1')
+            if(PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')) {
+              if(Debug) {print('data is being assigned to data1'); print(data); print(YVarList[[paste0('YVar', run)]])}
+              if(!PlotType %in% 'CorrMatrix') {
+                data1 <- data[!is.na(get(YVarList[[paste0('YVar', run)]]))]
+                CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- data[!is.na(", YVarList[[paste0('YVar', run)]], ")]")
+              } else {
+                data1 <- data
+                CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- "data1 <- data"
+              }
+            } else {
               if(Debug) print('ModelData is being assigned to data1')
               data1 <- ModelData
-            } else {
-              if(Debug) {print('data is being assigned to data1'); print(data); print(YVarList[[paste0('YVar', run)]])}
-              data1 <- data[!is.na(get(YVarList[[paste0('YVar', run)]]))]
+              CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- "data1 <- ModelData"
             }
-            if(Debug) {print('data1 <- data[!is.na(get(YVarList[[run]]))]');print(data1[])}
-            CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- data[!is.na(", YVarList[[paste0('YVar', run)]], ")]")
           } else {
-            if(!PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')) {
-              data1 <- ModelData
+            if(Debug) print('here 2')
+            if(PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')) {
+              if(Debug) print('here 3')
+              if(!PlotType %in% 'CorrMatrix') {
+                data1 <- data[!is.na(get(YVarList[[paste0('YVar', run)]]))]
+                CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- data[!is.na(", YVarList[[paste0('YVar', run)]], ")]")
+              } else {
+                data1 <- data
+                CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- data")
+              }
             } else {
-              data1 <- data[!is.na(get(YVarList[[paste0('YVar', run)]]))]
+              if(Debug) print('here 4')
+              data1 <- ModelData
+              CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- "data1 <- ModelData"
             }
-            CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- data")
           }
 
           if(Debug) print('Here 19')
@@ -6038,9 +6146,9 @@ server <- function(input, output, session) {
 
         # ----
 
-        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        # Create Plots                               ----
-        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+        # Define Plots Variables               ----
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
         if(Debug) print('Here 28')
         if(Debug) {print('Create Plot Object'); print(PlotType)}
@@ -6139,6 +6247,13 @@ server <- function(input, output, session) {
 
         if(Debug) {print('Here sucka9')}
 
+        # ----
+
+        # ----
+
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+        # Create Plots                         ----
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         if(PlotType %chin% c('BoxPlot', 'ViolinPlot', 'Bar', 'Line', 'Scatter', 'Copula', 'Histogram', 'CorrMatrix')) {
 
           # AutoPlotter()
@@ -6153,6 +6268,8 @@ server <- function(input, output, session) {
             XVar = xvar,
             XMin = tryCatch({RemixAutoML:::CEPP(XMinList[[paste0('XMin', run)]])}, error = function(x) NULL),
             XMax = tryCatch({RemixAutoML:::CEPP(XMaxList[[paste0('XMax', run)]])}, error = function(x) NULL),
+            CorrVariables = CorrVars,
+            CorrelationMethod = 'pearson',
             ColorVariables = tryCatch({GroupVars}, error = function(x) NULL),
             SizeVar1 = sizevar1,
             FacetVar1 = facetvar1,
@@ -6328,7 +6445,6 @@ server <- function(input, output, session) {
               print('Create Plot output$Trend')
             }
             CodeCollection[[length(CodeCollection)+1L]] <- 'gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))'
-            # Didnt work right away: gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))
 
             # Number of plots
             N <- length(PlotCollectionList)

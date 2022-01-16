@@ -145,6 +145,103 @@ ShapImportancePlot <- function(data,
   return(eval(p))
 }
 
+#' @noRd
+LowerTriangle <- function(x, Diag = FALSE) {
+  if(is.null(x)) {
+    return(x)
+  }
+  x[upper.tri(x)] <- NA
+  if(!Diag) {
+    diag(x) <- NA
+  }
+  return(x)
+}
+
+#' @noRd
+UpperTriangle <- function(x, Diag = FALSE) {
+  if(is.null(x)) return(x)
+  x[lower.tri(x)] <- NA
+  if(!Diag) diag(x) <- NA
+  return(x)
+}
+
+#' @noRd
+CorrMatrixPlotBase <- function(x,
+                               LegendName = 'Strength',
+                               method = "square",
+                               type = "upper",
+                               Diag = FALSE,
+                               colors = c("red", "green", "blue"),
+                               outline.color = "gray",
+                               lab = FALSE,
+                               lab_col = "black",
+                               lab_size = 4,
+                               p.mat = NULL,
+                               sig.level = 0.05,
+                               insig = "pch",
+                               digits = 2) {
+
+  x <- round(x = x, digits = digits)
+  if(type == "lower") {
+    x <- LowerTriangle(x, Diag)
+    p.mat <- LowerTriangle(p.mat, Diag)
+  } else if(type == "upper") {
+    x <- UpperTriangle(x, Diag)
+    p.mat <- UpperTriangle(p.mat, Diag)
+  }
+
+  x <- reshape2::melt(x, na.rm = TRUE)
+  colnames(x) <- c("Var1", "Var2", "value")
+  x$pvalue <- rep(NA, nrow(x))
+  x$signif <- rep(NA, nrow(x))
+
+  if(!is.null(p.mat)) {
+    p.mat <- reshape2::melt(p.mat, na.rm = TRUE)
+    x$coef <- x$value
+    x$pvalue <- p.mat$value
+    x$signif <- as.numeric(p.mat$value <= sig.level)
+    p.mat <- subset(p.mat, p.mat$value > sig.level)
+    if(insig == "blank") {
+      x$value <- x$value * x$signif
+    }
+  }
+
+  x$abs_x <- abs(x$value) * 10
+  p <- ggplot2::ggplot(data = x, mapping = ggplot2::aes_string(x = "Var1", y = "Var2", fill = "value"))
+
+  if(method == "square") {
+    p <- p + ggplot2::geom_tile(color = outline.color)
+  } else if(method == "circle") {
+    p <- p + ggplot2::geom_point(
+      color = outline.color,
+      shape = 21,
+      ggplot2::aes_string(size = "abs_corr")) +
+      ggplot2::scale_size(range = c(4,10)) +
+      ggplot2::guides(size = FALSE)
+  }
+
+  p <- p + ggplot2::scale_fill_gradient2(
+    low = colors[1],
+    high = colors[3],
+    mid = colors[2],
+    midpoint = 0,
+    limit = c(-1, 1),
+    space = "Lab",
+    name = LegendName)
+
+  label <- round(x = x[, "value"], digits = digits)
+  if(lab) {
+    p <- p + ggplot2::geom_text(
+      ggplot2::aes_string(
+        x = "Var1",
+        y = "Var2"),
+      color = lab_col,
+      size = lab_size,
+      label = label)
+  }
+  p
+}
+
 #' @title CorrMatrixPlot
 #'
 #' @description Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
@@ -155,13 +252,12 @@ ShapImportancePlot <- function(data,
 #'
 #' @param data Source data.table
 #' @param CorrVars Column names of variables you want included in the correlation matrix
-#' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param CorrMethod 'pearson', 'spearman', 'kendall'
 #' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
 #' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
 #' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
-#' @param FillColor 'gray'
-#' @param YTicks Choose from 'Default', 'Percentiles', 'Every 5th percentile', 'Deciles', 'Quantiles', 'Quartiles'
-#' @param XTicks Choose from 'Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour'
+#' @param DimnamesMaxNChar Default 20
+#' @param CorrValueTextSize Default 5.5
 #' @param TextSize 14
 #' @param AngleX 90
 #' @param AngleY 0
@@ -176,15 +272,15 @@ ShapImportancePlot <- function(data,
 #' @param LegendLineType 'solid'
 #' @param Debug FALSE
 #'
-#' @noRd
+#' @export
 CorrMatrixPlot <- function(data = NULL,
                            CorrVars = NULL,
+                           CorrMethod = 'pearson',
                            FacetVar1 = NULL,
                            FacetVar2 = NULL,
                            SampleSize = 1000000L,
-                           FillColor = 'gray',
-                           YTicks = 'Default',
-                           XTicks = 'Default',
+                           DimnamesMaxNChar = 20L,
+                           CorrValueTextSize = 5.5,
                            TextSize = 12,
                            AngleX = 90,
                            AngleY = 0,
@@ -194,7 +290,7 @@ CorrMatrixPlot <- function(data = NULL,
                            GridColor = 'white',
                            BackGroundColor = 'gray95',
                            SubTitleColor = 'blue',
-                           LegendPosition = 'bottom',
+                           LegendPosition = 'top',
                            LegendBorderSize = 0.50,
                            LegendLineType = 'solid',
                            Debug = FALSE) {
@@ -202,94 +298,23 @@ CorrMatrixPlot <- function(data = NULL,
   # Cap number of records
   if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
-  # Used multiple times
-  check1 <- length(CorrVars)
-  check2 <- which(RemixAutoML:::ColTypes(data = data) %in% c('numeric','integer'))
+  # Create correlation matrix
+  CorrMatrix <- cor(data[, .SD, .SDcols = c(CorrVars)], use = 'pairwise.complete.obs')
+  colnames(CorrMatrix) <- rownames(CorrMatrix) <- substr(rownames(CorrMatrix), 1L, DimnamesMaxNChar)
 
-  # ggcorrplot::ggcorrplot(
-  #   corr = ,
-  #   method = ,
-  #   type = ,
-  #   ggtheme = ,
-  #   title = ,
-  #   show.legend = ,
-  #   legend.title = ,
-  #   show.diag = ,
-  #   colors = ,
-  #   outline.color = ,
-  #   hc.order = ,
-  #   hc.method = ,
-  #   lab = ,
-  #   lab_col = ,
-  #   lab_size = ,
-  #   p.mat = ,
-  #   sig.level = ,
-  #   insig = ,
-  #   pch = ,
-  #   pch.col = ,
-  #   pch.cex = ,
-  #   tl.cex = ,
-  #   tl.col = ,
-  #   tl.srt = ,
-  #   digits = )
-
-  # Check for unique vals > 3
-
-  # Create base plot object
-  if(Debug) print('Create Plot with only data')
-  if(check1) {
-    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
-  } else if(length(YVar) != 0) {
-    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(YVar), x = ""))
-  } else if(length(XVar) != 0) {
-    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(XVar), x = ""))
-  } else {
-    stop('XVar and YVar cannot both be NULL')
-  }
-
-  # Violin Plot Call
-  if(Debug) print('Create ViolinPlot')
-  p1 <- p1 + ggplot2::geom_violin(fill = FillColor)
-
-  # Add Horizontal Line for Mean Y
-  if(Debug) print('Create Plot Horizontal Line')
-  if(!is.null(YVar)) {
-    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data[[eval(YVar)]], na.rm = TRUE)))
-  } else {
-    p1 <- p1 + ggplot2::geom_hline(color = 'blue', yintercept = eval(mean(data[[eval(XVar)]], na.rm = TRUE)))
-  }
-
-  # Create Plot labs
-  if(Debug) print('Create Plot labs')
-  if(check1) {
-    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
-  } else {
-    p1 <- p1 + ggplot2::labs(title = 'ViolinPlot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
-  }
-
-  # Labels
-  if(check1) {
-    p1 <- p1 + ggplot2::ylab(YVar)
-    p1 <- p1 + ggplot2::xlab(XVar)
-  } else if(length(YVar) != 0) {
-    p1 <- p1 + ggplot2::ylab(NULL)
-    p1 <- p1 + ggplot2::xlab(YVar)
-  } else {
-    p1 <- p1 + ggplot2::ylab(NULL)
-    p1 <- p1 + ggplot2::xlab(XVar)
-  }
-
-  # Add faceting (returns no faceting in none was requested)
-  if(length(FacetVar1) != 0 && FacetVar1 != 'None' && length(FacetVar2) != 0 && FacetVar2 != 'None') {
-    if(Debug) print('FacetVar1 and FacetVar2')
-    p1 <- p1 + ggplot2::facet_grid(get(FacetVar1) ~ get(FacetVar2))
-  } else if(length(FacetVar1) != 0 && FacetVar1 == 'None') {
-    if(Debug) print('FacetVar1')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar1))
-  } else if(length(FacetVar2) != 0 && FacetVar2 == 'None') {
-    if(Debug) print('FacetVar2')
-    p1 <- p1 + ggplot2::facet_wrap(~ get(FacetVar2))
-  }
+  # Create plot
+  options(warn = -1)
+  p1 <- suppressMessages(CorrMatrixPlotBase(
+    x = CorrMatrix,
+    method = 'square',
+    type = 'upper',
+    lab = TRUE,
+    lab_col = 'white',
+    lab_size = 5.5,
+    Diag = FALSE,
+    colors = c('darkred','white','darkblue'),
+    outline.color = 'gray50'))
+  options(warn = 1)
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
@@ -303,43 +328,17 @@ CorrMatrixPlot <- function(data = NULL,
     GridColor = GridColor,
     BackGroundColor = BackGroundColor,
     SubTitleColor = SubTitleColor,
-    LegendPosition = LegendPosition,
+    LegendPosition = 'top',
     LegendBorderSize = LegendBorderSize,
     LegendLineType = LegendLineType)
 
-  # Define Tick Marks
-  if(Debug) print('YTicks Update')
-  if('Percentiles' %in% YTicks) {
-    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-  } else if('Every 5th percentile' %in% YTicks) {
-    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-    YTicks <- YTicks[c(seq(6L, length(YTicks)-1L, 5L))]
-  } else if('Deciles' %in% YTicks) {
-    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-    YTicks <- YTicks[c(seq(11L, length(YTicks)-1L, 10L))]
-  } else if('Quantiles' %in% YTicks) {
-    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-    YTicks <- YTicks[c(seq(21L, length(YTicks)-1L, 20L))]
-  } else if('Quartiles' %in% YTicks) {
-    YTicks <- data[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-    YTicks <- YTicks[c(seq(26L, length(YTicks)-1L, 25L))]
-  } else {
-    YTicks <- NULL
-  }
+  # Make legend thinnier and longer than default
+  p1 <- p1 + ggplot2::theme(legend.key.width = ggplot2::unit(2, 'cm'))
+  p1 <- p1 + ggplot2::theme(legend.key.height = ggplot2::unit(0.60, 'cm'))
 
-  # Add tick marks
-  if(length(YTicks) != 0) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(YTicks))
-
-  # Add XTicks for Date Case
-  if(check1) {
-    if(Debug) {print('XTicks'); print(XTicks)}
-    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
-    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
-    if(length(XTicks) > 1L) XTicks <- XTicks[1L]
-    if(XTicks %in% date_check) {
-      p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
-    }
-  }
+  # Labels / Title / Caption
+  p1 <- p1 + ggplot2::xlab(label = NULL) + ggplot2::ylab(NULL)
+  p1 <- p1 + ggplot2::labs(title = paste0('Correlation Matrix with Correl Method: ', CorrMethod), caption = 'RemixAutoML')
 
   # Return plot
   return(eval(p1))
@@ -1042,6 +1041,8 @@ AutoPlotter <- function(dt = NULL,
                         YMax = NULL,
                         XMin = NULL,
                         XMax = NULL,
+                        CorrVariables = NULL,
+                        CorrelationMethod = 'pearson',
                         ColorVariables = NULL,
                         SizeVar1 = 'None',
                         FacetVar1 = 'None',
@@ -1070,6 +1071,41 @@ AutoPlotter <- function(dt = NULL,
   # Debug
   if(Debug) print(paste0('AutoPlotter() begin, PlotType = ', PlotType))
 
+  # Correlation Matrix Plot
+  if(tolower(PlotType) == 'corrmatrix') {
+    p1 <- RemixAutoML::CorrMatrixPlot(
+      data = dt,
+      CorrVars = CorrVariables,
+      CorrMethod = CorrelationMethod,
+      FacetVar1 = FacetVar1,
+      FacetVar2 = FacetVar2,
+      SampleSize = SampleSize,
+      DimnamesMaxNChar = 20L,
+      CorrValueTextSize = 5.5,
+      TextSize = TextSize,
+      AngleX = AngleX,
+      AngleY = AngleY,
+      ChartColor = ChartColor,
+      BorderColor = BorderColor,
+      TextColor = TextColor,
+      GridColor = GridColor,
+      BackGroundColor = BackGroundColor,
+      SubTitleColor = SubTitleColor,
+      LegendPosition = LegendPosition,
+      LegendBorderSize = LegendBorderSize,
+      LegendLineType = LegendLineType,
+      Debug = Debug)
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Return plot
+    return(eval(p1))
+  }
+
   # Box Plot
   if(tolower(PlotType) == 'boxplot') {
     p1 <- RemixAutoML::BoxPlot(
@@ -1097,6 +1133,15 @@ AutoPlotter <- function(dt = NULL,
       LegendBorderSize = LegendBorderSize,
       LegendLineType = LegendLineType,
       Debug = Debug)
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Return plot
+    return(eval(p1))
   }
 
   # Violin Plot
@@ -1124,6 +1169,15 @@ AutoPlotter <- function(dt = NULL,
       LegendBorderSize = LegendBorderSize,
       LegendLineType = LegendLineType,
       Debug = Debug)
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Return plot
+    return(eval(p1))
   }
 
   # Bar Plot
@@ -1152,6 +1206,15 @@ AutoPlotter <- function(dt = NULL,
       LegendBorderSize = LegendBorderSize,
       LegendLineType = LegendLineType,
       Debug = Debug)
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Return plot
+    return(eval(p1))
   }
 
   # Histogram
@@ -1180,6 +1243,15 @@ AutoPlotter <- function(dt = NULL,
       LegendBorderSize = LegendBorderSize,
       LegendLineType = LegendLineType,
       Debug = Debug)
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Return plot
+    return(eval(p1))
   }
 
   # Line
@@ -1231,6 +1303,13 @@ AutoPlotter <- function(dt = NULL,
     date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
     if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
     if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Add ChartTheme
+    if(Debug) print('ChartTheme')
+    p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
+
+    # Return plot
+    return(eval(p1))
   }
 
   # Scatter or Copula
@@ -1352,18 +1431,18 @@ AutoPlotter <- function(dt = NULL,
     if(Debug) print('Update X and Y Ticks')
     if(!'Default' %in% XTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
     if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+
+    # Add ChartTheme
+    if(Debug) print('ChartTheme')
+    p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
+
+    # Limit Y
+    if(Debug) print('Limit Y'); print(PlotType)
+    if(PlotType == 'Scatter' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
+
+    # Return plot
+    return(eval(p1))
   }
-
-  # Add ChartTheme
-  if(Debug) print('ChartTheme')
-  p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
-
-  # Limit Y
-  if(Debug) print('Limit Y'); print(PlotType)
-  if(PlotType == 'Scatter' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
-
-  # Return plot
-  return(eval(p1))
 }
 
 #' @title AppModelInsights

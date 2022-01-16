@@ -1,3 +1,24 @@
+#' @title PercRank
+#'
+#' @description Generate percent ranks for multiple variables, by groups if provided, and with a selected granularity
+#'
+#' @author Adrian Antico
+#' @family Utility
+#'
+#' @param data Source data.table
+#' @param ColNames Character vector of column names
+#' @param GroupVars Character vector of column names to have percent ranks by the group levels
+#' @param Granularity Provide a value such that data.table::frank(Variable) * (1 / Granularity) / .N * Granularity. Default is 0.001
+#'
+#' @export
+PercRank <- function(data, ColNames, GroupVars = NULL, Granularity = 0.001) {
+  if(length(GroupVars) == 0L) {
+    data[, paste0(ColNames, '_PercRank') := lapply(.SD, FUN = function(x) data.table::frank(x) * (1 / Granularity) / .N * Granularity), .SDcols = c(ColNames)]
+  } else {
+    data[, paste0(ColNames, '_PercRank') := lapply(.SD, FUN = function(x) data.table::frank(x) * (1 / Granularity) / .N * Granularity), .SDcols = c(ColNames), by = c(eval(GroupVars))]
+  }
+}
+
 #' @title Interact
 #'
 #' @family Feature Engineering
@@ -8,10 +29,7 @@
 #' @param Standardize List of results
 #'
 #' @noRd
-Interact <- function(x,
-                     i,
-                     NumVarOperations,
-                     Standardize) {
+Interact <- function(x, i, NumVarOperations, Standardize) {
   if(i > 2L) {
     temp <- Standardize[[NumVarOperations[[x]][[1L]]]]$Result * Standardize[[NumVarOperations[[x]][[2L]]]]$Result
     for(ggg in 3L:i) temp <- temp * Standardize[[NumVarOperations[[x]][[ggg]]]]$Result

@@ -54,7 +54,7 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL) {
     for(i in seq_along(x)) x[i] <- PlotNamesLookup[[x[i]]]
     x[length(x)+1L] <- 'ShapelyVarImp'
   }
-  StandardPlots <- c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')
+  StandardPlots <- c('Histogram','BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix')
   for(i in seq_along(StandardPlots)) StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
   return(c(StandardPlots, x))
 }
@@ -292,7 +292,7 @@ rCodeContainer <- function(...) {
 CEP <- function(x) if(missing(x)) 'NULL' else if(!exists('x')) 'NULL' else if(is.null(x)) "NULL" else if(identical(x, character(0))) "NULL" else if(identical(x, numeric(0))) "NULL" else if(identical(x, integer(0))) "NULL" else if(identical(x, logical(0))) "NULL" else if(x == "") "NULL" else if(is.na(x)) "NULL" else if(x == 'None') "NULL" else if(is.numeric(x)) x else if(length(x) > 1) paste0("c(", noquote(paste0("'", x, "'", collapse = ',')), ")") else paste0("'", x, "'")
 
 #' @noRd
-CEPP <- function(x, Default = NULL, Type = 'character') if(missing(x)) Default else if(!exists('x')) Default else if(is.null(x)) Default else if(identical(x, character(0))) Default else if(identical(x, numeric(0))) Default else if(identical(x, integer(0))) Default else if(identical(x, logical(0))) Default else if(is.na(x)) NULL else if(x == "") Default else if(Type == 'numeric') RemixAutoML:::NumNull(x) else if(Type == 'character') RemixAutoML:::CharNull(x)
+CEPP <- function(x, Default = NULL, Type = 'character') if(missing(x)) Default else if(!exists('x')) Default else if(length(x) == 0) Default else if(is.na(x)) Default else if(x == "") Default else if(Type == 'numeric') RemixAutoML:::NumNull(x) else if(Type == 'character') RemixAutoML:::CharNull(x)
 
 #' @title UniqueLevels
 #'
@@ -386,37 +386,39 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
     return(NULL)
   }
 
-  if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')) || FilterLogic %in% c('%in%', '%chin%', '%like')) {
-    if(Debug) print('FilterLogicData else if 1')
-    if(Debug) print(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')))
-    if(FilterLogic %in% c('%in%','%chin%')) {
-      data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
-    } else if(FilterLogic == '%like%') {
-      data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
-    }
-  } else if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))) {
-    if(Debug) print('FilterLogicData else if 2')
-    if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))
-    if(FilterLogic == '>') {
-      data1 <- data1[get(FilterVariable) > eval(FilterValue)]
-    } else if(FilterLogic == '>=') {
-      data1 <- data1[get(FilterVariable) >= eval(FilterValue)]
-    } else if(FilterLogic == '<') {
-      data1 <- data1[get(FilterVariable) < eval(FilterValue2)]
-    } else if(FilterLogic == '%between%') {
-      if(Debug) print('At %between% section')
-      if(Debug) print(as.numeric(FilterVariable))
-      if(Debug) print(as.numeric(FilterValue))
-      if(Debug) print(as.numeric(FilterValue2))
-      if(Debug) print(data1)
-      if(Debug) print('Run data.table operation')
-      data1 <- data1[get(FilterVariable) >= eval(FilterValue) & get(FilterVariable) <= eval(FilterValue2)]
-      if(Debug) print('Done with data.table operation')
-      if(Debug) print(data1)
-    } else if(FilterLogic == 'not %between%') {
-      data1 <- data1[get(FilterVariable) < eval(FilterValue) | get(FilterVariable) > eval(FilterValue2)]
-    } else {
-      data1 <- data1[get(FilterVariable) <= eval(FilterValue2)]
+  if(length(FilterVariable) != 0 && FilterVariable %in% names(data1)) {
+    if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')) || FilterLogic %in% c('%in%', '%chin%', '%like')) {
+      if(Debug) print('FilterLogicData else if 1')
+      if(Debug) print(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')))
+      if(FilterLogic %in% c('%in%','%chin%')) {
+        data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
+      } else if(FilterLogic == '%like%') {
+        data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
+      }
+    } else if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))) {
+      if(Debug) print('FilterLogicData else if 2')
+      if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))
+      if(FilterLogic == '>') {
+        data1 <- data1[get(FilterVariable) > eval(FilterValue)]
+      } else if(FilterLogic == '>=') {
+        data1 <- data1[get(FilterVariable) >= eval(FilterValue)]
+      } else if(FilterLogic == '<') {
+        data1 <- data1[get(FilterVariable) < eval(FilterValue2)]
+      } else if(FilterLogic == '%between%') {
+        if(Debug) print('At %between% section')
+        if(Debug) print(as.numeric(FilterVariable))
+        if(Debug) print(as.numeric(FilterValue))
+        if(Debug) print(as.numeric(FilterValue2))
+        if(Debug) print(data1)
+        if(Debug) print('Run data.table operation')
+        data1 <- data1[get(FilterVariable) >= eval(FilterValue) & get(FilterVariable) <= eval(FilterValue2)]
+        if(Debug) print('Done with data.table operation')
+        if(Debug) print(data1)
+      } else if(FilterLogic == 'not %between%') {
+        data1 <- data1[get(FilterVariable) < eval(FilterValue) | get(FilterVariable) > eval(FilterValue2)]
+      } else {
+        data1 <- data1[get(FilterVariable) <= eval(FilterValue2)]
+      }
     }
   }
   data1

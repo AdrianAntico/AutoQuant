@@ -14,6 +14,8 @@ AutoPlotter(
   YMax = NULL,
   XMin = NULL,
   XMax = NULL,
+  CorrVariables = NULL,
+  CorrelationMethod = "pearson",
   ColorVariables = NULL,
   SizeVar1 = "None",
   FacetVar1 = "None",
@@ -117,6 +119,7 @@ Other Graphics:
 \code{\link{BarPlot}()},
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
+\code{\link{CorrMatrixPlot}()},
 \code{\link{HistPlot}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}

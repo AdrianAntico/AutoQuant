@@ -89,6 +89,7 @@ Other Graphics:
 \code{\link{AutoPlotter}()},
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
+\code{\link{CorrMatrixPlot}()},
 \code{\link{HistPlot}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
