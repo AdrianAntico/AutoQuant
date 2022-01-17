@@ -1,6 +1,7 @@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+StartEnv <- as.list(environment())
 library(data.table)
 data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
 options(shiny.maxRequestSize = 100000000*1024^2)
@@ -6619,10 +6620,28 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Close app after closing browser      ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # shiny::onStop(function() {
+  #   cat("Session stopped\n")
+  #   EndEnv <- as.list(environment())
+  #   ggg <- setdiff(names(EndEnv), names(StartEnv))
+  #   for(i in seq_along(ggg)) try(rm(list = ggg[i]))
+  # })
   session$onSessionEnded(function() {
     shiny::stopApp()
   })
 }
+
+onStart = function() {
+  cat("Doing application setup\n")
+
+  onStop(function() {
+    cat("Doing application cleanup\n")
+    EndEnv <- as.list(environment())
+    ggg <- setdiff(names(EndEnv), names(StartEnv))
+    for(i in seq_along(ggg)) try(rm(list = ggg[i]))
+  })
+}
+
 
 # ----
 
