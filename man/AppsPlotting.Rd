@@ -5,15 +5,9 @@
 \title{AppsPlotting}
 \usage{
 AppsPlotting(
-  data = NULL,
   BlobStorageURL = NULL,
   IFrameLocation = NULL,
-  XVariable = NULL,
-  YVariable = NULL,
-  DateName = NULL,
-  GroupVariables = NULL,
-  FilterVariable = NULL,
-  ModelOutputList = NULL,
+  PlotObjectHome = NULL,
   HeaderColor = "black",
   AppWidth = 12L,
   LogoWidth = "750px",
@@ -35,21 +29,11 @@ AppsPlotting(
 )
 }
 \arguments{
-\item{data}{Source data.table}
-
 \item{BlobStorageURL}{is the URL path that leads up to the file name. E.g. 'http://localhost:5000/BlobFiles/ViewFile?name='}
 
-\item{XVariable}{Starter column name for x-variable. Not needed if x-axis is the DateName column}
+\item{IFrameLocation}{Browser location}
 
-\item{YVariable}{Starter column name for y-variable}
-
-\item{DateName}{Starter column name for date-variable}
-
-\item{GroupVariables}{Starter column name for group-variables}
-
-\item{FilterVariable}{Starter column name for filter-variable}
-
-\item{ModelOutputList}{ML output from RemixAutoML Auto___() SL functions}
+\item{PlotObjectHome}{NULL}
 
 \item{HeaderColor}{'black', 'blue', 'purple', 'green', 'red', 'yellow'}
 
@@ -94,15 +78,9 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 
 # Run App
 # RemixAutoML::AppsPlotting(
-#   data,
 #   BlobStorageURL = NULL,
 #   IFrameLocation = NULL,
-#   XVariable = NULL,
-#   YVariable = 'XREG1',
-#   DateName = 'Date',
-#   GroupVariables = names(data)[seq_len(3L)],
-#   FilterVariable = 'XREG1',
-#   ModelOutputList = NULL,
+#   PlotObjectHome = NULL,
 #   HeaderColor = 'black',
 #   AppWidth = 12L,
 #   LogoWidth = '1000px',
@@ -122,12 +100,6 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 #   UserName_Password_DT = NULL,
 #   Debug = FALSE)
 #
-# XVariable = 'Date'
-# YVariable = 'XREG1'
-# DateName = 'Date'
-# GroupVariables = names(data)[seq_len(3L)]
-# FilterVariable = 'XREG1'
-# ModelOutputList = NULL
 # Debug = TRUE
 # HeaderColor = 'black'
 # AppWidth = 12L

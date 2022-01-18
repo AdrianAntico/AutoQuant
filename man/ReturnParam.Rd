@@ -5,19 +5,19 @@
 \title{Save VarName values within a project}
 \usage{
 ReturnParam(
-  input = NULL,
-  VarName = "bla",
+  xx = NULL,
+  VarName = NULL,
   Type = "numeric",
   Default = 1,
   Switch = TRUE
 )
 }
 \arguments{
-\item{input}{This is the input value within a Shiny context}
+\item{xx}{This is the input value within a Shiny context; input$value or better yet, tryCatch({input$value}, error = function(x) NULL)}
 
 \item{VarName}{The name of the VarNameument you want to store}
 
-\item{Type}{'character' 'numeric' 'logical' 'date'}
+\item{Type}{'character' 'numeric' 'logical' 'date', or 'infer'}
 
 \item{Default}{default value}
 

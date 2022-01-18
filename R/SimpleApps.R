@@ -5,14 +5,9 @@
 #' @author Adrian Antico
 #' @family GUI
 #'
-#' @param data Source data.table
 #' @param BlobStorageURL is the URL path that leads up to the file name. E.g. 'http://localhost:5000/BlobFiles/ViewFile?name='
-#' @param XVariable Starter column name for x-variable. Not needed if x-axis is the DateName column
-#' @param YVariable Starter column name for y-variable
-#' @param DateName Starter column name for date-variable
-#' @param GroupVariables Starter column name for group-variables
-#' @param FilterVariable Starter column name for filter-variable
-#' @param ModelOutputList ML output from RemixAutoML Auto___() SL functions
+#' @param IFrameLocation Browser location
+#' @param PlotObjectHome NULL
 #' @param HeaderColor 'black', 'blue', 'purple', 'green', 'red', 'yellow'
 #' @param AppWidth Width of boxes
 #' @param GroupVarsBoxColor Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
@@ -38,15 +33,9 @@
 #'
 #' # Run App
 #' # RemixAutoML::AppsPlotting(
-#' #   data,
 #' #   BlobStorageURL = NULL,
 #' #   IFrameLocation = NULL,
-#' #   XVariable = NULL,
-#' #   YVariable = 'XREG1',
-#' #   DateName = 'Date',
-#' #   GroupVariables = names(data)[seq_len(3L)],
-#' #   FilterVariable = 'XREG1',
-#' #   ModelOutputList = NULL,
+#' #   PlotObjectHome = NULL,
 #' #   HeaderColor = 'black',
 #' #   AppWidth = 12L,
 #' #   LogoWidth = '1000px',
@@ -66,12 +55,6 @@
 #' #   UserName_Password_DT = NULL,
 #' #   Debug = FALSE)
 #' #
-#' # XVariable = 'Date'
-#' # YVariable = 'XREG1'
-#' # DateName = 'Date'
-#' # GroupVariables = names(data)[seq_len(3L)]
-#' # FilterVariable = 'XREG1'
-#' # ModelOutputList = NULL
 #' # Debug = TRUE
 #' # HeaderColor = 'black'
 #' # AppWidth = 12L
@@ -94,15 +77,9 @@
 #' }
 #'
 #' @export
-AppsPlotting <- function(data = NULL,
-                         BlobStorageURL = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=',
+AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=',
                          IFrameLocation = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles', #'http://127.0.0.1:5000/BlobFiles',
-                         XVariable = NULL,
-                         YVariable = NULL,
-                         DateName = NULL,
-                         GroupVariables = NULL,
-                         FilterVariable = NULL,
-                         ModelOutputList = NULL,
+                         PlotObjectHome = NULL,
                          HeaderColor = 'black',
                          AppWidth = 12L,
                          LogoWidth = '750px',
@@ -122,17 +99,14 @@ AppsPlotting <- function(data = NULL,
                          UserName_Password_DT = NULL,
                          Debug = FALSE) {
 
+  # Stop criteria
+  if(is.null(PlotObjectHome)) stop('Cannot run at this time')
+
   # Pass args to shiny app
   shiny::shinyOptions(
-    data = data,
     BlobStorageURL = BlobStorageURL,
     IFrameLocation = IFrameLocation,
-    XVariable = XVariable,
-    YVariable = YVariable,
-    DateName = DateName,
-    GroupVariables = GroupVariables,
-    FilterVariable = FilterVariable,
-    ModelOutputList = ModelOutputList,
+    PlotObjectHome = PlotObjectHome,
     HeaderColor = HeaderColor,
     AppWidth = AppWidth,
     LogoWidth = LogoWidth,
@@ -152,9 +126,9 @@ AppsPlotting <- function(data = NULL,
 
   # Run shiny app
   if(!Docker) {
-    shiny::shinyAppDir(appDir = system.file('shiny-apps', 'Insights2', package = 'RemixAutoML'))
+    shiny::shinyAppDir(appDir = system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'))
   } else {
-    shiny::runApp(appDir = system.file('shiny-apps', 'Insights', package = 'RemixAutoML'), display.mode = "normal", launch.browser = TRUE)
+    shiny::runApp(appDir = system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'), display.mode = "normal", launch.browser = TRUE)
   }
 }
 

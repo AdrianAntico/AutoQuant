@@ -1,5 +1,112 @@
 #' @title PlotLimits
 #'
+#' @param TotalPlots data.table
+#'
+#' @noRd
+InitializePlotObjects <- function(TotalPlots) {
+
+  # Define total number of possible plots
+  TotalPlots <- 4L
+
+  # Initalize PlotObjectLists
+  for(po in seq_len(TotalPlots)) {
+    if(po < 10L) {
+      assign(x = paste0('PlotObjectList_0', po), value = list())
+    } else {
+      assign(x = paste0('PlotObjectList_', po), value = list())
+    }
+  }
+
+  x <- list()
+  for(num in seq_len(TotalPlots)) {
+
+    # Fill out all slots ahead of time and update value blow when encountered, otherwise pass through what's in there
+    PlotMetaData <- list(
+
+      # MetaData:
+      #  PlotID -> connect plot metadata to fixed plot button to drag and drop
+      #  DataSource -> enable multiple data sets to be loaded
+      #  PlotType -> reactive so that options below can adjust accordingly
+      #  UpdateMethod -> not sure if needed but idea is to ensure that no action is taken that isn't needed, such as filtering
+      #               -> Modify value of this as list gets updated via user selection
+      'DataSource' = NULL,             # (listed for reference)
+      'PlotType' = NULL,               # (listed for reference)
+      'UpdateMethod' = 'All',
+
+      # Data Usage:
+      #   Sample Size -> would like to add sampling options or even allow for bootstrapping
+      'SampleSize' = 100000L,
+      'NumberGroupsDisplay' = 5L,
+
+      # Plot extras
+      'ShapAgg' = 'meanabs',
+      'GamFitScatter' = FALSE,
+      'NumberBins' = 30L,
+      'Percentile_Buckets' = 20L,
+
+      # Variables Selection (listed for reference)
+      'YVars' = NULL,
+      'YTicks' = NULL,
+      'XVars' = NULL,
+      'XTicks' = NULL,
+      'CorVariables' = NULL,
+      'PDP_Variable' = NULL,
+      'ScoreVar' = NULL,
+      'SizeVars' = NULL,
+      'FacetVar1' = NULL,
+      'FacetVar2' = NULL,
+      'GroupVars' = NULL,
+      'Levels1' = NULL,
+      'Levels2' = NULL,
+      'Levels3' = NULL,
+
+      # Filter Variables, logic, and values (listed for reference)
+      'FilterVar1' = NULL,
+      'FilterVar2' = NULL,
+      'FilterVar3' = NULL,
+      'FilterVar4' = NULL,
+      'FilterLogic1' = NULL,
+      'FilterLogic2' = NULL,
+      'FilterLogic3' = NULL,
+      'FilterLogic4' = NULL,
+      'FilterValue_1_1' = NULL,
+      'FilterValue_1_2' = NULL,
+      'FilterValue_1_3' = NULL,
+      'FilterValue_1_4' = NULL,
+      'FilterValue_2_1' = NULL,
+      'FilterValue_2_2' = NULL,
+      'FilterValue_2_3' = NULL,
+      'FilterValue_2_4' = NULL,
+
+      # Separate Button to Update These Inside DropDown Box
+      'PlotWidth' = '950px',
+      'PlotHeight' = '550px',
+      'AngleY' = 0,
+      'AngleX' = 90,
+      'TextSize' = 15,
+      'OutlierSize' = 0.01,
+      'LegendPosition' = 'right',
+      'LegendBorderSize' = 0.01,
+      'LegendLineType' = 'solid',
+      'TextColor' = 'darkblue',
+      'ChartColor' = 'lightsteelblue1',
+      'GridColor' = 'white',
+      'BackGroundColor' = 'gray95',
+      'BorderColor' = 'darkblue',
+      'OutlierColor' = 'red',
+      'FillColor' = 'gray25',
+      'SubTitleColor' = 'darkblue')
+
+    # Fill in master list
+    for(meta in names(PlotMetaData)) {
+      x[[paste0('Plot_', num)]][[meta]] <- PlotMetaData[[meta]]
+    }
+  }
+  return(x)
+}
+
+#' @title PlotLimits
+#'
 #' @param p data.table
 #' @param YMin Y Min Value
 #' @param YMax Y Max Value
@@ -169,73 +276,80 @@ XTicks <- function(data, xvar='None',datevar='None') {
 }
 
 #' @importFrom rstudioapi isAvailable getSourceEditorContext
-GetData <- function(data = NULL, name = NULL) {
+GetData <- function(data = NULL, name = NULL, Debug=FALSE) {
   if(!is.null(data)) {
+    if(Debug) print('GetData: !is.null(data) was TRUE')
     if(is.character(data)) {
-      remix_data <- try({
+      if(Debug) print('GetData: is.character(data) was TRUE')
+      data <- try({
         dat <- get(x = data, envir = globalenv())
         if(inherits(dat, what = 'data.table')) {
+          if(Debug) print('GetData returned dat from here 1')
           dat
-        } else {
+        } else if(inherits(dat, what = 'data.frame')) {
+          if(Debug) print('GetData returned dat from here 2')
           data.table::as.data.table(dat)
+        } else {
+          if(Debug) print('GetData returned dat from here 3')
+          tryCatch({data.table::as.data.table(dat)}, error = NULL)
         }
       }, silent = TRUE)
-      remix_data_name <- data
-      if("try-error" %in% class(remix_data)) {
+      data_name <- data
+      if("try-error" %in% class(data)) {
         warning(paste0("'", data, "' not found"), call. = FALSE)
-        remix_data <- NULL
-        remix_data_name <- ""
+        data <- NULL
+        data_name <- ""
       }
     } else if(inherits(x = data, what = 'data.table')) {
-      remix_data <- try({
+      data <- try({
         if(inherits(data, what = 'data.table')) {
           data
         } else {
           data.table::as.data.table(data)
         }
       }, silent = TRUE)
-      if("try-error" %in% class(remix_data)) {
+      if("try-error" %in% class(data)) {
         warning(paste0("'", data, "' not found"), call. = FALSE)
-        remix_data <- NULL
-        remix_data_name <- ""
+        data <- NULL
+        data_name <- ""
       } else {
         if(!is.null(name)) {
-          remix_data_name <- as.character(name)
+          data_name <- as.character(name)
         } else {
-          remix_data_name <- deparse(substitute(data))
+          data_name <- deparse(substitute(data))
         }
       }
     } else {
-      remix_data <- NULL
-      remix_data_name <- ""
+      data <- NULL
+      data_name <- ""
     }
   } else {
     if(rstudioapi::isAvailable()) {
       context <- try(rstudioapi::getSourceEditorContext(), silent = TRUE)
       if("try-error" %in% class(context) || is.null(context)) {
-        remix_data <- NULL
-        remix_data_name <- ""
+        data <- NULL
+        data_name <- ""
       } else {
         context_select <- context$selection[[1]]$text
         if(isTRUE(nzchar(context_select))) {
-          remix_data <- try(data.table::as.data.table(get(x = context_select, envir = globalenv())), silent = TRUE)
-          remix_data_name <- context_select
-          if("try-error" %in% class(remix_data)) {
+          data <- try(data.table::as.data.table(get(x = context_select, envir = globalenv())), silent = TRUE)
+          data_name <- context_select
+          if("try-error" %in% class(data)) {
             warning(paste0("Failed to retrieve data from the selection"), call. = FALSE)
-            remix_data <- NULL
-            remix_data_name <- ""
+            data <- NULL
+            data_name <- ""
           }
         } else {
-          remix_data <- NULL
-          remix_data_name <- ""
+          data <- NULL
+          data_name <- ""
         }
       }
     } else {
-      remix_data <- NULL
-      remix_data_name <- ""
+      data <- NULL
+      data_name <- ""
     }
   }
-  list(remix_data = remix_data, remix_data_name = remix_data_name)
+  list(data = data, data_name = data_name)
 }
 
 #' Search for object with specific class in an environment
@@ -844,9 +958,9 @@ StoreArgs <- function(input,
 #' @author Adrian Antico
 #' @family Shiny
 #'
-#' @param input This is the input value within a Shiny context
+#' @param xx This is the input value within a Shiny context; input$value or better yet, tryCatch({input$value}, error = function(x) NULL)
 #' @param VarName The name of the VarNameument you want to store
-#' @param Type 'character' 'numeric' 'logical' 'date'
+#' @param Type 'character' 'numeric' 'logical' 'date', or 'infer'
 #' @param Default default value
 #' @param Switch = FALSE
 #'
@@ -857,22 +971,39 @@ StoreArgs <- function(input,
 #'
 #' @return Updates ProjectList inside function
 #' @export
-ReturnParam <- function(input = NULL,
-                        VarName = 'bla',
+ReturnParam <- function(xx = NULL,
+                        VarName = NULL,
                         Type = 'numeric',
                         Default = 1,
                         Switch = TRUE) {
 
+  # Return if null or length(0) (can't have NULL elements or )
+  if(length(xx) == 0) return(Default)
+
+  # NA's
+  if(all(is.na(xx))) return(Default)
+  if(any(is.na(xx))) xx <- xx[!is.na(xx)]
+
+  # ""
+  if(all(xx %in% "")) return(Default)
+  if(any(xx %in% "")) xx <- xx[!xx %in% ""]
+
+  # 'No Data Loaded !!'
+  if(all(xx %in% 'No Data Loaded !!')) return(Default)
+  if(any(xx %in% 'No Data Loaded !!')) xx <- xx[!xx %in% 'No Data Loaded !!']
+
   # Type == numeric
   if(Type == "numeric") {
     if(Switch) {
-      if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-        return(as.numeric(input[[VarName]]))
+      if(!all(xx %in% c('None', 'Default'))) {
+        if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+        return(as.numeric(xx))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-          return(as.numeric(input[[VarName]]))
+        } else if(!all(xx %in% c('None', 'Default'))) {
+          if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+          return(as.numeric(xx))
         } else {
           return(Default)
         }
@@ -883,13 +1014,13 @@ ReturnParam <- function(input = NULL,
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-          return(as.numeric(input[[VarName]]))
+        } else if(!all(xx %in% c('None', 'Default'))) {
+          return(as.numeric(xx))
         } else {
           return(Default)
         }
-      } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-        return(as.numeric(input[[VarName]]))
+      } else if(!all(xx %in% c('None', 'Default'))) {
+        return(as.numeric(xx))
       } else {
         return(Default)
       }
@@ -899,13 +1030,15 @@ ReturnParam <- function(input = NULL,
   # Type == logical
   if(Type == "logical") {
     if(Switch) {
-      if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-        return(as.logical(input[[VarName]]))
+      if(!all(xx %in% c('None', 'Default'))) {
+        if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+        return(as.logical(xx))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-          return(as.logical(input[[VarName]]))
+        } else if(!all(xx %in% c('None', 'Default'))) {
+          if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+          return(as.logical(xx))
         } else {
           return(Default)
         }
@@ -916,13 +1049,13 @@ ReturnParam <- function(input = NULL,
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-          return(as.logical(input[[VarName]]))
+        } else if(!all(xx %in% c('None', 'Default'))) {
+          return(as.logical(xx))
         } else {
           return(Default)
         }
-      } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-        return(as.logical(input[[VarName]]))
+      } else if(!all(xx %in% c('None', 'Default'))) {
+        return(as.logical(xx))
       } else {
         return(Default)
       }
@@ -932,13 +1065,15 @@ ReturnParam <- function(input = NULL,
   # Type == character
   if(Type == "character") {
     if(Switch) {
-      if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-        return(as.character(input[[VarName]]))
+      if(!all(xx %in% c('None', 'Default'))) {
+        if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+        return(as.character(xx))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-          return(as.character(input[[VarName]]))
+        } else if(!all(xx %in% c('None', 'Default'))) {
+          if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+          return(as.character(xx))
         } else {
           return(Default)
         }
@@ -949,13 +1084,13 @@ ReturnParam <- function(input = NULL,
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-          return(as.character(input[[VarName]]))
+        } else if(!all(xx %in% c('None', 'Default'))) {
+          return(as.character(xx))
         } else {
           return(Default)
         }
-      } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-        return(as.character(input[[VarName]]))
+      } else if(!all(xx %in% c('None', 'Default'))) {
+        return(as.character(xx))
       } else {
         return(Default)
       }
@@ -965,13 +1100,15 @@ ReturnParam <- function(input = NULL,
   # Type == date
   if(Type == "date") {
     if(Switch) {
-      if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-        return(as.character(input[[VarName]]))
+      if(!all(xx %in% c('None', 'Default'))) {
+        if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+        return(as.character(xx))
       } else if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-          return(input[[VarName]])
+        } else if(any(class(xx) != "NULL") && !all(xx %in% c('None', 'Default'))) {
+          if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+          return(xx)
         } else {
           return(Default)
         }
@@ -982,13 +1119,13 @@ ReturnParam <- function(input = NULL,
       if(exists("ProjectList")) {
         if(!is.null(ProjectList[[VarName]])) {
           return(ProjectList[[VarName]])
-        } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-          return(input[[VarName]])
+        } else if(any(class(xx) != "NULL") && !all(xx %in% c('None', 'Default'))) {
+          return(xx)
         } else {
           return(Default)
         }
-      } else if(any(class(input[[VarName]]) != "NULL") && !all(input[[VarName]] %in% c('None', 'Default'))) {
-        return(input[[VarName]])
+      } else if(any(class(xx) != "NULL") && !all(xx %in% c('None', 'Default'))) {
+        return(xx)
       } else {
         return(Default)
       }

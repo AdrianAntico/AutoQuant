@@ -1294,7 +1294,7 @@ AutoPlotter <- function(dt = NULL,
     p1 <- p1 + ggplot2::labs(
       title = 'Time Series Plot',
       caption = 'RemixAutoML') +
-      ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax))) +
+      #ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax))) +
       ggplot2::ylab(eval(YVar)) + ggplot2::xlab(eval(XVar)) +
       ggplot2::theme(legend.title = ggplot2::element_blank())
 
