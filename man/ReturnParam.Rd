@@ -9,7 +9,8 @@ ReturnParam(
   VarName = NULL,
   Type = "numeric",
   Default = 1,
-  Switch = TRUE
+  Switch = TRUE,
+  Debug = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ ReturnParam(
 \item{Default}{default value}
 
 \item{Switch}{= FALSE}
+
+\item{Debug}{= FALSE}
 }
 \value{
 Updates ProjectList inside function

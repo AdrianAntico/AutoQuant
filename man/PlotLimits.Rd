@@ -4,7 +4,7 @@
 \alias{PlotLimits}
 \title{PlotLimits}
 \usage{
-PlotLimits(p, YMin, YMax, XMin, XMax)
+PlotLimits(p, YMin, YMax, XMin, XMax, Debug = FALSE)
 }
 \arguments{
 \item{p}{data.table}
@@ -16,6 +16,8 @@ PlotLimits(p, YMin, YMax, XMin, XMax)
 \item{XMin}{X Min Value}
 
 \item{XMax}{X Max Value}
+
+\item{Debug}{= FALSE}
 }
 \description{
 PlotLimits

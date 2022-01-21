@@ -9,7 +9,7 @@ AppsPlotting(
   IFrameLocation = NULL,
   PlotObjectHome = NULL,
   HeaderColor = "black",
-  AppWidth = 12L,
+  AppWidth = 8L,
   LogoWidth = "750px",
   LogoHeight = "100px",
   GroupVarsBoxColor = "navy",

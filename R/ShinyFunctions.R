@@ -1,3 +1,22 @@
+#' @noRd
+ExpandText <- function(x) {
+  return(paste0("'",paste0(x, collapse = "','"),"'"))
+}
+
+#' @param DataNames = names(data)
+#' @param ModelDataNames names(ModelData)
+#' @param PlotName = Plot1_react()
+#'
+#' @noRd
+VarNamesDisplay <- function(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=NULL) {
+  if(any(c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram') %in% PlotName)) {
+    return(DataNames)
+  } else {
+    return(ModelDataNames)
+  }
+}
+
+
 #' @title PlotLimits
 #'
 #' @param TotalPlots data.table
@@ -112,14 +131,35 @@ InitializePlotObjects <- function(TotalPlots) {
 #' @param YMax Y Max Value
 #' @param XMin X Min Value
 #' @param XMax X Max Value
+#' @param Debug = FALSE
 #'
 #' @export
-PlotLimits <- function(p, YMin, YMax, XMin, XMax) {
-  if(missing(p) || !length(p)) return(NULL)
-  if(missing(YMin)) YMin <- NA else if(!length(YMin)) YMin <- NA else if(YMin == "") YMin <- NA
-  if(missing(YMax)) YMin <- NA else if(!length(YMax)) YMax <- NA else if(YMax == "") YMax <- NA
-  if(missing(XMin)) YMin <- NA else if(!length(XMin)) XMin <- NA else if(XMin == "") XMin <- NA
-  if(missing(XMax)) YMin <- NA else if(!length(XMax)) XMax <- NA else if(XMax == "") XMax <- NA
+PlotLimits <- function(p, YMin, YMax, XMin, XMax, Debug = FALSE) {
+
+  if(Debug) {
+    print(YMin)
+    print(YMax)
+    print(XMin)
+    print(XMax)
+    print(length(p))
+  }
+
+  if(missing(p) || length(p) == 0) return(NULL)
+  if(Debug) {print('here 1'); print(missing(p))}
+  if(missing(YMin)) YMin <- NA else if(length(YMin) == 0) YMin <- NA else if(YMin == "") YMin <- NA
+  if(Debug) {print('here 2'); print(YMin)}
+  if(missing(YMax)) YMax <- NA else if(length(YMax) == 0) YMax <- NA else if(YMax == "") YMax <- NA
+  if(Debug) {print('here 3'); print(YMax)}
+  if(missing(XMin)) XMin <- NA else if(length(XMin) == 0) XMin <- NA else if(XMin == "") XMin <- NA
+  if(Debug) {print('here 4'); print(XMin)}
+  if(missing(XMax)) XMax <- NA else if(length(XMax) == 0) XMax <- NA else if(XMax == "") XMax <- NA
+  if(Debug) {
+    print(is.na(YMin))
+    print(is.na(YMax))
+    print(is.na(XMin))
+    print(is.na(XMax))
+    print(!all(is.na(YMin), is.na(YMax), is.na(XMin), is.na(XMax)))
+  }
   if(!all(is.na(YMin), is.na(YMax), is.na(XMin), is.na(XMax))) {
     p <- p + ggplot2::coord_cartesian(xlim = c(as.numeric(XMin), as.numeric(XMax)), ylim = c(as.numeric(YMin), as.numeric(YMax)))
     return(eval(p))
@@ -159,7 +199,7 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL) {
     x <- NULL
   } else {
     for(i in seq_along(x)) x[i] <- PlotNamesLookup[[x[i]]]
-    x[length(x)+1L] <- 'ShapelyVarImp'
+    x[length(x)+1L] <- 'ShapleyVarImp'
   }
   StandardPlots <- c('Histogram','BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix')
   for(i in seq_along(StandardPlots)) StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
@@ -963,6 +1003,7 @@ StoreArgs <- function(input,
 #' @param Type 'character' 'numeric' 'logical' 'date', or 'infer'
 #' @param Default default value
 #' @param Switch = FALSE
+#' @param Debug = FALSE
 #'
 #' @examples
 #' \dontrun{
@@ -975,22 +1016,47 @@ ReturnParam <- function(xx = NULL,
                         VarName = NULL,
                         Type = 'numeric',
                         Default = 1,
-                        Switch = TRUE) {
+                        Switch = TRUE,
+                        Debug = FALSE) {
 
   # Return if null or length(0) (can't have NULL elements or )
-  if(length(xx) == 0) return(Default)
+  if(length(xx) == 0) {
+    if(Debug) print('ReturnParam: length(xx) == 0 -> TRUE')
+    return(Default)
+  }
 
   # NA's
-  if(all(is.na(xx))) return(Default)
-  if(any(is.na(xx))) xx <- xx[!is.na(xx)]
+  if(all(is.na(xx))) {
+    if(Debug) print('ReturnParam: all(is.na(xx)) -> TRUE')
+    return(Default)
+  }
+  if(any(is.na(xx))) {
+    if(Debug) print('ReturnParam: any(is.na(xx)) -> TRUE')
+    xx <- xx[!is.na(xx)]
+    if(Debug) {print(xx); print('ReturnParam: any(is.na(xx)) -> TRUE END')}
+  }
 
   # ""
-  if(all(xx %in% "")) return(Default)
-  if(any(xx %in% "")) xx <- xx[!xx %in% ""]
+  if(all(xx %in% "")) {
+    if(Debug) {print("all(xx %in% '')")}
+    return(Default)
+  }
+  if(any(xx %in% "")) {
+    if(Debug) print("any(xx %in% '') -> TRUE")
+    xx <- xx[!xx %in% ""]
+    if(Debug) {print(xx); print("any(xx %in% '') -> TRUE END")}
+  }
 
   # 'No Data Loaded !!'
-  if(all(xx %in% 'No Data Loaded !!')) return(Default)
-  if(any(xx %in% 'No Data Loaded !!')) xx <- xx[!xx %in% 'No Data Loaded !!']
+  if(all(xx %in% 'No Data Loaded !!')) {
+    if(Debug) print("all(xx %in% 'No Data Loaded !!') -> TRUE")
+    return(Default)
+  }
+  if(any(xx %in% 'No Data Loaded !!')) {
+    if(Debug) print("any(xx %in% 'No Data Loaded !!') -> TRUE")
+    xx <- xx[!xx %in% 'No Data Loaded !!']
+    if(Debug) {print(xx); print("any(xx %in% 'No Data Loaded !!') -> TRUE END")}
+  }
 
   # Type == numeric
   if(Type == "numeric") {
@@ -1307,10 +1373,9 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #' @param Label Feeds label
 #' @param Choices Feeds choices
 #' @param SelectedDefault Feeds selected for cases where ProjectList has a null element
-#' @param Size Feeds size in the options list
-#' @param SelectedText Feeds selected-text-format in options list
 #' @param Multiple Feeds multiple for enabling selecting more than one element from list
-#' @param ActionBox Feeds actions-box for option list
+#' @param MaxVars = NULL
+#' @param CloseAfterSelect = FALSE,
 #' @param Debug FALSE
 #'
 #' @examples
@@ -1322,38 +1387,37 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #' @return SelectizeInput object for server.R to go into renderUI({SelectizeInput()})
 #' @export
 SelectizeInput <- function(InputID = "",
-                        Label = "",
-                        Choices = NULL,
-                        SelectedDefault = NULL,
-                        Size = 10,
-                        SelectedText = "count > 1",
-                        Multiple = TRUE,
-                        ActionBox = TRUE,
-                        Debug = FALSE) {
-  Options <- list(
-    `allowEmptyOption` = TRUE,
-    `actions-box` = ActionBox,
-    size = Size,
-    `selected-text-format` = SelectedText)
+                           Label = "",
+                           Choices = NULL,
+                           SelectedDefault = NULL,
+                           Multiple = TRUE,
+                           MaxVars = NULL,
+                           CloseAfterSelect = FALSE,
+                           Debug = FALSE) {
+  Options <- list()
+  Options[['allowEmptyOption']] <- TRUE
+  Options[['maxItems']] <- MaxVars
+  Options[['closeAfterSelect']] <- CloseAfterSelect
+
   return(
     if(exists("ProjectList")) {
       tryCatch({
         if(!is.null(ProjectList[[InputID]])) {
-          shiny::selectizeInput(inputId = InputID, label = Label, choices = Choices, selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
+          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c("", Choices))), selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
         } else {
-          shiny::selectizeInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)
-        }}, error = function(x) shiny::selectizeInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple))
+          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c("", Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)
+        }}, error = function(x) shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c("", Choices))), selected = SelectedDefault, options = Options, multiple = Multiple))
     } else {
       if(Debug) {
         print(InputID)
         print(Label)
-        print(Choices)
+        print(c(unique(c("", Choices))))
         print(SelectedDefault)
         print(Options)
         print(Multiple)
       }
       tryCatch({
-        shiny::selectizeInput(inputId = InputID, label = Label, choices = Choices, selected = SelectedDefault, options = Options, multiple = Multiple)},
+        shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c("", Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)},
         error = function(x) {
           shiny::selectizeInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
         })
@@ -1551,38 +1615,30 @@ PickerInput_GetLevels <- function(input,
 #' @author Adrian Antico
 #' @family Shiny
 #'
-#' @param input input object within shiny context
 #' @param DataExist Logical
 #' @param NumGroupVar Which group var to select
 #' @param InputID Feeds ProjectList and inputId. Argument saved in ProjectList
 #' @param InputID2 Values from input2. In first version the input is referenced inside function
 #' @param Choices Feeds choices
 #' @param SelectedDefault Feeds selected for cases where ProjectList has a null element
-#' @param Size Feeds size in the options list
-#' @param SelectedText Feeds selected-text-format in options list
 #' @param Multiple Feeds multiple for enabling selecting more than one element from list
-#' @param ActionBox Feeds actions-box for option list
 #'
 #' @examples
 #' \dontrun{
 #' output$TS_CARMA_HolidayMovingAverages <- renderUI({
 #'   RemixAutoML::PickerInput_GetLevels2(
-#'     input, InputID = "TS_CARMA_HolidayMovingAverages", Label = "Select Holiday Count MA's", Choices = as.character(0:50),
-#'     SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
+#'     InputID = "TS_CARMA_HolidayMovingAverages", Label = "Select Holiday Count MA's", Choices = as.character(0:50),
+#'     SelectedDefault = as.character(c(1,2)), Multiple = TRUE)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
 #' @export
-PickerInput_GetLevels2 <- function(input,
-                                   DataExist = TRUE,
+PickerInput_GetLevels2 <- function(DataExist = TRUE,
                                    NumGroupVar = 3,
                                    InputID = "TS_CARMA_HolidayMovingAverages",
                                    InputID2 = "timeSeriesGroupVars",
                                    Choices = as.character(0:50),
                                    SelectedDefault = as.character(c(1,2)),
-                                   Size = 10,
-                                   SelectedText = "count > 1",
-                                   Multiple = TRUE,
-                                   ActionBox = TRUE) {
+                                   Multiple = TRUE) {
   return(
 
     if(DataExist) {
@@ -1594,23 +1650,23 @@ PickerInput_GetLevels2 <- function(input,
           shinyWidgets::pickerInput(
             inputId = InputID, label = tags$span(style='color: blue;', paste0(InputID2[[NumGroupVar]]," Levels")),
             choices = Choices, selected = SelectedDefault,
-            options = list(`actions-box` = TRUE, size = 10, `selected-text-format` = "count > 1"), multiple = TRUE, width = "100%")
+            options = list(`actions-box` = TRUE, size = 10, `selected-text-format` = "count > 1"), multiple = Multiple, width = "100%")
 
         } else {
 
-          shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+          shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = Multiple, width = "100%")
 
         }
 
       } else {
 
-        shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+        shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = Multiple, width = "100%")
 
       }
 
     } else {
 
-      shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = TRUE, width = "100%")
+      shinyWidgets::pickerInput(inputId = InputID, label = tags$span(style='color: blue;', "< N/A >"), choices = SelectedDefault, selected = SelectedDefault, multiple = Multiple, width = "100%")
 
     }
 

@@ -1487,7 +1487,7 @@ AppModelInsights <- function(ModelOutputList,
   if(Debug) {print('Running AppModelInsights'); print(paste0('Rebuild = ', Rebuild))}
 
   # Shap VI
-  if(tolower(PlotType) == 'shapelyvarimp') {
+  if(tolower(PlotType) == 'shapleyvarimp') {
 
     # Debugging
     if(Debug) {print(dt); print(names(dt)); print(dt[, .N]); print(names(dt)[which(names(dt) %like% 'Shap_')]); print(length(names(dt)[which(names(dt) %like% 'Shap_')]))}

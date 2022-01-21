@@ -5,22 +5,16 @@
 \title{PickerInput_GetLevels2}
 \usage{
 PickerInput_GetLevels2(
-  input,
   DataExist = TRUE,
   NumGroupVar = 3,
   InputID = "TS_CARMA_HolidayMovingAverages",
   InputID2 = "timeSeriesGroupVars",
   Choices = as.character(0:50),
   SelectedDefault = as.character(c(1, 2)),
-  Size = 10,
-  SelectedText = "count > 1",
-  Multiple = TRUE,
-  ActionBox = TRUE
+  Multiple = TRUE
 )
 }
 \arguments{
-\item{input}{input object within shiny context}
-
 \item{DataExist}{Logical}
 
 \item{NumGroupVar}{Which group var to select}
@@ -33,13 +27,7 @@ PickerInput_GetLevels2(
 
 \item{SelectedDefault}{Feeds selected for cases where ProjectList has a null element}
 
-\item{Size}{Feeds size in the options list}
-
-\item{SelectedText}{Feeds selected-text-format in options list}
-
 \item{Multiple}{Feeds multiple for enabling selecting more than one element from list}
-
-\item{ActionBox}{Feeds actions-box for option list}
 }
 \value{
 PickerInput object for server.R to go into renderUI({PickerInput()})
@@ -51,8 +39,8 @@ PickerInput_GetLevels2 automatically builds a picker input with tryCatch's and P
 \dontrun{
 output$TS_CARMA_HolidayMovingAverages <- renderUI({
   RemixAutoML::PickerInput_GetLevels2(
-    input, InputID = "TS_CARMA_HolidayMovingAverages", Label = "Select Holiday Count MA's", Choices = as.character(0:50),
-    SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
+    InputID = "TS_CARMA_HolidayMovingAverages", Label = "Select Holiday Count MA's", Choices = as.character(0:50),
+    SelectedDefault = as.character(c(1,2)), Multiple = TRUE)})
 }
 }
 \seealso{

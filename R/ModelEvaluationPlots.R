@@ -600,7 +600,7 @@ CumGainsChart <- function(data = NULL,
         label.padding = ggplot2::unit(0.2, "lines")) +
       ggplot2::ylim(min(LiftRes_T[["Lift"]]), max(LiftRes_T[["Lift"]] * 1.1)) +
       ggplot2::guides(fill = "none") +
-      ggplot2::scale_colour_continuous(guide = FALSE) +
+      ggplot2::scale_colour_continuous(guide = 'none') +
       ggplot2::scale_x_continuous(breaks = c(0, seq(10,100,10))) +
       RemixAutoML::ChartTheme() + ggplot2::theme(legend.position = "none"))
 

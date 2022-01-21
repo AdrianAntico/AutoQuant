@@ -9,10 +9,9 @@ SelectizeInput(
   Label = "",
   Choices = NULL,
   SelectedDefault = NULL,
-  Size = 10,
-  SelectedText = "count > 1",
   Multiple = TRUE,
-  ActionBox = TRUE,
+  MaxVars = NULL,
+  CloseAfterSelect = FALSE,
   Debug = FALSE
 )
 }
@@ -25,13 +24,11 @@ SelectizeInput(
 
 \item{SelectedDefault}{Feeds selected for cases where ProjectList has a null element}
 
-\item{Size}{Feeds size in the options list}
-
-\item{SelectedText}{Feeds selected-text-format in options list}
-
 \item{Multiple}{Feeds multiple for enabling selecting more than one element from list}
 
-\item{ActionBox}{Feeds actions-box for option list}
+\item{MaxVars}{= NULL}
+
+\item{CloseAfterSelect}{= FALSE,}
 
 \item{Debug}{FALSE}
 }
