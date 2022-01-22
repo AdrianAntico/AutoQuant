@@ -23,6 +23,7 @@
 #' @param Browser FALSE
 #' @param Docker FALSE
 #' @param UserName_Password_DT NULL. In order to enforce authentication, supply a data.table with columns 'UserName' which contains the names of your users and 'Password' which contains the acceptable passwords. E.g. data.table::data.table(UserName = c('Adrian Antico', 'Guest'), Password = c('Password1', 'Password2')). Case sensitivity applies.
+#' @param RunMode = 'package', 'local'
 #' @param Debug FALSE
 #'
 #' @examples
@@ -80,7 +81,7 @@
 AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=',
                          IFrameLocation = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles', #'http://127.0.0.1:5000/BlobFiles',
                          PlotObjectHome = NULL,
-                         HeaderColor = 'black',
+                         HeaderColor = 'puple',
                          AppWidth = 8L,
                          LogoWidth = '750px',
                          LogoHeight = '100px',
@@ -97,6 +98,7 @@ AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurew
                          Browser = FALSE,
                          Docker = FALSE,
                          UserName_Password_DT = NULL,
+                         RunMode = 'package',
                          Debug = FALSE) {
 
   # Stop criteria
@@ -125,10 +127,18 @@ AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurew
     Debug = Debug)
 
   # Run shiny app
-  if(!Docker) {
-    shiny::shinyAppDir(appDir = system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'))
+  if(RunMode == 'pacakge') {
+    if(!Docker) {
+      shiny::shinyAppDir(appDir = system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'))
+    } else {
+      shiny::runApp(appDir = system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'), display.mode = "normal", launch.browser = TRUE)
+    }
   } else {
-    shiny::runApp(appDir = system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'), display.mode = "normal", launch.browser = TRUE)
+    if(!Docker) {
+      shiny::runApp(appDir = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/inst/shiny-apps/AutoInsights"), launch.browser = TRUE)
+    } else {
+      shiny::runApp(appDir = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/inst/shiny-apps/AutoInsights"), display.mode = "normal", launch.browser = TRUE)
+    }
   }
 }
 

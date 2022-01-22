@@ -268,7 +268,7 @@ ScatterCopula <- function(data = NULL,
   if(is.null(GroupVariable)) {
     original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = x_var, y = y_var)))
   } else {
-    original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = x_var, y = y_var, colour = GroupVariable)))
+    original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = x_var, y = y_var, colour = GroupVariable[[1L]])))
   }
   if(!is.null(SizeVar1)) {
     original_scale_plot <- original_scale_plot + ggplot2::geom_point(ggplot2::aes_string(size = eval(SizeVar1)))
@@ -304,7 +304,7 @@ ScatterCopula <- function(data = NULL,
   if(is.null(GroupVariable)) {
     copula_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1")))
   } else {
-    copula_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1", colour = GroupVariable)))
+    copula_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1", colour = GroupVariable[[1L]])))
   }
 
   if(!is.null(SizeVar1)) {
@@ -315,7 +315,7 @@ ScatterCopula <- function(data = NULL,
   copula_plot <- copula_plot +
     #ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 0.25) +
     ggplot2::ggtitle(paste0("Copula: Pearson Corr: ", round(cop_Pearson, 3L), " :: Spearman Corr: ", round(cop_Spearman, 3L))) +
-    ggplot2::labs(x = eval(x_var), y = eval(y_var), size = eval(SizeVar1), color = eval(GroupVariable)) +
+    ggplot2::labs(x = eval(x_var), y = eval(y_var), size = eval(SizeVar1), color = eval(GroupVariable[[1L]])) +
     #ggplot2::xlab(label = x_var) + ggplot2::ylab(label = y_var) +
     ChartTheme(
       Size = text_size,

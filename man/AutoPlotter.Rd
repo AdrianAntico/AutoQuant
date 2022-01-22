@@ -14,7 +14,6 @@ AutoPlotter(
   YMax = NULL,
   XMin = NULL,
   XMax = NULL,
-  CorrVariables = NULL,
   CorrelationMethod = "pearson",
   ColorVariables = NULL,
   SizeVar1 = "None",
