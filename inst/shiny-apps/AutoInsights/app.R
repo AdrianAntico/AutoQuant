@@ -1341,9 +1341,9 @@ server <- function(input, output, session) {
     if(Debug) print("Auto Size Grid")
 
     # Auto SCaling of Plot Grid: doubles the size in the event of more than 1 plot
-    # output$AutoGridHorizontal <-  shiny::renderUI({
-    #   shinyWidgets::materialSwitch(inputId = "AutoGridHorizontal", label = tags$span(style='color: blue;', 'Auto Grid Scale'), status = "danger", value = TRUE, inline = TRUE, width = '100%')
-    # })
+    output$AutoGridHorizontal <-  shiny::renderUI({
+      shinyWidgets::materialSwitch(inputId = "AutoGridHorizontal", label = tags$span(style='color: blue;', 'Auto Grid Scale'), status = "danger", value = TRUE, inline = TRUE, width = '100%')
+    })
 
     if(Debug) print("Here qq")
 
@@ -5722,7 +5722,7 @@ server <- function(input, output, session) {
 
               # Ouput Plot for 2 plot requests
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
                   gridExtra::grid.arrange(p1,p2, ncol=1)
                 })
               } else {
@@ -5772,7 +5772,7 @@ server <- function(input, output, session) {
 
               # Ouput Plot for 3 plot requests
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
                   gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
                                                                           c(3, 3)))
                 })
@@ -5833,7 +5833,7 @@ server <- function(input, output, session) {
 
               # Ouput Plot for 4 plot requests
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
                   gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
                 })
               } else {
