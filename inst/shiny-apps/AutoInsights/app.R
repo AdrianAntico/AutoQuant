@@ -1447,13 +1447,13 @@ server <- function(input, output, session) {
 
     if(Debug) print("Here ss")
     output$PlotWidth <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "PlotWidth", Label=tags$span(style='color: blue;', 'Plot Width'), Step = 50, Min = 800, Max = 1800, Value = 1600)
+      RemixAutoML::NumericInput(InputID = "PlotWidth", Label=tags$span(style='color: blue;', 'Plot Width'), Step = 50, Min = 500, Max = 3500, Value = 1600)
     })
 
     if(Debug) print("Here tt")
 
     output$PlotHeight <- shiny::renderUI({
-      RemixAutoML::NumericInput(InputID = "PlotHeight", Label=tags$span(style='color: blue;', 'Plot Height'), Step = 25, Min = 350, Max = 350*10, Value = 500)
+      RemixAutoML::NumericInput(InputID = "PlotHeight", Label=tags$span(style='color: blue;', 'Plot Height'), Step = 25, Min = 300, Max = 3500, Value = 500)
     })
 
     # Percentile Buckets
@@ -3222,11 +3222,13 @@ server <- function(input, output, session) {
   # Global Setting
   if(Debug) print("Here ss")
   output$PlotWidth <- shiny::renderUI({
-    RemixAutoML::NumericInput(InputID = "PlotWidth", Label=tags$span(style='color: blue;', 'Plot Width'), Step = 50, Min = 800, Max = 1800, Value = 1600)
+    RemixAutoML::NumericInput(InputID = "PlotWidth", Label=tags$span(style='color: blue;', 'Plot Width'), Step = 50, Min = 500, Max = 3500, Value = 1600)
   })
+
   if(Debug) print("Here tt")
+
   output$PlotHeight <- shiny::renderUI({
-    RemixAutoML::NumericInput(InputID = "PlotHeight", Label=tags$span(style='color: blue;', 'Plot Height'), Step = 25, Min = 350, Max = 350*10, Value = 500)
+    RemixAutoML::NumericInput(InputID = "PlotHeight", Label=tags$span(style='color: blue;', 'Plot Height'), Step = 25, Min = 300, Max = 3500, Value = 500)
   })
 
   print(':::::::: DATA NULL TESTING 7.1 ::::::::')
@@ -5686,11 +5688,8 @@ server <- function(input, output, session) {
               if(Debug) print(paste0('Class of p1 is :: ', class(p1)))
 
               # Ouput Plot for 1 single plot request
-              if(Debug) {
-                print(PlotWidth)
-                print(PlotHeight)
-              }
-              output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
+              if(Debug) {print(PlotWidth); print(PlotHeight)}
+              output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
                 gridExtra::grid.arrange(p1, ncol=1)
               })
 
@@ -5699,12 +5698,7 @@ server <- function(input, output, session) {
             } else if(N == 2L) {
 
               # Debugging
-              if(Debug) {
-                print('N == 2L case')
-                print(PlotRefs)
-                print(tryCatch({input[['YLimMin1']]}, error = function(x) ""))
-              }
-
+              if(Debug) {print('N == 2L case'); print(PlotRefs); print(tryCatch({input[['YLimMin1']]}, error = function(x) ""))}
               p1 <- PlotCollectionList[[paste0('p', PlotRefs[1L])]]
               p2 <- PlotCollectionList[[paste0('p', PlotRefs[2L])]]
               if(Debug) print(paste0('Class of p1 is :: ', tryCatch({class(p1)}, error = function(x) NULL)))
@@ -5728,11 +5722,11 @@ server <- function(input, output, session) {
 
               # Ouput Plot for 2 plot requests
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
                   gridExtra::grid.arrange(p1,p2, ncol=1)
                 })
               } else {
-                output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
                   gridExtra::grid.arrange(p1,p2, ncol=1)
                 })
               }
@@ -5778,12 +5772,12 @@ server <- function(input, output, session) {
 
               # Ouput Plot for 3 plot requests
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
                   gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
                                                                           c(3, 3)))
                 })
               } else {
-                output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
                   gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
                                                                           c(3, 3)))
                 })
@@ -5839,11 +5833,11 @@ server <- function(input, output, session) {
 
               # Ouput Plot for 4 plot requests
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
                   gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
                 })
               } else {
-                output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
+                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
                   gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
                 })
               }
