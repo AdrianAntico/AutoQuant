@@ -570,11 +570,10 @@ ui <- shinydashboard::dashboardPage(
               shinyWidgets::dropdown(
                 right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
                 tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Global Settings')),
-                # Commented out bc not sure if anyone would use it. I wouldn't
-                # RemixAutoML::BlankRow(AppWidth),
-                # shiny::fluidRow(
-                #   width = AppWidth,
-                #   shiny::column(3L, align='right', shiny::uiOutput('AutoGridHorizontal'))),
+                RemixAutoML::BlankRow(AppWidth),
+                shiny::fluidRow(
+                  width = AppWidth,
+                  shiny::column(3L, align='right', shiny::uiOutput('AutoGridHorizontal'))),
                 RemixAutoML::BlankRow(AppWidth),
                 shiny::fluidRow(width = AppWidth, shiny::column(3L, shiny::uiOutput('PlotHeight'))),
                 RemixAutoML::BlankRow(AppWidth),
