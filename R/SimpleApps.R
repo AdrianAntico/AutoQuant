@@ -21,6 +21,7 @@
 #' @param AppTextColor 'white'
 #' @param Browser FALSE
 #' @param Docker FALSE
+#' @param DockerPathToData bla
 #' @param UserName_Password_DT NULL. In order to enforce authentication, supply a data.table with columns 'UserName' which contains the names of your users and 'Password' which contains the acceptable passwords. E.g. data.table::data.table(UserName = c('Adrian Antico', 'Guest'), Password = c('Password1', 'Password2')). Case sensitivity applies.
 #' @param RunMode = 'package', 'local'
 #' @param Debug FALSE
@@ -94,6 +95,7 @@ AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurew
                          AppTextColor = 'blue',
                          Browser = FALSE,
                          Docker = FALSE,
+                         DockerPathToData = NULL,
                          UserName_Password_DT = NULL,
                          RunMode = 'package',
                          Debug = FALSE) {
@@ -104,6 +106,7 @@ AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurew
   # Pass args to shiny app
   shiny::shinyOptions(
     BlobStorageURL = BlobStorageURL,
+    DockerPathToData = DockerPathToData,
     PlotObjectHome = PlotObjectHome,
     HeaderColor = HeaderColor,
     AppWidth = AppWidth,

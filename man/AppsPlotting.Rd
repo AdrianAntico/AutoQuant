@@ -23,6 +23,7 @@ AppsPlotting(
   AppTextColor = "blue",
   Browser = FALSE,
   Docker = FALSE,
+  DockerPathToData = NULL,
   UserName_Password_DT = NULL,
   RunMode = "package",
   Debug = FALSE
@@ -60,6 +61,8 @@ AppsPlotting(
 \item{Browser}{FALSE}
 
 \item{Docker}{FALSE}
+
+\item{DockerPathToData}{bla}
 
 \item{UserName_Password_DT}{NULL. In order to enforce authentication, supply a data.table with columns 'UserName' which contains the names of your users and 'Password' which contains the acceptable passwords. E.g. data.table::data.table(UserName = c('Adrian Antico', 'Guest'), Password = c('Password1', 'Password2')). Case sensitivity applies.}
 

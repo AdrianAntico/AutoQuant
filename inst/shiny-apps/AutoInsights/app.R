@@ -86,7 +86,7 @@ data <- NULL
 
 # Meta Data related
 BlobStorageURL <- shiny::getShinyOption('BlobStorageURL', default = NULL)
-IFrameLocation <- shiny::getShinyOption('IFrameLocation', default = NULL)
+DockerPathToData <- shiny::getShinyOption('DockerPathToData', default = NULL)
 PlotObjectHome <- shiny::getShinyOption('PlotObjectHome', default = NULL)
 
 # App and Plot related
@@ -1162,12 +1162,12 @@ server <- function(input, output, session) {
       if(Debug) {print('data check 3'); print(input[['blob']])}
       if(!is.null(inFile2)) {
         if(grepl(pattern = '.csv', x = inFile2)) {
-          download.file(url=paste0(BlobStorageURL, inFile2), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
-          data <<- data.table::fread(file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.csv'))
+          curl::curl_download(url = BlobStorageURL, destfile = file.path(DockerPathToData, input[['blob']]))
+          data <<- data.table::fread(file = file.path(DockerPathToData, input$blob, '.csv'))
         } else {
-          download.file(url=paste0(BlobStorageURL, inFile2), destfile = file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.Rdata'))
+          curl::curl_download(url = BlobStorageURL, destfile = file.path(DockerPathToData, input[['blob']]))
           e <- new.env()
-          name <- load(file.path(system.file(package = 'RemixAutoML'), 'tests/CSVs/data.Rdata'), e)
+          name <- load(file.path(DockerPathToData, input$blob, '.Rdata'), e)
           ModelOutputList <<- e[[name]]
         }
       }
