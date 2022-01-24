@@ -12,7 +12,6 @@ body, h1, h2, h3, h4, h5, h6 {
   color: #1b1b1c;
 }
 
-
 /* lime border, gray interior, blue arrow middle */
 .btn-custom {
   background-color: #b5b4c2;
@@ -24,6 +23,13 @@ body, h1, h2, h3, h4, h5, h6 {
   pointer-events: none;
   cursor: default;
 }
+
+
+/* MAIN HEADER COLOR OF ENTIRE APP */
+.skin-blue .main-header .navbar {
+	background-color: #e0d6ff;
+}
+
 
 /* DROPDOWN BOX BACKGROUND COLOR */
 .sw-dropdown-content .animated .sw-show {
@@ -91,67 +97,26 @@ body, h1, h2, h3, h4, h5, h6 {
 }
 
 
-/* TESTING THE SUCCESS POP UPS */
+/* (NOTHING YET) TESTING THE SUCCESS POP UPS */
 .swal2-popup .swal2-modal .swal2-show {
-  background-image: linear-gradient(to top, #ece6ff, #e9e2ff, #e6deff, #e3daff, #e0d6ff);
+  background-color: linear-gradient(to top, #ece6ff, #e9e2ff, #e6deff, #e3daff, #e0d6ff);
 }
+
 
 
 
 
 /*  ???  */
-.skin-blue .main-header .navbar .sidebar-toggle {
-	color: #a2ff00
-}
-
-/* logo */
 .skin-blue .main-header .logo {
   background-color: #a2ff00;
 }
 
-/* logo when hovered */
+/*  ???  */
 .skin-blue .main-header .logo:hover {
   background-color: #a2ff00;
 }
 
-/* navbar (rest of the header) */
-.skin-blue .main-header .navbar {
-  background-color: #a2ff00;
-}
 
-/* main sidebar */
-.skin-blue .main-sidebar {
-  background-color: #a2ff00;
-}
-
-
-
-
-
-
-/* toggle button when hovered  */
-.skin-blue .main-header .navbar .sidebar-toggle:hover{
-  background-color: #6321de;
-}
-
-.skin-blue .main-header .navbar {
-	background-color: #a092fc
-}
-
-.skin-blue .main-header .navbar .nav>li>a {
-	color: #a092fc
-}
-
-.skin-blue .main-header .navbar .nav>li>a:hover,
-.skin-blue .main-header .navbar .nav>li>a:active,
-.skin-blue .main-header .navbar .nav>li>a:focus,
-.skin-blue .main-header .navbar .nav .open>a,
-.skin-blue .main-header .navbar .nav .open>a:hover,
-.skin-blue .main-header .navbar .nav .open>a:focus,
-.skin-blue .main-header .navbar .nav>.active>a {
-	background: rgba(0, 0, 0, 0.1);
-	color: #e2d5f0
-}
 
 .skin-blue .main-header .navbar .sidebar-toggle {
 	color: #fff
