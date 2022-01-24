@@ -1,6 +1,11 @@
 /* Get a fancy font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
 
+/* Enables pages to be blocked without password */
+.inactiveLink {
+  pointer-events: none;
+  cursor: default;
+}
 
 /* Change header text to imported font */
 body, h1, h2, h3, h4, h5, h6 {
@@ -14,20 +19,15 @@ body, h1, h2, h3, h4, h5, h6 {
 
 /* lime border, gray interior, blue arrow middle */
 .btn-custom {
-  background-color: #b5b4c2;
-  border: 3px solid #bbd6fa;
+  background-color: #9f9eba;
+  border: 3px solid #00ff0d;
 }
 
-/* Enables pages to be blocked without password */
-.inactiveLink {
-  pointer-events: none;
-  cursor: default;
-}
 
 
 /* MAIN HEADER COLOR OF ENTIRE APP */
 .skin-blue .main-header .navbar {
-	background-color: #e0d6ff;
+	background-color: #b299ff;
 }
 
 
@@ -53,14 +53,14 @@ body, h1, h2, h3, h4, h5, h6 {
 }
 
 /* THIS IS WHERE YOU CHANGE THE LENGTH OF THE COLOR THAT GOES OVER THE PAGE LABELS ON SIDEBAR */
-/* 210px seems to be the extra long default */
+/* 205px seems to be the extra long default */
 .main-sidebar {
 	position: absolute;
 	top: 0;
 	left: 0;
 	padding-top: 50px;
 	min-height: 100%;
-	width: 210px;
+	width: 205px;
 	z-index: 810;
 	-webkit-transition: -webkit-transform .3s ease-in-out, width .3s ease-in-out;
 	-moz-transition: -moz-transform .3s ease-in-out, width .3s ease-in-out;
@@ -70,7 +70,7 @@ body, h1, h2, h3, h4, h5, h6 {
 
 /* Action Button Formatting */
 .bttn-gradient.bttn-royal {
-  background-image: linear-gradient(to top, #01076e, #20016e, #2b016e)
+  background-image: linear-gradient(to top, #aa73e7, #8766eb, #5d67d1)
 }
 
 /* SIDE PANEL BACKGROUND COLOR */
@@ -6565,7 +6565,7 @@ button.mailbox-attachment-close {
 		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5)
 	}
 	.modal-sm {
-		width: 210px
+		width: 205px
 	}
 }
 
@@ -7459,7 +7459,7 @@ body {
 	-moz-transition: -moz-transform .3s ease-in-out, margin .3s ease-in-out;
 	-o-transition: -o-transform .3s ease-in-out, margin .3s ease-in-out;
 	transition: transform .3s ease-in-out, margin .3s ease-in-out;
-	margin-left: 210px;
+	margin-left: 205px;
 	z-index: 820
 }
 
@@ -7485,10 +7485,10 @@ body {
 @media (max-width: 767px) {
 	.sidebar-open .content-wrapper,
 	.sidebar-open .main-footer {
-		-webkit-transform: translate(210px, 0);
-		-ms-transform: translate(210px, 0);
-		-o-transform: translate(210px, 0);
-		transform: translate(210px, 0)
+		-webkit-transform: translate(205px, 0);
+		-ms-transform: translate(205px, 0);
+		-o-transform: translate(205px, 0);
+		transform: translate(205px, 0)
 	}
 }
 
@@ -7618,7 +7618,7 @@ a:focus {
 	-o-transition: margin-left .3s ease-in-out;
 	transition: margin-left .3s ease-in-out;
 	margin-bottom: 0;
-	margin-left: 210px;
+	margin-left: 205px;
 	border: none;
 	min-height: 50px;
 	border-radius: 0
@@ -7729,7 +7729,7 @@ a:focus {
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
-	width: 210px;
+	width: 205px;
 	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	padding: 0 15px;
 	font-weight: 300;
@@ -7869,19 +7869,19 @@ a:focus {
 
 @media (max-width: 767px) {
 	.main-sidebar {
-		-webkit-transform: translate(-210px, 0);
-		-ms-transform: translate(-210px, 0);
-		-o-transform: translate(-210px, 0);
-		transform: translate(-210px, 0)
+		-webkit-transform: translate(-205px, 0);
+		-ms-transform: translate(-205px, 0);
+		-o-transform: translate(-205px, 0);
+		transform: translate(-205px, 0)
 	}
 }
 
 @media (min-width: 768px) {
 	.sidebar-collapse .main-sidebar {
-		-webkit-transform: translate(-210px, 0);
-		-ms-transform: translate(-210px, 0);
-		-o-transform: translate(-210px, 0);
-		transform: translate(-210px, 0)
+		-webkit-transform: translate(-205px, 0);
+		-ms-transform: translate(-205px, 0);
+		-o-transform: translate(-205px, 0);
+		transform: translate(-205px, 0)
 	}
 }
 
@@ -8152,8 +8152,8 @@ a:focus {
 .control-sidebar-bg,
 .control-sidebar {
 	top: 0;
-	right: -210px;
-	width: 210px;
+	right: -205px;
+	width: 205px;
 	-webkit-transition: right .3s ease-in-out;
 	-o-transition: right .3s ease-in-out;
 	transition: right .3s ease-in-out
@@ -8189,7 +8189,7 @@ a:focus {
 	.control-sidebar-open .content-wrapper,
 	.control-sidebar-open .right-side,
 	.control-sidebar-open .main-footer {
-		margin-right: 210px
+		margin-right: 205px
 	}
 }
 
@@ -8614,7 +8614,7 @@ a:focus {
 }
 
 .navbar-nav>.user-menu>.dropdown-menu>li.user-header {
-	height: 210px;
+	height: 205px;
 	padding: 10px;
 	text-align: center
 }
@@ -8720,45 +8720,45 @@ a:focus {
 
 @keyframes flipInX {
 	0% {
-		transform: perspective(210px) rotate3d(1, 0, 0, 90deg);
+		transform: perspective(205px) rotate3d(1, 0, 0, 90deg);
 		transition-timing-function: ease-in;
 		opacity: 0
 	}
 	40% {
-		transform: perspective(210px) rotate3d(1, 0, 0, -20deg);
+		transform: perspective(205px) rotate3d(1, 0, 0, -20deg);
 		transition-timing-function: ease-in
 	}
 	60% {
-		transform: perspective(210px) rotate3d(1, 0, 0, 10deg);
+		transform: perspective(205px) rotate3d(1, 0, 0, 10deg);
 		opacity: 1
 	}
 	80% {
-		transform: perspective(210px) rotate3d(1, 0, 0, -5deg)
+		transform: perspective(205px) rotate3d(1, 0, 0, -5deg)
 	}
 	100% {
-		transform: perspective(210px)
+		transform: perspective(205px)
 	}
 }
 
 @-webkit-keyframes flipInX {
 	0% {
-		-webkit-transform: perspective(210px) rotate3d(1, 0, 0, 90deg);
+		-webkit-transform: perspective(205px) rotate3d(1, 0, 0, 90deg);
 		-webkit-transition-timing-function: ease-in;
 		opacity: 0
 	}
 	40% {
-		-webkit-transform: perspective(210px) rotate3d(1, 0, 0, -20deg);
+		-webkit-transform: perspective(205px) rotate3d(1, 0, 0, -20deg);
 		-webkit-transition-timing-function: ease-in
 	}
 	60% {
-		-webkit-transform: perspective(210px) rotate3d(1, 0, 0, 10deg);
+		-webkit-transform: perspective(205px) rotate3d(1, 0, 0, 10deg);
 		opacity: 1
 	}
 	80% {
-		-webkit-transform: perspective(210px) rotate3d(1, 0, 0, -5deg)
+		-webkit-transform: perspective(205px) rotate3d(1, 0, 0, -5deg)
 	}
 	100% {
-		-webkit-transform: perspective(210px)
+		-webkit-transform: perspective(205px)
 	}
 }
 
@@ -9176,7 +9176,7 @@ a:focus {
 }
 
 .box.height-control .box-body {
-	max-height: 210px;
+	max-height: 205px;
 	overflow: auto
 }
 
@@ -11003,7 +11003,7 @@ table.text-center th {
 }
 
 .lockscreen-wrapper {
-	max-width: 210px;
+	max-width: 205px;
 	margin: 0 auto;
 	margin-top: 10%
 }
@@ -11137,7 +11137,7 @@ table.text-center th {
 }
 
 .error-page>.error-content {
-	margin-left: 190px;
+	margin-left: 205px;
 	display: block
 }
 
