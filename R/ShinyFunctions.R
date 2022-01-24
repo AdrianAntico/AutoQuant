@@ -1613,6 +1613,7 @@ SelectizeInput <- function(InputID = "",
   Options <- list()
   Options[['allowEmptyOption']] <- TRUE
   Options[['maxItems']] <- MaxVars
+  Options[['maxOptions']] <- MaxVars
   Options[['closeAfterSelect']] <- CloseAfterSelect
 
   return(
