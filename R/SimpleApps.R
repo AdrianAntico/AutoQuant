@@ -123,7 +123,7 @@ AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurew
     Debug = Debug)
 
   # Run shiny app
-  if(RunMode == 'pacakge') {
+  if(RunMode == 'package') {
     if(!Docker) {
       shiny::shinyAppDir(appDir = system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'))
     } else {
