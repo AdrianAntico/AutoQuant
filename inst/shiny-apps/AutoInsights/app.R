@@ -1,10 +1,11 @@
+options(shiny.maxRequestSize = 250000*1024^2)
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 StartEnv <- as.list(environment())
 library(data.table)
 data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
-options(shiny.maxRequestSize = 100000000*1024^2)
 options(scipen = 999)
 
 PlotNamesLookup <- list()
