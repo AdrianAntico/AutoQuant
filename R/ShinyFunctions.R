@@ -225,7 +225,7 @@ ExpandText <- function(x) {
 #'
 #' @noRd
 VarNamesDisplay <- function(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=NULL) {
-  if(any(c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram') %in% PlotName)) {
+  if(any(c('Box','BoxPlot','ViolinPlot','Violin','Line','Bar','BarPlot','Scatter','Copula','CorrMatrix','Histogram','Hist') %in% PlotName)) {
     return(DataNames)
   } else {
     return(ModelDataNames)
@@ -411,7 +411,7 @@ textInput3<-function (inputId, label, value = "", ...) {
 
 #' @noRd
 AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL) {
-  if(!length(x)) {
+  if(length(x) == 0) {
     x <- NULL
   } else {
     for(i in seq_along(x)) x[i] <- PlotNamesLookup[[x[i]]]

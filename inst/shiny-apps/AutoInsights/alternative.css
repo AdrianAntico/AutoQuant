@@ -18,13 +18,18 @@ body, h1, h2, h3, h4, h5, h6 {
 
 
 
-
+.sw-dropdown-content .animated .sw-show {
+  background-image: linear-gradient(to top, #8fbfff, #716dfc, #4a44fc);
+  border: #020085;
+  border-style: solid;
+  color: #020085;
+}
 
 
 
 /* logo */
 .skin-blue .main-header .logo {
-  background-color: #f4b943;
+  background-image: linear-gradient(to top, #8fbfff, #716dfc, #4a44fc)
 }
 
 /* logo when hovered */

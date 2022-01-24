@@ -1,3 +1,17 @@
+#' @noRd
+BlankPlot <- function() {
+  `Y Axis` <- rnorm(20)
+  `X Axis` <- rnorm(20,1,0.5)
+  df <- data.frame(`X Axis`,`Y Axis`)
+  return(
+    eval(ggplot2::ggplot(df, ggplot2::aes(`X Axis`,`Y Axis`)) +
+           ggplot2::geom_blank() +
+           RemixAutoML::ChartTheme(ChartColor = 'aliceblue', GridColor = 'lightsteelblue1', BorderColor = 'lightsteelblue2') +
+           ggplot2::labs(title = 'Title', subtitle = 'Subtitle', caption = 'RemixAutoML'))
+
+  )
+}
+
 #' @title AddFacet
 #'
 #' @description Add up to two facet variables for plots
@@ -217,7 +231,7 @@ CorrMatrixPlotBase <- function(x,
       shape = 21,
       ggplot2::aes_string(size = "abs_corr")) +
       ggplot2::scale_size(range = c(4,10)) +
-      ggplot2::guides(size = FALSE)
+      ggplot2::guides(size = 'none')
   }
 
   p <- p + ggplot2::scale_fill_gradient2(
