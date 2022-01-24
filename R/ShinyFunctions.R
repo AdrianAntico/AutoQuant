@@ -1607,7 +1607,7 @@ SelectizeInput <- function(InputID = "",
                            Choices = NULL,
                            SelectedDefault = NULL,
                            Multiple = TRUE,
-                           MaxVars = NULL,
+                           MaxVars = 5000,
                            CloseAfterSelect = FALSE,
                            Debug = FALSE) {
   Options <- list()
