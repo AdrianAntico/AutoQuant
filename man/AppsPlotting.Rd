@@ -6,9 +6,8 @@
 \usage{
 AppsPlotting(
   BlobStorageURL = NULL,
-  IFrameLocation = NULL,
   PlotObjectHome = NULL,
-  HeaderColor = "puple",
+  HeaderColor = "blue",
   AppWidth = 8L,
   LogoWidth = "750px",
   LogoHeight = "100px",
@@ -31,8 +30,6 @@ AppsPlotting(
 }
 \arguments{
 \item{BlobStorageURL}{is the URL path that leads up to the file name. E.g. 'http://localhost:5000/BlobFiles/ViewFile?name='}
-
-\item{IFrameLocation}{Browser location}
 
 \item{PlotObjectHome}{NULL}
 
@@ -82,7 +79,6 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 # Run App
 # RemixAutoML::AppsPlotting(
 #   BlobStorageURL = NULL,
-#   IFrameLocation = NULL,
 #   PlotObjectHome = NULL,
 #   HeaderColor = 'black',
 #   AppWidth = 12L,

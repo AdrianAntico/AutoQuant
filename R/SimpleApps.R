@@ -6,7 +6,6 @@
 #' @family GUI
 #'
 #' @param BlobStorageURL is the URL path that leads up to the file name. E.g. 'http://localhost:5000/BlobFiles/ViewFile?name='
-#' @param IFrameLocation Browser location
 #' @param PlotObjectHome NULL
 #' @param HeaderColor 'black', 'blue', 'purple', 'green', 'red', 'yellow'
 #' @param AppWidth Width of boxes
@@ -35,7 +34,6 @@
 #' # Run App
 #' # RemixAutoML::AppsPlotting(
 #' #   BlobStorageURL = NULL,
-#' #   IFrameLocation = NULL,
 #' #   PlotObjectHome = NULL,
 #' #   HeaderColor = 'black',
 #' #   AppWidth = 12L,
@@ -79,9 +77,8 @@
 #'
 #' @export
 AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=',
-                         IFrameLocation = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles', #'http://127.0.0.1:5000/BlobFiles',
                          PlotObjectHome = NULL,
-                         HeaderColor = 'puple',
+                         HeaderColor = 'blue',
                          AppWidth = 8L,
                          LogoWidth = '750px',
                          LogoHeight = '100px',
@@ -107,7 +104,6 @@ AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurew
   # Pass args to shiny app
   shiny::shinyOptions(
     BlobStorageURL = BlobStorageURL,
-    IFrameLocation = IFrameLocation,
     PlotObjectHome = PlotObjectHome,
     HeaderColor = HeaderColor,
     AppWidth = AppWidth,
