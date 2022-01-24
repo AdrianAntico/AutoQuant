@@ -1195,7 +1195,9 @@ server <- function(input, output, session) {
     # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
     output$Plot1 <- shiny::renderUI({
       if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+      if(Debug) {print(bla)}
       x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup)
+      if(Debug) {print('Plot1 Charts Available'); print(x)}
       RemixAutoML::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = FALSE)
     })
     output$Plot2 <- shiny::renderUI({
@@ -3096,7 +3098,9 @@ server <- function(input, output, session) {
 
   output$Plot1 <- shiny::renderUI({
     if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+    if(Debug) {print(bla)}
     x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup)
+    if(Debug) {print('Plot1 Charts Available 2nd plot section'); print(x)}
     RemixAutoML::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
   })
 
