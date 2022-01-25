@@ -194,15 +194,29 @@ textInput3<-function (inputId, label, value = "", ...) {
 }
 
 #' @noRd
-AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL) {
+AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = NULL) {
+  if(Debug) {
+    print('AvailableAppInsightsPlots Start')
+    print('ModelOutputListNames below')
+    print(x)
+  }
+
   if(length(x) == 0) {
+    if(Debug) print('aaip here 1')
     x <- NULL
   } else {
+    if(Debug) print('aaip here 2')
     for(i in seq_along(x)) x[i] <- PlotNamesLookup[[x[i]]]
     x[length(x)+1L] <- 'ShapleyVarImp'
+    if(Debug) print('aaip here 3')
+    if(Debug) print(x)
   }
   StandardPlots <- c('Histogram','BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix')
+  if(Debug) print('StandardPlots below')
+  if(Debug) print(StandardPlots)
   for(i in seq_along(StandardPlots)) StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
+  if(Debug) print('Return output below')
+  if(Debug) print(c(StandardPlots, x))
   return(c(StandardPlots, x))
 }
 
