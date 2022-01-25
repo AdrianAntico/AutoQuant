@@ -1442,18 +1442,18 @@ SelectizeInput <- function(InputID = "",
                            Debug = FALSE) {
   Options <- list()
   Options[['allowEmptyOption']] <- TRUE
-  Options[['maxItems']] <- MaxVars
-  Options[['maxOptions']] <- MaxVars
+  if(Multiple) Options[['maxItems']] <- MaxVars else Options[['maxItems']] <- 1
+  #if(Multiple) Options[['maxOptions']] <- 5000 else Options[['maxOptions']] <- MaxVars
   Options[['closeAfterSelect']] <- CloseAfterSelect
 
   return(
     if(exists("ProjectList")) {
       tryCatch({
         if(!is.null(ProjectList[[InputID]])) {
-          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c("", Choices))), selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
+          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
         } else {
-          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c("", Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)
-        }}, error = function(x) shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c("", Choices))), selected = SelectedDefault, options = Options, multiple = Multiple))
+          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)
+        }}, error = function(x) shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple))
     } else {
       if(Debug) {
         print(InputID)
@@ -1464,7 +1464,7 @@ SelectizeInput <- function(InputID = "",
         print(Multiple)
       }
       tryCatch({
-        shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c("", Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)},
+        shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(Choices)), selected = SelectedDefault, options = Options, multiple = Multiple)},
         error = function(x) {
           shiny::selectizeInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
         })
