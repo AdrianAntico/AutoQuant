@@ -288,7 +288,7 @@ AutoXGBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots'
     PlotList[["Test_GainsPlot"]] <- Output$GainsPlot; Output$GainsPlot <- NULL
     PlotList[["Test_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
     PlotList[["Test_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
-    if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[["VariableImportance"]][['Train_Importance']] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[["VariableImportance"]][['Train_Importance']] <- VI_Plot(Type = "xgboost", VariableImportance)
+    if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[['Train_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[['Train_VariableImportance']] <- VI_Plot(Type = "xgboost", VariableImportance)
   }
 
   # Send output to pdf ----

@@ -8,6 +8,7 @@ library(data.table)
 data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
 options(scipen = 999)
 
+# For dragula naming - convert to display, convert back to utilize
 PlotNamesLookup <- list()
 PlotNamesLookup[['Test_EvaluationPlot']] <- c('CalibrationPlot_Test')
 PlotNamesLookup[['Train_EvaluationPlot']] <- c('Calibration_Train')

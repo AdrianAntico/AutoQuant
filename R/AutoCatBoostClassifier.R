@@ -341,7 +341,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
     PlotList[['Test_GainsPlot']] <- Output$GainsPlot; Output$GainsPlot <- NULL
     PlotList[['Test_LiftPlot']] <- Output$LiftPlot; Output$LiftPlot <- NULL
     PlotList[['Test_ROC_Plot']] <- Output$ROC_Plot; rm(Output)
-    if(!is.null(VariableImportance[['Test_Importance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])) else if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_Importance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])
+    if(!is.null(VariableImportance[['Test_VariableImportance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])) else if(!is.null(VariableImportance[['Test_VariableImportance']])) PlotList[['Test_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])
   }
 
   # Remove extenal files if GridTune is TRUE ----

@@ -374,7 +374,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
         data.table::set(TrainData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
       }
     }
-    if(!is.null(VariableImportance[['Test_Importance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])) else if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_Importance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])
+    if(!is.null(VariableImportance[['Test_VariableImportance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])) else if(!is.null(VariableImportance[['Test_VariableImportance']])) PlotList[['Test_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])
     for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
       ValidationData[, p1 := get(tarlevel)]
       ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]

@@ -360,7 +360,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
     PlotList[['Test_ResidualTime']] <- Output$ResidualTime; Output$ResidualTime <- NULL
     PlotList[['Test_ScatterPlot']] <- Output$ScatterPlot; Output$ScatterPlot <- NULL
     PlotList[['Test_CopulaPlot']] <- Output$CopulaPlot; rm(Output)
-    if(!is.null(VariableImportance[['Test_Importance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])) else if(!is.null(VariableImportance[['Test_Importance']])) PlotList[['Test_Importance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_Importance']])
+    if(!is.null(VariableImportance[['Test_VariableImportance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])) else if(!is.null(VariableImportance[['Test_VariableImportance']])) PlotList[['Test_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])
   }
 
   # Subset Transformation Object ----
