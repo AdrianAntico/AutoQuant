@@ -1161,14 +1161,12 @@ server <- function(input, output, session) {
     if(length(inFile2) != 0 && inFile2 != "Load" && inFile2 != "") {
       if(Debug) {print('data check 3'); print(input[['blob']])}
       if(!is.null(inFile2)) {
-        if(grepl(pattern = '.csv', x = inFile2)) {
-          system(paste0("curl ", shQuote(BlobStorageURL), " --output ", file.path(DockerPathToData, paste0(input[['blob']], ".csv"))))
-          curl::curl_download(url = BlobStorageURL, destfile = file.path(DockerPathToData, input[['blob']]))
+        system(paste0("curl ", shQuote(paste0(BlobStorageURL, '/', input[['blob']])), " --output ", file.path(DockerPathToData, input[['blob']])))
+        if(grepl(pattern = '.csv', x = input[['blob']])) {
           data <<- data.table::fread(file = file.path(DockerPathToData, input$blob, '.csv'))
         } else {
-          system(paste0("curl ", shQuote(BlobStorageURL), " --output ", file.path(DockerPathToData, paste0(input[['blob']], ".Rdata"))))
           e <- new.env()
-          name <- load(file.path(DockerPathToData, input$blob, '.Rdata'), e)
+          name <- load(file.path(DockerPathToData, input[['blob']]), e)
           ModelOutputList <<- e[[name]]
         }
       }
