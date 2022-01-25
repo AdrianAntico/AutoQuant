@@ -215,12 +215,11 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = N
     }
     for(i in seq_along(x)) {
       if(Debug) {
-        print(x[i])
-        print(PlotNamesLookup[[x[i]]])
+        paste0(print(x[i]), "   x ::: PNL   ", PlotNamesLookup[[eval(x[i])]])
       }
-      x[i] <- PlotNamesLookup[[x[i]]]
+      x[i] <- PlotNamesLookup[[eval(x[i])]]
     }
-    x[length(x)+1L] <- 'ShapleyVarImp'
+    x <- c(x, 'ShapleyVarImp')
     if(Debug) print('aaip here 3')
     if(Debug) print(x)
   }
