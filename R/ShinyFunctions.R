@@ -207,9 +207,11 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = N
   } else {
     if(Debug) print('aaip here 2')
     if(Debug) {
+      print('PlotNamesLookup :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
       print(PlotNamesLookup)
+      print('names(PlotNamesLookup) :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
       print(names(PlotNamesLookup))
-      print('First for loop now')
+      print('First for loop now ::::::::::::::::::::::::::::::::::::::::::')
     }
     for(i in seq_along(x)) {
       if(Debug) {
@@ -225,6 +227,7 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = N
   StandardPlots <- c('Histogram','BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix')
   if(Debug) print('StandardPlots below')
   if(Debug) print(StandardPlots)
+  if(Debug) print('Second for loop now ::::::::::::::::::::::::::::::::::::::::::')
   for(i in seq_along(StandardPlots)) {
     if(Debug) {
       print(StandardPlots[i])
