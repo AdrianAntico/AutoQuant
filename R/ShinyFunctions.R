@@ -206,7 +206,11 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = N
     x <- NULL
   } else {
     if(Debug) print('aaip here 2')
-    if(Debug) {print(PlotNamesLookup); print(names(PlotNamesLookup))}
+    if(Debug) {
+      print(PlotNamesLookup)
+      print(names(PlotNamesLookup))
+      print('First for loop now')
+    }
     for(i in seq_along(x)) {
       if(Debug) {
         print(x[i])
