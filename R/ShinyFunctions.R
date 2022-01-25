@@ -215,7 +215,13 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = N
   StandardPlots <- c('Histogram','BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix')
   if(Debug) print('StandardPlots below')
   if(Debug) print(StandardPlots)
-  for(i in seq_along(StandardPlots)) StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
+  for(i in seq_along(StandardPlots)) {
+    if(Debug) {
+      print(StandardPlots[i])
+      print(PlotNamesLookup[[StandardPlots[i]]])
+    }
+    StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
+  }
   if(Debug) print('Return output below')
   if(Debug) print(c(StandardPlots, x))
   return(c(StandardPlots, x))
