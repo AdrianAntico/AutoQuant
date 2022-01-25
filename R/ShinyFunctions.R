@@ -215,7 +215,7 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = N
     }
     for(i in seq_along(x)) {
       if(Debug) {
-        paste0(print(x[i]), "   x ::: PNL   ", PlotNamesLookup[[eval(x[i])]])
+        print(paste0(x[i], "   x ::: PNL   ", PlotNamesLookup[[eval(x[i])]]))
       }
       x[i] <- PlotNamesLookup[[eval(x[i])]]
     }
@@ -229,8 +229,7 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = N
   if(Debug) print('Second for loop now ::::::::::::::::::::::::::::::::::::::::::')
   for(i in seq_along(StandardPlots)) {
     if(Debug) {
-      print(StandardPlots[i])
-      print(PlotNamesLookup[[StandardPlots[i]]])
+      print(paste0(StandardPlots[i], "      standard plots :::  PNL    ", PlotNamesLookup[[StandardPlots[i]]]))
     }
     StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
   }
