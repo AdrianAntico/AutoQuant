@@ -23,6 +23,8 @@ FilterLogicData(
 \item{FilterValue}{passthrough}
 
 \item{FilterValue2}{passthrough}
+
+\item{Debug}{passthrough}
 }
 \description{
 FilterLogicData

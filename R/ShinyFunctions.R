@@ -194,7 +194,7 @@ textInput3<-function (inputId, label, value = "", ...) {
 }
 
 #' @noRd
-AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = NULL) {
+AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = FALSE) {
   if(Debug) {
     print('AvailableAppInsightsPlots Start')
     print('ModelOutputListNames below')
@@ -556,6 +556,7 @@ FilterValues <- function(data, VarName = NULL, type = 1) {
 #' @param FilterVariable passthrough
 #' @param FilterValue passthrough
 #' @param FilterValue2 passthrough
+#' @param Debug passthrough
 #'
 #' @export
 FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
@@ -574,16 +575,29 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
 
   if(length(FilterVariable) != 0 && FilterVariable %in% names(data1)) {
     if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')) || FilterLogic %in% c('%in%', '%chin%', '%like')) {
-      if(Debug) print('FilterLogicData else if 1')
-      if(Debug) print(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')))
+
+      # Debug
+      if(Debug) {
+        print('FilterLogicData else if 1')
+        print(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('factor', 'character')))
+      }
+
+      # Factor & Character Subsetting
       if(FilterLogic %in% c('%in%','%chin%')) {
         data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
       } else if(FilterLogic == '%like%') {
         data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
       }
+
     } else if(any(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))) {
-      if(Debug) print('FilterLogicData else if 2')
-      if(Debug) print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))
+
+      # Debug
+      if(Debug) {
+        print('FilterLogicData else if 2')
+        print(tolower(class(data1[[eval(FilterVariable)]])) %chin% c('numeric', 'integer', 'date', 'posix'))
+      }
+
+      # Other types
       if(FilterLogic == '>') {
         data1 <- data1[get(FilterVariable) > eval(FilterValue)]
       } else if(FilterLogic == '>=') {

@@ -2057,177 +2057,177 @@ server <- function(input, output, session) {
 
     # Filter Variables
     output$FilterVariable_1_1 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+        ModelVars <- names(data)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(ModelData)
       }
-      shiny::selectInput(inputId='FilterVariable_1_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_1_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here nnnnn")
 
     output$FilterVariable_1_2 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_1_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_1_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here ooooo")
 
     output$FilterVariable_1_3 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_1_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_1_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here ppppp")
 
     output$FilterVariable_1_4 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_1_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_1_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here qqqqq")
 
     output$FilterVariable_2_1 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot2_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_2_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_2_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here rrrrr")
 
     output$FilterVariable_2_2 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot2_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_2_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_2_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here sssss")
 
     output$FilterVariable_2_3 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot2_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_2_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_2_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here ttttt")
 
     output$FilterVariable_2_4 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot2_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_2_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_2_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here uuuuu")
 
     output$FilterVariable_3_1 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot3_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_3_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_3_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here vvvvv")
 
     output$FilterVariable_3_2 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot3_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_3_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_3_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here wwwww")
 
     output$FilterVariable_3_3 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot3_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_3_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_3_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here xxxxx")
 
     output$FilterVariable_3_4 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot3_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_3_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_3_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here yyyyy")
 
     output$FilterVariable_4_1 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot4_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_4_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_4_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here zzzzz")
 
     output$FilterVariable_4_2 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot4_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_4_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_4_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here aaaaaa")
 
     output$FilterVariable_4_3 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot4_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_4_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_4_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c(ModelVars), selected='None')
     })
 
     if(Debug) print("Here bbbbbb")
 
     output$FilterVariable_4_4 <- shiny::renderUI({
-      if(!is.null(ModelData)) {
-        ModelVars <- paste0('ModelVar-', names(ModelData))
+      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot4_react()}, error = function(x) NULL))) {
+        ModelVars <- names(ModelData)
       } else {
-        ModelVars <- NULL
+        ModelVars <- names(data)
       }
-      shiny::selectInput(inputId='FilterVariable_4_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data), ModelVars), selected='None')
+      shiny::selectInput(inputId='FilterVariable_4_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c(ModelVars), selected='None')
     })
 
     # Reactives References
@@ -3846,12 +3846,12 @@ server <- function(input, output, session) {
 
   # Filter Variables
   output$FilterVariable_1_1 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot1']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_1_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_1_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c(ModelVars), selected='None')
   })
 
   print(':::::::: DATA NULL TESTING 12 ::::::::')
@@ -3860,166 +3860,166 @@ server <- function(input, output, session) {
   if(Debug) print("Here nnnnn")
 
   output$FilterVariable_1_2 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot1']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_1_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_1_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here ooooo")
 
   output$FilterVariable_1_3 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot1']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_1_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_1_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here ppppp")
 
   output$FilterVariable_1_4 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot1']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_1_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_1_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here qqqqq")
 
   output$FilterVariable_2_1 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot2']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_2_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_2_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here rrrrr")
 
   output$FilterVariable_2_2 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot2']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_2_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_2_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here sssss")
 
   output$FilterVariable_2_3 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot2']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_2_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_2_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c( ModelVars), selected='None')
   })
 
   if(Debug) print("Here ttttt")
 
   output$FilterVariable_2_4 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot2']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_2_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_2_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here uuuuu")
 
   output$FilterVariable_3_1 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot3']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_3_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_3_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here vvvvv")
 
   output$FilterVariable_3_2 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot3']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_3_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_3_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here wwwww")
 
   output$FilterVariable_3_3 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot3']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_3_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_3_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here xxxxx")
 
   output$FilterVariable_3_4 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot3']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_3_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_3_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here yyyyy")
 
   output$FilterVariable_4_1 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot4']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_4_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_4_1', label = tags$span(style='color: blue;', 'Filter Variable 1'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here zzzzz")
 
   output$FilterVariable_4_2 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot4']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_4_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_4_2', label = tags$span(style='color: blue;', 'Filter Variable 2'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here aaaaaa")
 
   output$FilterVariable_4_3 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot4']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_4_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_4_3', label = tags$span(style='color: blue;', 'Filter Variable 3'), choices=c(ModelVars), selected='None')
   })
 
   if(Debug) print("Here bbbbbb")
 
   output$FilterVariable_4_4 <- shiny::renderUI({
-    if(!is.null(ModelData)) {
-      ModelVars <- paste0('ModelVar-', names(ModelData))
+    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot4']]}, error = function(x) NULL))) {
+      ModelVars <- names(ModelData)
     } else {
-      ModelVars <- NULL
+      ModelVars <- names(data)
     }
-    shiny::selectInput(inputId='FilterVariable_4_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c('None', names(data), ModelVars), selected='None')
+    shiny::selectInput(inputId='FilterVariable_4_4', label = tags$span(style='color: blue;', 'Filter Variable 4'), choices=c(ModelVars), selected='None')
   })
 
   # Reactives References
@@ -4914,10 +4914,14 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['SizeVars']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('SizeVars', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FacetVar1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FacetVar1', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FacetVar2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FacetVar2', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
+
+
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar3']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_3')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar4']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_4')]]}, error=function(x) NULL), Type='character', Default=NULL)
+
+
       PlotObjectHome[[paste0('Plot_', run)]][['FilterLogic1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterLogic_',run, '_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterLogic2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterLogic_',run, '_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterLogic3']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterLogic_',run, '_3')]]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -5068,11 +5072,19 @@ server <- function(input, output, session) {
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
       # Convert back to original plottype name
-      if(Debug) {
-        #print(PlotNamesLookup)
-        print(PlotType)
-      }
+      if(Debug) {print(PlotType)}
       PlotType <- PlotNamesLookup[[eval(PlotType)]]
+
+      # For PDP's
+      if(PlotType %in% names(ModelOutputList$PlotList)) {
+        if('p1' %in% names(ModelData)) {
+          ScoreVar <- 'p1'
+        } else {
+          ScoreVar <- 'Predict'
+        }
+      } else {
+        ScoreVar <- NULL
+      }
 
       # X & Y Variable Checks
       baseplot <- PlotType %in% c('Scatter','Copula','Line','Bar','BoxPlot','ViolinPlot','Histogram')
@@ -5316,12 +5328,13 @@ server <- function(input, output, session) {
           for(i in seq_len(4L)) {
             if(length(eval(parse(text = paste0('FilterVar', i)))) != 0L) {
               data1 <- RemixAutoML::FilterLogicData(
+                data1,
                 FilterLogic    = get(paste0('FilterLogic', i)),
-                FilterVariable = get(paste0('FilterVar', i)),
+                FilterVariable = get(paste0('FilterVar', i)), # Replaces ModelVar- with "" and returns normally if it isn't there
                 FilterValue    = get(paste0('FilterValue_',i,'_1')),
                 FilterValue2   = get(paste0('FilterValue_',i,'_2')),
                 Debug          = Debug)
-              CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(get(paste0('FilterLogic',i))),", FilterVariable=", RemixAutoML:::CEP(get(paste0('FilterVariable',i))),", FilterValue=", RemixAutoML:::CEP(get(paste0('FilterValue_',i,'_1'))),", FilterValue2=", RemixAutoML:::CEP(get(paste0('FilterValue_',i,'_2'))),"))")
+              CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(get(paste0('FilterLogic',i))),", FilterVariable=", RemixAutoML:::CEP(get(paste0('FilterVar',i))),", FilterValue=", RemixAutoML:::CEP(get(paste0('FilterValue_',i,'_1'))),", FilterValue2=", RemixAutoML:::CEP(get(paste0('FilterValue_',i,'_2'))),"))")
             }
           }
 
@@ -5400,7 +5413,7 @@ server <- function(input, output, session) {
         # Logic Checks
         x1 <- length(ScoreVar) != 0; if(Debug) print(x1)
         if(Debug) print('Here 27a')
-        x2 <- PDP_Variable %in% names(data1); if(Debug) print(PDP_Variable %in% names(data1))
+        x2 <- XVar %in% names(data1); if(Debug) print(XVar %in% names(data1))
         if(Debug) print('Here 27b')
         x3 <- Percentile_Buckets != 20; if(Debug) print(Percentile_Buckets != 20)
         if(Debug) print('Here 27c')
@@ -5542,7 +5555,7 @@ server <- function(input, output, session) {
 
           # Debugging
           if(Debug) {
-            print(paste0('PDPVar = ', RemixAutoML:::CEP(PDP_Variable)))
+            print(paste0('PDPVar = ', RemixAutoML:::CEP(YVar)))
             print(class(ModelOutputList))
             print(names(ModelOutputList$PlotList))
           }
@@ -5554,7 +5567,7 @@ server <- function(input, output, session) {
             PlotType = PlotType,
             TargetVar = YVar,
             PredictVar = ScoreVar,
-            PDPVar = PDP_Variable,
+            PDPVar = XVar,
             DateVar = NULL,
             FacetVar1 = NULL, # facetvar1,
             FacetVar2 = NULL, # facetvar2,
@@ -5568,14 +5581,14 @@ server <- function(input, output, session) {
             print(ShapAgg)
             print('You are right here and now 1')
             print(class(PlotCollectionList[[paste0('p', run)]]))
-            print(PDP_Variable)
+            print(YVar)
             print(names(ModelOutputList$PlotList$Test_ParDepPlots)[1L])
             print('AppModelInsights finished building. Code Collection next')
             print(length(YVar))
             print(RemixAutoML:::CEP(YVar))
             print(paste0("TargetVar=", if(length(YVar) != 0) RemixAutoML:::CEP(YVar) else 'NULL'))
             print(paste0("PredictVar=", if(length(ScoreVar) != 0) RemixAutoML:::CEP(ScoreVar) else 'NULL'))
-            print(paste0("PDPVar=", PDP_Variable))
+            print(paste0("PDPVar=", XVar))
             print(paste0("GamFit=", RemixAutoML:::CEPP(GamFitScatter)))
             print(paste0("Buckets=", RemixAutoML:::CEP(Percentile_Buckets)))
             print(paste0("Rebuild=", Rebuild))
@@ -5587,7 +5600,7 @@ server <- function(input, output, session) {
             ", ModelOutputList=ModelOutputList",
             ", TargetVar=", RemixAutoML:::CEP(YVar),
             ", PredictVar=", RemixAutoML:::CEP(ScoreVar),
-            ", PDPVar=", RemixAutoML:::CEP(PDP_Variable),
+            ", PDPVar=", RemixAutoML:::CEP(XVar),
             ", FacetVar1 = ", if(PlotType %in% 'S__hapleyVarImp') RemixAutoML:::CEP(FacetVar1) else "NULL",
             ", FacetVar2 = ", if(PlotType %in% 'S__hapleyVarImp') RemixAutoML:::CEP(FacetVar2) else "NULL",
             ", GamFit=", RemixAutoML:::CEPP(GamFitScatter),
