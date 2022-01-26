@@ -5,7 +5,7 @@
 \title{AppsPlotting}
 \usage{
 AppsPlotting(
-  BlobStorageURL = NULL,
+  AzureCredsFile = NULL,
   PlotObjectHome = NULL,
   HeaderColor = "blue",
   AppWidth = 8L,
@@ -30,7 +30,7 @@ AppsPlotting(
 )
 }
 \arguments{
-\item{BlobStorageURL}{is the URL path that leads up to the file name. E.g. 'http://localhost:5000/BlobFiles/ViewFile?name='}
+\item{AzureCredsFile}{Path to your credentials file}
 
 \item{PlotObjectHome}{NULL}
 
@@ -81,7 +81,6 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 
 # Run App
 # RemixAutoML::AppsPlotting(
-#   BlobStorageURL = NULL,
 #   PlotObjectHome = NULL,
 #   HeaderColor = 'black',
 #   AppWidth = 12L,

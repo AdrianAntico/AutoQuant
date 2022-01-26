@@ -1,5 +1,16 @@
 options(shiny.maxRequestSize = 250000*1024^2)
 library(curl)
+
+
+# key <- data.table::data.table(
+#   Account = c('StorageAccount',
+#         'Container',
+#         'Key'),
+#   Values = c('rshinyapps',
+#         "blobstorage",
+#         "7Zg4GFJVkaOH9tD6fvPqVJ3ITesM7o9FqrSSRNVjZIIbFws/HF5dTZOOxxhhJOHocijqFoU3jNkjfhXYHx680A=="))
+
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -91,6 +102,7 @@ DockerPathToData <- shiny::getShinyOption('DockerPathToData', default = NULL)
 PlotObjectHome <- shiny::getShinyOption('PlotObjectHome', default = NULL)
 
 # App and Plot related
+AzureCredsFile <- shiny::getShinyOption('AzureCredsFile')
 HeaderColor <- shiny::getShinyOption('HeaderColor')
 AppWidth <- shiny::getShinyOption('AppWidth')
 LogoWidth <- shiny::getShinyOption('LogoWidth')
@@ -106,6 +118,24 @@ H4Color <- shiny::getShinyOption('H4Color')
 H3Color <- shiny::getShinyOption('H3Color')
 AppTextColor <- shiny::getShinyOption('AppTextColor')
 Debug <- shiny::getShinyOption('Debug')
+
+# Load credentials
+if(!is.null(AzureCredsFile)) {
+
+  # Load creds
+  creds <- data.table::fread(file = file.path(AzureCredsFile))
+
+  # Define values
+  StorageAccount <- creds[Account == 'StorageAccount', Values]
+  Container <- creds[Account == 'Container', Values]
+  Key <- creds[Account == 'Key', Values]
+} else {
+
+  # Define values
+  StorageAccount <- NULL
+  Container <- NULL
+  Key <- NULL
+}
 
 PlotWidth <- 1500
 PlotHeight <- 550
@@ -290,20 +320,24 @@ ui <- shinydashboard::dashboardPage(
         # Box ----
         shinydashboard::box(
           title = NULL, width=AppWidth, solidHeader=TRUE, status = 'danger',
+
+          # Local CSV
           RemixAutoML::BlankRow(AppWidth),
-          shiny::fileInput(
-            inputId = 'DataLoad',
-            label =  'Choose CSV File',
-            accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-          shiny::textInput(
-            inputId = 'blob',
-            label = 'Azure Blob Storage File Name',
-            value = NULL,
-            placeholder = 'Load'),
+          shiny::fileInput(inputId = 'DataLoad', label =  'Choose CSV File', accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+
+          # Local .Rdata
           RemixAutoML::BlankRow(AppWidth),
-          shiny::fileInput(
-            inputId = "ModelObjectLoad",
-            label =  "RemixAutoML .Rdata Model Output List")),
+          shiny::fileInput(inputId = "ModelObjectLoad", label =  "RemixAutoML .Rdata Model Output List"),
+
+          # Azure Blob CSV
+          RemixAutoML::BlankRow(AppWidth),
+          shiny::uiOutput('blob'),
+
+          # Azure Blob .Rdata
+          RemixAutoML::BlankRow(AppWidth),
+          shiny::uiOutput('rdatablob')
+
+        ), # end box
 
         # Add Space
         RemixAutoML::BlankRow(AppWidth),
@@ -1107,6 +1141,35 @@ server <- function(input, output, session) {
   #   tags$iframe(src=IFrameLocation, style='width:60vw;height:50vh;')
   # })
 
+  output$blob <- shiny::renderUI({
+
+    if(Debug) {
+      paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
+
+    }
+
+
+    BlobStorageURL <- paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
+    assign(x = 'BlobStorageURL', value = BlobStorageURL, envir = .GlobalEnv)
+    cont <<- AzureStor::blob_container(BlobStorageURL, key = Key)
+    rawfiles <- AzureStor::list_storage_files(cont, info = 'name')
+    rawfiles <<- rawfiles[c(which(grepl(pattern = '.csv', x = rawfiles)), which(grepl(pattern = '.Rdata', x = rawfiles)))]
+    RemixAutoML::SelectizeInput(
+      InputID = 'blob',
+      Label = 'Select Azure .csv File',
+      Choices = rawfiles,
+      SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+
+  output$rdatablob <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(
+      InputID = 'rdatablob',
+      Label = 'Select Azure .Rdata File',
+      Choices = rawfiles,
+      SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+
+
   # Load data event
   shiny::observeEvent(eventExpr = input$LoadDataButton, {
 
@@ -1155,7 +1218,7 @@ server <- function(input, output, session) {
       ModelOutputList <- NULL
     }
 
-    # Azure data loading
+    # Azure csv data loading
     if(Debug) print(input[['blob']])
     inFile2 <- tryCatch({input[['blob']]}, error = function(x) NULL)
     if(Debug) print(inFile2)
@@ -1163,16 +1226,50 @@ server <- function(input, output, session) {
       if(Debug) {print('data check 3'); print(input[['blob']])}
       if(!is.null(inFile2)) {
         if(Debug) print(paste0("curl ", shQuote(paste0(BlobStorageURL, input[['blob']])), " --output ", file.path(DockerPathToData, input[['blob']])))
-        #system(paste0("curl ", shQuote(paste0(BlobStorageURL, input[['blob']])), " --output ", file.path(DockerPathToData, input[['blob']])))
-        if(grepl(pattern = '.csv', x = input[['blob']])) {
-          data <- data.table::fread(file = paste0(BlobStorageURL, input$blob))
-        } else {
-          e <- new.env()
-          name <- load(file.path(input[['blob']]), e)
-          ModelOutputList <<- e[[name]]
+        AzureStor::download_blob(container = cont, src = input[['blob']], dest = file.path('/inputdata', input[['blob']]), overwrite=TRUE)
+        if(Debug) print(' FUUUUUUUUUUUUUUUUUU CCCCCCCCCCCCCCCCCCCCCCC KKKKKKKKKKKKKKKKKKKKKKKKKK YYYYYYYYYYYYYY OOOOOOOOOOOOO UUUUUUUUUUUUUUUUU')
+        data <<- data.table::fread(file = file.path('/inputdata', input[['blob']]))
+        if(Debug) print(data)
+      }
+    }
+
+    # Azure .Rdata data loading
+    if(Debug) print(input[['rdatablob']])
+    inFile2 <- tryCatch({input[['rdatablob']]}, error = function(x) NULL)
+    if(Debug) print(inFile2)
+    if(length(inFile2) != 0 && inFile2 != "Load" && inFile2 != "") {
+      if(Debug) {print('data check 3'); print(input[['rdatablob']])}
+      if(!is.null(inFile2)) {
+        if(Debug) print(paste0("curl ", shQuote(paste0(BlobStorageURL, input[['rdatablob']])), " --output ", file.path(DockerPathToData, input[['rdatablob']])))
+        AzureStor::download_blob(container = cont, src = input[['rdatablob']], dest = file.path('/inputdata', input[['rdatablob']]), overwrite=TRUE)
+        counter <- 1L
+        repeat {
+          print(counter)
+          print(input[['rdatablob']])
+          print(file.exists(file.path('/inputdata', input[['rdatablob']])))
+          if(file.exists(file.path('/inputdata', input[['rdatablob']]))) {
+            e <- new.env()
+            name <- load(file = file.path('/inputdata', input[['rdatablob']]), e)
+            ModelOutputList <<- e[[name]]
+            if(Debug) print(ModelOutputList)
+            if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
+              ModelData <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
+            } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
+              ModelData <<- ModelOutputList$TestData
+            } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
+              ModelData <<- ModelOutputList$TrainData
+            } else {
+              ModelData <<- NULL
+            }
+            break
+
+          } else {
+            Sys.sleep(5)
+          }
         }
       }
     }
+
     CodeCollection <<- CodeCollection
 
     # ----

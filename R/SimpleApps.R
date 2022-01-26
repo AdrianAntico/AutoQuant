@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family GUI
 #'
-#' @param BlobStorageURL is the URL path that leads up to the file name. E.g. 'http://localhost:5000/BlobFiles/ViewFile?name='
+#' @param AzureCredsFile Path to your credentials file
 #' @param PlotObjectHome NULL
 #' @param HeaderColor 'black', 'blue', 'purple', 'green', 'red', 'yellow'
 #' @param AppWidth Width of boxes
@@ -34,7 +34,6 @@
 #'
 #' # Run App
 #' # RemixAutoML::AppsPlotting(
-#' #   BlobStorageURL = NULL,
 #' #   PlotObjectHome = NULL,
 #' #   HeaderColor = 'black',
 #' #   AppWidth = 12L,
@@ -77,7 +76,7 @@
 #' }
 #'
 #' @export
-AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurewebsites.net/BlobFiles/ViewFile?name=',
+AppsPlotting <- function(AzureCredsFile = NULL,
                          PlotObjectHome = NULL,
                          HeaderColor = 'blue',
                          AppWidth = 8L,
@@ -105,7 +104,7 @@ AppsPlotting <- function(BlobStorageURL = NULL, #'https://middlewarehouse.azurew
 
   # Pass args to shiny app
   shiny::shinyOptions(
-    BlobStorageURL = BlobStorageURL,
+    AzureCredsFile = AzureCredsFile,
     DockerPathToData = DockerPathToData,
     PlotObjectHome = PlotObjectHome,
     HeaderColor = HeaderColor,
