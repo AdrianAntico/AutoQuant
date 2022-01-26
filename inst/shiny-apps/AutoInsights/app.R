@@ -123,7 +123,7 @@ Debug <- shiny::getShinyOption('Debug')
 if(!is.null(AzureCredsFile)) {
 
   # Load creds
-  creds <- data.table::fread(file = file.path(AzureCredsFile))
+  creds <- data.table::fread(file = file.path(AzureCredsFile, 'AutoPlotterCreds.csv'))
 
   # Define values
   StorageAccount <- creds[Account == 'StorageAccount', Values]
