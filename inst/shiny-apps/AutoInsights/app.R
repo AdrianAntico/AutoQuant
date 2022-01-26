@@ -1,5 +1,5 @@
 options(shiny.maxRequestSize = 250000*1024^2)
-
+library(curl)
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -1162,13 +1162,13 @@ server <- function(input, output, session) {
     if(length(inFile2) != 0 && inFile2 != "Load" && inFile2 != "") {
       if(Debug) {print('data check 3'); print(input[['blob']])}
       if(!is.null(inFile2)) {
-        if(Debug) print(paste0("curl ", shQuote(paste0(BlobStorageURL, '/', input[['blob']])), " --output ", file.path(DockerPathToData, input[['blob']])))
-        system(paste0("curl ", shQuote(paste0(BlobStorageURL, '/', input[['blob']])), " --output ", file.path(DockerPathToData, input[['blob']])))
+        if(Debug) print(paste0("curl ", shQuote(paste0(BlobStorageURL, input[['blob']])), " --output ", file.path(DockerPathToData, input[['blob']])))
+        #system(paste0("curl ", shQuote(paste0(BlobStorageURL, input[['blob']])), " --output ", file.path(DockerPathToData, input[['blob']])))
         if(grepl(pattern = '.csv', x = input[['blob']])) {
-          data <<- data.table::fread(file = file.path(DockerPathToData, input$blob))
+          data <- data.table::fread(file = paste0(BlobStorageURL, input$blob))
         } else {
           e <- new.env()
-          name <- load(file.path(DockerPathToData, input[['blob']]), e)
+          name <- load(file.path(input[['blob']]), e)
           ModelOutputList <<- e[[name]]
         }
       }
@@ -4789,9 +4789,7 @@ server <- function(input, output, session) {
   # Initialize Plot                      ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   output$Trend <- renderPlot({
-    if(!exists('PlotCollectionList')) {
-      RemixAutoML:::BlankPlot()
-    }
+    if(!exists('PlotCollectionList')) RemixAutoML:::BlankPlot()
   })
 
   # ----
@@ -4817,65 +4815,18 @@ server <- function(input, output, session) {
 
   # ----
 
-  # Save Plot to File
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Downloadable csv of selected dataset ----
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-
-  # shiny::observeEvent(input$SavePlot, {
-  #
-  #   # Check if plot exists and is valid
-  #
-  #   # Then Save
-  #   output$SavePlot <- shiny::downloadHandler(
-  #     filename = function() {
-  #       paste(data, ".csv", sep = "")
-  #     },
-  #     content = function(file) {
-  #       data.table::fwrite(datasetInput(), file, row.names = FALSE)
-  #     })
-  # })
-
-  # ----
-
-  # ----
-
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Create Plot                          ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['TrendPlotExecute']], {
 
-    #  Reason for verbose declaration of variables and storage of variables:
-    #    Partial reactivity throughout app with variables hidden in dropdowns
-    #    Initallize all variables so that when referenced it's either:
-    #      1. NULL
-    #      2. The correct type of value
-    #      3. The correct type of vector with only valid elements inside
-    #      Note: user should know which type is which as some values can be a scalar or a vector
-    #         context is clear from initialization of variables
-
-    print(':::::::: DATA NULL TESTING 18 ::::::::')
-    print(names(data))
-
-    # Debug
-    if(Debug) for(zzzz in 1:4) print(':: :: CREATE PLOTS :: ::')
-
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Determine Which Plots to Build       ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    if(Debug) print('Here 11: BEGIN PLOTTING LOOP')
-
     PlotCollectionList <- list()
     CodeCollection <- list()
 
     # Identify which plots to build
-    if(Debug) {
-      print(RemixAutoML::ReturnParam(xx=tryCatch({input[['Plot1']]}, error=function(x) NULL), Type='character', Default=NULL, Debug = TRUE))
-      print(RemixAutoML::ReturnParam(xx=tryCatch({input[['Plot2']]}, error=function(x) NULL), Type='character', Default=NULL, Debug = TRUE))
-      print(RemixAutoML::ReturnParam(xx=tryCatch({input[['Plot3']]}, error=function(x) NULL), Type='character', Default=NULL, Debug = TRUE))
-      print(RemixAutoML::ReturnParam(xx=tryCatch({input[['Plot4']]}, error=function(x) NULL), Type='character', Default=NULL, Debug = TRUE))
-    }
-
     NumPlots <- c()
     Plot1 <- RemixAutoML::ReturnParam(xx=tryCatch({input[['Plot1']]}, error=function(x) NULL), Type='character', Default=NULL)
     Plot2 <- RemixAutoML::ReturnParam(xx=tryCatch({input[['Plot2']]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -4887,13 +4838,6 @@ server <- function(input, output, session) {
     if(length(Plot4) != 0) NumPlots[length(NumPlots) + 1L] <- 4
 
     # PlotType Determination
-    if(Debug) {
-      print('Dragula Details'); print(input[['PlotTypeDragula']])
-      print(input[['PlotTypeDragula']][['target']][['TopLeft']])
-      print(input[['PlotTypeDragula']][['target']][['LowerLeft']])
-      print(input[['PlotTypeDragula']][['target']][['TopRight']])
-      print(input[['PlotTypeDragula']][['target']][['LowerRight']])
-    }
     ULP <- input[['PlotTypeDragula']][['target']][['TopLeft']]
     BLP <- input[['PlotTypeDragula']][['target']][['LowerLeft']]
     URP <- input[['PlotTypeDragula']][['target']][['TopRight']]
@@ -4904,36 +4848,24 @@ server <- function(input, output, session) {
       if(ULP == 'Plot2') PlotBuilds[length(PlotBuilds) + 1L] <- 2
       if(ULP == 'Plot3') PlotBuilds[length(PlotBuilds) + 1L] <- 3
       if(ULP == 'Plot4') PlotBuilds[length(PlotBuilds) + 1L] <- 4
-      print(paste0('TopLeft = ', ULP))
     }
     if(!is.null(BLP) && BLP != "") {
       if(BLP == 'Plot1') PlotBuilds[length(PlotBuilds) + 1L] <- 1
       if(BLP == 'Plot2') PlotBuilds[length(PlotBuilds) + 1L] <- 2
       if(BLP == 'Plot3') PlotBuilds[length(PlotBuilds) + 1L] <- 3
       if(BLP == 'Plot4') PlotBuilds[length(PlotBuilds) + 1L] <- 4
-      print(paste0('LowerLeft = ', BLP))
     }
     if(!is.null(URP) && URP != "") {
       if(URP == 'Plot1') PlotBuilds[length(PlotBuilds) + 1L] <- 1
       if(URP == 'Plot2') PlotBuilds[length(PlotBuilds) + 1L] <- 2
       if(URP == 'Plot3') PlotBuilds[length(PlotBuilds) + 1L] <- 3
       if(URP == 'Plot4') PlotBuilds[length(PlotBuilds) + 1L] <- 4
-      print(paste0('TopRight = ', URP))
     }
     if(!is.null(BRP) && BRP != "") {
       if(BRP == 'Plot1') PlotBuilds[length(PlotBuilds) + 1L] <- 1
       if(BRP == 'Plot2') PlotBuilds[length(PlotBuilds) + 1L] <- 2
       if(BRP == 'Plot3') PlotBuilds[length(PlotBuilds) + 1L] <- 3
       if(BRP == 'Plot4') PlotBuilds[length(PlotBuilds) + 1L] <- 4
-      print(paste0('LowerRight = ', BRP))
-    }
-
-    # Debugging
-    if(Debug) {
-      #print(PlotBuilds)
-      print(NumPlots)
-      print("intersect check ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-      print(intersect(PlotBuilds,NumPlots))
     }
 
     # Intersection of both
@@ -4946,20 +4878,11 @@ server <- function(input, output, session) {
 
     # Initialize PlotObjectHome List
     for(run in PlotRefs) {
-
-      # Debug
-      if(Debug) print('Define PlotObjectHome values for variables :: START ::')
-
-      # MetaData
       PlotObjectHome[[paste0('Plot_', run)]][['DataSource']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('DataSource', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['PlotType']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('Plot', run)]]}, error=function(x) NULL), Type='character', Default=NULL, Debug = TRUE)
       PlotObjectHome[[paste0('Plot_', run)]][['UpdateMethod']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('UpdateMethod', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
-
-      # Data Usage
       PlotObjectHome[[paste0('Plot_', run)]][['SampleSize']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('SampleSize', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['NumberGroupsDisplay']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('NumberGroupsDisplay', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
-
-      # Variable Selection
       PlotObjectHome[[paste0('Plot_', run)]][['YVar']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('YVar', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['YTicks']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('YTicks', run)]]}, error=function(x) NULL), Type='character', Default='Default')
       PlotObjectHome[[paste0('Plot_', run)]][['XVar']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('XVar', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -4973,14 +4896,10 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['SizeVars']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('SizeVars', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FacetVar1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FacetVar1', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FacetVar2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FacetVar2', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
-
-
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar3']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_3')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar4']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_4')]]}, error=function(x) NULL), Type='character', Default=NULL)
-
-
       PlotObjectHome[[paste0('Plot_', run)]][['FilterLogic1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterLogic_',run, '_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterLogic2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterLogic_',run, '_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterLogic3']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterLogic_',run, '_3')]]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -4993,8 +4912,6 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['FilterValue_2_2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterValue_',run, '_3_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterValue_2_3']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterValue_',run, '_4_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterValue_2_4']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterValue_',run, '_4_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
-
-      # Plot Formatting
       PlotObjectHome[[paste0('Plot_', run)]][['AngleY']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('AngleY', run)]]}, error=function(x) NULL), Type='numeric', Default=0L)
       PlotObjectHome[[paste0('Plot_', run)]][['AngleX']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('AngleX', run)]]}, error=function(x) NULL), Type='numeric', Default=90L)
       PlotObjectHome[[paste0('Plot_', run)]][['TextSize']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('TextSize', run)]]}, error=function(x) NULL), Type='numeric', Default=15L)
@@ -5010,20 +4927,13 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['OutlierColor']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('OutlierColor', run)]]}, error=function(x) NULL), Type='character', Default='blue')
       PlotObjectHome[[paste0('Plot_', run)]][['FillColor']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FillColor', run)]]}, error=function(x) NULL), Type='character', Default='gray70')
       PlotObjectHome[[paste0('Plot_', run)]][['SubTitleColor']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('SubTitleColor', run)]]}, error=function(x) NULL), Type='character', Default='blue')
-
-      # Plot Extras
-      if(Debug) print(RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('ShapAggMethod', run)]]}, error=function(x) NULL), Type='character', Default='meanabs'))
       PlotObjectHome[[paste0('Plot_', run)]][['ShapAgg']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('ShapAggMethod', run)]]}, error=function(x) NULL), Type='character', Default='meanabs')
-      if(Debug) print(PlotObjectHome[[paste0('Plot_', run)]][['ShapAgg']])
       PlotObjectHome[[paste0('Plot_', run)]][['GamFitScatter']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('GamFitScatter', run)]]}, error=function(x) NULL), Type='logical', Default=FALSE)
       PlotObjectHome[[paste0('Plot_', run)]][['NumberBins']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('NumberBins', run)]]}, error=function(x) NULL), Type='numeric', Default=30L)
       PlotObjectHome[[paste0('Plot_', run)]][['Percentile_Buckets']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('Percentile_Buckets', run)]]}, error=function(x) NULL), Type='numeric', Default=20L)
 
       # Assign Globally
       assign(x = 'PlotObjectHome', value = PlotObjectHome, envir = .GlobalEnv)
-
-      # Debug
-      if(Debug) print('Define PlotObjectHome values for variables :: END ::')
     }
 
     # ----
@@ -5037,15 +4947,6 @@ server <- function(input, output, session) {
 
       # Code ID
       CodeCollection[[run]] <- run
-
-      # Debugging
-      #if(run == 1) tryCatch({print(data)}, error = function(x) print('::: run = 1: printing data caused an error :::'))
-      #if(run == 2) tryCatch({print(data)}, error = function(x) print('::: run = 2: printing data caused an error :::'))
-      #if(run == 3) tryCatch({print(data)}, error = function(x) print('::: run = 3: printing data caused an error :::'))
-      #if(run == 4) tryCatch({print(data)}, error = function(x) print('::: run = 4: printing data caused an error :::'))
-
-      # Debug
-      if(Debug) print('Define NamedValue Objects for variables :: START ::')
 
       # Define NamedValue Objects for variables
       if(1 == 1) {
@@ -5111,14 +5012,9 @@ server <- function(input, output, session) {
 
         # Plot Extras
         ShapAgg <- PlotObjectHome[[paste0('Plot_', run)]][['ShapAgg']]
-        if(Debug) print(ShapAgg)
         GamFitScatter <- PlotObjectHome[[paste0('Plot_', run)]][['GamFitScatter']]
         NumberBins <- PlotObjectHome[[paste0('Plot_', run)]][['NumberBins']]
         Percentile_Buckets <- PlotObjectHome[[paste0('Plot_', run)]][['Percentile_Buckets']]
-
-        # Debug
-        if(Debug) print('Define NamedValue Objects for variables :: END ::')
-
       }
 
       # ----
@@ -5130,7 +5026,6 @@ server <- function(input, output, session) {
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
       # Convert back to original plottype name
-      if(Debug) {print(PlotType)}
       PlotType <- PlotNamesLookup[[eval(PlotType)]]
 
       # For PDP's
@@ -5144,24 +5039,8 @@ server <- function(input, output, session) {
         ScoreVar <- NULL
       }
 
-      # X & Y Variable Checks
-      baseplot <- PlotType %in% c('Scatter','Copula','Line','Bar','BoxPlot','ViolinPlot','Histogram')
-      if(Debug) print('Here 15.33')
-
-      # Debugging
-      if(Debug) {
-        print('here yo yo')
-        print(PlotType %in% 'CorrMatrix')
-        print('Here 15.4'); print('Args for first if condition :::: ::::'); print(YVar); print(XVar); print(PlotType); print('Args for 2nd if condition :::: ::::')
-        print('First IF condition check'); print(YVar); print(XVar); print(baseplot)
-        print('Second IF condition check'); print(PlotType)
-        print(data)
-        if(!is.null(XVar)) print(!any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) else print('XVar is NULL')
-        if(!is.null(YVar) && length(YVar) < 1L) print('YVar has multiple entries for CorrMatrix') else if(length(YVar) == 1L) print(!any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) else print('YVar is NULL')
-      }
-
       # PLOT LOGIC CHECK:
-      if(length(YVar) == 0 && length(XVar) == 0 && baseplot) {
+      if(length(YVar) == 0 && length(XVar) == 0 && PlotType %in% c('Scatter','Copula','Line','Bar','BoxPlot','ViolinPlot','Histogram')) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to specify additional variables to generate additional plots', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else if(PlotType %in% c('Scatter','Copula') && !any(class(data[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "Y and / or X-Variable needs to be a numeric or integer variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -5186,9 +5065,6 @@ server <- function(input, output, session) {
           SubsetList <- list()
           SubsetList[[paste0('RunNumber', run)]] <- 1L
           SubsetList[[paste0('DataPrep', run)]] <- TRUE
-
-          if(Debug) {print('Here at 14c'); print(run)}
-
           SubsetList[[paste0('GroupVars', run)]] <- GroupVars
           SubsetList[[paste0('Levels_', run, '_1')]] <- Levels1
           SubsetList[[paste0('Levels_', run, '_2')]] <- Levels2
@@ -5199,8 +5075,6 @@ server <- function(input, output, session) {
 
           # Filter Variables
           print('Filter Variables')
-          print(FilterVar1)
-          print(stringr::str_remove(string = FilterVar1, pattern = 'ModelVar-'))
           SubsetList[[paste0('FilterVariable_', run, '_1')]] <- if(length(FilterVar1) != 0 && FilterVar1 != 'None') stringr::str_remove(string = FilterVar1, pattern = 'ModelVar-') else 'None'
           SubsetList[[paste0('FilterVariable_', run, '_2')]] <- if(length(FilterVar2) != 0 && FilterVar2 != 'None') stringr::str_remove(string = FilterVar2, pattern = 'ModelVar-') else 'None'
           SubsetList[[paste0('FilterVariable_', run, '_3')]] <- if(length(FilterVar3) != 0 && FilterVar3 != 'None') stringr::str_remove(string = FilterVar3, pattern = 'ModelVar-') else 'None'
@@ -5226,14 +5100,6 @@ server <- function(input, output, session) {
 
           # Store Globally
           assign(x = 'SubsetList', value = SubsetList, envir = .GlobalEnv)
-
-          # Debugging
-          if(Debug) {
-            print('Filter Values Done')
-            print('Filter check here')
-            print(SubsetList[[paste0('FilterValue_', run, '_1_1')]])
-            print(SubsetList[[paste0('FilterValue_', run, '_1_2')]])
-          }
 
         } else {
 
@@ -5348,19 +5214,12 @@ server <- function(input, output, session) {
         # Prepare data for plotting            ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
-        # Debugging
-        if(Debug) {
-          print('Here 17')
-          for(zzzz in 1:4) print(':: :: DataPrep :: ::')
-        }
-
         # Filter Data if DataPrep = TRUE
         if(!SubsetList[[paste0('DataPrep', run)]]) {
 
           # Assign data1
           if(Debug) {
             print('Here 18 a')
-            print('data1')
             if(exists('data1')) print(data1)
             if(exists('ModelData')) print(ModelData)
             if(exists('data')) print(data)
@@ -5370,15 +5229,7 @@ server <- function(input, output, session) {
 
         } else {
 
-          # Assign data1
-          if(Debug) {
-            print('Here 18 aa')
-            print('data1')
-            if(exists('data1')) print(data1)
-            if(exists('ModelData')) print(ModelData)
-            if(exists('data')) print(data)
-          }
-
+          # Assign data1 to correct data set
           if(!PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')) data1 <- data.table::copy(ModelData) else data1 <- data.table::copy(data)
 
           # Subset by FilterVariable
@@ -5416,9 +5267,6 @@ server <- function(input, output, session) {
 
             # Debugging
             if(Debug) {
-              if(length(unique(c(YVar, XVar, GroupVars, SizeVars, FacetVar1, FacetVar2))) != 0) {
-                print(unique(c(YVar, XVar, GroupVars, SizeVars, FacetVar1, FacetVar2, XVar, ScoreVar)))
-              }
               print(YVar)
               print(XVar)
               print(ScoreVar)
@@ -5444,9 +5292,6 @@ server <- function(input, output, session) {
               }
             }
           }
-
-          # Debugging
-          if(Debug) print('PreparePlotData done')
         }
 
         # ----
@@ -5459,35 +5304,18 @@ server <- function(input, output, session) {
 
         if(Debug) print('Here 27')
 
-        # Rebuild Model Eval Plots; # Rebuild needs ScoreVar to not be null, # Rebuild if PDP Var in names(dt)
-        # Rebuild if Percentile_Buckets changed from default, # Rebuild if Subsetting is desired
-        # x4:Rebuild if XVar not in names of PlotList
-        if(Debug) {
-          #print(data1)
-          print(GroupVars)
-        }
-
-        # Logic Checks
+        # Logic Check for rebuilding modeling plots
         x1 <- length(ScoreVar) != 0; if(Debug) print(x1)
-        if(Debug) print('Here 27a')
         x2 <- XVar %in% names(data1); if(Debug) print(XVar %in% names(data1))
-        if(Debug) print('Here 27b')
         x3 <- Percentile_Buckets != 20; if(Debug) print(Percentile_Buckets != 20)
-        if(Debug) print('Here 27c')
         x4 <- length(GroupVars) != 0 && (length(Levels1) != 0 || length(Levels2) != 0 || length(Levels3) != 0); if(Debug) print(length(GroupVars) != 0 && (length(Levels1) != 0 || length(Levels2) != 0 || length(Levels3) != 0))
-        if(Debug) print('Here 27d')
         x5 <- any(c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots','Test_EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot','Test_GainsPlot','Train_GainsPlot','Test_LiftPlot','Train_LiftPlot','Test_ScatterPlot','Train_ScatterPlot','Test_CopulaPlot','Train_CopulaPlot','Test_ResidualsHistogram','Train_ResidualsHistogram') %in% PlotType); if(Debug) print(any(c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots','Test_EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot','Test_GainsPlot','Train_GainsPlot','Test_LiftPlot','Train_LiftPlot','Test_ScatterPlot','Train_ScatterPlot','Test_CopulaPlot','Train_CopulaPlot','Test_ResidualsHistogram','Train_ResidualsHistogram') %in% PlotType))
-        if(Debug) print('Here 27e')
         Blocker <- !x1 || (!x2 && PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots')); if(Debug) print(!x1 || (!x2 && PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots')))
-        if(Debug) print('Here 27f')
         if(x5 || x4 || (x3 && PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots'))) {
-          if(Debug) print('Here 27g')
           if(Blocker) Rebuild <- FALSE else Rebuild <- TRUE
         } else {
-          if(Debug) print('Here 27h')
           Rebuild <- FALSE
         }
-        if(Debug) print(Rebuild)
 
         # ----
 
@@ -5609,13 +5437,6 @@ server <- function(input, output, session) {
           if(Debug) print(unlist(CodeCollection))
 
         } else {
-
-          # Debugging
-          if(Debug) {
-            print(paste0('PDPVar = ', RemixAutoML:::CEP(YVar)))
-            print(class(ModelOutputList))
-            print(names(ModelOutputList$PlotList))
-          }
 
           # Build Plot
           PlotCollectionList[[paste0('p', run)]] <- RemixAutoML:::AppModelInsights(
@@ -5966,12 +5787,6 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Close app after closing browser      ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # shiny::onStop(function() {
-  #   cat("Session stopped\n")
-  #   EndEnv <- as.list(environment())
-  #   ggg <- setdiff(names(EndEnv), names(StartEnv))
-  #   for(i in seq_along(ggg)) try(rm(list = ggg[i]))
-  # })
   session$onSessionEnded(function() {
     shiny::stopApp()
   })
