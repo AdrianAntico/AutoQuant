@@ -1625,6 +1625,11 @@ AppModelInsights <- function(ModelOutputList,
     if(!Rebuild) {
       if(Debug) print('ROC !Rebuild')
       p1 <- ModelOutputList$PlotList[['Test_ROC_Plot']]
+      if(Debug) {
+        print(is.null(p1))
+        print(class(p1))
+        print(names(ModelOutputList$PlotList))
+      }
     } else {
       if(Debug) print('Test_ROC_Plot ! !Rebuild')
       p1 <- RemixAutoML::ROCPlot(

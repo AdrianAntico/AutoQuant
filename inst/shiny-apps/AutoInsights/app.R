@@ -7,8 +7,8 @@ library(curl)
 #         'Container',
 #         'Key'),
 #   Values = c('rshinyapps',
-#         "blobstorage",
-#         "7Zg4GFJVkaOH9tD6fvPqVJ3ITesM7o9FqrSSRNVjZIIbFws/HF5dTZOOxxhhJOHocijqFoU3jNkjfhXYHx680A=="))
+#         "",
+#         ""))
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -1142,13 +1142,9 @@ server <- function(input, output, session) {
   # })
 
   output$blob <- shiny::renderUI({
-
     if(Debug) {
       paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
-
     }
-
-
     BlobStorageURL <- paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
     assign(x = 'BlobStorageURL', value = BlobStorageURL, envir = .GlobalEnv)
     cont <<- AzureStor::blob_container(BlobStorageURL, key = Key)
@@ -1225,33 +1221,31 @@ server <- function(input, output, session) {
     if(length(inFile2) != 0 && inFile2 != "Load" && inFile2 != "") {
       if(Debug) {print('data check 3'); print(input[['blob']])}
       if(!is.null(inFile2)) {
-        if(Debug) print(paste0("curl ", shQuote(paste0(BlobStorageURL, input[['blob']])), " --output ", file.path(DockerPathToData, input[['blob']])))
         AzureStor::download_blob(container = cont, src = input[['blob']], dest = file.path('/inputdata', input[['blob']]), overwrite=TRUE)
-        if(Debug) print(' FUUUUUUUUUUUUUUUUUU CCCCCCCCCCCCCCCCCCCCCCC KKKKKKKKKKKKKKKKKKKKKKKKKK YYYYYYYYYYYYYY OOOOOOOOOOOOO UUUUUUUUUUUUUUUUU')
         data <<- data.table::fread(file = file.path('/inputdata', input[['blob']]))
-        if(Debug) print(data)
       }
     }
 
     # Azure .Rdata data loading
     if(Debug) print(input[['rdatablob']])
     inFile2 <- tryCatch({input[['rdatablob']]}, error = function(x) NULL)
+    if(!is.null(inFile2)) print(inFile2)
     if(Debug) print(inFile2)
-    if(length(inFile2) != 0 && inFile2 != "Load" && inFile2 != "") {
+    if(length(inFile2) != 0 && inFile2 != "") {
       if(Debug) {print('data check 3'); print(input[['rdatablob']])}
       if(!is.null(inFile2)) {
         if(Debug) print(paste0("curl ", shQuote(paste0(BlobStorageURL, input[['rdatablob']])), " --output ", file.path(DockerPathToData, input[['rdatablob']])))
-        AzureStor::download_blob(container = cont, src = input[['rdatablob']], dest = file.path('/inputdata', input[['rdatablob']]), overwrite=TRUE)
-        counter <- 1L
-        repeat {
-          print(counter)
-          print(input[['rdatablob']])
-          print(file.exists(file.path('/inputdata', input[['rdatablob']])))
-          if(file.exists(file.path('/inputdata', input[['rdatablob']]))) {
+
+        promise <- promises::future_promise(
+          AzureStor::download_blob(container = cont, src = input[['rdatablob']], dest = file.path('/inputdata', input[['rdatablob']]), overwrite=TRUE),
+          packages = 'AzureStor')
+
+        promises::then(
+          promise,
+          onFulfilled = function(value) {
             e <- new.env()
             name <- load(file = file.path('/inputdata', input[['rdatablob']]), e)
             ModelOutputList <<- e[[name]]
-            if(Debug) print(ModelOutputList)
             if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
               ModelData <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
             } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
@@ -1261,12 +1255,10 @@ server <- function(input, output, session) {
             } else {
               ModelData <<- NULL
             }
-            break
-
-          } else {
-            Sys.sleep(5)
-          }
-        }
+          },
+          onRejected = function(value) {
+            ModelOutputList <<- NULL
+          })
       }
     }
 
@@ -5536,6 +5528,15 @@ server <- function(input, output, session) {
         } else {
 
           # Build Plot
+          if(Debug) {
+            print(data1[1:5])
+            print(PlotType)
+            print(YVar)
+            print(ScoreVar)
+            print(XVar)
+            print(Rebuild)
+          }
+
           PlotCollectionList[[paste0('p', run)]] <- RemixAutoML:::AppModelInsights(
             ModelOutputList,
             dt = data1,
