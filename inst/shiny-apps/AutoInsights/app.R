@@ -308,14 +308,17 @@ ui <- shinydashboard::dashboardPage(
 
           # Local CSV
           RemixAutoML::BlankRow(AppWidth),
-          shiny::fileInput(inputId = 'DataLoad', label =  'Choose CSV File', accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+          tags$h4(tags$b('Local .csv Data')),
+          shiny::fileInput(inputId = 'DataLoad', label = NULL, accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
 
           # Local .Rdata
           RemixAutoML::BlankRow(AppWidth),
-          shiny::fileInput(inputId = "ModelObjectLoad", label =  "RemixAutoML .Rdata Model Output List"),
+          tags$h4(tags$b('Local .Rdata Files')),
+          shiny::fileInput(inputId = "ModelObjectLoad", label = NULL),#  "RemixAutoML .Rdata Model Output List"),
 
           # Dropdown for external data
           RemixAutoML::BlankRow(AppWidth),
+          tags$h4(tags$b('External Data Loading')),
           shinyWidgets::dropdown(
             right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
             tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'External Data')),
@@ -329,12 +332,12 @@ ui <- shinydashboard::dashboardPage(
             shinyWidgets::actionBttn(inputId = 'LoadAzure', label = 'Download Data')),
 
           # Azure Blob CSV
-          RemixAutoML::BlankRow(AppWidth),
-          shiny::htmlOutput('ExternalCSVSelected'),
+          #RemixAutoML::BlankRow(AppWidth),
+          #shiny::htmlOutput('ExternalCSVSelected'),
 
           # Azure Blob .Rdata
-          RemixAutoML::BlankRow(AppWidth),
-          shiny::htmlOutput('ExternalRdataSelected')
+          RemixAutoML::BlankRow(AppWidth)
+          #shiny::htmlOutput('ExternalRdataSelected')
 
         ), # end box
 
