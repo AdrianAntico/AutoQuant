@@ -124,9 +124,10 @@ if(!is.null(AzureCredsFile)) {
 # Initialize a few variables
 PlotWidth <- 1500
 PlotHeight <- 550
+
+ModelData <- NULL
+ModelOutputList <- NULL
 data <- NULL
-#ModelData <- NULL
-#ModelOutputList <- NULL
 
 # Usernames and Passwords
 UserName_Password_DT <- shiny::getShinyOption(name = 'UserName_Password_DT', default = NULL)
@@ -1078,6 +1079,9 @@ ui <- shinydashboard::dashboardPage(
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 server <- function(input, output, session) {
 
+  # Enable updating of values
+  #Artifacts <- shiny::reactiveValues(ModelData = data.table::data.table(), data = data.table::data.table(), ModelOutputList = list())
+
   # ----
 
   # ----
@@ -1210,7 +1214,7 @@ server <- function(input, output, session) {
     # Load ModelOutputList
     if(Debug) print('data check 2')
     inFile1 <- tryCatch({input[['ModelObjectLoad']]}, error = function(x) NULL)
-    if(Debug) print(inFile1)
+    if(Debug) print(inFile1[['datapath']])
     if(!is.null(inFile1)) {
       if(Debug) print('loading .Rdata')
       e <- new.env()
@@ -1231,9 +1235,6 @@ server <- function(input, output, session) {
       if(Debug) print(length(ModelOutputList))
       if(Debug) print(length(ModelOutputList$PlotList))
       if(Debug) print(names(ModelOutputList$PlotList))
-    } else {
-      if(Debug) print('ModelOutputList not loaded')
-      ModelOutputList <- NULL
     }
 
     if(Debug) print('fuuuuuuuuu cccccccccccccccccc kkkkkkkkkkkkkkkk yyyyyyyyyyyyyyy ooooooooooooooooooo uuuuuuuuuuuuuuuuuuu')
@@ -1247,46 +1248,40 @@ server <- function(input, output, session) {
       data <<- RemixAutoML::ReactiveLoadCSV(Infile = file.path('/inputdata', input[['blob']]), ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
     }
 
-    # Azure .Rdata data loading
-    # if(Debug)
-    print('.Rdata blob here ------------------------->>>>>>>>>>>>>>>>>>>>> ')
-    print(input[['rdatablob']])
-    rdatapath <- input[['rdatablob']]
-    print(rdatapath)
-    print(length(rdatapath) != 0 && rdatapath != "")
-    if(length(rdatapath) != 0 && rdatapath != "") {
-      if(Debug) {print('data check 3')}
+    # Load ModelOutputList
+    if(Debug) print('data check 22')
+    inFile1 <- tryCatch({input[['rdatablob']]}, error = function(x) NULL)
+    if(Debug) print(inFile1)
+    if(!is.null(inFile1)) {
+      if(Debug) print('loading .Rdata')
       e <- new.env()
-      name <- load(file = file.path('/inputdata', rdatapath), e)
-      if(Debug) print(name)
-      ModelOutputList <- e[[name]]
-      if(Debug) {print(is.null(ModelOutputList)); if(length(ModelOutputList) != 0) print(names(ModelOutputList))}
+      print(file.exists(file.path('/inputdata', inFile1)))
+      name <- load(file.path('/inputdata', inFile1), e)
+      print(name)
+      if(Debug) print('store ModelOutputList globally')
+      ModelOutputList <<- e[[name]]
       if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
-        if(Debug) print('here 1111')
-        ModelData <- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
+        ModelData <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
       } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
-        if(Debug) print('here 2222')
-        ModelData <- ModelOutputList$TestData
+        ModelData <<- ModelOutputList$TestData
       } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
-        if(Debug) print('here 3333')
-        ModelData <- ModelOutputList$TrainData
+        ModelData <<- ModelOutputList$TrainData
       } else {
-        if(Debug) print('here 4444')
-        ModelData <- NULL
+        ModelData <<- NULL
       }
 
-      # Assign globally
-      assign(x = 'ModelOutputList', value = ModelOutputList, envir = .GlobalEnv)
-      assign(x = 'ModelData', value = ModelData, envir = .GlobalEnv)
+      if(Debug) print(class(ModelOutputList))
+      if(Debug) print(length(ModelOutputList))
+      if(Debug) print(length(ModelOutputList$PlotList))
+      if(Debug) print(names(ModelOutputList$PlotList))
+    } else if(!exists('ModelOutputList')) {
+      if(Debug) print('ModelOutputList not loaded')
+      ModelOutputList <- NULL
+      ModelData <- NULL
     }
 
     # Initialize
     CodeCollection <<- CodeCollection
-    if(!exists('ModelData')) ModelData <- NULL
-    if(!exists('ModelOutputList')) ModelOutputList <- NULL
-
-    print('THIS IS WHERE TO START CHECKING')
-    print(names(ModelOutputList))
 
     # ----
 
@@ -1449,9 +1444,6 @@ server <- function(input, output, session) {
     if(Debug) print("Here r")
 
     # ----
-
-    print('THIS IS WHERE TO START CHECKING 2')
-    print(names(ModelOutputList))
 
     # ----
 
@@ -1945,7 +1937,7 @@ server <- function(input, output, session) {
     # ----
 
     print('THIS IS WHERE TO START CHECKING 3')
-    print(names(ModelOutputList))
+
 
     # ----
 
@@ -2229,7 +2221,7 @@ server <- function(input, output, session) {
     # ----
 
     print('THIS IS WHERE TO START CHECKING 4')
-    print(names(ModelOutputList))
+
 
     # ----
 
@@ -2433,7 +2425,7 @@ server <- function(input, output, session) {
     # ----
 
     print('THIS IS WHERE TO START CHECKING 5')
-    print(names(ModelOutputList))
+
 
     # ----
 
@@ -2541,7 +2533,7 @@ server <- function(input, output, session) {
     # ----
 
     print('THIS IS WHERE TO START CHECKING 6')
-    print(names(ModelOutputList))
+
 
     # ----
 
@@ -3169,7 +3161,7 @@ server <- function(input, output, session) {
     # ----
 
     print('THIS IS WHERE TO START CHECKING 7')
-    print(names(ModelOutputList))
+
 
     # ----
 
@@ -3183,11 +3175,19 @@ server <- function(input, output, session) {
     # ----
 
     print('THIS IS WHERE TO START CHECKING 8')
-    print(names(ModelOutputList))
+
 
     # ----
 
   })
+
+  #ModelData <<- shiny::isolate(Artifacts$ModelData)
+  #data <<- shiny::isolate(Artifacts$data)
+  #ModelOutputList <<- shiny::isolate(Artifacts$ModelOutputList)
+
+  if(exists('ModelData')) print(ModelData)
+  if(exists('data')) print(data)
+  if(exists('ModelOutputList'))
 
   # ----
 
@@ -4955,8 +4955,16 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['TrendPlotExecute']], {
 
+    #ModelData <<- shiny::isolate(Artifacts$ModelData)
+    #data <<- shiny::isolate(Artifacts$data)
+    #ModelOutputList <<- shiny::isolate(Artifacts$ModelOutputList)
+
+    if(exists('ModelData')) print(ModelData)
+    if(exists('data')) print(data)
+    if(exists('ModelOutputList'))
+
     print('THIS IS WHERE TO START CHECKING 9')
-    print(names(ModelOutputList))
+
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Determine Which Plots to Build       ----
@@ -5076,18 +5084,12 @@ server <- function(input, output, session) {
 
     # ----
 
-    print('THIS IS WHERE TO START CHECKING 10')
-    print(names(ModelOutputList))
-
     # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Loop Through Plot Builds             ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     for(run in PlotRefs) {
-
-      print('THIS IS WHERE TO START CHECKING 11')
-      print(names(ModelOutputList))
 
       # Code ID
       CodeCollection[[run]] <- run
@@ -5161,9 +5163,6 @@ server <- function(input, output, session) {
         Percentile_Buckets <- PlotObjectHome[[paste0('Plot_', run)]][['Percentile_Buckets']]
       }
 
-      print('THIS IS WHERE TO START CHECKING 12')
-      print(names(ModelOutputList))
-
       # ----
 
       # ----
@@ -5174,9 +5173,6 @@ server <- function(input, output, session) {
 
       # Convert back to original plottype name
       PlotType <- PlotNamesLookup[[eval(PlotType)]]
-
-      print('THIS IS WHERE TO START CHECKING 13')
-      print(names(ModelOutputList))
 
       # For PDP's
       if(PlotType %in% names(ModelOutputList$PlotList)) {
@@ -5597,8 +5593,6 @@ server <- function(input, output, session) {
 
           # Build Plot
           if(Debug) {
-            print(length(ModelOutputList))
-            if(length(ModelOutputList) != 0) print(names(ModelOutputList))
             print(data1[1:5])
             print(PlotType)
             print(YVar)
