@@ -154,7 +154,7 @@ ui <- shinydashboard::dashboardPage(
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Header                               ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  title = 'Tablows',
+  title = 'RemixAutoML',
 
   # Top of page color
   skin = HeaderColor,
@@ -273,7 +273,7 @@ ui <- shinydashboard::dashboardPage(
           shiny::textInput(
             inputId = "Password",
             label =  "Input Password",
-            value = if(Credentials[UserName == 'Adrian Antico', .N] > 0) Credentials$Password[[1L]] else 'Password')),
+            value = 'Password')),
 
         # Add Space
         RemixAutoML::BlankRow(AppWidth),
@@ -313,7 +313,7 @@ ui <- shinydashboard::dashboardPage(
 
           # Local .Rdata
           RemixAutoML::BlankRow(AppWidth),
-          tags$h4(tags$b('Local .Rdata Files')),
+          tags$h4(tags$b('Local .Rdata Model Output List')),
           shiny::fileInput(inputId = "ModelObjectLoad", label = NULL),#  "RemixAutoML .Rdata Model Output List"),
 
           # Dropdown for external data
@@ -348,20 +348,8 @@ ui <- shinydashboard::dashboardPage(
         shiny::fluidRow(
           shiny::column(
             width = 3L, shinyjs::useShinyjs(),
-            shinyWidgets::actionBttn(inputId='LoadDataButton', label='Load Data', icon=shiny::icon('chevron-right', lib='font-awesome'), style='gradient', color='royal'))),
+            shinyWidgets::actionBttn(inputId='LoadDataButton', label='Load Data', icon=shiny::icon('chevron-right', lib='font-awesome'), style='gradient', color='royal')))
 
-        # Add Space
-        # RemixAutoML::BlankRow(AppWidth),
-        # RemixAutoML::BlankRow(AppWidth),
-        #
-        # # Azure Blob Data
-        # shinydashboard::box(
-        #   title = htmltools::tagList(shiny::icon('filter', lib = 'font-awesome'), 'Azure Blob Storage iframe'),
-        #   width=9L, solidHeader=TRUE, collapsible=TRUE, collapsed=TRUE, background='aqua',
-        #   shiny::fluidRow(
-        #     shiny::column(
-        #       width = 9L,
-        #       shiny::htmlOutput('IFrame')))),
         ),
 
       # ----
@@ -1166,14 +1154,14 @@ server <- function(input, output, session) {
   })
 
   # Exteneral CSV's
-  output$ExternalCSVSelected <- shiny::renderPrint({
-    shiny::HTML(paste0(input$blob, sep = '<br/>'))
-  })
-
-  # External .Rdata
-  output$ExternalRdataSelected <- shiny::renderPrint({
-    shiny::HTML(paste0(input$rdatablob, sep = '<br/>'))
-  })
+  # output$ExternalCSVSelected <- shiny::renderPrint({
+  #   shiny::HTML(paste0(input$blob, sep = '<br/>'))
+  # })
+  #
+  # # External .Rdata
+  # output$ExternalRdataSelected <- shiny::renderPrint({
+  #   shiny::HTML(paste0(input$rdatablob, sep = '<br/>'))
+  # })
 
   # Load Azure Data
   shiny::observeEvent(eventExpr = input$LoadAzure, {
