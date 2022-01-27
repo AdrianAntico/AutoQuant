@@ -10,7 +10,7 @@ ExpandText <- function(x) {
 #' @noRd
 VarNamesDisplay <- function(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=NULL) {
   if(any(c('Box','BoxPlot','ViolinPlot','Violin','Line','Bar','BarPlot','Scatter','Copula','CorrMatrix','Histogram','Hist') %in% PlotName)) {
-    return(DataNames)
+    return(unique(c(DataNames, ModelDataNames)))
   } else {
     return(ModelDataNames)
   }
@@ -964,7 +964,7 @@ observeEventLoad <- function(input, InputVal = NULL, ObjectName = NULL) {
 #' @param Debug FALSE
 #'
 #' @export
-ReactiveLoadCSV <- function(Infile = input[[eval(InputVal)]], ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = FALSE) {
+ReactiveLoadCSV <- function(Infile = NULL, ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = FALSE) {
   if(Debug) print('ReactiveLoadCSV 1')
   if(is.null(Infile)) return(NULL)
   if(Debug) print('ReactiveLoadCSV 2')
@@ -972,7 +972,12 @@ ReactiveLoadCSV <- function(Infile = input[[eval(InputVal)]], ProjectList = NULL
   if(Debug) print('ReactiveLoadCSV 3')
   if(!is.null(RemoveObjects)) for(i in seq_along(RemoveObjects)) if(exists(RemoveObjects[i])) rm(RemoveObjects[i])
   if(Debug) print('ReactiveLoadCSV 4')
-  x <- data.table::fread(file = Infile$datapath)
+  if('datapath' %in% names(Infile)) {
+    x <- data.table::fread(file = Infile$datapath)
+  } else {
+    x <- data.table::fread(file = Infile)
+  }
+
   if(Debug) print('ReactiveLoadCSV 5')
   g <- RemixAutoML:::ColTypes(x)
   if(Debug) {print('ReactiveLoadCSV 6'); print(x); print(g); print(any('IDate' %in% g))}

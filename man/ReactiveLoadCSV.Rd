@@ -5,7 +5,7 @@
 \title{ReactiveLoadCSV}
 \usage{
 ReactiveLoadCSV(
-  Infile = input[[eval(InputVal)]],
+  Infile = NULL,
   ProjectList = NULL,
   DateUpdateName = NULL,
   RemoveObjects = NULL,

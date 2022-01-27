@@ -1,16 +1,6 @@
 options(shiny.maxRequestSize = 250000*1024^2)
 library(curl)
 
-
-# key <- data.table::data.table(
-#   Account = c('StorageAccount',
-#         'Container',
-#         'Key'),
-#   Values = c('rshinyapps',
-#         "",
-#         ""))
-
-
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -121,27 +111,22 @@ Debug <- shiny::getShinyOption('Debug')
 
 # Load credentials
 if(!is.null(AzureCredsFile)) {
-
-  # Load creds
   creds <- data.table::fread(file = file.path(AzureCredsFile, 'AutoPlotterCreds.csv'))
-
-  # Define values
   StorageAccount <- creds[Account == 'StorageAccount', Values]
   Container <- creds[Account == 'Container', Values]
   Key <- creds[Account == 'Key', Values]
 } else {
-
-  # Define values
   StorageAccount <- NULL
   Container <- NULL
   Key <- NULL
 }
 
+# Initialize a few variables
 PlotWidth <- 1500
 PlotHeight <- 550
 data <- NULL
-ModelData <- NULL
-ModelOutputList <- NULL
+#ModelData <- NULL
+#ModelOutputList <- NULL
 
 # Usernames and Passwords
 UserName_Password_DT <- shiny::getShinyOption(name = 'UserName_Password_DT', default = NULL)
@@ -329,13 +314,27 @@ ui <- shinydashboard::dashboardPage(
           RemixAutoML::BlankRow(AppWidth),
           shiny::fileInput(inputId = "ModelObjectLoad", label =  "RemixAutoML .Rdata Model Output List"),
 
+          # Dropdown for external data
+          RemixAutoML::BlankRow(AppWidth),
+          shinyWidgets::dropdown(
+            right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
+            tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'External Data')),
+            RemixAutoML::BlankRow(AppWidth),
+            shiny::fluidRow(width = AppWidth, shiny::column(3L, align='right', shiny::uiOutput('blob'))),
+            RemixAutoML::BlankRow(AppWidth),
+            shiny::fluidRow(width = AppWidth, shiny::column(3L, shiny::uiOutput('rdatablob'))),
+            RemixAutoML::BlankRow(AppWidth),
+
+            # Load button
+            shinyWidgets::actionBttn(inputId = 'LoadAzure', label = 'Download Data')),
+
           # Azure Blob CSV
           RemixAutoML::BlankRow(AppWidth),
-          shiny::uiOutput('blob'),
+          shiny::htmlOutput('ExternalCSVSelected'),
 
           # Azure Blob .Rdata
           RemixAutoML::BlankRow(AppWidth),
-          shiny::uiOutput('rdatablob')
+          shiny::htmlOutput('ExternalRdataSelected')
 
         ), # end box
 
@@ -1142,9 +1141,7 @@ server <- function(input, output, session) {
   # })
 
   output$blob <- shiny::renderUI({
-    if(Debug) {
-      paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
-    }
+    if(Debug) paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
     BlobStorageURL <- paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
     assign(x = 'BlobStorageURL', value = BlobStorageURL, envir = .GlobalEnv)
     cont <<- AzureStor::blob_container(BlobStorageURL, key = Key)
@@ -1153,7 +1150,7 @@ server <- function(input, output, session) {
     RemixAutoML::SelectizeInput(
       InputID = 'blob',
       Label = 'Select Azure .csv File',
-      Choices = rawfiles,
+      Choices = rawfiles[which(grepl(pattern = '.csv', x = rawfiles))],
       SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
 
@@ -1161,10 +1158,42 @@ server <- function(input, output, session) {
     RemixAutoML::SelectizeInput(
       InputID = 'rdatablob',
       Label = 'Select Azure .Rdata File',
-      Choices = rawfiles,
+      Choices = rawfiles[which(grepl(pattern = '.Rdata', x = rawfiles))],
       SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
 
+  # Exteneral CSV's
+  output$ExternalCSVSelected <- shiny::renderPrint({
+    shiny::HTML(paste0(input$blob, sep = '<br/>'))
+  })
+
+  # External .Rdata
+  output$ExternalRdataSelected <- shiny::renderPrint({
+    shiny::HTML(paste0(input$rdatablob, sep = '<br/>'))
+  })
+
+  # Load Azure Data
+  shiny::observeEvent(eventExpr = input$LoadAzure, {
+
+    # csv
+    FileName <- tryCatch({input[['blob']]}, error = function(x) NULL)
+    if(Debug) print(FileName)
+    if(length(FileName) != 0 && FileName != "Load" && FileName != "") {
+      data
+      AzureStor::download_blob(container = cont, src = input[['blob']], dest = file.path('/inputdata', input[['blob']]), overwrite=TRUE)
+    }
+
+    # .Rdata
+    inFile2 <- tryCatch({input[['rdatablob']]}, error = function(x) NULL)
+    if(!is.null(inFile2)) print(inFile2)
+    if(length(inFile2) != 0 && inFile2 != "") {
+      if(Debug) {print('data check 3')}
+      AzureStor::download_blob(container = cont, src = input[['rdatablob']], dest = file.path('/inputdata', input[['rdatablob']]), overwrite=TRUE)
+    }
+
+    #shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Success', type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+
+  })
 
   # Load data event
   shiny::observeEvent(eventExpr = input$LoadDataButton, {
@@ -1180,7 +1209,13 @@ server <- function(input, output, session) {
     # Local data loading
     if(Debug) print('data check 1')
     CodeCollection <- list()
-    data <<- RemixAutoML::ReactiveLoadCSV(Infile = input[['DataLoad']], ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
+    if(Debug) print(input[['DataLoad']])
+    if(!is.null(input[['DataLoad']])) {
+      data <<- RemixAutoML::ReactiveLoadCSV(Infile = input[['DataLoad']], ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
+    } else {
+      data <<- NULL
+    }
+
     print("::::::::::::::::::::::::::::::::::: DATA IS LOADED NOW ::::::::::::::::::::::::::::::::::::::::::")
     print(data)
 
@@ -1188,7 +1223,6 @@ server <- function(input, output, session) {
     if(Debug) print('data check 2')
     inFile1 <- tryCatch({input[['ModelObjectLoad']]}, error = function(x) NULL)
     if(Debug) print(inFile1)
-    pp <- c(as.list(environment()))
     if(!is.null(inFile1)) {
       if(Debug) print('loading .Rdata')
       e <- new.env()
@@ -1214,55 +1248,57 @@ server <- function(input, output, session) {
       ModelOutputList <- NULL
     }
 
-    # Azure csv data loading
-    if(Debug) print(input[['blob']])
-    inFile2 <- tryCatch({input[['blob']]}, error = function(x) NULL)
-    if(Debug) print(inFile2)
-    if(length(inFile2) != 0 && inFile2 != "Load" && inFile2 != "") {
-      if(Debug) {print('data check 3'); print(input[['blob']])}
-      if(!is.null(inFile2)) {
-        AzureStor::download_blob(container = cont, src = input[['blob']], dest = file.path('/inputdata', input[['blob']]), overwrite=TRUE)
-        data <<- data.table::fread(file = file.path('/inputdata', input[['blob']]))
-      }
+    if(Debug) print('fuuuuuuuuu cccccccccccccccccc kkkkkkkkkkkkkkkk yyyyyyyyyyyyyyy ooooooooooooooooooo uuuuuuuuuuuuuuuuuuu')
+
+    # Azure .csv
+    if(Debug) {print(input$blob); print(!is.null(input$blob))}
+    if(!is.null(input$blob)) {
+      if(Debug) print('WHY ARE YOU HERE??? ')
+      print(input$blob)
+      print(file.path('/inputdata', input[['blob']]))
+      data <<- RemixAutoML::ReactiveLoadCSV(Infile = file.path('/inputdata', input[['blob']]), ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
     }
 
     # Azure .Rdata data loading
-    if(Debug) print(input[['rdatablob']])
-    inFile2 <- tryCatch({input[['rdatablob']]}, error = function(x) NULL)
-    if(!is.null(inFile2)) print(inFile2)
-    if(Debug) print(inFile2)
-    if(length(inFile2) != 0 && inFile2 != "") {
-      if(Debug) {print('data check 3'); print(input[['rdatablob']])}
-      if(!is.null(inFile2)) {
-        if(Debug) print(paste0("curl ", shQuote(paste0(BlobStorageURL, input[['rdatablob']])), " --output ", file.path(DockerPathToData, input[['rdatablob']])))
-
-        promise <- promises::future_promise(
-          AzureStor::download_blob(container = cont, src = input[['rdatablob']], dest = file.path('/inputdata', input[['rdatablob']]), overwrite=TRUE),
-          packages = 'AzureStor')
-
-        promises::then(
-          promise,
-          onFulfilled = function(value) {
-            e <- new.env()
-            name <- load(file = file.path('/inputdata', input[['rdatablob']]), e)
-            ModelOutputList <<- e[[name]]
-            if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
-              ModelData <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
-            } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
-              ModelData <<- ModelOutputList$TestData
-            } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
-              ModelData <<- ModelOutputList$TrainData
-            } else {
-              ModelData <<- NULL
-            }
-          },
-          onRejected = function(value) {
-            ModelOutputList <<- NULL
-          })
+    # if(Debug)
+    print('.Rdata blob here ------------------------->>>>>>>>>>>>>>>>>>>>> ')
+    print(input[['rdatablob']])
+    rdatapath <- input[['rdatablob']]
+    print(rdatapath)
+    print(length(rdatapath) != 0 && rdatapath != "")
+    if(length(rdatapath) != 0 && rdatapath != "") {
+      if(Debug) {print('data check 3')}
+      e <- new.env()
+      name <- load(file = file.path('/inputdata', rdatapath), e)
+      if(Debug) print(name)
+      ModelOutputList <- e[[name]]
+      if(Debug) {print(is.null(ModelOutputList)); if(length(ModelOutputList) != 0) print(names(ModelOutputList))}
+      if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
+        if(Debug) print('here 1111')
+        ModelData <- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
+      } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
+        if(Debug) print('here 2222')
+        ModelData <- ModelOutputList$TestData
+      } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
+        if(Debug) print('here 3333')
+        ModelData <- ModelOutputList$TrainData
+      } else {
+        if(Debug) print('here 4444')
+        ModelData <- NULL
       }
+
+      # Assign globally
+      assign(x = 'ModelOutputList', value = ModelOutputList, envir = .GlobalEnv)
+      assign(x = 'ModelData', value = ModelData, envir = .GlobalEnv)
     }
 
+    # Initialize
     CodeCollection <<- CodeCollection
+    if(!exists('ModelData')) ModelData <- NULL
+    if(!exists('ModelOutputList')) ModelOutputList <- NULL
+
+    print('THIS IS WHERE TO START CHECKING')
+    print(names(ModelOutputList))
 
     # ----
 
@@ -1425,6 +1461,9 @@ server <- function(input, output, session) {
     if(Debug) print("Here r")
 
     # ----
+
+    print('THIS IS WHERE TO START CHECKING 2')
+    print(names(ModelOutputList))
 
     # ----
 
@@ -1917,6 +1956,9 @@ server <- function(input, output, session) {
 
     # ----
 
+    print('THIS IS WHERE TO START CHECKING 3')
+    print(names(ModelOutputList))
+
     # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -2198,6 +2240,9 @@ server <- function(input, output, session) {
 
     # ----
 
+    print('THIS IS WHERE TO START CHECKING 4')
+    print(names(ModelOutputList))
+
     # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -2399,6 +2444,9 @@ server <- function(input, output, session) {
 
     # ----
 
+    print('THIS IS WHERE TO START CHECKING 5')
+    print(names(ModelOutputList))
+
     # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -2503,6 +2551,9 @@ server <- function(input, output, session) {
     })
 
     # ----
+
+    print('THIS IS WHERE TO START CHECKING 6')
+    print(names(ModelOutputList))
 
     # ----
 
@@ -3129,19 +3180,22 @@ server <- function(input, output, session) {
 
     # ----
 
+    print('THIS IS WHERE TO START CHECKING 7')
+    print(names(ModelOutputList))
+
     # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Sweet Alert                          ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     if(Debug) print("Here gggggggg")
-    if(is.null(data) && is.null(ModelOutputList)) {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Data was not loaded', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    } else {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Success', type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    }
+    shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Success', type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    #ModelOutputList <<- ModelOutputList
 
     # ----
+
+    print('THIS IS WHERE TO START CHECKING 8')
+    print(names(ModelOutputList))
 
     # ----
 
@@ -3156,6 +3210,10 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   if(Debug) print("Here a")
+
+  # Initialize
+  if(!exists('ModelData')) ModelData <- NULL
+  if(!exists('ModelOutputList')) ModelOutputList <- NULL
 
   print(':::::::: DATA NULL TESTING 1 ::::::::')
   print(data)
@@ -4909,6 +4967,9 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(eventExpr = input[['TrendPlotExecute']], {
 
+    print('THIS IS WHERE TO START CHECKING 9')
+    print(names(ModelOutputList))
+
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Determine Which Plots to Build       ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -5027,12 +5088,18 @@ server <- function(input, output, session) {
 
     # ----
 
+    print('THIS IS WHERE TO START CHECKING 10')
+    print(names(ModelOutputList))
+
     # ----
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Loop Through Plot Builds             ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     for(run in PlotRefs) {
+
+      print('THIS IS WHERE TO START CHECKING 11')
+      print(names(ModelOutputList))
 
       # Code ID
       CodeCollection[[run]] <- run
@@ -5106,6 +5173,9 @@ server <- function(input, output, session) {
         Percentile_Buckets <- PlotObjectHome[[paste0('Plot_', run)]][['Percentile_Buckets']]
       }
 
+      print('THIS IS WHERE TO START CHECKING 12')
+      print(names(ModelOutputList))
+
       # ----
 
       # ----
@@ -5116,6 +5186,9 @@ server <- function(input, output, session) {
 
       # Convert back to original plottype name
       PlotType <- PlotNamesLookup[[eval(PlotType)]]
+
+      print('THIS IS WHERE TO START CHECKING 13')
+      print(names(ModelOutputList))
 
       # For PDP's
       if(PlotType %in% names(ModelOutputList$PlotList)) {
@@ -5303,27 +5376,40 @@ server <- function(input, output, session) {
         # Prepare data for plotting            ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
-        # Filter Data if DataPrep = TRUE
-        if(!SubsetList[[paste0('DataPrep', run)]]) {
-
-          # Assign data1
-          if(Debug) {
-            print('Here 18 a')
-            if(exists('data1')) print(data1)
-            if(exists('ModelData')) print(ModelData)
-            if(exists('data')) print(data)
+        # Define data1
+        if(exists('data') && (exists('YVar') && length(YVar) != 0 && YVar %in% names(data)) || (exists('XVar') && length(XVar) != 0 && XVar %in% names(data))) {
+          print("data1 GETS DEFINED HERE                     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+          data1 <- data.table::copy(data)
+        } else if(exists('ModelData') && (exists('YVar') && length(YVar) != 0 && YVar %in% names(ModelData)) || (exists('XVar') && length(XVar) != 0 && XVar %in% names(ModelData))) {
+          print("data1 GETS DEFINED HERE 2                     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+          data1 <- data.table::copy(ModelData)
+        } else if(length(YVar) == 0 && length(XVar) == 0 && !PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')) {
+          print("data1 GETS DEFINED HERE 3                     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+          if(!is.null(ModelData)) {
+            print("data1 GETS DEFINED HERE 4                     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+            data1 <- data.table::copy(ModelData)
+          } else {
+            print("data1 GETS DEFINED HERE 5                     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+            data1 <- NULL
           }
-
-          if(!PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')) data1 <- data.table::copy(ModelData) else data1 <- data.table::copy(data)
-
         } else {
+          print("data1 GETS DEFINED HERE 6                     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+          if(!is.null(data)) {
+            print("data1 GETS DEFINED HERE 7                     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+            data1 <- data.table::copy(data)
+          } else {
+            print("data1 GETS DEFINED HERE 8                     :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ")
+            data1 <- NULL
+          }
+        }
 
-          # Assign data1 to correct data set
-          if(!PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram')) data1 <- data.table::copy(ModelData) else data1 <- data.table::copy(data)
+        # Filter Data if DataPrep = TRUE
+        if(SubsetList[[paste0('DataPrep', run)]]) {
 
           # Subset by FilterVariable
           if(Debug) print('Here 23')
           for(i in seq_len(4L)) {
+            print(length(eval(parse(text = paste0('FilterVar', i)))) != 0L)
             if(length(eval(parse(text = paste0('FilterVar', i)))) != 0L) {
               data1 <- RemixAutoML::FilterLogicData(
                 data1,
@@ -5355,20 +5441,12 @@ server <- function(input, output, session) {
           } else {
 
             # Debugging
-            if(Debug) {
-              print(YVar)
-              print(XVar)
-              print(ScoreVar)
-              print(GroupVars)
-              print(SizeVars)
-              print(FacetVar1)
-              print(FacetVar2)
-            }
+            if(Debug) {print(YVar); print(XVar); print(ScoreVar); print(GroupVars); print(SizeVars); print(FacetVar1); print(FacetVar2)}
 
             # Subset columns
             if(Debug) print('Subset Columns Here')
             if(!PlotType %in% c('BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','Histogram','ShapleyVarImp')) {
-              if(length(unique(c(XVar, ScoreVar))) != 0) {
+              if(length(unique(c(XVar))) != 0) {
                 Keep <- unique(c(YVar, XVar, ScoreVar)); if(Debug) {print(Keep); print(names(data1))}
                 data1 <- data1[, .SD, .SDcols = c(Keep)]; if(Debug) print('Subset Columns Here predone')
                 CodeCollection[[run]][[length(CodeCollection)+1L]] <- paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]"); if(Debug) print('Subset Columns Here done')
@@ -5394,14 +5472,16 @@ server <- function(input, output, session) {
         if(Debug) print('Here 27')
 
         # Logic Check for rebuilding modeling plots
-        x1 <- length(ScoreVar) != 0; if(Debug) print(x1)
-        x2 <- XVar %in% names(data1); if(Debug) print(XVar %in% names(data1))
+        x2 <- if(length(data1) != 0) any(names(data1) %in% XVar) else FALSE; if(Debug) print(if(length(data1) != 0) {print(data1); any(names(data1) %in% XVar)} else FALSE)
         x3 <- Percentile_Buckets != 20; if(Debug) print(Percentile_Buckets != 20)
         x4 <- length(GroupVars) != 0 && (length(Levels1) != 0 || length(Levels2) != 0 || length(Levels3) != 0); if(Debug) print(length(GroupVars) != 0 && (length(Levels1) != 0 || length(Levels2) != 0 || length(Levels3) != 0))
         x5 <- any(c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots','Test_EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot','Test_GainsPlot','Train_GainsPlot','Test_LiftPlot','Train_LiftPlot','Test_ScatterPlot','Train_ScatterPlot','Test_CopulaPlot','Train_CopulaPlot','Test_ResidualsHistogram','Train_ResidualsHistogram') %in% PlotType); if(Debug) print(any(c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots','Test_EvaluationPlot','Train_EvaluationPlot','Test_EvaluationBoxPlot','Train_EvaluationBoxPlot','Test_GainsPlot','Train_GainsPlot','Test_LiftPlot','Train_LiftPlot','Test_ScatterPlot','Train_ScatterPlot','Test_CopulaPlot','Train_CopulaPlot','Test_ResidualsHistogram','Train_ResidualsHistogram') %in% PlotType))
-        Blocker <- !x1 || (!x2 && PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots')); if(Debug) print(!x1 || (!x2 && PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots')))
+
+        # if xvar is not in data1, cannot rebuild
+        #        && PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots')
+        PDP_Blocker <- !x2; if(Debug) print(!x2 && PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots'))
         if(x5 || x4 || (x3 && PlotType %in% c('Test_ParDepPlots','Train_ParDepPlots','Test_ParDepBoxPlots','Train_ParDepBoxPlots'))) {
-          if(Blocker) Rebuild <- FALSE else Rebuild <- TRUE
+          if(PDP_Blocker) Rebuild <- FALSE else Rebuild <- TRUE
         } else {
           Rebuild <- FALSE
         }
@@ -5529,6 +5609,8 @@ server <- function(input, output, session) {
 
           # Build Plot
           if(Debug) {
+            print(length(ModelOutputList))
+            if(length(ModelOutputList) != 0) print(names(ModelOutputList))
             print(data1[1:5])
             print(PlotType)
             print(YVar)
@@ -5625,21 +5707,11 @@ server <- function(input, output, session) {
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         # Return Plot to UI                          ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        if(Debug) {
-          print('BUILD THE GRID.ARRANGE :::::::::::::::::::::::::::::::::::::::')
-          print(PlotRefs)
-          print(length(names(PlotCollectionList)))
-          print(length(PlotRefs))
-          print(length(names(PlotCollectionList)) == length(PlotRefs))
-        }
+        if(Debug) {print('BUILD THE GRID.ARRANGE :::::::::::::::::::::::::::::::::::::::'); print(PlotRefs); print(length(names(PlotCollectionList))); print(length(PlotRefs))}
         if(length(names(PlotCollectionList)) == length(PlotRefs)) {
 
           # Debugging
-          if(Debug) {
-            print('Return Plot to UI')
-            print(exists("PlotCollectionList"))
-            print(class(PlotCollectionList[[paste0('p', 1)]]))
-          }
+          if(Debug) {print('Return Plot to UI'); print(exists("PlotCollectionList")); print(class(PlotCollectionList[[paste0('p', 1)]]))}
 
           # Print to UI
           if(exists("PlotCollectionList") && length(names(PlotCollectionList)) != 0) {
@@ -5886,6 +5958,7 @@ server <- function(input, output, session) {
   # Close app after closing browser      ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   session$onSessionEnded(function() {
+    rm(BlobStorageURL, PlotObjectHome, CodeCollection, data1, PlotCollectionList, SubsetList, rawfiles, cont, ModelData, ModelOutputList, envir = .GlobalEnv)
     shiny::stopApp()
   })
 }

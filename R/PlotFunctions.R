@@ -1503,7 +1503,7 @@ AppModelInsights <- function(ModelOutputList,
   if(tolower(PlotType) == 'shapleyvarimp') {
 
     # Debugging
-    if(Debug) {print(dt); print(names(dt)); print(dt[, .N]); print(names(dt)[which(names(dt) %like% 'Shap_')]); print(length(names(dt)[which(names(dt) %like% 'Shap_')]))}
+    if(Debug) {print(dt[1:3]); print(names(dt)); print(dt[, .N]); print(names(dt)[which(names(dt) %like% 'Shap_')]); print(length(names(dt)[which(names(dt) %like% 'Shap_')]))}
 
     # Prepare info
     vals <- names(dt)[which(names(dt) %like% 'Shap_')]
@@ -1623,7 +1623,10 @@ AppModelInsights <- function(ModelOutputList,
   # ROC Plot ----
   if(any(PlotType %chin% "Test_ROC_Plot")) {
     if(!Rebuild) {
-      if(Debug) print('ROC !Rebuild')
+      if(Debug) {
+        print('ROC !Rebuild')
+        print(names(ModelOutputList$PlotList))
+      }
       p1 <- ModelOutputList$PlotList[['Test_ROC_Plot']]
       if(Debug) {
         print(is.null(p1))
@@ -1858,7 +1861,6 @@ AppModelInsights <- function(ModelOutputList,
       p1 <- p1 + ggplot2::ylab('ML-Algo-Generated Variable Importance')
     }
     return(eval(p1))
-
   }
 
   # ----
