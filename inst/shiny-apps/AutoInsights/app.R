@@ -1190,9 +1190,6 @@ server <- function(input, output, session) {
       if(Debug) {print('data check 3')}
       AzureStor::download_blob(container = cont, src = input[['rdatablob']], dest = file.path('/inputdata', input[['rdatablob']]), overwrite=TRUE)
     }
-
-    #shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Success', type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-
   })
 
   # Load data event
