@@ -76,3 +76,85 @@ data.table::fwrite(Outputt, file = file.path(opt$CSV_Path, "QA-AutoBanditSarima.
 # MaxRunTimeMinutes = 30L
 # NumberCores = parallel::detectCores() - 2
 # DebugMode = TRUE
+
+
+# FROM rocker/shiny:4.0.5
+#
+# # Get linux up to date
+# RUN apt-get update && apt-get install -y \
+# --no-install-recommends \
+# git-core \
+# libssl-dev \
+# libcurl4-gnutls-dev \
+# curl \
+# libsodium-dev \
+# libxml2-dev \
+# libicu-dev \
+# && apt-get clean \
+# && rm -rf /var/lib/apt/lists/*
+#
+#   # Something
+#   ENV _R_SHLIB_STRIP_=true
+#
+# # It's free real estate!
+# RUN echo 'Its free real estate'
+#
+# # Install packages
+# RUN install2.r --error --skipinstalled \
+# esquisse \
+# shiny \
+# forecast \
+# jsonlite \
+# ggplot2 \
+# htmltools \
+# plotly \
+# devtools \
+# arules \
+# bit64 \
+# combinat \
+# data.table \
+# doParallel \
+# e1071 \
+# fBasics \
+# foreach \
+# forecast \
+# fpp \
+# ggplot2 \
+# gridExtra \
+# itertools \
+# lubridate \
+# MLmetrics \
+# nortest \
+# RColorBrewer \
+# recommenderlab \
+# pROC \
+# Rfast \
+# scatterplot3d \
+# stringr \
+# timeDate \
+# tsoutliers \
+# xgboost \
+# lightgbm \
+# jsonlite \
+# RCurl \
+# shinydashboard \
+# shinyjs \
+# shinyWidgets \
+# htmltools \
+# AzureStor
+#
+# # Install github packages
+# RUN R -e "devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')"
+# RUN R -e "devtools::install_github('AdrianAntico/prettydoc', upgrade = FALSE, dependencies = FALSE, force = TRUE)"
+# RUN R -e "devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE, quiet = FALSE)"
+#
+# # Copy in credentials for azure
+# COPY AutoPlotterCreds.csv .
+#
+# # Run app
+# CMD /bin/bash R -e "options('shiny.port'=3838,shiny.host='0.0.0.0'); library(RemixAutoML); RemixAutoML::AppsPlotting(UserName_Password_DT=data.table::data.table(UserName = c('UserID'), Password = c('Nova2046')), Debug = TRUE, PlotObjectHome = RemixAutoML:::InitializePlotObjects(4L), RunMode = 'package', AzureCredsFile = normalizePath('.'))"
+
+
+
+
+
