@@ -124,7 +124,6 @@ if(!is.null(AzureCredsFile)) {
 # Initialize a few variables
 PlotWidth <- 1500
 PlotHeight <- 550
-
 ModelData <- NULL
 ModelOutputList <- NULL
 data <- NULL
@@ -134,9 +133,7 @@ UserName_Password_DT <- shiny::getShinyOption(name = 'UserName_Password_DT', def
 if(!is.null(UserName_Password_DT) && 'UserName' %in% names(UserName_Password_DT) && 'Password' %in% names(UserName_Password_DT)) {
   Credentials <- UserName_Password_DT
 } else {
-  Credentials <- data.table::data.table(
-    UserName = c('Guest'),
-    Password = c('Password'))
+  Credentials <- data.table::data.table(UserName = c('Guest'), Password = c('Password'))
 }
 
 # ----
@@ -192,40 +189,22 @@ ui <- shinydashboard::dashboardPage(
 
       # Sidebar for switching pages only (no other buttons will work. Ensures authentically)
       id = "sidebar",
-      # tags$head(tags$style(".inactiveLink {
-      #                       pointer-events: none;
-      #                      cursor: default;
-      #                      }
-      #
-      #                      .main-sidebar .shiny-bound-input {
-      #                      background-color: #160029;
-      #                      }
-      #
-      #                      ")),
 
-      # -- ADD SPACE
+      # Login Page
       RemixAutoML::BlankRow(AppWidth),
+      shinydashboard::menuItem(text="Login", tabName="Login", icon=shiny::icon("sign-in-alt"), selected = TRUE),
 
-      # Home Page
-      shinydashboard::menuItem(text="Login", tabName="Login", icon=shiny::icon("fort-awesome"), selected = TRUE),
-
-      # -- ADD SPACE
+      # Load Data Page
       RemixAutoML::BlankRow(AppWidth),
+      shinydashboard::menuItem(text="Import Data", tabName='LoadDataPage', icon=shiny::icon("database")),
 
-      # Home Page
-      shinydashboard::menuItem(text="Import Data", tabName='LoadDataPage', icon=shiny::icon("fort-awesome")),
-
-      # -- ADD SPACE
+      # Plotting Page
       RemixAutoML::BlankRow(AppWidth),
+      shinydashboard::menuItem(text="Create Plots", tabName='Plotter', icon=shiny::icon("chart-line")),
 
-      # Home Page
-      shinydashboard::menuItem(text="Create Plots", tabName='Plotter', icon=shiny::icon("fort-awesome")),
-
-      # -- ADD SPACE
+      # Code Print Page
       RemixAutoML::BlankRow(AppWidth),
-
-      # Home Page
-      shinydashboard::menuItem(text="Print Code", tabName='CodePrint', icon=shiny::icon("fort-awesome")))),
+      shinydashboard::menuItem(text="Print Code", tabName='CodePrint', icon=shiny::icon("code")))),
 
   # ----
 
@@ -236,6 +215,7 @@ ui <- shinydashboard::dashboardPage(
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shinydashboard::dashboardBody(
 
+    # Style Sheet Reference ----
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
 
     # ----
@@ -247,7 +227,6 @@ ui <- shinydashboard::dashboardPage(
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     shinydashboard::tabItems(
 
-
       # ----
 
       # ----
@@ -256,39 +235,15 @@ ui <- shinydashboard::dashboardPage(
       # Login Page                           ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       shinydashboard::tabItem(
-        selected = TRUE,
-        tabName = 'Login',
 
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
+        # Tab MetaData
+        selected = TRUE, tabName = 'Login',
 
-        # Box ----
-        shinydashboard::box(
-          title = NULL,
-          solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
-          shiny::selectInput(
-            inputId = "UserName",
-            label =  "Select from Names",
-            choices = Credentials[['UserName']],
-            selected = 'UserName'),
-          shiny::textInput(
-            inputId = "Password",
-            label =  "Input Password",
-            value = 'Password')),
-
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
+        # Box with Username and Password inputs
+        RemixAutoML:::LoginInputs(id='LoginBox', BoxStatus='danger', UserNameLabel="Select from Names", PassWordLabel='Input Password', UserNameChoices=Credentials[['UserName']], BoxTitle=NULL, SolidHeader=TRUE, Collapsible=FALSE, AppWidth=AppWidth),
 
         # Button to login and go to Load Data
-        shiny::fluidRow(
-          shiny::column(
-            width = 3L, shinyjs::useShinyjs(),
-            shinyWidgets::actionBttn(
-              inputId = 'Check_Credentials',
-              label = 'Check Credentials',
-              icon = shiny::icon('chevron-right', lib = 'font-awesome'),
-              style = 'gradient',
-              color = 'royal')))),
+        RemixAutoML:::LoginButton(id='LoginButton', Label='Check Credentials', AppWidth=AppWidth, Width=3L, Icon=shiny::icon('chevron-right', lib = 'font-awesome'), Style='gradient', Color='royal')),
 
       # ----
 
@@ -298,60 +253,15 @@ ui <- shinydashboard::dashboardPage(
       # Load Data Page                       ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       shinydashboard::tabItem(
+
+        # Tab MetaData
         tabName = 'LoadDataPage',
 
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
+        # Load Inputs Box
+        RemixAutoML:::LoadDataInputs(id='LoadDataInputs', AppWidth=AppWidth, LogoWidth=LogoWidth, SolidHeader=TRUE, BoxTitle=NULL, BoxStatus='danger', CSV_h4='Local .csv Data', DropdownRight=FALSE, DropDownAnimate=TRUE, DropDownStatus='custom'),
 
-        # Box ----
-        shinydashboard::box(
-          title = NULL, width=AppWidth, solidHeader=TRUE, status = 'danger',
-
-          # Local CSV
-          RemixAutoML::BlankRow(AppWidth),
-          tags$h4(tags$b('Local .csv Data')),
-          shiny::fileInput(inputId = 'DataLoad', label = NULL, accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-
-          # Local .Rdata
-          RemixAutoML::BlankRow(AppWidth),
-          tags$h4(tags$b('Local .Rdata Model Output List')),
-          shiny::fileInput(inputId = "ModelObjectLoad", label = NULL),#  "RemixAutoML .Rdata Model Output List"),
-
-          # Dropdown for external data
-          RemixAutoML::BlankRow(AppWidth),
-          tags$h4(tags$b('External Data Loading')),
-          shinyWidgets::dropdown(
-            right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
-            tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'External Data')),
-            RemixAutoML::BlankRow(AppWidth),
-            shiny::fluidRow(width = AppWidth, shiny::column(3L, align='right', shiny::uiOutput('blob'))),
-            RemixAutoML::BlankRow(AppWidth),
-            shiny::fluidRow(width = AppWidth, shiny::column(3L, shiny::uiOutput('rdatablob'))),
-            RemixAutoML::BlankRow(AppWidth),
-
-            # Load button
-            shinyWidgets::actionBttn(inputId = 'LoadAzure', label = 'Download Data')),
-
-          # Azure Blob CSV
-          #RemixAutoML::BlankRow(AppWidth),
-          #shiny::htmlOutput('ExternalCSVSelected'),
-
-          # Azure Blob .Rdata
-          RemixAutoML::BlankRow(AppWidth)
-          #shiny::htmlOutput('ExternalRdataSelected')
-
-        ), # end box
-
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
-
-        # Go to Plotter
-        shiny::fluidRow(
-          shiny::column(
-            width = 3L, shinyjs::useShinyjs(),
-            shinyWidgets::actionBttn(inputId='LoadDataButton', label='Load Data', icon=shiny::icon('chevron-right', lib='font-awesome'), style='gradient', color='royal')))
-
-        ),
+        # Button to Load Data
+        RemixAutoML:::LoadDataButton(id = 'DataButton', AppWidth = AppWidth)),
 
       # ----
 
@@ -381,172 +291,16 @@ ui <- shinydashboard::dashboardPage(
           # Add Space
           RemixAutoML::BlankRow(AppWidth),
 
-          # Plotting Variables
+          # Plot DropDown Buttons and Contents ----
           shiny::fluidRow(
             width=AppWidth,
-
-            # Plot 1 ----
-            shiny::column(
-              width = 3L,
-              align='center',
-
-              # Plot 1-2 Core Variables in DropDowns
-              tags$h4(tags$b('Plot 1')),
-              shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
-                tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Core Variables for Plot 1')),
-                RemixAutoML::BlankRow(AppWidth),
-
-                # PlotType Selection
-                shiny::fluidRow(width=AppWidth, shiny::column(6L, shiny::uiOutput('Plot1'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('YVar1')),
-                  shiny::column(6L, shiny::uiOutput('XVar1'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('FacetVar_1_1')),
-                  shiny::column(6L, shiny::uiOutput('FacetVar_1_2'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('GroupVars1')),
-                  shiny::column(6L, shiny::uiOutput('SizeVar1'))),
-
-                # Group-Levels
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars1']) >= 1", shiny::uiOutput('Levels_1_1'))),
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars1']) >= 2", shiny::uiOutput('Levels_1_2'))),
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars1']) >= 3", shiny::uiOutput('Levels_1_3')))),
-
-              ) # end dropdown
-            ), # end column
-
-
-            # Plot 2 ----
-            shiny::column(
-              width = 3L,
-              align='center',
-
-              # Core Variables
-              tags$h4(tags$b('Plot 2')),
-              shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
-                tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Core Variables for Plot 2')),
-                RemixAutoML::BlankRow(AppWidth),
-
-                # PlotType Selection
-                shiny::fluidRow(width=AppWidth, shiny::column(6L, shiny::uiOutput('Plot2'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('YVar2')),
-                  shiny::column(6L, shiny::uiOutput('XVar2'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('FacetVar_2_1')),
-                  shiny::column(6L, shiny::uiOutput('FacetVar_2_2'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('GroupVars2')),
-                  shiny::column(6L, shiny::uiOutput('SizeVar2'))),
-
-                # Group-Levels
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars2']) >= 1", shiny::uiOutput('Levels_2_1'))),
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars2']) >= 2", shiny::uiOutput('Levels_2_2'))),
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars2']) >= 3", shiny::uiOutput('Levels_2_3')))),
-
-              ) # end dropdown
-            ), # end column
-
-
-            # Plot 3 ----
-            shiny::column(
-              width = 3L,
-              align='center',
-
-              # Core Variables
-              tags$h4(tags$b('Plot 3')),
-              shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
-                tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Core Variables for Plot 3')),
-                RemixAutoML::BlankRow(AppWidth),
-
-                # PlotType Selection
-                shiny::fluidRow(width=AppWidth, shiny::column(6L, shiny::uiOutput('Plot3'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('YVar3')),
-                  shiny::column(6L, shiny::uiOutput('XVar3'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('FacetVar_3_1')),
-                  shiny::column(6L, shiny::uiOutput('FacetVar_3_2'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('GroupVars3')),
-                  shiny::column(6L, shiny::uiOutput('SizeVar3'))),
-
-                # Group-Levels
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars3']) >= 1", shiny::uiOutput('Levels_3_1'))),
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars3']) >= 2", shiny::uiOutput('Levels_3_2'))),
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars3']) >= 3", shiny::uiOutput('Levels_3_3')))),
-
-              ) # end dropdown
-            ), # end of column
-
-
-            # Plot 4 ----
-            shiny::column(
-              width = 3L,
-              align='center',
-
-              # Core Variables
-              tags$h4(tags$b('Plot 4')),
-              shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
-                tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Core Variables for Plot 4')),
-                RemixAutoML::BlankRow(AppWidth),
-
-                # PlotType Selection
-                shiny::fluidRow(width=AppWidth, shiny::column(6L, shiny::uiOutput('Plot4'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('YVar4')),
-                  shiny::column(6L, shiny::uiOutput('XVar4'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('FacetVar_4_1')),
-                  shiny::column(6L, shiny::uiOutput('FacetVar_4_2'))),
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(6L, shiny::uiOutput('GroupVars4')),
-                  shiny::column(6L, shiny::uiOutput('SizeVar4'))),
-
-                # Group-Levels
-                shiny::fluidRow(
-                  width=AppWidth,
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars4']) >= 1", shiny::uiOutput('Levels_4_1'))),
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars4']) >= 2", shiny::uiOutput('Levels_4_2'))),
-                  shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars4']) >= 3", shiny::uiOutput('Levels_4_3')))),
-
-              ) # end dropdown
-            ) # end of column
-
-
-          ), # end of fluidrow
+            RemixAutoML:::PlotDropDownContents(id='PlotDropDown', PlotNumber=1L, AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color=H3Color),
+            RemixAutoML:::PlotDropDownContents(id='PlotDropDown', PlotNumber=2L, AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color=H3Color),
+            RemixAutoML:::PlotDropDownContents(id='PlotDropDown', PlotNumber=3L, AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color=H3Color),
+            RemixAutoML:::PlotDropDownContents(id='PlotDropDown', PlotNumber=4L, AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color=H3Color)), # end of fluidrow
 
           # Add Space to act as a bigger boarder for box
           RemixAutoML::BlankRow(AppWidth),
-
-          # Build, GS, Format, Filter
-          # All on same row
-          # shiny::fluidRow(
-          #   width = 12L,
-          #
 
         ), # End of box
 
@@ -570,43 +324,15 @@ ui <- shinydashboard::dashboardPage(
             width=AppWidth,
 
             # Dragula Boxes          ----
-            shiny::column(
-              width = 12L,
-              align = 'center',
-              shiny::uiOutput('PlotTypeDragula')),
+            shiny::column(width = 12L, align = 'center', shiny::uiOutput('PlotTypeDragula')),
 
             # Create Plot Button     ----
             shiny::column(
-              width = 3L, shinyjs::useShinyjs(),
-              align='center',
-              tags$h4(tags$b('~ Build Plot')), # tags$h4(tags$span(style='color: blue;', 'Build Plot')),
-              shinyWidgets::actionBttn(inputId='TrendPlotExecute', label='Build Plot', style='gradient', color='royal')), # eval(CreatePlotButtonColor)
-
-            # Reset Theme!
-            # shiny::column(
-            #   width = 2L, shinyjs::useShinyjs(),
-            #   tags$h4(tags$span(style='color: blue;', 'Reset Plot')),
-            #   shinyWidgets::actionBttn(inputId='ResetPlotThemeElements', label='Reset', icon=shiny::icon('chevron-right', lib = 'font-awesome'), style='gradient', color='default')), # color=eval(ResetPlotButtonColor)))),
+              width = 3L, shinyjs::useShinyjs(), align='center', tags$h4(tags$b('~ Build Plot')),
+              shinyWidgets::actionBttn(inputId='TrendPlotExecute', label='Build Plot', style='gradient', color='royal')),
 
             # Global Settings        ----
-            shiny::column(
-              width = 3L,
-              align='center',
-              tags$h4(tags$b('Global Settings')),
-              shinyWidgets::dropdown(
-                right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", width = LogoWidth,
-                tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Global Settings')),
-                RemixAutoML::BlankRow(AppWidth),
-                shiny::fluidRow(
-                  width = AppWidth,
-                  shiny::column(3L, align='right', shiny::uiOutput('AutoGridHorizontal'))),
-                RemixAutoML::BlankRow(AppWidth),
-                shiny::fluidRow(width = AppWidth, shiny::column(3L, shiny::uiOutput('PlotHeight'))),
-                RemixAutoML::BlankRow(AppWidth),
-                shiny::fluidRow(width = AppWidth, shiny::column(3L, shiny::uiOutput('PlotWidth'))),
-
-              ) # end of dropdown
-            ), # end of column global settings
+            RemixAutoML:::GlobalSettingsContents(id='GlobalSettings', PlotHeight=PlotHeight, PlotWidth=PlotWidth, AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
             # Formatting DropDown    ----
             shiny::column(
@@ -622,163 +348,14 @@ ui <- shinydashboard::dashboardPage(
                 # Plot Formatting
                 shiny::fluidRow(
 
-                  # Plot Axis Limits ----
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Axis Limits'))),
-                    shinyWidgets::dropdown(
-                      right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Axis-Limits", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Limits')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Alter the min and max limits for the Y and X Axes')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('YLimMin1')),
-                        shiny::column(3L, shiny::uiOutput('YLimMax1')),
-                        shiny::column(3L, shiny::uiOutput('XLimMin1')),
-                        shiny::column(3L, shiny::uiOutput('XLimMax1'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('YLimMin2')),
-                        shiny::column(3L, shiny::uiOutput('YLimMax2')),
-                        shiny::column(3L, shiny::uiOutput('XLimMin2')),
-                        shiny::column(3L, shiny::uiOutput('XLimMax2'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('YLimMin3')),
-                        shiny::column(3L, shiny::uiOutput('YLimMax3')),
-                        shiny::column(3L, shiny::uiOutput('XLimMin3')),
-                        shiny::column(3L, shiny::uiOutput('XLimMax3'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('YLimMin4')),
-                        shiny::column(3L, shiny::uiOutput('YLimMax4')),
-                        shiny::column(3L, shiny::uiOutput('XLimMin4')),
-                        shiny::column(3L, shiny::uiOutput('XLimMax4'))))), # column end
+                  # Plot Axes Limits ----
+                  RemixAutoML:::AxisLimits(id='AxisLimitsContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
                   # Plot Formatting  ----
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot Structure'))),
-                    shinyWidgets::dropdown(
-                      right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Plot-Structure", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Formatting')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'For color options, see Plot Colors')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('SampleSize1')),
-                        shiny::column(3L, shiny::uiOutput('SampleSize2')),
-                        shiny::column(3L, shiny::uiOutput('SampleSize3')),
-                        shiny::column(3L, shiny::uiOutput('SampleSize4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('AngleY1')),
-                        shiny::column(3L, shiny::uiOutput('AngleY2')),
-                        shiny::column(3L, shiny::uiOutput('AngleY3')),
-                        shiny::column(3L, shiny::uiOutput('AngleY4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('AngleX1')),
-                        shiny::column(3L, shiny::uiOutput('AngleX2')),
-                        shiny::column(3L, shiny::uiOutput('AngleX3')),
-                        shiny::column(3L, shiny::uiOutput('AngleX4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('YTicks1')),
-                        shiny::column(3L, shiny::uiOutput('YTicks2')),
-                        shiny::column(3L, shiny::uiOutput('YTicks3')),
-                        shiny::column(3L, shiny::uiOutput('YTicks4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('XTicks1')),
-                        shiny::column(3L, shiny::uiOutput('XTicks2')),
-                        shiny::column(3L, shiny::uiOutput('XTicks3')),
-                        shiny::column(3L, shiny::uiOutput('XTicks4'))),
-                      shiny::fluidRow(
-                        shiny::column(3L, shiny::uiOutput('TextSize1')),
-                        shiny::column(3L, shiny::uiOutput('TextSize2')),
-                        shiny::column(3L, shiny::uiOutput('TextSize3')),
-                        shiny::column(3L, shiny::uiOutput('TextSize4'))),
-                      shiny::fluidRow(
-                        shiny::column(3L, shiny::uiOutput('OutlierSize1')),
-                        shiny::column(3L, shiny::uiOutput('OutlierSize2')),
-                        shiny::column(3L, shiny::uiOutput('OutlierSize3')),
-                        shiny::column(3L, shiny::uiOutput('OutlierSize4'))),
-                      shiny::fluidRow(
-                        shiny::column(3L, shiny::uiOutput('LegendPosition1')),
-                        shiny::column(3L, shiny::uiOutput('LegendPosition2')),
-                        shiny::column(3L, shiny::uiOutput('LegendPosition3')),
-                        shiny::column(3L, shiny::uiOutput('LegendPosition4'))),
-                      shiny::fluidRow(
-                        shiny::column(3L, shiny::uiOutput('LegendLineType1')),
-                        shiny::column(3L, shiny::uiOutput('LegendLineType2')),
-                        shiny::column(3L, shiny::uiOutput('LegendLineType3')),
-                        shiny::column(3L, shiny::uiOutput('LegendLineType4'))),
-
-                    ) # end dropdown
-                  ), # column end and dropdown end
+                  RemixAutoML:::Formatting(id='FormattingContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
                   # Plot Colors      ----
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot Colors'))),
-                    shinyWidgets::dropdown(
-                      right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom  ", inputId = "Plot-Colors", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Plot Coloring')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('BackGroundColor1')),
-                        shiny::column(3L, shiny::uiOutput('BackGroundColor2')),
-                        shiny::column(3L, shiny::uiOutput('BackGroundColor3')),
-                        shiny::column(3L, shiny::uiOutput('BackGroundColor4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('SubTitleColor1')),
-                        shiny::column(3L, shiny::uiOutput('SubTitleColor2')),
-                        shiny::column(3L, shiny::uiOutput('SubTitleColor3')),
-                        shiny::column(3L, shiny::uiOutput('SubTitleColor4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('ChartColor1')),
-                        shiny::column(3L, shiny::uiOutput('ChartColor2')),
-                        shiny::column(3L, shiny::uiOutput('ChartColor3')),
-                        shiny::column(3L, shiny::uiOutput('ChartColor4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('BorderColor1')),
-                        shiny::column(3L, shiny::uiOutput('BorderColor2')),
-                        shiny::column(3L, shiny::uiOutput('BorderColor3')),
-                        shiny::column(3L, shiny::uiOutput('BorderColor4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('TextColor1')),
-                        shiny::column(3L, shiny::uiOutput('TextColor2')),
-                        shiny::column(3L, shiny::uiOutput('TextColor3')),
-                        shiny::column(3L, shiny::uiOutput('TextColor4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FillColor1')),
-                        shiny::column(3L, shiny::uiOutput('FillColor2')),
-                        shiny::column(3L, shiny::uiOutput('FillColor3')),
-                        shiny::column(3L, shiny::uiOutput('FillColor4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('OutlierColor1')),
-                        shiny::column(3L, shiny::uiOutput('OutlierColor2')),
-                        shiny::column(3L, shiny::uiOutput('OutlierColor3')),
-                        shiny::column(3L, shiny::uiOutput('OutlierColor4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('GridColor1')),
-                        shiny::column(3L, shiny::uiOutput('GridColor2')),
-                        shiny::column(3L, shiny::uiOutput('GridColor3')),
-                        shiny::column(3L, shiny::uiOutput('GridColor4')))
-
-                    ) # end of dropdown
-                  ) # end of column
-                ), # fluidrow end
+                  RemixAutoML:::Coloring(id='ColoringContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom')), # fluidrow end
 
 
                 # Add Space
@@ -788,70 +365,17 @@ ui <- shinydashboard::dashboardPage(
                 shiny::fluidRow(
 
                   # Gam Fitting
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'GAM Line'))),
-                    shinyWidgets::dropdown(
-                      right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "GamRegressionLine", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'GAM Regression Lines')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Add a generalized additive model regression fit to the data')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('GamFitScatter1')),
-                        shiny::column(3L, shiny::uiOutput('GamFitScatter2')),
-                        shiny::column(3L, shiny::uiOutput('GamFitScatter3')),
-                        shiny::column(3L, shiny::uiOutput('GamFitScatter4'))))), # end of column
+                  RemixAutoML:::GamFitting(id='GamFittingContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
                   # Histogram bins
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), tags$b('Hist Bins'))),
-                    shinyWidgets::dropdown(
-                      right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Histograms-Bins", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Histogram # Bins')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Choose the number of bins for the histogram')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('NumberBins1')),
-                        shiny::column(3L, shiny::uiOutput('NumberBins2')),
-                        shiny::column(3L, shiny::uiOutput('NumberBins3')),
-                        shiny::column(3L, shiny::uiOutput('NumberBins4'))))), # end of column
+                  RemixAutoML:::HistBins(id='HistBinsContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
                   # Percentile Bins
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Eval Bins'))),
-                    shinyWidgets::dropdown(
-                      right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Percentile-Bins", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Calibration Plot Bins')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Choose the number of bins for the relevant model output plots')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('Percentile_Buckets1')),
-                        shiny::column(3L, shiny::uiOutput('Percentile_Buckets2')),
-                        shiny::column(3L, shiny::uiOutput('Percentile_Buckets3')),
-                        shiny::column(3L, shiny::uiOutput('Percentile_Buckets4'))))), # end of column
+                  RemixAutoML:::PercentileBuckets(id='PercentileBucketsContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=TRUE, Animate=TRUE, Status='custom'),
 
                   # Shapely Aggregation Method
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), tags$b('Shapley Agg'))),
-                    shinyWidgets::dropdown(
-                      right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Shapely-Agg", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Calibration Plot Bins')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Choose the number of bins for the relevant model output plots')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('ShapAggMethod1')),
-                        shiny::column(3L, shiny::uiOutput('ShapAggMethod2')),
-                        shiny::column(3L, shiny::uiOutput('ShapAggMethod3')),
-                        shiny::column(3L, shiny::uiOutput('ShapAggMethod4'))))) # end of column
+                  RemixAutoML:::ShapAgg(id='ShapAggContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=TRUE, Animate=TRUE, Status='custom')) # end fluid row
 
-                ) # end of fluidrow
               ) # end of dropdown
             ), # end of column plot format dropdown inputs ::::::::
 
@@ -867,152 +391,12 @@ ui <- shinydashboard::dashboardPage(
                 tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Filters for subsetting data')),
                 RemixAutoML::BlankRow(12L),
 
-                # Plot N Filter DropDowns
+                # Filter Variables ----
                 shiny::fluidRow(
-
-                  # Plot 1 Filter Variables ----
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot 1'))),
-                    align='center',
-                    shinyWidgets::dropdown(
-                      right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Filters-P1", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filters for Plot 1')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Subset data using up to four variables')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = 12L,
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_1_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_1_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_1_3')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_1_4'))),
-                      shiny::fluidRow(
-                        width = 13L,
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_1_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_1_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_1_3')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_1_4'))),
-                      shiny::fluidRow(
-                        width = 13L,
-                        shiny::column(3L, shiny::uiOutput('FilterValue_1_1_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_1_2_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_1_3_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_1_4_1'))),
-                      shiny::fluidRow(
-                        width = 13L,
-                        shiny::column(3L, shiny::uiOutput('FilterValue_1_1_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_1_2_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_1_3_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_1_4_2'))))),
-
-
-                  # Plot 2 Filter Variables ----
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot 2'))),
-                    align='center',
-                    shinyWidgets::dropdown(
-                      right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Filters-P2", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filters for Plot 2')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Subset data using up to four variables')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_2_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_2_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_2_3')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_2_4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_2_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_2_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_2_3')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_2_4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterValue_2_1_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_2_2_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_2_3_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_2_4_1'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterValue_2_1_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_2_2_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_2_3_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_2_4_2'))))), # column end
-
-                  # Plot 3 Filter Variables ----
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot 3'))),
-                    align='center',
-                    shinyWidgets::dropdown(
-                      right = FALSE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Filters-P3", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filters for Plot 3')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Subset data using up to four variables')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_3_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_3_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_3_3')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_3_4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_3_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_3_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_3_3')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_3_4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterValue_3_1_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_3_2_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_3_3_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_3_4_1'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterValue_3_1_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_3_2_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_3_3_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_3_4_2'))))), # column end
-
-                  # Plot 4 Filter Variables ----
-                  shiny::column(
-                    width = 3L,
-                    tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot 4'))),
-                    align='center',
-                    shinyWidgets::dropdown(
-                      right = TRUE, animate = TRUE, circle = FALSE, tooltip = FALSE, status = "custom", inputId = "Filters-P4", width = LogoWidth,
-                      tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Filters for Plot 4')),
-                      tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Subset data using up to four variables')),
-                      RemixAutoML::BlankRow(AppWidth),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_4_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_4_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_4_3')),
-                        shiny::column(3L, shiny::uiOutput('FilterVariable_4_4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_4_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_4_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_4_3')),
-                        shiny::column(3L, shiny::uiOutput('FilterLogic_4_4'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterValue_4_1_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_4_2_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_4_3_1')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_4_4_1'))),
-                      shiny::fluidRow(
-                        width = AppWidth,
-                        shiny::column(3L, shiny::uiOutput('FilterValue_4_1_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_4_2_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_4_3_2')),
-                        shiny::column(3L, shiny::uiOutput('FilterValue_4_4_2'))))) # column end
-
-
-                ), # fluidrow end
+                  RemixAutoML:::DataFilters(id='FiltersDropDownContents', PlotNumber=1, Status='custom', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color = H4Color, Right=FALSE, Animate=TRUE),
+                  RemixAutoML:::DataFilters(id='FiltersDropDownContents', PlotNumber=2, Status='custom', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color = H4Color, Right=FALSE, Animate=TRUE),
+                  RemixAutoML:::DataFilters(id='FiltersDropDownContents', PlotNumber=3, Status='custom', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color = H4Color, Right=FALSE, Animate=TRUE),
+                  RemixAutoML:::DataFilters(id='FiltersDropDownContents', PlotNumber=4, Status='custom', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color = H4Color, Right=FALSE, Animate=TRUE)), # fluidrow end
 
                 # Extra space at bottom of dropdown after filter buttoms
                 RemixAutoML::BlankRow(AppWidth),
@@ -1032,10 +416,7 @@ ui <- shinydashboard::dashboardPage(
 
         # Add Space
         RemixAutoML::BlankRow(AppWidth),
-        shiny::fluidRow(
-          shiny::column(
-            width = AppWidth,
-            shiny::plotOutput('Trend')))),
+        shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend')))),
 
       # ----
 
@@ -1050,20 +431,10 @@ ui <- shinydashboard::dashboardPage(
         tabName = "CodePrint",
 
         # Print Code!
-        shiny::fluidRow(
-          shiny::column(
-            width = 3L, shinyjs::useShinyjs(),
-            shinyWidgets::actionBttn(
-              inputId = 'PrintCodeButton',
-              label = 'Print Code',
-              icon = shiny::icon('chevron-right', lib = 'font-awesome'),
-              style = 'gradient',
-              color = eval(CreatePlotButtonColor)))),
-
-        # Add Space
-        RemixAutoML::BlankRow(AppWidth),
+        shiny::fluidRow(shiny::column(width = 3L, shinyjs::useShinyjs(), shinyWidgets::actionBttn(inputId='PrintCodeButton', label='Print Code', icon=shiny::icon('chevron-right', lib = 'font-awesome'), style='gradient', color=eval(CreatePlotButtonColor)))),
 
         # Print Code
+        RemixAutoML::BlankRow(AppWidth),
         shiny::fluidRow(shiny::column(width = AppWidth, shiny::htmlOutput('PrintCode'))))
 
       ) # Close tab items

@@ -120,20 +120,25 @@ XGBoost and LightGBM can be used with GPU. However, their installation is much m
 ```r
 # Install Dependencies----
 if(!("devtools" %in% rownames(installed.packages()))) install.packages("devtools"); print("devtools")
+
+# Core pacakges
+if(!("data.table" %in% rownames(installed.packages()))) install.packages("data.table"); print("data.table")
 if(!("arules" %in% rownames(installed.packages()))) install.packages("arules"); print("arules")
 if(!("bit64" %in% rownames(installed.packages()))) install.packages("bit64"); print("bit64")
-if(!("combinat" %in% rownames(install.packages()))) install.packages("combinat"); print("combinat")
-if(!("data.table" %in% rownames(installed.packages()))) install.packages("data.table"); print("data.table")
 if(!("doParallel" %in% rownames(installed.packages()))) install.packages("doParallel"); print("doParallel")
+if(!("foreach" %in% rownames(installed.packages()))) install.packages("foreach"); print("foreach")
+if(!("lubridate" %in% rownames(installed.packages()))) install.packages("lubridate"); print("lubridate")
+if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate"); print("timeDate")
+
+# Additional dependencies for specific use cases
+if(!("combinat" %in% rownames(install.packages()))) install.packages("combinat"); print("combinat")
 if(!("e1071" %in% rownames(installed.packages()))) install.packages("e1071"); print("e1071")
 if(!("fBasics" %in% rownames(installed.packages()))) install.packages("fBasics"); print("fBasics")
-if(!("foreach" %in% rownames(installed.packages()))) install.packages("foreach"); print("foreach")
 if(!("forecast" %in% rownames(installed.packages()))) install.packages("forecast"); print("forecast")
 if(!("fpp" %in% rownames(installed.packages()))) install.packages("fpp"); print("fpp")
 if(!("ggplot2" %in% rownames(installed.packages()))) install.packages("ggplot2"); print("ggplot2")
 if(!("gridExtra" %in% rownames(installed.packages()))) install.packages("gridExtra"); print("gridExtra")
 if(!("itertools" %in% rownames(installed.packages()))) install.packages("itertools"); print("itertools")
-if(!("lubridate" %in% rownames(installed.packages()))) install.packages("lubridate"); print("lubridate")
 if(!("MLmetrics" %in% rownames(installed.packages()))) install.packages("MLmetrics"); print("MLmetrics")
 if(!("nortest" %in% rownames(installed.packages()))) install.packages("nortest"); print("nortest")
 if(!("RColorBrewer" %in% rownames(installed.packages()))) install.packages("RColorBrewer"); print("RColorBrewer")
@@ -142,7 +147,6 @@ if(!("pROC" %in% rownames(installed.packages()))) install.packages("pROC"); prin
 if(!("Rfast" %in% rownames(installed.packages()))) install.packages("Rfast"); print("Rfast")
 if(!("scatterplot3d" %in% rownames(installed.packages()))) install.packages("scatterplot3d"); print("scatterplot3d")
 if(!("stringr" %in% rownames(installed.packages()))) install.packages("stringr"); print("stringr")
-if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate"); print("timeDate")
 if(!("tsoutliers" %in% rownames(installed.packages()))) install.packages("tsoutliers"); print("tsoutliers")
 if(!("xgboost" %in% rownames(installed.packages()))) install.packages("xgboost"); print("xgboost")
 if(!("lightgbm" %in% rownames(installed.packages()))) install.packages("lightgbm"); print("lightgbm")
@@ -154,6 +158,8 @@ for (pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()
 install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))
 devtools::install_github('catboost/catboost', subdir = 'catboost/R-package')
 devtools::install_github('AdrianAntico/prettydoc', upgrade = FALSE, dependencies = FALSE, force = TRUE)
+
+# And lastly, RemixAutoML
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
 ```
 

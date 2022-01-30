@@ -16,7 +16,6 @@ VarNamesDisplay <- function(DataNames=names(data), ModelDataNames=names(ModelDat
   }
 }
 
-
 #' @title PlotLimits
 #'
 #' @param TotalPlots data.table
@@ -180,7 +179,7 @@ textInput2 <- function(inputId, label, value = "", ...) {
       type = "text",
       value = value,...))
 }
-textInput3<-function (inputId, label, value = "", ...) {
+textInput3 <- function (inputId, label, value = "", ...) {
   div(
     style="display:inline-block",
     tags$label(
