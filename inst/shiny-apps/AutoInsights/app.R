@@ -4052,9 +4052,9 @@ server <- function(input, output, session) {
 
           # Print to UI
           if(exists("PlotCollectionList") && length(names(PlotCollectionList)) != 0) {
-            AutoGridHorizontal <- RemixAutoML::ReturnParam(xx=tryCatch({input[['AutoGridHorizontal']]}, error=function(x) FALSE), VarName=NULL, Type='character', Default = 'on')
+            AutoGridHorizontal <- RemixAutoML::ReturnParam(xx=tryCatch({input[['AutoGridHorizontal']]}, error=function(x) FALSE), VarName=NULL, Type='character', Default = 'On')
             print(AutoGridHorizontal)
-            if(AutoGridHorizontal == 1 || AutoGridHorizontal == 'on') AutoGridHorizontal <- TRUE else AutoGridHorizontal <- FALSE
+            if(AutoGridHorizontal == 1 || tolower(AutoGridHorizontal) == 'on') AutoGridHorizontal <- TRUE else AutoGridHorizontal <- FALSE
             if(is.null(AutoGridHorizontal)) AutoGridHorizontal <- TRUE
             CodeCollection[[length(CodeCollection)+1L]] <- 'gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))'
 
