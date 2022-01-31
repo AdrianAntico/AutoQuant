@@ -809,7 +809,7 @@ Plotter <- function(id = 'PlotOutput', AppWidth = 12L, PlotWidth = 1100, PlotHei
     shiny::mainPanel(
       shiny::conditionalPanel(
         condition =  "input.PlotEngine == 'plotly'",
-        shiny::column(width = AppWidth, plotly::plotlyOutput("TrendPlotly"))
+        shiny::column(width = AppWidth, plotly::plotlyOutput("TrendPlotly", width = PlotWidth, height = PlotHeight))
       ),
       shiny::conditionalPanel(
         condition = "input.PlotEngine == 'ggplot2'",

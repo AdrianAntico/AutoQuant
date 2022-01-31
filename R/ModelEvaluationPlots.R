@@ -468,7 +468,7 @@ VI_Plot <- function(Type = "catboost",
                     VI_Data = NULL,
                     ColorHigh = "darkblue",
                     ColorLow = "white",
-                    TopN = 10) {
+                    TopN = 25) {
 
   # Catboost
   if(Type != "h2o") {
@@ -479,7 +479,6 @@ VI_Plot <- function(Type = "catboost",
         ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
         ggplot2::coord_flip() +
         ggplot2::labs(title = "Global Variable Importance") +
-        ggplot2::xlab("Top Model Features") +
         ggplot2::ylab("Value") +
         ggplot2::theme(legend.position = "none"))
     return(p1)
@@ -494,7 +493,6 @@ VI_Plot <- function(Type = "catboost",
         ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
         ggplot2::coord_flip() +
         ggplot2::labs(title = "Global Variable Importance") +
-        ggplot2::xlab("Top Model Features") +
         ggplot2::ylab("Value") +
         ggplot2::theme(legend.position = "none"))
     return(p1)
