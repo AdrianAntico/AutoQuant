@@ -257,7 +257,7 @@ ui <- shinydashboard::dashboardPage(
         tabName = 'LoadDataPage',
 
         # Load Inputs Box
-        RemixAutoML:::LoadDataInputs(id='LoadDataInputs', AppWidth=AppWidth, LogoWidth=LogoWidth, SolidHeader=TRUE, BoxTitle=NULL, BoxStatus='danger', CSV_h4='Local .csv Data', DropdownRight=FALSE, DropDownAnimate=TRUE, DropDownStatus='custom'),
+        RemixAutoML:::LoadDataInputs(id='ExternalData', AppWidth=AppWidth, LogoWidth=LogoWidth, SolidHeader=TRUE, BoxTitle=NULL, BoxStatus='danger', CSV_h4='Local .csv Data', DropdownRight=FALSE, DropDownAnimate=TRUE, DropDownStatus='custom'),
 
         # Button to Load Data
         RemixAutoML:::LoadDataButton(id = 'DataButton', AppWidth = AppWidth)),
@@ -498,6 +498,19 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Load Data and Initialize Vars        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # RemixAutoML:::ExternalDataServer(id='ExternalData', StorageAccount=StorageAccount, Container=Container, BlobStorageURL=BlobStorageURL, Key=Key, Debug=Debug)
+  output$DataLoad <- shiny::renderUI({
+    shiny::fileInput(
+      inputId = 'DataLoad',
+      label = NULL,
+      accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
+  })
+
+  output$ModelObjectLoad <- shiny::renderUI({
+    shiny::fileInput(inputId = "ModelObjectLoad", label = NULL)
+  })
+
   output$blob <- shiny::renderUI({
     if(Debug) paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
     BlobStorageURL <- paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
@@ -777,12 +790,12 @@ server <- function(input, output, session) {
 
     # Define plot output type: if any FacetVars are not null then use ggplot2, othwerwise plotly
     output$PlotEngine <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID = 'PlotEngine', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Engine'), Choices = c('plotly','ggplot2'), Multiple = FALSE, SelectedDefault = 'plotly', CloseAfterSelect = TRUE)
+      shiny::checkboxGroupInput(inputId = "PlotEngine", label = tags$span(style='color: blue;', 'Plot Engine'),choices = list("plotly" = 1, "ggplot2" = 2), selected = 1)
     })
 
     # Auto SCaling of Plot Grid: doubles the size in the event of more than 1 plot
     output$AutoGridHorizontal <-  shiny::renderUI({
-      shinyWidgets::materialSwitch(inputId = "AutoGridHorizontal", label = tags$span(style='color: blue;', 'Auto Grid Scale'), status = "danger", value = TRUE, inline = TRUE, width = '100%')
+      shiny::checkboxGroupInput(inputId = "AutoGridHorizontal", label = tags$span(style='color: blue;', 'Auto Grid Scale'),choices = list("On" = 1, "Off" = 2), selected = 1)
     })
 
     # Dragula for PlotType
@@ -2151,12 +2164,12 @@ server <- function(input, output, session) {
 
   # Define plot output type: if any FacetVars are not null then use ggplot2, othwerwise plotly
   output$PlotEngine <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID = 'PlotEngine', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Engine'), Choices = c('plotly','ggplot2'), Multiple = FALSE, SelectedDefault = 'plotly', CloseAfterSelect = TRUE)
+    shiny::checkboxGroupInput(inputId = "PlotEngine", label = tags$span(style='color: blue;', 'Plot Engine'),choices = list("plotly" = 1, "ggplot2" = 2), selected = 1)
   })
 
   # Auto SCaling of Plot Grid: doubles the size in the event of more than 1 plot
   output$AutoGridHorizontal <-  shiny::renderUI({
-    shinyWidgets::materialSwitch(inputId = "AutoGridHorizontal", label = tags$span(style='color: blue;', 'Auto Grid Scale'), status = "danger", value = TRUE, inline = TRUE, width = '100%')
+    shiny::checkboxGroupInput(inputId = "AutoGridHorizontal", label = tags$span(style='color: blue;', 'Auto Grid Scale'),choices = list("On" = 1, "Off" = 2), selected = 1)
   })
   output$Plot1 <- shiny::renderUI({
     if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
@@ -4039,7 +4052,9 @@ server <- function(input, output, session) {
 
           # Print to UI
           if(exists("PlotCollectionList") && length(names(PlotCollectionList)) != 0) {
-            AutoGridHorizontal <- RemixAutoML::ReturnParam(xx=tryCatch({input[['AutoGridHorizontal']]}, error=function(x) FALSE), VarName=NULL, Type='logical', Default = TRUE)
+            AutoGridHorizontal <- RemixAutoML::ReturnParam(xx=tryCatch({input[['AutoGridHorizontal']]}, error=function(x) FALSE), VarName=NULL, Type='character', Default = 'on')
+            print(AutoGridHorizontal)
+            if(AutoGridHorizontal == 1 || AutoGridHorizontal == 'on') AutoGridHorizontal <- TRUE else AutoGridHorizontal <- FALSE
             if(is.null(AutoGridHorizontal)) AutoGridHorizontal <- TRUE
             CodeCollection[[length(CodeCollection)+1L]] <- 'gridExtra::grid.arrange(gridExtra::arrangeGrob(grobs = PlotCollectionList, as.table = FALSE))'
 

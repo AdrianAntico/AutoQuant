@@ -101,7 +101,7 @@ LoginButton <- function(id = 'LoginButton',
 #' @param DropDownStatus = 'custom'
 #'
 #' @noRd
-LoadDataInputs <- function(id = 'LoadDataInputs',
+LoadDataInputs <- function(id = 'ExternalData',
                            AppWidth = AppWidth,
                            LogoWidth = LogoWidth,
                            SolidHeader = TRUE,
@@ -124,17 +124,12 @@ LoadDataInputs <- function(id = 'LoadDataInputs',
       # Local CSV
       RemixAutoML::BlankRow(AppWidth),
       tags$h4(tags$b(CSV_h4)),
-      shiny::fileInput(
-        inputId = 'DataLoad',
-        label = NULL,
-        accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+      shiny::uiOutput('DataLoad'),
 
       # Local .Rdata
       RemixAutoML::BlankRow(AppWidth),
       tags$h4(tags$b('Local .Rdata Model Output List')),
-      shiny::fileInput(
-        inputId = "ModelObjectLoad",
-        label = NULL),
+      shiny::uiOutput('ModelObjectLoad'),
 
       # Dropdown for external data
       RemixAutoML::BlankRow(AppWidth),
@@ -308,13 +303,25 @@ GlobalSettingsContents <- function(id='GlobalSettings',
         right = Right, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Global Settings')),
         RemixAutoML::BlankRow(AppWidth),
-        shiny::fluidRow(width = AppWidth, shiny::column(3L, align='right', shiny::uiOutput('PlotEngine'))),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(
+            3L,
+            align='left',
+            shiny::uiOutput('PlotEngine')),
+          shiny::column(
+            3L,
+            align='left',
+            shiny::uiOutput('AutoGridHorizontal'))),
         RemixAutoML::BlankRow(AppWidth),
-        shiny::fluidRow(width = AppWidth, shiny::column(3L, align='right', shiny::uiOutput('AutoGridHorizontal'))),
-        RemixAutoML::BlankRow(AppWidth),
-        shiny::fluidRow(width = AppWidth, shiny::column(3L, shiny::uiOutput('PlotHeight'))),
-        RemixAutoML::BlankRow(AppWidth),
-        shiny::fluidRow(width = AppWidth, shiny::column(3L, shiny::uiOutput('PlotWidth'))))))
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(
+            3L,
+            shiny::uiOutput('PlotHeight')),
+          shiny::column(
+            3L,
+            shiny::uiOutput('PlotWidth'))))))
 }
 
 
