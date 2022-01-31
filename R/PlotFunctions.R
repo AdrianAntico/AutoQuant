@@ -347,8 +347,9 @@ CorrMatrixPlot <- function(data = NULL,
     LegendLineType = LegendLineType)
 
   # Make legend thinnier and longer than default
-  p1 <- p1 + ggplot2::theme(legend.key.width = ggplot2::unit(2, 'cm'))
-  p1 <- p1 + ggplot2::theme(legend.key.height = ggplot2::unit(0.60, 'cm'))
+  p1 <- p1 + ggplot2::theme(legend.position = 'none')
+  #p1 <- p1 + ggplot2::theme(legend.key.width = ggplot2::unit(2, 'cm'))
+  #p1 <- p1 + ggplot2::theme(legend.key.height = ggplot2::unit(0.60, 'cm'))
 
   # Labels / Title / Caption
   p1 <- p1 + ggplot2::xlab(label = NULL) + ggplot2::ylab(NULL)
@@ -1387,9 +1388,7 @@ AutoPlotter <- function(dt = NULL,
         subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
                           "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
         caption = 'RemixAutoML')
-      p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor))
-      p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
-      p1 <- p1 + ggplot2::xlim(as.numeric(eval(XMin)), as.numeric(eval(XMax)))
+      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
 
     } else if(PlotType %chin% 'Copula') {
 
@@ -1399,7 +1398,7 @@ AutoPlotter <- function(dt = NULL,
         subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
                           "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
         caption = 'RemixAutoML')
-      p1 <- shiny::isolate( p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor))
+      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
     }
 
     # Tick Marks

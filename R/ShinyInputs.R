@@ -308,9 +308,9 @@ GlobalSettingsContents <- function(id='GlobalSettings',
         right = Right, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Global Settings')),
         RemixAutoML::BlankRow(AppWidth),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, align='right', shiny::uiOutput('AutoGridHorizontal'))),
+        shiny::fluidRow(width = AppWidth, shiny::column(3L, align='right', shiny::uiOutput('PlotEngine'))),
+        RemixAutoML::BlankRow(AppWidth),
+        shiny::fluidRow(width = AppWidth, shiny::column(3L, align='right', shiny::uiOutput('AutoGridHorizontal'))),
         RemixAutoML::BlankRow(AppWidth),
         shiny::fluidRow(width = AppWidth, shiny::column(3L, shiny::uiOutput('PlotHeight'))),
         RemixAutoML::BlankRow(AppWidth),
@@ -772,25 +772,50 @@ ShapAgg <- function(id = 'ShapAggContents',
                               Status = 'custom') {
   ns <- shiny::NS(id)
   shiny::tagList(
-shiny::column(
-  width = 3L,
-  tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), tags$b('Shapley Agg'))),
-  shinyWidgets::dropdown(
-    right = Right, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, inputId = "Shapely-Agg", width = LogoWidth,
-    tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Calibration Plot Bins')),
-    tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Choose the number of bins for the relevant model output plots')),
-    RemixAutoML::BlankRow(AppWidth),
-    shiny::fluidRow(
-      width = AppWidth,
-      shiny::column(3L, shiny::uiOutput('ShapAggMethod1')),
-      shiny::column(3L, shiny::uiOutput('ShapAggMethod2')),
-      shiny::column(3L, shiny::uiOutput('ShapAggMethod3')),
-      shiny::column(3L, shiny::uiOutput('ShapAggMethod4'))))))
+    shiny::column(
+      width = 3L,
+      tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), tags$b('Shapley Agg'))),
+      shinyWidgets::dropdown(
+        right = Right, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, inputId = "Shapely-Agg", width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Calibration Plot Bins')),
+        tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Choose the number of bins for the relevant model output plots')),
+        RemixAutoML::BlankRow(AppWidth),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('ShapAggMethod1')),
+          shiny::column(3L, shiny::uiOutput('ShapAggMethod2')),
+          shiny::column(3L, shiny::uiOutput('ShapAggMethod3')),
+          shiny::column(3L, shiny::uiOutput('ShapAggMethod4'))))))
 }
 
 
 
-
+#' @title Plotter
+#'
+#' @description Replaces shiny::plotOutput and plotly::plotlyOutput
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'PlotOutput'
+#' @param AppWidth Width
+#' @param PlotWidth width
+#' @param PlotHeight height
+#'
+#' @noRd
+Plotter <- function(id = 'PlotOutput', AppWidth = 12L, PlotWidth = 1100, PlotHeight = 600) {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::mainPanel(
+      shiny::conditionalPanel(
+        condition =  "input.PlotEngine == 'plotly'",
+        shiny::column(width = AppWidth, plotly::plotlyOutput("TrendPlotly"))
+      ),
+      shiny::conditionalPanel(
+        condition = "input.PlotEngine == 'ggplot2'",
+        shiny::column(width = AppWidth, shiny::plotOutput("Trendggplot2"))
+      )))
+}
 
 
 

@@ -1,5 +1,4 @@
 options(shiny.maxRequestSize = 250000*1024^2)
-library(curl)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
@@ -215,7 +214,7 @@ ui <- shinydashboard::dashboardPage(
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shinydashboard::dashboardBody(
 
-    # Style Sheet Reference ----
+    # Style Sheet Reference
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
 
     # ----
@@ -283,7 +282,7 @@ ui <- shinydashboard::dashboardPage(
         # Plot Inputs                          ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
-        # Box ----
+        # Box
         shinydashboard::box(
           title = NULL,
           solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
@@ -291,7 +290,7 @@ ui <- shinydashboard::dashboardPage(
           # Add Space
           RemixAutoML::BlankRow(AppWidth),
 
-          # Plot DropDown Buttons and Contents ----
+          # Plot DropDown Buttons and Contents
           shiny::fluidRow(
             width=AppWidth,
             RemixAutoML:::PlotDropDownContents(id='PlotDropDown', PlotNumber=1L, AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color=H3Color),
@@ -315,7 +314,7 @@ ui <- shinydashboard::dashboardPage(
         # Box with Dragula and Extra Buttons   ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
-        # Box ----
+        # Box
         shinydashboard::box(
           title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
 
@@ -323,18 +322,18 @@ ui <- shinydashboard::dashboardPage(
           shiny::fluidRow(
             width=AppWidth,
 
-            # Dragula Boxes          ----
+            # Dragula Boxes
             shiny::column(width = 12L, align = 'center', shiny::uiOutput('PlotTypeDragula')),
 
-            # Create Plot Button     ----
+            # Create Plot Button
             shiny::column(
               width = 3L, shinyjs::useShinyjs(), align='center', tags$h4(tags$b('~ Build Plot')),
               shinyWidgets::actionBttn(inputId='TrendPlotExecute', label='Build Plot', style='gradient', color='royal')),
 
-            # Global Settings        ----
+            # Global Settings
             RemixAutoML:::GlobalSettingsContents(id='GlobalSettings', PlotHeight=PlotHeight, PlotWidth=PlotWidth, AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
-            # Formatting DropDown    ----
+            # Formatting DropDown
             shiny::column(
               width = 3L,
               align = 'center',
@@ -348,13 +347,13 @@ ui <- shinydashboard::dashboardPage(
                 # Plot Formatting
                 shiny::fluidRow(
 
-                  # Plot Axes Limits ----
+                  # Plot Axes Limits
                   RemixAutoML:::AxisLimits(id='AxisLimitsContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
-                  # Plot Formatting  ----
+                  # Plot Formatting
                   RemixAutoML:::Formatting(id='FormattingContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
-                  # Plot Colors      ----
+                  # Plot Colors
                   RemixAutoML:::Coloring(id='ColoringContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom')), # fluidrow end
 
 
@@ -380,7 +379,7 @@ ui <- shinydashboard::dashboardPage(
             ), # end of column plot format dropdown inputs ::::::::
 
 
-            # Filtering Dropdown     ----
+            # Filtering Dropdown
             shiny::column(
               width = 3L,
               align = 'center',
@@ -391,7 +390,7 @@ ui <- shinydashboard::dashboardPage(
                 tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Filters for subsetting data')),
                 RemixAutoML::BlankRow(12L),
 
-                # Filter Variables ----
+                # Filter Variables
                 shiny::fluidRow(
                   RemixAutoML:::DataFilters(id='FiltersDropDownContents', PlotNumber=1, Status='custom', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color = H4Color, Right=FALSE, Animate=TRUE),
                   RemixAutoML:::DataFilters(id='FiltersDropDownContents', PlotNumber=2, Status='custom', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color = H4Color, Right=FALSE, Animate=TRUE),
@@ -416,7 +415,9 @@ ui <- shinydashboard::dashboardPage(
 
         # Add Space
         RemixAutoML::BlankRow(AppWidth),
-        shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend')))),
+        #shiny::fluidRow(shiny::column(width = AppWidth, shiny::plotOutput('Trend')))),
+        #shiny::fluidRow(shiny::column(width = AppWidth, plotly::plotlyOutput(outputId = 'Trend', width = PlotWidth, height = PlotHeight)))),
+        RemixAutoML:::Plotter(id = 'PlotOutput')),
 
       # ----
 
@@ -773,6 +774,11 @@ server <- function(input, output, session) {
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Plotting MetaData                    ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # Define plot output type: if any FacetVars are not null then use ggplot2, othwerwise plotly
+    output$PlotEngine <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'PlotEngine', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Engine'), Choices = c('plotly','ggplot2'), Multiple = FALSE, SelectedDefault = 'plotly', CloseAfterSelect = TRUE)
+    })
 
     # Auto SCaling of Plot Grid: doubles the size in the event of more than 1 plot
     output$AutoGridHorizontal <-  shiny::renderUI({
@@ -1260,38 +1266,59 @@ server <- function(input, output, session) {
 
     # Faceting
     output$FacetVar_1_1 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
+      if('ggplot2' %in% input$PlotEngine) {
+        if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+          ModelVars <- names(data)
+        } else {
+          ModelVars <- names(ModelData)
+        }
       } else {
-        ModelVars <- names(ModelData)
+        ModelVars <- NULL
       }
       RemixAutoML::SelectizeInput(InputID='FacetVar_1_1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = c(ModelVars), Multiple = TRUE, MaxVars = 1)
     })
     output$FacetVar_1_2 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
+      if('ggplot2' %in% input$PlotEngine) {
+        if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+          ModelVars <- names(data)
+        } else {
+          ModelVars <- names(ModelData)
+        }
       } else {
-        ModelVars <- names(ModelData)
+        ModelVars <- NULL
       }
       RemixAutoML::SelectizeInput(InputID='FacetVar_1_2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = c(ModelVars), Multiple = TRUE, MaxVars = 1)
     })
     output$FacetVar_2_1 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
+      if('ggplot2' %in% input$PlotEngine) {
+        if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+          ModelVars <- names(data)
+        } else {
+          ModelVars <- names(ModelData)
+        }
       } else {
-        ModelVars <- names(ModelData)
+        ModelVars <- NULL
       }
       RemixAutoML::SelectizeInput(InputID='FacetVar_2_1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = c(ModelVars), Multiple = TRUE, MaxVars = 1)
     })
     output$FacetVar_2_2 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
+      if('ggplot2' %in% input$PlotEngine) {
+        if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+          ModelVars <- names(data)
+        } else {
+          ModelVars <- names(ModelData)
+        }
       } else {
-        ModelVars <- names(ModelData)
+        ModelVars <- NULL
       }
       RemixAutoML::SelectizeInput(InputID='FacetVar_2_2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = c(ModelVars), Multiple = TRUE, MaxVars = 1)
     })
     output$FacetVar_3_1 <- shiny::renderUI({
+      if('ggplot2' %in% input$PlotEngine) {
+
+      } else {
+        ModelVars <- NULL
+      }
       if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
         ModelVars <- names(data)
       } else {
@@ -1300,26 +1327,38 @@ server <- function(input, output, session) {
       RemixAutoML::SelectizeInput(InputID='FacetVar_3_1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = c(ModelVars), Multiple = TRUE, MaxVars = 1)
     })
     output$FacetVar_3_2 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
+      if('ggplot2' %in% input$PlotEngine) {
+        if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+          ModelVars <- names(data)
+        } else {
+          ModelVars <- names(ModelData)
+        }
       } else {
-        ModelVars <- names(ModelData)
+        ModelVars <- NULL
       }
       RemixAutoML::SelectizeInput(InputID='FacetVar_3_2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = c(ModelVars), Multiple = TRUE, MaxVars = 1)
     })
     output$FacetVar_4_1 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
+      if('ggplot2' %in% input$PlotEngine) {
+        if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+          ModelVars <- names(data)
+        } else {
+          ModelVars <- names(ModelData)
+        }
       } else {
-        ModelVars <- names(ModelData)
+        ModelVars <- NULL
       }
       RemixAutoML::SelectizeInput(InputID='FacetVar_4_1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = c(ModelVars), Multiple = TRUE, MaxVars = 1)
     })
     output$FacetVar_4_2 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
+      if('ggplot2' %in% input$PlotEngine) {
+        if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
+          ModelVars <- names(data)
+        } else {
+          ModelVars <- names(ModelData)
+        }
       } else {
-        ModelVars <- names(ModelData)
+        ModelVars <- NULL
       }
       RemixAutoML::SelectizeInput(InputID='FacetVar_4_2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = c(ModelVars), Multiple = TRUE, MaxVars = 1)
     })
@@ -2109,6 +2148,11 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Plotting MetaData                    ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Define plot output type: if any FacetVars are not null then use ggplot2, othwerwise plotly
+  output$PlotEngine <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'PlotEngine', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Engine'), Choices = c('plotly','ggplot2'), Multiple = FALSE, SelectedDefault = 'plotly', CloseAfterSelect = TRUE)
+  })
 
   # Auto SCaling of Plot Grid: doubles the size in the event of more than 1 plot
   output$AutoGridHorizontal <-  shiny::renderUI({
@@ -3277,8 +3321,8 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # Initialize Plot                      ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  output$Trend <- renderPlot({
-    if(!exists('PlotCollectionList')) RemixAutoML:::BlankPlot()
+  output$TrendPlotly <- plotly::renderPlotly({
+    if(!exists('PlotCollectionList')) plotly::ggplotly(RemixAutoML:::BlankPlot())
   })
 
   # ----
@@ -3362,6 +3406,7 @@ server <- function(input, output, session) {
     if(length(PlotRefs) == 0) PlotRefs <- NULL
 
     # Global Settings
+    PlotObjectHome[['GlobalSettings']][['PlotEngine']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[['PlotEngine']]}, error=function(x) NULL), Type='character', Default='plotly')
     PlotObjectHome[['GlobalSettings']][['PlotWidth']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[['PlotWidth']]}, error=function(x) NULL), Type='numeric', Default=1550L)
     PlotObjectHome[['GlobalSettings']][['PlotHeight']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[['PlotHeight']]}, error=function(x) NULL), Type='numeric', Default=500L)
 
@@ -3383,8 +3428,8 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['Levels2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('Levels_',run,'_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['Levels3']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('Levels_',run,'_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['SizeVars']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('SizeVars', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
-      PlotObjectHome[[paste0('Plot_', run)]][['FacetVar1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FacetVar1', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
-      PlotObjectHome[[paste0('Plot_', run)]][['FacetVar2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FacetVar2', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
+      PlotObjectHome[[paste0('Plot_', run)]][['FacetVar1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FacetVar_', run, '_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
+      PlotObjectHome[[paste0('Plot_', run)]][['FacetVar2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FacetVar_', run, '_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar1']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar2']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar3']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_3')]]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -3481,8 +3526,9 @@ server <- function(input, output, session) {
         FilterValue_2_4 <- PlotObjectHome[[paste0('Plot_', run)]][['FilterValue_2_4']]
 
         # Plot Formatting
-        PlotWidth <- PlotObjectHome[['GlobalSettings']][['PlotWidth']]
-        PlotHeight <- PlotObjectHome[['GlobalSettings']][['PlotHeight']]
+        PlotEngine <<- PlotObjectHome[['GlobalSettings']][['PlotEngine']]
+        PlotWidth <<- PlotObjectHome[['GlobalSettings']][['PlotWidth']]
+        PlotHeight <<- PlotObjectHome[['GlobalSettings']][['PlotHeight']]
         AngleY <- PlotObjectHome[[paste0('Plot_', run)]][['AngleY']]
         AngleX <- PlotObjectHome[[paste0('Plot_', run)]][['AngleX']]
         TextSize <- PlotObjectHome[[paste0('Plot_', run)]][['TextSize']]
@@ -4003,136 +4049,364 @@ server <- function(input, output, session) {
 
             # Build Plots
             if(N == 1L) {
-              p1 <- PlotCollectionList[[paste0('p', PlotRefs[1L])]]
-              p1 <- RemixAutoML::PlotLimits(
-                p1,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
-                Debug = Debug)
 
-              # Ouput Plot for 1 single plot request
-              output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
-                gridExtra::grid.arrange(p1, ncol=1)
-              })
+              # Store plot object
+              p1 <- PlotCollectionList[[paste0('p', PlotRefs[1L])]]
+
+              # Plotly
+              print('plotly is right here')
+              print(PlotEngine)
+              if(PlotEngine != 'ggplot2') {
+                print('removing ggplot2 plot')
+                output$Trendggplot2 <- NULL
+              }
+              if(PlotEngine == 'plotly') {
+                output$TrendPlotly <- plotly::renderPlotly({
+                  shiny::req(PlotEngine == "plotly")
+                  plotly::ggplotly(p1)
+                })
+              }
+
+              # ggplot2
+              print('ggplot2 is right here')
+              if(PlotEngine != 'plotly') {
+                print('removing Plotly plot')
+                output$TrendPlotly <- NULL
+              }
+              if(PlotEngine == 'ggplot2') {
+                output$Trendggplot2 <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                  shiny::req(PlotEngine == "ggplot2")
+                  p1 <- RemixAutoML::PlotLimits(
+                    p1,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  gridExtra::grid.arrange(p1, ncol=1)
+                })
+              }
 
             } else if(N == 2L) {
+
+              # Store plot objects
               p1 <- PlotCollectionList[[paste0('p', PlotRefs[1L])]]
               p2 <- PlotCollectionList[[paste0('p', PlotRefs[2L])]]
 
-              # Update axis limits
-              p1 <- RemixAutoML::PlotLimits(
-                p1,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
-                Debug = Debug)
-              p2 <- RemixAutoML::PlotLimits(
-                p2,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
-                Debug = Debug)
-
-              # Ouput Plot for 2 plot requests
+              # Plotly
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
+
+                # Output
+                output$TrendPlotly <- plotly::renderPlotly({
+                  shiny::req(PlotEngine == "plotly")
+                  p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p1 <- plotly::ggplotly(p1)
+                  p2 <- plotly::ggplotly(p2)
+                  plotly::subplot(p1, p2, nrows = 2, shareX = FALSE, shareY = FALSE)
+                })
+
+              } else {
+
+                # Output
+                output$TrendPlotly <- plotly::renderPlotly({
+                  shiny::req(PlotEngine == "plotly")
+                  p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p1 <- plotly::ggplotly(p1)
+                  p2 <- plotly::ggplotly(p2)
+                  plotly::subplot(p1, p2, nrows = 2, shareX = FALSE, shareY = FALSE)
+                })
+              }
+
+              # ggplot2
+              if(AutoGridHorizontal) {
+
+                # Output
+                output$Trendggplot2 <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
+
+                  # Block output if FALSE
+                  shiny::req(PlotEngine == "ggplot2")
+
+                  # Update axis limits
+                  p1 <- RemixAutoML::PlotLimits(
+                    p1,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p2 <- RemixAutoML::PlotLimits(
+                    p2,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    Debug = Debug)
+
+                  # Output
                   gridExtra::grid.arrange(p1,p2, ncol=1)
                 })
+
               } else {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+
+                # Output
+                output$Trendggplot2 <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+
+                  # Block output if FALSE
+                  shiny::req(PlotEngine == "ggplot2")
+
+                  # Update axis limits
+                  p1 <- RemixAutoML::PlotLimits(
+                    p1,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p2 <- RemixAutoML::PlotLimits(
+                    p2,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    Debug = Debug)
+
+                  # Output
                   gridExtra::grid.arrange(p1,p2, ncol=1)
                 })
               }
-              if(Debug) print('Just ran output$Trend for N == 2L')
 
             } else if(N == 3L) {
+
+              # Store plot objects
               p1 <- PlotCollectionList[[paste0('p', PlotRefs[1L])]]
               p2 <- PlotCollectionList[[paste0('p', PlotRefs[2L])]]
               p3 <- PlotCollectionList[[paste0('p', PlotRefs[3L])]]
 
-              # Update axis limits
-              p1 <- RemixAutoML::PlotLimits(
-                p1,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
-                Debug = Debug)
-              p2 <- RemixAutoML::PlotLimits(
-                p2,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
-                Debug = Debug)
-              p3 <- RemixAutoML::PlotLimits(
-                p3,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[3L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[3L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[3L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[3L])]]}, error = function(x) ""),
-                Debug = Debug)
-
-              # Ouput Plot for 3 plot requests
+              # Plotly
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
+
+                # Output
+                output$TrendPlotly <- plotly::renderPlotly({
+                  shiny::req(PlotEngine == 'plotly')
+                  p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p3 <- p3 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p1 <- plotly::ggplotly(p1)
+                  p2 <- plotly::ggplotly(p2)
+                  p3 <- plotly::ggplotly(p3)
+                  plotly::subplot(p1, p2, p3, nrows = 2, shareX = FALSE, shareY = FALSE)
+                })
+
+              } else {
+
+                # Output
+                output$TrendPlotly <- plotly::renderPlotly(width = PlotWidth, height = PlotHeight, {
+                  shiny::req(PlotEngine == 'plotly')
+                  p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p3 <- p3 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p1 <- plotly::ggplotly(p1)
+                  p2 <- plotly::ggplotly(p2)
+                  p3 <- plotly::ggplotly(p3)
+                  plotly::subplot(p1, p2, p3, nrows = 2, shareX = FALSE, shareY = FALSE)
+                })
+              }
+
+              # ggplot2
+              if(AutoGridHorizontal) {
+
+                # Output
+                output$Trendggplot2 <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
+
+                  # Block if not true
+                  shiny::req(PlotEngine == 'ggplot2')
+
+                  # Update axis limits
+                  p1 <- RemixAutoML::PlotLimits(
+                    p1,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p2 <- RemixAutoML::PlotLimits(
+                    p2,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p3 <- RemixAutoML::PlotLimits(
+                    p3,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[3L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[3L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[3L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[3L])]]}, error = function(x) ""),
+                    Debug = Debug)
+
+                  # Output
                   gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
                                                                           c(3, 3)))
                 })
+
               } else {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+
+                # Output
+                output$Trendggplot2 <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+
+                  # Block if not true
+                  shiny::req(PlotEngine == 'ggplot2')
+
+                  # Update axis limits
+                  p1 <- RemixAutoML::PlotLimits(
+                    p1,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p2 <- RemixAutoML::PlotLimits(
+                    p2,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p3 <- RemixAutoML::PlotLimits(
+                    p3,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[3L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[3L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[3L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[3L])]]}, error = function(x) ""),
+                    Debug = Debug)
+
+                  # Output
                   gridExtra::grid.arrange(p1,p3,p2, layout_matrix = rbind(c(1, 2),  # 1 = upper left, 2 = upper right, 3 = bottom left and right
                                                                           c(3, 3)))
                 })
               }
 
             } else if(N == 4L) {
+
+              # Store plot objects
               p1 <- PlotCollectionList[[paste0('p', PlotRefs[1L])]]
               p2 <- PlotCollectionList[[paste0('p', PlotRefs[2L])]]
               p3 <- PlotCollectionList[[paste0('p', PlotRefs[3L])]]
               p4 <- PlotCollectionList[[paste0('p', PlotRefs[4L])]]
 
-              # Update axis limits
-              p1 <- RemixAutoML::PlotLimits(
-                p1,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
-                Debug = Debug)
-              p2 <- RemixAutoML::PlotLimits(
-                p2,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
-                Debug = Debug)
-              p3 <- RemixAutoML::PlotLimits(
-                p3,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[3L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[3L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[3L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[3L])]]}, error = function(x) ""),
-                Debug = Debug)
-              p4 <- RemixAutoML::PlotLimits(
-                p4,
-                YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[4L])]]}, error = function(x) ""),
-                YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[4L])]]}, error = function(x) ""),
-                XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[4L])]]}, error = function(x) ""),
-                XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[4L])]]}, error = function(x) ""),
-                Debug = Debug)
-
-              # Ouput Plot for 4 plot requests
+              # Plotly
               if(AutoGridHorizontal) {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
-                  gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
+                output$TrendPlotly <- plotly::renderPlotly({
+                  shiny::req(PlotEngine == 'plotly')
+                  p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p3 <- p3 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p4 <- p4 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p1 <- plotly::ggplotly(p1)
+                  p2 <- plotly::ggplotly(p2)
+                  p3 <- plotly::ggplotly(p3)
+                  p4 <- plotly::ggplotly(p4)
+                  plotly::subplot(p1, p2, p3, p4, nrows = 2, shareX = FALSE, shareY = FALSE)
                 })
               } else {
-                output$Trend <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+                output$TrendPlotly <- plotly::renderPlotly({
+                  shiny::req(PlotEngine == 'plotly')
+                  p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p3 <- p3 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p4 <- p4 + ggplot2::labs(title = NULL, subtitle = NULL)
+                  p1 <- plotly::ggplotly(p1)
+                  p2 <- plotly::ggplotly(p2)
+                  p3 <- plotly::ggplotly(p3)
+                  p4 <- plotly::ggplotly(p4)
+                  plotly::subplot(p1, p2, p3, p4, nrows = 2, shareX = FALSE, shareY = FALSE)
+                })
+              }
+
+              # ggplot2
+              if(AutoGridHorizontal) {
+
+                # Output
+                output$Trendggplot2 <- shiny::renderPlot(width = PlotWidth, height = PlotHeight * 2, {
+
+                  # Block from outputted if not selected
+                  shiny::req(PlotEngine == 'ggplot2')
+
+                  # Update axis limits
+                  p1 <- RemixAutoML::PlotLimits(
+                    p1,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p2 <- RemixAutoML::PlotLimits(
+                    p2,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p3 <- RemixAutoML::PlotLimits(
+                    p3,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[3L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[3L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[3L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[3L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p4 <- RemixAutoML::PlotLimits(
+                    p4,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[4L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[4L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[4L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[4L])]]}, error = function(x) ""),
+                    Debug = Debug)
+
+                  # Final Output
+                  gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
+                })
+
+              } else {
+
+                # Output
+                output$Trendggplot2 <- shiny::renderPlot(width = PlotWidth, height = PlotHeight, {
+
+                  # Block from outputted if not selected
+                  shiny::req(PlotEngine == 'ggplot2')
+
+                  # Update axis limits
+                  p1 <- RemixAutoML::PlotLimits(
+                    p1,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[1L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[1L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p2 <- RemixAutoML::PlotLimits(
+                    p2,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[2L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[2L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p3 <- RemixAutoML::PlotLimits(
+                    p3,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[3L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[3L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[3L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[3L])]]}, error = function(x) ""),
+                    Debug = Debug)
+                  p4 <- RemixAutoML::PlotLimits(
+                    p4,
+                    YMin=tryCatch({input[[paste0('YLimMin',PlotRefs[4L])]]}, error = function(x) ""),
+                    YMax=tryCatch({input[[paste0('YLimMax',PlotRefs[4L])]]}, error = function(x) ""),
+                    XMin=tryCatch({input[[paste0('XLimMin',PlotRefs[4L])]]}, error = function(x) ""),
+                    XMax=tryCatch({input[[paste0('XLimMax',PlotRefs[4L])]]}, error = function(x) ""),
+                    Debug = Debug)
+
+                  # Final Output
                   gridExtra::grid.arrange(p1,p3,p2,p4, ncol=2)
                 })
               }
@@ -4141,8 +4415,9 @@ server <- function(input, output, session) {
           } else {
 
             # Empty plot for errors
-            output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
-              RemixAutoML:::BlankPlot()
+            output$TrendPlotly <- plotly::renderPlotly({
+              shiny::req(PlotEngine == 'plotly')
+              plotly::ggplotly(RemixAutoML:::BlankPlot())
             })
 
             # Send Error Message
@@ -4152,8 +4427,10 @@ server <- function(input, output, session) {
         } else {
 
           # Empty plot for errors
-          output$Trend <- shiny::renderPlot({ # width = PlotWidth, height = PlotHeight,
-            RemixAutoML:::BlankPlot()
+          output$TrendPlotly <- plotly::renderPlotly({
+            if(!exists('PlotEngine')) PlotEngine <- 'plotly'
+            shiny::req(PlotEngine == 'plotly')
+            plotly::ggplotly(RemixAutoML:::BlankPlot())
           })
 
         } # end Plot Build
@@ -4162,8 +4439,10 @@ server <- function(input, output, session) {
 
     # Output blank grapth is list is empty
     if(length(PlotCollectionList) == 0) {
-      output$Trend <- shiny::renderPlot({
-        RemixAutoML:::BlankPlot()
+      output$TrendPlotly <- plotly::renderPlotly({
+        if(!exists('PlotEngine')) PlotEngine <- 'plotly'
+        shiny::req(PlotEngine == 'plotly')
+        plotly::ggplotly(RemixAutoML:::BlankPlot())
       })
     }
   })
