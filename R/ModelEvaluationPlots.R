@@ -472,6 +472,7 @@ VI_Plot <- function(Type = "catboost",
 
   # Catboost
   if(Type != "h2o") {
+    VI_Data[, Variable := gsub(pattern = 'Shap_', replacement = "", x = Variable)]
     p1 <- eval(
       ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Variable, abs(Importance)), y = Importance, fill = Importance)) +
         ggplot2::geom_bar(stat = "identity") +
@@ -486,13 +487,14 @@ VI_Plot <- function(Type = "catboost",
 
   # H2O
   if(Type == "h2o") {
+    VI_Data[, Variable := gsub(pattern = 'Shap_', replacement = "", x = Variable)]
     p1 <- eval(
       ggplot2::ggplot(VI_Data[seq_len(min(TopN,.N))], ggplot2::aes(x = reorder(Variable, ScaledImportance ), y = ScaledImportance , fill = ScaledImportance )) +
-        ggplot2::geom_bar(stat = "identity") +
+        ggplot2::geom_bar(stat = 'identity') +
         ggplot2::scale_fill_gradient2(mid = ColorLow,high = ColorHigh) +
         ChartTheme(Size = 12L, AngleX = 0L, LegendPosition = "right") +
         ggplot2::coord_flip() +
-        ggplot2::labs(title = "Global Variable Importance") +
+        ggplot2::labs(title = 'Global Variable Importance') +
         ggplot2::ylab("Value") +
         ggplot2::theme(legend.position = "none"))
     return(p1)

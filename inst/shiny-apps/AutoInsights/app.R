@@ -331,7 +331,7 @@ ui <- shinydashboard::dashboardPage(
               shinyWidgets::actionBttn(inputId='TrendPlotExecute', label='Build Plot', style='gradient', color='royal')),
 
             # Global Settings
-            RemixAutoML:::GlobalSettingsContents(id='GlobalSettings', PlotHeight=PlotHeight, PlotWidth=PlotWidth, AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, Right=FALSE, Animate=TRUE, Status='custom'),
+            #RemixAutoML:::GlobalSettingsContents(id='GlobalSettings', PlotHeight=PlotHeight, PlotWidth=PlotWidth, AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
             # Formatting DropDown
             shiny::column(

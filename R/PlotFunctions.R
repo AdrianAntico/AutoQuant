@@ -1508,6 +1508,7 @@ AppModelInsights <- function(ModelOutputList,
     vals <- names(dt)[which(names(dt) %like% 'Shap_')]
     if(length(vals) != 0) {
       p1 <- RemixAutoML::ShapImportancePlot(dt, ShapColNames = vals, FacetVar1 = FacetVar1, FacetVar2 = FacetVar2, AggMethod = ShapAgg, TopN = 25)
+      p1 <- p1 + ggplot2::ylab(label = "") + ggplot2::xlab(label = "")
     } else {
       p1 <- NULL
     }
@@ -1854,6 +1855,7 @@ AppModelInsights <- function(ModelOutputList,
     if(Debug) print('Test_Importance ! !Rebuild')
     if(Debug) print(ModelOutputList$VariableImportance[['Test_Importance']])
     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Test_Importance']], TopN = 25)
+    p1 <- p1 + ggplot2::ylab(label = "") + ggplot2::xlab(label = "")
     if(!exists('p1')) p1 <- NULL
     if(!is.null(p1)) {
       p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: test data', caption = 'RemixAutoML')
