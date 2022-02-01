@@ -656,23 +656,23 @@ server <- function(input, output, session) {
 
     # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
     output$Plot1 <- shiny::renderUI({
-      if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+      if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- unique(c(names(ModelOutputList$PlotList),'Test_ParDepPlots','Train_ParDepPlots')) else bla <- NULL
       x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup, Debug = Debug)
       if(Debug) {print('Plot1 Charts Available'); print(x)}
       RemixAutoML::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = TRUE, MaxVars = 1)
     })
     output$Plot2 <- shiny::renderUI({
-      if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+      if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- unique(c(names(ModelOutputList$PlotList),'Test_ParDepPlots','Train_ParDepPlots')) else bla <- NULL
       x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup, Debug = Debug)
       RemixAutoML::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = TRUE, MaxVars = 1)
     })
     output$Plot3 <- shiny::renderUI({
-      if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+      if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- unique(c(names(ModelOutputList$PlotList),'Test_ParDepPlots','Train_ParDepPlots')) else bla <- NULL
       x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup, Debug = Debug)
       RemixAutoML::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = TRUE, MaxVars = 1)
     })
     output$Plot4 <- shiny::renderUI({
-      if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+      if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- unique(c(names(ModelOutputList$PlotList),'Test_ParDepPlots','Train_ParDepPlots')) else bla <- NULL
       x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup, Debug = Debug)
       RemixAutoML::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = TRUE, MaxVars = 1)
     })
@@ -2172,24 +2172,24 @@ server <- function(input, output, session) {
     shiny::checkboxGroupInput(inputId = "AutoGridHorizontal", label = tags$span(style='color: blue;', 'Auto Grid Scale'),choices = list("On" = 1, "Off" = 2), selected = 1)
   })
   output$Plot1 <- shiny::renderUI({
-    if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+    if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- unique(c(names(ModelOutputList$PlotList),'Test_ParDepPlots','Train_ParDepPlots')) else bla <- NULL
     if(Debug) {print(bla)}
     x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup, Debug = Debug)
     if(Debug) {print('Plot1 Charts Available 2nd plot section'); print(x)}
     RemixAutoML::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
   })
   output$Plot2 <- shiny::renderUI({
-    if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+    if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- unique(c(names(ModelOutputList$PlotList),'Test_ParDepPlots','Train_ParDepPlots')) else bla <- NULL
     x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup, Debug = Debug)
     RemixAutoML::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
   })
   output$Plot3 <- shiny::renderUI({
-    if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+    if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- unique(c(names(ModelOutputList$PlotList),'Test_ParDepPlots','Train_ParDepPlots')) else bla <- NULL
     x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup, Debug = Debug)
     RemixAutoML::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
   })
   output$Plot4 <- shiny::renderUI({
-    if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- names(ModelOutputList$PlotList) else bla <- NULL
+    if(length(ModelOutputList) != 0 && length(names(ModelOutputList$PlotList)) != 0) bla <- unique(c(names(ModelOutputList$PlotList),'Test_ParDepPlots','Train_ParDepPlots')) else bla <- NULL
     x <- RemixAutoML:::AvailableAppInsightsPlots(x = bla, PlotNamesLookup = PlotNamesLookup, Debug = Debug)
     RemixAutoML::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(x), Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
   })
@@ -3577,7 +3577,7 @@ server <- function(input, output, session) {
       PlotType <- PlotNamesLookup[[eval(PlotType)]]
 
       # For PDP's
-      if(PlotType %in% names(ModelOutputList$PlotList)) {
+      if(PlotType %in% unique(c(names(ModelOutputList$PlotList), 'Test_ParDepPlots','Train_ParDepPlots'))) {
         if('p1' %in% names(ModelData)) {
           ScoreVar <- 'p1'
         } else {
