@@ -7994,7 +7994,7 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 </p>
 </details>
 
-#### Postgres Functions
+#### Postgre Functions
 
 <details><summary>Expand to view content</summary>
 <p>
