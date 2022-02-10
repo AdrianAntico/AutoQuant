@@ -7,7 +7,7 @@
 EDA_Histograms(
   data = NULL,
   PlotColumns = NULL,
-  SampleCount = 100000,
+  SampleCount = 1e+05,
   SavePath = NULL,
   FactorCountPerPlot = 10,
   AddDensityLine = FALSE,

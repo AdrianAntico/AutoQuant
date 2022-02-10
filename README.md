@@ -7971,6 +7971,11 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 <details><summary>Expand to view content</summary>
 <p>
 
+#### SQL Server Functions
+
+<details><summary>Expand to view content</summary>
+<p>
+
 <code>AutoDataDictionary()</code> will pull back data dictionary data from a sql server data warehouse. There are several data dictionary types that can be returned, such as returning every table that exists along with every column with metadata information. Another good one is to pull back all tables and their counterparts that can be used in joins, along with the joining sql.
 
 <code>SQL_Server_DBConnection()</code> Create a connect with sql server
@@ -7985,6 +7990,22 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 
 <code>SQL_SaveTable()</code> Write a sql server table
 
+
+</p>
+</details>
+
+#### Postgres Functions
+
+<details><summary>Expand to view content</summary>
+<p>
+
+<code>PostGRE_Query()</code> Get data from a database table, return a data.table
+
+<code>PostGRE_AppendData()</code> Add data to database. Works with empty tables too.
+
+<code>PostGRE_CreateTable()</code> Create a table
+
+<code>PostGRE_RemoveTable()</code> DROP a table
 
 </p>
 </details>
