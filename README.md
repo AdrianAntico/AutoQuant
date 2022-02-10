@@ -8011,6 +8011,10 @@ RulesData <- RemixAutoML::AutoMarketBasketModel(
 </details>
 
 
+</p>
+</details>
+
+
 ## Utilities EDA and Misc <img src="https://raw.githubusercontent.com/AdrianAntico/RemixAutoML/master/Images/MiscImage.png" align="right" width="80" />
 <details><summary>Expand to view content</summary>
 <p>
