@@ -60,7 +60,7 @@ for(i in seq_len(20L)) {
 }
 # Run function and time it
 runtime <- system.time(
-  data <- CreateHolidayVariables(
+  data <- RemixAutoML::CreateHolidayVariables(
     data,
     DateCols = "DateTime",
     LookbackDays = NULL,

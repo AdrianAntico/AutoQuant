@@ -163,6 +163,7 @@ LoadDataInputs <- function(id = 'ExternalData',
           label = 'Download Data')),
 
       # Add row
+      RemixAutoML::BlankRow(AppWidth),
       RemixAutoML::BlankRow(AppWidth)))
 }
 
@@ -194,6 +195,165 @@ LoadDataButton <- function(id = 'DataButton',
         shinyWidgets::actionBttn(
           inputId = 'LoadDataButton',
           label = 'Load Data',
+          icon = shiny::icon('chevron-right', lib='font-awesome'),
+          style = Style,
+          color = Color))))
+}
+
+#' @title FE_CalendarVariables
+#'
+#' @description Calendar Variables Dropdown
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'CalendarVariables'
+#' @param AppWidth = AppWidth
+#' @param LogoWidth = LogoWidth
+#' @param ButtonWidth = 3L
+#' @param Align = 'center'
+#' @param DropDownRight = FALSE
+#' @param Animate = TRUE
+#' @param Status = 'custom'
+#' @param H3Color = 'blue'
+#'
+#' @noRd
+FE_DateVariables <- function(id='CalendarVariables',
+                             AppWidth=AppWidth,
+                             LogoWidth=LogoWidth,
+                             ButtonWidth=3L,
+                             Align='left',
+                             DropDownRight=FALSE,
+                             Animate=TRUE,
+                             Status='custom',
+                             H3Color = 'blue') {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::column(
+      width = ButtonWidth,
+      align=Align,
+
+      # Dropdown Button
+      tags$h4(tags$b('Date Variables')),
+      shinyWidgets::dropdown(
+        right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+        RemixAutoML::BlankRow(AppWidth),
+
+        # Calendar Variables Selection
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Calendar Variables'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('CalendarVariables_DateVariables')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('CalendarVariables_TimeUnits'))),
+
+
+        # Holiday Variables Selection
+        RemixAutoML::BlankRow(AppWidth),
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Holiday Variables'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('HolidayVariables_DateVariables')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('HolidayVariables_HolidayGroups')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('HolidayVariables_LookbackDays')))
+      )))
+}
+
+#' @title FE_NumericVariables
+#'
+#' @description Numeric Variables Dropdown
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'NumericVariables'
+#' @param AppWidth = AppWidth
+#' @param LogoWidth = LogoWidth
+#' @param ButtonWidth = 3L
+#' @param Align = 'center'
+#' @param DropDownRight = FALSE
+#' @param Animate = TRUE
+#' @param Status = 'custom'
+#' @param H3Color = 'blue'
+#'
+#' @noRd
+FE_NumericVariables <- function(id='NumericVariables',
+                                AppWidth=AppWidth,
+                                LogoWidth=LogoWidth,
+                                ButtonWidth=3L,
+                                Align='left',
+                                DropDownRight=FALSE,
+                                Animate=TRUE,
+                                Status='custom',
+                                H3Color = 'blue') {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::column(
+      width = ButtonWidth,
+      align=Align,
+
+      # Dropdown Button
+      tags$h4(tags$b('Date Variables')),
+      shinyWidgets::dropdown(
+        right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+        RemixAutoML::BlankRow(AppWidth),
+
+        # PercRank Selection
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Percent Rank Variables'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('PercentRank_ColNames')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('PercentRank_GroupVars')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('PercentRank_Granularity'))),
+
+        # Auto Interaction Selection
+        RemixAutoML::BlankRow(AppWidth),
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Interaction Variables'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_NumericVars')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_InteractionDepth')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_Center')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_Scale'))),
+
+        # Transformations
+        RemixAutoML::BlankRow(AppWidth),
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Transform Variables'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_ColumnNames')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_Methods')))
+      )))
+}
+
+#' @title FeatureEngineeringButton
+#'
+#' @description FeatureEngineeringButton is a button for kicking off feature engineering
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = input
+#' @param AppWidth = AppWidth
+#' @param Style = 'gradient'
+#' @param Color = 'royal'
+#'
+#' @noRd
+FeatureEngineeringButton <- function(id = 'FEButton',
+                                     AppWidth = AppWidth,
+                                     Style = 'gradient',
+                                     Color = 'royal') {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    RemixAutoML::BlankRow(AppWidth),
+    shiny::fluidRow(
+      shiny::column(
+        width = 3L,
+        shinyjs::useShinyjs(),
+        shinyWidgets::actionBttn(
+          inputId = 'FeatureEngineeringButton',
+          label = 'Build Features',
           icon = shiny::icon('chevron-right', lib='font-awesome'),
           style = Style,
           color = Color))))

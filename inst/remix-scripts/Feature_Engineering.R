@@ -18,7 +18,7 @@ data <- RemixAutoML::FakeDataGenerator(
 data.table::fwrite(data, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/Sample_Project/Data/data.csv")
 rm(data)
 
-# Args Management ----
+# Args Management           ----
 print("Args Management")
 if("Args Setup" == "Args Setup") {
 
@@ -342,7 +342,7 @@ if("Args Setup" == "Args Setup") {
   ArgsList$FE_Args$Clean[["IgnoreCols"]] <- CL_ArgsList_FE[["IgnoreCols"]]
 
   # Calendar Variables
-  ArgsList$FE_Args$Calendar[["CalendarVariables"]] <-  RemixAutoML:::ParseOptParse(CL_ArgsList_FE[["Calendar_Variables"]])
+  ArgsList$FE_Args$Calendar[["CalendarVariables"]] <- RemixAutoML:::ParseOptParse(CL_ArgsList_FE[["Calendar_Variables"]])
 
   # Holiday Variables
   ArgsList$FE_Args$Holiday[["LookBackDays"]] <- CL_ArgsList_FE[["LookBackDays"]]
@@ -428,11 +428,11 @@ if("Args Setup" == "Args Setup") {
   save(ArgsList, file = file.path(ArgsList$MetaData$MetaData_Path, 'ArgsList.Rdata'))
 }
 
-# . ----
+# .                         ----
 
-# . ----
+# .                         ----
 
-# Run: Load Data ----
+# Run: Load Data            ----
 print("Run: Load Data")
 if('LoadData' == 'LoadData') {
 
@@ -447,7 +447,7 @@ if('LoadData' == 'LoadData') {
   ArgsList$RunTime$LoadData <- difftime(End, Start, units = 'mins')
 }
 
-# Run: Clean data ----
+# Run: Clean data           ----
 print("Run: Clean data")
 if('Clean' == 'Clean') {
   Start <- Sys.time()
@@ -460,7 +460,7 @@ if('Clean' == 'Clean') {
   save(ArgsList, file = file.path(ArgsList$MetaData$MetaData_Path, 'ArgsList.Rdata'))
 }
 
-# Run: DiffVars ----
+# Run: DiffVars             ----
 print("Run: DiffVars")
 if("DiffVars" == "DiffVars") {
   DiffVars <- setdiff(names(data), unique(c(ArgsList$Data[["TargetVariables"]], ArgsList$Data[["IDVariables"]], ArgsList$Data[["DateVariables"]])))
@@ -477,7 +477,7 @@ if("DiffVars" == "DiffVars") {
   }
 }
 
-# Run: Calendar Variables ----
+# Run: Calendar Variables   ----
 print("Run: Calendar Variables")
 if(any(ArgsList$Services %in% 'CalendarVariables')) {
   Start <- Sys.time()
@@ -487,7 +487,7 @@ if(any(ArgsList$Services %in% 'CalendarVariables')) {
   save(ArgsList, file = file.path(ArgsList$MetaData$MetaData_Path, 'ArgsList.Rdata'))
 }
 
-# Run: Holiday Variables ----
+# Run: Holiday Variables    ----
 print("Run: Holiday Variables")
 if(any(ArgsList$Services %in% 'HolidayVariables')) {
   Output <- RemixAutoML:::HolidayVariables(data=data, RunMode='train', ArgsList=ArgsList, SkipCols=NULL)
@@ -496,7 +496,7 @@ if(any(ArgsList$Services %in% 'HolidayVariables')) {
   save(ArgsList, file = file.path(ArgsList$MetaData$MetaData_Path, 'ArgsList.Rdata'))
 }
 
-# Run: PartialDummies ----
+# Run: PartialDummies       ----
 print("Run: PartialDummies")
 if(any(ArgsList$Services %in% 'PartialDummies')) {
   Output <- RemixAutoML:::DummyVariables(data=data, RunMode='train', ArgsList=ArgsList, SkipCols=NULL)
@@ -505,7 +505,7 @@ if(any(ArgsList$Services %in% 'PartialDummies')) {
   save(ArgsList, file = file.path(ArgsList$MetaData$MetaData_Path, 'ArgsList.Rdata'))
 }
 
-# Run: Feature Interaction ----
+# Run: Feature Interaction  ----
 print("Run: Feature Interaction")
 if(any(ArgsList$Services %in% 'FeatureInteraction')) {
   Output <- RemixAutoML:::CreateInteractions(data=data, RunMode='train', ArgsList=ArgsList, SkipCols=NULL)
@@ -514,7 +514,7 @@ if(any(ArgsList$Services %in% 'FeatureInteraction')) {
   save(ArgsList, file = file.path(ArgsList$MetaData$MetaData_Path, 'ArgsList.Rdata'))
 }
 
-# Run: Differencing ----
+# Run: Differencing         ----
 print("Run: Differencing")
 if(any(ArgsList$Services %in% 'Differencing')) {
   Counter <- 0L
@@ -526,7 +526,7 @@ if(any(ArgsList$Services %in% 'Differencing')) {
   }
 }
 
-# Run: TimeSeries ----
+# Run: TimeSeries           ----
 print("Run: TimeSeries")
 if(any(ArgsList$Services %in% 'TimeSeries') && ModelType != 'MultiClass') {
   Output <- RemixAutoML:::TimeSeriesFeatures(data=data, RunMode='train', ArgsList=ArgsList, SkipCols=NULL, DebugMode=FALSE)
@@ -535,7 +535,7 @@ if(any(ArgsList$Services %in% 'TimeSeries') && ModelType != 'MultiClass') {
   save(ArgsList, file = file.path(ArgsList$MetaData$MetaData_Path, 'ArgsList.Rdata'))
 }
 
-# Run: Partition Data ----
+# Run: Partition Data       ----
 print("Run: Partition Data")
 if(any(ArgsList$Services %in% 'DataPartition')) {
   Output <- RemixAutoML:::PartitionData(data = data, ArgsList = ArgsList)
@@ -557,7 +557,7 @@ if(any(ArgsList$Services %in% 'Encoding')) {
   save(ArgsList, file = file.path(ArgsList$MetaData$MetaData_Path, 'ArgsList.Rdata'))
 }
 
-# H2O Word2Vec ----
+# Run: H2O Word2Vec         ----
 print("H2O Word2Vec")
 if(any(ArgsList$Services %in% 'H2OWord2Vec')) {
   NumCols <- ncol(TrainData)
@@ -574,7 +574,7 @@ if(any(ArgsList$Services %in% 'H2OWord2Vec')) {
   }
 }
 
-# H2O AutoEncoder ----
+# Run: H2O AutoEncoder      ----
 print("H2O AutoEncoder")
 if(any(ArgsList$Services %in% 'H2OAutoEncoder')) {
   NumCols <- ncol(TrainData)
@@ -591,7 +591,7 @@ if(any(ArgsList$Services %in% 'H2OAutoEncoder')) {
   }
 }
 
-# H2O Isolation Forest ----
+# Run: H2O Isolation Forest ----
 print("H2O Isolation Forest")
 if(any(ArgsList$Services %in% 'H2OIsolationForest')) {
   NumCols <- ncol(TrainData)
@@ -608,7 +608,7 @@ if(any(ArgsList$Services %in% 'H2OIsolationForest')) {
   }
 }
 
-# H2O Clustering ----
+# Run: H2O Clustering       ----
 print("H2O Clustering")
 if(any(ArgsList$Services %in% 'H2OClustering')) {
 
@@ -647,7 +647,7 @@ if(any(ArgsList$Services %in% 'H2OClustering')) {
   }
 }
 
-# Save Data ----
+# Save Data                 ----
 print("Save Data")
 if('SaveData' == 'SaveData') {
   ArgsList$MetaData$ML_Train_DataColumnTypes <- RemixAutoML:::ColTypes(TrainData)
@@ -656,7 +656,7 @@ if('SaveData' == 'SaveData') {
   data.table::fwrite(TestData, file = file.path(ArgsList$MetaData$Data, 'TestData.csv'))
 }
 
-# Clear Environment ----
+# Clear Environment         ----
 print("Clear Environment")
 if("Clear" == "Clear") {
   rm(list = ls())

@@ -197,6 +197,10 @@ ui <- shinydashboard::dashboardPage(
       RemixAutoML::BlankRow(AppWidth),
       shinydashboard::menuItem(text="Import Data", tabName='LoadDataPage', icon=shiny::icon("database")),
 
+      # Load Data Page
+      RemixAutoML::BlankRow(AppWidth),
+      shinydashboard::menuItem(text="Feature Engineering", tabName='FeatureEngineering', icon=shiny::icon("blender")),
+
       # Plotting Page
       RemixAutoML::BlankRow(AppWidth),
       shinydashboard::menuItem(text="Create Plots", tabName='Plotter', icon=shiny::icon("chart-line")),
@@ -261,6 +265,54 @@ ui <- shinydashboard::dashboardPage(
 
         # Button to Load Data
         RemixAutoML:::LoadDataButton(id = 'DataButton', AppWidth = AppWidth)),
+
+      # ----
+
+      # ----
+
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      # Feature Engineering Page             ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      shinydashboard::tabItem(
+
+        # -- TAB REFERENCE VALUE
+        tabName = "FeatureEngineering",
+
+        # ----
+
+        # ----
+
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+        # FE Inputs                            ----
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+        # Box
+        shinydashboard::box(
+          title = NULL,
+          solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
+
+          # Add Space
+          RemixAutoML::BlankRow(AppWidth),
+
+          # Feature Engineering DropDowns by Feature Engineering Type
+          shiny::fluidRow(
+            width=AppWidth,
+            RemixAutoML:::FE_DateVariables(id='CalendarVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
+            RemixAutoML:::FE_NumericVariables(id='NumericVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='left', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue')
+
+          ), # end of fluidrow
+
+
+          # Add Space to act as a bigger boarder for box
+          RemixAutoML::BlankRow(AppWidth),
+
+        ), # End of box
+
+        # Add Space to act as a border, just like the dragula box
+        RemixAutoML::BlankRow(AppWidth),
+        RemixAutoML:::FeatureEngineeringButton(id='FEButton', AppWidth=AppWidth, Style='gradient', Color='royal')
+
+      ),
 
       # ----
 
@@ -462,6 +514,7 @@ server <- function(input, output, session) {
   # Button to disable / enable Data Load Page
   shinyjs::addCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
   shinyjs::addCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
+  shinyjs::addCssClass(selector = "a[data-value='FeatureEngineering']", class = "inactiveLink")
   shinyjs::addCssClass(selector = "a[data-value='CodePrint']", class = "inactiveLink")
 
   # ----
@@ -481,11 +534,13 @@ server <- function(input, output, session) {
     if(UserName() %in% Credentials$UserName && Password() %in% Credentials[UserName == eval(UserName())]$Password) {
       shinyjs::removeCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
       shinyjs::removeCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
+      shinyjs::removeCssClass(selector = "a[data-value='FeatureEngineering']", class = "inactiveLink")
       shinyjs::removeCssClass(selector = "a[data-value='CodePrint']", class = "inactiveLink")
       shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Success', type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     } else {
       shinyjs::addCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
       shinyjs::addCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
+      shinyjs::addCssClass(selector = "a[data-value='FeatureEngineering']", class = "inactiveLink")
       shinyjs::addCssClass(selector = "a[data-value='CodePrint']", class = "inactiveLink")
       shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Username and / or password is incorrect', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
@@ -520,14 +575,14 @@ server <- function(input, output, session) {
     rawfiles <<- rawfiles[c(which(grepl(pattern = '.csv', x = rawfiles)), which(grepl(pattern = '.Rdata', x = rawfiles)))]
     RemixAutoML::SelectizeInput(
       InputID = 'blob',
-      Label = 'Select Azure .csv File',
+      Label = 'Azure Blob .csv Files',
       Choices = rawfiles[which(grepl(pattern = '.csv', x = rawfiles))],
       SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
   output$rdatablob <- shiny::renderUI({
     RemixAutoML::SelectizeInput(
       InputID = 'rdatablob',
-      Label = 'Select Azure .Rdata File',
+      Label = 'Azure Blob .Rdata Files',
       Choices = rawfiles[which(grepl(pattern = '.Rdata', x = rawfiles))],
       SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
@@ -645,6 +700,68 @@ server <- function(input, output, session) {
     # EXACT COPIES EXCEPT FILTERS          ----
 
     # EXACT COPIES EXCEPT FILTERS          ----
+
+    # ----
+
+    # ----
+
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # FE Variables                         ----
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+    # CalendarVariables() Parameters
+    output$CalendarVariables_DateVariables <- shiny::renderUI({
+      if(length(data) != 0 && length(names(data)) != 0) bla <- c(names(data)) else bla <- NULL
+      RemixAutoML::SelectizeInput(InputID='CalendarVariables_DateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Columns'), Choices = c(bla), Multiple = TRUE, MaxVars = 100)
+    })
+    output$CalendarVariables_TimeUnits <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='CalendarVariables_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Calendar Variables'), Choices = c('second','minute','hour','wday','mday','yday','week','wom','month','quarter','year'), Multiple = TRUE, MaxVars = 100)
+    })
+
+    # HolidayVariables() Parameters
+    output$HolidayVariables_DateVariables <- shiny::renderUI({
+      if(length(data) != 0 && length(names(data)) != 0) bla <- c(names(data)) else bla <- NULL
+      RemixAutoML::SelectizeInput(InputID='HolidayVariables_DateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Holiday Variables'), Choices = c(bla), Multiple = TRUE, MaxVars = 100)
+    })
+    output$HolidayVariables_HolidayGroups <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='HolidayVariables_HolidayGroups', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Holiday Variables'), Choices = c('USPublicHolidays','EasterGroup','ChristmasGroup','OtherEcclesticalFeasts'), Multiple = TRUE, MaxVars = 100)
+    })
+    output$HolidayVariables_LookbackDays <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='HolidayVariables_LookbackDays', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lookback Days'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100)
+    })
+
+    # PercRank() Parameters
+    output$PercentRank_ColNames <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='PercentRank_ColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+    })
+    output$PercentRank_GroupVars <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='PercentRank_GroupVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By Variables'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100)
+    })
+    output$PercentRank_Granularity <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='PercentRank_Granularity', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Precision'), Choices = c(seq(0.001, 0.99, 0.001)), Multiple = FALSE, MaxVars = 100)
+    })
+
+    # AutoInteraction() Parameters
+    output$AutoInteraction_NumericVars <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoInteraction_NumericVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoInteraction_InteractionDepth <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoInteraction_InteractionDepth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Interaction Depth'), Choices = c(1:10), Multiple = FALSE, MaxVars = 100)
+    })
+    output$AutoInteraction_Scale <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoInteraction_Scale', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Scale Data'), Choices = c('TRUE','FALSE'), Multiple = FALSE, MaxVars = 100)
+    })
+    output$AutoInteraction_Center <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoInteraction_Center', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Center Data'), Choices = c('TRUE','FALSE'), Multiple = FALSE, MaxVars = 100)
+    })
+
+    # AutoTransformCreate() Parameters
+    output$AutoInteraction_ColumnNames <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoInteraction_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoInteraction_Methods <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoInteraction_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Methods'), Choices = c('YeoJohnson','BoxCox','Asinh','Log','LogPlus1','Sqrt','Asin','Logit'), Multiple = TRUE, MaxVars = 100)
+    })
 
     # ----
 
@@ -2096,12 +2213,74 @@ server <- function(input, output, session) {
     # Sweet Alert                          ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     if(Debug) print("Here gggggggg")
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Success', type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
 
     # ----
 
     # ----
 
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # FE Variables                         ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Date Variables
+  output$CalendarVariables_DateVariables <- shiny::renderUI({
+    if(length(data) != 0 && length(names(data)) != 0) bla <- c(names(data)) else bla <- NULL
+    RemixAutoML::SelectizeInput(InputID='CalendarVariables_DateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Columns'), Choices = c(bla), Multiple = TRUE, MaxVars = 100)
+  })
+  output$CalendarVariables_TimeUnits <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='CalendarVariables_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Calendar Variables'), Choices = c('second','minute','hour','wday','mday','yday','week','wom','month','quarter','year'), Multiple = TRUE, MaxVars = 100)
+  })
+
+  # Holiday Variables
+  output$HolidayVariables_DateVariables <- shiny::renderUI({
+    if(length(data) != 0 && length(names(data)) != 0) bla <- c(names(data)) else bla <- NULL
+    RemixAutoML::SelectizeInput(InputID='HolidayVariables_DateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Holiday Variables'), Choices = c(bla), Multiple = TRUE, MaxVars = 100)
+  })
+  output$HolidayVariables_HolidayGroups <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='HolidayVariables_HolidayGroups', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Holiday Variables'), Choices = c('USPublicHolidays','EasterGroup','ChristmasGroup','OtherEcclesticalFeasts'), Multiple = TRUE, MaxVars = 100)
+  })
+  output$HolidayVariables_LookbackDays <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='HolidayVariables_LookbackDays', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Holiday Variables'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100)
+  })
+
+  # PercRank() Parameters
+  output$PercentRank_ColNames <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='PercentRank_ColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+  })
+  output$PercentRank_GroupVars <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='PercentRank_GroupVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By Variables'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100)
+  })
+  output$PercentRank_Granularity <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='PercentRank_Granularity', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Precision'), Choices = c(seq(0.001, 0.99, 0.001)), Multiple = FALSE, MaxVars = 100)
+  })
+
+  # AutoInteraction() Parameters
+  output$AutoInteraction_NumericVars <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoInteraction_NumericVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoInteraction_InteractionDepth <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoInteraction_InteractionDepth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Interaction Depth'), Choices = c(1:10), Multiple = FALSE, MaxVars = 100)
+  })
+  output$AutoInteraction_Scale <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoInteraction_Scale', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Scale Data'), Choices = c('TRUE','FALSE'), Multiple = FALSE, MaxVars = 100)
+  })
+  output$AutoInteraction_Center <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoInteraction_Center', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Center Data'), Choices = c('TRUE','FALSE'), Multiple = FALSE, MaxVars = 100)
+  })
+
+  # AutoTransformCreate() Parameters
+  output$AutoInteraction_ColumnNames <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoInteraction_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoInteraction_Methods <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoInteraction_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Methods'), Choices = c('YeoJohnson','BoxCox','Asinh','Log','LogPlus1','Sqrt','Asin','Logit'), Multiple = TRUE, MaxVars = 100)
   })
 
   # ----
@@ -3332,10 +3511,48 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Initialize Plot                      ----
+  # Feature Engineering                  ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  output$TrendPlotly <- plotly::renderPlotly({
-    if(!exists('PlotCollectionList')) plotly::ggplotly(RemixAutoML:::BlankPlot())
+  shiny::observeEvent(input$FeatureEngineeringButton, {
+
+    # Calendar Variables
+    CalendarVar_DateVariables <- RemixAutoML::ReturnParam(xx = 'CalendarVariables_DateVariables')
+    CalendarVar_TimeUnits <- RemixAutoML::ReturnParam(xx = 'CalendarVariables_TimeUnits')
+    if(length(CalendarVar_DateVariables) != 0 && CalendarVar_DateVariables %in% names(data) && length(CalendarVar_TimeUnits) != 0) {
+      data <- RemixAutoML::CreateCalendarVariables(
+        data = data,
+        DateCols = CalendarVar_DateVariables,
+        AsFactor = FALSE,
+        TimeUnits = CalendarVar_TimeUnits)
+      data <<- data
+    }
+
+    # Holiday Variables
+    HolidayVar_DateVariables <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_DateVariables')
+    HolidayVar_HolidayGroups <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_HolidayGroups')
+    HolidayVar_LookbackDays <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_LookbackDays')
+    if(length(HolidayVar_DateVariables) != 0 && HolidayVar_DateVariables %in% names(data) && length(HolidayVar_HolidayGroups) != 0)
+    data <- RemixAutoML::CreateHolidayVariables(
+      data,
+      DateCols = HolidayVar_DateVariables,
+      LookbackDays = HolidayVar_LookbackDays,
+      HolidayGroups = HolidayVar_HolidayGroups,
+      Holidays = NULL,
+      Print = FALSE)
+    data <<- data
+
+    # Numeric Variables
+
+    # Time Series Variables
+
+    # Categorical Variables
+
+    # Text Variables
+
+    # Data Set Variables
+
+    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+
   })
 
   # ----
@@ -3343,18 +3560,10 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Print Code to UI                     ----
+  # Initialize Plot                      ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  shiny::observeEvent(input$PrintCodeButton, {
-    if(Debug) print('Print Code UI Begin')
-    if(Debug) print(paste0('Check if CodeCollection exists: exists = ', exists('CodeCollection')))
-    if(exists('CodeCollection')) {
-      output$PrintCode <- shiny::renderPrint({
-        shiny::HTML(paste0(unlist(CodeCollection), sep = '<br/>'))
-      })
-    } else {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'No Code Collected, Yet', type = NULL, btn_labels = "warning", btn_colors = "yellow", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    }
+  output$TrendPlotly <- plotly::renderPlotly({
+    if(!exists('PlotCollectionList')) plotly::ggplotly(RemixAutoML:::BlankPlot())
   })
 
   # ----
@@ -4459,6 +4668,25 @@ server <- function(input, output, session) {
         shiny::req(PlotEngine == 'plotly')
         plotly::ggplotly(RemixAutoML:::BlankPlot())
       })
+    }
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # Print Code to UI                     ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  shiny::observeEvent(input$PrintCodeButton, {
+    if(Debug) print('Print Code UI Begin')
+    if(Debug) print(paste0('Check if CodeCollection exists: exists = ', exists('CodeCollection')))
+    if(exists('CodeCollection')) {
+      output$PrintCode <- shiny::renderPrint({
+        shiny::HTML(paste0(unlist(CodeCollection), sep = '<br/>'))
+      })
+    } else {
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'No Code Collected, Yet', type = NULL, btn_labels = "warning", btn_colors = "yellow", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
   })
 

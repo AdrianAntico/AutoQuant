@@ -26,6 +26,10 @@ SQL_ClearTable remove all rows from a database table
 \seealso{
 Other Database: 
 \code{\link{AutoDataDictionaries}()},
+\code{\link{PostGRE_AppendData}()},
+\code{\link{PostGRE_CreateTable}()},
+\code{\link{PostGRE_Query}()},
+\code{\link{PostGRE_RemoveTable}()},
 \code{\link{SQL_DropTable}()},
 \code{\link{SQL_Query_Push}()},
 \code{\link{SQL_Query}()},

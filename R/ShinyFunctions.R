@@ -1,3 +1,63 @@
+
+
+#' @title DataTable
+#'
+#' @description Fully loaded DT::datatable() with args prefilled
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @examples
+#' \dontrun{
+#' # Rmarkdown example of DataTable inside a <details> </Details> section
+#'
+#' ```{r Get Dependencies For DT::datatable(), echo=FALSE,include = FALSE}
+#' # You need this code to conduct the magic dependences attaching...
+#' DT::datatable(matrix())
+#' ```
+#'
+#' ```{js Nest All DT::datatable() inside a details drop down, echo=FALSE}
+#' setTimeout(function() {
+#'   var codes = document.querySelectorAll('.dataTables_wrapper');
+#'   var code, i, d, s, p;
+#'   for (i = 0; i < codes.length; i++) {
+#'     code = codes[i];
+#'     p = code.parentNode;
+#'     d = document.createElement('details');
+#'     s = document.createElement('summary');
+#'     s.innerText = 'Details';
+#'     // <details><summary>Details</summary></details>
+#'       d.appendChild(s);
+#'     // move the code into <details>
+#'       p.replaceChild(d, code);
+#'     d.appendChild(code);
+#'   }
+#' });
+#' ```
+#'
+#' ```{r Example, echo = FALSE}
+#' RemixAutoML::DataTable(data)
+#' ````
+#'
+#'
+#' }
+#'
+#' @export
+DataTable <- function(data) {
+  DT::datatable(
+    data = data,
+    filter = 'top',
+    editable = TRUE,
+    extensions = c('Buttons','ColReorder','Select'),
+    options = list(
+      select = list(style = 'os', items = 'row'),
+      dom = 'Bfrtip',
+      buttons = c('copy', 'csv', 'excel', 'pdf', 'selectRows', 'selectColumns', 'selectCells', 'selectAll', 'selectNone'),
+      colReorder = TRUE,
+      pageLength = 10))
+}
+
+
 #' @noRd
 ExpandText <- function(x) {
   return(paste0("'",paste0(x, collapse = "','"),"'"))

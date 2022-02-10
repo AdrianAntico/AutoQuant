@@ -262,7 +262,7 @@ CreateCalendarVariables <- function(data,
 #' }
 #' # Run function and time it
 #' runtime <- system.time(
-#'   data <- CreateHolidayVariables(
+#'   data <- RemixAutoML::CreateHolidayVariables(
 #'     data,
 #'     DateCols = "DateTime",
 #'     LookbackDays = NULL,
@@ -278,7 +278,7 @@ CreateCalendarVariables <- function(data,
 CreateHolidayVariables <- function(data,
                                    DateCols = NULL,
                                    LookbackDays = NULL,
-                                   HolidayGroups = c("USPublicHolidays","EasterGroup","ChristmasGroup","OtherEcclesticalFeasts"),
+                                   HolidayGroups = c('USPublicHolidays','EasterGroup','ChristmasGroup','OtherEcclesticalFeasts'),
                                    Holidays = NULL,
                                    Print = FALSE) {
 

@@ -31,6 +31,10 @@ AutoDataDictionaries is a function to return data dictionary data in table form
 }
 \seealso{
 Other Database: 
+\code{\link{PostGRE_AppendData}()},
+\code{\link{PostGRE_CreateTable}()},
+\code{\link{PostGRE_Query}()},
+\code{\link{PostGRE_RemoveTable}()},
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},
 \code{\link{SQL_Query_Push}()},

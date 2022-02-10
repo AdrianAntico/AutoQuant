@@ -21,7 +21,7 @@ AutoH2oGBMHurdleModel(
   IfSaveModel = "mojo",
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1000000)), "G") },
   NThreads = max(1L, parallel::detectCores() - 2L),
   Trees = 1000L,
   GridTune = TRUE,

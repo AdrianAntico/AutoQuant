@@ -33,6 +33,7 @@ Other Shiny:
 \code{\link{ArgNullCheck2}()},
 \code{\link{ArgNullCheck}()},
 \code{\link{BlankRow}()},
+\code{\link{DataTable}()},
 \code{\link{DateInput}()},
 \code{\link{GenerateEvaluationMetrics}()},
 \code{\link{NumericInput}()},
