@@ -805,6 +805,7 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #'
 #' @param Query SQL Statement in quotes
 #' @param Connection db connection
+#' @param CloseConnection = FALSE
 #' @param Host If Connection is NULL then this must be supplied. host
 #' @param DBName If Connection is NULL then this must be supplied. dbname
 #' @param User If Connection is NULL then this must be supplied. user
@@ -816,6 +817,7 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #' data <- PostGRE_Query(
 #'   Query = 'Select * from static_data',
 #'   Host = 'localhost',
+#'   CloseConnection = FALSE,
 #'   DBName = 'Testing',
 #'   User = 'postgres',
 #'   Port = 5432,
@@ -824,6 +826,7 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #' # Query = 'Select * from static_data'
 #' # Host = 'localhost'
 #' # DBName = 'Testing'
+#' # CloseConnection = FALSE,
 #' # User = 'postgres'
 #' # Port = 5432
 #' # Password = 'Aa...'
@@ -832,6 +835,7 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #' @export
 PostGRE_Query <- function(Query = NULL,
                           Connection = NULL,
+                          CloseConnection = FALSE,
                           Host = 'localhost',
                           DBName = 'Testing',
                           User = 'postgres',
@@ -853,7 +857,7 @@ PostGRE_Query <- function(Query = NULL,
   rows <- DBI::dbSendQuery(Connection, Query)
   x <- DBI::dbFetch(rows)
   data.table::setDT(x)
-  suppressWarnings(DBI::dbDisconnect(Connection))
+  if(CloseConnection) suppressWarnings(DBI::dbDisconnect(Connection))
   return(x)
 }
 
@@ -866,6 +870,7 @@ PostGRE_Query <- function(Query = NULL,
 #'
 #' @param data Source data.table
 #' @param Connection db connection
+#' @param CloseConnection = FALSE
 #' @param Host If Connection is NULL then this must be supplied. host
 #' @param DBName If Connection is NULL then this must be supplied. dbname
 #' @param User If Connection is NULL then this must be supplied. user
@@ -876,6 +881,7 @@ PostGRE_Query <- function(Query = NULL,
 #' \dontrun{
 #' data <- PostGRE_AppendData(
 #'   data = data,
+#'   CloseConnection = FALSE,
 #'   Host = 'localhost',
 #'   DBName = 'Testing',
 #'   User = 'postgres',
@@ -883,6 +889,7 @@ PostGRE_Query <- function(Query = NULL,
 #'   Password = 'Aa...')
 #'
 #' # data = data
+#' # CloseConnection = FALSE,
 #' # Host = 'localhost'
 #' # DBName = 'Testing'
 #' # User = 'postgres'
@@ -894,6 +901,7 @@ PostGRE_Query <- function(Query = NULL,
 PostGRE_AppendData <- function(data = NULL,
                                TableName = NULL,
                                Connection = NULL,
+                               CloseConnection = FALSE,
                                Host = 'localhost',
                                DBName = 'Testing',
                                User = 'postgres',
@@ -921,7 +929,7 @@ PostGRE_AppendData <- function(data = NULL,
     overwrite = FALSE)
 
   # Close Connection
-  suppressWarnings(DBI::dbDisconnect(Connection))
+  if(CloseConnection) suppressWarnings(DBI::dbDisconnect(Connection))
 }
 
 #' @title PostGRE_CreateTable
@@ -935,6 +943,7 @@ PostGRE_AppendData <- function(data = NULL,
 #' @param TableName Name of table you want created
 #' @param Schema Optional. Advised to use if type inference is fuzzy
 #' @param Connection NULL. If supplied, use this: Connection <- DBI::dbConnect(RPostgres::Postgres(), host = Host, dbname = DBName, user = User, port = Port, password = Password)
+#' @param CloseConnection = FALSE
 #' @param Temporary If Connection is NULL then this must be supplied. FALSE
 #' @param Host If Connection is NULL then this must be supplied. host name
 #' @param DBName If Connection is NULL then this must be supplied. database name
@@ -949,6 +958,8 @@ PostGRE_AppendData <- function(data = NULL,
 #'   TableName = NULL,
 #'   Schema = NULL,
 #'   Temporary = FALSE,
+#'   Connection = NULL,
+#'   CloseConnection = FALSE,
 #'   Host = 'localhost',
 #'   DBName = 'Testing',
 #'   User = 'postgres',
@@ -961,6 +972,7 @@ PostGRE_CreateTable <- function(data = NULL,
                                 Schema = NULL,
                                 TableName = NULL,
                                 Connection = NULL,
+                                CloseConnection = FALSE,
                                 Temporary = FALSE,
                                 Host = 'localhost',
                                 DBName = 'Testing',
@@ -998,7 +1010,7 @@ PostGRE_CreateTable <- function(data = NULL,
   }
 
   # Close Connection
-  suppressWarnings(DBI::dbDisconnect(Connection))
+  if(CloseConnection) suppressWarnings(DBI::dbDisconnect(Connection))
 }
 
 #' @title PostGRE_RemoveTable
@@ -1010,6 +1022,7 @@ PostGRE_CreateTable <- function(data = NULL,
 #'
 #' @param TableName Name of table you want created
 #' @param Connection NULL. If supplied, use this: Connection <- DBI::dbConnect(RPostgres::Postgres(), host = Host, dbname = DBName, user = User, port = Port, password = Password)
+#' @param CloseConnection = FALSE
 #' @param Host If Connection is NULL then this must be supplied. Host name
 #' @param DBName If Connection is NULL then this must be supplied. database name
 #' @param User If Connection is NULL then this must be supplied. user name
@@ -1021,6 +1034,7 @@ PostGRE_CreateTable <- function(data = NULL,
 #' data <- PostGRE_Truncate(
 #'   TableName = 'static_data',
 #'   Connection = NULL,
+#'   CloseConnection = FALSE,
 #'   Host = 'localhost',
 #'   DBName = 'Testing',
 #'   User = 'postgres',
@@ -1039,6 +1053,7 @@ PostGRE_CreateTable <- function(data = NULL,
 #' @export
 PostGRE_RemoveTable <- function(TableName = NULL,
                                 Connection = NULL,
+                                CloseConnection = FALSE,
                                 Host = 'localhost',
                                 DBName = 'Testing',
                                 User = 'postgres',
@@ -1058,5 +1073,5 @@ PostGRE_RemoveTable <- function(TableName = NULL,
   DBI::dbRemoveTable(conn = Connection, name = TableName)
 
   # Close Connection
-  suppressWarnings(DBI::dbDisconnect(Connection))
+  if(CloseConnection) suppressWarnings(DBI::dbDisconnect(Connection))
 }

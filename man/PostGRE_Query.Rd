@@ -7,6 +7,7 @@
 PostGRE_Query(
   Query = NULL,
   Connection = NULL,
+  CloseConnection = FALSE,
   Host = "localhost",
   DBName = "Testing",
   User = "postgres",
@@ -18,6 +19,8 @@ PostGRE_Query(
 \item{Query}{SQL Statement in quotes}
 
 \item{Connection}{db connection}
+
+\item{CloseConnection}{= FALSE}
 
 \item{Host}{If Connection is NULL then this must be supplied. host}
 
@@ -37,6 +40,7 @@ PostGRE_Query get data from a database table
 data <- PostGRE_Query(
   Query = 'Select * from static_data',
   Host = 'localhost',
+  CloseConnection = FALSE,
   DBName = 'Testing',
   User = 'postgres',
   Port = 5432,
@@ -45,6 +49,7 @@ data <- PostGRE_Query(
 # Query = 'Select * from static_data'
 # Host = 'localhost'
 # DBName = 'Testing'
+# CloseConnection = FALSE,
 # User = 'postgres'
 # Port = 5432
 # Password = 'Aa...'

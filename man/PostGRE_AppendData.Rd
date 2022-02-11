@@ -8,6 +8,7 @@ PostGRE_AppendData(
   data = NULL,
   TableName = NULL,
   Connection = NULL,
+  CloseConnection = FALSE,
   Host = "localhost",
   DBName = "Testing",
   User = "postgres",
@@ -19,6 +20,8 @@ PostGRE_AppendData(
 \item{data}{Source data.table}
 
 \item{Connection}{db connection}
+
+\item{CloseConnection}{= FALSE}
 
 \item{Host}{If Connection is NULL then this must be supplied. host}
 
@@ -37,6 +40,7 @@ PostGRE_AppendData get data from a database table
 \dontrun{
 data <- PostGRE_AppendData(
   data = data,
+  CloseConnection = FALSE,
   Host = 'localhost',
   DBName = 'Testing',
   User = 'postgres',
@@ -44,6 +48,7 @@ data <- PostGRE_AppendData(
   Password = 'Aa...')
 
 # data = data
+# CloseConnection = FALSE,
 # Host = 'localhost'
 # DBName = 'Testing'
 # User = 'postgres'

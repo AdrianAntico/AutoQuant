@@ -7,6 +7,7 @@
 PostGRE_RemoveTable(
   TableName = NULL,
   Connection = NULL,
+  CloseConnection = FALSE,
   Host = "localhost",
   DBName = "Testing",
   User = "postgres",
@@ -18,6 +19,8 @@ PostGRE_RemoveTable(
 \item{TableName}{Name of table you want created}
 
 \item{Connection}{NULL. If supplied, use this: Connection <- DBI::dbConnect(RPostgres::Postgres(), host = Host, dbname = DBName, user = User, port = Port, password = Password)}
+
+\item{CloseConnection}{= FALSE}
 
 \item{Host}{If Connection is NULL then this must be supplied. Host name}
 
@@ -37,6 +40,7 @@ PostGRE_RemoveTable will DROP the table specified
 data <- PostGRE_Truncate(
   TableName = 'static_data',
   Connection = NULL,
+  CloseConnection = FALSE,
   Host = 'localhost',
   DBName = 'Testing',
   User = 'postgres',

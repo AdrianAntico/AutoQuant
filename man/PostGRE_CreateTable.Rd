@@ -9,6 +9,7 @@ PostGRE_CreateTable(
   Schema = NULL,
   TableName = NULL,
   Connection = NULL,
+  CloseConnection = FALSE,
   Temporary = FALSE,
   Host = "localhost",
   DBName = "Testing",
@@ -25,6 +26,8 @@ PostGRE_CreateTable(
 \item{TableName}{Name of table you want created}
 
 \item{Connection}{NULL. If supplied, use this: Connection <- DBI::dbConnect(RPostgres::Postgres(), host = Host, dbname = DBName, user = User, port = Port, password = Password)}
+
+\item{CloseConnection}{= FALSE}
 
 \item{Temporary}{If Connection is NULL then this must be supplied. FALSE}
 
@@ -48,6 +51,8 @@ data <- PostGRE_CreateTable(
   TableName = NULL,
   Schema = NULL,
   Temporary = FALSE,
+  Connection = NULL,
+  CloseConnection = FALSE,
   Host = 'localhost',
   DBName = 'Testing',
   User = 'postgres',
