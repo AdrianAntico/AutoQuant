@@ -234,7 +234,7 @@ FE_DateVariables <- function(id='CalendarVariables',
       align=Align,
 
       # Dropdown Button
-      tags$h4(tags$b('Date Variables')),
+      tags$h4(tags$b('Date Features')),
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
@@ -293,7 +293,7 @@ FE_NumericVariables <- function(id='NumericVariables',
       align=Align,
 
       # Dropdown Button
-      tags$h4(tags$b('Date Variables')),
+      tags$h4(tags$b('Numeric Features')),
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
@@ -324,6 +324,159 @@ FE_NumericVariables <- function(id='NumericVariables',
           width=AppWidth,
           shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_ColumnNames')),
           shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_Methods')))
+      )))
+}
+
+#' @title FE_CategoricalVariables
+#'
+#' @description Categorical Variables Dropdown
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'CategoricalVariables'
+#' @param AppWidth = AppWidth
+#' @param LogoWidth = LogoWidth
+#' @param ButtonWidth = 3L
+#' @param Align = 'center'
+#' @param DropDownRight = FALSE
+#' @param Animate = TRUE
+#' @param Status = 'custom'
+#' @param H3Color = 'blue'
+#'
+#' @noRd
+FE_CategoricalVariables <- function(id='CategoricalVariables',
+                                    AppWidth=AppWidth,
+                                    LogoWidth=LogoWidth,
+                                    ButtonWidth=3L,
+                                    Align='left',
+                                    DropDownRight=FALSE,
+                                    Animate=TRUE,
+                                    Status='custom',
+                                    H3Color = 'blue') {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::column(
+      width = ButtonWidth,
+      align=Align,
+
+      # Dropdown Button
+      tags$h4(tags$b('Categorical Features')),
+      shinyWidgets::dropdown(
+        right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+        RemixAutoML::BlankRow(AppWidth),
+
+        # Partial Dummies
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Partial Dummies'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('DummifyDT_Cols')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('DummifyDT_TopN')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('DummifyDT_KeepBaseCols'))),
+
+        # Categorical Encoding
+        RemixAutoML::BlankRow(AppWidth),
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Categorical Encoding'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('CategoricalEncoding_GroupVariables')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('CategoricalEncoding_TargetVariable')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('CategoricalEncoding_Method')))
+      )))
+}
+
+#' @title FE_WindowingVariables
+#'
+#' @description Windowing Variables Dropdown
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'WindowingVariables'
+#' @param AppWidth = AppWidth
+#' @param LogoWidth = LogoWidth
+#' @param ButtonWidth = 3L
+#' @param Align = 'center'
+#' @param DropDownRight = FALSE
+#' @param Animate = TRUE
+#' @param Status = 'custom'
+#' @param H3Color = 'blue'
+#'
+#' @noRd
+FE_WindowingVariables <- function(id='WindowingVariables',
+                                  AppWidth=AppWidth,
+                                  LogoWidth=LogoWidth,
+                                  ButtonWidth=3L,
+                                  Align='left',
+                                  DropDownRight=FALSE,
+                                  Animate=TRUE,
+                                  Status='custom',
+                                  H3Color = 'blue') {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::column(
+      width = ButtonWidth,
+      align=Align,
+
+      # Dropdown Button
+      tags$h4(tags$b('Categorical Features')),
+      shinyWidgets::dropdown(
+        right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+        RemixAutoML::BlankRow(AppWidth),
+
+        # Rolling Categorical
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Rolling Categorical'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_Lags')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_ModePeriods')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_Targets'))),
+        shiny::fluidRow(
+          shiny::column(2L, align = 'center', shiny::uiOutput('AutoLagRollMode_GroupingVars')),
+          shiny::column(2L, align = 'center', shiny::uiOutput('AutoLagRollMode_SortDateName')),
+          shiny::column(2L, align = 'center', shiny::uiOutput('AutoLagRollMode_WindowingLag'))),
+
+        # Rolling Numeric
+        RemixAutoML::BlankRow(AppWidth),
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Rolling Numeric'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_Targets')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_GroupVars')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_DateColumn'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_TimeUnits')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_TimeGroups')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_Quantiles_Selected'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_Lags')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_MA_RollWindows')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_SD_RollWindows'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_Skew_RollWindows')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_Kurt_RollWindows')),
+          shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollStats_Quantile_RollWindows'))),
+
+        # Rolling Numeric
+        RemixAutoML::BlankRow(AppWidth),
+        tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Rolling Numeric'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoDiffLagN_DateVariable')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoDiffLagN_GroupVariables')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoDiffLagN_DiffVariables'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoDiffLagN_DiffDateVariables')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoDiffLagN_DiffGroupVariables'))),
+        Shiny::fluidRow(
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoDiffLagN_NLag1')),
+          shiny::column(6L, align = 'center', shiny::uiOutput('AutoDiffLagN_NLag2')))
       )))
 }
 
@@ -781,7 +934,6 @@ Coloring <- function(id = 'ColoringContents',
           shiny::column(3L, shiny::uiOutput('GridColor4'))))))
 }
 
-
 #' @title GamFitting
 #'
 #' @description Display a dropdown button with GamFitting
@@ -867,7 +1019,6 @@ HistBins <- function(id = 'HistBinsContents',
           shiny::column(3L, shiny::uiOutput('NumberBins3')),
           shiny::column(3L, shiny::uiOutput('NumberBins4'))))))
 }
-
 
 #' @title PercentileBuckets
 #'
@@ -955,8 +1106,6 @@ ShapAgg <- function(id = 'ShapAggContents',
           shiny::column(3L, shiny::uiOutput('ShapAggMethod4'))))))
 }
 
-
-
 #' @title Plotter
 #'
 #' @description Replaces shiny::plotOutput and plotly::plotlyOutput
@@ -983,13 +1132,3 @@ Plotter <- function(id = 'PlotOutput', AppWidth = 12L, PlotWidth = 1100, PlotHei
         shiny::column(width = AppWidth, shiny::plotOutput("Trendggplot2"))
       )))
 }
-
-
-
-
-
-
-
-
-
-

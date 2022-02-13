@@ -298,7 +298,9 @@ ui <- shinydashboard::dashboardPage(
           shiny::fluidRow(
             width=AppWidth,
             RemixAutoML:::FE_DateVariables(id='CalendarVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_NumericVariables(id='NumericVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='left', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue')
+            RemixAutoML:::FE_NumericVariables(id='NumericVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
+            RemixAutoML:::FE_CategoricalVariables(id='CategoricalVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
+            RemixAutoML:::FE_WindowingVariables(id='WindowingVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue')
 
           ), # end of fluidrow
 
@@ -571,19 +573,29 @@ server <- function(input, output, session) {
     BlobStorageURL <- paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
     assign(x = 'BlobStorageURL', value = BlobStorageURL, envir = .GlobalEnv)
     cont <<- AzureStor::blob_container(BlobStorageURL, key = Key)
-    rawfiles <- AzureStor::list_storage_files(cont, info = 'name')
-    rawfiles <<- rawfiles[c(which(grepl(pattern = '.csv', x = rawfiles)), which(grepl(pattern = '.Rdata', x = rawfiles)))]
+    rawfiles <- tryCatch({AzureStor::list_storage_files(cont, info = 'name')}, error = function(x) NULL)
+    if(length(rawfiles) != 0) {
+      rawfiles <<- rawfiles[c(which(grepl(pattern = '.csv', x = rawfiles)), which(grepl(pattern = '.Rdata', x = rawfiles)))]
+      rawfiles_csv <- rawfiles[which(grepl(pattern = '.csv', x = rawfiles))]
+    } else {
+      rawfiles_csv <<- NULL
+    }
     RemixAutoML::SelectizeInput(
       InputID = 'blob',
       Label = 'Azure Blob .csv Files',
-      Choices = rawfiles[which(grepl(pattern = '.csv', x = rawfiles))],
+      Choices = rawfiles_csv,
       SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
   output$rdatablob <- shiny::renderUI({
+    if(length(rawfiles) != 0) {
+      rawfiles_rdata <- rawfiles[which(grepl(pattern = '.Rdata', x = rawfiles))]
+    } else {
+      rawfiles_rdata <- NULL
+    }
     RemixAutoML::SelectizeInput(
       InputID = 'rdatablob',
       Label = 'Azure Blob .Rdata Files',
-      Choices = rawfiles[which(grepl(pattern = '.Rdata', x = rawfiles))],
+      Choices = rawfiles_rdata,
       SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
 
@@ -732,7 +744,8 @@ server <- function(input, output, session) {
 
     # PercRank() Parameters
     output$PercentRank_ColNames <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='PercentRank_ColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+      nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='PercentRank_ColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
     })
     output$PercentRank_GroupVars <- shiny::renderUI({
       RemixAutoML::SelectizeInput(InputID='PercentRank_GroupVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By Variables'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100)
@@ -743,7 +756,8 @@ server <- function(input, output, session) {
 
     # AutoInteraction() Parameters
     output$AutoInteraction_NumericVars <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='AutoInteraction_NumericVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+      nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoInteraction_NumericVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
     })
     output$AutoInteraction_InteractionDepth <- shiny::renderUI({
       RemixAutoML::SelectizeInput(InputID='AutoInteraction_InteractionDepth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Interaction Depth'), Choices = c(1:10), Multiple = FALSE, MaxVars = 100)
@@ -757,10 +771,131 @@ server <- function(input, output, session) {
 
     # AutoTransformCreate() Parameters
     output$AutoInteraction_ColumnNames <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='AutoInteraction_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+      nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoInteraction_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
     })
     output$AutoInteraction_Methods <- shiny::renderUI({
       RemixAutoML::SelectizeInput(InputID='AutoInteraction_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Methods'), Choices = c('YeoJohnson','BoxCox','Asinh','Log','LogPlus1','Sqrt','Asin','Logit'), Multiple = TRUE, MaxVars = 100)
+    })
+
+    # DummifyDT() Parameters
+    output$DummifyDT_Cols <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='DummifyDT_Cols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$DummifyDT_TopN <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='DummifyDT_TopN', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'TopN'), Choices = 1:100, Multiple = FALSE, MaxVars = 100)
+    })
+    output$DummifyDT_KeepBaseCols <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='DummifyDT_KeepBaseCols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Keep Base Columns'), Choices = c(TRUE, FALSE), Multiple = TRUE, MaxVars = 100)
+    })
+
+    # CategoricalEncoding() Parameters
+    output$CategoricalEncoding_GroupVariables <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='CategoricalEncoding_GroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$CategoricalEncoding_TargetVariable <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='CategoricalEncoding_TargetVariable', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Name'), Choices = nam, Multiple = FALSE, MaxVars = 100000)
+    })
+    output$CategoricalEncoding_Method <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='CategoricalEncoding_Method', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Name'), Choices = c('credibility','target_encoding','m_estimator','woe','poly_encode','backward_difference','helmert'), Multiple = FALSE, MaxVars = 100000)
+    })
+
+    # AutoLagRollMode() Parameters
+    output$AutoLagRollMode_Lags <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_Lags', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lags'), Choices = 1:100, Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollMode_ModePeriods <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_ModePeriods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Sizes'), Choices = 1:100, Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollMode_Targets <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_Targets', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoLagRollMode_Targets <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_Targets', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoLagRollMode_GroupingVars <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_GroupingVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoLagRollMode_SortDateName <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_SortDateName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollMode_WindowingLag <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_WindowingLag', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Lag Start'), Choices = c(0,1), Multiple = FALSE, MaxVars = 100000)
+    })
+
+    # AutoLagRollStats() Parameters
+    output$AutoLagRollStats_Targets <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Targets', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_GroupVars <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_GroupVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_DateColumn <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_DateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_TimeUnits <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Base Aggregation Level'), Choices = c('raw','hour','day','week','month','quarter','year'), Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_TimeGroups <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_TimeGroups', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Aggregation Levels'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_RollOnLag1 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_RollOnLag1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Lag Start'), Choices = c(0,1), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_Lags <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Lags', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Lag Start'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_MA_RollWindows <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_MA_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Moving Average Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_SD_RollWindows <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_SD_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling StDev Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_Skew_RollWindows <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Skew_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Skew Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_Kurt_RollWindows <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Kurt_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Kurt Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_Quantile_RollWindows <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Quantile_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Percentile Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoLagRollStats_Quantiles_Selected <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Quantiles_Selected', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Percentiles'), Choices = c('q5','q10','q15','q20','q25','q30','q35','q40','q45','q50','q55','q60','q65','q70','q75','q80','q85','q90','q95'), Multiple = TRUE, MaxVars = 100000)
+    })
+
+    # AutoDiffLagN() Parameters
+    output$AutoDiffLagN_DateVariable <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_DateVariable', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoDiffLagN_GroupVariables <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_GroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoDiffLagN_DiffVariables <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_DiffVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Numeric Differencing Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoDiffLagN_DiffDateVariables <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_DiffDateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Differencing Variables'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoDiffLagN_DiffGroupVariables <- shiny::renderUI({
+      nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+      RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_DiffGroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Differencing Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    })
+    output$AutoDiffLagN_NLag1 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_NLag1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Base Period Lag'), Choices = c(0:100), Multiple = FALSE, MaxVars = 100000)
+    })
+    output$AutoDiffLagN_NLag2 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_NLag2', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lookback Period Lag'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
     })
 
     # ----
@@ -2252,7 +2387,8 @@ server <- function(input, output, session) {
 
   # PercRank() Parameters
   output$PercentRank_ColNames <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID='PercentRank_ColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+    nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='PercentRank_ColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
   })
   output$PercentRank_GroupVars <- shiny::renderUI({
     RemixAutoML::SelectizeInput(InputID='PercentRank_GroupVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By Variables'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100)
@@ -2263,7 +2399,8 @@ server <- function(input, output, session) {
 
   # AutoInteraction() Parameters
   output$AutoInteraction_NumericVars <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID='AutoInteraction_NumericVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+    nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoInteraction_NumericVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
   })
   output$AutoInteraction_InteractionDepth <- shiny::renderUI({
     RemixAutoML::SelectizeInput(InputID='AutoInteraction_InteractionDepth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Interaction Depth'), Choices = c(1:10), Multiple = FALSE, MaxVars = 100)
@@ -2277,10 +2414,131 @@ server <- function(input, output, session) {
 
   # AutoTransformCreate() Parameters
   output$AutoInteraction_ColumnNames <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID='AutoInteraction_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = c(names(data)), Multiple = TRUE, MaxVars = 100000)
+    nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoInteraction_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
   })
   output$AutoInteraction_Methods <- shiny::renderUI({
     RemixAutoML::SelectizeInput(InputID='AutoInteraction_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Methods'), Choices = c('YeoJohnson','BoxCox','Asinh','Log','LogPlus1','Sqrt','Asin','Logit'), Multiple = TRUE, MaxVars = 100)
+  })
+
+  # DummifyDT() Parameters
+  output$DummifyDT_Cols <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='DummifyDT_Cols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$DummifyDT_TopN <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='DummifyDT_TopN', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'TopN'), Choices = 1:100, Multiple = FALSE, MaxVars = 100)
+  })
+  output$DummifyDT_KeepBaseCols <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='DummifyDT_KeepBaseCols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Keep Base Columns'), Choices = c(TRUE, FALSE), Multiple = TRUE, MaxVars = 100)
+  })
+
+  # CategoricalEncoding() Parameters
+  output$CategoricalEncoding_GroupVariables <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='CategoricalEncoding_GroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$CategoricalEncoding_TargetVariable <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='CategoricalEncoding_TargetVariable', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Name'), Choices = nam, Multiple = FALSE, MaxVars = 100000)
+  })
+  output$CategoricalEncoding_Method <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='CategoricalEncoding_Method', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Name'), Choices = c('credibility','target_encoding','m_estimator','woe','poly_encode','backward_difference','helmert'), Multiple = FALSE, MaxVars = 100000)
+  })
+
+  # AutoLagRollMode() Parameters
+  output$AutoLagRollMode_Lags <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_Lags', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lags'), Choices = 1:100, Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollMode_ModePeriods <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_ModePeriods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Sizes'), Choices = 1:100, Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollMode_Targets <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_Targets', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoLagRollMode_Targets <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_Targets', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoLagRollMode_GroupingVars <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_GroupingVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoLagRollMode_SortDateName <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_SortDateName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollMode_WindowingLag <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollMode_WindowingLag', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Lag Start'), Choices = c(0,1), Multiple = FALSE, MaxVars = 100000)
+  })
+
+  # AutoLagRollStats() Parameters
+  output$AutoLagRollStats_Targets <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Targets', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_GroupVars <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_GroupVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_DateColumn <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_DateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_TimeUnits <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Base Aggregation Level'), Choices = c('raw','hour','day','week','month','quarter','year'), Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_TimeGroups <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_TimeGroups', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Aggregation Levels'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_RollOnLag1 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_RollOnLag1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Lag Start'), Choices = c(0,1), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_Lags <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Lags', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Lag Start'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_MA_RollWindows <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_MA_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Moving Average Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_SD_RollWindows <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_SD_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling StDev Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_Skew_RollWindows <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Skew_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Skew Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_Kurt_RollWindows <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Kurt_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Kurt Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_Quantile_RollWindows <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Quantile_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Percentile Window Sizes'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoLagRollStats_Quantiles_Selected <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoLagRollStats_Quantiles_Selected', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Percentiles'), Choices = c('q5','q10','q15','q20','q25','q30','q35','q40','q45','q50','q55','q60','q65','q70','q75','q80','q85','q90','q95'), Multiple = TRUE, MaxVars = 100000)
+  })
+
+  # AutoDiffLagN() Parameters
+  output$AutoDiffLagN_DateVariable <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_DateVariable', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoDiffLagN_GroupVariables <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_GroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoDiffLagN_DiffVariables <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_DiffVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Numeric Differencing Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoDiffLagN_DiffDateVariables <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_DiffDateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Differencing Variables'), Choices = names(data), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoDiffLagN_DiffGroupVariables <- shiny::renderUI({
+    nam <- RemixAutoML:::CEPP(x = unique(c(names(data)[which(unlist(lapply(data, is.character)))], names(data)[which(unlist(lapply(data, is.factor)))])), Default = NULL)
+    RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_DiffGroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Differencing Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+  })
+  output$AutoDiffLagN_NLag1 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_NLag1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Base Period Lag'), Choices = c(0:100), Multiple = FALSE, MaxVars = 100000)
+  })
+  output$AutoDiffLagN_NLag2 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoDiffLagN_NLag2', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lookback Period Lag'), Choices = c(1:100), Multiple = FALSE, MaxVars = 100000)
   })
 
   # ----
@@ -3515,10 +3773,10 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$FeatureEngineeringButton, {
 
-    # Calendar Variables
+    # Calendar Variables ----
     CalendarVar_DateVariables <- RemixAutoML::ReturnParam(xx = 'CalendarVariables_DateVariables')
     CalendarVar_TimeUnits <- RemixAutoML::ReturnParam(xx = 'CalendarVariables_TimeUnits')
-    if(length(CalendarVar_DateVariables) != 0 && CalendarVar_DateVariables %in% names(data) && length(CalendarVar_TimeUnits) != 0) {
+    if(length(CalendarVar_DateVariables) != 0 && all(CalendarVar_DateVariables %in% names(data))) {
       data <- RemixAutoML::CreateCalendarVariables(
         data = data,
         DateCols = CalendarVar_DateVariables,
@@ -3527,25 +3785,178 @@ server <- function(input, output, session) {
       data <<- data
     }
 
-    # Holiday Variables
+    # Holiday Variables ----
     HolidayVar_DateVariables <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_DateVariables')
     HolidayVar_HolidayGroups <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_HolidayGroups')
     HolidayVar_LookbackDays <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_LookbackDays')
-    if(length(HolidayVar_DateVariables) != 0 && HolidayVar_DateVariables %in% names(data) && length(HolidayVar_HolidayGroups) != 0)
-    data <- RemixAutoML::CreateHolidayVariables(
-      data,
-      DateCols = HolidayVar_DateVariables,
-      LookbackDays = HolidayVar_LookbackDays,
-      HolidayGroups = HolidayVar_HolidayGroups,
-      Holidays = NULL,
-      Print = FALSE)
-    data <<- data
+    if(length(HolidayVar_DateVariables) != 0 && all(HolidayVar_DateVariables %in% names(data))) {
+      data <- RemixAutoML::CreateHolidayVariables(
+        data,
+        DateCols = HolidayVar_DateVariables,
+        LookbackDays = HolidayVar_LookbackDays,
+        HolidayGroups = HolidayVar_HolidayGroups,
+        Holidays = NULL,
+        Print = FALSE)
+      data <<- data
+    }
 
-    # Numeric Variables
+    # Percent Rank ----
+    PercentRank_ColNames <- RemixAutoML::ReturnParam(xx = 'PercentRank_ColNames', Type = 'character', Default = NULL, Debug = Debug)
+    PercentRank_GroupVars <- RemixAutoML::ReturnParam(xx = 'PercentRank_GroupVars', Type = 'character', Default = NULL, Debug = Debug)
+    PercentRank_Granularity <- RemixAutoML::ReturnParam(xx = 'PercentRank_Granularity', Type = 'numeric', Default = NULL, Debug = Debug)
+    if(length(PercentRank_ColNames) != 0 && all(PercentRank_ColNames %in% names(data))) {
+      data <- PercRank(data, ColNames, GroupVars = NULL, Granularity = 0.001)
+      data <<- data
+    }
 
-    # Time Series Variables
+    # Interaction ----
+    AutoInteraction_NumericVars <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_NumericVars', Type = 'character', Default = NULL, Debug = Debug)
+    AutoInteraction_InteractionDepth <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_InteractionDepth', Type = 'numeric', Default = 2, Debug = Debug)
+    AutoInteraction_Scale <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_Scale', Type = 'logical', Default = TRUE, Debug = Debug)
+    AutoInteraction_Center <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_Center', Type = 'logical', Default = TRUE, Debug = Debug)
+    if(length(AutoInteraction_NumericVars) != 0 && all(AutoInteraction_NumericVars %in% names(data))) {
+      RemixAutoML::AutoInteraction(
+        data = data,
+        NumericVars = AutoInteraction_NumericVars,
+        InteractionDepth = AutoInteraction_InteractionDepth,
+        Center = AutoInteraction_Center,
+        Scale = AutoInteraction_Scale,
+        SkipCols = NULL,
+        Scoring = FALSE,
+        File = NULL)
+      data <<- data
+    }
 
-    # Categorical Variables
+    # Transformations ----
+    AutoInteraction_ColumnNames <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_ColumnNames', Type = 'character', Default = NULL, Debug = Debug)
+    AutoInteraction_Methods <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_Methods', Type = 'character', Default = NULL, Debug = Debug)
+    if(length(AutoInteraction_ColumnNames) != 0 && all(AutoInteraction_ColumnNames %in% names(data))) {
+      RemixAutoML::AutoTransformationCreate(
+        data = data,
+        ColumnNames = AutoInteraction_ColumnNames,
+        Methods = AutoInteraction_Methods,
+        Path = NULL,
+        TransID = "ModelID",
+        SaveOutput = FALSE)
+      data <<- data
+    }
+
+    # Partial Dummies ----
+    DummifyDT_Cols <- RemixAutoML::ReturnParam(xx = 'DummifyDT_Cols', Type = 'character', Default = NULL, Debug = Debug)
+    DummifyDT_TopN <- RemixAutoML::ReturnParam(xx = 'DummifyDT_TopN', Type = 'character', Default = NULL, Debug = Debug)
+    DummifyDT_KeepBaseCols <- RemixAutoML::ReturnParam(xx = 'DummifyDT_KeepBaseCols', Type = 'character', Default = NULL, Debug = Debug)
+    if(length(DummifyDT_Cols) != 0 && all(DummifyDT_Cols %in% names(data))) {
+      data <- RemixAutoML::DummifyDT(
+        data = data,
+        cols = DummifyDT_Cols,
+        TopN = DummifyDT_TopN,
+        KeepFactorCols = DummifyDT_KeepBaseCols,
+        OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE, GroupVar=FALSE)
+      data <<- data
+    }
+
+    # Categorical Encoding ----
+    CategoricalEncoding_GroupVariables <- RemixAutoML::ReturnParam(xx = 'CategoricalEncoding_GroupVariables', Type = 'character', Default = NULL, Debug = Debug)
+    CategoricalEncoding_TargetVariable <- RemixAutoML::ReturnParam(xx = 'CategoricalEncoding_TargetVariable', Type = 'character', Default = NULL, Debug = Debug)
+    CategoricalEncoding_Method <- RemixAutoML::ReturnParam(xx = 'CategoricalEncoding_Method', Type = 'character', Default = NULL, Debug = Debug)
+    if(length(CategoricalEncoding_GroupVariables) != 0 && all(CategoricalEncoding_GroupVariables %in% names(data))) {
+      RemixAutoML::CategoricalEncoding(
+        data = data,
+        ML_Type = "classification",
+        GroupVariables = CategoricalEncoding_GroupVariables,
+        TargetVariable = CategoricalEncoding_TargetVariable,
+        Method = CategoricalEncoding_Method,
+        SavePath=NULL, Scoring=FALSE, ImputeValueScoring=NULL, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=TRUE)
+      data <<- data
+    }
+
+    # Auto Lag Roll Mode ----
+    AutoLagRollMode_Lags <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+    AutoLagRollMode_ModePeriods <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_ModePeriods', Type = 'numeric', Default = NULL, Debug = Debug)
+    AutoLagRollMode_Targets <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_Targets', Type = 'character', Default = NULL, Debug = Debug)
+    AutoLagRollMode_GroupingVars <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_GroupingVars', Type = 'character', Default = NULL, Debug = Debug)
+    AutoLagRollMode_SortDateName <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_SortDateName', Type = 'character', Default = NULL, Debug = Debug)
+    AutoLagRollMode_WindowingLag <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_WindowingLag', Type = 'numeric', Default = NULL, Debug = Debug)
+    if(length(AutoLagRollMode_Targets) != 0 && all(AutoLagRollMode_Targets %in% names(data))) {
+      RemixAutoML::AutoLagRollMode(
+        data = data,
+        Lags = AutoLagRollMode_Lags,
+        ModePeriods = AutoLagRollMode_ModePeriods,
+        Targets = AutoLagRollMode_Targets,
+        GroupingVars = AutoLagRollMode_GroupingVars,
+        SortDateName = AutoLagRollMode_SortDateName,
+        WindowingLag = AutoLagRollMode_WindowingLag,
+        Type = c("Lag"),
+        SimpleImpute = TRUE)
+      data <<- data
+    }
+
+    # Auto Lag Roll Stats ----
+    AutoLagRollStats_Targets <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Targets', Type = 'character', Default = NULL, Debug = Debug)
+    AutoLagRollStats_GroupVars <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_GroupVars', Type = 'character', Default = NULL, Debug = Debug)
+    AutoLagRollStats_DateColumn <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_DateColumn', Type = 'character', Default = NULL, Debug = Debug)
+    AutoLagRollStats_TimeUnits <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_TimeUnits', Type = 'character', Default = NULL, Debug = Debug)
+    AutoLagRollStats_TimeGroups <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_TimeGroups', Type = 'character', Default = NULL, Debug = Debug)
+    AutoLagRollStats_Lags <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+    AutoLagRollStats_RollOnLag1 <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_RollOnLag1', Type = 'logical', Default = NULL, Debug = Debug)
+    AutoLagRollStats_MA_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+    AutoLagRollStats_SD_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+    AutoLagRollStats_Skew_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+    AutoLagRollStats_Kurt_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+    AutoLagRollStats_Quantile_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+    AutoLagRollStats_Quantiles_Selected <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+    if(length(AutoLagRollStats_Targets) != 0 &&
+       length(AutoLagRollStats_DateColumn) != 0 &&
+       length(AutoLagRollStats_TimeUnits) != 0 &&
+       length(AutoLagRollStats_TimeGroups) != 0) {
+      RemixAutoML::AutoLagRollStats(
+        data                 = data,
+        Targets              = AutoLagRollStats_Targets,
+        HierarchyGroups      = NULL,
+        IndependentGroups    = AutoLagRollStats_GroupVars,
+        DateColumn           = AutoLagRollStats_DateColumn,
+        TimeUnit             = AutoLagRollStats_TimeUnits,
+        TimeUnitAgg          = AutoLagRollStats_TimeUnits,
+        TimeGroups           = AutoLagRollStats_TimeGroups,
+        TimeBetween          = NULL,
+        RollOnLag1           = AutoLagRollStats_RollOnLag1,
+        Type                 = "Lag",
+        SimpleImpute         = TRUE,
+        Lags                 = AutoLagRollStats_Lags,
+        MA_RollWindows       = AutoLagRollStats_MA_RollWindows,
+        SD_RollWindows       = AutoLagRollStats_SD_RollWindows,
+        Skew_RollWindows     = AutoLagRollStats_Skew_RollWindows,
+        Kurt_RollWindows     = AutoLagRollStats_Kurt_RollWindows,
+        Quantile_RollWindows = AutoLagRollStats_Quantile_RollWindows,
+        Quantiles_Selected   = AutoLagRollStats_Quantiles_Selected,
+        Debug = Debug)
+      data <<- data
+    }
+
+    # Auto Differences Lag N1 to Lag N2 ----
+    AutoDiffLagN_DateVariable <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DateVariable', type = 'character', Default = NULL, Debug = Debug)
+    AutoDiffLagN_GroupVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_GroupVariables', type = 'character', Default = NULL, Debug = Debug)
+    AutoDiffLagN_DiffVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffVariables', type = 'character', Default = NULL, Debug = Debug)
+    AutoDiffLagN_DiffDateVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffDateVariables', type = 'character', Default = NULL, Debug = Debug)
+    AutoDiffLagN_DiffGroupVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffGroupVariables', type = 'character', Default = NULL, Debug = Debug)
+    AutoDiffLagN_NLag1 <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_NLag1', type = 'character', Default = NULL, Debug = Debug)
+    AutoDiffLagN_NLag2 <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_NLag2', type = 'character', Default = NULL, Debug = Debug)
+    if(length(AutoDiffLagN_DateVariable) != 0 &&
+       length(AutoDiffLagN_NLag1) != 0 &&
+       length(AutoDiffLagN_NLag2) != 0) {
+      data <- RemixAutoML::AutoDiffLagN(
+        data = data,
+        DateVariable = AutoDiffLagN_DateVariable,
+        GroupVariables = AutoDiffLagN_GroupVariables,
+        DiffVariables = AutoDiffLagN_DiffVariables,
+        DiffDateVariables = AutoDiffLagN_DiffDateVariables,
+        DiffGroupVariables = AutoDiffLagN_DiffGroupVariables,
+        NLag1 = AutoDiffLagN_NLag1,
+        NLag2 = AutoDiffLagN_NLag2,
+        Sort = FALSE,
+        RemoveNA = TRUE)
+      data <<- data
+    }
 
     # Text Variables
 

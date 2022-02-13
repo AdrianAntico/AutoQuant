@@ -1109,8 +1109,8 @@ StoreArgs <- function(input,
 #' @family Shiny
 #'
 #' @param xx This is the input value within a Shiny context; input$value or better yet, tryCatch({input$value}, error = function(x) NULL)
-#' @param VarName The name of the VarNameument you want to store
-#' @param Type 'character' 'numeric' 'logical' 'date', or 'infer'
+#' @param VarName The name of the argument you want to store
+#' @param Type 'character' 'numeric' 'logical' 'date'
 #' @param Default default value
 #' @param Switch = FALSE
 #' @param Debug = FALSE
