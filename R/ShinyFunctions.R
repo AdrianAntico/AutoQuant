@@ -537,7 +537,7 @@ rCodeContainer <- function(...) {
 CEP <- function(x) if(missing(x)) 'NULL' else if(!exists('x')) 'NULL' else if(is.null(x)) "NULL" else if(identical(x, character(0))) "NULL" else if(identical(x, numeric(0))) "NULL" else if(identical(x, integer(0))) "NULL" else if(identical(x, logical(0))) "NULL" else if(x == "") "NULL" else if(is.na(x)) "NULL" else if(x == 'None') "NULL" else if(is.numeric(x)) x else if(length(x) > 1) paste0("c(", noquote(paste0("'", x, "'", collapse = ',')), ")") else paste0("'", x, "'")
 
 #' @noRd
-CEPP <- function(x, Default = NULL, Type = 'character') if(missing(x)) Default else if(!exists('x')) Default else if(length(x) == 0) Default else if(is.na(x)) Default else if(x == "") Default else if(Type == 'numeric') RemixAutoML:::NumNull(x) else if(Type == 'character') RemixAutoML:::CharNull(x)
+CEPP <- function(x, Default = NULL, Type = 'character') if(missing(x)) Default else if(!exists('x')) Default else if(length(x) == 0) Default else if(any(is.na(x))) Default else if(all(x == "")) Default else if(Type == 'numeric') RemixAutoML:::NumNull(x) else if(Type == 'character') RemixAutoML:::CharNull(x)
 
 #' @title UniqueLevels
 #'

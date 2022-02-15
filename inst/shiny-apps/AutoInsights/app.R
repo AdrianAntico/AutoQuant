@@ -300,7 +300,7 @@ ui <- shinydashboard::dashboardPage(
             RemixAutoML:::FE_DateVariables(id='CalendarVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
             RemixAutoML:::FE_NumericVariables(id='NumericVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
             RemixAutoML:::FE_CategoricalVariables(id='CategoricalVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_WindowingVariables(id='WindowingVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue')
+            RemixAutoML:::FE_WindowingVariables(id='WindowingVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE, Animate=TRUE, Status='custom', H3Color = 'blue')
 
           ), # end of fluidrow
 
@@ -573,7 +573,7 @@ server <- function(input, output, session) {
     BlobStorageURL <- paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
     assign(x = 'BlobStorageURL', value = BlobStorageURL, envir = .GlobalEnv)
     cont <<- AzureStor::blob_container(BlobStorageURL, key = Key)
-    rawfiles <- tryCatch({AzureStor::list_storage_files(cont, info = 'name')}, error = function(x) NULL)
+    rawfiles <<- tryCatch({AzureStor::list_storage_files(cont, info = 'name')}, error = function(x) NULL)
     if(length(rawfiles) != 0) {
       rawfiles <<- rawfiles[c(which(grepl(pattern = '.csv', x = rawfiles)), which(grepl(pattern = '.Rdata', x = rawfiles)))]
       rawfiles_csv <- rawfiles[which(grepl(pattern = '.csv', x = rawfiles))]
@@ -770,12 +770,12 @@ server <- function(input, output, session) {
     })
 
     # AutoTransformCreate() Parameters
-    output$AutoInteraction_ColumnNames <- shiny::renderUI({
+    output$AutoTransformationCreate_ColumnNames <- shiny::renderUI({
       nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
-      RemixAutoML::SelectizeInput(InputID='AutoInteraction_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+      RemixAutoML::SelectizeInput(InputID='AutoTransformationCreate_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
     })
-    output$AutoInteraction_Methods <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='AutoInteraction_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Methods'), Choices = c('YeoJohnson','BoxCox','Asinh','Log','LogPlus1','Sqrt','Asin','Logit'), Multiple = TRUE, MaxVars = 100)
+    output$AutoTransformationCreate_Methods <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID='AutoTransformationCreate_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Methods'), Choices = c('YeoJohnson','BoxCox','Asinh','Log','LogPlus1','Sqrt','Asin','Logit'), Multiple = TRUE, MaxVars = 100)
     })
 
     # DummifyDT() Parameters
@@ -2413,12 +2413,12 @@ server <- function(input, output, session) {
   })
 
   # AutoTransformCreate() Parameters
-  output$AutoInteraction_ColumnNames <- shiny::renderUI({
+  output$AutoTransformationCreate_ColumnNames <- shiny::renderUI({
     nam <- RemixAutoML:::CEPP(x = names(data)[which(unlist(lapply(data, is.numeric)))], Default = NULL)
-    RemixAutoML::SelectizeInput(InputID='AutoInteraction_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
+    RemixAutoML::SelectizeInput(InputID='AutoTransformationCreate_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 100000)
   })
-  output$AutoInteraction_Methods <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID='AutoInteraction_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Methods'), Choices = c('YeoJohnson','BoxCox','Asinh','Log','LogPlus1','Sqrt','Asin','Logit'), Multiple = TRUE, MaxVars = 100)
+  output$AutoTransformationCreate_Methods <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID='AutoTransformationCreate_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Methods'), Choices = c('YeoJohnson','BoxCox','Asinh','Log','LogPlus1','Sqrt','Asin','Logit'), Multiple = TRUE, MaxVars = 100)
   })
 
   # DummifyDT() Parameters
@@ -3774,9 +3774,9 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton, {
 
     # Calendar Variables ----
-    CalendarVar_DateVariables <- RemixAutoML::ReturnParam(xx = 'CalendarVariables_DateVariables')
-    CalendarVar_TimeUnits <- RemixAutoML::ReturnParam(xx = 'CalendarVariables_TimeUnits')
+    CalendarVar_DateVariables <- RemixAutoML::ReturnParam(xx = 'CalendarVariables_DateVariables', VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
     if(length(CalendarVar_DateVariables) != 0 && all(CalendarVar_DateVariables %in% names(data))) {
+      CalendarVar_TimeUnits <- RemixAutoML::ReturnParam(xx = 'CalendarVariables_TimeUnits', VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
       data <- RemixAutoML::CreateCalendarVariables(
         data = data,
         DateCols = CalendarVar_DateVariables,
@@ -3786,10 +3786,10 @@ server <- function(input, output, session) {
     }
 
     # Holiday Variables ----
-    HolidayVar_DateVariables <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_DateVariables')
-    HolidayVar_HolidayGroups <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_HolidayGroups')
-    HolidayVar_LookbackDays <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_LookbackDays')
+    HolidayVar_DateVariables <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_DateVariables', VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
     if(length(HolidayVar_DateVariables) != 0 && all(HolidayVar_DateVariables %in% names(data))) {
+      HolidayVar_HolidayGroups <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_HolidayGroups', VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
+      HolidayVar_LookbackDays <- RemixAutoML::ReturnParam(xx = 'HolidayVariables_LookbackDays', VarName = NULL, Type = 'numeric', Default = NULL, Debug = Debug)
       data <- RemixAutoML::CreateHolidayVariables(
         data,
         DateCols = HolidayVar_DateVariables,
@@ -3802,19 +3802,19 @@ server <- function(input, output, session) {
 
     # Percent Rank ----
     PercentRank_ColNames <- RemixAutoML::ReturnParam(xx = 'PercentRank_ColNames', Type = 'character', Default = NULL, Debug = Debug)
-    PercentRank_GroupVars <- RemixAutoML::ReturnParam(xx = 'PercentRank_GroupVars', Type = 'character', Default = NULL, Debug = Debug)
-    PercentRank_Granularity <- RemixAutoML::ReturnParam(xx = 'PercentRank_Granularity', Type = 'numeric', Default = NULL, Debug = Debug)
     if(length(PercentRank_ColNames) != 0 && all(PercentRank_ColNames %in% names(data))) {
-      data <- PercRank(data, ColNames, GroupVars = NULL, Granularity = 0.001)
+      PercentRank_GroupVars <- RemixAutoML::ReturnParam(xx = 'PercentRank_GroupVars', Type = 'character', Default = NULL, Debug = Debug)
+      PercentRank_Granularity <- RemixAutoML::ReturnParam(xx = 'PercentRank_Granularity', Type = 'numeric', Default = NULL, Debug = Debug)
+      data <- PercRank(data, ColNames, GroupVars = NULL, Granularity = PercentRank_Granularity)
       data <<- data
     }
 
     # Interaction ----
     AutoInteraction_NumericVars <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_NumericVars', Type = 'character', Default = NULL, Debug = Debug)
-    AutoInteraction_InteractionDepth <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_InteractionDepth', Type = 'numeric', Default = 2, Debug = Debug)
-    AutoInteraction_Scale <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_Scale', Type = 'logical', Default = TRUE, Debug = Debug)
-    AutoInteraction_Center <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_Center', Type = 'logical', Default = TRUE, Debug = Debug)
     if(length(AutoInteraction_NumericVars) != 0 && all(AutoInteraction_NumericVars %in% names(data))) {
+      AutoInteraction_InteractionDepth <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_InteractionDepth', Type = 'numeric', Default = 2, Debug = Debug)
+      AutoInteraction_Scale <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_Scale', Type = 'logical', Default = TRUE, Debug = Debug)
+      AutoInteraction_Center <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_Center', Type = 'logical', Default = TRUE, Debug = Debug)
       RemixAutoML::AutoInteraction(
         data = data,
         NumericVars = AutoInteraction_NumericVars,
@@ -3828,13 +3828,13 @@ server <- function(input, output, session) {
     }
 
     # Transformations ----
-    AutoInteraction_ColumnNames <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_ColumnNames', Type = 'character', Default = NULL, Debug = Debug)
-    AutoInteraction_Methods <- RemixAutoML::ReturnParam(xx = 'AutoInteraction_Methods', Type = 'character', Default = NULL, Debug = Debug)
-    if(length(AutoInteraction_ColumnNames) != 0 && all(AutoInteraction_ColumnNames %in% names(data))) {
+    AutoTransformationCreate_ColumnNames <- RemixAutoML::ReturnParam(xx = 'AutoTransformationCreate_ColumnNames', Type = 'character', Default = NULL, Debug = Debug)
+    if(length(AutoTransformationCreate_ColumnNames) != 0 && all(AutoTransformationCreate_ColumnNames %in% names(data))) {
+      AutoTransformationCreate_Methods <- RemixAutoML::ReturnParam(xx = 'AutoTransformationCreate_Methods', Type = 'character', Default = NULL, Debug = Debug)
       RemixAutoML::AutoTransformationCreate(
         data = data,
-        ColumnNames = AutoInteraction_ColumnNames,
-        Methods = AutoInteraction_Methods,
+        ColumnNames = AutoTransformationCreate_ColumnNames,
+        Methods = AutoTransformationCreate_Methods,
         Path = NULL,
         TransID = "ModelID",
         SaveOutput = FALSE)
@@ -3843,9 +3843,9 @@ server <- function(input, output, session) {
 
     # Partial Dummies ----
     DummifyDT_Cols <- RemixAutoML::ReturnParam(xx = 'DummifyDT_Cols', Type = 'character', Default = NULL, Debug = Debug)
-    DummifyDT_TopN <- RemixAutoML::ReturnParam(xx = 'DummifyDT_TopN', Type = 'character', Default = NULL, Debug = Debug)
-    DummifyDT_KeepBaseCols <- RemixAutoML::ReturnParam(xx = 'DummifyDT_KeepBaseCols', Type = 'character', Default = NULL, Debug = Debug)
     if(length(DummifyDT_Cols) != 0 && all(DummifyDT_Cols %in% names(data))) {
+      DummifyDT_TopN <- RemixAutoML::ReturnParam(xx = 'DummifyDT_TopN', Type = 'character', Default = NULL, Debug = Debug)
+      DummifyDT_KeepBaseCols <- RemixAutoML::ReturnParam(xx = 'DummifyDT_KeepBaseCols', Type = 'character', Default = NULL, Debug = Debug)
       data <- RemixAutoML::DummifyDT(
         data = data,
         cols = DummifyDT_Cols,
@@ -3857,9 +3857,9 @@ server <- function(input, output, session) {
 
     # Categorical Encoding ----
     CategoricalEncoding_GroupVariables <- RemixAutoML::ReturnParam(xx = 'CategoricalEncoding_GroupVariables', Type = 'character', Default = NULL, Debug = Debug)
-    CategoricalEncoding_TargetVariable <- RemixAutoML::ReturnParam(xx = 'CategoricalEncoding_TargetVariable', Type = 'character', Default = NULL, Debug = Debug)
-    CategoricalEncoding_Method <- RemixAutoML::ReturnParam(xx = 'CategoricalEncoding_Method', Type = 'character', Default = NULL, Debug = Debug)
     if(length(CategoricalEncoding_GroupVariables) != 0 && all(CategoricalEncoding_GroupVariables %in% names(data))) {
+      CategoricalEncoding_TargetVariable <- RemixAutoML::ReturnParam(xx = 'CategoricalEncoding_TargetVariable', Type = 'character', Default = NULL, Debug = Debug)
+      CategoricalEncoding_Method <- RemixAutoML::ReturnParam(xx = 'CategoricalEncoding_Method', Type = 'character', Default = NULL, Debug = Debug)
       RemixAutoML::CategoricalEncoding(
         data = data,
         ML_Type = "classification",
@@ -3871,13 +3871,13 @@ server <- function(input, output, session) {
     }
 
     # Auto Lag Roll Mode ----
-    AutoLagRollMode_Lags <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
-    AutoLagRollMode_ModePeriods <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_ModePeriods', Type = 'numeric', Default = NULL, Debug = Debug)
     AutoLagRollMode_Targets <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_Targets', Type = 'character', Default = NULL, Debug = Debug)
-    AutoLagRollMode_GroupingVars <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_GroupingVars', Type = 'character', Default = NULL, Debug = Debug)
-    AutoLagRollMode_SortDateName <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_SortDateName', Type = 'character', Default = NULL, Debug = Debug)
-    AutoLagRollMode_WindowingLag <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_WindowingLag', Type = 'numeric', Default = NULL, Debug = Debug)
     if(length(AutoLagRollMode_Targets) != 0 && all(AutoLagRollMode_Targets %in% names(data))) {
+      AutoLagRollMode_Lags <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+      AutoLagRollMode_ModePeriods <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_ModePeriods', Type = 'numeric', Default = NULL, Debug = Debug)
+      AutoLagRollMode_GroupingVars <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_GroupingVars', Type = 'character', Default = NULL, Debug = Debug)
+      AutoLagRollMode_SortDateName <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_SortDateName', Type = 'character', Default = NULL, Debug = Debug)
+      AutoLagRollMode_WindowingLag <- RemixAutoML::ReturnParam(xx = 'AutoLagRollMode_WindowingLag', Type = 'numeric', Default = NULL, Debug = Debug)
       RemixAutoML::AutoLagRollMode(
         data = data,
         Lags = AutoLagRollMode_Lags,
@@ -3893,22 +3893,22 @@ server <- function(input, output, session) {
 
     # Auto Lag Roll Stats ----
     AutoLagRollStats_Targets <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Targets', Type = 'character', Default = NULL, Debug = Debug)
-    AutoLagRollStats_GroupVars <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_GroupVars', Type = 'character', Default = NULL, Debug = Debug)
     AutoLagRollStats_DateColumn <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_DateColumn', Type = 'character', Default = NULL, Debug = Debug)
     AutoLagRollStats_TimeUnits <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_TimeUnits', Type = 'character', Default = NULL, Debug = Debug)
     AutoLagRollStats_TimeGroups <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_TimeGroups', Type = 'character', Default = NULL, Debug = Debug)
-    AutoLagRollStats_Lags <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
-    AutoLagRollStats_RollOnLag1 <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_RollOnLag1', Type = 'logical', Default = NULL, Debug = Debug)
-    AutoLagRollStats_MA_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
-    AutoLagRollStats_SD_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
-    AutoLagRollStats_Skew_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
-    AutoLagRollStats_Kurt_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
-    AutoLagRollStats_Quantile_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
-    AutoLagRollStats_Quantiles_Selected <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
     if(length(AutoLagRollStats_Targets) != 0 &&
        length(AutoLagRollStats_DateColumn) != 0 &&
        length(AutoLagRollStats_TimeUnits) != 0 &&
        length(AutoLagRollStats_TimeGroups) != 0) {
+      AutoLagRollStats_GroupVars <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_GroupVars', Type = 'character', Default = NULL, Debug = Debug)
+      AutoLagRollStats_Lags <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+      AutoLagRollStats_RollOnLag1 <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_RollOnLag1', Type = 'logical', Default = NULL, Debug = Debug)
+      AutoLagRollStats_MA_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+      AutoLagRollStats_SD_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+      AutoLagRollStats_Skew_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+      AutoLagRollStats_Kurt_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+      AutoLagRollStats_Quantile_RollWindows <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
+      AutoLagRollStats_Quantiles_Selected <- RemixAutoML::ReturnParam(xx = 'AutoLagRollStats_Lags', Type = 'numeric', Default = NULL, Debug = Debug)
       RemixAutoML::AutoLagRollStats(
         data                 = data,
         Targets              = AutoLagRollStats_Targets,
@@ -3935,15 +3935,15 @@ server <- function(input, output, session) {
 
     # Auto Differences Lag N1 to Lag N2 ----
     AutoDiffLagN_DateVariable <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DateVariable', type = 'character', Default = NULL, Debug = Debug)
-    AutoDiffLagN_GroupVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_GroupVariables', type = 'character', Default = NULL, Debug = Debug)
-    AutoDiffLagN_DiffVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffVariables', type = 'character', Default = NULL, Debug = Debug)
-    AutoDiffLagN_DiffDateVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffDateVariables', type = 'character', Default = NULL, Debug = Debug)
-    AutoDiffLagN_DiffGroupVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffGroupVariables', type = 'character', Default = NULL, Debug = Debug)
     AutoDiffLagN_NLag1 <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_NLag1', type = 'character', Default = NULL, Debug = Debug)
     AutoDiffLagN_NLag2 <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_NLag2', type = 'character', Default = NULL, Debug = Debug)
     if(length(AutoDiffLagN_DateVariable) != 0 &&
        length(AutoDiffLagN_NLag1) != 0 &&
        length(AutoDiffLagN_NLag2) != 0) {
+      AutoDiffLagN_GroupVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_GroupVariables', type = 'character', Default = NULL, Debug = Debug)
+      AutoDiffLagN_DiffVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffVariables', type = 'character', Default = NULL, Debug = Debug)
+      AutoDiffLagN_DiffDateVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffDateVariables', type = 'character', Default = NULL, Debug = Debug)
+      AutoDiffLagN_DiffGroupVariables <- RemixAutoML::ReturnParam(xx = 'AutoDiffLagN_DiffGroupVariables', type = 'character', Default = NULL, Debug = Debug)
       data <- RemixAutoML::AutoDiffLagN(
         data = data,
         DateVariable = AutoDiffLagN_DateVariable,
@@ -3959,6 +3959,12 @@ server <- function(input, output, session) {
     }
 
     # Text Variables
+
+    # Dim Reduction
+
+    # Clustering
+
+    # Anomaly Detection
 
     # Data Set Variables
 
