@@ -814,7 +814,7 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' data <- PostGRE_Query(
+#' data <- RemixAutoML::PostGRE_Query(
 #'   Query = 'Select * from static_data',
 #'   Host = 'localhost',
 #'   CloseConnection = FALSE,
@@ -857,8 +857,12 @@ PostGRE_Query <- function(Query = NULL,
   rows <- DBI::dbSendQuery(Connection, Query)
   x <- DBI::dbFetch(rows)
   data.table::setDT(x)
-  if(CloseConnection) suppressWarnings(DBI::dbDisconnect(Connection))
-  return(x)
+  if(CloseConnection) {
+    suppressWarnings(DBI::dbDisconnect(Connection))
+    return(list(data = x, Conn = NULL))
+  } else {
+    return(list(data = x, Conn = Connection))
+  }
 }
 
 #' @title PostGRE_AppendData
@@ -879,7 +883,7 @@ PostGRE_Query <- function(Query = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' data <- PostGRE_AppendData(
+#' RemixAutoML::PostGRE_AppendData(
 #'   data = data,
 #'   CloseConnection = FALSE,
 #'   Host = 'localhost',
@@ -927,9 +931,12 @@ PostGRE_AppendData <- function(data = NULL,
     append = TRUE,
     row.names = FALSE,
     overwrite = FALSE)
-
-  # Close Connection
-  if(CloseConnection) suppressWarnings(DBI::dbDisconnect(Connection))
+  if(CloseConnection) {
+    suppressWarnings(DBI::dbDisconnect(Connection))
+    return(NULL)
+  } else {
+    return(Connection)
+  }
 }
 
 #' @title PostGRE_CreateTable
@@ -953,7 +960,7 @@ PostGRE_AppendData <- function(data = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' data <- PostGRE_CreateTable(
+#' RemixAutoML::PostGRE_CreateTable(
 #'   data,
 #'   TableName = NULL,
 #'   Schema = NULL,
@@ -1009,8 +1016,12 @@ PostGRE_CreateTable <- function(data = NULL,
       temporary = Temporary)
   }
 
-  # Close Connection
-  if(CloseConnection) suppressWarnings(DBI::dbDisconnect(Connection))
+  if(CloseConnection) {
+    suppressWarnings(DBI::dbDisconnect(Connection))
+    return(NULL)
+  } else {
+    return(Connection)
+  }
 }
 
 #' @title PostGRE_RemoveTable
@@ -1031,7 +1042,7 @@ PostGRE_CreateTable <- function(data = NULL,
 #'
 #' @examples
 #' \dontrun{
-#' data <- PostGRE_Truncate(
+#' RemixAutoML::PostGRE_RemoveTable(
 #'   TableName = 'static_data',
 #'   Connection = NULL,
 #'   CloseConnection = FALSE,
@@ -1073,5 +1084,10 @@ PostGRE_RemoveTable <- function(TableName = NULL,
   DBI::dbRemoveTable(conn = Connection, name = TableName)
 
   # Close Connection
-  if(CloseConnection) suppressWarnings(DBI::dbDisconnect(Connection))
+  if(CloseConnection) {
+    suppressWarnings(DBI::dbDisconnect(Connection))
+    return(NULL)
+  } else {
+    return(Connection)
+  }
 }

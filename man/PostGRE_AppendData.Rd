@@ -38,7 +38,7 @@ PostGRE_AppendData get data from a database table
 }
 \examples{
 \dontrun{
-data <- PostGRE_AppendData(
+RemixAutoML::PostGRE_AppendData(
   data = data,
   CloseConnection = FALSE,
   Host = 'localhost',

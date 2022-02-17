@@ -37,7 +37,7 @@ PostGRE_Query get data from a database table
 }
 \examples{
 \dontrun{
-data <- PostGRE_Query(
+data <- RemixAutoML::PostGRE_Query(
   Query = 'Select * from static_data',
   Host = 'localhost',
   CloseConnection = FALSE,
