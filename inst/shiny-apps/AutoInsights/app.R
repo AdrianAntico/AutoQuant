@@ -563,11 +563,9 @@ server <- function(input, output, session) {
       label = NULL,
       accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
   })
-
   output$ModelObjectLoad <- shiny::renderUI({
     shiny::fileInput(inputId = "ModelObjectLoad", label = NULL)
   })
-
   output$blob <- shiny::renderUI({
     if(Debug) paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
     BlobStorageURL <- paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
@@ -639,14 +637,10 @@ server <- function(input, output, session) {
     }
 
     # Load ModelOutputList
-    if(Debug) print('data check 2')
     inFile1 <- tryCatch({input[['ModelObjectLoad']]}, error = function(x) NULL)
-    if(Debug) print(inFile1[['datapath']])
     if(!is.null(inFile1)) {
-      if(Debug) print('loading .Rdata')
       e <- new.env()
       name <- load(inFile1[['datapath']], e)
-      if(Debug) print('store ModelOutputList globally')
       ModelOutputList <<- e[[name]]
       if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
         ModelData <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
@@ -657,28 +651,18 @@ server <- function(input, output, session) {
       } else {
         ModelData <<- NULL
       }
-      if(Debug) print(class(ModelOutputList))
-      if(Debug) print(length(ModelOutputList))
-      if(Debug) print(length(ModelOutputList$PlotList))
-      if(Debug) print(names(ModelOutputList$PlotList))
     }
 
     # Azure .csv
-    if(Debug) {print(input$blob); print(!is.null(input$blob))}
     if(!is.null(input$blob)) {
       data <<- RemixAutoML::ReactiveLoadCSV(Infile = file.path('/inputdata', input[['blob']]), ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
     }
 
     # Load ModelOutputList
     inFile1 <- tryCatch({input[['rdatablob']]}, error = function(x) NULL)
-    if(Debug) print(inFile1)
     if(!is.null(inFile1)) {
-      if(Debug) print('loading .Rdata')
       e <- new.env()
-      print(file.exists(file.path('/inputdata', inFile1)))
       name <- load(file.path('/inputdata', inFile1), e)
-      print(name)
-      if(Debug) print('store ModelOutputList globally')
       ModelOutputList <<- e[[name]]
       if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
         ModelData <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
@@ -689,11 +673,6 @@ server <- function(input, output, session) {
       } else {
         ModelData <<- NULL
       }
-
-      if(Debug) print(class(ModelOutputList))
-      if(Debug) print(length(ModelOutputList))
-      if(Debug) print(length(ModelOutputList$PlotList))
-      if(Debug) print(names(ModelOutputList$PlotList))
     } else if(!exists('ModelOutputList')) {
       if(Debug) print('ModelOutputList not loaded')
       ModelOutputList <- NULL
