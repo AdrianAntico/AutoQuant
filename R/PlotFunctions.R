@@ -1,3 +1,20 @@
+#' @title PlotlyConversion
+#'
+#' @author Adrian Antico
+#' @family Graphics
+#'
+#' @param p1 ggplot2 object
+#'
+#' @export
+PlotlyConversion <- function(p1) {
+  if(!is.null(p1$plot_env$ForecastLineColor)) {
+    p1 <- plotly::rangeslider(plotly::ggplotly(p1, dynamicTicks = TRUE))
+  } else {
+    p1 <- plotly::ggplotly(p1)
+  }
+  return(p1)
+}
+
 #' @noRd
 BlankPlot <- function() {
   `Y Axis` <- rnorm(20)
@@ -32,10 +49,10 @@ AddFacet <- function(p, fv1=NULL, fv2=NULL, Exclude = 'None', Debug = FALSE) {
   if(length(fv1) != 0 && fv1 != Exclude && length(fv2) != 0 && fv2 != Exclude) {
     if(Debug) print('FacetVar1 and FacetVar2')
     p <- p + ggplot2::facet_grid(get(fv1) ~ get(fv2))
-  } else if(length(fv1) != 0 && fv1 == Exclude) {
+  } else if(length(fv1) != 0 && fv1 != Exclude) {
     if(Debug) print('FacetVar1')
     p <- p + ggplot2::facet_wrap(~ get(fv1))
-  } else if(length(fv2) != 0 && fv2 == Exclude) {
+  } else if(length(fv2) != 0 && fv2 != Exclude) {
     if(Debug) print('FacetVar2')
     p <- p + ggplot2::facet_wrap(~ get(fv2))
   }
@@ -390,6 +407,64 @@ CorrMatrixPlot <- function(data = NULL,
 #' @param LegendLineType 'solid'
 #' @param Debug FALSE
 #'
+#' @examples
+#' \dontrun{
+#' # Load packages
+#' library(RemixAutoML)
+#' library(data.table)
+#'
+#' # Load data
+#' data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
+#'
+#' # Run function
+#' RemixAutoML:::ViolinPlot(
+#'   data = data,
+#'   XVar = 'Region',
+#'   YVar = 'Weekly_Sales',
+#'   FacetVar1 = 'Store',
+#'   FacetVar2 = NULL,
+#'   SampleSize = 1000000L,
+#'   FillColor = 'gray',
+#'   YTicks = 'Default',
+#'   XTicks = 'Default',
+#'   TextSize = 12,
+#'   AngleX = 90,
+#'   AngleY = 0,
+#'   ChartColor = 'lightsteelblue1',
+#'   BorderColor = 'darkblue',
+#'   TextColor = 'darkblue',
+#'   GridColor = 'white',
+#'   BackGroundColor = 'gray95',
+#'   SubTitleColor = 'blue',
+#'   LegendPosition = 'bottom',
+#'   LegendBorderSize = 0.50,
+#'   LegendLineType = 'solid',
+#'   Debug = FALSE)
+#'
+#' # Step through function
+#' # XVar = 'Region'
+#' # YVar = 'Weekly_Sales'
+#' # FacetVar1 = 'Store'
+#' # FacetVar2 = NULL
+#' # SampleSize = 1000000L
+#' # FillColor = 'gray'
+#' # YTicks = 'Default'
+#' # XTicks = 'Default'
+#' # TextSize = 12
+#' # AngleX = 90
+#' # AngleY = 0
+#' # ChartColor = 'lightsteelblue1'
+#' # BorderColor = 'darkblue'
+#' # TextColor = 'darkblue'
+#' # GridColor = 'white'
+#' # BackGroundColor = 'gray95'
+#' # SubTitleColor = 'blue'
+#' # LegendPosition = 'bottom'
+#' # LegendBorderSize = 0.50
+#' # LegendLineType = 'solid'
+#' # Debug = FALSE
+#' }
+#'
 #' @export
 ViolinPlot <- function(data = NULL,
                        XVar = NULL,
@@ -418,7 +493,7 @@ ViolinPlot <- function(data = NULL,
   if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
   # Used multiple times
-  check1 <- length(XVar) != 0 && length(YVar) != 0 && (lubridate::is.Date(data[['XVar']]) || lubridate::is.POSIXct(data[['XVar']]))
+  check1 <- length(XVar) != 0 && length(YVar) != 0
 
   # Create base plot object
   if(Debug) print('Create Plot with only data')
@@ -554,6 +629,67 @@ ViolinPlot <- function(data = NULL,
 #' @param LegendLineType 'solid'
 #' @param Debug FALSE
 #'
+#' @examples
+#' \dontrun{
+#' # Load packages
+#' library(RemixAutoML)
+#' library(data.table)
+#'
+#' # Load data
+#' data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
+#'
+#' # Run function
+#' RemixAutoML:::BoxPlot(
+#'   data = data,
+#'   XVar = 'Region',
+#'   YVar = 'Weekly_Sales',
+#'   FacetVar1 = 'Store',
+#'   FacetVar2 = NULL,
+#'   SampleSize = 1000000L,
+#'   FillColor = 'gray',
+#'   OutlierSize = 0.10,
+#'   OutlierColor = 'blue',
+#'   YTicks = 'Default',
+#'   XTicks = 'Default',
+#'   TextSize = 12,
+#'   AngleX = 90,
+#'   AngleY = 0,
+#'   ChartColor = 'lightsteelblue1',
+#'   BorderColor = 'darkblue',
+#'   TextColor = 'darkblue',
+#'   GridColor = 'white',
+#'   BackGroundColor = 'gray95',
+#'   SubTitleColor = 'blue',
+#'   LegendPosition = 'bottom',
+#'   LegendBorderSize = 0.50,
+#'   LegendLineType = 'solid',
+#'   Debug = FALSE)
+#'
+#' # Step through function
+#' # XVar = 'Region'
+#' # YVar = 'Weekly_Sales'
+#' # FacetVar1 = 'Store'
+#' # FacetVar2 = 'Dept'
+#' # SampleSize = 1000000L
+#' # FillColor = 'gray'
+#' # OutlierSize = 0.10
+#' # OutlierColor = 'blue'
+#' # YTicks = 'Default'
+#' # XTicks = 'Default'
+#' # TextSize = 12
+#' # AngleX = 90
+#' # AngleY = 0
+#' # ChartColor = 'lightsteelblue1'
+#' # BorderColor = 'darkblue'
+#' # TextColor = 'darkblue'
+#' # GridColor = 'white'
+#' # BackGroundColor = 'gray95'
+#' # SubTitleColor = 'blue'
+#' # LegendPosition = 'bottom'
+#' # LegendBorderSize = 0.50
+#' # LegendLineType = 'solid'
+#' # Debug = FALSE
+#' }
 #' @export
 BoxPlot <- function(data = NULL,
                     XVar = NULL,
@@ -584,7 +720,7 @@ BoxPlot <- function(data = NULL,
   if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
   # Used multiple times
-  check1 <- length(XVar) != 0 && length(YVar) != 0 && (lubridate::is.Date(data[['XVar']]) || lubridate::is.POSIXct(data[['XVar']]))
+  check1 <- length(XVar) != 0 && length(YVar) != 0
 
   # Create base plot object
   if(Debug) print('Create Plot with only data')
@@ -698,6 +834,7 @@ BoxPlot <- function(data = NULL,
 #' @param data Source data.table
 #' @param XVar Column name of X-Axis variable. If NULL then ignored
 #' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param AggMethod Choose from 'mean', 'sum', 'sd', and 'median'
 #' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
 #' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
 #' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
@@ -720,10 +857,73 @@ BoxPlot <- function(data = NULL,
 #' @param LegendLineType 'solid'
 #' @param Debug FALSE
 #'
+#' @examples
+#' \dontrun{
+#' # Load packages
+#' library(RemixAutoML)
+#' library(data.table)
+#'
+#' # Load data
+#' data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
+#'
+#' # Run function
+#' RemixAutoML:::BarPlot(
+#'   data = data,
+#'   XVar = 'Region',
+#'   YVar = 'Weekly_Sales',
+#'   AggMethod = 'mean',
+#'   ColorVar = NULL,
+#'   FacetVar1 = 'Store',
+#'   FacetVar2 = 'Dept',
+#'   SampleSize = 1000000L,
+#'   FillColor = 'gray',
+#'   YTicks = 'Default',
+#'   XTicks = 'Default',
+#'   TextSize = 12,
+#'   AngleX = 90,
+#'   AngleY = 0,
+#'   ChartColor = 'lightsteelblue1',
+#'   BorderColor = 'darkblue',
+#'   TextColor = 'darkblue',
+#'   GridColor = 'white',
+#'   BackGroundColor = 'gray95',
+#'   SubTitleColor = 'blue',
+#'   LegendPosition = 'bottom',
+#'   LegendBorderSize = 0.50,
+#'   LegendLineType = 'solid',
+#'   Debug = FALSE)
+#'
+#' # Step through function
+#' # XVar = 'Region'
+#' # YVar = 'Weekly_Sales'
+#' # YVar_Agg = 'mean'
+#' # ColorVar = NULL
+#' # FacetVar1 = NULL
+#' # FacetVar2 = NULL
+#' # SampleSize = 1000000L
+#' # FillColor = 'gray'
+#' # YTicks = 'Default'
+#' # XTicks = 'Default'
+#' # TextSize = 12
+#' # AngleX = 90
+#' # AngleY = 0
+#' # ChartColor = 'lightsteelblue1'
+#' # BorderColor = 'darkblue'
+#' # TextColor = 'darkblue'
+#' # GridColor = 'white'
+#' # BackGroundColor = 'gray95'
+#' # SubTitleColor = 'blue'
+#' # LegendPosition = 'bottom'
+#' # LegendBorderSize = 0.50
+#' # LegendLineType = 'solid'
+#' # Debug = FALSE
+#' }
+#'
 #' @export
 BarPlot <- function(data = NULL,
                     XVar = NULL,
                     YVar = NULL,
+                    AggMethod = 'mean',
                     ColorVar = NULL,
                     FacetVar1 = NULL,
                     FacetVar2 = NULL,
@@ -758,50 +958,34 @@ BarPlot <- function(data = NULL,
   if(check1) {
     if(length(ColorVar) != 0) {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), fill = as.factor(get(ColorVar))))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'identity')
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod)
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(YVar)) + ggplot2::ylab(eval(YVar))
     } else {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar)))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'identity', fill = FillColor)
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod, fill = FillColor)
       p1 <- p1 + ggplot2::xlab(eval(YVar)) + ggplot2::ylab(eval(YVar))
     }
   } else if(check2) {
     if(length(ColorVar) != 0) {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar), fill = as.factor(get(ColorVar))))
-      if(length(unique(data[[eval(YVar)]])) <= 10L) {
-        p1 <- p1 + ggplot2::geom_bar(stat = 'count')
-      } else {
-        p1 <- p1 + ggplot2::geom_bar(stat = 'bin')
-      }
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod)
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(YVar))
     } else {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar)))
-      if(length(unique(data[[eval(YVar)]])) <= 10L) {
-        p1 <- p1 + ggplot2::geom_bar(stat = 'count', fill = FillColor)
-      } else {
-        p1 <- p1 + ggplot2::geom_bar(stat = 'bin', fill = FillColor)
-      }
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod, fill = FillColor)
       p1 <- p1 + ggplot2::xlab(eval(YVar))
     }
   } else if(check3) {
     if(length(ColorVar) != 0) {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), fill = as.factor(get(ColorVar))))
-      if(length(unique(data[[eval(XVar)]])) <= 10L) {
-        p1 <- p1 + ggplot2::geom_bar(stat = 'count')
-      } else {
-        p1 <- p1 + ggplot2::geom_bar(stat = 'bin')
-      }
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod)
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(XVar))
     } else {
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar)))
-      if(length(unique(data[[eval(XVar)]])) <= 10L) {
-        p1 <- p1 + ggplot2::geom_bar(stat = 'count', fill = FillColor)
-      } else {
-        p1 <- p1 + ggplot2::geom_bar(stat = 'bin', fill = FillColor)
-      }
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod, fill = FillColor)
       p1 <- p1 + ggplot2::xlab(eval(XVar))
     }
   } else {

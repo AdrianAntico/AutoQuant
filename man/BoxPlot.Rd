@@ -83,6 +83,68 @@ BoxPlot(
 \description{
 Build a box plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
 }
+\examples{
+\dontrun{
+# Load packages
+library(RemixAutoML)
+library(data.table)
+
+# Load data
+data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
+
+# Run function
+RemixAutoML:::BoxPlot(
+  data = data,
+  XVar = 'Region',
+  YVar = 'Weekly_Sales',
+  FacetVar1 = 'Store',
+  FacetVar2 = NULL,
+  SampleSize = 1000000L,
+  FillColor = 'gray',
+  OutlierSize = 0.10,
+  OutlierColor = 'blue',
+  YTicks = 'Default',
+  XTicks = 'Default',
+  TextSize = 12,
+  AngleX = 90,
+  AngleY = 0,
+  ChartColor = 'lightsteelblue1',
+  BorderColor = 'darkblue',
+  TextColor = 'darkblue',
+  GridColor = 'white',
+  BackGroundColor = 'gray95',
+  SubTitleColor = 'blue',
+  LegendPosition = 'bottom',
+  LegendBorderSize = 0.50,
+  LegendLineType = 'solid',
+  Debug = FALSE)
+
+# Step through function
+# XVar = 'Region'
+# YVar = 'Weekly_Sales'
+# FacetVar1 = 'Store'
+# FacetVar2 = 'Dept'
+# SampleSize = 1000000L
+# FillColor = 'gray'
+# OutlierSize = 0.10
+# OutlierColor = 'blue'
+# YTicks = 'Default'
+# XTicks = 'Default'
+# TextSize = 12
+# AngleX = 90
+# AngleY = 0
+# ChartColor = 'lightsteelblue1'
+# BorderColor = 'darkblue'
+# TextColor = 'darkblue'
+# GridColor = 'white'
+# BackGroundColor = 'gray95'
+# SubTitleColor = 'blue'
+# LegendPosition = 'bottom'
+# LegendBorderSize = 0.50
+# LegendLineType = 'solid'
+# Debug = FALSE
+}
+}
 \seealso{
 Other Graphics: 
 \code{\link{AddFacet}()},

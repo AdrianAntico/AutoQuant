@@ -4683,7 +4683,7 @@ server <- function(input, output, session) {
               if(PlotEngine == 'plotly') {
                 output$TrendPlotly <- plotly::renderPlotly({
                   shiny::req(PlotEngine == "plotly")
-                  plotly::ggplotly(p1)
+                  p1 <- RemixAutoML:::PlotlyConversion(p1)
                 })
               }
 
@@ -4721,8 +4721,8 @@ server <- function(input, output, session) {
                   shiny::req(PlotEngine == "plotly")
                   p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
-                  p1 <- plotly::ggplotly(p1)
-                  p2 <- plotly::ggplotly(p2)
+                  p1 <- RemixAutoML:::PlotlyConversion(p1)
+                  p2 <- RemixAutoML:::PlotlyConversion(p2)
                   plotly::subplot(p1, p2, nrows = 2, shareX = FALSE, shareY = FALSE)
                 })
 
@@ -4733,8 +4733,8 @@ server <- function(input, output, session) {
                   shiny::req(PlotEngine == "plotly")
                   p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
-                  p1 <- plotly::ggplotly(p1)
-                  p2 <- plotly::ggplotly(p2)
+                  p1 <- RemixAutoML:::PlotlyConversion(p1)
+                  p2 <- RemixAutoML:::PlotlyConversion(p2)
                   plotly::subplot(p1, p2, nrows = 2, shareX = FALSE, shareY = FALSE)
                 })
               }
@@ -4813,9 +4813,9 @@ server <- function(input, output, session) {
                   p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p3 <- p3 + ggplot2::labs(title = NULL, subtitle = NULL)
-                  p1 <- plotly::ggplotly(p1)
-                  p2 <- plotly::ggplotly(p2)
-                  p3 <- plotly::ggplotly(p3)
+                  p1 <- RemixAutoML:::PlotlyConversion(p1)
+                  p2 <- RemixAutoML:::PlotlyConversion(p2)
+                  p3 <- RemixAutoML:::PlotlyConversion(p3)
                   plotly::subplot(p1, p2, p3, nrows = 2, shareX = FALSE, shareY = FALSE)
                 })
 
@@ -4827,9 +4827,9 @@ server <- function(input, output, session) {
                   p1 <- p1 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p3 <- p3 + ggplot2::labs(title = NULL, subtitle = NULL)
-                  p1 <- plotly::ggplotly(p1)
-                  p2 <- plotly::ggplotly(p2)
-                  p3 <- plotly::ggplotly(p3)
+                  p1 <- RemixAutoML:::PlotlyConversion(p1)
+                  p2 <- RemixAutoML:::PlotlyConversion(p2)
+                  p3 <- RemixAutoML:::PlotlyConversion(p3)
                   plotly::subplot(p1, p2, p3, nrows = 2, shareX = FALSE, shareY = FALSE)
                 })
               }
@@ -4924,10 +4924,10 @@ server <- function(input, output, session) {
                   p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p3 <- p3 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p4 <- p4 + ggplot2::labs(title = NULL, subtitle = NULL)
-                  p1 <- plotly::ggplotly(p1)
-                  p2 <- plotly::ggplotly(p2)
-                  p3 <- plotly::ggplotly(p3)
-                  p4 <- plotly::ggplotly(p4)
+                  p1 <- RemixAutoML:::PlotlyConversion(p1)
+                  p2 <- RemixAutoML:::PlotlyConversion(p2)
+                  p3 <- RemixAutoML:::PlotlyConversion(p3)
+                  p4 <- RemixAutoML:::PlotlyConversion(p4)
                   plotly::subplot(p1, p2, p3, p4, nrows = 2, shareX = FALSE, shareY = FALSE)
                 })
               } else {
@@ -4937,10 +4937,10 @@ server <- function(input, output, session) {
                   p2 <- p2 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p3 <- p3 + ggplot2::labs(title = NULL, subtitle = NULL)
                   p4 <- p4 + ggplot2::labs(title = NULL, subtitle = NULL)
-                  p1 <- plotly::ggplotly(p1)
-                  p2 <- plotly::ggplotly(p2)
-                  p3 <- plotly::ggplotly(p3)
-                  p4 <- plotly::ggplotly(p4)
+                  p1 <- RemixAutoML:::PlotlyConversion(p1)
+                  p2 <- RemixAutoML:::PlotlyConversion(p2)
+                  p3 <- RemixAutoML:::PlotlyConversion(p3)
+                  p4 <- RemixAutoML:::PlotlyConversion(p4)
                   plotly::subplot(p1, p2, p3, p4, nrows = 2, shareX = FALSE, shareY = FALSE)
                 })
               }

@@ -8,6 +8,7 @@ BarPlot(
   data = NULL,
   XVar = NULL,
   YVar = NULL,
+  AggMethod = "mean",
   ColorVar = NULL,
   FacetVar1 = NULL,
   FacetVar2 = NULL,
@@ -36,6 +37,8 @@ BarPlot(
 \item{XVar}{Column name of X-Axis variable. If NULL then ignored}
 
 \item{YVar}{Column name of Y-Axis variable. If NULL then ignored}
+
+\item{AggMethod}{Choose from 'mean', 'sum', 'sd', and 'median'}
 
 \item{FacetVar1}{Column name of facet variable 1. If NULL then ignored}
 
@@ -81,6 +84,69 @@ BarPlot(
 }
 \description{
 Build a bar plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
+}
+\examples{
+\dontrun{
+# Load packages
+library(RemixAutoML)
+library(data.table)
+
+# Load data
+data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
+
+# Run function
+RemixAutoML:::BarPlot(
+  data = data,
+  XVar = 'Region',
+  YVar = 'Weekly_Sales',
+  AggMethod = 'mean',
+  ColorVar = NULL,
+  FacetVar1 = 'Store',
+  FacetVar2 = 'Dept',
+  SampleSize = 1000000L,
+  FillColor = 'gray',
+  YTicks = 'Default',
+  XTicks = 'Default',
+  TextSize = 12,
+  AngleX = 90,
+  AngleY = 0,
+  ChartColor = 'lightsteelblue1',
+  BorderColor = 'darkblue',
+  TextColor = 'darkblue',
+  GridColor = 'white',
+  BackGroundColor = 'gray95',
+  SubTitleColor = 'blue',
+  LegendPosition = 'bottom',
+  LegendBorderSize = 0.50,
+  LegendLineType = 'solid',
+  Debug = FALSE)
+
+# Step through function
+# XVar = 'Region'
+# YVar = 'Weekly_Sales'
+# YVar_Agg = 'mean'
+# ColorVar = NULL
+# FacetVar1 = NULL
+# FacetVar2 = NULL
+# SampleSize = 1000000L
+# FillColor = 'gray'
+# YTicks = 'Default'
+# XTicks = 'Default'
+# TextSize = 12
+# AngleX = 90
+# AngleY = 0
+# ChartColor = 'lightsteelblue1'
+# BorderColor = 'darkblue'
+# TextColor = 'darkblue'
+# GridColor = 'white'
+# BackGroundColor = 'gray95'
+# SubTitleColor = 'blue'
+# LegendPosition = 'bottom'
+# LegendBorderSize = 0.50
+# LegendLineType = 'solid'
+# Debug = FALSE
+}
+
 }
 \seealso{
 Other Graphics: 
