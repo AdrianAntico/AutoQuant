@@ -83,6 +83,7 @@ Other Graphics:
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
 \code{\link{HistPlot}()},
+\code{\link{PlotlyConversion}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
 }

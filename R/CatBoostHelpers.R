@@ -1027,6 +1027,9 @@ CatBoostValidationData <- function(ModelType = "classification",
         }
       }
     }
+
+    # Return
+    return(ValidationData)
   }
 
   # Regression
@@ -1134,6 +1137,9 @@ CatBoostValidationData <- function(ModelType = "classification",
         data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_TrainData.csv")))
       }
     }
+
+    # Return
+    return(ValidationData)
   }
 
   # MultiClass
@@ -1224,10 +1230,10 @@ CatBoostValidationData <- function(ModelType = "classification",
         data.table::fwrite(ValidationData, file = file.path(model_path., paste0(ModelID., "_TrainData.csv")))
       }
     }
-  }
 
-  # Return
-  return(ValidationData)
+    # Return
+    return(ValidationData)
+  }
 }
 
 #' @title CatBoostImportances

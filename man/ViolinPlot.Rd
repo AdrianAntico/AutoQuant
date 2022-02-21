@@ -146,6 +146,7 @@ Other Graphics:
 \code{\link{ChartTheme}()},
 \code{\link{CorrMatrixPlot}()},
 \code{\link{HistPlot}()},
+\code{\link{PlotlyConversion}()},
 \code{\link{multiplot}()}
 }
 \author{

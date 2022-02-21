@@ -109,6 +109,7 @@ ShapImportancePlot <- function(data,
   if(AggMethod == 'mean') {
     temp <- temp[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(ShapColNames)]
     temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    temp1[, Imp2 := sign(Importance) * sqrt(abs(Importance)) / sum(sqrt(abs(Importance)))]
     gg <- temp1[, .N]
     if(gg > TopN) {
       temp1 <- temp1[c(1:13, (gg - 13L):gg)]
@@ -116,6 +117,7 @@ ShapImportancePlot <- function(data,
   } else if(AggMethod == 'median') {
     temp <- temp[, lapply(.SD, median, na.rm = TRUE), .SDcols = c(ShapColNames)]
     temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    temp1[, Imp2 := sign(Importance) * sqrt(abs(Importance)) / sum(sqrt(abs(Importance)))]
     gg <- temp1[, .N]
     if(gg > TopN) {
       temp1 <- temp1[c(1:13, (gg - 13L):gg)]
@@ -125,26 +127,31 @@ ShapImportancePlot <- function(data,
   } else if(AggMethod == 'sd') {
     temp <- temp[, lapply(.SD, sd, na.rm = TRUE), .SDcols = c(ShapColNames)]
     temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    temp1[, Imp2 := sign(Importance) * sqrt(abs(Importance)) / sum(sqrt(abs(Importance)))]
   } else if(AggMethod == 'absmean') {
     temp <- temp[, lapply(.SD, function(x) {
       return(abs(mean(x[which(!is.na(x))])))
     }), .SDcols = c(ShapColNames)]
     temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    temp1[, Imp2 := sign(Importance) * sqrt(abs(Importance)) / sum(sqrt(abs(Importance)))]
   } else if(AggMethod == 'meanabs') {
     temp <- temp[, lapply(.SD, function(x) {
       return(mean(abs(x[which(!is.na(x))])))
     }), .SDcols = c(ShapColNames)]
     temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    temp1[, Imp2 := sign(Importance) * sqrt(abs(Importance)) / sum(sqrt(abs(Importance)))]
   } else if(AggMethod == 'medianabs') {
     temp <- temp[, lapply(.SD, function(x) {
       return(median(abs(x[which(!is.na(x))])))
     }), .SDcols = c(ShapColNames)]
     temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    temp1[, Imp2 := sign(Importance) * sqrt(abs(Importance)) / sum(sqrt(abs(Importance)))]
   } else if(AggMethod == 'absmedian') {
     temp <- temp[, lapply(.SD, function(x) {
       return(abs(median(x[which(!is.na(x))])))
     }), .SDcols = c(ShapColNames)]
     temp1 <- data.table::melt.data.table(data = temp, measure.vars = names(temp), value.name = 'Importance', variable.name = 'Variable')
+    temp1[, Imp2 := sign(Importance) * sqrt(abs(Importance)) / sum(sqrt(abs(Importance)))]
   }
 
   # Build VI Plot
@@ -2039,11 +2046,11 @@ AppModelInsights <- function(ModelOutputList,
     if(Debug) print('Test_Importance ! !Rebuild')
     if(Debug) print(ModelOutputList$VariableImportance[['Test_Importance']])
     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Test_Importance']], TopN = 25)
-    p1 <- p1 + ggplot2::ylab(label = "") + ggplot2::xlab(label = "")
+    p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
     if(!exists('p1')) p1 <- NULL
     if(!is.null(p1)) {
-      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: test data', caption = 'RemixAutoML')
-      p1 <- p1 + ggplot2::ylab('ML-Algo-Generated Variable Importance')
+      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: Test data', caption = 'RemixAutoML')
+      p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
     }
     return(eval(p1))
   }
@@ -2055,10 +2062,11 @@ AppModelInsights <- function(ModelOutputList,
     if(Debug) print('Validation_Importance ! !Rebuild')
     if(Debug) print(ModelOutputList$VariableImportance[['Validation_Importance']])
     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Validation_Importance']], TopN = 25)
+    p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
     if(!exists('p1')) p1 <- NULL
     if(!is.null(p1)) {
       p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: Validation data', caption = 'RemixAutoML')
-      p1 <- p1 + ggplot2::ylab('ML-Algo-Generated Variable Importance')
+      p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
     }
     return(eval(p1))
 
@@ -2071,10 +2079,11 @@ AppModelInsights <- function(ModelOutputList,
     if(Debug) print('Train_Importance ! !Rebuild')
     if(Debug) print(ModelOutputList$VariableImportance[['Train_Importance']])
     p1 <- RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = ModelOutputList$VariableImportance[['Train_Importance']], TopN = 25)
+    p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
     if(!exists('p1')) p1 <- NULL
     if(!is.null(p1)) {
-      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: training data', caption = 'RemixAutoML')
-      p1 <- p1 + ggplot2::ylab('ML-Algo-Generated Variable Importance')
+      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: Training data', caption = 'RemixAutoML')
+      p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
     }
     return(eval(p1))
   }

@@ -75,6 +75,7 @@ Other Graphics:
 \code{\link{BoxPlot}()},
 \code{\link{CorrMatrixPlot}()},
 \code{\link{HistPlot}()},
+\code{\link{PlotlyConversion}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
 }
