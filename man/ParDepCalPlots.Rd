@@ -6,10 +6,10 @@
 \usage{
 ParDepCalPlots(
   data,
-  PredictionColName = c("PredictedValues"),
-  TargetColName = c("ActualValues"),
-  IndepVar = c("Independent_Variable_Name"),
-  GraphType = c("calibration"),
+  PredictionColName = NULL,
+  TargetColName = NULL,
+  IndepVar = NULL,
+  GraphType = "calibration",
   PercentileBucket = 0.05,
   FactLevels = 10,
   Function = function(x) mean(x, na.rm = TRUE),
@@ -67,6 +67,17 @@ Plot <- RemixAutoML::ParDepCalPlots(
   Function = function(x) mean(x, na.rm = TRUE),
   DateColumn = NULL,
   DateAgg_3D = NULL)
+
+# Step through function
+# PredictionColName = "Predict"
+# TargetColName = "Adrian"
+# IndepVar = "Independent_Variable1"
+# GraphType = "calibration"
+# PercentileBucket = 0.20
+# FactLevels = 10
+# Function = function(x) mean(x, na.rm = TRUE)
+# DateColumn = NULL
+# DateAgg_3D = NULL
 }
 }
 \seealso{

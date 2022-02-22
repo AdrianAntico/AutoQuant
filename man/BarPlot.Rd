@@ -124,7 +124,7 @@ RemixAutoML:::BarPlot(
 # Step through function
 # XVar = 'Region'
 # YVar = 'Weekly_Sales'
-# YVar_Agg = 'mean'
+# AggMethod = 'mean'
 # ColorVar = NULL
 # FacetVar1 = NULL
 # FacetVar2 = NULL

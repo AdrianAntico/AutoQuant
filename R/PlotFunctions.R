@@ -7,7 +7,7 @@
 #'
 #' @export
 PlotlyConversion <- function(p1) {
-  if(!is.null(p1$plot_env$ForecastLineColor)) {
+  if(!is.null(p1$plot_env$ForecastLineColor) || any(p1$layers[[1]]$mapping %like% 'PredictionColName')) {
     p1 <- plotly::rangeslider(plotly::ggplotly(p1, dynamicTicks = TRUE))
   } else {
     p1 <- plotly::ggplotly(p1)
@@ -903,7 +903,7 @@ BoxPlot <- function(data = NULL,
 #' # Step through function
 #' # XVar = 'Region'
 #' # YVar = 'Weekly_Sales'
-#' # YVar_Agg = 'mean'
+#' # AggMethod = 'mean'
 #' # ColorVar = NULL
 #' # FacetVar1 = NULL
 #' # FacetVar2 = NULL
@@ -952,8 +952,8 @@ BarPlot <- function(data = NULL,
                     LegendLineType = 'solid',
                     Debug = FALSE) {
 
-  # Cap number of records
-  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+  # Check for data.table class
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
 
   # Used multiple times
   check1 <- length(XVar) != 0 && length(YVar) != 0
@@ -962,37 +962,136 @@ BarPlot <- function(data = NULL,
 
   # Create base plot object
   if(Debug) print('Create Plot with only data')
+  numvars <- c()
+  byvars <- c()
   if(check1) {
     if(length(ColorVar) != 0) {
-      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), fill = as.factor(get(ColorVar))))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod)
+      if(any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, YVar))
+      } else {
+        byvars <- unique(c(byvars, YVar))
+      }
+      if(any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, XVar))
+      } else {
+        byvars <- unique(c(byvars, XVar))
+      }
+      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, ColorVar))
+      } else {
+        byvars <- unique(c(byvars, ColorVar))
+      }
+      if(!is.null(byvars)) {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
+      } else {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
+      }
+      p1 <- ggplot2::ggplot(data = temp, ggplot2::aes(x = get(XVar), y = get(YVar), fill = as.factor(get(ColorVar))))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = 'sum')
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
-      p1 <- p1 + ggplot2::xlab(eval(YVar)) + ggplot2::ylab(eval(YVar))
+      p1 <- p1 + ggplot2::xlab(eval(XVar)) + ggplot2::ylab(eval(YVar))
     } else {
-      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar)))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod, fill = FillColor)
-      p1 <- p1 + ggplot2::xlab(eval(YVar)) + ggplot2::ylab(eval(YVar))
+      if(any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, YVar))
+      } else {
+        byvars <- unique(c(byvars, YVar))
+      }
+      if(any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, XVar))
+      } else {
+        byvars <- unique(c(byvars, XVar))
+      }
+      if(!is.null(byvars)) {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
+      } else {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
+      }
+      p1 <- ggplot2::ggplot(data = temp, ggplot2::aes(x = get(XVar), y = get(YVar)))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = 'sum', fill = FillColor)
+      p1 <- p1 + ggplot2::xlab(eval(XVar)) + ggplot2::ylab(eval(YVar))
     }
   } else if(check2) {
     if(length(ColorVar) != 0) {
-      p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar), fill = as.factor(get(ColorVar))))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod)
+      if(any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, YVar))
+      } else {
+        byvars <- unique(c(byvars, YVar))
+      }
+      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, ColorVar))
+      } else {
+        byvars <- unique(c(byvars, ColorVar))
+      }
+      if(!is.null(byvars)) {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
+      } else {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
+      }
+      p1 <- ggplot2::ggplot(data = temp, ggplot2::aes(x = get(YVar), fill = as.factor(get(ColorVar))))
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = 'sum')
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(YVar))
     } else {
+      if(any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, YVar))
+      } else {
+        byvars <- unique(c(byvars, YVar))
+      }
+      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, ColorVar))
+      } else {
+        byvars <- unique(c(byvars, ColorVar))
+      }
+      if(!is.null(byvars)) {
+        temp <- data[, .N, by = c(byvars)]
+        data.table::setnames(temp, 'N', byvars)
+      } else {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
+      }
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar)))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod, fill = FillColor)
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = 'sum', fill = FillColor)
       p1 <- p1 + ggplot2::xlab(eval(YVar))
     }
   } else if(check3) {
     if(length(ColorVar) != 0) {
+      if(any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, XVar))
+      } else {
+        byvars <- unique(c(byvars, XVar))
+      }
+      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, ColorVar))
+      } else {
+        byvars <- unique(c(byvars, ColorVar))
+      }
+      if(!is.null(byvars)) {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
+      } else {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
+      }
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), fill = as.factor(get(ColorVar))))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod)
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = 'sum')
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(XVar))
     } else {
+      if(any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, XVar))
+      } else {
+        byvars <- unique(c(byvars, XVar))
+      }
+      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, ColorVar))
+      } else {
+        byvars <- unique(c(byvars, ColorVar))
+      }
+      if(!is.null(byvars)) {
+        temp <- data[, .N, by = c(byvars)]
+        data.table::setnames(temp, 'N', byvars)
+      } else {
+        temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
+      }
       p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar)))
-      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = AggMethod, fill = FillColor)
+      p1 <- p1 + ggplot2::geom_bar(stat = 'summary', fun = 'sum', fill = FillColor)
       p1 <- p1 + ggplot2::xlab(eval(XVar))
     }
   } else {
@@ -1218,6 +1317,7 @@ HistPlot <- function(data = NULL,
 #' @param SizeVar1 = input[['SizeVar1']]
 #' @param FacetVar1 = shiny::isolate(input[['FacetVar1']])
 #' @param FacetVar2 = shiny::isolate(input[['FacetVar2']])
+#' @param BarPlotAggMethod 'mean'
 #' @param YTicks = input[['YTicks']]
 #' @param XTicks = input[['XTicks']]
 #' @param Bins = 30
@@ -1252,6 +1352,7 @@ AutoPlotter <- function(dt = NULL,
                         SizeVar1 = 'None',
                         FacetVar1 = 'None',
                         FacetVar2 = 'None',
+                        BarPlotAggMethod = 'mean',
                         YTicks = 'Default',
                         XTicks = 'Default',
                         Bins = 30,
@@ -1394,7 +1495,7 @@ AutoPlotter <- function(dt = NULL,
       FacetVar1 = FacetVar1,
       FacetVar2 = FacetVar2,
       ColorVar = ColorVariables,
-      SampleSize = SampleSize,
+      AggMethod = BarPlotAggMethod,
       FillColor = FillColor,
       YTicks = YTicks,
       XTicks = XTicks,
@@ -1689,7 +1790,7 @@ AppModelInsights <- function(ModelOutputList,
   # Debugging
   if(Debug) {print('Running AppModelInsights'); print(paste0('Rebuild = ', Rebuild))}
 
-  # Shap VI
+  # Shap VI ----
   if(tolower(PlotType) == 'shapleyvarimp') {
 
     # Debugging
@@ -1713,6 +1814,8 @@ AppModelInsights <- function(ModelOutputList,
     # return
     return(eval(p1))
   }
+
+  # ----
 
   # Test Evaluation Plot ----
   if(any(PlotType %chin% "Test_EvaluationPlot")) {

@@ -131,13 +131,24 @@ EvalPlot <- function(data,
 #'   Function = function(x) mean(x, na.rm = TRUE),
 #'   DateColumn = NULL,
 #'   DateAgg_3D = NULL)
+#'
+#' # Step through function
+#' # PredictionColName = "Predict"
+#' # TargetColName = "Adrian"
+#' # IndepVar = "Independent_Variable1"
+#' # GraphType = "calibration"
+#' # PercentileBucket = 0.20
+#' # FactLevels = 10
+#' # Function = function(x) mean(x, na.rm = TRUE)
+#' # DateColumn = NULL
+#' # DateAgg_3D = NULL
 #' }
 #' @export
 ParDepCalPlots <- function(data,
-                           PredictionColName = c("PredictedValues"),
-                           TargetColName  = c("ActualValues"),
-                           IndepVar = c("Independent_Variable_Name"),
-                           GraphType = c("calibration"),
+                           PredictionColName = NULL,
+                           TargetColName  = NULL,
+                           IndepVar = NULL,
+                           GraphType = "calibration",
                            PercentileBucket = 0.05,
                            FactLevels = 10,
                            Function = function(x) mean(x, na.rm = TRUE),
@@ -196,9 +207,9 @@ ParDepCalPlots <- function(data,
 
     # Cross section plot
     plot <- eval(
-      ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]])) +
-        ggplot2::geom_line(ggplot2::aes(y = preds3[[PredictionColName]], color = "Predicted")) +
-        ggplot2::geom_line(ggplot2::aes(y = preds3[[TargetColName]], color = "Actuals")) +
+      ggplot2::ggplot(preds3, ggplot2::aes(x = get(IndepVar))) +
+        ggplot2::geom_line(ggplot2::aes(y = get(PredictionColName), color = "Predicted")) +
+        ggplot2::geom_line(ggplot2::aes(y = get(TargetColName), color = "Actuals")) +
         ggplot2::ylab(eval(TargetColName)) +
         ggplot2::xlab(IndepVar) +
         ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +

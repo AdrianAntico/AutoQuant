@@ -1,3 +1,40 @@
+#' @title Bucketize
+#'
+#' @description Convert a numeric or integer column to categorical
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#'
+#' @param data Source data
+#' @param NumericVars Column name
+#' @param GroupVariables Categorical by-variable column names
+#' @param ByPercentileValue Calc ran = seq(Min, Max, ByPercentileValue). Supply decimal value. Examples: 0.001, 0.01, 0.05, 0.10, 0.20, 0.25, 0.33, 0.50
+#' @noRd
+Bucketize <- function(data = NULL,
+                      NumericVars = NULL,
+                      GroupVariables = NULL,
+                      ByPercentileValue = 0.10) {
+
+  # Arg checks
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(is.null(NumericVars)) stop('NumericVars cannot be NULL')
+  if(!is.numeric(ByPercentileValue)) stop('ByPercentileValue cannot be non-numeric')
+
+  # Create features
+  if(!is.null(GroupVariables)) {
+    data[, paste0(NumericVars, '_Buckets') := lapply(
+      .SD, function(x) as.character(quantile(x = x, probs = c(seq(0.00, 1.0, ByPercentileValue))))),
+      .SDcols = c(NumericVars),
+      by = c(GroupVariables)]
+  } else {
+    data[, paste0(NumericVars, '_Buckets') := lapply(
+      .SD,
+      function(x) quantile(x = x, probs = c(seq(0.0, 1.0, ByPercentileValue)))),
+      .SDcols = c(NumericVars)]
+  }
+  return(data)
+}
+
 #' @title Mode
 #'
 #' @description Statistical mode. Only returns the first mode if there are many

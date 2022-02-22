@@ -646,8 +646,9 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
           shiny::column(6L, shiny::uiOutput(paste0('FacetVar_', PlotNumber, '_2')))),
         shiny::fluidRow(
           width=AppWidth,
-          shiny::column(6L, shiny::uiOutput(paste0('GroupVars', PlotNumber))),
-          shiny::column(6L, shiny::uiOutput(paste0('SizeVar', PlotNumber)))),
+          shiny::column(4L, shiny::uiOutput(paste0('GroupVars', PlotNumber))),
+          shiny::column(4L, shiny::uiOutput(paste0('SizeVar', PlotNumber))),
+          shiny::column(4L, shiny::uiOutput(paste0('BarPlotAgg', PlotNumber)))),
 
         # Group-Levels
         shiny::fluidRow(

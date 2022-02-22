@@ -1061,6 +1061,20 @@ server <- function(input, output, session) {
       )
     })
 
+    # BarPlot AggMethods
+    output$BarPlotAgg1 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg1', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+    })
+    output$BarPlotAgg2 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg2', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+    })
+    output$BarPlotAgg3 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg3', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+    })
+    output$BarPlotAgg4 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg4', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+    })
+
     # UI Plot Options
     output$YLimMin1 <- shiny::renderUI({
       RemixAutoML::TextInput(InputID = 'YLimMin1', Label = tags$span(style='color: blue;', 'Y Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
@@ -2639,6 +2653,20 @@ server <- function(input, output, session) {
       choices = c('Plot1', 'Plot2', 'Plot3', 'Plot4'))
   })
 
+  # BarPlot AggMethods
+  output$BarPlotAgg1 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg1', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+  })
+  output$BarPlotAgg2 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg2', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+  })
+  output$BarPlotAgg3 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg3', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+  })
+  output$BarPlotAgg4 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg4', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+  })
+
   # UI Plot Options
   output$YLimMin1 <- shiny::renderUI({
     RemixAutoML::TextInput(InputID = 'YLimMin1', Label = tags$span(style='color: blue;', 'Y Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
@@ -4083,6 +4111,7 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['GamFitScatter']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('GamFitScatter', run)]]}, error=function(x) NULL), Type='logical', Default=FALSE)
       PlotObjectHome[[paste0('Plot_', run)]][['NumberBins']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('NumberBins', run)]]}, error=function(x) NULL), Type='numeric', Default=30L)
       PlotObjectHome[[paste0('Plot_', run)]][['Percentile_Buckets']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('Percentile_Buckets', run)]]}, error=function(x) NULL), Type='numeric', Default=20L)
+      PlotObjectHome[[paste0('Plot_', run)]][['BarPlotAgg']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('BarPlotAgg', run)]]}, error=function(x) NULL), Type='character', Default='mean')
 
       # Assign Globally
       assign(x = 'PlotObjectHome', value = PlotObjectHome, envir = .GlobalEnv)
@@ -4164,6 +4193,7 @@ server <- function(input, output, session) {
         SubTitleColor <- PlotObjectHome[[paste0('Plot_', run)]][['SubTitleColor']]
 
         # Plot Extras
+        BarPlotAgg <- PlotObjectHome[[paste0('Plot_', run)]][['BarPlotAgg']]
         ShapAgg <- PlotObjectHome[[paste0('Plot_', run)]][['ShapAgg']]
         GamFitScatter <- PlotObjectHome[[paste0('Plot_', run)]][['GamFitScatter']]
         NumberBins <- PlotObjectHome[[paste0('Plot_', run)]][['NumberBins']]
@@ -4493,6 +4523,7 @@ server <- function(input, output, session) {
             OutlierSize = OutlierSize,
             OutlierColor = OutlierColor,
             FillColor = FillColor,
+            BarPlotAggMethod = BarPlotAgg,
             GamFitScatter = GamFitScatter,
             TextSize = TextSize,
             TextColor = TextColor,
@@ -4522,6 +4553,7 @@ server <- function(input, output, session) {
             print(paste0('OutlierSize = ', RemixAutoML:::CEP(OutlierSize)))
             print(paste0('OutlierColor = ', RemixAutoML:::CEP(OutlierColor)))
             print(paste0('FillColor = ', RemixAutoML:::CEP(FillColor)))
+            print(paste0("BarPlotAggMethod = ", RemixAutoML:::CEP(BarPlotAgg)))
             print(paste0('GamFitScatter = ', RemixAutoML:::CEP(GamFitScatter)))
             print(paste0('TextSize = ', RemixAutoML:::CEP(TextSize)))
             print(paste0('TextColor = ', RemixAutoML:::CEP(TextColor)))
@@ -4550,6 +4582,7 @@ server <- function(input, output, session) {
             ", OutlierSize=", RemixAutoML:::CEP(OutlierSize),
             ", OutlierColor=", RemixAutoML:::CEP(OutlierColor),
             ", FillColor=", RemixAutoML:::CEP(FillColor),
+            ", BarPlotAggMethod= ", RemixAutoML:::CEP(BarPlotAgg),
             ", GamFitScatter=", RemixAutoML:::CEP(GamFitScatter),
             ", TextSize=", RemixAutoML:::CEP(TextSize),
             ", TextColor=", RemixAutoML:::CEP(TextColor),

@@ -19,6 +19,7 @@ AutoPlotter(
   SizeVar1 = "None",
   FacetVar1 = "None",
   FacetVar2 = "None",
+  BarPlotAggMethod = "mean",
   YTicks = "Default",
   XTicks = "Default",
   Bins = 30,
@@ -67,6 +68,8 @@ AutoPlotter(
 \item{FacetVar1}{= shiny::isolate(input[['FacetVar1']])}
 
 \item{FacetVar2}{= shiny::isolate(input[['FacetVar2']])}
+
+\item{BarPlotAggMethod}{'mean'}
 
 \item{YTicks}{= input[['YTicks']]}
 
