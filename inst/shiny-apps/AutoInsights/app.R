@@ -4222,11 +4222,15 @@ server <- function(input, output, session) {
         ScoreVar <- NULL
       }
 
+      PlotType %in% c('Scatter','Copula') &&
+        (!any(class(data[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(data[[eval(YVar)]]) %in% c('numeric','integer')) ||
+           (!is.null(ModelData) && !any(class(ModelData[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(ModelData[[eval(YVar)]]) %in% c('numeric','integer'))))
+
       # PLOT LOGIC CHECK:
       if(length(YVar) == 0 && length(XVar) == 0 && PlotType %in% c('Scatter','Copula','Line','Bar','BoxPlot','ViolinPlot','Histogram')) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to specify additional variables to generate additional plots', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-      } else if(PlotType %in% c('Scatter','Copula') && !any(class(data[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
-        shinyWidgets::sendSweetAlert(session, title = NULL, text = "Y and / or X-Variable needs to be a numeric or integer variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      # } else if(PlotType %in% c('Scatter','Copula') && (!any(class(data[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(data[[eval(YVar)]]) %in% c('numeric','integer')) || (!is.null(ModelData) && !any(class(ModelData[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(ModelData[[eval(YVar)]]) %in% c('numeric','integer'))))) {
+      #   shinyWidgets::sendSweetAlert(session, title = NULL, text = "Y and / or X-Variable needs to be a numeric or integer variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else if(PlotType %in% 'CorrMatrix' && length(YVar) == 0) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "YVar needs to have at least two variables selected to build this plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else {
