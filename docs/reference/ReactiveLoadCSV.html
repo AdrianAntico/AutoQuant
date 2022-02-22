@@ -128,24 +128,16 @@
     </div>
 
     <pre class="usage"><span class='fu'>ReactiveLoadCSV</span><span class='op'>(</span>
-  <span class='va'>input</span>,
-  InputVal <span class='op'>=</span> <span class='cn'>NULL</span>,
+  Infile <span class='op'>=</span> <span class='cn'>NULL</span>,
   ProjectList <span class='op'>=</span> <span class='cn'>NULL</span>,
   DateUpdateName <span class='op'>=</span> <span class='cn'>NULL</span>,
-  RemoveObjects <span class='op'>=</span> <span class='cn'>NULL</span>
+  RemoveObjects <span class='op'>=</span> <span class='cn'>NULL</span>,
+  Debug <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>input</th>
-      <td><p>Passthrough</p></td>
-    </tr>
-    <tr>
-      <th>InputVal</th>
-      <td><p>Values that follows input$</p></td>
-    </tr>
     <tr>
       <th>ProjectList</th>
       <td><p>Supply the project list if available. NULL otherwise</p></td>
@@ -158,6 +150,18 @@
       <th>RemoveObjects</th>
       <td><p>List of objects to remove</p></td>
     </tr>
+    <tr>
+      <th>Debug</th>
+      <td><p>FALSE</p></td>
+    </tr>
+    <tr>
+      <th>input</th>
+      <td><p>Passthrough</p></td>
+    </tr>
+    <tr>
+      <th>InputVal</th>
+      <td><p>Values that follows input$</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
@@ -166,13 +170,16 @@
 <code><a href='ArgNullCheck2.html'>ArgNullCheck2</a>()</code>,
 <code><a href='ArgNullCheck.html'>ArgNullCheck</a>()</code>,
 <code><a href='BlankRow.html'>BlankRow</a>()</code>,
+<code><a href='DataTable.html'>DataTable</a>()</code>,
 <code><a href='DateInput.html'>DateInput</a>()</code>,
 <code><a href='GenerateEvaluationMetrics.html'>GenerateEvaluationMetrics</a>()</code>,
 <code><a href='NumericInput.html'>NumericInput</a>()</code>,
+<code><a href='PickerInput_GetLevels2.html'>PickerInput_GetLevels2</a>()</code>,
 <code><a href='PickerInput_GetLevels.html'>PickerInput_GetLevels</a>()</code>,
 <code><a href='PickerInput.html'>PickerInput</a>()</code>,
 <code><a href='PreparePlotData.html'>PreparePlotData</a>()</code>,
 <code><a href='ReturnParam.html'>ReturnParam</a>()</code>,
+<code><a href='SelectizeInput.html'>SelectizeInput</a>()</code>,
 <code><a href='StoreArgs.html'>StoreArgs</a>()</code>,
 <code><a href='TextInput.html'>TextInput</a>()</code>,
 <code><a href='observeEventLoad.html'>observeEventLoad</a>()</code></p></div>

@@ -275,7 +275,7 @@
     <p>Adrian Antico</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
+    <pre class="examples"><span class='co'># \donttest{</span>
 <span class='co'># Create some dummy correlated data with numeric and categorical features</span>
 <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'><a href='FakeDataGenerator.html'>FakeDataGenerator</a></span><span class='op'>(</span>
   Correlation <span class='op'>=</span> <span class='fl'>0.85</span>,
@@ -311,34 +311,8 @@
   H2OShutdown <span class='op'>=</span> <span class='cn'>TRUE</span>,
   H2OStartUp <span class='op'>=</span> <span class='cn'>TRUE</span>,
   DebugMode <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;  Connection successful!
-#&gt; 
-#&gt; R is connected to the H2O cluster: 
-#&gt;     H2O cluster uptime:         59 seconds 393 milliseconds 
-#&gt;     H2O cluster timezone:       America/Phoenix 
-#&gt;     H2O data parsing timezone:  UTC 
-#&gt;     H2O cluster version:        3.32.1.4 
-#&gt;     H2O cluster version age:    5 months and 12 days !!! 
-#&gt;     H2O cluster name:           H2O_started_from_R_Bizon_ktw237 
-#&gt;     H2O cluster total nodes:    1 
-#&gt;     H2O cluster total memory:   243.00 GB 
-#&gt;     H2O cluster total cores:    64 
-#&gt;     H2O cluster allowed cores:  62 
-#&gt;     H2O cluster healthy:        TRUE 
-#&gt;     H2O Connection ip:          localhost 
-#&gt;     H2O Connection port:        54321 
-#&gt;     H2O Connection proxy:       NA 
-#&gt;     H2O Internal Security:      FALSE 
-#&gt;     H2O API Extensions:         Amazon S3, Algos, AutoML, Core V3, TargetEncoder, Core V4 
-#&gt;     R Version:                  R version 4.1.0 (2021-05-18) </div><div class='output co'>#&gt; <span class='warning'>Warning: </span>
-#&gt; <span class='warning'>Your H2O cluster version is too old (5 months and 12 days)!</span>
-#&gt; <span class='warning'>Please download and install the latest version from http://h2o.ai/download/</span></div><div class='output co'>#&gt; 
-#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#&gt;   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
-#&gt; [1] "Cannot build a XGboost model - no backend found."</div><div class='output co'>#&gt; <span class='error'>Error in .h2o.__checkConnectionHealth(): H2O connection has been severed. Cannot connect to instance at http://localhost:54321/</span>
-#&gt; <span class='error'>Failed to connect to localhost port 54321: Connection refused</span></div><div class='input'><span class='co'># }</span>
-</div></pre>
+<span class='co'># }</span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -129,10 +129,10 @@
 
     <pre class="usage"><span class='fu'>ParDepCalPlots</span><span class='op'>(</span>
   <span class='va'>data</span>,
-  PredictionColName <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"PredictedValues"</span><span class='op'>)</span>,
-  TargetColName <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"ActualValues"</span><span class='op'>)</span>,
-  IndepVar <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Independent_Variable_Name"</span><span class='op'>)</span>,
-  GraphType <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"calibration"</span><span class='op'>)</span>,
+  PredictionColName <span class='op'>=</span> <span class='cn'>NULL</span>,
+  TargetColName <span class='op'>=</span> <span class='cn'>NULL</span>,
+  IndepVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  GraphType <span class='op'>=</span> <span class='st'>"calibration"</span>,
   PercentileBucket <span class='op'>=</span> <span class='fl'>0.05</span>,
   FactLevels <span class='op'>=</span> <span class='fl'>10</span>,
   Function <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>x</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,
@@ -208,7 +208,7 @@
     <p>Adrian Antico</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+    <pre class="examples"><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='co'># Create fake data</span>
 <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'><a href='FakeDataGenerator.html'>FakeDataGenerator</a></span><span class='op'>(</span>
   Correlation <span class='op'>=</span> <span class='fl'>0.70</span>, N <span class='op'>=</span> <span class='fl'>10000000</span>, Classification <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
@@ -226,8 +226,19 @@
   Function <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>x</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,
   DateColumn <span class='op'>=</span> <span class='cn'>NULL</span>,
   DateAgg_3D <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>
+
+<span class='co'># Step through function</span>
+<span class='co'># PredictionColName = "Predict"</span>
+<span class='co'># TargetColName = "Adrian"</span>
+<span class='co'># IndepVar = "Independent_Variable1"</span>
+<span class='co'># GraphType = "calibration"</span>
+<span class='co'># PercentileBucket = 0.20</span>
+<span class='co'># FactLevels = 10</span>
+<span class='co'># Function = function(x) mean(x, na.rm = TRUE)</span>
+<span class='co'># DateColumn = NULL</span>
+<span class='co'># DateAgg_3D = NULL</span>
 <span class='op'>}</span>
-</div></pre>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

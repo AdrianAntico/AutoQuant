@@ -128,16 +128,19 @@
     </div>
 
     <pre class="usage"><span class='fu'>AppModelInsights</span><span class='op'>(</span>
+  <span class='va'>ModelOutputList</span>,
   dt <span class='op'>=</span> <span class='cn'>NULL</span>,
   PlotType <span class='op'>=</span> <span class='cn'>NULL</span>,
-  ModelOutputList <span class='op'>=</span> <span class='cn'>NULL</span>,
   TargetVar <span class='op'>=</span> <span class='cn'>NULL</span>,
   PredictVar <span class='op'>=</span> <span class='cn'>NULL</span>,
   PDPVar <span class='op'>=</span> <span class='cn'>NULL</span>,
   DateVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  FacetVar1 <span class='op'>=</span> <span class='cn'>NULL</span>,
+  FacetVar2 <span class='op'>=</span> <span class='cn'>NULL</span>,
   GamFit <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Buckets <span class='op'>=</span> <span class='fl'>20</span>,
-  Subsetcheck <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  ShapAgg <span class='op'>=</span> <span class='st'>"mean"</span>,
+  Rebuild <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Check2 <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Debug <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
@@ -146,15 +149,15 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>ModelOutputList</th>
+      <td><p>output list</p></td>
+    </tr>
+    <tr>
       <th>dt</th>
       <td><p>= NULL,</p></td>
     </tr>
     <tr>
       <th>PlotType</th>
-      <td><p>= NULL,</p></td>
-    </tr>
-    <tr>
-      <th>ModelOutputList</th>
       <td><p>= NULL,</p></td>
     </tr>
     <tr>
@@ -174,6 +177,14 @@
       <td><p>= isolate(DateVar()),</p></td>
     </tr>
     <tr>
+      <th>FacetVar1</th>
+      <td><p>= NULL</p></td>
+    </tr>
+    <tr>
+      <th>FacetVar2</th>
+      <td><p>= NULL</p></td>
+    </tr>
+    <tr>
       <th>GamFit</th>
       <td><p>= FALSE,</p></td>
     </tr>
@@ -182,7 +193,11 @@
       <td><p>= 20,</p></td>
     </tr>
     <tr>
-      <th>Subsetcheck</th>
+      <th>ShapAgg</th>
+      <td><p>A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'geomean', 'harmmean', 'sd', 'median', 'absmedian', 'medianabs'</p></td>
+    </tr>
+    <tr>
+      <th>Rebuild</th>
       <td><p>= FALSE,</p></td>
     </tr>
     <tr>
@@ -198,8 +213,15 @@
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p>Other Graphics: 
+<code><a href='AddFacet.html'>AddFacet</a>()</code>,
 <code><a href='AutoPlotter.html'>AutoPlotter</a>()</code>,
+<code><a href='BarPlot.html'>BarPlot</a>()</code>,
+<code><a href='BoxPlot.html'>BoxPlot</a>()</code>,
 <code><a href='ChartTheme.html'>ChartTheme</a>()</code>,
+<code><a href='CorrMatrixPlot.html'>CorrMatrixPlot</a>()</code>,
+<code><a href='HistPlot.html'>HistPlot</a>()</code>,
+<code><a href='PlotlyConversion.html'>PlotlyConversion</a>()</code>,
+<code><a href='ViolinPlot.html'>ViolinPlot</a>()</code>,
 <code><a href='multiplot.html'>multiplot</a>()</code></p></div>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 

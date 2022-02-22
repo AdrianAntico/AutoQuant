@@ -128,28 +128,27 @@
     </div>
 
     <pre class="usage"><span class='fu'>AppsPlotting</span><span class='op'>(</span>
-  <span class='va'>data</span>,
-  XVariable <span class='op'>=</span> <span class='cn'>NULL</span>,
-  YVariable <span class='op'>=</span> <span class='cn'>NULL</span>,
-  DateName <span class='op'>=</span> <span class='cn'>NULL</span>,
-  GroupVariables <span class='op'>=</span> <span class='cn'>NULL</span>,
-  FilterVariable <span class='op'>=</span> <span class='cn'>NULL</span>,
-  ModelOutputList <span class='op'>=</span> <span class='cn'>NULL</span>,
-  HeaderColor <span class='op'>=</span> <span class='st'>"black"</span>,
-  AppWidth <span class='op'>=</span> <span class='fl'>12L</span>,
-  LogoWidth <span class='op'>=</span> <span class='st'>"1000px"</span>,
+  AzureCredsFile <span class='op'>=</span> <span class='cn'>NULL</span>,
+  PlotObjectHome <span class='op'>=</span> <span class='cn'>NULL</span>,
+  HeaderColor <span class='op'>=</span> <span class='st'>"blue"</span>,
+  AppWidth <span class='op'>=</span> <span class='fl'>8L</span>,
+  LogoWidth <span class='op'>=</span> <span class='st'>"750px"</span>,
   LogoHeight <span class='op'>=</span> <span class='st'>"100px"</span>,
   GroupVarsBoxColor <span class='op'>=</span> <span class='st'>"navy"</span>,
   VarsBoxColor <span class='op'>=</span> <span class='st'>"purple"</span>,
   FilterBoxColor <span class='op'>=</span> <span class='st'>"blue"</span>,
   PlotBoxColor <span class='op'>=</span> <span class='st'>"aqua"</span>,
-  CreatePlotButtonColor <span class='op'>=</span> <span class='st'>"primary"</span>,
-  UpdatePlotButtonColor <span class='op'>=</span> <span class='st'>"primary"</span>,
-  ResetPlotButtonColor <span class='op'>=</span> <span class='st'>"primary"</span>,
-  AppTextColor <span class='op'>=</span> <span class='st'>"white"</span>,
+  CreatePlotButtonColor <span class='op'>=</span> <span class='st'>"royal"</span>,
+  UpdatePlotButtonColor <span class='op'>=</span> <span class='st'>"default"</span>,
+  ResetPlotButtonColor <span class='op'>=</span> <span class='st'>"default"</span>,
+  H3Color <span class='op'>=</span> <span class='st'>"darkblue"</span>,
+  H4Color <span class='op'>=</span> <span class='st'>"darkblue"</span>,
+  AppTextColor <span class='op'>=</span> <span class='st'>"blue"</span>,
   Browser <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Docker <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  DockerPathToData <span class='op'>=</span> <span class='cn'>NULL</span>,
   UserName_Password_DT <span class='op'>=</span> <span class='cn'>NULL</span>,
+  RunMode <span class='op'>=</span> <span class='st'>"package"</span>,
   Debug <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
 
@@ -157,32 +156,12 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>data</th>
-      <td><p>Source data.table</p></td>
+      <th>AzureCredsFile</th>
+      <td><p>Path to your credentials file</p></td>
     </tr>
     <tr>
-      <th>XVariable</th>
-      <td><p>Starter column name for x-variable. Not needed if x-axis is the DateName column</p></td>
-    </tr>
-    <tr>
-      <th>YVariable</th>
-      <td><p>Starter column name for y-variable</p></td>
-    </tr>
-    <tr>
-      <th>DateName</th>
-      <td><p>Starter column name for date-variable</p></td>
-    </tr>
-    <tr>
-      <th>GroupVariables</th>
-      <td><p>Starter column name for group-variables</p></td>
-    </tr>
-    <tr>
-      <th>FilterVariable</th>
-      <td><p>Starter column name for filter-variable</p></td>
-    </tr>
-    <tr>
-      <th>ModelOutputList</th>
-      <td><p>ML output from RemixAutoML Auto___() SL functions</p></td>
+      <th>PlotObjectHome</th>
+      <td><p>NULL</p></td>
     </tr>
     <tr>
       <th>HeaderColor</th>
@@ -221,6 +200,14 @@
       <td><p>Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'</p></td>
     </tr>
     <tr>
+      <th>H3Color</th>
+      <td><p>Header colors 'darkblue'</p></td>
+    </tr>
+    <tr>
+      <th>H4Color</th>
+      <td><p>Text below headers but not the input cells; 'blue2'</p></td>
+    </tr>
+    <tr>
       <th>AppTextColor</th>
       <td><p>'white'</p></td>
     </tr>
@@ -233,8 +220,16 @@
       <td><p>FALSE</p></td>
     </tr>
     <tr>
+      <th>DockerPathToData</th>
+      <td><p>bla</p></td>
+    </tr>
+    <tr>
       <th>UserName_Password_DT</th>
       <td><p>NULL. In order to enforce authentication, supply a data.table with columns 'UserName' which contains the names of your users and 'Password' which contains the acceptable passwords. E.g. data.table::data.table(UserName = c('Adrian Antico', 'Guest'), Password = c('Password1', 'Password2')). Case sensitivity applies.</p></td>
+    </tr>
+    <tr>
+      <th>RunMode</th>
+      <td><p>= 'package', 'local'</p></td>
     </tr>
     <tr>
       <th>Debug</th>
@@ -251,20 +246,14 @@
     <p>Adrian Antico</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+    <pre class="examples"><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='co'># Pull Data</span>
 <span class='co'># data &lt;- data.table::fread(system.file('tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv', package = "RemixAutoML"))</span>
 <span class='co'># data[, Date := as.Date(Date)]</span>
 
 <span class='co'># Run App</span>
 <span class='co'># RemixAutoML::AppsPlotting(</span>
-<span class='co'>#   data,</span>
-<span class='co'>#   XVariable = NULL,</span>
-<span class='co'>#   YVariable = 'XREG1',</span>
-<span class='co'>#   DateName = 'Date',</span>
-<span class='co'>#   GroupVariables = names(data)[seq_len(3L)],</span>
-<span class='co'>#   FilterVariable = 'XREG1',</span>
-<span class='co'>#   ModelOutputList = NULL,</span>
+<span class='co'>#   PlotObjectHome = NULL,</span>
 <span class='co'>#   HeaderColor = 'black',</span>
 <span class='co'>#   AppWidth = 12L,</span>
 <span class='co'>#   LogoWidth = '1000px',</span>
@@ -276,18 +265,14 @@
 <span class='co'>#   CreatePlotButtonColor = 'default',</span>
 <span class='co'>#   UpdatePlotButtonColor = 'default',</span>
 <span class='co'>#   ResetPlotButtonColor = 'default',</span>
+<span class='co'>#   H3Color = 'darkblue',</span>
+<span class='co'>#   H5Color = 'blue2',</span>
 <span class='co'>#   AppTextColor = 'white',</span>
 <span class='co'>#   Docker = FALSE,</span>
 <span class='co'>#   Browser = FALSE,</span>
 <span class='co'>#   UserName_Password_DT = NULL,</span>
 <span class='co'>#   Debug = FALSE)</span>
 <span class='co'>#</span>
-<span class='co'># XVariable = 'Date'</span>
-<span class='co'># YVariable = 'XREG1'</span>
-<span class='co'># DateName = 'Date'</span>
-<span class='co'># GroupVariables = names(data)[seq_len(3L)]</span>
-<span class='co'># FilterVariable = 'XREG1'</span>
-<span class='co'># ModelOutputList = NULL</span>
 <span class='co'># Debug = TRUE</span>
 <span class='co'># HeaderColor = 'black'</span>
 <span class='co'># AppWidth = 12L</span>
@@ -300,6 +285,8 @@
 <span class='co'># CreatePlotButtonColor = 'default'</span>
 <span class='co'># UpdatePlotButtonColor = 'default'</span>
 <span class='co'># ResetPlotButtonColor = 'default'</span>
+<span class='co'># H3Color = 'darkblue'</span>
+<span class='co'># H4Color = 'blue2'</span>
 <span class='co'># AppTextColor = 'white'</span>
 <span class='co'># Docker = FALSE</span>
 <span class='co'># Browser = FALSE</span>
@@ -307,7 +294,7 @@
 <span class='co'># Debug = TRUE</span>
 <span class='op'>}</span>
 
-</div></pre>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
