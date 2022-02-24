@@ -643,7 +643,7 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
 
       # Factor & Character Subsetting
       if(FilterLogic %in% c('%in%','%chin%')) {
-        data1 <- data1[get(FilterVariable) %chin% c(eval(FilterValue))]
+        data1 <- data1[get(FilterVariable) %in% c(eval(FilterValue))]
       } else if(FilterLogic == '%like%') {
         data1 <- data1[get(eval(FilterVariable)) %like% c(eval(FilterValue))]
       }
