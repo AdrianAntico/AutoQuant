@@ -620,6 +620,9 @@ server <- function(input, output, session) {
   # Load data event
   shiny::observeEvent(eventExpr = input$LoadDataButton, {
 
+    # Notify user that data is being loaded
+    shiny::showNotification('Data loading has begun')
+
     # ----
 
     # ----
@@ -1446,16 +1449,40 @@ server <- function(input, output, session) {
 
     # Select GroupVars
     output$GroupVars1 <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='GroupVars1', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=c(names(data)), SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
+      if('CorrMatrix' %in% tryCatch({Plot1_react()}, error = 'none')) {
+        choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+        if(length(choices) == 0) choices <- NULL
+      } else {
+        choices <- RemixAutoML:::VarNamesDisplay(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=tryCatch({Plot1_react()}, error = function(x) 'Scatter'))
+      }
+      RemixAutoML::SelectizeInput(InputID='GroupVars1', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices= choices, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
     })
     output$GroupVars2 <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='GroupVars2', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=c(names(data)), SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
+      if('CorrMatrix' %in% tryCatch({Plot2_react()}, error = 'none')) {
+        choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+        if(length(choices) == 0) choices <- NULL
+      } else {
+        choices <- RemixAutoML:::VarNamesDisplay(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=tryCatch({Plot1_react()}, error = function(x) 'Scatter'))
+      }
+      RemixAutoML::SelectizeInput(InputID='GroupVars2', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=choices, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
     })
     output$GroupVars3 <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='GroupVars3', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=c(names(data)), SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
+      if('CorrMatrix' %in% tryCatch({Plot3_react()}, error = 'none')) {
+        choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+        if(length(choices) == 0) choices <- NULL
+      } else {
+        choices <- RemixAutoML:::VarNamesDisplay(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=tryCatch({Plot1_react()}, error = function(x) 'Scatter'))
+      }
+      RemixAutoML::SelectizeInput(InputID='GroupVars3', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=choices, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
     })
     output$GroupVars4 <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='GroupVars4', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=c(names(data)), SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
+      if('CorrMatrix' %in% tryCatch({Plot3_react()}, error = 'none')) {
+        choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+        if(length(choices) == 0) choices <- NULL
+      } else {
+        choices <- RemixAutoML:::VarNamesDisplay(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=tryCatch({Plot1_react()}, error = function(x) 'Scatter'))
+      }
+      RemixAutoML::SelectizeInput(InputID='GroupVars4', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=choices, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
     })
 
     # Reactive Group Variables
@@ -1474,52 +1501,128 @@ server <- function(input, output, session) {
 
     # Group Levels
     output$Levels_1_1 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) print('PickerInput_GetLevels 1')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) {print('PickerInput_GetLevels 1'); print(sgs)}
+      if(Debug) {print('Levels_1_1 logic check for data'); print(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data))}
+      if(Debug) {print('Levels_1_1 logic check for ModelData'); print(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData))}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        print('here for data')
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        print('here for ModelData')
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_1_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_1_2 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) print('PickerInput_GetLevels 2')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) {print('PickerInput_GetLevels 2'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_1_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_1_3 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) print('PickerInput_GetLevels 3')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) {print('PickerInput_GetLevels 3'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_1_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_2_1 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) print('PickerInput_GetLevels 1')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) {print('PickerInput_GetLevels 1'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_2_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_2_2 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) print('PickerInput_GetLevels 2')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) {print('PickerInput_GetLevels 2'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_2_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_2_3 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) print('PickerInput_GetLevels 3')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) {print('PickerInput_GetLevels 3'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_2_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_3_1 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) print('PickerInput_GetLevels 1')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) {print('PickerInput_GetLevels 1'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_3_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_3_2 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) print('PickerInput_GetLevels 2')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) {print('PickerInput_GetLevels 2'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_3_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_3_3 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) print('PickerInput_GetLevels 3')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) {print('PickerInput_GetLevels 3'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_3_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_4_1 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) print('PickerInput_GetLevels 1')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) {print('PickerInput_GetLevels 1'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_4_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_4_2 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) print('PickerInput_GetLevels 2')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) {print('PickerInput_GetLevels 2'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_4_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
     output$Levels_4_3 <- shiny::renderUI({
-      sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) print('PickerInput_GetLevels 3')
-      RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) {print('PickerInput_GetLevels 3'); print(sgs)}
+      if(length(sgs) != 0 && length(data) != 0 && sgs[1L] %in% names(data)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      } else if(length(sgs) != 0 && length(ModelData) != 0 && sgs[1L] %in% names(ModelData)) {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('ModelData'), InputID='Levels_4_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, ModelData, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      } else {
+        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+      }
     })
 
     # Faceting
@@ -1665,83 +1768,63 @@ server <- function(input, output, session) {
 
     # Filter Variables
     output$FilterVariable_1_1 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_1_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_1_2 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_1_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_1_3 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_1_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_1_4 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot1_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_1_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_2_1 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot2_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_2_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_2_2 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot2_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_2_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_2_3 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot2_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_2_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_2_4 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot2_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_2_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_3_1 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot3_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_3_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_3_2 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot3_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_3_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_3_3 <- shiny::renderUI({
@@ -1753,43 +1836,33 @@ server <- function(input, output, session) {
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_3_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_3_4 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot3_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_3_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_4_1 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot4_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_4_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_4_2 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot4_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_4_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_4_3 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot4_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_4_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$FilterVariable_4_4 <- shiny::renderUI({
-      if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({Plot4_react()}, error = function(x) NULL))) {
-        ModelVars <- names(data)
-      } else {
-        ModelVars <- names(ModelData)
-      }
+      ModelVars <- c()
+      if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+      if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
       RemixAutoML::SelectizeInput(InputID = 'FilterVariable_4_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
 
@@ -3041,80 +3114,78 @@ server <- function(input, output, session) {
 
   # Select GroupVars
   output$GroupVars1 <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID='GroupVars1', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=c(names(data)), SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3)
+    if('CorrMatrix' %in% tryCatch({input[['Plot1']]}, error = 'none')) {
+      choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+      if(length(choices) == 0) choices <- NULL
+    } else {
+      choices <- RemixAutoML:::VarNamesDisplay(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=tryCatch({Plot1_react()}, error = function(x) 'Scatter'))
+    }
+    RemixAutoML::SelectizeInput(InputID='GroupVars1', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices= choices, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
   })
   output$GroupVars2 <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID='GroupVars2', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=c(names(data)), SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3)
+    if('CorrMatrix' %in% tryCatch({input[['Plot2']]}, error = 'none')) {
+      choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+      if(length(choices) == 0) choices <- NULL
+    } else {
+      choices <- RemixAutoML:::VarNamesDisplay(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=tryCatch({Plot1_react()}, error = function(x) 'Scatter'))
+    }
+    RemixAutoML::SelectizeInput(InputID='GroupVars2', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=choices, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
   })
   output$GroupVars3 <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID='GroupVars3', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=c(names(data)), SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3)
+    if('CorrMatrix' %in% tryCatch({input[['Plot3']]}, error = 'none')) {
+      choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+      if(length(choices) == 0) choices <- NULL
+    } else {
+      choices <- RemixAutoML:::VarNamesDisplay(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=tryCatch({Plot1_react()}, error = function(x) 'Scatter'))
+    }
+    RemixAutoML::SelectizeInput(InputID='GroupVars3', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=choices, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
   })
   output$GroupVars4 <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID='GroupVars4', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=c(names(data)), SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3)
-  })
-
-  # Reactive Group Variables
-  SelectedGroups1 <- shiny::reactive({
-    RemixAutoML::ReturnParam(xx = input[['GroupVars1']], VarName = 'GroupVars1', Default = NULL, Switch = TRUE, Type = 'character')
-  })
-  SelectedGroups2 <- shiny::reactive({
-    RemixAutoML::ReturnParam(xx = input[['GroupVars2']], VarName = 'GroupVars2', Default = NULL, Switch = TRUE, Type = 'character')
-  })
-  SelectedGroups3 <- shiny::reactive({
-    RemixAutoML::ReturnParam(xx = input[['GroupVars3']], VarName = 'GroupVars3', Default = NULL, Switch = TRUE, Type = 'character')
-  })
-  SelectedGroups4 <- shiny::reactive({
-    RemixAutoML::ReturnParam(xx = input[['GroupVars4']], VarName = 'GroupVars4', Default = NULL, Switch = TRUE, Type = 'character')
+    if('CorrMatrix' %in% tryCatch({input[['Plot4']]}, error = 'none')) {
+      choices <- names(data)[which(RemixAutoML:::ColTypes(data) %in% c('numeric','integer'))]
+      if(length(choices) == 0) choices <- NULL
+    } else {
+      choices <- RemixAutoML:::VarNamesDisplay(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=tryCatch({Plot1_react()}, error = function(x) 'Scatter'))
+    }
+    RemixAutoML::SelectizeInput(InputID='GroupVars4', Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices=choices, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
   })
 
   # Group Levels
   output$Levels_1_1 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) print('PickerInput_GetLevels 1')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_1', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 1L, GroupVars=NULL), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_1_2 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) print('PickerInput_GetLevels 2')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_2', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 2L, GroupVars=NULL), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_1_3 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) print('PickerInput_GetLevels 3')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_3', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 3L, GroupVars=NULL), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_2_1 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) print('PickerInput_GetLevels 1')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_1', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 1L, GroupVars=NULL), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_2_2 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) print('PickerInput_GetLevels 2')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_2', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 2L, GroupVars=NULL), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_2_3 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) print('PickerInput_GetLevels 3')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_3', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 3L, GroupVars=NULL), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_3_1 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) print('PickerInput_GetLevels 1')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_1', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 1L, GroupVars=NULL), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_3_2 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) print('PickerInput_GetLevels 2')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_2', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 2L, GroupVars=NULL), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_3_3 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) print('PickerInput_GetLevels 3')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_3', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 3L, GroupVars=NULL), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_4_1 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) print('PickerInput_GetLevels 1')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_1', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_1', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 1L, GroupVars=NULL), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_4_2 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) print('PickerInput_GetLevels 2')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_2', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_2', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 2L, GroupVars=NULL), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=NULL)
   })
   output$Levels_4_3 <- shiny::renderUI({
-    sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) print('PickerInput_GetLevels 3')
-    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_3', InputID2=sgs, Choices=RemixAutoML::UniqueLevels(input, data, 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
+    RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_3', InputID2=NULL, Choices=RemixAutoML::UniqueLevels(input, NULL, 3L, GroupVars=NULL), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=NULL)
   })
 
   # Faceting
@@ -3167,131 +3238,99 @@ server <- function(input, output, session) {
 
   # Filter Variables
   output$FilterVariable_1_1 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot1']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_1_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_1_2 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot1']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_1_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_1_3 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot1']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_1_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_1_4 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot1']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_1_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_2_1 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot2']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_2_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_2_2 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot2']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_2_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_2_3 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot2']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_2_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_2_4 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot2']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_2_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_3_1 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot3']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_3_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_3_2 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot3']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_3_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_3_3 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot3']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_3_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_3_4 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot3']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_3_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_4_1 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot4']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_4_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_4_2 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot4']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_4_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_4_3 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot4']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_4_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
   output$FilterVariable_4_4 <- shiny::renderUI({
-    if(any(RemixAutoML:::AvailableAppInsightsPlots(x = NULL, PlotNamesLookup = PlotNamesLookup, Debug = Debug) %in% tryCatch({input[['Plot4']]}, error = function(x) NULL))) {
-      ModelVars <- names(data)
-    } else {
-      ModelVars <- names(ModelData)
-    }
+    ModelVars <- c()
+    if(length(data) != 0) ModelVars <- c(ModelVars, names(data))
+    if(length(ModelData) != 0) ModelVars <- c(ModelVars, names(ModelData))
     RemixAutoML::SelectizeInput(InputID = 'FilterVariable_4_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = c(ModelVars), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
   })
 
@@ -4222,15 +4261,9 @@ server <- function(input, output, session) {
         ScoreVar <- NULL
       }
 
-      PlotType %in% c('Scatter','Copula') &&
-        (!any(class(data[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(data[[eval(YVar)]]) %in% c('numeric','integer')) ||
-           (!is.null(ModelData) && !any(class(ModelData[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(ModelData[[eval(YVar)]]) %in% c('numeric','integer'))))
-
       # PLOT LOGIC CHECK:
       if(length(YVar) == 0 && length(XVar) == 0 && PlotType %in% c('Scatter','Copula','Line','Bar','BoxPlot','ViolinPlot','Histogram')) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to specify additional variables to generate additional plots', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-      # } else if(PlotType %in% c('Scatter','Copula') && (!any(class(data[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(data[[eval(YVar)]]) %in% c('numeric','integer')) || (!is.null(ModelData) && !any(class(ModelData[[eval(XVar)]]) %in% c('numeric','integer')) && !any(class(ModelData[[eval(YVar)]]) %in% c('numeric','integer'))))) {
-      #   shinyWidgets::sendSweetAlert(session, title = NULL, text = "Y and / or X-Variable needs to be a numeric or integer variable", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else if(PlotType %in% 'CorrMatrix' && length(YVar) == 0) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "YVar needs to have at least two variables selected to build this plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else {
@@ -4517,6 +4550,7 @@ server <- function(input, output, session) {
             SampleSize = SampleSize,
             YVar = YVar,
             XVar = XVar,
+            Bins = NumberBins,
             CorrelationMethod = CorMethod,
             ColorVariables = GroupVars,
             SizeVar1 = SizeVars,
@@ -4548,6 +4582,7 @@ server <- function(input, output, session) {
             print(RemixAutoML:::CEPP(PlotType))
             print(paste0('YVar = ', RemixAutoML:::CEP(YVar)))
             print(paste0('XVar = ', RemixAutoML:::CEP(XVar)))
+            print(paste0('Bins = ', RemixAutoML:::CEP(NumberBins)))
             print(paste0('ColorVariables = ', RemixAutoML:::CEP(GroupVars[[1L]])))
             print(paste0('SizeVar1 = ', RemixAutoML:::CEP(SizeVars)))
             print(paste0('FacetVar1 = ', RemixAutoML:::CEP(FacetVar1)))
@@ -4577,6 +4612,7 @@ server <- function(input, output, session) {
             "RemixAutoML:::AutoPlotter(dt = data1, PlotType = ", RemixAutoML:::CEP(PlotType),
             ", YVar=", RemixAutoML:::CEP(YVar),
             ", XVar=", RemixAutoML:::CEP(XVar),
+            ", Bins=", RemixAutoML:::CEP(NumberBins),
             ", ColorVariables=", RemixAutoML:::CEP(GroupVars[[1L]]),
             ", SizeVar1=", RemixAutoML:::CEP(SizeVars),
             ", FacetVar1=", RemixAutoML:::CEP(FacetVar1),

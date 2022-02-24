@@ -8,6 +8,7 @@ HistPlot(
   data = NULL,
   XVar = NULL,
   YVar = NULL,
+  ColorVar = NULL,
   FacetVar1 = NULL,
   FacetVar2 = NULL,
   SampleSize = 1000000L,
@@ -38,6 +39,8 @@ HistPlot(
 \item{XVar}{Column name of X-Axis variable. If NULL then ignored}
 
 \item{YVar}{Column name of Y-Axis variable. If NULL then ignored}
+
+\item{ColorVar}{Column name of Group Variable for distinct colored histograms by group levels}
 
 \item{FacetVar1}{Column name of facet variable 1. If NULL then ignored}
 

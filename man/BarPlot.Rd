@@ -40,6 +40,8 @@ BarPlot(
 
 \item{AggMethod}{Choose from 'mean', 'sum', 'sd', and 'median'}
 
+\item{ColorVar}{Column name of Group Variable for distinct colored histograms by group levels}
+
 \item{FacetVar1}{Column name of facet variable 1. If NULL then ignored}
 
 \item{FacetVar2}{Column name of facet variable 2. If NULL then ignored}

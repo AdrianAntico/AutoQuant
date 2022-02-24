@@ -1,3 +1,9 @@
+
+# Correlation Matrix Updates: https://okanbulut.github.io/bigdata/visualizing-big-data.html
+
+
+
+
 #' @title PlotlyConversion
 #'
 #' @author Adrian Antico
@@ -841,6 +847,7 @@ BoxPlot <- function(data = NULL,
 #' @param data Source data.table
 #' @param XVar Column name of X-Axis variable. If NULL then ignored
 #' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param ColorVar Column name of Group Variable for distinct colored histograms by group levels
 #' @param AggMethod Choose from 'mean', 'sum', 'sd', and 'median'
 #' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
 #' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
@@ -1170,6 +1177,7 @@ BarPlot <- function(data = NULL,
 #' @param data Source data.table
 #' @param XVar Column name of X-Axis variable. If NULL then ignored
 #' @param YVar Column name of Y-Axis variable. If NULL then ignored
+#' @param ColorVar Column name of Group Variable for distinct colored histograms by group levels
 #' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
 #' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
 #' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
@@ -1193,10 +1201,76 @@ BarPlot <- function(data = NULL,
 #' @param LegendLineType 'solid'
 #' @param Debug FALSE
 #'
+#' @examples
+#' \dontrun{
+#' # Load packages
+#' library(RemixAutoML)
+#' library(data.table)
+#'
+#' # Load data
+#' data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
+#'
+#' # Run function
+#' p1 <- RemixAutoML:::HistPlot(
+#'   data = data,
+#'   XVar = NULL,
+#'   YVar = 'Weekly_Sales',
+#'   ColorVar = 'Region',
+#'   FacetVar1 = 'Store',
+#'   FacetVar2 = 'Dept',
+#'   SampleSize = 1000000L,
+#'   Bins = 20,
+#'   FillColor = 'gray',
+#'   YTicks = 'Default',
+#'   XTicks = 'Default',
+#'   TextSize = 12,
+#'   AngleX = 90,
+#'   AngleY = 0,
+#'   ChartColor = 'lightsteelblue1',
+#'   BorderColor = 'darkblue',
+#'   TextColor = 'darkblue',
+#'   GridColor = 'white',
+#'   BackGroundColor = 'gray95',
+#'   SubTitleColor = 'blue',
+#'   LegendPosition = 'bottom',
+#'   LegendBorderSize = 0.50,
+#'   LegendLineType = 'solid',
+#'   Debug = FALSE)
+#'
+#' # Step through function
+#' # # plotly::ggplotly(p1)
+#' # XVar = NULL
+#' # YVar = 'Weekly_Sales'
+#' # AggMethod = 'mean'
+#' # ColorVar = 'Region'
+#' # FacetVar1 = NULL
+#' # FacetVar2 = NULL
+#' # Bins = 20
+#' # SampleSize = 1000000L
+#' # FillColor = 'gray'
+#' # YTicks = 'Default'
+#' # XTicks = 'Default'
+#' # TextSize = 12
+#' # AngleX = 90
+#' # AngleY = 0
+#' # ChartColor = 'lightsteelblue1'
+#' # BorderColor = 'darkblue'
+#' # TextColor = 'darkblue'
+#' # GridColor = 'white'
+#' # BackGroundColor = 'gray95'
+#' # SubTitleColor = 'blue'
+#' # LegendPosition = 'bottom'
+#' # LegendBorderSize = 0.50
+#' # LegendLineType = 'solid'
+#' # Debug = FALSE
+#' # Bins
+#' }
+#'
 #' @export
 HistPlot <- function(data = NULL,
                      XVar = NULL,
                      YVar = NULL,
+                     ColorVar = NULL,
                      FacetVar1 = NULL,
                      FacetVar2 = NULL,
                      SampleSize = 1000000L,
@@ -1230,19 +1304,26 @@ HistPlot <- function(data = NULL,
 
   # Create base plot object
   if(Debug) print('Create Plot with only data')
-  p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar)))
+  if(!is.null(ColorVar)) {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar), fill = get(ColorVar)))
+  } else {
+    p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(YVar)))
+  }
 
   # Box Plot Call
   if(Debug) print('Create Histogram')
-  p1 <- p1 + ggplot2::geom_histogram(bin = Bins)
+  p1 <- p1 + ggplot2::geom_histogram(bins = Bins)
 
   # Add Horizontal Line for Mean Y
   if(Debug) print('Create Plot Horizontal Line')
-  p1 <- p1 + ggplot2::geom_vline(color = 'blue', xintercept = eval(mean(data[[eval(YVar)]], na.rm = TRUE)))
+  p1 <- p1 + ggplot2::geom_vline(linetype="longdash", color = 'darkblue', xintercept = eval(mean(data[[eval(YVar)]], na.rm = TRUE)))
+  p1 <- p1 + ggplot2::geom_vline(linetype="longdash", color = 'darkred', xintercept = eval(median(data[[eval(YVar)]], na.rm = TRUE)))
+  p1 <- p1 + ggplot2::geom_vline(linetype="longdash", color = 'darkred', xintercept = eval(quantile(data[[eval(YVar)]], na.rm = TRUE, probs = 0.05)[[1L]]))
+  p1 <- p1 + ggplot2::geom_vline(linetype="longdash", color = 'darkred', xintercept = eval(quantile(data[[eval(YVar)]], na.rm = TRUE, probs = 0.95)[[1L]]))
 
   # Create Plot labs
   if(Debug) print('Create Plot labs')
-  p1 <- p1 + ggplot2::labs(title = 'Histogram', subtitle = 'Blue line = mean(X)', caption = 'RemixAutoML')
+  p1 <- p1 + ggplot2::labs(title = 'Histogram', subtitle = 'Blue line: mean(X), Red lines: q5, q50, q95', caption = 'RemixAutoML')
 
   # Labels
   p1 <- p1 + ggplot2::ylab(NULL)
@@ -1266,6 +1347,9 @@ HistPlot <- function(data = NULL,
     LegendPosition = LegendPosition,
     LegendBorderSize = LegendBorderSize,
     LegendLineType = LegendLineType)
+
+  # Rename legend
+  if(!is.null(ColorVar)) p1 <- p1 + ggplot2::scale_fill_discrete(name = ColorVar)
 
   # Define Tick Marks
   if(Debug) print('YTicks Update')
@@ -1529,6 +1613,7 @@ AutoPlotter <- function(dt = NULL,
       data = dt,
       XVar = XVar,
       YVar = YVar,
+      ColorVar = ColorVariables,
       FacetVar1 = FacetVar1,
       FacetVar2 = FacetVar2,
       SampleSize = SampleSize,
@@ -1551,10 +1636,12 @@ AutoPlotter <- function(dt = NULL,
       Debug = Debug)
 
     # Modify x-axis scale
+    print('here here here here here here here here here here ')
     if(Debug) {print('XTicks'); print(XTicks)}
     date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
     if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
     if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+    print('here here here here here here here here here here ')
 
     # Return plot
     return(eval(p1))
