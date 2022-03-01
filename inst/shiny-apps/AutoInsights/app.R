@@ -385,7 +385,7 @@ ui <- shinydashboard::dashboardPage(
               shinyWidgets::actionBttn(inputId='TrendPlotExecute', label='Build Plot', style='gradient', color='royal')),
 
             # Global Settings
-            #RemixAutoML:::GlobalSettingsContents(id='GlobalSettings', PlotHeight=PlotHeight, PlotWidth=PlotWidth, AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, Right=FALSE, Animate=TRUE, Status='custom'),
+            # (issue with getting blank space removed) RemixAutoML:::GlobalSettingsContents(id='GlobalSettings', PlotHeight=PlotHeight, PlotWidth=PlotWidth, AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, Right=FALSE, Animate=TRUE, Status='custom'),
 
             # Formatting DropDown
             shiny::column(
@@ -400,38 +400,26 @@ ui <- shinydashboard::dashboardPage(
 
                 # Plot Formatting
                 shiny::fluidRow(
-
-                  # Plot Axes Limits
                   RemixAutoML:::AxisLimits(id='AxisLimitsContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
-
-                  # Plot Formatting
                   RemixAutoML:::Formatting(id='FormattingContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
-
-                  # Plot Colors
                   RemixAutoML:::Coloring(id='ColoringContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom')), # fluidrow end
-
 
                 # Add Space
                 RemixAutoML::BlankRow(AppWidth),
 
                 # Plot Enhancements
                 shiny::fluidRow(
-
-                  # Gam Fitting
                   RemixAutoML:::GamFitting(id='GamFittingContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
-
-                  # Histogram bins
                   RemixAutoML:::HistBins(id='HistBinsContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom'),
-
-                  # Percentile Bins
                   RemixAutoML:::PercentileBuckets(id='PercentileBucketsContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=TRUE, Animate=TRUE, Status='custom'),
+                  RemixAutoML:::ShapAgg(id='ShapAggContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=TRUE, Animate=TRUE, Status='custom')),
+                  # (incompatible with ggplotly) RemixAutoML:::MarginalInputs(id='MarginalContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=FALSE, Animate=TRUE, Status='custom')), # end fluid row
 
-                  # Shapely Aggregation Method
-                  RemixAutoML:::ShapAgg(id='ShapAggContents', AppWidth=AppWidth, LogoWidth=LogoWidth, H3Color=H3Color, H4Color=H4Color, Right=TRUE, Animate=TRUE, Status='custom')) # end fluid row
+                # Extra space at bottom of dropdown after filter buttoms
+                RemixAutoML::BlankRow(AppWidth),
 
               ) # end of dropdown
             ), # end of column plot format dropdown inputs ::::::::
-
 
             # Filtering Dropdown
             shiny::column(
@@ -1062,6 +1050,32 @@ server <- function(input, output, session) {
         #,
         # choiceNames = , choiceValues = , selected = , status = , replace = , copySource = , badge = , ncolSource = , ncolGrid = , dragulaOpts = , boxStyle = , width = "100%", height = "100%"
       )
+    })
+
+    # Scatterplot / copula plot marginals
+    output$Marginals1 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'Marginals1', Label = tags$span(style='color: blue;', 'Marginals 1'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    output$Marginals2 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'Marginals2', Label = tags$span(style='color: blue;', 'Marginals 2'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    output$Marginals3 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'Marginals3', Label = tags$span(style='color: blue;', 'Marginals 3'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    output$Marginals4 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'Marginals4', Label = tags$span(style='color: blue;', 'Marginals 4'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    output$MarginalType1 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'MarginalType1', Label = tags$span(style='color: blue;', 'Marginal Type 1'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    output$MarginalType2 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'MarginalType2', Label = tags$span(style='color: blue;', 'Marginal Type 2'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    output$MarginalType3 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'MarginalType3', Label = tags$span(style='color: blue;', 'Marginal Type 3'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    output$MarginalType4 <- shiny::renderUI({
+      RemixAutoML::SelectizeInput(InputID = 'MarginalType4', Label = tags$span(style='color: blue;', 'Marginal Type 4'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
     })
 
     # BarPlot AggMethods
@@ -2726,18 +2740,44 @@ server <- function(input, output, session) {
       choices = c('Plot1', 'Plot2', 'Plot3', 'Plot4'))
   })
 
+  # Scatterplot / copula plot marginals
+  output$Marginals1 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'Marginals1', Label = tags$span(style='color: blue;', 'Marginals 1'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+  output$Marginals2 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'Marginals2', Label = tags$span(style='color: blue;', 'Marginals 2'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+  output$Marginals3 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'Marginals3', Label = tags$span(style='color: blue;', 'Marginals 3'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+  output$Marginals4 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'Marginals4', Label = tags$span(style='color: blue;', 'Marginals 4'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+  output$MarginalType1 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'MarginalType1', Label = tags$span(style='color: blue;', 'Marginal Type 1'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+  output$MarginalType2 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'MarginalType2', Label = tags$span(style='color: blue;', 'Marginal Type 2'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+  output$MarginalType3 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'MarginalType3', Label = tags$span(style='color: blue;', 'Marginal Type 3'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+  output$MarginalType4 <- shiny::renderUI({
+    RemixAutoML::SelectizeInput(InputID = 'MarginalType4', Label = tags$span(style='color: blue;', 'Marginal Type 4'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+  })
+
   # BarPlot AggMethods
   output$BarPlotAgg1 <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg1', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg1', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
   output$BarPlotAgg2 <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg2', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg2', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
   output$BarPlotAgg3 <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg3', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg3', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
   output$BarPlotAgg4 <- shiny::renderUI({
-    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg4', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE)
+    RemixAutoML::SelectizeInput(InputID = 'BarPlotAgg4', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
   })
 
   # UI Plot Options
@@ -4151,6 +4191,8 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['NumberBins']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('NumberBins', run)]]}, error=function(x) NULL), Type='numeric', Default=30L)
       PlotObjectHome[[paste0('Plot_', run)]][['Percentile_Buckets']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('Percentile_Buckets', run)]]}, error=function(x) NULL), Type='numeric', Default=20L)
       PlotObjectHome[[paste0('Plot_', run)]][['BarPlotAgg']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('BarPlotAgg', run)]]}, error=function(x) NULL), Type='character', Default='mean')
+      PlotObjectHome[[paste0('Plot_', run)]][['Marginals']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('Marginals', run)]]}, error=function(x) NULL), Type='logical', Default=FALSE)
+      PlotObjectHome[[paste0('Plot_', run)]][['MarginalType']] <- RemixAutoML::ReturnParam(xx=tryCatch({input[[paste0('MarginalType', run)]]}, error=function(x) NULL), Type='character', Default='density')
 
       # Assign Globally
       assign(x = 'PlotObjectHome', value = PlotObjectHome, envir = .GlobalEnv)
@@ -4237,6 +4279,8 @@ server <- function(input, output, session) {
         GamFitScatter <- PlotObjectHome[[paste0('Plot_', run)]][['GamFitScatter']]
         NumberBins <- PlotObjectHome[[paste0('Plot_', run)]][['NumberBins']]
         Percentile_Buckets <- PlotObjectHome[[paste0('Plot_', run)]][['Percentile_Buckets']]
+        Marginals <- PlotObjectHome[[paste0('Plot_', run)]][['Marginals']]
+        MarginalType <- PlotObjectHome[[paste0('Plot_', run)]][['MarginalType']]
       }
 
       # ----
@@ -4448,6 +4492,7 @@ server <- function(input, output, session) {
           # Subset by FilterVariable
           if(Debug) print('Here 23')
           for(i in seq_len(4L)) {
+            if(Debug) print(length(eval(parse(text = paste0('FilterVar', i)))) != 0L)
             if(length(eval(parse(text = paste0('FilterVar', i)))) != 0L) {
               data1 <- RemixAutoML::FilterLogicData(
                 data1,
@@ -4550,6 +4595,8 @@ server <- function(input, output, session) {
             SampleSize = SampleSize,
             YVar = YVar,
             XVar = XVar,
+            Marginal = Marginals,
+            MarginalPlotType = MarginalType,
             Bins = NumberBins,
             CorrelationMethod = CorMethod,
             ColorVariables = GroupVars,
@@ -4582,6 +4629,8 @@ server <- function(input, output, session) {
             print(RemixAutoML:::CEPP(PlotType))
             print(paste0('YVar = ', RemixAutoML:::CEP(YVar)))
             print(paste0('XVar = ', RemixAutoML:::CEP(XVar)))
+            print(paste0('Marginal = ', RemixAutoML:::CEP(Marginals)))
+            print(paste0('MarginalPlotType = ', RemixAutoML:::CEP(MarginalType)))
             print(paste0('Bins = ', RemixAutoML:::CEP(NumberBins)))
             print(paste0('ColorVariables = ', RemixAutoML:::CEP(GroupVars[[1L]])))
             print(paste0('SizeVar1 = ', RemixAutoML:::CEP(SizeVars)))
@@ -4612,6 +4661,8 @@ server <- function(input, output, session) {
             "RemixAutoML:::AutoPlotter(dt = data1, PlotType = ", RemixAutoML:::CEP(PlotType),
             ", YVar=", RemixAutoML:::CEP(YVar),
             ", XVar=", RemixAutoML:::CEP(XVar),
+            ", Marginal = ", RemixAutoML:::CEP(Marginals),
+            ", MarginalPlotType = ", RemixAutoML:::CEP(MarginalType),
             ", Bins=", RemixAutoML:::CEP(NumberBins),
             ", ColorVariables=", RemixAutoML:::CEP(GroupVars[[1L]]),
             ", SizeVar1=", RemixAutoML:::CEP(SizeVars),
@@ -4756,7 +4807,7 @@ server <- function(input, output, session) {
               if(PlotEngine == 'plotly') {
                 output$TrendPlotly <- plotly::renderPlotly({
                   shiny::req(PlotEngine == "plotly")
-                  p1 <- RemixAutoML:::PlotlyConversion(p1)
+                  RemixAutoML:::PlotlyConversion(p1)
                 })
               }
 

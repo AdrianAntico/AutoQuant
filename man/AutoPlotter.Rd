@@ -15,6 +15,8 @@ AutoPlotter(
   XMin = NULL,
   XMax = NULL,
   CorrelationMethod = "pearson",
+  Marginal = FALSE,
+  MarginalPlotType = "density",
   ColorVariables = NULL,
   SizeVar1 = "None",
   FacetVar1 = "None",
@@ -60,6 +62,12 @@ AutoPlotter(
 \item{XMin}{= input[['XMin']]}
 
 \item{XMax}{= input[['XMax']]}
+
+\item{CorrelationMethod}{= 'pearson'}
+
+\item{Marginal}{= Marginals}
+
+\item{MarginalPlotType}{= MarginalType}
 
 \item{ColorVariables}{= shiny::isolate(SelectedGroups())}
 

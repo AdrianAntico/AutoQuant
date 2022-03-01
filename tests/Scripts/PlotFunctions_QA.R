@@ -213,6 +213,9 @@ RemixAutoML:::BarPlot(
 
 # ----
 
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# Histogram Plot                            ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
 # Load packages
 library(RemixAutoML)
@@ -276,3 +279,65 @@ p1 <- RemixAutoML:::HistPlot(
 # Debug = FALSE
 # Bins
 
+# ----
+
+# ----
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+# ScatterPlot                               ----
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+# Load packages
+library(RemixAutoML)
+library(data.table)
+
+# Create data
+data <- RemixAutoML::FakeDataGenerator()
+
+# Build plot
+RemixAutoML::ScatterCopula(
+  data = data,
+  x_var = 'Independent_Variable1',
+  y_var = 'Independent_Variable2',
+  GroupVariable = NULL, #'Factor_1',
+  Marginals = FALSE,
+  MarginalType = 'density',
+  FacetCol = 'Factor_1',
+  FacetRow = NULL,
+  SizeVar1 = 'Independent_Variable1',
+  SampleCount = 100000L,
+  FitGam = FALSE,
+  color = "darkblue",
+  point_size = 0.50,
+  text_size = 12,
+  x_axis_text_angle = 35,
+  y_axis_text_angle = 0,
+  chart_color = "lightsteelblue1",
+  border_color = "darkblue",
+  text_color = "darkblue",
+  grid_color = "white",
+  background_color = "gray95",
+  legend_position = "bottom")
+
+# Step through function
+x_var = 'Independent_Variable1'
+y_var = 'Independent_Variable2'
+GroupVariable = 'Factor_1'
+Marginals = TRUE
+MarginalType = 'density'
+FacetCol = NULL # 'Factor_1'
+FacetRow = NULL
+SizeVar1 = 'Factor_2'
+SampleCount = 100000L
+FitGam = FALSE
+color = "darkblue"
+point_size = 0.50
+text_size = 12
+x_axis_text_angle = 35
+y_axis_text_angle = 0
+chart_color = "lightsteelblue1"
+border_color = "darkblue"
+text_color = "darkblue"
+grid_color = "white"
+background_color = "gray95"
+legend_position = "bottom"

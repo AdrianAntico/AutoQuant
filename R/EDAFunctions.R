@@ -186,6 +186,8 @@ PlotGUI <- function() {
 #' @param x_var Numeric variable
 #' @param y_var Numeric variable
 #' @param GroupVariable Color options
+#' @param Marginals FALSE
+#' @param MarginalType 'density' or 'histogram'. 'density' required if GroupVariable is not null
 #' @param FacetCol NULL or string
 #' @param FacetRow NULL or string
 #' @param SizeVar1 NULL. Use to size the dots by a variable
@@ -214,6 +216,8 @@ PlotGUI <- function() {
 #'   x_var = 'Independent_Variable1',
 #'   y_var = 'Independent_Variable2',
 #'   GroupVariable = NULL, #'Factor_1',
+#'   Marginals = FALSE,
+#'   MarginalType = 'density',
 #'   FacetCol = 'Factor_1',
 #'   FacetRow = NULL,
 #'   SizeVar1 = 'Independent_Variable1',
@@ -236,6 +240,8 @@ ScatterCopula <- function(data = NULL,
                           x_var = NULL,
                           y_var = NULL,
                           GroupVariable = NULL,
+                          Marginals = FALSE,
+                          MarginalType = 'density',
                           FacetCol = NULL,
                           FacetRow = NULL,
                           SizeVar1 = NULL,
@@ -300,6 +306,23 @@ ScatterCopula <- function(data = NULL,
   # Gam fit
   if(FitGam) original_scale_plot <- original_scale_plot + ggplot2::geom_smooth(method='gam')
 
+  # Add Marginals if Requested
+  if(Marginals && is.null(FacetRow) && is.null(FacetCol)) {
+    if(!is.null(GroupVariable)) {
+      original_scale_plot <- ggExtra::ggMarginal(
+        p = original_scale_plot,
+        type = tolower(MarginalType),
+        groupColour = TRUE,
+        groupFill = TRUE)
+    } else {
+      original_scale_plot <- ggExtra::ggMarginal(
+        original_scale_plot,
+        type = tolower(MarginalType),
+        groupColour = FALSE,
+        groupFill = FALSE)
+    }
+  }
+
   # Empirical Copula Scatter ----
   if(is.null(GroupVariable)) {
     copula_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = "Var2", y = "Var1")))
@@ -313,10 +336,8 @@ ScatterCopula <- function(data = NULL,
     copula_plot <- copula_plot + ggplot2::geom_point(size = point_size)
   }
   copula_plot <- copula_plot +
-    #ggplot2::geom_segment(ggplot2::aes(x = 0, xend = 1, y = 0, yend = 1), colour = "darkviolet", size = 0.25) +
     ggplot2::ggtitle(paste0("Copula: Pearson Corr: ", round(cop_Pearson, 3L), " :: Spearman Corr: ", round(cop_Spearman, 3L))) +
     ggplot2::labs(x = eval(x_var), y = eval(y_var), size = eval(SizeVar1), color = eval(GroupVariable[[1L]])) +
-    #ggplot2::xlab(label = x_var) + ggplot2::ylab(label = y_var) +
     ChartTheme(
       Size = text_size,
       AngleX = x_axis_text_angle,
@@ -339,6 +360,23 @@ ScatterCopula <- function(data = NULL,
 
   # Gam fit
   if(FitGam) copula_plot <- copula_plot + ggplot2::geom_smooth(method = "lm") + ggplot2::geom_smooth(method='gam')
+
+  # Add Marginals if Requested
+  if(Marginals && is.null(FacetRow) && is.null(FacetCol)) {
+    if(!is.null(GroupVariable)) {
+      copula_plot <- ggExtra::ggMarginal(
+        p = copula_plot,
+        type = tolower(MarginalType),
+        groupColour = TRUE,
+        groupFill = TRUE)
+    } else {
+      copula_plot <- ggExtra::ggMarginal(
+        copula_plot,
+        type = tolower(MarginalType),
+        groupColour = FALSE,
+        groupFill = FALSE)
+    }
+  }
 
   # Return
   return(list(ScatterPlot = original_scale_plot, CopulaPlot = copula_plot))

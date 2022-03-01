@@ -1185,6 +1185,71 @@ ShapAgg <- function(id = 'ShapAggContents',
           shiny::column(3L, shiny::uiOutput('ShapAggMethod4'))))))
 }
 
+#' @title MarginalInputs
+#'
+#' @description Display a dropdown button with MarginalInputs
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'MarginalContents'
+#' @param AppWidth = AppWidth
+#' @param LogoWidth = LogoWidth
+#' @param H3Color = H3Color
+#' @param H4Color = H4Color
+#' @param Right = FALSE
+#' @param Animate = TRUE
+#' @param Status = 'custom'
+#'
+#' @noRd
+MarginalInputs <- function(id='MarginalContents',
+                           AppWidth=AppWidth,
+                           LogoWidth=LogoWidth,
+                           H3Color=H3Color,
+                           H4Color=H4Color,
+                           Right=TRUE,
+                           Animate=TRUE,
+                           Status='custom') {
+
+  ns <- shiny::NS(id)
+  shiny::tagList(
+
+    # Marginals On / Off
+    RemixAutoML::BlankRow(AppWidth),
+    shiny::column(
+      width = 3L,
+      tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Marginal Plots'))),
+      shinyWidgets::dropdown(
+        right = Right, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, inputId = "MarginalOnOff", width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Add Marginal Plots')),
+        tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Add marginal plots for scatter and copula plots')),
+        RemixAutoML::BlankRow(AppWidth),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('Marginals1')),
+          shiny::column(3L, shiny::uiOutput('Marginals2')),
+          shiny::column(3L, shiny::uiOutput('Marginals3')),
+          shiny::column(3L, shiny::uiOutput('Marginals4'))))),
+
+    # Marginals Plot Type
+    shiny::column(
+      width = 3L,
+      tags$h4(tags$b(tags$span(style=paste0('color: ', H3Color, ';'), 'Marginal Plot Type'))),
+      shinyWidgets::dropdown(
+        right = Right, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, inputId = "MarginalPlots", width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Marginal Plot Type')),
+        tags$h4(tags$span(style=paste0('color: ', H4Color, ';'),'Select from density or histogram')),
+        RemixAutoML::BlankRow(AppWidth),
+        shiny::fluidRow(
+          width = AppWidth,
+          shiny::column(3L, shiny::uiOutput('MarginalType1')),
+          shiny::column(3L, shiny::uiOutput('MarginalType2')),
+          shiny::column(3L, shiny::uiOutput('MarginalType3')),
+          shiny::column(3L, shiny::uiOutput('MarginalType4'))))))
+}
+
+
+
 #' @title Plotter
 #'
 #' @description Replaces shiny::plotOutput and plotly::plotlyOutput

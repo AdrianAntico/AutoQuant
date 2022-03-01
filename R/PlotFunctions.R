@@ -1,8 +1,120 @@
+#' Automated Word Frequency and Word Cloud Creation
+#'
+#' This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
+#' @author Adrian Antico
+#' @family EDA
+#' @param data Source data table
+#' @param TextColName A string name for the column
+#' @param GroupColName Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)
+#' @param GroupLevel Must be set if GroupColName is defined. Set to cluster ID (or factor level)
+#' @param RemoveEnglishStopwords Set to TRUE to remove English stop words, FALSE to ignore
+#' @param Stemming Set to TRUE to run stemming on your text data
+#' @param StopWords Add your own stopwords, in vector format
+#' @examples
+#' \dontrun{
+#' data <- data.table::data.table(
+#' DESCR = c(
+#'   "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Gru",
+#'   "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Urkle",
+#'   "Urkle", "Urkle", "Urkle", "Urkle", "Urkle", "Urkle",
+#'   "Gru", "Gru", "Gru", "bears", "bears", "bears",
+#'   "bears", "bears", "bears", "smug", "smug", "smug", "smug",
+#'   "smug", "smug", "smug", "smug", "smug", "smug",
+#'   "smug", "smug", "smug", "smug", "smug", "eats", "eats",
+#'   "eats", "eats", "eats", "eats", "beats", "beats", "beats", "beats",
+#'   "beats", "beats", "beats", "beats", "beats", "beats",
+#'   "beats", "science", "science", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
+#'   "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
+#'   "Schrute", "Schrute", "Schrute", "Schrute", "Schrute",
+#'   "Schrute", "Schrute", "James", "James", "James", "James",
+#'   "James", "James", "James", "James", "James", "James",
+#'   "Halpert", "Halpert", "Halpert", "Halpert",
+#'   "Halpert", "Halpert", "Halpert", "Halpert"))
+#' data <- AutoWordFreq(
+#'   data,
+#'   TextColName = "DESCR",
+#'   GroupColName = NULL,
+#'   GroupLevel = NULL,
+#'   RemoveEnglishStopwords = FALSE,
+#'   Stemming = FALSE,
+#'   StopWords = c("Bla"))
+#' }
+#' @export
+AutoWordFreq <- function(data,
+                         TextColName = "DESCR",
+                         GroupColName = "ClusterAllNoTarget",
+                         GroupLevel = 0,
+                         RemoveEnglishStopwords = TRUE,
+                         Stemming = TRUE,
+                         StopWords = c("bla",
+                                       "bla2")) {
+  # Check data.table
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
+  # Ensure stringCol is character (not factor)
+  if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
+
+  # Prepare data
+  if(is.null(GroupColName)) {
+    desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
+  } else {
+    if(!is.character(data[[GroupColName]])) {
+      data[, eval(GroupColName) := as.character(get(GroupColName))]
+      desc <- tm::Corpus(tm::VectorSource(data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]]))
+    }
+  }
+
+  # Clean text
+  toSpace <- tm::content_transformer(function(x , pattern) gsub(pattern, " ", x))
+  text <- tm::tm_map(desc, toSpace, "/")
+  text <- tm::tm_map(text, toSpace, "@")
+  text <- tm::tm_map(text, toSpace, "\\|")
+
+  # Convert the text to lower case
+  text <- tm::tm_map(text, tm::content_transformer(tolower))
+
+  # Remove numbers
+  text <- tm::tm_map(text, tm::removeNumbers)
+
+  # Remove english common stopwords
+  if(RemoveEnglishStopwords)
+    text <- tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
+
+  # specify your stopwords as a character vector
+  text <- tm::tm_map(text, tm::removeWords, StopWords)
+
+  # Remove punctuations
+  text <- tm::tm_map(text, tm::removePunctuation)
+
+  # Eliminate extra white spaces
+  text <- tm::tm_map(text, tm::stripWhitespace)
+
+  # Text stemming
+  if(Stemming) text <- tm::tm_map(text, tm::stemDocument)
+
+  # Finalize
+  dtm <- tm::TermDocumentMatrix(text)
+  m <- as.matrix(dtm)
+  v <- sort(rowSums(m), decreasing = TRUE)
+  d <- data.table::data.table(word = names(v), freq = v)
+  print(head(d, 10))
+
+  # Word Cloud
+  print(
+    wordcloud::wordcloud(
+      words = d$word,
+      freq = d$freq,
+      min.freq = 1,
+      max.words = 200,
+      random.order = FALSE,
+      rot.per = 0.35,
+      colors = RColorBrewer::brewer.pal(8, "Dark2")))
+
+  # Return
+  return(d)
+}
 
 # Correlation Matrix Updates: https://okanbulut.github.io/bigdata/visualizing-big-data.html
-
-
-
 
 #' @title PlotlyConversion
 #'
@@ -1397,6 +1509,9 @@ HistPlot <- function(data = NULL,
 #' @param YMax = input[['YMax']]
 #' @param XMin = input[['XMin']]
 #' @param XMax = input[['XMax']]
+#' @param CorrelationMethod = 'pearson'
+#' @param Marginal = Marginals
+#' @param MarginalPlotType = MarginalType
 #' @param ColorVariables = shiny::isolate(SelectedGroups())
 #' @param SizeVar1 = input[['SizeVar1']]
 #' @param FacetVar1 = shiny::isolate(input[['FacetVar1']])
@@ -1432,6 +1547,8 @@ AutoPlotter <- function(dt = NULL,
                         XMin = NULL,
                         XMax = NULL,
                         CorrelationMethod = 'pearson',
+                        Marginal = FALSE,
+                        MarginalPlotType = 'density',
                         ColorVariables = NULL,
                         SizeVar1 = 'None',
                         FacetVar1 = 'None',
@@ -1751,85 +1868,106 @@ AutoPlotter <- function(dt = NULL,
       data = dt,
       x_var = xxx,
       y_var = yyy,
+      Marginals = Marginal,
+      MarginalType = MarginalPlotType,
       GroupVariable = ColorVariables,
       FacetCol = FacetVar2,
       FacetRow = FacetVar1,
       SizeVar1 = SizeVar1,
       SampleCount = 100000L,
-      FitGam = as.logical(GamFitScatter))
+      FitGam = as.logical(GamFitScatter),
+      color = "darkblue",
+      point_size = 0.50,
+      text_size = 12,
+      x_axis_text_angle = 35,
+      y_axis_text_angle = 0,
+      chart_color = "lightsteelblue1",
+      border_color = "darkblue",
+      text_color = "darkblue",
+      grid_color = "white",
+      background_color = "gray95",
+      legend_position = "bottom")
 
     # Modify by plot type
-    if(Debug) print('Modify by plot type')
-    if(PlotType %chin% 'Scatter') {
-      p1 <- Output[['ScatterPlot']]
-      p1 <- p1 + ggplot2::labs(
-        title = paste0('Scatter Plot'),
-        subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
-                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
-        caption = 'RemixAutoML')
-      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
+    if(!Marginal) {
+      if(Debug) print('Modify by plot type')
+      if(PlotType %chin% 'Scatter') {
+        p1 <- Output[['ScatterPlot']]
+        p1 <- p1 + ggplot2::labs(
+          title = paste0('Scatter Plot'),
+          subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                            "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
+          caption = 'RemixAutoML')
+        p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
 
-    } else if(PlotType %chin% 'Copula') {
+      } else if(PlotType %chin% 'Copula') {
 
-      p1 <- Output[['CopulaPlot']]
-      p1 <- p1 + ggplot2::labs(
-        title = paste0('Empirical Copula Plot'),
-        subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
-                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
-        caption = 'RemixAutoML')
-      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
-    }
+        p1 <- Output[['CopulaPlot']]
+        p1 <- p1 + ggplot2::labs(
+          title = paste0('Empirical Copula Plot'),
+          subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                            "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
+          caption = 'RemixAutoML')
+        p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
+      }
 
-    # Tick Marks
-    if(Debug) print('YTicks Update')
-    if('Percentiles' %in% YTicks) {
-      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-    } else if('Every 5th percentile' %in% YTicks) {
-      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
-    } else if('Deciles' %in% YTicks) {
-      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
-    } else if('Quantiles' %in% YTicks) {
-      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
-    } else if('Quartiles' %in% YTicks) {
-      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
+      # Tick Marks
+      if(Debug) print('YTicks Update')
+      if('Percentiles' %in% YTicks) {
+        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      } else if('Every 5th percentile' %in% YTicks) {
+        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
+      } else if('Deciles' %in% YTicks) {
+        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
+      } else if('Quantiles' %in% YTicks) {
+        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
+      } else if('Quartiles' %in% YTicks) {
+        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
+      } else {
+        y_vals <- YTicks
+      }
+
+      if(Debug) print('XTicks Update')
+      if('Percentiles' %in% XTicks) {
+        x_vals <- dt[, quantile(round(get(XVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      } else if('Every 5th percentile' %in% XTicks) {
+        x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
+      } else if('Deciles' %in% XTicks) {
+        x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
+      } else if('Quantiles' %in% XTicks) {
+        x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
+      } else if('Quartiles' %in% XTicks) {
+        x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+        x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
+      } else {
+        x_vals <- XTicks
+      }
+
+      if(Debug) print('Update X and Y Ticks')
+      if(!'Default' %in% XTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
+      if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+
+      # Add ChartTheme
+      if(Debug) print('ChartTheme')
+      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
+
+      # Limit Y
+      if(Debug) print('Limit Y'); print(PlotType)
+      if(PlotType == 'Scatter' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
     } else {
-      y_vals <- YTicks
+      if(PlotType %chin% 'Scatter') {
+        p1 <- Output[['ScatterPlot']]
+      } else {
+        p1 <- Output[['CopulaPlot']]
+      }
     }
-
-    if(Debug) print('XTicks Update')
-    if('Percentiles' %in% XTicks) {
-      x_vals <- dt[, quantile(round(get(XVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-    } else if('Every 5th percentile' %in% XTicks) {
-      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
-    } else if('Deciles' %in% XTicks) {
-      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
-    } else if('Quantiles' %in% XTicks) {
-      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
-    } else if('Quartiles' %in% XTicks) {
-      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
-    } else {
-      x_vals <- XTicks
-    }
-
-    if(Debug) print('Update X and Y Ticks')
-    if(!'Default' %in% XTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
-    if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
-
-    # Add ChartTheme
-    if(Debug) print('ChartTheme')
-    p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
-
-    # Limit Y
-    if(Debug) print('Limit Y'); print(PlotType)
-    if(PlotType == 'Scatter' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
 
     # Return plot
     return(eval(p1))

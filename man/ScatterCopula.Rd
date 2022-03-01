@@ -9,6 +9,8 @@ ScatterCopula(
   x_var = NULL,
   y_var = NULL,
   GroupVariable = NULL,
+  Marginals = FALSE,
+  MarginalType = "density",
   FacetCol = NULL,
   FacetRow = NULL,
   SizeVar1 = NULL,
@@ -35,6 +37,10 @@ ScatterCopula(
 \item{y_var}{Numeric variable}
 
 \item{GroupVariable}{Color options}
+
+\item{Marginals}{FALSE}
+
+\item{MarginalType}{'density' or 'histogram'. 'density' required if GroupVariable is not null}
 
 \item{FacetCol}{NULL or string}
 
@@ -82,6 +88,8 @@ RemixAutoML::ScatterCopula(
   x_var = 'Independent_Variable1',
   y_var = 'Independent_Variable2',
   GroupVariable = NULL, #'Factor_1',
+  Marginals = FALSE,
+  MarginalType = 'density',
   FacetCol = 'Factor_1',
   FacetRow = NULL,
   SizeVar1 = 'Independent_Variable1',

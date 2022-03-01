@@ -89,6 +89,72 @@ HistPlot(
 \description{
 Build a histogram plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
 }
+\examples{
+\dontrun{
+# Load packages
+library(RemixAutoML)
+library(data.table)
+
+# Load data
+data <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'))
+
+# Run function
+p1 <- RemixAutoML:::HistPlot(
+  data = data,
+  XVar = NULL,
+  YVar = 'Weekly_Sales',
+  ColorVar = 'Region',
+  FacetVar1 = 'Store',
+  FacetVar2 = 'Dept',
+  SampleSize = 1000000L,
+  Bins = 20,
+  FillColor = 'gray',
+  YTicks = 'Default',
+  XTicks = 'Default',
+  TextSize = 12,
+  AngleX = 90,
+  AngleY = 0,
+  ChartColor = 'lightsteelblue1',
+  BorderColor = 'darkblue',
+  TextColor = 'darkblue',
+  GridColor = 'white',
+  BackGroundColor = 'gray95',
+  SubTitleColor = 'blue',
+  LegendPosition = 'bottom',
+  LegendBorderSize = 0.50,
+  LegendLineType = 'solid',
+  Debug = FALSE)
+
+# Step through function
+# # plotly::ggplotly(p1)
+# XVar = NULL
+# YVar = 'Weekly_Sales'
+# AggMethod = 'mean'
+# ColorVar = 'Region'
+# FacetVar1 = NULL
+# FacetVar2 = NULL
+# Bins = 20
+# SampleSize = 1000000L
+# FillColor = 'gray'
+# YTicks = 'Default'
+# XTicks = 'Default'
+# TextSize = 12
+# AngleX = 90
+# AngleY = 0
+# ChartColor = 'lightsteelblue1'
+# BorderColor = 'darkblue'
+# TextColor = 'darkblue'
+# GridColor = 'white'
+# BackGroundColor = 'gray95'
+# SubTitleColor = 'blue'
+# LegendPosition = 'bottom'
+# LegendBorderSize = 0.50
+# LegendLineType = 'solid'
+# Debug = FALSE
+# Bins
+}
+
+}
 \seealso{
 Other Graphics: 
 \code{\link{AddFacet}()},
