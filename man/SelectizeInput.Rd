@@ -6,6 +6,7 @@
 \usage{
 SelectizeInput(
   InputID = "",
+  Update = FALSE,
   Label = "",
   Choices = NULL,
   SelectedDefault = NULL,
@@ -17,6 +18,8 @@ SelectizeInput(
 }
 \arguments{
 \item{InputID}{Feeds ProjectList and inputId. Argument saved in ProjectList}
+
+\item{Update}{FALSE. Set to TRUE to run updateSelectizeInput}
 
 \item{Label}{Feeds label}
 
@@ -41,7 +44,7 @@ SelectizeInput automatically builds a picker input with tryCatch's and ProjectLi
 \examples{
 \dontrun{
 output$TS_CARMA_HolidayMovingAverages <- renderUI({
-  RemixAutoML::SelectizeInput(InputID = "TS_CARMA_HolidayMovingAverages", Label = "Select Holiday Count MA's", Choices = as.character(0:50),
+  RemixAutoML::SelectizeInput(InputID = "TS_CARMA_HolidayMovingAverages", Update = FALSE, Label = "Select Holiday Count MA's", Choices = as.character(0:50),
                            SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
 }
 }

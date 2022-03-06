@@ -6,7 +6,6 @@
 #' @family GUI
 #'
 #' @param AzureCredsFile Path to your credentials file
-#' @param PlotObjectHome NULL
 #' @param HeaderColor 'black', 'blue', 'purple', 'green', 'red', 'yellow'
 #' @param AppWidth Width of boxes
 #' @param GroupVarsBoxColor Choose from 'red', 'yellow', 'aqua', 'blue', 'light-blue', 'green', 'navy', 'teal', 'olive', 'lime', 'orange', 'fuchsia', 'purple', 'maroon', 'black'
@@ -24,6 +23,7 @@
 #' @param DockerPathToData bla
 #' @param UserName_Password_DT NULL. In order to enforce authentication, supply a data.table with columns 'UserName' which contains the names of your users and 'Password' which contains the acceptable passwords. E.g. data.table::data.table(UserName = c('Adrian Antico', 'Guest'), Password = c('Password1', 'Password2')). Case sensitivity applies.
 #' @param RunMode = 'package', 'local'
+#' @param PlotObjectHome NULL
 #' @param Debug FALSE
 #'
 #' @examples
@@ -34,7 +34,6 @@
 #'
 #' # Run App
 #' # RemixAutoML::AppsPlotting(
-#' #   PlotObjectHome = NULL,
 #' #   HeaderColor = 'black',
 #' #   AppWidth = 12L,
 #' #   LogoWidth = '1000px',
@@ -52,6 +51,7 @@
 #' #   Docker = FALSE,
 #' #   Browser = FALSE,
 #' #   UserName_Password_DT = NULL,
+#' #   PlotObjectHome = NULL,
 #' #   Debug = FALSE)
 #' #
 #' # Debug = TRUE
@@ -77,9 +77,8 @@
 #'
 #' @export
 AppsPlotting <- function(AzureCredsFile = NULL,
-                         PlotObjectHome = NULL,
                          HeaderColor = 'blue',
-                         AppWidth = 8L,
+                         AppWidth = 12L,
                          LogoWidth = '750px',
                          LogoHeight = '100px',
                          GroupVarsBoxColor = 'navy',
@@ -97,6 +96,7 @@ AppsPlotting <- function(AzureCredsFile = NULL,
                          DockerPathToData = NULL,
                          UserName_Password_DT = NULL,
                          RunMode = 'package',
+                         PlotObjectHome = NULL,
                          Debug = FALSE) {
 
   # Stop criteria

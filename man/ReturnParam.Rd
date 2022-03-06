@@ -8,7 +8,7 @@ ReturnParam(
   xx = NULL,
   VarName = NULL,
   Type = "numeric",
-  Default = 1,
+  Default = NULL,
   Switch = TRUE,
   Debug = FALSE
 )

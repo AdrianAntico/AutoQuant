@@ -1,11 +1,11 @@
-
-
 #' @title DataTable
 #'
 #' @description Fully loaded DT::datatable() with args prefilled
 #'
 #' @author Adrian Antico
 #' @family Shiny
+#'
+#' @param data source data.table
 #'
 #' @examples
 #' \dontrun{
@@ -39,21 +39,33 @@
 #' RemixAutoML::DataTable(data)
 #' ````
 #'
+#' # Shiny Usage
+#' output$Table <- shiny::renderUI({RemixAutoML::DataTable(data)})
 #'
 #' }
 #'
 #' @export
 DataTable <- function(data) {
   DT::datatable(
-    data = data,
+    data,
     filter = 'top',
     editable = TRUE,
-    extensions = c('Buttons','ColReorder','Select'),
+    rownames = FALSE,
+    extensions = c('Buttons','ColReorder'), # Only usable in Rmarkdown  'Select'),
     options = list(
       select = list(style = 'os', items = 'row'),
       dom = 'Bfrtip',
-      buttons = c('copy', 'csv', 'excel', 'pdf', 'selectRows', 'selectColumns', 'selectCells', 'selectAll', 'selectNone'),
+      buttons = c('copy', 'csv', 'excel', 'pdf'), # Only usable in Rmarkdown 'selectRows', 'selectColumns', 'selectCells', 'selectAll', 'selectNone'),
       colReorder = TRUE,
+      autoWidth = TRUE,
+      selection = list(mode = 'multiple', target = 'row+column'), # 'row', 'column'
+      style = 'bootstrap', # 'auto', 'default', 'bootstrap', or 'bootstrap4'
+      columnDefs = list(list(className = 'dt-center', targets = 0:(ncol(data)-1L))),
+      targets = "_all",
+      scrollX = TRUE,
+      fillContainer = TRUE,
+      autoHideNavigation = TRUE,
+      lengthMenu = c(5, 30, 50),
       pageLength = 10))
 }
 
@@ -983,7 +995,7 @@ AssignData <- function(data, env = globalenv()) {
 #' }
 #' @return Adds a row to your UI of width W
 #' @export
-BlankRow <- function(W) {
+BlankRow <- function(W = 12) {
   shiny::fluidRow(shiny::column(width = W, htmltools::tags$br()))
 }
 
@@ -1125,7 +1137,7 @@ StoreArgs <- function(input,
 ReturnParam <- function(xx = NULL,
                         VarName = NULL,
                         Type = 'numeric',
-                        Default = 1,
+                        Default = NULL,
                         Switch = TRUE,
                         Debug = FALSE) {
 
@@ -1155,6 +1167,7 @@ ReturnParam <- function(xx = NULL,
     if(Debug) print("any(xx %in% '') -> TRUE")
     xx <- xx[!xx %in% ""]
     if(Debug) {print(xx); print("any(xx %in% '') -> TRUE END")}
+    return(Default)
   }
 
   # 'No Data Loaded !!'
@@ -1166,6 +1179,7 @@ ReturnParam <- function(xx = NULL,
     if(Debug) print("any(xx %in% 'No Data Loaded !!') -> TRUE")
     xx <- xx[!xx %in% 'No Data Loaded !!']
     if(Debug) {print(xx); print("any(xx %in% 'No Data Loaded !!') -> TRUE END")}
+    return(Default)
   }
 
   # Type == numeric
@@ -1480,6 +1494,7 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #' @family Shiny
 #'
 #' @param InputID Feeds ProjectList and inputId. Argument saved in ProjectList
+#' @param Update FALSE. Set to TRUE to run updateSelectizeInput
 #' @param Label Feeds label
 #' @param Choices Feeds choices
 #' @param SelectedDefault Feeds selected for cases where ProjectList has a null element
@@ -1491,12 +1506,13 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #' @examples
 #' \dontrun{
 #' output$TS_CARMA_HolidayMovingAverages <- renderUI({
-#'   RemixAutoML::SelectizeInput(InputID = "TS_CARMA_HolidayMovingAverages", Label = "Select Holiday Count MA's", Choices = as.character(0:50),
+#'   RemixAutoML::SelectizeInput(InputID = "TS_CARMA_HolidayMovingAverages", Update = FALSE, Label = "Select Holiday Count MA's", Choices = as.character(0:50),
 #'                            SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
 #' }
 #' @return SelectizeInput object for server.R to go into renderUI({SelectizeInput()})
 #' @export
 SelectizeInput <- function(InputID = "",
+                           Update = FALSE,
                            Label = "",
                            Choices = NULL,
                            SelectedDefault = NULL,
@@ -1507,28 +1523,31 @@ SelectizeInput <- function(InputID = "",
   Options <- list()
   Options[['allowEmptyOption']] <- TRUE
   if(Multiple) Options[['maxItems']] <- MaxVars else Options[['maxItems']] <- 1
-  #if(Multiple) Options[['maxOptions']] <- 5000 else Options[['maxOptions']] <- MaxVars
   Options[['closeAfterSelect']] <- CloseAfterSelect
-
   return(
     if(exists("ProjectList")) {
       tryCatch({
         if(!is.null(ProjectList[[InputID]])) {
-          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
+          if(!Update) {
+            shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
+          } else {
+            shiny::updateSelectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
+          }
         } else {
-          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)
+          if(!Update) {
+            shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)
+          } else {
+            shiny::updateSelectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)
+          }
         }}, error = function(x) shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple))
     } else {
-      if(Debug) {
-        print(InputID)
-        print(Label)
-        print(c(unique(c("", Choices))))
-        print(SelectedDefault)
-        print(Options)
-        print(Multiple)
-      }
+      if(Debug) {print(InputID); print(Label); print(c(unique(c("", Choices)))); print(SelectedDefault); print(Options); print(Multiple)}
       tryCatch({
-        shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(Choices)), selected = SelectedDefault, options = Options, multiple = Multiple)},
+        if(!Update) {
+          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(Choices)), selected = SelectedDefault, options = Options, multiple = Multiple)
+        } else {
+          shiny::updateSelectizeInput(inputId = InputID, label = Label, choices = c(unique(Choices)), selected = SelectedDefault, options = Options, multiple = Multiple)
+        }},
         error = function(x) {
           shiny::selectizeInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
         })
@@ -2182,3 +2201,30 @@ TimeSeriesMelt <- function(data,
   # Return
   return(data)
 }
+
+
+# # Scatterplot / copula plot marginals
+# output$Marginals1 <- shiny::renderUI({
+#   RemixAutoML::SelectizeInput(InputID = 'Marginals1', Label = tags$span(style='color: blue;', 'Marginals 1'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+# })
+# output$Marginals2 <- shiny::renderUI({
+#   RemixAutoML::SelectizeInput(InputID = 'Marginals2', Label = tags$span(style='color: blue;', 'Marginals 2'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+# })
+# output$Marginals3 <- shiny::renderUI({
+#   RemixAutoML::SelectizeInput(InputID = 'Marginals3', Label = tags$span(style='color: blue;', 'Marginals 3'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+# })
+# output$Marginals4 <- shiny::renderUI({
+#   RemixAutoML::SelectizeInput(InputID = 'Marginals4', Label = tags$span(style='color: blue;', 'Marginals 4'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+# })
+# output$MarginalType1 <- shiny::renderUI({
+#   RemixAutoML::SelectizeInput(InputID = 'MarginalType1', Label = tags$span(style='color: blue;', 'Marginal Type 1'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+# })
+# output$MarginalType2 <- shiny::renderUI({
+#   RemixAutoML::SelectizeInput(InputID = 'MarginalType2', Label = tags$span(style='color: blue;', 'Marginal Type 2'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+# })
+# output$MarginalType3 <- shiny::renderUI({
+#   RemixAutoML::SelectizeInput(InputID = 'MarginalType3', Label = tags$span(style='color: blue;', 'Marginal Type 3'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+# })
+# output$MarginalType4 <- shiny::renderUI({
+#   RemixAutoML::SelectizeInput(InputID = 'MarginalType4', Label = tags$span(style='color: blue;', 'Marginal Type 4'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+# })

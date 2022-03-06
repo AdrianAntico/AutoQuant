@@ -17,6 +17,7 @@ PercRank <- function(data, ColNames, GroupVars = NULL, Granularity = 0.001) {
   } else {
     data[, paste0(ColNames, '_PercRank') := lapply(.SD, FUN = function(x) data.table::frank(x) * (1 / Granularity) / .N * Granularity), .SDcols = c(ColNames), by = c(eval(GroupVars))]
   }
+  data
 }
 
 #' @title Interact

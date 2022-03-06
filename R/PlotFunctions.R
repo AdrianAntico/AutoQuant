@@ -100,15 +100,14 @@ AutoWordFreq <- function(data,
   print(head(d, 10))
 
   # Word Cloud
-  print(
-    wordcloud::wordcloud(
-      words = d$word,
-      freq = d$freq,
-      min.freq = 1,
-      max.words = 200,
-      random.order = FALSE,
-      rot.per = 0.35,
-      colors = RColorBrewer::brewer.pal(8, "Dark2")))
+  xx <- wordcloud::wordcloud(
+    words = d$word,
+    freq = d$freq,
+    min.freq = 1,
+    max.words = 200,
+    random.order = FALSE,
+    rot.per = 0.35,
+    colors = RColorBrewer::brewer.pal(8, "Dark2"))
 
   # Return
   return(d)
@@ -1617,7 +1616,7 @@ AutoPlotter <- function(dt = NULL,
   if(tolower(PlotType) == 'boxplot') {
     p1 <- RemixAutoML::BoxPlot(
       data = dt,
-      XVar = XVar,
+      XVar = if(!is.null(XVar)) XVar else if(!is.null(ColorVariables)) ColorVariables[1L] else NULL,
       YVar = YVar,
       FacetVar1 = FacetVar1,
       FacetVar2 = FacetVar2,
@@ -1655,7 +1654,7 @@ AutoPlotter <- function(dt = NULL,
   if(tolower(PlotType) == 'violinplot') {
     p1 <- RemixAutoML::ViolinPlot(
       data = dt,
-      XVar = XVar,
+      XVar = if(!is.null(XVar)) XVar else if(!is.null(ColorVariables)) ColorVariables[1L] else NULL,
       YVar = YVar,
       FacetVar1 = FacetVar1,
       FacetVar2 = FacetVar2,
@@ -1725,7 +1724,7 @@ AutoPlotter <- function(dt = NULL,
   }
 
   # Histogram
-  if(tolower(PlotType) %chin% 'histogram') {
+  if(tolower(PlotType) == 'histogram') {
     p1 <- RemixAutoML::HistPlot(
       data = dt,
       XVar = XVar,

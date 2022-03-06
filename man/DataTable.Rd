@@ -6,6 +6,9 @@
 \usage{
 DataTable(data)
 }
+\arguments{
+\item{data}{source data.table}
+}
 \description{
 Fully loaded DT::datatable() with args prefilled
 }
@@ -41,6 +44,8 @@ setTimeout(function() {
 RemixAutoML::DataTable(data)
 ````
 
+# Shiny Usage
+output$Table <- shiny::renderUI({RemixAutoML::DataTable(data)})
 
 }
 

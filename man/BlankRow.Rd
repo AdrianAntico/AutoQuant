@@ -4,7 +4,7 @@
 \alias{BlankRow}
 \title{BlankRow}
 \usage{
-BlankRow(W)
+BlankRow(W = 12)
 }
 \arguments{
 \item{W}{width of column}

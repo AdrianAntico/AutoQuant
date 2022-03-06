@@ -6,9 +6,8 @@
 \usage{
 AppsPlotting(
   AzureCredsFile = NULL,
-  PlotObjectHome = NULL,
   HeaderColor = "blue",
-  AppWidth = 8L,
+  AppWidth = 12L,
   LogoWidth = "750px",
   LogoHeight = "100px",
   GroupVarsBoxColor = "navy",
@@ -26,13 +25,12 @@ AppsPlotting(
   DockerPathToData = NULL,
   UserName_Password_DT = NULL,
   RunMode = "package",
+  PlotObjectHome = NULL,
   Debug = FALSE
 )
 }
 \arguments{
 \item{AzureCredsFile}{Path to your credentials file}
-
-\item{PlotObjectHome}{NULL}
 
 \item{HeaderColor}{'black', 'blue', 'purple', 'green', 'red', 'yellow'}
 
@@ -68,6 +66,8 @@ AppsPlotting(
 
 \item{RunMode}{= 'package', 'local'}
 
+\item{PlotObjectHome}{NULL}
+
 \item{Debug}{FALSE}
 }
 \description{
@@ -81,7 +81,6 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 
 # Run App
 # RemixAutoML::AppsPlotting(
-#   PlotObjectHome = NULL,
 #   HeaderColor = 'black',
 #   AppWidth = 12L,
 #   LogoWidth = '1000px',
@@ -99,6 +98,7 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 #   Docker = FALSE,
 #   Browser = FALSE,
 #   UserName_Password_DT = NULL,
+#   PlotObjectHome = NULL,
 #   Debug = FALSE)
 #
 # Debug = TRUE
