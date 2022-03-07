@@ -4278,8 +4278,6 @@ server <- function(input, output, session) {
             print(RemixAutoML:::CEPP(PlotType))
             print(paste0('YVar = ', RemixAutoML:::CEP(YVar)))
             print(paste0('XVar = ', RemixAutoML:::CEP(XVar)))
-            # print(paste0('Marginal = ', RemixAutoML:::CEP(Marginals)))
-            # print(paste0('MarginalPlotType = ', RemixAutoML:::CEP(MarginalType)))
             print(paste0('Bins = ', RemixAutoML:::CEP(NumberBins)))
             print(paste0('ColorVariables = ', RemixAutoML:::CEP(GroupVars[[1L]])))
             print(paste0('SizeVar1 = ', RemixAutoML:::CEP(SizeVars)))

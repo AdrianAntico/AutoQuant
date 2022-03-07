@@ -450,51 +450,57 @@ CorrMatrixPlot <- function(data = NULL,
                            LegendLineType = 'solid',
                            Debug = FALSE) {
 
+  p <- cor(data[, .SD, .SDcols = c(CorrVars)])
+  p1 <- heatmaply::heatmaply_cor(
+    p,
+    xlab = "Features",
+    ylab = "Features",
+    k_col = 2,
+    k_row = 2)
+
   # Cap number of records
-  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
-
-  # Create correlation matrix
-  CorrMatrix <- cor(data[, .SD, .SDcols = c(CorrVars)], use = 'pairwise.complete.obs')
-  colnames(CorrMatrix) <- rownames(CorrMatrix) <- substr(rownames(CorrMatrix), 1L, DimnamesMaxNChar)
-
-  # Create plot
-  options(warn = -1)
-  p1 <- suppressMessages(CorrMatrixPlotBase(
-    x = CorrMatrix,
-    method = 'square',
-    type = 'upper',
-    lab = TRUE,
-    lab_col = 'white',
-    lab_size = 5.5,
-    Diag = FALSE,
-    colors = c('darkred','white','darkblue'),
-    outline.color = 'gray50'))
-  options(warn = 1)
-
-  # Add ChartTheme
-  if(Debug) print('ChartTheme')
-  p1 <- p1 + RemixAutoML::ChartTheme(
-    Size = TextSize,
-    AngleX = AngleX,
-    AngleY = AngleY,
-    ChartColor = ChartColor,
-    BorderColor = BorderColor,
-    TextColor = TextColor,
-    GridColor = GridColor,
-    BackGroundColor = BackGroundColor,
-    SubTitleColor = SubTitleColor,
-    LegendPosition = 'top',
-    LegendBorderSize = LegendBorderSize,
-    LegendLineType = LegendLineType)
-
-  # Make legend thinnier and longer than default
-  p1 <- p1 + ggplot2::theme(legend.position = 'none')
-  #p1 <- p1 + ggplot2::theme(legend.key.width = ggplot2::unit(2, 'cm'))
-  #p1 <- p1 + ggplot2::theme(legend.key.height = ggplot2::unit(0.60, 'cm'))
-
-  # Labels / Title / Caption
-  p1 <- p1 + ggplot2::xlab(label = NULL) + ggplot2::ylab(NULL)
-  p1 <- p1 + ggplot2::labs(title = paste0('Correlation Matrix with Correl Method: ', CorrMethod), caption = 'RemixAutoML')
+  # if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+  #
+  # # Create correlation matrix
+  # CorrMatrix <- cor(data[, .SD, .SDcols = c(CorrVars)], use = 'pairwise.complete.obs')
+  # colnames(CorrMatrix) <- rownames(CorrMatrix) <- substr(rownames(CorrMatrix), 1L, DimnamesMaxNChar)
+  #
+  # # Create plot
+  # options(warn = -1)
+  # p1 <- suppressMessages(CorrMatrixPlotBase(
+  #   x = CorrMatrix,
+  #   method = 'square',
+  #   type = 'upper',
+  #   lab = TRUE,
+  #   lab_col = 'white',
+  #   lab_size = 5.5,
+  #   Diag = FALSE,
+  #   colors = c('darkred','white','darkblue'),
+  #   outline.color = 'gray50'))
+  # options(warn = 1)
+  #
+  # # Add ChartTheme
+  # if(Debug) print('ChartTheme')
+  # p1 <- p1 + RemixAutoML::ChartTheme(
+  #   Size = TextSize,
+  #   AngleX = AngleX,
+  #   AngleY = AngleY,
+  #   ChartColor = ChartColor,
+  #   BorderColor = BorderColor,
+  #   TextColor = TextColor,
+  #   GridColor = GridColor,
+  #   BackGroundColor = BackGroundColor,
+  #   SubTitleColor = SubTitleColor,
+  #   LegendPosition = 'top',
+  #   LegendBorderSize = LegendBorderSize,
+  #   LegendLineType = LegendLineType)
+  #
+  # # Make legend thinnier and longer than default
+  # p1 <- p1 + ggplot2::theme(legend.position = 'none')
+  #
+  # # Labels / Title / Caption
+  # p1 <- p1 + ggplot2::xlab(label = NULL) + ggplot2::ylab(NULL)
+  # p1 <- p1 + ggplot2::labs(title = paste0('Correlation Matrix with Correl Method: ', CorrMethod), caption = 'RemixAutoML')
 
   # Return plot
   return(eval(p1))
