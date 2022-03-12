@@ -7,6 +7,7 @@
 PostGRE_AppendData(
   data = NULL,
   TableName = NULL,
+  Append = FALSE,
   Connection = NULL,
   CloseConnection = FALSE,
   Host = "localhost",
@@ -18,6 +19,8 @@ PostGRE_AppendData(
 }
 \arguments{
 \item{data}{Source data.table}
+
+\item{Append}{Set to TRUE to append data, FALSE to overwrite data}
 
 \item{Connection}{db connection}
 
@@ -40,9 +43,11 @@ PostGRE_AppendData get data from a database table
 \dontrun{
 RemixAutoML::PostGRE_AppendData(
   data = data,
+  TableName = 'somename',
+  Append = FALSE,
   CloseConnection = FALSE,
   Host = 'localhost',
-  DBName = 'Testing',
+  DBName = 'RemixAutoML',
   User = 'postgres',
   Port = 5432,
   Password = 'Aa...')

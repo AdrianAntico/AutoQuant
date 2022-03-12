@@ -888,6 +888,7 @@ PostGRE_Query <- function(Query = NULL,
 #' @param data Source data.table
 #' @param Connection db connection
 #' @param CloseConnection = FALSE
+#' @param Append Set to TRUE to append data, FALSE to overwrite data
 #' @param Host If Connection is NULL then this must be supplied. host
 #' @param DBName If Connection is NULL then this must be supplied. dbname
 #' @param User If Connection is NULL then this must be supplied. user
@@ -898,9 +899,11 @@ PostGRE_Query <- function(Query = NULL,
 #' \dontrun{
 #' RemixAutoML::PostGRE_AppendData(
 #'   data = data,
+#'   TableName = 'somename',
+#'   Append = FALSE,
 #'   CloseConnection = FALSE,
 #'   Host = 'localhost',
-#'   DBName = 'Testing',
+#'   DBName = 'RemixAutoML',
 #'   User = 'postgres',
 #'   Port = 5432,
 #'   Password = 'Aa...')
@@ -917,6 +920,7 @@ PostGRE_Query <- function(Query = NULL,
 #' @export
 PostGRE_AppendData <- function(data = NULL,
                                TableName = NULL,
+                               Append = FALSE,
                                Connection = NULL,
                                CloseConnection = FALSE,
                                Host = 'localhost',
@@ -941,7 +945,7 @@ PostGRE_AppendData <- function(data = NULL,
     conn = Connection,
     name = DBI::dbQuoteIdentifier(conn = Connection, x = TableName),
     value = data,
-    append = TRUE,
+    append = Append,
     row.names = FALSE,
     overwrite = FALSE)
   if(CloseConnection) {
