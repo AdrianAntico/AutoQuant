@@ -947,7 +947,7 @@ PostGRE_AppendData <- function(data = NULL,
     value = data,
     append = Append,
     row.names = FALSE,
-    overwrite = FALSE)
+    overwrite = if(Append) FALSE else TRUE)
   if(CloseConnection) {
     suppressWarnings(DBI::dbDisconnect(Connection))
     return(NULL)

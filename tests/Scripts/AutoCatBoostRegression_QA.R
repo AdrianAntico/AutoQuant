@@ -14,17 +14,10 @@ CatBoost_QA_Results_Regression <- CatBoost_QA_Results_Regression[!(TOF & GridTun
 CatBoost_QA_Results_Regression <- CatBoost_QA_Results_Regression[!(PartitionInFunction & TOF)]
 CatBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
 
-RemixAutoML::PostGRE_CreateTable(
-  data = CatBoost_QA_Results_Regression,
-  DBName = 'RemixAutoML',
-  TableName = 'CatBoost_QA_Results_Regression',
-  Temporary = FALSE,
-  Connection = NULL,
-  CloseConnection = TRUE,
-  Host = 'localhost',
-  User = 'postgres',
-  Port = 5432,
-  Password = 'Aa1028#@')
+# Create table if it doesn't exist
+# if(RemixAutoML::JustinFunction(WH =, Conn = TN = 'CatBoost_QA_Results_Regression')) {
+#   RemixAutoML::PostGRE_CreateTable()
+# }
 
 #       TOF Transformation GridTune LossFunction TaskType Success PartitionInFunction
 # 1:  FALSE          FALSE    FALSE    MultiRMSE      CPU Failure               FALSE
@@ -215,12 +208,8 @@ for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
   gc(); Sys.sleep(5)
   RemixAutoML::PostGRE_AppendData(
     data = CatBoost_QA_Results_Regression,
-    CloseConnection = TRUE,
-    Host = 'localhost',
-    DBName = 'RemixAutoML',
-    User = 'postgres',
-    Port = 5432,
-    Password = 'Aa1028#@')
+    TableName = 'CatBoost_QA_Results_Regression',
+    CloseConnection = TRUE, Append = FALSE, Host = 'localhost', DBName = 'RemixAutoML', User = 'postgres', Port = 5432, Password = 'Aa1028#@')
 
   # Replace PostGre_AppendData() with the below
   data.table::fwrite(CatBoost_QA_Results_Regression, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoCatBoostRegression_QA.csv")
