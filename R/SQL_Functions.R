@@ -814,8 +814,10 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #'
 #' @examples
 #' \dontrun{
+#'
+#' # Query data from table with Uppercase name
 #' data <- RemixAutoML::PostGRE_Query(
-#'   Query = 'Select * from static_data',
+#'   Query = paste0("SELECT * FROM ", shQuote('Devices')),
 #'   Host = 'localhost',
 #'   CloseConnection = FALSE,
 #'   DBName = 'Testing',
@@ -830,6 +832,17 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #' # User = 'postgres'
 #' # Port = 5432
 #' # Password = 'Aa...'
+#'
+#' # Create Schema
+#' query <- "CREATE SCHEMA remixautoml AUTHORIZATION postgres;"
+#' RemixAutoML::PostGRE_Query(
+#'   Query = query,
+#'   Host = 'localhost',
+#'   CloseConnection = FALSE,
+#'   DBName = 'Testing',
+#'   User = 'postgres',
+#'   Port = 5432,
+#'   Password = 'Aa...')
 #' }
 #'
 #' @export
@@ -855,7 +868,7 @@ PostGRE_Query <- function(Query = NULL,
 
   # Pull data from db
   rows <- DBI::dbSendQuery(Connection, Query)
-  x <- DBI::dbFetch(rows)
+  if(grepl(pattern = 'select', x = tolower(Query))) x <- DBI::dbFetch(rows)
   data.table::setDT(x)
   if(CloseConnection) {
     suppressWarnings(DBI::dbDisconnect(Connection))
@@ -962,13 +975,13 @@ PostGRE_AppendData <- function(data = NULL,
 #' \dontrun{
 #' RemixAutoML::PostGRE_CreateTable(
 #'   data,
-#'   TableName = NULL,
+#'   DBName = 'Testing',
 #'   Schema = NULL,
+#'   TableName = NULL,
 #'   Temporary = FALSE,
 #'   Connection = NULL,
 #'   CloseConnection = FALSE,
 #'   Host = 'localhost',
-#'   DBName = 'Testing',
 #'   User = 'postgres',
 #'   Port = 5432,
 #'   Password = 'Aa...')
@@ -976,13 +989,13 @@ PostGRE_AppendData <- function(data = NULL,
 #'
 #' @export
 PostGRE_CreateTable <- function(data = NULL,
+                                DBName = NULL,
                                 Schema = NULL,
                                 TableName = NULL,
                                 Connection = NULL,
                                 CloseConnection = FALSE,
                                 Temporary = FALSE,
                                 Host = 'localhost',
-                                DBName = 'Testing',
                                 User = 'postgres',
                                 Port = 5432,
                                 Password = '') {

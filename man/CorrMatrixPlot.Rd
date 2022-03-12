@@ -4,75 +4,30 @@
 \alias{CorrMatrixPlot}
 \title{CorrMatrixPlot}
 \usage{
-CorrMatrixPlot(
-  data = NULL,
-  CorrVars = NULL,
-  CorrMethod = "pearson",
-  FacetVar1 = NULL,
-  FacetVar2 = NULL,
-  SampleSize = 1000000L,
-  DimnamesMaxNChar = 20L,
-  CorrValueTextSize = 5.5,
-  TextSize = 12,
-  AngleX = 90,
-  AngleY = 0,
-  ChartColor = "lightsteelblue1",
-  BorderColor = "darkblue",
-  TextColor = "darkblue",
-  GridColor = "white",
-  BackGroundColor = "gray95",
-  SubTitleColor = "blue",
-  LegendPosition = "top",
-  LegendBorderSize = 0.5,
-  LegendLineType = "solid",
-  Debug = FALSE
-)
+CorrMatrixPlot(data = NULL, CorrVars = NULL)
 }
 \arguments{
 \item{data}{Source data.table}
 
 \item{CorrVars}{Column names of variables you want included in the correlation matrix}
-
-\item{CorrMethod}{'pearson', 'spearman', 'kendall'}
-
-\item{FacetVar1}{Column name of facet variable 1. If NULL then ignored}
-
-\item{FacetVar2}{Column name of facet variable 2. If NULL then ignored}
-
-\item{SampleSize}{An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored}
-
-\item{DimnamesMaxNChar}{Default 20}
-
-\item{CorrValueTextSize}{Default 5.5}
-
-\item{TextSize}{14}
-
-\item{AngleX}{90}
-
-\item{AngleY}{0}
-
-\item{ChartColor}{'lightsteelblue'}
-
-\item{BorderColor}{'darkblue'}
-
-\item{TextColor}{'darkblue'}
-
-\item{GridColor}{'white'}
-
-\item{BackGroundColor}{'gray95'}
-
-\item{SubTitleColor}{'darkblue'}
-
-\item{LegendPosition}{'bottom'}
-
-\item{LegendBorderSize}{0.50}
-
-\item{LegendLineType}{'solid'}
-
-\item{Debug}{FALSE}
 }
 \description{
 Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
+}
+\examples{
+\dontrun{
+data <- data.table::fread(file.choose())
+CorrVars <- c('Weekly_Sales', 'XREG1', 'XREG2', 'XREG3')
+p <- cor(data[, .SD, .SDcols = c(CorrVars)])
+p1 <- heatmaply::heatmaply_cor(
+  p,
+  colors = c('red', 'white', 'blue'),
+  xlab = "Features",
+  ylab = "Features",
+  k_col = 2,
+  k_row = 2)
+}
+
 }
 \seealso{
 Other Graphics: 

@@ -100,14 +100,14 @@ AutoWord2VecModeler <- function(data,
                                 MaxMemory     = "28G",
                                 ModelID       = "Model_1") {
 
-  # Arg check ----
+  # Arg check
   if(is.null(stringCol)) stop("stringCol cannot be NULL")
   if(length(stringCol) == 1L) BuildType <- "individual"
 
-  # Ensure data is a data.table ----
+  # Ensure data is a data.table
   if(!data.table::is.data.table(data)) data.table::setDT(data)
 
-  # Two processes ----
+  # Two processes
   if(tolower(BuildType) == "combined") {
 
     # Create storage file----
@@ -116,10 +116,10 @@ AutoWord2VecModeler <- function(data,
     i <- 0L
     for(string in stringCol) {
 
-      # Increment----
+      # Increment
       i <- i + 1L
 
-      # Ensure stringCol is character (not factor)----
+      # Convert to character
       if(!is.character(data[[eval(string)]])) data[, eval(string) := as.character(get(string))]
 
       # Build single column----
@@ -204,7 +204,7 @@ AutoWord2VecModeler <- function(data,
 
   } else {
 
-    # Create storage file ----
+    # Create storage file
     N <- length(stringCol)
     StoreFile <- data.table::data.table(ModelName = rep("a", N), Path = rep("a", N), Jar = rep("a", N))
     i <- 0L
@@ -214,7 +214,7 @@ AutoWord2VecModeler <- function(data,
       Sys.sleep(10L)
       h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory)
 
-      # It is important to remove "\n" --
+      # It is important to remove "\n"
       data[, eval(string) := gsub(pattern = "[[:punct:][:blank:]]", replacement = " ", x = data[[eval(string)]])]
       data2 <- data[, list(get(string))]
 
@@ -361,7 +361,7 @@ AutoWord2VecScoring <- function(data,
                                 Threads = max(1L, parallel::detectCores() - 2L),
                                 MaxMemory = "28G") {
 
-  # Check args ----
+  # Check args
   if(is.null(stringCol)) stop("stringCol cannot be NULL")
   if(is.null(ModelObject) && tolower(BuildType) == "combined" && !file.exists(file.path(model_path, ModelID))) stop(paste0("Model not found at ", file.path(model_path, ModelID)))
   if(is.null(ModelObject) && tolower(BuildType) == "individual" && !file.exists(file.path(model_path, paste0(ModelID, "_", stringCol)))) stop(paste0("Model not found at ", file.path(model_path, paste0(ModelID, "_", stringCol))))
@@ -369,20 +369,12 @@ AutoWord2VecScoring <- function(data,
   # Instantiate H2O ----
   if(H2OStartUp) localH2O <- h2o::h2o.init(nthreads = Threads, max_mem_size = MaxMemory, enable_assertions = FALSE)
 
-  # Build vecs ----
+  # Build vecs
   if(tolower(BuildType) == "individual") {
     for(textCol in stringCol) {
       model <- h2o::h2o.loadModel(path = file.path(model_path, paste0(ModelID, "_", textCol)))
-      data1 <- AutoH2OTextPrepScoring(
-        data = data,
-        string = textCol,
-        NThreads = Threads,
-        MaxMem = MaxMemory,
-        StartH2O = FALSE)
-      Scores <- data.table::as.data.table(h2o::h2o.transform(
-        model,
-        words = data1,
-        aggregate_method = "AVERAGE"))
+      data1 <- AutoH2OTextPrepScoring(data = data, string = textCol, NThreads = Threads, MaxMem = MaxMemory, StartH2O = FALSE)
+      Scores <- data.table::as.data.table(h2o::h2o.transform(model, words = data1, aggregate_method = "AVERAGE"))
       data.table::setnames(Scores, names(Scores), paste0(textCol, "_", names(Scores)))
       if(!KeepStringCol) {
         data[, eval(textCol) := NULL]
@@ -391,20 +383,11 @@ AutoWord2VecScoring <- function(data,
         data <- cbind(data, Scores)
       }
     }
-
   } else {
     model <- h2o::h2o.loadModel(path = file.path(model_path, ModelID))
     for(textCol in stringCol) {
-      data1 <- AutoH2OTextPrepScoring(
-        data = data,
-        string = textCol,
-        NThreads = Threads,
-        MaxMem = MaxMemory,
-        StartH2O = FALSE)
-      Scores <- data.table::as.data.table(h2o::h2o.transform(
-        model,
-        words = data1,
-        aggregate_method = "AVERAGE"))
+      data1 <- AutoH2OTextPrepScoring(data = data, string = textCol, NThreads = Threads, MaxMem = MaxMemory, StartH2O = FALSE)
+      Scores <- data.table::as.data.table(h2o::h2o.transform(model, words = data1, aggregate_method = "AVERAGE"))
       data.table::setnames(Scores, names(Scores), paste0(textCol, "_", names(Scores)))
       if(!KeepStringCol) {
         data[, eval(textCol) := NULL]
@@ -415,13 +398,13 @@ AutoWord2VecScoring <- function(data,
     }
   }
 
-  # Remove H2O Objects ----
+  # Remove H2O Objects
   rm(localH2O, model)
 
-  # H2O Shutdown ----
+  # H2O Shutdown
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
-  # Return ----
+  # Return
   return(data)
 }
 

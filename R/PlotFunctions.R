@@ -300,103 +300,6 @@ ShapImportancePlot <- function(data,
   return(eval(p))
 }
 
-#' @noRd
-LowerTriangle <- function(x, Diag = FALSE) {
-  if(is.null(x)) {
-    return(x)
-  }
-  x[upper.tri(x)] <- NA
-  if(!Diag) {
-    diag(x) <- NA
-  }
-  return(x)
-}
-
-#' @noRd
-UpperTriangle <- function(x, Diag = FALSE) {
-  if(is.null(x)) return(x)
-  x[lower.tri(x)] <- NA
-  if(!Diag) diag(x) <- NA
-  return(x)
-}
-
-#' @noRd
-CorrMatrixPlotBase <- function(x,
-                               LegendName = 'Strength',
-                               method = "square",
-                               type = "upper",
-                               Diag = FALSE,
-                               colors = c("red", "green", "blue"),
-                               outline.color = "gray",
-                               lab = FALSE,
-                               lab_col = "black",
-                               lab_size = 4,
-                               p.mat = NULL,
-                               sig.level = 0.05,
-                               insig = "pch",
-                               digits = 2) {
-
-  x <- round(x = x, digits = digits)
-  if(type == "lower") {
-    x <- LowerTriangle(x, Diag)
-    p.mat <- LowerTriangle(p.mat, Diag)
-  } else if(type == "upper") {
-    x <- UpperTriangle(x, Diag)
-    p.mat <- UpperTriangle(p.mat, Diag)
-  }
-
-  x <- reshape2::melt(x, na.rm = TRUE)
-  colnames(x) <- c("Var1", "Var2", "value")
-  x$pvalue <- rep(NA, nrow(x))
-  x$signif <- rep(NA, nrow(x))
-
-  if(!is.null(p.mat)) {
-    p.mat <- reshape2::melt(p.mat, na.rm = TRUE)
-    x$coef <- x$value
-    x$pvalue <- p.mat$value
-    x$signif <- as.numeric(p.mat$value <= sig.level)
-    p.mat <- subset(p.mat, p.mat$value > sig.level)
-    if(insig == "blank") {
-      x$value <- x$value * x$signif
-    }
-  }
-
-  x$abs_x <- abs(x$value) * 10
-  p <- ggplot2::ggplot(data = x, mapping = ggplot2::aes_string(x = "Var1", y = "Var2", fill = "value"))
-
-  if(method == "square") {
-    p <- p + ggplot2::geom_tile(color = outline.color)
-  } else if(method == "circle") {
-    p <- p + ggplot2::geom_point(
-      color = outline.color,
-      shape = 21,
-      ggplot2::aes_string(size = "abs_corr")) +
-      ggplot2::scale_size(range = c(4,10)) +
-      ggplot2::guides(size = 'none')
-  }
-
-  p <- p + ggplot2::scale_fill_gradient2(
-    low = colors[1],
-    high = colors[3],
-    mid = colors[2],
-    midpoint = 0,
-    limit = c(-1, 1),
-    space = "Lab",
-    name = LegendName)
-
-  label <- round(x = x[, "value"], digits = digits)
-  if(lab) {
-    p <- p + ggplot2::geom_text(
-      ggplot2::aes_string(
-        x = "Var1",
-        y = "Var2"),
-      color = lab_col,
-      size = lab_size,
-      label = label)
-  }
-  p
-}
-
 #' @title CorrMatrixPlot
 #'
 #' @description Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.
@@ -407,100 +310,34 @@ CorrMatrixPlotBase <- function(x,
 #'
 #' @param data Source data.table
 #' @param CorrVars Column names of variables you want included in the correlation matrix
-#' @param CorrMethod 'pearson', 'spearman', 'kendall'
-#' @param FacetVar1 Column name of facet variable 1. If NULL then ignored
-#' @param FacetVar2 Column name of facet variable 2. If NULL then ignored
-#' @param SampleSize An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored
-#' @param DimnamesMaxNChar Default 20
-#' @param CorrValueTextSize Default 5.5
-#' @param TextSize 14
-#' @param AngleX 90
-#' @param AngleY 0
-#' @param ChartColor 'lightsteelblue'
-#' @param BorderColor 'darkblue'
-#' @param TextColor 'darkblue'
-#' @param GridColor 'white'
-#' @param BackGroundColor 'gray95'
-#' @param SubTitleColor 'darkblue'
-#' @param LegendPosition 'bottom'
-#' @param LegendBorderSize 0.50
-#' @param LegendLineType 'solid'
-#' @param Debug FALSE
+#'
+#' @examples
+#' \dontrun{
+#' data <- data.table::fread(file.choose())
+#' CorrVars <- c('Weekly_Sales', 'XREG1', 'XREG2', 'XREG3')
+#' p <- cor(data[, .SD, .SDcols = c(CorrVars)])
+#' p1 <- heatmaply::heatmaply_cor(
+#'   p,
+#'   colors = c('red', 'white', 'blue'),
+#'   xlab = "Features",
+#'   ylab = "Features",
+#'   k_col = 2,
+#'   k_row = 2)
+#' }
 #'
 #' @export
 CorrMatrixPlot <- function(data = NULL,
-                           CorrVars = NULL,
-                           CorrMethod = 'pearson',
-                           FacetVar1 = NULL,
-                           FacetVar2 = NULL,
-                           SampleSize = 1000000L,
-                           DimnamesMaxNChar = 20L,
-                           CorrValueTextSize = 5.5,
-                           TextSize = 12,
-                           AngleX = 90,
-                           AngleY = 0,
-                           ChartColor = 'lightsteelblue1',
-                           BorderColor = 'darkblue',
-                           TextColor = 'darkblue',
-                           GridColor = 'white',
-                           BackGroundColor = 'gray95',
-                           SubTitleColor = 'blue',
-                           LegendPosition = 'top',
-                           LegendBorderSize = 0.50,
-                           LegendLineType = 'solid',
-                           Debug = FALSE) {
+                           CorrVars = NULL) {
 
+  # Plot
   p <- cor(data[, .SD, .SDcols = c(CorrVars)])
   p1 <- heatmaply::heatmaply_cor(
     p,
-    xlab = "Features",
-    ylab = "Features",
+    colors = c('darkred', 'pink', 'black', 'lightblue', 'darkblue'),
+    xlab = NULL,
+    ylab = NULL,
     k_col = 2,
     k_row = 2)
-
-  # Cap number of records
-  # if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
-  #
-  # # Create correlation matrix
-  # CorrMatrix <- cor(data[, .SD, .SDcols = c(CorrVars)], use = 'pairwise.complete.obs')
-  # colnames(CorrMatrix) <- rownames(CorrMatrix) <- substr(rownames(CorrMatrix), 1L, DimnamesMaxNChar)
-  #
-  # # Create plot
-  # options(warn = -1)
-  # p1 <- suppressMessages(CorrMatrixPlotBase(
-  #   x = CorrMatrix,
-  #   method = 'square',
-  #   type = 'upper',
-  #   lab = TRUE,
-  #   lab_col = 'white',
-  #   lab_size = 5.5,
-  #   Diag = FALSE,
-  #   colors = c('darkred','white','darkblue'),
-  #   outline.color = 'gray50'))
-  # options(warn = 1)
-  #
-  # # Add ChartTheme
-  # if(Debug) print('ChartTheme')
-  # p1 <- p1 + RemixAutoML::ChartTheme(
-  #   Size = TextSize,
-  #   AngleX = AngleX,
-  #   AngleY = AngleY,
-  #   ChartColor = ChartColor,
-  #   BorderColor = BorderColor,
-  #   TextColor = TextColor,
-  #   GridColor = GridColor,
-  #   BackGroundColor = BackGroundColor,
-  #   SubTitleColor = SubTitleColor,
-  #   LegendPosition = 'top',
-  #   LegendBorderSize = LegendBorderSize,
-  #   LegendLineType = LegendLineType)
-  #
-  # # Make legend thinnier and longer than default
-  # p1 <- p1 + ggplot2::theme(legend.position = 'none')
-  #
-  # # Labels / Title / Caption
-  # p1 <- p1 + ggplot2::xlab(label = NULL) + ggplot2::ylab(NULL)
-  # p1 <- p1 + ggplot2::labs(title = paste0('Correlation Matrix with Correl Method: ', CorrMethod), caption = 'RemixAutoML')
 
   # Return plot
   return(eval(p1))
@@ -1514,9 +1351,6 @@ HistPlot <- function(data = NULL,
 #' @param YMax = input[['YMax']]
 #' @param XMin = input[['XMin']]
 #' @param XMax = input[['XMax']]
-#' @param CorrelationMethod = 'pearson'
-#' @param Marginal = Marginals
-#' @param MarginalPlotType = MarginalType
 #' @param ColorVariables = shiny::isolate(SelectedGroups())
 #' @param SizeVar1 = input[['SizeVar1']]
 #' @param FacetVar1 = shiny::isolate(input[['FacetVar1']])
@@ -1551,9 +1385,6 @@ AutoPlotter <- function(dt = NULL,
                         YMax = NULL,
                         XMin = NULL,
                         XMax = NULL,
-                        CorrelationMethod = 'pearson',
-                        Marginal = FALSE,
-                        MarginalPlotType = 'density',
                         ColorVariables = NULL,
                         SizeVar1 = 'None',
                         FacetVar1 = 'None',
@@ -1585,34 +1416,9 @@ AutoPlotter <- function(dt = NULL,
 
   # Correlation Matrix Plot
   if(tolower(PlotType) == 'corrmatrix') {
-    p1 <- RemixAutoML::CorrMatrixPlot(
-      data = dt,
-      CorrVars = YVar,
-      CorrMethod = CorrelationMethod,
-      FacetVar1 = FacetVar1,
-      FacetVar2 = FacetVar2,
-      SampleSize = SampleSize,
-      DimnamesMaxNChar = 20L,
-      CorrValueTextSize = 5.5,
-      TextSize = TextSize,
-      AngleX = AngleX,
-      AngleY = AngleY,
-      ChartColor = ChartColor,
-      BorderColor = BorderColor,
-      TextColor = TextColor,
-      GridColor = GridColor,
-      BackGroundColor = BackGroundColor,
-      SubTitleColor = SubTitleColor,
-      LegendPosition = LegendPosition,
-      LegendBorderSize = LegendBorderSize,
-      LegendLineType = LegendLineType,
-      Debug = Debug)
 
-    # Modify x-axis scale
-    if(Debug) {print('XTicks'); print(XTicks)}
-    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
-    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
-    if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+    # Plot
+    p1 <- RemixAutoML::CorrMatrixPlot(data = dt, CorrVars = YVar)
 
     # Return plot
     return(eval(p1))
@@ -1772,11 +1578,7 @@ AutoPlotter <- function(dt = NULL,
   # Line
   if(tolower(PlotType) == 'line') {
 
-    if(Debug) print('Line Plot Here')
-    if(Debug) print(paste0('ColorVariables: ', ColorVariables))
-    if(Debug) print(paste0('XTicks: ', XTicks))
-    if(Debug) print(paste0('XVar: ', XVar))
-    if(Debug) print(paste0('names(dt): ', names(dt)))
+    if(Debug) {print('Line Plot Here');print(paste0('ColorVariables: ', ColorVariables));print(paste0('XTicks: ', XTicks));print(paste0('XVar: ', XVar));print(paste0('names(dt): ', names(dt)))}
 
     # TS Line Plot
     p1 <- RemixAutoML:::TimeSeriesPlotter(
@@ -1809,7 +1611,6 @@ AutoPlotter <- function(dt = NULL,
     p1 <- p1 + ggplot2::labs(
       title = 'Time Series Plot',
       caption = 'RemixAutoML') +
-      #ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax))) +
       ggplot2::ylab(eval(YVar)) + ggplot2::xlab(eval(XVar)) +
       ggplot2::theme(legend.title = ggplot2::element_blank())
 
@@ -1873,8 +1674,6 @@ AutoPlotter <- function(dt = NULL,
       data = dt,
       x_var = xxx,
       y_var = yyy,
-      Marginals = FALSE,
-      MarginalType = MarginalPlotType,
       GroupVariable = ColorVariables,
       FacetCol = FacetVar2,
       FacetRow = FacetVar1,
@@ -1894,85 +1693,77 @@ AutoPlotter <- function(dt = NULL,
       legend_position = "bottom")
 
     # Modify by plot type
-    if(!Marginal) {
-      if(Debug) print('Modify by plot type')
-      if(PlotType %chin% 'Scatter') {
-        p1 <- Output[['ScatterPlot']]
-        p1 <- p1 + ggplot2::labs(
-          title = paste0('Scatter Plot'),
-          subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
-                            "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
-          caption = 'RemixAutoML')
-        p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
+    if(Debug) print('Modify by plot type')
+    if(PlotType %chin% 'Scatter') {
+      p1 <- Output[['ScatterPlot']]
+      p1 <- p1 + ggplot2::labs(
+        title = paste0('Scatter Plot'),
+        subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
+        caption = 'RemixAutoML')
+      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
 
-      } else if(PlotType %chin% 'Copula') {
+    } else if(PlotType %chin% 'Copula') {
 
-        p1 <- Output[['CopulaPlot']]
-        p1 <- p1 + ggplot2::labs(
-          title = paste0('Empirical Copula Plot'),
-          subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
-                            "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
-          caption = 'RemixAutoML')
-        p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
-      }
-
-      # Tick Marks
-      if(Debug) print('YTicks Update')
-      if('Percentiles' %in% YTicks) {
-        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      } else if('Every 5th percentile' %in% YTicks) {
-        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
-      } else if('Deciles' %in% YTicks) {
-        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
-      } else if('Quantiles' %in% YTicks) {
-        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
-      } else if('Quartiles' %in% YTicks) {
-        y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
-      } else {
-        y_vals <- YTicks
-      }
-
-      if(Debug) print('XTicks Update')
-      if('Percentiles' %in% XTicks) {
-        x_vals <- dt[, quantile(round(get(XVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-      } else if('Every 5th percentile' %in% XTicks) {
-        x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
-      } else if('Deciles' %in% XTicks) {
-        x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
-      } else if('Quantiles' %in% XTicks) {
-        x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
-      } else if('Quartiles' %in% XTicks) {
-        x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
-        x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
-      } else {
-        x_vals <- XTicks
-      }
-
-      if(Debug) print('Update X and Y Ticks')
-      if(!'Default' %in% XTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
-      if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
-
-      # Add ChartTheme
-      if(Debug) print('ChartTheme')
-      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
-
-      # Limit Y
-      if(Debug) print('Limit Y'); print(PlotType)
-      if(PlotType == 'Scatter' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
-    } else {
-      if(PlotType %chin% 'Scatter') {
-        p1 <- Output[['ScatterPlot']]
-      } else {
-        p1 <- Output[['CopulaPlot']]
-      }
+      p1 <- Output[['CopulaPlot']]
+      p1 <- p1 + ggplot2::labs(
+        title = paste0('Empirical Copula Plot'),
+        subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
+                          "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
+        caption = 'RemixAutoML')
+      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
     }
+
+    # Tick Marks
+    if(Debug) print('YTicks Update')
+    if('Percentiles' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    } else if('Every 5th percentile' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      y_vals <- y_vals[c(seq(6L, length(y_vals)-1L, 5L))]
+    } else if('Deciles' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      y_vals <- y_vals[c(seq(11L, length(y_vals)-1L, 10L))]
+    } else if('Quantiles' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      y_vals <- y_vals[c(seq(21L, length(y_vals)-1L, 20L))]
+    } else if('Quartiles' %in% YTicks) {
+      y_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      y_vals <- y_vals[c(seq(26L, length(y_vals)-1L, 25L))]
+    } else {
+      y_vals <- YTicks
+    }
+
+    if(Debug) print('XTicks Update')
+    if('Percentiles' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(XVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+    } else if('Every 5th percentile' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      x_vals <- x_vals[c(seq(6L, length(x_vals)-1L, 5L))]
+    } else if('Deciles' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      x_vals <- x_vals[c(seq(11L, length(x_vals)-1L, 10L))]
+    } else if('Quantiles' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      x_vals <- x_vals[c(seq(21L, length(x_vals)-1L, 20L))]
+    } else if('Quartiles' %in% XTicks) {
+      x_vals <- dt[, quantile(round(get(YVar), 4L), na.rm = TRUE, probs = c(seq(0, 1, 0.01)))]
+      x_vals <- x_vals[c(seq(26L, length(x_vals)-1L, 25L))]
+    } else {
+      x_vals <- XTicks
+    }
+
+    if(Debug) print('Update X and Y Ticks')
+    if(!'Default' %in% XTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
+    if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+
+    # Add ChartTheme
+    if(Debug) print('ChartTheme')
+    p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor, SubTitleColor = SubTitleColor, LegendPosition = LegendPosition, LegendBorderSize = LegendBorderSize, LegendLineType = LegendLineType)
+
+    # Limit Y
+    if(Debug) print('Limit Y'); print(PlotType)
+    if(PlotType == 'Scatter' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
 
     # Return plot
     return(eval(p1))
@@ -2423,121 +2214,41 @@ AppModelInsights <- function(ModelOutputList,
 
   # ----
 
-  # Partial Dependence Plot Test ----
-  if(any(PlotType %chin% 'Test_ParDepPlots') && !is.null(PDPVar)) {
-    if(!Rebuild) {
-      p1 <- p1 <- ModelOutputList$PlotList$Test_ParDepPlots[[eval(PDPVar)]]
-      p1 <- p1 + ggplot2::labs(subtitle = NULL)
-      p1$layers[[6L]] <- NULL
-      p1$layers[[5L]] <- NULL
-      p1$layers[[4L]] <- NULL
-    } else {
-      p1 <- RemixAutoML::ParDepCalPlots(
+  # Partial Dependence Plot ----
+  if(any(PlotType %chin% 'PartialDependenceLine') && !is.null(PDPVar)) {
+    p1 <- RemixAutoML::ParDepCalPlots(
         data = dt,
         PredictionColName = PredictVar,
         TargetColName = TargetVar,
         IndepVar = PDPVar,
         GraphType = 'calibration', PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
-      p1 <- p1 + ggplot2::labs(subtitle = NULL)
-      p1$layers[[6L]] <- NULL
-      p1$layers[[5L]] <- NULL
-      p1$layers[[4L]] <- NULL
-    }
+    p1 <- p1 + ggplot2::labs(subtitle = NULL)
+    p1$layers[[6L]] <- NULL
+    p1$layers[[5L]] <- NULL
+    p1$layers[[4L]] <- NULL
     if(!exists('p1')) p1 <- NULL
     return(eval(p1))
   }
 
   # ----
 
-  # Partial Dependence Plot Train ----
-  if(any(PlotType %chin% 'Train_ParDepPlots') && !is.null(PDPVar)) {
-    if(Debug) print('Partial Dependence Plot Train')
-    if(!Rebuild && !is.null(ModelOutputList$PlotList$Train_ParDepPlots[[eval(PDPVar)]])) {
-      p1 <- ModelOutputList$PlotList$Train_ParDepPlots[[eval(PDPVar)]]
-      p1$layers[[6L]] <- NULL
-      p1$layers[[5L]] <- NULL
-      p1$layers[[4L]] <- NULL
-    } else {
-      if(Debug) print('Partial Dependence Plot Train else')
-      p1 <- RemixAutoML::ParDepCalPlots(
-        data = dt,
-        PredictionColName = PredictVar,
-        TargetColName = TargetVar,
-        IndepVar = PDPVar,
-        GraphType = 'calibration', PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
-      p1$layers[[6L]] <- NULL
-      p1$layers[[5L]] <- NULL
-      p1$layers[[4L]] <- NULL
-    }
+  # Partial Dependence Box Plot ----
+  if(any(PlotType %chin% 'PartialDependenceBox') && !is.null(PDPVar)) {
+    p1 <- RemixAutoML::ParDepCalPlots(
+      data = dt,
+      PredictionColName = PredictVar,
+      TargetColName = TargetVar,
+      IndepVar = PDPVar,
+      GraphType = "boxplot", PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+    p1 <- p1 + ggplot2::labs(subtitle = NULL)
+    p1$layers[[6L]] <- NULL
+    p1$layers[[5L]] <- NULL
+    p1$layers[[4L]] <- NULL
     if(!exists('p1')) p1 <- NULL
     return(eval(p1))
   }
 
   # ----
-
-  # Partial Dependence Box Plot Test ----
-  if(any(PlotType %chin% 'Test_ParDepBoxPlots') && !is.null(PDPVar)) {
-    if(!Rebuild && !is.null(ModelOutputList$PlotList$Test_ParDepBoxPlots[[eval(PDPVar)]])) {
-      p1 <- ModelOutputList$PlotList$Test_ParDepBoxPlots[[eval(PDPVar)]]
-      p1 <- p1 + ggplot2::labs(subtitle = NULL)
-      p1$layers[[6L]] <- NULL
-      p1$layers[[5L]] <- NULL
-      p1$layers[[4L]] <- NULL
-    } else {
-      p1 <- RemixAutoML::ParDepCalPlots(
-        data = dt,
-        PredictionColName = PredictVar,
-        TargetColName = TargetVar,
-        IndepVar = PDPVar,
-        GraphType = "boxplot", PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
-      p1 <- p1 + ggplot2::labs(subtitle = NULL)
-      p1$layers[[6L]] <- NULL
-      p1$layers[[5L]] <- NULL
-      p1$layers[[4L]] <- NULL
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Partial Dependence Box Plot Train ----
-  if(any(PlotType %chin% 'Train_ParDepBoxPlots') && !is.null(PDPVar)) {
-    if(!Rebuild && !is.null(ModelOutputList$PlotList$Train_ParDepBoxPlots[[eval(PDPVar)]])) {
-      p1 <- ModelOutputList$PlotList$Train_ParDepBoxPlots[[eval(PDPVar)]]
-      p1 <- p1 + ggplot2::labs(subtitle = NULL)
-      p1$layers[[6L]] <- NULL
-      p1$layers[[5L]] <- NULL
-      p1$layers[[4L]] <- NULL
-    } else {
-      p1 <- RemixAutoML::ParDepCalPlots(
-        data = dt,
-        PredictionColName = PredictVar,
-        TargetColName = TargetVar,
-        IndepVar = PDPVar,
-        GraphType = "boxplot", PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
-      p1 <- p1 + ggplot2::labs(subtitle = NULL)
-      p1$layers[[6L]] <- NULL
-      p1$layers[[5L]] <- NULL
-      p1$layers[[4L]] <- NULL
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Shap Table Variable Importance ----
-  # if(any(PlotType %chin% "ShapPlot")) {
-  #   if(!Rebuild && data.table::is.data.table(ML_ShapTable)) {
-  #     ML_ShapTable2 <- ML_ShapTable[, list(Importance = mean(ShapValue, na.rm = TRUE)), by = "Variable"]
-  #     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ML_ShapTable2, TopN = 25)
-  #   } else {
-  #     ML_ShapTable1 <- RemixAutoML::AutoShapeShap(ScoringData = dt, Threads = parallel::detectCores(), DateColumnName = DateVar, ByVariableName = NULL)
-  #     ML_ShapTable2 <- ML_ShapTable1[, list(Importance = mean(ShapValue, na.rm = TRUE)), by = "Variable"]
-  #     p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ML_ShapTable2, TopN = 25)
-  #   }
-  # }
 
   if(!exists('p1')) p1 <- NULL
   return(eval(p1))

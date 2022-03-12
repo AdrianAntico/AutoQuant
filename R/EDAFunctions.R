@@ -185,9 +185,9 @@ PlotGUI <- function() {
 #' @param data Source data.table
 #' @param x_var Numeric variable
 #' @param y_var Numeric variable
+#' @param Marginals = FALSE,
+#' @param MarginalType = 'density',
 #' @param GroupVariable Color options
-#' @param Marginals FALSE
-#' @param MarginalType 'density' or 'histogram'. 'density' required if GroupVariable is not null
 #' @param FacetCol NULL or string
 #' @param FacetRow NULL or string
 #' @param SizeVar1 NULL. Use to size the dots by a variable
@@ -215,9 +215,9 @@ PlotGUI <- function() {
 #'   data = data,
 #'   x_var = 'Independent_Variable1',
 #'   y_var = 'Independent_Variable2',
-#'   GroupVariable = NULL, #'Factor_1',
 #'   Marginals = FALSE,
 #'   MarginalType = 'density',
+#'   GroupVariable = NULL, #'Factor_1',
 #'   FacetCol = 'Factor_1',
 #'   FacetRow = NULL,
 #'   SizeVar1 = 'Independent_Variable1',
@@ -239,9 +239,9 @@ PlotGUI <- function() {
 ScatterCopula <- function(data = NULL,
                           x_var = NULL,
                           y_var = NULL,
-                          GroupVariable = NULL,
                           Marginals = FALSE,
                           MarginalType = 'density',
+                          GroupVariable = NULL,
                           FacetCol = NULL,
                           FacetRow = NULL,
                           SizeVar1 = NULL,

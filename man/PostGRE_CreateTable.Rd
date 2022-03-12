@@ -6,13 +6,13 @@
 \usage{
 PostGRE_CreateTable(
   data = NULL,
+  DBName = NULL,
   Schema = NULL,
   TableName = NULL,
   Connection = NULL,
   CloseConnection = FALSE,
   Temporary = FALSE,
   Host = "localhost",
-  DBName = "Testing",
   User = "postgres",
   Port = 5432,
   Password = ""
@@ -20,6 +20,8 @@ PostGRE_CreateTable(
 }
 \arguments{
 \item{data}{Source data.table. If you supply a Schema, data will be ignored.}
+
+\item{DBName}{If Connection is NULL then this must be supplied. database name}
 
 \item{Schema}{Optional. Advised to use if type inference is fuzzy}
 
@@ -32,8 +34,6 @@ PostGRE_CreateTable(
 \item{Temporary}{If Connection is NULL then this must be supplied. FALSE}
 
 \item{Host}{If Connection is NULL then this must be supplied. host name}
-
-\item{DBName}{If Connection is NULL then this must be supplied. database name}
 
 \item{User}{If Connection is NULL then this must be supplied. user name}
 
@@ -48,13 +48,13 @@ PostGRE_CreateTable get data from a database table
 \dontrun{
 RemixAutoML::PostGRE_CreateTable(
   data,
-  TableName = NULL,
+  DBName = 'Testing',
   Schema = NULL,
+  TableName = NULL,
   Temporary = FALSE,
   Connection = NULL,
   CloseConnection = FALSE,
   Host = 'localhost',
-  DBName = 'Testing',
   User = 'postgres',
   Port = 5432,
   Password = 'Aa...')

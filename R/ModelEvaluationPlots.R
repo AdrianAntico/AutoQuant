@@ -185,7 +185,11 @@ ParDepCalPlots <- function(data,
     preds2[, rank := round(data.table::frank(preds2[[IndepVar]]) * (1/PercentileBucket) /.N) * PercentileBucket]
   } else {
     GraphType <- "FactorVar"
-    preds2 <- preds2[, .(Function(get(TargetColName)), Function(get(PredictionColName)), .N), by = get(IndepVar)][order(-N)]
+    if(length(PredictionColName) != 0) {
+      preds2 <- preds2[, .(Function(get(TargetColName)), Function(get(PredictionColName)), .N), by = get(IndepVar)][order(-N)]
+    } else {
+      preds2 <- preds2[, .(Function(get(TargetColName)), .N), by = get(IndepVar)][order(-N)]
+    }
     if(nrow(preds2) > FactLevels) {
       temp1 <- preds2[seq_len(min(.N,FactLevels))]
       temp2 <- preds2[(FactLevels + 1):nrow(preds2)]
@@ -196,97 +200,116 @@ ParDepCalPlots <- function(data,
       preds3 <- data.table::rbindlist(list(temp1, temp3), use.names = TRUE)
     }
     if(nrow(preds2) <= FactLevels) preds3 <- preds2
-    data.table::setnames(preds3, old = c("get", "V1", "V2"), new = c(IndepVar, TargetColName, PredictionColName))
+    if(length(PredictionColName) != 0) {
+      data.table::setnames(preds3, old = c("get", "V1", "V2"), new = c(IndepVar, TargetColName, PredictionColName), skip_absent = TRUE)
+    } else {
+      data.table::setnames(preds3, old = c("get", "V1"), new = c(IndepVar, TargetColName), skip_absent = TRUE)
+    }
     preds3 <- preds3[order(-N)]
   }
 
   # Build plots ----
   if(GraphType == "calibration") {
+
     if(class(preds2[[eval(IndepVar)]])[1L] != "numeric") preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
     preds3 <- preds2[, lapply(.SD, noquote(Function)), by = "rank"][order(rank)]
 
     # Cross section plot
-    plot <- eval(
-      ggplot2::ggplot(preds3, ggplot2::aes(x = get(IndepVar))) +
-        ggplot2::geom_line(ggplot2::aes(y = get(PredictionColName), color = "Predicted")) +
-        ggplot2::geom_line(ggplot2::aes(y = get(TargetColName), color = "Actuals")) +
-        ggplot2::ylab(eval(TargetColName)) +
-        ggplot2::xlab(IndepVar) +
-        ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue")) +
-        ChartTheme(Size = 13, AngleX = 90) +
-        ggplot2::labs(
-          title = "Partial Dependence Calibration Plot",
-          subtitle = paste0("black line -> mean(", TargetColName,"); purple lines -> 10th & 90th-%tile; chocolate line = mean")) +
-        ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
-        ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "chocolate") +
-        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple") +
-        ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple"))
+
+    plot <- ggplot2::ggplot(preds3, ggplot2::aes(x = get(IndepVar)))
+    if(length(PredictionColName) != 0) plot <- plot + ggplot2::geom_line(ggplot2::aes(y = get(PredictionColName), color = "Predicted"))
+    plot <- plot + ggplot2::geom_line(ggplot2::aes(y = get(TargetColName), color = "Actuals"))
+    plot <- plot + ggplot2::ylab(eval(TargetColName))
+    plot <- plot + ggplot2::xlab(IndepVar)
+    plot <- plot + ggplot2::scale_colour_manual("", breaks = c("Actuals", "Predicted"), values = c("red", "blue"))
+    plot <- plot + ChartTheme(Size = 13, AngleX = 90)
+    plot <- plot + ggplot2::labs(
+      title = "Partial Dependence",
+      subtitle = paste0("black line -> mean(", TargetColName,"); purple lines -> 10th & 90th-%tile; chocolate line = mean"))
+    plot <- plot + ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black")
+    plot <- plot + ggplot2::geom_vline(xintercept = data[, mean(get(IndepVar))], color = "chocolate")
+    plot <- plot + ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.10)][[1L]], color = "purple")
+    plot <- plot + ggplot2::geom_vline(xintercept = data[, quantile(get(IndepVar), probs = 0.90)][[1L]], color = "purple")
 
     # Heatmap
     if(!is.null(DateColumn) && !is.null(DateAgg_3D)) {
       preds2[, Time := lubridate::floor_date(get(DateColumn), unit = DateAgg_3D)]
       preds4 <- preds2[, lapply(.SD, noquote(Function)), by = c("rank", "Time")][order(rank, Time)]
       data.table::setnames(preds4, eval(TargetColName), "Target_Variable")
-      plot2 <- ggplot2::ggplot(data = preds4, ggplot2::aes(x = Time, y = rank, fill = Target_Variable)) +
-        ggplot2::geom_tile() +
-        ChartTheme() +
-        ggplot2::xlab(DateColumn) + ggplot2::ylab(paste0(IndepVar, "_Percentile"))
+      plot2 <- ggplot2::ggplot(data = preds4, ggplot2::aes(x = Time, y = rank, fill = Target_Variable))
+      plot2 <- ggplot2::geom_tile()
+      plot2 <- ChartTheme()
+      plot2 <- ggplot2::xlab(DateColumn) + ggplot2::ylab(paste0(IndepVar, "_Percentile"))
     }
+
   } else if(GraphType == "boxplot") {
+
     keep <- c("rank", TargetColName, IndepVar)
     actual <- preds2[, ..keep]
     actual[, Type := "actual"]
     data.table::setnames(actual, TargetColName, "Output")
-    keep <- c("rank", PredictionColName, IndepVar)
-    preds2 <- preds2[, ..keep]
-    preds2[, Type := "predicted"]
-    data.table::setnames(preds2, PredictionColName, "Output")
-    preds2 <- data.table::rbindlist(list(actual, preds2))[order(rank)]
+    if(length(PredictionColName) != 0L) {
+      keep <- c("rank", PredictionColName, IndepVar)
+      preds2 <- preds2[, ..keep]
+      preds2[, Type := "predicted"]
+      data.table::setnames(preds2, PredictionColName, "Output", skip_absent = TRUE)
+      preds2 <- data.table::rbindlist(list(actual, preds2))[order(rank)]
+    } else {
+      preds2 <- actual
+    }
     preds2[, rank := as.factor(rank)]
     preds2 <- preds2[, eval(IndepVar) := as.numeric(get(IndepVar))]
     preds2 <- preds2[, eval(IndepVar) := round(Function(get(IndepVar)), 3L), by = rank]
     preds2[, eval(IndepVar) := as.factor(get(IndepVar))]
     preds2[, rank := NULL]
-    plot <- eval(
-      ggplot2::ggplot(preds2, ggplot2::aes(x = preds2[[IndepVar]], y = Output)) +
-        ggplot2::geom_boxplot(ggplot2::aes(fill = Type)) +
-        ggplot2::scale_fill_manual(values = c("red", "blue")) +
-        ggplot2::labs(
-          title = "Partial Dependence Calibration Plot",
-          subtitle = paste0("black line -> mean(", TargetColName,")")) +
-        ggplot2::xlab(eval(IndepVar)) +
-        ggplot2::ylab(eval(TargetColName)) +
-        ChartTheme(Size = 13) +
-        ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black"))
+    plot <- ggplot2::ggplot(preds2, ggplot2::aes(x = preds2[[IndepVar]], y = Output))
+    plot <- plot + ggplot2::geom_boxplot(ggplot2::aes(fill = Type))
+    if(length(PredictionColName) != 0L) {
+      plot <- plot + ggplot2::scale_fill_manual(values = c("red", "blue"))
+    } else {
+      plot <- plot + ggplot2::scale_fill_manual(values = c('gray80'))
+    }
+    plot <- plot + ggplot2::labs(
+      title = "Partial Dependence",
+      subtitle = paste0("black line -> mean(", TargetColName,")"))
+    plot <- plot + ggplot2::xlab(eval(IndepVar))
+    plot <- plot + ggplot2::ylab(eval(TargetColName))
+    plot <- plot + ChartTheme(Size = 13)
+    plot <- plot + ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black")
+
   } else if(GraphType == "FactorVar") {
+
     keep <- c(IndepVar, TargetColName, "N")
     actual <- preds3[, ..keep]
     actual[, Type := "actual"]
     data.table::setnames(actual, TargetColName, "Output")
-    keep <- c(IndepVar, PredictionColName)
-    preds3 <- preds3[, ..keep]
-    preds3[, Type := "predicted"]
-    data.table::setnames(preds3, PredictionColName, "Output")
-    preds3 <- data.table::rbindlist(list(actual, preds3), fill = TRUE)[order(-N)]
-    plot <- eval(
-      ggplot2::ggplot(preds3, ggplot2::aes(x = preds3[[IndepVar]], y = Output)) +
-       ggplot2::geom_bar(stat = "identity", position = "dodge", ggplot2::aes(fill = Type)) +
-        ggplot2::scale_fill_manual(values = c("red", "blue")) +
-        ggplot2::labs(
-          title = "Partial Dependence Calibration Plot",
-          subtitle = paste0("Black line -> mean(", TargetColName,"); Labels -> counts per bucket")) +
-        ggplot2::xlab(eval(IndepVar)) +
-        ggplot2::ylab(eval(TargetColName)) +
-        RemixAutoML::ChartTheme(Size = 13) +
-        ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black") +
-        ggplot2::geom_text(ggplot2::aes(label= N), vjust=-1.25, hjust = 1.5, color = "black"))
+    if(length(PredictionColName) != 0L) {
+      keep <- c(IndepVar, PredictionColName)
+      preds3 <- preds3[, ..keep]
+      preds3[, Type := "predicted"]
+      data.table::setnames(preds3, PredictionColName, "Output", skip_absent = TRUE)
+      preds3 <- data.table::rbindlist(list(actual, preds3), fill = TRUE)[order(-N)]
+    } else {
+      preds3 <- actual
+    }
+    plot <- ggplot2::ggplot(preds3, ggplot2::aes(x = get(IndepVar), y = Output))
+    plot <- plot + ggplot2::geom_bar(stat = "identity", position = "dodge", ggplot2::aes(fill = Type))
+    plot <- plot + ggplot2::scale_fill_manual(values = c("red", "blue"))
+    plot <- plot + ggplot2::labs(
+      title = "Partial Dependence",
+      subtitle = paste0("Black line -> mean(", TargetColName,"); Labels -> counts per bucket"))
+    plot <- plot + ggplot2::xlab(eval(IndepVar))
+    plot <- plot + ggplot2::ylab(eval(TargetColName))
+    plot <- plot + ChartTheme(Size = 13)
+    plot <- plot + ggplot2::geom_hline(yintercept = data[, mean(get(TargetColName))], color = "black")
+    plot <- plot + ggplot2::geom_text(ggplot2::aes(label= N), vjust=-1.25, hjust = 1.5, color = "black")
   }
 
   # Return plot----
   if(!is.null(DateColumn) && !is.null(DateAgg_3D)) {
-    return(list(CrossSection = plot, HeatMap = plot2))
+    return(list(CrossSection = eval(plot), HeatMap = plot2))
   } else {
-    return(plot)
+    return(eval(plot))
   }
 }
 

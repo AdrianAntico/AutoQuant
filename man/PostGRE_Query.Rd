@@ -37,8 +37,10 @@ PostGRE_Query get data from a database table
 }
 \examples{
 \dontrun{
+
+# Query data from table with Uppercase name
 data <- RemixAutoML::PostGRE_Query(
-  Query = 'Select * from static_data',
+  Query = paste0("SELECT * FROM ", shQuote('Devices')),
   Host = 'localhost',
   CloseConnection = FALSE,
   DBName = 'Testing',
@@ -53,6 +55,17 @@ data <- RemixAutoML::PostGRE_Query(
 # User = 'postgres'
 # Port = 5432
 # Password = 'Aa...'
+
+# Create Schema
+query <- "CREATE SCHEMA remixautoml AUTHORIZATION postgres;"
+RemixAutoML::PostGRE_Query(
+  Query = query,
+  Host = 'localhost',
+  CloseConnection = FALSE,
+  DBName = 'Testing',
+  User = 'postgres',
+  Port = 5432,
+  Password = 'Aa...')
 }
 
 }

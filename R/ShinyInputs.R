@@ -135,12 +135,7 @@ LoadDataInputs <- function(id = 'ExternalData',
       RemixAutoML::BlankRow(AppWidth),
       tags$h4(tags$b('External Data Loading')),
       shinyWidgets::dropdown(
-        right = DropdownRight,
-        animate = DropDownAnimate,
-        circle = FALSE,
-        tooltip = FALSE,
-        status = DropDownStatus,
-        width = LogoWidth,
+        right = DropdownRight, animate = DropDownAnimate, circle = FALSE, tooltip = FALSE, status = DropDownStatus, width = LogoWidth,
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'External Data')),
         RemixAutoML::BlankRow(AppWidth),
         shiny::fluidRow(
@@ -366,9 +361,9 @@ FE_NumericVariables <- function(id='NumericVariables',
               RemixAutoML::BlankRow(AppWidth),
               shiny::fluidRow(
                 width=AppWidth,
-                shiny::column(6L, align = 'center', shiny::uiOutput('PercentRank_ColNames')),
-                shiny::column(6L, align = 'center', shiny::uiOutput('PercentRank_GroupVars')),
-                shiny::column(6L, align = 'center', shiny::uiOutput('PercentRank_Granularity'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('PercentRank_ColNames')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('PercentRank_GroupVars')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('PercentRank_Granularity'))),
 
               # Blank space
               RemixAutoML::BlankRow(AppWidth),
@@ -395,7 +390,8 @@ FE_NumericVariables <- function(id='NumericVariables',
               shiny::fluidRow(
                 width=AppWidth,
                 shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_NumericVars')),
-                shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_InteractionDepth')),
+                shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_InteractionDepth'))),
+              shiny::fluidRow(
                 shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_Center')),
                 shiny::column(6L, align = 'center', shiny::uiOutput('AutoInteraction_Scale'))),
 
@@ -418,7 +414,7 @@ FE_NumericVariables <- function(id='NumericVariables',
             width = 3L,
             tags$h4(tags$b('Transformation')),
             shinyWidgets::dropdown(
-              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              right = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Transform Variables'))),
               RemixAutoML::BlankRow(AppWidth),
               shiny::fluidRow(
@@ -473,7 +469,7 @@ FE_CategoricalVariables <- function(id='CategoricalVariables',
                                     Style = 'gradient',
                                     Color = 'royal',
                                     Align='left',
-                                    DropDownRight=FALSE,
+                                    DropDownRight=TRUE,
                                     Animate=TRUE,
                                     Status='custom',
                                     H3Color = 'blue') {
@@ -498,14 +494,14 @@ FE_CategoricalVariables <- function(id='CategoricalVariables',
             width = 3L,
             tags$h4(tags$b('One Hot')),
             shinyWidgets::dropdown(
-              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              right = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Create Partial Dummy Variables'))),
               RemixAutoML::BlankRow(AppWidth),
               shiny::fluidRow(
                 width=AppWidth,
-                shiny::column(6L, align = 'center', shiny::uiOutput('DummifyDT_Cols')),
-                shiny::column(6L, align = 'center', shiny::uiOutput('DummifyDT_TopN')),
-                shiny::column(6L, align = 'center', shiny::uiOutput('DummifyDT_KeepBaseCols'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('DummifyDT_Cols')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('DummifyDT_TopN')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('DummifyDT_KeepBaseCols'))),
 
               # Blank space
               RemixAutoML::BlankRow(AppWidth),
@@ -526,14 +522,14 @@ FE_CategoricalVariables <- function(id='CategoricalVariables',
             width = 3L,
             tags$h4(tags$b('Char Encode')),
             shinyWidgets::dropdown(
-              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              right = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Categorical Encoding'))),
               RemixAutoML::BlankRow(AppWidth),
               shiny::fluidRow(
                 width=AppWidth,
-                shiny::column(6L, align = 'center', shiny::uiOutput('CategoricalEncoding_GroupVariables')),
-                shiny::column(6L, align = 'center', shiny::uiOutput('CategoricalEncoding_TargetVariable')),
-                shiny::column(6L, align = 'center', shiny::uiOutput('CategoricalEncoding_Method'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('CategoricalEncoding_GroupVariables')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('CategoricalEncoding_TargetVariable')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('CategoricalEncoding_Method'))),
 
               # Blank space
               RemixAutoML::BlankRow(AppWidth),
@@ -607,14 +603,14 @@ FE_WindowingVariables <- function(id='WindowingVariables',
             width = 3L,
             tags$h4(tags$b('Categorical Vars')),
             shinyWidgets::dropdown(
-              right = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              right = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Rolling Categorical'))),
               RemixAutoML::BlankRow(AppWidth),
               shiny::fluidRow(
                 width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_Targets')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_Lags')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_ModePeriods')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_Targets'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_ModePeriods'))),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_GroupingVars')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('AutoLagRollMode_SortDateName')),
@@ -752,79 +748,222 @@ FE_General <- function(id='GeneralFeatureEngineering',
   ns <- shiny::NS(id)
   shiny::tagList(
 
-    # Delete Features
+    # General FE
     shiny::column(
       width = ButtonWidth,
       align=Align,
 
       # Dropdown Button
-      tags$h4(tags$b('Delete Features')),
+      tags$h4(tags$b('Data Wrangling')),
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
         RemixAutoML::BlankRow(AppWidth),
 
-        # Dropdowns on same row: otherwise they get put on diff rows
+        # Row
         shiny::fluidRow(
+
+          # Delete Features
           shiny::column(
-            width = 6L,
-            shiny::uiOutput('DeleteVariables'))),
+            width = ButtonWidth,
+            align=Align,
 
-        # Blank space
-        RemixAutoML::BlankRow(AppWidth),
+            # Dropdown Button
+            tags$h4(tags$b('Delete Features')),
+            shinyWidgets::dropdown(
+              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+              RemixAutoML::BlankRow(AppWidth),
 
-        # Delete Features Button
-        shiny::fluidRow(
+              # Dropdowns on same row: otherwise they get put on diff rows
+              shiny::fluidRow(
+                shiny::column(
+                  width = 6L,
+                  shiny::uiOutput('DeleteVariables'))),
+
+              # Blank space
+              RemixAutoML::BlankRow(AppWidth),
+
+              # Delete Features Button
+              shiny::fluidRow(
+                shiny::column(
+                  width = 3L,
+                  shinyWidgets::actionBttn(
+                    inputId = 'FeatureEngineeringButton_DeleteFeatures',
+                    label = 'Run',
+                    icon = shiny::icon('chevron-right', lib='font-awesome'),
+                    style = Style,
+                    color = Color))),
+
+              # Add space at bottom of box
+              RemixAutoML::BlankRow(AppWidth)
+
+            )), # end column
+
+          # Concat Features
           shiny::column(
-            width = 3L,
-            shinyWidgets::actionBttn(
-              inputId = 'FeatureEngineeringButton_DeleteFeatures',
-              label = 'Run',
-              icon = shiny::icon('chevron-right', lib='font-awesome'),
-              style = Style,
-              color = Color))),
+            width = ButtonWidth,
+            align=Align,
 
-        # Add space at bottom of box
-        RemixAutoML::BlankRow(AppWidth)
+            # Dropdown Button
+            tags$h4(tags$b('Concat Features')),
+            shinyWidgets::dropdown(
+              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+              RemixAutoML::BlankRow(AppWidth),
 
-      )), # end column
+              # Dropdowns on same row: otherwise they get put on diff rows
+              shiny::fluidRow(
+                shiny::column(
+                  width = 6L,
+                  shiny::uiOutput('ConcatColumns'))),
 
-    # Concat Features
-    shiny::column(
-      width = ButtonWidth,
-      align=Align,
+              # Blank space
+              RemixAutoML::BlankRow(AppWidth),
 
-      # Dropdown Button
-      tags$h4(tags$b('Concat Features')),
-      shinyWidgets::dropdown(
-        right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
-        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
-        RemixAutoML::BlankRow(AppWidth),
+              # Delete Features Button
+              shiny::fluidRow(
+                shiny::column(
+                  width = 3L,
+                  shinyWidgets::actionBttn(
+                    inputId = 'FeatureEngineeringButton_ConcatColumns',
+                    label = 'Run',
+                    icon = shiny::icon('chevron-right', lib='font-awesome'),
+                    style = Style,
+                    color = Color))),
 
-        # Dropdowns on same row: otherwise they get put on diff rows
-        shiny::fluidRow(
-          shiny::column(
-            width = 6L,
-            shiny::uiOutput('ConcatColumns'))),
+              # Add space at bottom of box
+              RemixAutoML::BlankRow(AppWidth)
 
-        # Blank space
-        RemixAutoML::BlankRow(AppWidth),
+      ))),
 
-        # Delete Features Button
-        shiny::fluidRow(
-          shiny::column(
-            width = 3L,
-            shinyWidgets::actionBttn(
-              inputId = 'FeatureEngineeringButton_ConcatColumns',
-              label = 'Run',
-              icon = shiny::icon('chevron-right', lib='font-awesome'),
-              style = Style,
-              color = Color))),
-
-        # Add space at bottom of box
-        RemixAutoML::BlankRow(AppWidth)
+      # Add space at bottom of box
+      RemixAutoML::BlankRow(AppWidth)
 
       ))) # tagList
+}
+
+#' @title FE_DataSets
+#'
+#' @description Calendar Variables Dropdown
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'DataSets'
+#' @param AppWidth = AppWidth
+#' @param LogoWidth = LogoWidth
+#' @param ButtonWidth = 3L
+#' @param Style = 'gradient',
+#' @param Color = 'royal',
+#' @param Align = 'center'
+#' @param DropDownRight = FALSE
+#' @param Animate = TRUE
+#' @param Status = 'custom'
+#' @param H3Color = 'blue'
+#'
+#' @noRd
+FE_DataSets <- function(id='DataSets',
+                             AppWidth=AppWidth,
+                             LogoWidth=LogoWidth,
+                             ButtonWidth=3L,
+                             Style = 'gradient',
+                             Color = 'royal',
+                             Align='left',
+                             DropDownRight=FALSE,
+                             Animate=TRUE,
+                             Status='custom',
+                             H3Color = 'blue') {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::column(
+      width = ButtonWidth,
+      align=Align,
+
+      # Dropdown Button
+      tags$h4(tags$b('Data Sets')),
+      shinyWidgets::dropdown(
+        right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+        RemixAutoML::BlankRow(AppWidth),
+
+        # Dropdowns on same row: otherwise they get put on diff rows
+        shiny::fluidRow(
+
+          # Calendar Variables Selection
+          shiny::column(
+            width = 3L,
+            tags$h4(tags$b('Type Casting')),
+            shinyWidgets::dropdown(
+              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Type Conversion'))),
+              RemixAutoML::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(3L, align = 'center', shiny::uiOutput('ModelDataPrep_IgnoreCols')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('ModelDataPrep_CharToFactor')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('ModelDataPrep_FactorToChar')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('ModelDataPrep_DateToChar'))),
+              shiny::fluidRow(
+                shiny::column(3L, align = 'center', shiny::uiOutput('ModelDataPrep_IDateConversion')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('ModelDataPrep_RemoveDates')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('ModelDataPrep_IntToNumeric')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('ModelDataPrep_LogicalToBinary'))),
+
+              # Blank space
+              RemixAutoML::BlankRow(AppWidth),
+
+              # Date Variable Build Button
+              shiny::fluidRow(
+                shiny::column(
+                  width = 3L,
+                  shinyWidgets::actionBttn(
+                    inputId = 'FeatureEngineeringButton_ModelDataPrep',
+                    label = 'Run',
+                    icon = shiny::icon('chevron-right', lib='font-awesome'),
+                    style = Style,
+                    color = Color))))),
+
+          # Partition Data
+          shiny::column(
+            width = 3L,
+            tags$h4(tags$b('Partition Data')),
+            shinyWidgets::dropdown(
+              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Partition Data Sets'))),
+              RemixAutoML::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoDataPartition_Ratios_Train')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoDataPartition_Ratios_Validation')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoDataPartition_Ratios_Test'))),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoDataPartition_NumDataSets')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoDataPartition_PartitionType'))),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoDataPartition_StratifyCols')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('AutoDataPartition_DateColumn'))),
+
+              # Blank space
+              RemixAutoML::BlankRow(AppWidth),
+
+              # Build Button
+              shiny::fluidRow(
+                shiny::column(
+                  width = 3L,
+                  shinyWidgets::actionBttn(
+                    inputId = 'FeatureEngineeringButton_AutoDataPartition',
+                    label = 'Run',
+                    icon = shiny::icon('chevron-right', lib='font-awesome'),
+                    style = Style,
+                    color = Color)))))),
+
+        # Add space at bottom of box
+        RemixAutoML::BlankRow(AppWidth)
+
+      )))
 }
 
 #' @title PlotDropDownContents
@@ -856,6 +995,7 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
                                  Animate=TRUE,
                                  Status='custom',
                                  H3Color = 'blue') {
+  if(PlotNumber > 2) DropDownRight <- TRUE
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(

@@ -54,7 +54,8 @@ DataTable <- function(data) {
     extensions = c('Buttons','ColReorder'), # Only usable in Rmarkdown  'Select'),
     options = list(
       select = list(style = 'os', items = 'row'),
-      dom = 'Bfrtip',
+      dom = 'Brtip', #Bfrtip
+      #dom = 'ltipr',
       buttons = c('copy', 'csv', 'excel', 'pdf'), # Only usable in Rmarkdown 'selectRows', 'selectColumns', 'selectCells', 'selectAll', 'selectNone'),
       colReorder = TRUE,
       autoWidth = TRUE,
@@ -81,7 +82,7 @@ ExpandText <- function(x) {
 #'
 #' @noRd
 VarNamesDisplay <- function(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=NULL) {
-  if(any(c('Box','BoxPlot','ViolinPlot','Violin','Line','Bar','BarPlot','Scatter','Copula','CorrMatrix','Histogram','Hist') %in% PlotName)) {
+  if(any(c('Box','BoxPlot','ViolinPlot','Violin','Line','Bar','BarPlot','Scatter','Copula','CorrMatrix','Histogram','Hist','PartialDependenceLine','PartialDependenceBox','Partial_Dependence_Line','Partial_Dependence_Box') %in% PlotName)) {
     return(unique(c(DataNames, ModelDataNames)))
   } else {
     return(ModelDataNames)
@@ -294,7 +295,7 @@ AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = F
     if(Debug) print('aaip here 3')
     if(Debug) print(x)
   }
-  StandardPlots <- c('Histogram','BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix')
+  StandardPlots <- c('Histogram','BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','PartialDependenceLine','PartialDependenceBox')
   if(Debug) print('StandardPlots below')
   if(Debug) print(StandardPlots)
   if(Debug) print('Second for loop now ::::::::::::::::::::::::::::::::::::::::::')
@@ -546,7 +547,7 @@ rCodeContainer <- function(...) {
 }
 
 #' @noRd
-CEP <- function(x) if(missing(x)) 'NULL' else if(!exists('x')) 'NULL' else if(is.null(x)) "NULL" else if(identical(x, character(0))) "NULL" else if(identical(x, numeric(0))) "NULL" else if(identical(x, integer(0))) "NULL" else if(identical(x, logical(0))) "NULL" else if(x == "") "NULL" else if(is.na(x)) "NULL" else if(x == 'None') "NULL" else if(is.numeric(x)) x else if(length(x) > 1) paste0("c(", noquote(paste0("'", x, "'", collapse = ',')), ")") else paste0("'", x, "'")
+CEP <- function(x) if(any(missing(x))) 'NULL' else if(!exists('x')) 'NULL' else if(is.null(x)) "NULL" else if(identical(x, character(0))) "NULL" else if(identical(x, numeric(0))) "NULL" else if(identical(x, integer(0))) "NULL" else if(identical(x, logical(0))) "NULL" else if(any(x == "")) "NULL" else if(any(is.na(x))) "NULL" else if(any(x == 'None')) "NULL" else if(is.numeric(x)) x else if(length(x) > 1) paste0("c(", noquote(paste0("'", x, "'", collapse = ',')), ")") else paste0("'", x, "'")
 
 #' @noRd
 CEPP <- function(x, Default = NULL, Type = 'character') if(missing(x)) Default else if(!exists('x')) Default else if(length(x) == 0) Default else if(any(is.na(x))) Default else if(all(x == "")) Default else if(Type == 'numeric') RemixAutoML:::NumNull(x) else if(Type == 'character') RemixAutoML:::CharNull(x)
@@ -1015,8 +1016,7 @@ observeEventLoad <- function(input, InputVal = NULL, ObjectName = NULL) {
   shiny::observeEvent(eventExpr = input[[eval(InputVal)]], {
     inFile <- input[[eval(InputVal)]]
     e = new.env()
-    name <- load(inFile$datapath, envir = e)
-    assign(x = ObjectName, value = e[[name]], envir = .GlobalEnv)
+    assign(x = ObjectName, value = readRDS(inFile$datapath), envir = .GlobalEnv)
   })
 }
 
