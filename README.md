@@ -7896,7 +7896,6 @@ RatingsMatrix <- RemixAutoML::AutoRecommenderDataCreate(
   ProductColName = "StockCode",
   MetricColName = "TotalSales",
   ReturnMatrix = TRUE)
-}
 ```
 
 </p>
@@ -7918,7 +7917,6 @@ WinningModel <- RemixAutoML::AutoRecommender(
   RatingsKeep = 20,
   SkipModels = "AssociationRules",
   ModelMetric = "TPR")
-}
 ```
 
 </p>
