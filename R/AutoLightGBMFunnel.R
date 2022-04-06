@@ -717,6 +717,7 @@ AutoLightGBMFunnelCARMA <- function(data,
   if(!identical(drop, character(0))) data.table::set(data, j = c(drop), value = NULL)
 
   # ML Process: Train and Evaluate Models ----
+  # proc = 'eval'
   for(proc in Jobs) {
 
     # Admin: Function Similify ----
@@ -1168,8 +1169,8 @@ AutoLightGBMFunnelCARMA <- function(data,
         uniform_drop_dart = Uniform_Drop_Dart,
         top_rate_goss = Top_Rate_Goss,
         other_rate_goss = Other_Rate_Goss,
-        monotone_constraints = Monotone_Constraints,
-        monotone_constraints_method = Monotone_Constraints_Method,
+        monotone_constraints = NULL,
+        monotone_constraints_method = Monotone_Constraints_method,
         monotone_penalty = Monotone_Penalty,
         forcedsplits_filename = Forcedsplits_Filename, # use for AutoStack option; .json file
         refit_decay_rate = Refit_Decay_Rate,
