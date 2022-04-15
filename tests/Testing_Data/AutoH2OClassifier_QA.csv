@@ -1,10 +1,10 @@
 Class,Method,Success,Outcome
 DRF,TrainOnFull,Failure,Success
-DRF,Not,Failure,Success
-DRF,Not,Failure,Success
+DRF,Not,Failure,
+DRF,Not,Failure,
 GAM,TrainOnFull,Failure,
 GAM,Not,Failure,
-GAM,Not,Failure,
+GAM,Not,Success,
 GBM,TrainOnFull,Failure,
 GBM,Not,Failure,
 GBM,Not,Failure,

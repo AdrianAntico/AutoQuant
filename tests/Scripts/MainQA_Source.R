@@ -12,15 +12,15 @@ CSVPath <- 'C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV'
 
 # Run time table
 RunTimes <- data.table::data.table(
-  Job = c('CatBoost_Classifier','CatBoost_MultiClass','CatBoost_Regression',
-          'LightGBM_Classifier','LightGBM_MultiClass','LightGBM_Regression',
-          'XGBoost_Classifier','XGBoost_MultiClass','XGBoost_Regression',
+  Job = c('CatBoost_Classifier','CatBoost_MultiClass','CatBoost_Regression', 'CatBoost_Hurdle',
+          'LightGBM_Classifier','LightGBM_MultiClass','LightGBM_Regression', 'LightGBM_Hurdle',
+          'XGBoost_Classifier','XGBoost_MultiClass','XGBoost_Regression', 'XGBoost_Hurdle',
           'H2O_Classifier','H2O_MultiClass','H2O_Regression',
           'CatBoostCARMA','XGBoostCARMA','LightGBMCARMA',
-          'CatBoostHurdleCARMA',
+          'CatBoost_HurdleCARMA', 'XGBoost_HurdleCARMA', 'LightGBM_HurdleCARMA',
           'CatBoostVectorCARMA',
           "CatBoostFunnelCARMA","LightGBMFunnelCARMA","XGBoostFunnelCARMA"),
-  RunTimeMins = rep(NA_real_, 20))
+  RunTimeMins = rep(NA_real_, 25))
 
 # Helpers
 KeepList <- c('RunTimes','Counter','Job','Start','OverallStart','ScriptsPath','CSVPath')
