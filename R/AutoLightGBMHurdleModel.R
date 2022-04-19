@@ -1840,6 +1840,7 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
         }
       }
     }
+
   } else if(TrainOnFull) {
     ValidationData <- NULL
     TestData <- NULL
@@ -2393,11 +2394,11 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
           # Objective Parameters
           # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
           boost_from_average = Regressionboost_from_average,
-          alpha = Regressionalpha,
-          fair_c = Regressionfair_c,
-          poisson_max_delta_step = Regressionpoisson_max_delta_step,
-          tweedie_variance_power = Regressiontweedie_variance_power,
-          lambdarank_truncation_level = Regressionlambdarank_truncation_level,
+          alpha = NULL,
+          fair_c = NULL,
+          poisson_max_delta_step = NULL,
+          tweedie_variance_power = NULL,
+          lambdarank_truncation_level = NULL,
 
           # Metric Parameters (metric is in Core)
           # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters

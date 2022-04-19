@@ -258,7 +258,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
       for(tarlevel in as.character(unique(TargetLevels[["OriginalLevels"]]))) {
         TrainData[, p1 := get(tarlevel)]
-        TrainData[, paste0("Temp_",tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+        TrainData[, paste0("Temp_",tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
         EvalMetricsList[[paste0("TrainData_",tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0("Temp_",tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
         EvalMetrics2List[[paste0("TrainData_",tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0("Temp_",tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
         data.table::set(TrainData, j = c("p1",paste0("Temp_",tarlevel)), value = NULL)
@@ -266,7 +266,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     }
     for(tarlevel in as.character(unique(TargetLevels[["OriginalLevels"]]))) {
       ValidationData[, p1 := get(tarlevel)]
-      ValidationData[, paste0("Temp_",tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+      ValidationData[, paste0("Temp_",tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
       EvalMetricsList[[paste0("TestData_",tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0("Temp_",tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "threshold")
       EvalMetrics2List[[paste0("TestData_",tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0("Temp_",tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = "bins")
       data.table::set(ValidationData, j = c("p1",paste0("Temp_",tarlevel)), value = NULL)
@@ -288,7 +288,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
       for(tarlevel in as.character(unique(TargetLevels[["OriginalLevels"]]))) {
         TrainData[, p1 := get(tarlevel)]
-        TrainData[, paste0("Temp_",tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+        TrainData[, paste0("Temp_",tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
         if(length(unique(TrainData[[paste0('Temp_',tarlevel)]])) == 1) next
         Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0("Temp_",tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=FALSE, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
         PlotList[[paste0("Train_EvaluationPlot_",tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL
@@ -302,7 +302,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[["Train_VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[["Train_VariableImportance"]] <- VI_Plot(Type = "xgboost", VariableImportance)
     for(tarlevel in as.character(unique(TargetLevels[["OriginalLevels"]]))) {
       ValidationData[, p1 := get(tarlevel)]
-      ValidationData[, paste0("Temp_",tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+      ValidationData[, paste0("Temp_",tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
       if(length(unique(ValidationData[[paste0('Temp_',tarlevel)]])) == 1) next
       Output <- ML_EvalPlots(ModelType="classification", TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL)
       PlotList[[paste0("Test_EvaluationPlot_",tarlevel)]] <- Output$EvaluationPlot; Output$EvaluationPlot <- NULL

@@ -90,7 +90,7 @@
 #'   TestData = NULL,
 #'   TargetColumnName = 'Adrian',
 #'   FeatureColNames = names(data)[!names(data) %in%
-#'      c('IDcol_1','IDcol_2','Adrian')],
+#'     c('IDcol_1','IDcol_2','Adrian')],
 #'   PrimaryDateColumn = NULL,
 #'   WeightsColumnName = NULL,
 #'   IDcols = c('IDcol_1','IDcol_2'),

@@ -68,65 +68,65 @@
 #' # Run function
 #' TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 #'
-#'     # GPU or CPU and the number of available GPUs
-#'     task_type = 'GPU',
-#'     NumGPUs = 1,
-#'     TrainOnFull = FALSE,
-#'     DebugMode = FALSE,
+#'  # GPU or CPU and the number of available GPUs
+#'  task_type = 'GPU',
+#'  NumGPUs = 1,
+#'  TrainOnFull = FALSE,
+#'  DebugMode = FALSE,
 #'
-#'     # Metadata args
-#'     OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
-#'     ModelID = 'Test_Model_1',
-#'     model_path = normalizePath('./'),
-#'     metadata_path = normalizePath('./'),
-#'     SaveModelObjects = FALSE,
-#'     ReturnModelObjects = TRUE,
+#'  # Metadata args
+#'  OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+#'  ModelID = 'Test_Model_1',
+#'  model_path = normalizePath('./'),
+#'  metadata_path = normalizePath('./'),
+#'  SaveModelObjects = FALSE,
+#'  ReturnModelObjects = TRUE,
 #'
-#'     # Data args
-#'     data = data,
-#'     ValidationData = NULL,
-#'     TestData = NULL,
-#'     TargetColumnName = 'Adrian',
-#'     FeatureColNames = names(data)[!names(data) %in%
-#'       c('IDcol_1', 'IDcol_2','Adrian')],
-#'     PrimaryDateColumn = NULL,
-#'     WeightsColumnName = NULL,
-#'     ClassWeights = c(1L,1L,1L,1L,1L),
-#'     IDcols = c('IDcol_1','IDcol_2'),
+#'  # Data args
+#'  data = data,
+#'  ValidationData = NULL,
+#'  TestData = NULL,
+#'  TargetColumnName = 'Adrian',
+#'  FeatureColNames = names(data)[!names(data) %in%
+#'    c('IDcol_1', 'IDcol_2','Adrian')],
+#'  PrimaryDateColumn = NULL,
+#'  WeightsColumnName = NULL,
+#'  ClassWeights = c(1L,1L,1L,1L,1L),
+#'  IDcols = c('IDcol_1','IDcol_2'),
 #'
-#'     # Model evaluation
-#'     eval_metric = 'MCC',
-#'     loss_function = 'MultiClassOneVsAll',
-#'     grid_eval_metric = 'Accuracy',
-#'     MetricPeriods = 10L,
-#'     NumOfParDepPlots = 3,
+#'  # Model evaluation
+#'  eval_metric = 'MCC',
+#'  loss_function = 'MultiClassOneVsAll',
+#'  grid_eval_metric = 'Accuracy',
+#'  MetricPeriods = 10L,
+#'  NumOfParDepPlots = 3,
 #'
-#'     # Grid tuning args
-#'     PassInGrid = NULL,
-#'     GridTune = FALSE,
-#'     MaxModelsInGrid = 30L,
-#'     MaxRunsWithoutNewWinner = 20L,
-#'     MaxRunMinutes = 24L*60L,
-#'     BaselineComparison = 'default',
+#'  # Grid tuning args
+#'  PassInGrid = NULL,
+#'  GridTune = FALSE,
+#'  MaxModelsInGrid = 30L,
+#'  MaxRunsWithoutNewWinner = 20L,
+#'  MaxRunMinutes = 24L*60L,
+#'  BaselineComparison = 'default',
 #'
-#'     # ML args
-#'     langevin = FALSE,
-#'     diffusion_temperature = 10000,
-#'     Trees = 100L,
-#'     Depth = 4L,
-#'     LearningRate = NULL,
-#'     L2_Leaf_Reg = NULL,
-#'     RandomStrength = 1,
-#'     BorderCount = 254,
-#'     RSM = NULL,
-#'     BootStrapType = 'Bayesian',
-#'     GrowPolicy = 'SymmetricTree',
-#'     model_size_reg = 0.5,
-#'     feature_border_type = 'GreedyLogSum',
-#'     sampling_unit = 'Object',
-#'     subsample = NULL,
-#'     score_function = 'Cosine',
-#'     min_data_in_leaf = 1)
+#'  # ML args
+#'  langevin = FALSE,
+#'  diffusion_temperature = 10000,
+#'  Trees = 100L,
+#'  Depth = 4L,
+#'  LearningRate = NULL,
+#'  L2_Leaf_Reg = NULL,
+#'  RandomStrength = 1,
+#'  BorderCount = 254,
+#'  RSM = NULL,
+#'  BootStrapType = 'Bayesian',
+#'  GrowPolicy = 'SymmetricTree',
+#'  model_size_reg = 0.5,
+#'  feature_border_type = 'GreedyLogSum',
+#'  sampling_unit = 'Object',
+#'  subsample = NULL,
+#'  score_function = 'Cosine',
+#'  min_data_in_leaf = 1)
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model (the model), ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
@@ -331,7 +331,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
     if('score_traindata' %chin% tolower(OutputSelection) && !TrainOnFull) {
       for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
         TrainData[, p1 := get(tarlevel)]
-        TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+        TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
         EvalMetricsList[[paste0('TrainData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
         EvalMetrics2List[[paste0('TrainData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
         data.table::set(TrainData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
@@ -339,7 +339,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
     }
     for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
       ValidationData[, p1 := get(tarlevel)]
-      ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+      ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
       EvalMetricsList[[paste0('TestData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'threshold')
       EvalMetrics2List[[paste0('TestData_',tarlevel)]] <- BinaryMetrics(ClassWeights.=c(1,1), CostMatrixWeights.=c(1,0,0,1), SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, TrainOnFull.=TrainOnFull, TargetColumnName.=paste0('Temp_',tarlevel), ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Method = 'bins')
       data.table::set(ValidationData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
@@ -363,7 +363,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       if(!is.null(VariableImportance$Validation_Importance) && "plotly" %chin% installed.packages()) PlotList[['Validation_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)) else if(!is.null(VariableImportance$Validation_Importance)) PlotList[['Validation_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance$Validation_Importance)
       for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
         TrainData[, p1 := get(tarlevel)]
-        TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+        TrainData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
         if(length(unique(TrainData[[paste0('Temp_',tarlevel)]])) == 1) next
         Output <- ML_EvalPlots(ModelType='multiclass', DataType = 'Train', TrainOnFull.=TrainOnFull, ValidationData.=TrainData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)
         PlotList[[paste0('Train_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL
@@ -377,7 +377,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
     if(!is.null(VariableImportance[['Test_VariableImportance']]) && "plotly" %chin% installed.packages()) PlotList[['Test_VariableImportance']] <- plotly::ggplotly(VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])) else if(!is.null(VariableImportance[['Test_VariableImportance']])) PlotList[['Test_VariableImportance']] <- VI_Plot(Type = 'catboost', VariableImportance[['Test_VariableImportance']])
     for(tarlevel in as.character(unique(TargetLevels[['OriginalLevels']]))) {
       ValidationData[, p1 := get(tarlevel)]
-      ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(Predict == eval(tarlevel), 1, 0)]
+      ValidationData[, paste0('Temp_',tarlevel) := data.table::fifelse(get(TargetColumnName) == eval(tarlevel), 1, 0)]
       if(length(unique(ValidationData[[paste0('Temp_',tarlevel)]])) == 1) next
       Output <- ML_EvalPlots(ModelType='multiclass', DataType = 'Test', TrainOnFull.=TrainOnFull, ValidationData.=ValidationData, NumOfParDepPlots.=NumOfParDepPlots, VariableImportance.=VariableImportance, TargetColumnName.=paste0('Temp_',tarlevel), FeatureColNames.=FeatureColNames, SaveModelObjects.=SaveModelObjects, ModelID.=ModelID, metadata_path.=metadata_path, model_path.=model_path, LossFunction.=NULL, EvalMetric.=NULL, EvaluationMetrics.=NULL, predict.=NULL, TargetLevel = tarlevel)
       PlotList[[paste0('Test_EvaluationPlot_',tarlevel)]] <- Output[['EvaluationPlot']]; Output[['EvaluationPlot']] <- NULL

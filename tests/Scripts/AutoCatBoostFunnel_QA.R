@@ -6,7 +6,7 @@ QA_Results <- data.table::CJ(
   Training = "Failure",
   Forecast = "Failure")
 
-# run = 11
+# run = 9
 for(run in seq_len(QA_Results[,.N])) {
 
   # Get data ----

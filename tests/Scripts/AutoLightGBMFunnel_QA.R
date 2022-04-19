@@ -312,14 +312,17 @@ for(run in seq_len(QA_Results[,.N])) {
 
 # Main Args ----
 
-# run = 32
+# run = 1
 #
 # library(RemixAutoML)
 # library(data.table)
 # library(lubridate)
 #
+# # Need to load NON-EXPORTED FUNCTIONS - I don't use RemixAutoML:::... inside exported functions.
+# #  I just reference the function name. Thus, I need them predefined as well
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R"))
+# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_NumericTypes.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
@@ -334,51 +337,51 @@ for(run in seq_len(QA_Results[,.N])) {
 # # Get data
 # if(QA_Results[run, Group] == 0) {
 #   groupvars <- NULL
-#   ModelData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-NoGroup-ModelData.csv"), key = c(groupvars, "CalendarDateColumn"))
+#   ModelData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-NoGroup-ModelData.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   if(QA_Results[run, xregs] == 0) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-NoGroup-LeadsData.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-NoGroup-LeadsData.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 1) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-NoGroup-LeadsData-XREGS1.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-NoGroup-LeadsData-XREGS1.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 2) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-NoGroup-LeadsData-XREGS2.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-NoGroup-LeadsData-XREGS2.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 3) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-NoGroup-LeadsData-XREGS3.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-NoGroup-LeadsData-XREGS3.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   }
 # } else if(QA_Results[run, Group] == 1) {
 #   groupvars <- "MarketingSegments"
-#   ModelData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-OneGroup-ModelData.csv"), key = c(groupvars, "CalendarDateColumn"))
+#   ModelData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-OneGroup-ModelData.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   if(QA_Results[run, xregs] == 0) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-OneGroup-LeadsData.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-OneGroup-LeadsData.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 1) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-OneGroup-LeadsData-XREGS1.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-OneGroup-LeadsData-XREGS1.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 2) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-OneGroup-LeadsData-XREGS2.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-OneGroup-LeadsData-XREGS2.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 3) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-OneGroup-LeadsData-XREGS3.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-OneGroup-LeadsData-XREGS3.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   }
 # } else if(QA_Results[run, Group] == 2) {
 #   groupvars <- c("MarketingSegments","MarketingSegments2")
-#   ModelData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-TwoGroup-ModelData.csv"), key = c(groupvars, "CalendarDateColumn"))
+#   ModelData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-TwoGroup-ModelData.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   if(QA_Results[run, xregs] == 0) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-TwoGroup-LeadsData.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-TwoGroup-LeadsData.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 1) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-TwoGroup-LeadsData-XREGS1.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-TwoGroup-LeadsData-XREGS1.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 2) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-TwoGroup-LeadsData-XREGS2.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-TwoGroup-LeadsData-XREGS2.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 3) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-TwoGroup-LeadsData-XREGS3.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-TwoGroup-LeadsData-XREGS3.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   }
 # } else if(QA_Results[run, Group] == 3) {
 #   groupvars <- c("MarketingSegments","MarketingSegments2","MarketingSegments3")
-#   ModelData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-ThreeGroup-ModelData.csv"), key = c(groupvars, "CalendarDateColumn"))
+#   ModelData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-ThreeGroup-ModelData.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   if(QA_Results[run, xregs] == 0) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-ThreeGroup-LeadsData.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-ThreeGroup-LeadsData.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 1) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-ThreeGroup-LeadsData-XREGS1.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-ThreeGroup-LeadsData-XREGS1.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 2) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-ThreeGroup-LeadsData-XREGS2.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-ThreeGroup-LeadsData-XREGS2.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   } else if(QA_Results[run, xregs] == 3) {
-#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/QA_DataSets/ChainLadder-ThreeGroup-LeadsData-XREGS3.csv"), key = c(groupvars, "CalendarDateColumn"))
+#     LeadsData <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ChainLadder-ThreeGroup-LeadsData-XREGS3.csv"), key = c(groupvars, "CalendarDateColumn"))
 #   }
 # }
 #
@@ -393,7 +396,7 @@ for(run in seq_len(QA_Results[,.N])) {
 # MaxCohortPeriod = 15
 # DebugMode = TRUE
 #
-# # Join data
+# Join data
 # keep <- names(LeadsData)
 # keep <- keep[!keep %in% c(groupvars, "CalendarDateColumn")]
 # ModelData[LeadsData, paste0(keep) := mget(paste0("i.", keep))]
@@ -527,7 +530,11 @@ for(run in seq_len(QA_Results[,.N])) {
 # Gpu_Device_Id = -1
 # Gpu_Use_Dp = TRUE
 # Num_Gpu = 1
+# EncodingMethod = 'credibility'
 # proc = "eval"
+# GridEvalMetric = 'mae'
+# Monotone_Constraints_Method = 'advanced'
+# OutputSelection = 'EvalMetrics'
 #
 # # AutoLagRollScoring
 # data                 = temp
@@ -574,3 +581,102 @@ for(run in seq_len(QA_Results[,.N])) {
 # AscRowByGroup = RowNumsID
 # RecordsKeep = RowNumsKeep
 # AscRowRemove = TRUE
+
+# AutoLightGBMRegression()
+
+# Metadata arguments
+# ModelID = paste0(ModelID,"_", proc, "_")
+# model_path = ModelPath
+# metadata_path = MetaDataPath
+# SaveModelObjects = FALSE
+# ReturnModelObjects = TRUE
+# NThreads = NThreads
+# WeightsColumnName = WeightsColumnName
+# OutputSelection = OutputSelection
+# DebugMode = DebugMode
+# SaveInfoToPDF = FALSE
+# ReturnFactorLevels = TRUE
+# EncodingMethod = EncodingMethod
+# data = if(proc %chin% c("eval", "evaluate")) TrainData else data
+# TrainOnFull = if(proc %chin% c("eval", "evaluate")) FALSE else TRUE
+# ValidationData = if(proc %chin% c("eval", "evaluate")) ValidationData else NULL
+# TestData = if(proc %chin% c("eval", "evaluate")) TestData else NULL
+# TargetColumnName = ConversionRateMeasure
+# FeatureColNames = Features
+# PrimaryDateColumn = CohortDate
+# IDcols = idcols
+# TransformNumericColumns = NULL
+# Methods = TransformMethods
+# NumOfParDepPlots = NumOfParDepPlots
+# PassInGrid = PassInGrid
+# GridTune = GridTune
+# MaxModelsInGrid = MaxModelsInGrid
+# MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
+# MaxRunMinutes = MaxRunMinutes
+# BaselineComparison = BaselineComparison
+# grid_eval_metric = GridEvalMetric
+# device_type = tolower(Device_Type)
+# objective = LossFunction
+# metric = EvalMetric
+# input_model = Input_Model
+# task = Task
+# boosting = Boosting
+# LinearTree = LinearTree
+# Trees = NTrees
+# eta = ETA
+# num_leaves = Num_Leaves
+# deterministic = Deterministic
+# force_col_wise = Force_Col_Wise
+# force_row_wise = Force_Row_Wise
+# max_depth = Max_Depth
+# min_data_in_leaf = Min_Data_In_Leaf
+# min_sum_hessian_in_leaf = Min_Sum_Hessian_In_Leaf
+# bagging_freq = Bagging_Freq
+# bagging_fraction = Bagging_Fraction
+# feature_fraction = Feature_Fraction
+# feature_fraction_bynode = Feature_Fraction_Bynode
+# lambda_l1 = Lambda_L1
+# lambda_l2 = Lambda_L2
+# extra_trees = Extra_Trees
+# early_stopping_round = Early_Stopping_Round
+# first_metric_only = First_Metric_Only
+# max_delta_step = Max_Delta_Step
+# linear_lambda = Linear_Lambda
+# min_gain_to_split = Min_Gain_To_Split
+# drop_rate_dart = Drop_Rate_Dart
+# max_drop_dart = Max_Drop_Dart
+# skip_drop_dart = Skip_Drop_Dart
+# uniform_drop_dart = Uniform_Drop_Dart
+# top_rate_goss = Top_Rate_Goss
+# other_rate_goss = Other_Rate_Goss
+# monotone_constraints = Monotone_Constraints
+# monotone_constraints_method = Monotone_Constraints_Method
+# monotone_penalty = Monotone_Penalty
+# forcedsplits_filename = Forcedsplits_Filename
+# refit_decay_rate = Refit_Decay_Rate
+# path_smooth = Path_Smooth
+# max_bin = Max_Bin
+# min_data_in_bin = Min_Data_In_Bin
+# data_random_seed = Data_Random_Seed
+# is_enable_sparse = Is_Enable_Sparse
+# enable_bundle = Enable_Bundle
+# use_missing = Use_Missing
+# zero_as_missing = Zero_As_Missing
+# two_round = Two_Round
+# convert_model = Convert_Model
+# convert_model_language = Convert_Model_Language
+# boost_from_average = Boost_From_Average
+# alpha = Alpha
+# fair_c = Fair_C
+# poisson_max_delta_step = Poisson_Max_Delta_Step
+# tweedie_variance_power = Tweedie_Variance_Power
+# lambdarank_truncation_level = Lambdarank_Truncation_Level
+# is_provide_training_metric = TRUE
+# eval_at = Eval_At
+# num_machines = Num_Machines
+# gpu_platform_id = Gpu_Platform_Id
+# gpu_device_id = Gpu_Device_Id
+# gpu_use_dp = Gpu_Use_Dp
+# num_gpu = Num_Gpu
+# Monotone_Constraints_method = 'advanced'
+#

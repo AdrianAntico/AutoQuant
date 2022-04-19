@@ -965,8 +965,10 @@ AutoLagRollStats <- function(data,
   }
 
   # Simple impute missed ----
-  for(miss in seq_along(data)) {
-    data.table::set(data, i = which(is.na(data[[miss]])), j = miss, value = -1)
+  if(SimpleImpute) {
+    for(miss in seq_along(data)) {
+      data.table::set(data, i = which(is.na(data[[miss]])), j = miss, value = -1)
+    }
   }
 
   # Return data ----

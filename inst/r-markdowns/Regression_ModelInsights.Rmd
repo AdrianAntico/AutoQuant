@@ -1446,7 +1446,7 @@ This report is for investigating model performance from a variety of perspective
 
 ```{r Model_Evaluation_Metrics, echo=FALSE}
 if(!is.null(Test_EvalMetrics)) {
-  print(knitr::kable(Test_EvalMetrics))
+  print(RemixAutoML::DataTable(Test_EvalMetrics))
 } else {
   print('Test_EvalMetrics is NULL')
 }
@@ -1464,7 +1464,7 @@ if(!is.null(Test_EvalMetrics)) {
 
 ```{r Model_Evaluation_Metrics_Train, echo=FALSE}
 if(!is.null(Train_EvalMetrics)) {
-  print(knitr::kable(Train_EvalMetrics))
+  print(RemixAutoML::DataTable(Train_EvalMetrics))
 } else {
   print('Train_EvalMetrics is NULL')
 }
@@ -1484,7 +1484,7 @@ if(!is.null(Train_EvalMetrics)) {
 ```{r Model_VarImportanceTable, echo=FALSE}
 if(!is.null(All_Importance)) {
   data.table::setorderv(x = All_Importance, cols = names(All_Importance)[2L], order = -1L, na.last = TRUE)
-  print(knitr::kable(All_Importance))
+  print(RemixAutoML::DataTable(All_Importance))
 } else {
   print("No importance data was provided")
 }
@@ -1505,7 +1505,7 @@ if(!is.null(All_Importance)) {
 ```{r Model_IntImportanceTable, echo=FALSE}
 if(!is.null(All_Interaction)) {
   data.table::setorderv(x = All_Interaction, cols = names(All_Importance)[3L], order = -1L, na.last = TRUE)
-  print(knitr::kable(All_Interaction))
+  print(RemixAutoML::DataTable(All_Interaction))
 } else {
   print('No interaction importance data was provided')
 }
@@ -1544,21 +1544,21 @@ if(!is.null(All_Interaction)) {
 print('Test Importance')
 if(!is.null(Test_Importance)) {
   data.table::setnames(Test_Importance, 'Test_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Test_Importance, TopN = 15))
+  eval(RemixAutoML:::PlotlyConversion(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Test_Importance, TopN = 15)))
 } else {
   print("Test_Importance is NULL")
 }
 print('Validation Importance')
 if(!is.null(Validation_Importance)) {
   data.table::setnames(Validation_Importance, 'Validation_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Validation_Importance, TopN = 15))
+  eval(RemixAutoML:::PlotlyConversion(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Validation_Importance, TopN = 15)))
 } else {
   print("Validation_Importance is NULL")
 }
 print('Train Importance')
 if(!is.null(Train_Importance)) {
   data.table::setnames(Train_Importance, 'Train_Importance', 'Importance', skip_absent = TRUE)
-  eval(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Train_Importance, TopN = 15))
+  eval(RemixAutoML:::PlotlyConversion(RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = Train_Importance, TopN = 15)))
 } else {
   print("Train_Importance is NULL")
 }
@@ -1578,13 +1578,13 @@ if(!is.null(Train_Importance)) {
 ```{r EvaluationPlots_ResidualHistogram, echo=FALSE}
 print('Test Data')
 if(!is.null(Test_ResidualHistogram)) {
-  eval(Test_ResidualHistogram)
+  eval(RemixAutoML:::PlotlyConversion(Test_ResidualHistogram))
 } else {
   print('Test_ResidualHistogram is NULL or TestData is NULL')
 }
 print('Train + Validation Data')
 if(!is.null(Train_ResidualHistogram)) {
-  eval(Train_ResidualHistogram)
+  eval(RemixAutoML:::PlotlyConversion(Train_ResidualHistogram))
 } else {
   print('Train_ResidualHistogram is NULL or TrainData is NULL')
 }
@@ -1605,13 +1605,13 @@ if(!is.null(Train_ResidualHistogram)) {
 ```{r EvaluationPlots_CalibrationPlot, echo=FALSE}
 print('Test Data Evaluation Plots')
 if(!is.null(Test_EvaluationPlot)) {
-  eval(Test_EvaluationPlot)
+  eval(RemixAutoML:::PlotlyConversion(Test_EvaluationPlot))
 } else {
   print('Test_EvaluationPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Evaluation Plots')
 if(!is.null(Train_EvaluationPlot)) {
-  eval(Train_EvaluationPlot)
+  eval(RemixAutoML:::PlotlyConversion(Train_EvaluationPlot))
 } else {
   print('Test_EvaluationPlot is NULL or TrainData is NULL')
 }
@@ -1633,13 +1633,13 @@ if(!is.null(Train_EvaluationPlot)) {
 ```{r EvaluationPlots_CalibrationBoxPlot, echo=FALSE}
 print('Test Data Evaluation Box Plots')
 if(!is.null(Test_EvaluationBoxPlot)) {
-  eval(Test_EvaluationBoxPlot)
+  eval(RemixAutoML:::PlotlyConversion(Test_EvaluationBoxPlot))
 } else {
   print('Test_EvaluationBoxPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Evaluation Box Plots')
 if(!is.null(Train_EvaluationBoxPlot)) {
-  eval(Train_EvaluationBoxPlot)
+  eval(RemixAutoML:::PlotlyConversion(Train_EvaluationBoxPlot))
 } else {
   print('Train_EvaluationBoxPlot is NULL or TrainData is NULL')
 }
@@ -1661,13 +1661,13 @@ if(!is.null(Train_EvaluationBoxPlot)) {
 ```{r EvaluationPlots_ResidualsScatterPlot, echo=FALSE}
 print('Test Data Scatter Plot')
 if(!is.null(Test_ScatterPlot)) {
-  eval(Test_ScatterPlot)
+  eval(RemixAutoML:::PlotlyConversion(Test_ScatterPlot))
 } else {
   print('Test_ScatterPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Scatter Plot')
 if(!is.null(Train_ScatterPlot)) {
-  eval(Train_ScatterPlot)
+  eval(RemixAutoML:::PlotlyConversion(Train_ScatterPlot))
 } else {
   print('Train_ScatterPlot is NULL or TrainData is NULL')
 }
@@ -1689,13 +1689,13 @@ if(!is.null(Train_ScatterPlot)) {
 ```{r EvaluationPlots_ResidualsCopulaPlot, echo=FALSE}
 print('Test Data Copula Plot')
 if(!is.null(Test_CopulaPlot)) {
-  eval(Test_CopulaPlot)
+  eval(RemixAutoML:::PlotlyConversion(Test_CopulaPlot))
 } else {
   print('Test_CopulaPlot is NULL or TestData is NULL')
 }
 print('Train + Validation Data Copula Plot')
 if(!is.null(Train_CopulaPlot)) {
-  eval(Train_CopulaPlot)
+  eval(RemixAutoML:::PlotlyConversion(Train_CopulaPlot))
 } else {
   print('Train_CopulaPlot is NULL or TrainData is NULL')
 }
@@ -1720,7 +1720,7 @@ if(!is.null(Train_CopulaPlot)) {
 
 
 
-## <font size="5">Partial Dependence Plots: Numeric-Features</font> 
+## <font size="5">Partial Dependence Plots: Numeric-Features</font>
 <p>
 
 <details><summary>Expand to view content</summary>
@@ -1791,7 +1791,7 @@ options(warn = 1)
 ```{r Model_Evaluation_Metrics_NumericVariables_Box, echo=FALSE}
 options(warn = -1)
 if(!is.null(Test_ParDepBoxPlots) && length(Test_ParDepBoxPlots) > 0) {
-  eval(Test_ParDepBoxPlots) 
+  eval(Test_ParDepBoxPlots)
 } else {
   print('Test_ParDepBoxPlots is NULL and TestData is NULL')
 }
@@ -1811,7 +1811,7 @@ options(warn = 1)
 ```{r Model_Evaluation_Metrics_NumericVariables_Train_Box, echo=FALSE}
 options(warn = -1)
 if(!is.null(Train_ParDepBoxPlots) && length(Train_ParDepBoxPlots) > 0) {
-  eval(Train_ParDepBoxPlots) 
+  eval(Train_ParDepBoxPlots)
 } else {
   print('Train_ParDepBoxPlots is NULL and TestData is NULL')
 }
@@ -1912,7 +1912,7 @@ if(!is.null(ArgsList)) {
 
 ```{r Model_MetaData_GridMetrics, echo=FALSE}
 if(!is.null(GridMetrics)) {
-  print(knitr::kable(GridMetrics[order(-MetricValue)]))
+  print(RemixAutoML::DataTable(GridMetrics[order(-MetricValue)]))
 } else {
   print("GridTuning was not conducted")
 }

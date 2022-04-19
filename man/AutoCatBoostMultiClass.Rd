@@ -170,65 +170,65 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoCatBoostMultiClass(
 
-    # GPU or CPU and the number of available GPUs
-    task_type = 'GPU',
-    NumGPUs = 1,
-    TrainOnFull = FALSE,
-    DebugMode = FALSE,
+ # GPU or CPU and the number of available GPUs
+ task_type = 'GPU',
+ NumGPUs = 1,
+ TrainOnFull = FALSE,
+ DebugMode = FALSE,
 
-    # Metadata args
-    OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
-    ModelID = 'Test_Model_1',
-    model_path = normalizePath('./'),
-    metadata_path = normalizePath('./'),
-    SaveModelObjects = FALSE,
-    ReturnModelObjects = TRUE,
+ # Metadata args
+ OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+ ModelID = 'Test_Model_1',
+ model_path = normalizePath('./'),
+ metadata_path = normalizePath('./'),
+ SaveModelObjects = FALSE,
+ ReturnModelObjects = TRUE,
 
-    # Data args
-    data = data,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = 'Adrian',
-    FeatureColNames = names(data)[!names(data) \%in\%
-      c('IDcol_1', 'IDcol_2','Adrian')],
-    PrimaryDateColumn = NULL,
-    WeightsColumnName = NULL,
-    ClassWeights = c(1L,1L,1L,1L,1L),
-    IDcols = c('IDcol_1','IDcol_2'),
+ # Data args
+ data = data,
+ ValidationData = NULL,
+ TestData = NULL,
+ TargetColumnName = 'Adrian',
+ FeatureColNames = names(data)[!names(data) \%in\%
+   c('IDcol_1', 'IDcol_2','Adrian')],
+ PrimaryDateColumn = NULL,
+ WeightsColumnName = NULL,
+ ClassWeights = c(1L,1L,1L,1L,1L),
+ IDcols = c('IDcol_1','IDcol_2'),
 
-    # Model evaluation
-    eval_metric = 'MCC',
-    loss_function = 'MultiClassOneVsAll',
-    grid_eval_metric = 'Accuracy',
-    MetricPeriods = 10L,
-    NumOfParDepPlots = 3,
+ # Model evaluation
+ eval_metric = 'MCC',
+ loss_function = 'MultiClassOneVsAll',
+ grid_eval_metric = 'Accuracy',
+ MetricPeriods = 10L,
+ NumOfParDepPlots = 3,
 
-    # Grid tuning args
-    PassInGrid = NULL,
-    GridTune = FALSE,
-    MaxModelsInGrid = 30L,
-    MaxRunsWithoutNewWinner = 20L,
-    MaxRunMinutes = 24L*60L,
-    BaselineComparison = 'default',
+ # Grid tuning args
+ PassInGrid = NULL,
+ GridTune = FALSE,
+ MaxModelsInGrid = 30L,
+ MaxRunsWithoutNewWinner = 20L,
+ MaxRunMinutes = 24L*60L,
+ BaselineComparison = 'default',
 
-    # ML args
-    langevin = FALSE,
-    diffusion_temperature = 10000,
-    Trees = 100L,
-    Depth = 4L,
-    LearningRate = NULL,
-    L2_Leaf_Reg = NULL,
-    RandomStrength = 1,
-    BorderCount = 254,
-    RSM = NULL,
-    BootStrapType = 'Bayesian',
-    GrowPolicy = 'SymmetricTree',
-    model_size_reg = 0.5,
-    feature_border_type = 'GreedyLogSum',
-    sampling_unit = 'Object',
-    subsample = NULL,
-    score_function = 'Cosine',
-    min_data_in_leaf = 1)
+ # ML args
+ langevin = FALSE,
+ diffusion_temperature = 10000,
+ Trees = 100L,
+ Depth = 4L,
+ LearningRate = NULL,
+ L2_Leaf_Reg = NULL,
+ RandomStrength = 1,
+ BorderCount = 254,
+ RSM = NULL,
+ BootStrapType = 'Bayesian',
+ GrowPolicy = 'SymmetricTree',
+ model_size_reg = 0.5,
+ feature_border_type = 'GreedyLogSum',
+ sampling_unit = 'Object',
+ subsample = NULL,
+ score_function = 'Cosine',
+ min_data_in_leaf = 1)
 }
 }
 \seealso{

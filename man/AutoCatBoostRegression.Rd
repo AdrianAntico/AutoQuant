@@ -6,7 +6,7 @@
 \usage{
 AutoCatBoostRegression(
   OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
-  data,
+  data = NULL,
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = NULL,

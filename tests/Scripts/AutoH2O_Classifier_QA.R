@@ -15,7 +15,7 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = TRUE,
   MultiClass = FALSE)
 
-# run = 1
+# run = 6
 for(run in 1L:3L) {
 
   # Set training mode
@@ -84,7 +84,7 @@ for(run in 1L:3L) {
 
 
   # Outcome
-  if(!is.null(TestModel)) QA_Results[run, Outcome := "Success"]
+  if(!is.null(TestModel)) QA_Results[run, Success := "Success"]
   rm(TestModel)
   data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OClassifier_QA.csv")
   Sys.sleep(5)
