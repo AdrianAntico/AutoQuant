@@ -11,7 +11,7 @@ PostGRE_AppendData(
   Connection = NULL,
   CloseConnection = FALSE,
   Host = "localhost",
-  DBName = "RemixAutoML",
+  DBName = "Testing",
   User = "postgres",
   Port = 5432,
   Password = ""
@@ -55,7 +55,7 @@ RemixAutoML::PostGRE_AppendData(
 # data = data
 # CloseConnection = FALSE,
 # Host = 'localhost'
-# DBName = 'RemixAutoML'
+# DBName = 'Testing'
 # User = 'postgres'
 # Port = 5432
 # Password = 'Aa...'

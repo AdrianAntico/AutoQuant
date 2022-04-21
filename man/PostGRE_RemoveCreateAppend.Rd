@@ -2,11 +2,11 @@
 % Please edit documentation in R/SQL_Functions.R
 \name{PostGRE_RemoveCreateAppend}
 \alias{PostGRE_RemoveCreateAppend}
-\title{PostGRE_RemoveCreateAppend}
+\title{PostGRE_RemoveTable}
 \usage{
 PostGRE_RemoveCreateAppend(
-  data = NULL,
-  TableName = NULL,
+  data = data,
+  TableName = "",
   CloseConnection = TRUE,
   CreateSchema = NULL,
   Host = "localhost",
@@ -16,50 +16,36 @@ PostGRE_RemoveCreateAppend(
   Password = "",
   Temporary = FALSE,
   Connection = NULL,
-  Append = FALSE
+  Append = TRUE
 )
 }
 \arguments{
-\item{TableName}{Name of table you want created}
+\item{data}{See args from related functions}
 
-\item{CloseConnection}{= FALSE}
+\item{TableName}{See args from related functions}
 
-\item{Host}{If Connection is NULL then this must be supplied. Host name}
+\item{CloseConnection}{See args from related functions}
 
-\item{DBName}{If Connection is NULL then this must be supplied. database name}
+\item{CreateSchema}{See args from related functions}
 
-\item{User}{If Connection is NULL then this must be supplied. user name}
+\item{Host}{See args from related functions}
 
-\item{Port}{If Connection is NULL then this must be supplied. port name}
+\item{DBName}{See args from related functions}
 
-\item{Password}{If Connection is NULL then this must be supplied. user password}
+\item{User}{See args from related functions}
 
-\item{Connection}{NULL. If supplied, use this: Connection <- DBI::dbConnect(RPostgres::Postgres(), host = Host, dbname = DBName, user = User, port = Port, password = Password)}
+\item{Port}{See args from related functions}
+
+\item{Password}{See args from related functions}
+
+\item{Temporary}{See args from related functions}
+
+\item{Connection}{See args from related functions}
+
+\item{Append}{See args from related functions}
 }
 \description{
-PostGRE_RemoveCreateAppend will DROP the table specified
-}
-\examples{
-\dontrun{
-RemixAutoML::PostGRE_RemoveCreateAppend(
-  TableName = 'static_data',
-  Connection = NULL,
-  CloseConnection = FALSE,
-  Host = 'localhost',
-  DBName = 'RemixAutoML',
-  User = 'postgres',
-  Port = 5432,
-  Password = 'Aa...')
-
-# Host = 'localhost'
-# TableName = 'static_data'
-# Connection = NULL
-# DBName = 'Testing'
-# User = 'postgres'
-# Port = 5432
-# Password = 'Aa...'
-}
-
+PostGRE_RemoveTable will DROP the table specified
 }
 \seealso{
 Other Database: 

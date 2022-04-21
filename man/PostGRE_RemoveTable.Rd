@@ -9,7 +9,7 @@ PostGRE_RemoveTable(
   Connection = NULL,
   CloseConnection = FALSE,
   Host = "localhost",
-  DBName = "RemixAutoML",
+  DBName = "Testing",
   User = "postgres",
   Port = 5432,
   Password = ""
@@ -42,7 +42,7 @@ RemixAutoML::PostGRE_RemoveTable(
   Connection = NULL,
   CloseConnection = FALSE,
   Host = 'localhost',
-  DBName = 'RemixAutoML',
+  DBName = 'Testing',
   User = 'postgres',
   Port = 5432,
   Password = 'Aa...')
@@ -50,7 +50,7 @@ RemixAutoML::PostGRE_RemoveTable(
 # Host = 'localhost'
 # TableName = 'static_data'
 # Connection = NULL
-# DBName = 'RemixAutoML'
+# DBName = 'Testing'
 # User = 'postgres'
 # Port = 5432
 # Password = 'Aa...'

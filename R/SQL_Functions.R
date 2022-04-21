@@ -1109,6 +1109,98 @@ PostGRE_RemoveTable <- function(TableName = NULL,
   }
 }
 
+#' @title PostGRE_RemoveTable
+#'
+#' @description PostGRE_RemoveTable will DROP the table specified
+#'
+#' @author Adrian Antico
+#' @family Database
+#'
+#' @param data See args from related functions
+#' @param TableName See args from related functions
+#' @param CloseConnection See args from related functions
+#' @param CreateSchema See args from related functions
+#' @param Host See args from related functions
+#' @param DBName See args from related functions
+#' @param User See args from related functions
+#' @param Port See args from related functions
+#' @param Password See args from related functions
+#' @param Temporary See args from related functions
+#' @param Connection See args from related functions
+#' @param Append See args from related functions
+#'
+#' @export
+PostGRE_RemoveCreateAppend <- function(data = data,
+                                       TableName = '',
+                                       CloseConnection = TRUE,
+                                       CreateSchema = NULL,
+                                       Host = 'localhost',
+                                       DBName = 'RemixAutoML',
+                                       User = 'postgres',
+                                       Port = 5432,
+                                       Password = '',
+                                       Temporary = FALSE,
+                                       Connection = NULL,
+                                       Append = TRUE) {
+
+  # Rename
+  DBName. <- DBName
+  Schema. <- CreateSchema
+  TableName. <- TableName
+  Append. <- Append
+  Connection. <- Connection
+  CloseConnection. <- CloseConnection
+  Temporary. <- Temporary
+  Host. <- Host
+  User. <- User
+  Port. <- Port
+  Password. <- Password
+
+  # Remove
+  tryCatch({
+    PostGRE_RemoveTable(
+      TableName = TableName.,
+      Connection = Connection.,
+      CloseConnection = CloseConnection.,
+      Host = Host.,
+      DBName = DBName.,
+      User = User.,
+      Port = Port.,
+      Password = Password.)
+    }, error = function(x) NULL)
+
+  # Create
+  tryCatch({
+    PostGRE_CreateTable(
+      data = data,
+      DBName = DBName.,
+      Schema = Schema.,
+      TableName = TableName.,
+      Connection = Connection.,
+      CloseConnection = CloseConnection.,
+      Temporary = Temporary.,
+      Host = Host.,
+      User = User.,
+      Port = Port.,
+      Password = Password.)
+  }, error = function(x) NULL)
+
+  # Add data
+  tryCatch({
+    PostGRE_AppendData(
+      data = data,
+      TableName = TableName.,
+      Append = Append.,
+      Connection = Connection.,
+      CloseConnection = CloseConnection.,
+      Host = Host.,
+      DBName = DBName.,
+      User = User.,
+      Port = Port.,
+      Password = Password.)
+  }, error = function(x) NULL)
+}
+
 #' @noRd
 Post_Query_Helper <- function(RefTable){
   .RefTable <- RefTable
@@ -1154,16 +1246,5 @@ Post_Append_Helper <- function(data, tableName){
 #   User = 'postgres',
 #   Port = 5432,
 #   Password = 'Aa...')
-#
-# DBName = 'RemixAutoML'
-# SchemaName = 'public'
-# TableName = 'POS'
-# Append = TRUE
-# Host = 'localhost'
-# User = 'postgres'
-# Port = 5432
-# Password = 'Aa1028#@'
-# CloseConnection = NULL
-# Temporary = FALSE
-# CreateSchema = NULL
+
 

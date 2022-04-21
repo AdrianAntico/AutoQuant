@@ -48,7 +48,7 @@ PostGRE_CreateTable get data from a database table
 \dontrun{
 RemixAutoML::PostGRE_CreateTable(
   data,
-  DBName = 'RemixAutoML',
+  DBName = 'Testing',
   Schema = NULL,
   TableName = NULL,
   Temporary = FALSE,
