@@ -46,6 +46,24 @@ body, h1, h2, h3, h4, h5, h6 {
   color: #4a44fc;
 }
 
+.btn-default {
+	background-image: linear-gradient(to top, #6265fc, #5053fa, #3a3dfc);
+  border: #4a44fc;
+  border-style: solid;
+  color: #4a44fc;
+}
+
+/*color: #333;
+	background-color: #fff;
+	border-color: #ccc  */
+
+.btn .btn-default .shiny-download-link .shiny-bound-output {
+  background-image: linear-gradient(to top, #6265fc, #5053fa, #3a3dfc);
+  border: #4a44fc;
+  border-style: solid;
+  color: #4a44fc;
+}
+
 /* THIS IS THE COLOR OF THE BOXES */
 .box.box-solid.box-danger {
   background-image: linear-gradient(to top, #f7f7f7, #dfe3ee, #d0dcf4);
@@ -1678,7 +1696,7 @@ pre code {
 		width: 25%
 	}
 	.col-sm-4 {
-		width: 33.33333%
+		width: 33.33333%;
 	}
 	.col-sm-5 {
 		width: 41.66667%
@@ -3151,11 +3169,7 @@ fieldset[disabled] a.btn {
 	pointer-events: none
 }
 
-.btn-default {
-	color: #333;
-	background-color: #fff;
-	border-color: #ccc
-}
+
 
 .btn-default:focus,
 .btn-default.focus {

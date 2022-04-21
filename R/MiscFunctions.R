@@ -327,3 +327,7 @@ LogicalColNames <- function(data) {
 # ColNameFilter(data, Types = 'charcter')
 # ColNameFilter(data, Types = 'logical')
 
+#' @noRd
+Names2Vector <- function(xx) {
+  for(gg in seq_along(names(xx))) if(gg == 1L) cat(paste0("c('",names(xx)[gg], "',\n", collapse = "")) else if(gg != max(seq_along(names(xx)))) cat(paste0("  '", names(xx)[gg], "',\n")) else cat(paste0("  '", names(xx)[gg], "')\n"))
+}

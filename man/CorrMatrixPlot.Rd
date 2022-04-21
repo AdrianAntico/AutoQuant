@@ -4,12 +4,14 @@
 \alias{CorrMatrixPlot}
 \title{CorrMatrixPlot}
 \usage{
-CorrMatrixPlot(data = NULL, CorrVars = NULL)
+CorrMatrixPlot(data = NULL, CorrVars = NULL, Method = "spearman")
 }
 \arguments{
 \item{data}{Source data.table}
 
 \item{CorrVars}{Column names of variables you want included in the correlation matrix}
+
+\item{Method}{'spearman' default, 'pearson' otherwise}
 }
 \description{
 Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.

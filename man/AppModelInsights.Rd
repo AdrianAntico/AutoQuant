@@ -5,10 +5,10 @@
 \title{AppModelInsights}
 \usage{
 AppModelInsights(
-  ModelOutputList,
   dt = NULL,
   PlotType = NULL,
   TargetVar = NULL,
+  TargetLevel = NULL,
   PredictVar = NULL,
   PDPVar = NULL,
   DateVar = NULL,
@@ -17,19 +17,18 @@ AppModelInsights(
   GamFit = FALSE,
   Buckets = 20,
   ShapAgg = "mean",
-  Rebuild = FALSE,
   Check2 = FALSE,
   Debug = FALSE
 )
 }
 \arguments{
-\item{ModelOutputList}{output list}
-
 \item{dt}{= NULL,}
 
 \item{PlotType}{= NULL,}
 
 \item{TargetVar}{= isolate(YVar()),}
+
+\item{TargetLevel}{= NULL,}
 
 \item{PredictVar}{= isolate(ScoreVar()),}
 
@@ -47,14 +46,31 @@ AppModelInsights(
 
 \item{ShapAgg}{A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'geomean', 'harmmean', 'sd', 'median', 'absmedian', 'medianabs'}
 
-\item{Rebuild}{= FALSE,}
-
 \item{Check2}{= FALSE,}
 
 \item{Debug}{= FALSE}
 }
 \description{
 Plot model insights in app
+}
+\examples{
+\dontrun{
+dt = NULL,
+PlotType = NULL,
+TargetVar = NULL,
+TargetLevel = NULL,
+PredictVar = NULL,
+PDPVar = NULL,
+DateVar = NULL,
+FacetVar1 = NULL,
+FacetVar2 = NULL,
+GamFit = FALSE,
+Buckets = 20,
+ShapAgg = 'mean',
+Check2 = FALSE,
+Debug = FALSE
+}
+
 }
 \seealso{
 Other Graphics: 

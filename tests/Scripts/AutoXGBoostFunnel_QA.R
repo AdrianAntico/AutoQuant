@@ -6,7 +6,7 @@ QA_Results <- data.table::CJ(
   Training = "Failure",
   Forecast = "Failure")
 
-# run = 25
+# run = 1
 for(run in seq_len(QA_Results[,.N])) {
 
   # Print run number

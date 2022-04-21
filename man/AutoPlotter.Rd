@@ -14,6 +14,7 @@ AutoPlotter(
   YMax = NULL,
   XMin = NULL,
   XMax = NULL,
+  MaxGroupTS = 50,
   ColorVariables = NULL,
   SizeVar1 = "None",
   FacetVar1 = "None",
@@ -59,6 +60,8 @@ AutoPlotter(
 \item{XMin}{= input[['XMin']]}
 
 \item{XMax}{= input[['XMax']]}
+
+\item{MaxGroupTS}{= 50,}
 
 \item{ColorVariables}{= shiny::isolate(SelectedGroups())}
 

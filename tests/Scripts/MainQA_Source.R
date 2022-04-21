@@ -7,8 +7,9 @@
 # Use job
 Job <- FALSE
 OverallStart <- Sys.time()
-ScriptsPath <- 'C:/Users/Bizon/Documents/GitHub/QA_Code'
-CSVPath <- 'C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV'
+ScriptsPath <- 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Scripts'
+CSVPath <- 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets'
+OutputPath <- 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data'
 
 # Run time table
 RunTimes <- data.table::data.table(
@@ -23,7 +24,7 @@ RunTimes <- data.table::data.table(
   RunTimeMins = rep(NA_real_, 25))
 
 # Helpers
-KeepList <- c('RunTimes','Counter','Job','Start','OverallStart','ScriptsPath','CSVPath')
+KeepList <- c('RunTimes','Counter','Job','Start','OverallStart','ScriptsPath','CSVPath','OutputPath')
 Packages <- c('RemixAutoML','data.table')
 
 # Incrementer
@@ -413,10 +414,10 @@ Counter <- Counter + 1L
 # . ----
 
 # CatBoost Evaluation ----
-CatBoost_QA_Results_Classifier <- data.table::fread(file.path(CSVPath, 'AutoCatBoostClassifier_QA.csv'))
-CatBoost_QA_Results_MultiClass <- data.table::fread(file.path(CSVPath, 'AutoCatBoostMultiClass_QA.csv'))
-CatBoost_QA_Results_Regression <- data.table::fread(file.path(CSVPath, 'AutoCatBoostRegression_QA.csv'))
-CatBoost_QA_Results_HurdleModel <- data.table::fread(file.path(CSVPath, 'AutoCatBoostHurdleModel_QA.csv'))
+CatBoost_QA_Results_Classifier <- data.table::fread(file.path(OutputPath, 'AutoCatBoostClassifier_QA.csv'))
+CatBoost_QA_Results_MultiClass <- data.table::fread(file.path(OutputPath, 'AutoCatBoostMultiClass_QA.csv'))
+CatBoost_QA_Results_Regression <- data.table::fread(file.path(OutputPath, 'AutoCatBoostRegression_QA.csv'))
+CatBoost_QA_Results_HurdleModel <- data.table::fread(file.path(OutputPath, 'AutoCatBoostHurdleModel_QA.csv'))
 CatBoost_QA <- data.table::rbindlist(list(
   CatBoost_QA_Results_Classifier[, Type := 'Classifier'][, Model := 'CatBoost'],
   CatBoost_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'CatBoost'],
@@ -428,10 +429,10 @@ View(CatBoost_QA)
 # . ----
 
 # LightGBM Evaluation ----
-LightGBM_QA_Results_Classifier <- data.table::fread(file.path(CSVPath, 'AutoLightGBMClassifier_QA.csv'))
-LightGBM_QA_Results_MultiClass <- data.table::fread(file.path(CSVPath, 'AutoLightGBMMultiClass_QA.csv'))
-LightGBM_QA_Results_Regression <- data.table::fread(file.path(CSVPath, 'AutoLightGBMRegression_QA.csv'))
-LightGBM_QA_Results_HurdleModel <- data.table::fread(file.path(CSVPath, 'AutoLightGBMHurdleModel_QA.csv'))
+LightGBM_QA_Results_Classifier <- data.table::fread(file.path(OutputPath, 'AutoLightGBMClassifier_QA.csv'))
+LightGBM_QA_Results_MultiClass <- data.table::fread(file.path(OutputPath, 'AutoLightGBMMultiClass_QA.csv'))
+LightGBM_QA_Results_Regression <- data.table::fread(file.path(OutputPath, 'AutoLightGBMRegression_QA.csv'))
+LightGBM_QA_Results_HurdleModel <- data.table::fread(file.path(OutputPath, 'AutoLightGBMHurdleModel_QA.csv'))
 LightGBM_QA <- data.table::rbindlist(list(
   LightGBM_QA_Results_Classifier[, Type := 'Classifier'][, Model := 'LightGBM'],
   LightGBM_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'LightGBM'],
@@ -443,10 +444,10 @@ View(LightGBM_QA)
 # . ----
 
 # XGBoost Evaluation ----
-XGBoost_QA_Results_Classifier <- data.table::fread(file.path(CSVPath, 'AutoXGBoostClassifier_QA.csv'))
-XGBoost_QA_Results_MultiClass <- data.table::fread(file.path(CSVPath, 'AutoXGBoostMultiClass_QA.csv'))
-XGBoost_QA_Results_Regression <- data.table::fread(file.path(CSVPath, 'AutoXGBoostRegression_QA.csv'))
-XGBoost_QA_Results_HurdleModel <- data.table::fread(file.path(CSVPath, 'AutoXGBoostHurdleModel_QA.csv'))
+XGBoost_QA_Results_Classifier <- data.table::fread(file.path(OutputPath, 'AutoXGBoostClassifier_QA.csv'))
+XGBoost_QA_Results_MultiClass <- data.table::fread(file.path(OutputPath, 'AutoXGBoostMultiClass_QA.csv'))
+XGBoost_QA_Results_Regression <- data.table::fread(file.path(OutputPath, 'AutoXGBoostRegression_QA.csv'))
+XGBoost_QA_Results_HurdleModel <- data.table::fread(file.path(OutputPath, 'AutoXGBoostHurdleModel_QA.csv'))
 XGBoost_QA <- data.table::rbindlist(list(
   XGBoost_QA_Results_Classifier[, Type := 'Classifier'][, Model := 'XGBoost'],
   XGBoost_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'XGBoost'],
@@ -458,9 +459,9 @@ View(XGBoost_QA)
 # . ----
 
 # H2O Evaluation ----
-H2O_QA_Results_Classifier <- data.table::fread(file.path(CSVPath, 'AutoCatBoostClassifier_QA.csv'))
-H2O_QA_Results_MultiClass <- data.table::fread(file.path(CSVPath, 'AutoCatBoostMultiClass_QA.csv'))
-H2O_QA_Results_Regression <- data.table::fread(file.path(CSVPath, 'AutoCatBoostRegression_QA.csv'))
+H2O_QA_Results_Classifier <- data.table::fread(file.path(OutputPath, 'AutoCatBoostClassifier_QA.csv'))
+H2O_QA_Results_MultiClass <- data.table::fread(file.path(OutputPath, 'AutoCatBoostMultiClass_QA.csv'))
+H2O_QA_Results_Regression <- data.table::fread(file.path(OutputPath, 'AutoCatBoostRegression_QA.csv'))
 H2O_QA <- data.table::rbindlist(list(
   H2O_QA_Results_Classifier[, Type := 'Classifier'][, Model := 'h2o'],
   H2O_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'h2o'],
@@ -471,9 +472,9 @@ View(H2O_QA)
 # . ----
 
 # CARMA Evaluation ----
-CatBoostCARMA <- data.table::fread(file.path(CSVPath, 'AutoCatBoostCARMA_QA.csv'))
-XGBoostCARMA <- data.table::fread(file.path(CSVPath, 'AutoXGBoostCARMA_QA.csv'))
-LightGBMCARMA <- data.table::fread(file.path(CSVPath, 'AutoLightGBMCARMA_QA.csv'))
+CatBoostCARMA <- data.table::fread(file.path(OutputPath, 'AutoCatBoostCARMA_QA.csv'))
+XGBoostCARMA <- data.table::fread(file.path(OutputPath, 'AutoXGBoostCARMA_QA.csv'))
+LightGBMCARMA <- data.table::fread(file.path(OutputPath, 'AutoLightGBMCARMA_QA.csv'))
 CARMA_QA <- data.table::rbindlist(list(
   CatBoostCARMA[, Type := 'CARMA'][, Model := 'CatBoost'],
   XGBoostCARMA[, Type := 'CARMA'][, Model := 'XGBoost'],
@@ -484,9 +485,9 @@ View(CARMA_QA)
 # . ----
 
 # Hurdle CARMA Evaluation ----
-CatBoostHurdleCARMA <- data.table::fread(file.path(CSVPath, 'AutoCatBoostHurdleCARMA_QA.csv'))
-XGBoostHurdleCARMA <- data.table::fread(file.path(CSVPath, 'AutoXGBoostHurdleCARMA_QA.csv'))
-LightGBMHurdleCARMA <- data.table::fread(file.path(CSVPath, 'AutoLightGBMHurdleCARMA_QA.csv'))
+CatBoostHurdleCARMA <- data.table::fread(file.path(OutputPath, 'AutoCatBoostHurdleCARMA_QA.csv'))
+XGBoostHurdleCARMA <- data.table::fread(file.path(OutputPath, 'AutoXGBoostHurdleCARMA_QA.csv'))
+LightGBMHurdleCARMA <- data.table::fread(file.path(OutputPath, 'AutoLightGBMHurdleCARMA_QA.csv'))
 HurdleCARMA_QA <- data.table::rbindlist(list(
   CatBoostHurdleCARMA[, Type := 'Hurdle_CARMA'][, Model := 'CatBoost'],
   XGBoostHurdleCARMA[, Type := 'Hurdle_CARMA'][, Model := 'XGBoost'],
@@ -497,15 +498,15 @@ View(HurdleCARMA_QA)
 # . ----
 
 # Vector CARMA Evaluation ----
-CatBoostVectorCARMA <- data.table::fread(file.path(CSVPath, 'AutoCatBoostVectorCARMA_QA.csv'))
+CatBoostVectorCARMA <- data.table::fread(file.path(OutputPath, 'AutoCatBoostVectorCARMA_QA.csv'))
 View(CatBoostVectorCARMA)
 
 # . ----
 
 # Funnel CARMA Evaluation ----
-CatBoostFunnel <- data.table::fread(file.path(CSVPath, 'AutoCatBoostFunnel_QA.csv'))
-LightGBMFunnel <- data.table::fread(file.path(CSVPath, 'AutoLightGBMFunnel_QA.csv'))
-XGBoostFunnel <- data.table::fread(file.path(CSVPath, 'AutoXGBoostFunnel_QA.csv'))
+CatBoostFunnel <- data.table::fread(file.path(OutputPath, 'AutoCatBoostFunnel_QA.csv'))
+LightGBMFunnel <- data.table::fread(file.path(OutputPath, 'AutoLightGBMFunnel_QA.csv'))
+XGBoostFunnel <- data.table::fread(file.path(OutputPath, 'AutoXGBoostFunnel_QA.csv'))
 Funnel_QA <- data.table::rbindlist(list(
   CatBoostFunnel[, Type := 'Funnel_CARMA'][, Model := 'CatBoost'],
   LightGBMFunnel[, Type := 'Funnel_CARMA'][, Model := 'LightGBM'],

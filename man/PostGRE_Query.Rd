@@ -9,7 +9,7 @@ PostGRE_Query(
   Connection = NULL,
   CloseConnection = FALSE,
   Host = "localhost",
-  DBName = "Testing",
+  DBName = "RemixAutoML",
   User = "postgres",
   Port = 5432,
   Password = ""
@@ -43,14 +43,14 @@ data <- RemixAutoML::PostGRE_Query(
   Query = paste0("SELECT * FROM ", shQuote('Devices')),
   Host = 'localhost',
   CloseConnection = FALSE,
-  DBName = 'Testing',
+  DBName = 'RemixAutoML',
   User = 'postgres',
   Port = 5432,
   Password = 'Aa...')
 
 # Query = 'Select * from static_data'
 # Host = 'localhost'
-# DBName = 'Testing'
+# DBName = 'RemixAutoML'
 # CloseConnection = FALSE,
 # User = 'postgres'
 # Port = 5432
@@ -62,7 +62,7 @@ RemixAutoML::PostGRE_Query(
   Query = query,
   Host = 'localhost',
   CloseConnection = FALSE,
-  DBName = 'Testing',
+  DBName = 'RemixAutoML',
   User = 'postgres',
   Port = 5432,
   Password = 'Aa...')
@@ -74,6 +74,7 @@ Other Database:
 \code{\link{AutoDataDictionaries}()},
 \code{\link{PostGRE_AppendData}()},
 \code{\link{PostGRE_CreateTable}()},
+\code{\link{PostGRE_RemoveCreateAppend}()},
 \code{\link{PostGRE_RemoveTable}()},
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},

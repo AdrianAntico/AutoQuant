@@ -1,3 +1,180 @@
+#' @param Debug = Debug
+#'
+#' @noRd
+ChoicesByType <- function(data) {
+  categorical_cols <- RemixAutoML:::CEPP(names(data)[c(unique(which(unlist(lapply(data, is.character))), which(unlist(lapply(data, is.factor)))))])
+  date_cols <- RemixAutoML:::CEPP(names(data)[c(unique(which(unlist(lapply(data, lubridate::is.Date))), which(unlist(lapply(data, lubridate::is.POSIXct)))))])
+  numeric_cols <- RemixAutoML:::CEPP(names(data)[which(unlist(lapply(data, is.numeric)))])
+  logical_cols <- RemixAutoML:::CEPP(names(data)[which(unlist(lapply(data, is.logical)))])
+  return(list(
+    Date = date_cols,
+    Categorical = categorical_cols,
+    Numeric = numeric_cols,
+    Logical = logical_cols))
+}
+
+#' @param List = PlotDropDown1
+#' @param InputName = 'Plot1_SelectData'
+#' @param ArgName = 'SelectedDefault'
+#' @param Default = names(DataList)[[1L]]
+#' @param Debug = Debug
+#'
+#' @noRd
+IntraSessionDefaults <- function(List = PlotDropDown1,
+                                 InputName = 'Plot1_SelectData',
+                                 ArgName = 'SelectedDefault',
+                                 Default = names(DataList)[[1L]],
+                                 Debug = Debug) {
+
+  # Check args
+  if(Debug) print(paste0('IntraSessionDefaults: check args for :: ', InputName))
+  if(length(List) == 0L) stop(paste0('IntraSessionDefaults: ', InputName, ': length(List) == 0'))
+  if(length(InputName) == 0L) stop(paste0('IntraSessionDefaults: ', InputName, ': length(InputName) == 0'))
+  if(length(ArgName) == 0L) stop(paste0('IntraSessionDefaults: ', InputName, ': length(ArgName) == 0'))
+
+  # Select last item from history or use Default
+  if(length(List[[InputName]][[ArgName]]) == 0L) {
+    if(Debug) print('IntraSessionDefaults: length(List[[InputName]][[ArgName]]) == 0L')
+    selected_default <- Default
+  } else {
+    if(Debug) print('IntraSessionDefaults: length(List[[InputName]][[ArgName]]) != 0L')
+    selected_default <- List[[InputName]][[ArgName]][[length(List[[InputName]][[ArgName]])]]
+  }
+
+  # Return Default Value
+  return(selected_default)
+}
+
+#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
+#'
+#' @noRd
+CatBoostGridEvalMetricsOptions <- function(TT) {
+  if(TT == 'Regression') {
+    choices <- c('mae','mape','rmse','r2')
+    default <- 'rmse'
+  } else if(TT == 'Binary Classification') {
+    choices <- c('Utility','MCC','Acc','F1_Score','F2_Score','F0.5_Score','TPR','TNR','FNR','FPR','FDR','FOR','NPV','PPV','ThreatScore')
+    default <- 'Utility'
+  } else if(TT == 'MultiClass') {
+    choices <- c('accuracy','microauc','logloss')
+    default <- 'microauc'
+  }
+  return(list(Choices = choices, Default = default))
+}
+
+#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
+#'
+#' @noRd
+CatBoostEvalMetricOptions <- function(TT) {
+  print(TT)
+  if(TT == 'Regression') {
+    choices <- c('RMSE','MAE','MAPE','R2','Poisson','MedianAbsoluteError','SMAPE','MSLE','NumErrors','FairLoss','Tweedie','Huber','LogLinQuantile','Quantile','Lq','Expectile','MultiRMSE')
+    default <- 'RMSE'
+  } else if(TT == 'Binary Classification') {
+    choices <- c('Logloss','CrossEntropy','Precision','Recall','F1','BalancedAccuracy','BalancedErrorRate','MCC','Accuracy','CtrFactor','AUC','BrierScore','HingeLoss','HammingLoss','ZeroOneLoss','Kappa','WKappa','LogLikelihoodOfPrediction','TotalF1','PairLogit','PairLogitPairwise','PairAccuracy','QueryCrossEntropy','QuerySoftMax','PFound','NDCG','AverageGain','PrecisionAt','RecallAt','MAP')
+    default <- 'MCC'
+  } else if(TT == 'MultiClass') {
+    choices <- c('MultiClass','MultiClassOneVsAll','AUC','TotalF1','MCC','Accuracy','HingeLoss','HammingLoss','ZeroOneLoss','Kappa','WKappa')
+    default <- 'MultiClassOneVsAll'
+  }
+  return(list(Choices = choices, Default = default))
+}
+
+#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
+#'
+#' @noRd
+CatBoostLossFunctionOptions <- function(TT) {
+  print(TT)
+  if(TT == 'Regression') {
+    choices <- c('MAPE','MAE','RMSE','Poisson','Tweedie','Huber','LogLinQuantile','Quantile','Lq','Expectile','MultiRMSE')
+    default <- 'RMSE'
+  } else if(TT == 'Binary Classification') {
+    choices <- c('Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')
+    default <- 'Logloss'
+  } else if(TT == 'MultiClass') {
+    choices <- c('MultiClass','MultiClassOneVsAll')
+    default <- 'MultiClassOneVsAll'
+  }
+  return(list(Choices = choices, Default = default))
+}
+
+#' @param ModelOutput Output from RemixAutoML:: supervised learning functions
+#'
+#' @noRd
+ModelDataObjects <- function(ModelOutput) {
+  if(!is.null(ModelOutput$TrainData) && !is.null(ModelOutput$TestData)) {
+    temp1 <- data.table::rbindlist(list(
+      'TRAIN' = ModelOutput$TrainData,
+      'TEST' = ModelOutput$TestData
+    ), use.names = TRUE, fill = TRUE, idcol = 'DataSet')
+  } else if(is.null(ModelOutput$TrainData) && !is.null(ModelOutput$TestData)) {
+    temp1 <- ModelOutput$TestData
+  } else if(!is.null(ModelOutput$TrainData) && is.null(ModelOutput$TestData)) {
+    temp1 <- ModelOutput$TrainData
+  }
+  return(
+    list(
+      ScoringDataCombined = temp1,
+      VI_Train = ModelOutput$VariableImportance$Train_Importance,
+      VI_Validation = ModelOutput$VariableImportance$Validation_Importance,
+      VI_Test = ModelOutput$VariableImportance$Test_Importance,
+      II_Train = ModelOutput$InteractionImportance$Train_Interaction))
+}
+
+#' @param X Vector
+#' @param FUN E.g. FUN = CustomFunction. Function with elements of X as the single input argument
+#' @param depth Header depth, #, ##, ###, etc. corresponds to 1, 2, 3, etc.
+#' @param AddDetails Defaults to TRUE. Iterated output will be contained in Details sections (need to expand to see content).
+#' @param FontSizes A named list with the names being identical but the numeric values can vary: list('h1' = 6, 'h2' = 5, 'h3' = 4)
+#' @param Opts Default c(echo = FALSE)
+#'
+#' @examples
+#' \dontrun{
+#'
+#' # Run this outside of any code blocks
+#' # but after required functions have been defined
+#'
+#' ```{r code}
+#' my_list <- list()
+#' for(i in seq_along(CustomerID)) my_list[[as.character(CustomerID[i])]] <- i
+#' ```
+#'
+#' `r mdapply(list(X = seq_along(ListOfInterest)), CustomerDetailDay, 1, TRUE, list('h1' = 6, 'h2' = 5, 'h3' = 4), c(echo=FALSE))`
+#' }
+#'
+#' @noRd
+RmdApply <- function(X,
+                     FUN,
+                     depth,
+                     AddDetails = TRUE,
+                     FontSizes = list('h1' = 6, 'h2' = 5, 'h3' = 4),
+                     Opts = list(echo = FALSE)) {
+  FUN <- as.character(substitute(FUN))
+  list_name <- as.character(substitute(X))
+  if(!all(Opts == "")) Opts <- paste(",", names(Opts), "=", Opts, collapse="")
+  if(AddDetails) {
+    build_chunk <- function(HeaderName) {
+      paste0(
+        paste0(rep("#", depth), collapse = ""), " ", "<font size=", shQuote(as.character(FontSizes[[paste0('h',as.character(depth))]])), ">", list_name, ": ", HeaderName, "</font>",
+
+        "\n\n<details><summary>Reports</summary>\n<p>\n",
+
+        "\n\n```{r", Opts, "}\n",
+        FUN, "(", list_name, "[['", HeaderName, "']])\n```", " \n</details>\n</p>")
+    }
+  } else {
+    build_chunk <- function(HeaderName) {
+      paste0(
+        paste0(rep("#", depth), collapse = ""), " ", list_name, ": ", HeaderName,
+        "\n\n```{r", Opts, "}\n",
+        FUN, "(", list_name, "[['", HeaderName, "']])\n```")
+    }
+  }
+  parts <- sapply(names(X), build_chunk)
+  whole <- paste(parts, collapse = "\n\n")
+  knitr::knit(text = whole)
+}
+
 #' @title DataTable
 #'
 #' @description Fully loaded DT::datatable() with args prefilled
@@ -51,12 +228,13 @@ DataTable <- function(data) {
     filter = 'top',
     editable = TRUE,
     rownames = FALSE,
-    extensions = c('Buttons','ColReorder'), # Only usable in Rmarkdown  'Select'),
+    extensions = c('Buttons','ColReorder','FixedColumns'), # Only usable in Rmarkdown  'Select'),
     options = list(
       select = list(style = 'os', items = 'row'),
       dom = 'Brtip', #Bfrtip
       #dom = 'ltipr',
-      buttons = c('copy', 'csv', 'excel', 'pdf'), # Only usable in Rmarkdown 'selectRows', 'selectColumns', 'selectCells', 'selectAll', 'selectNone'),
+      fixedColumns = list(leftColumns = 2),
+      buttons = c('copy','pdf'), # Only usable in Rmarkdown 'selectRows', 'selectColumns', 'selectCells', 'selectAll', 'selectNone'),
       colReorder = TRUE,
       autoWidth = TRUE,
       selection = list(mode = 'multiple', target = 'row+column'), # 'row', 'column'
@@ -74,19 +252,6 @@ DataTable <- function(data) {
 #' @noRd
 ExpandText <- function(x) {
   return(paste0("'",paste0(x, collapse = "','"),"'"))
-}
-
-#' @param DataNames = names(data)
-#' @param ModelDataNames names(ModelData)
-#' @param PlotName = Plot1_react()
-#'
-#' @noRd
-VarNamesDisplay <- function(DataNames=names(data), ModelDataNames=names(ModelData), PlotName=NULL) {
-  if(any(c('Box','BoxPlot','ViolinPlot','Violin','Line','Bar','BarPlot','Scatter','Copula','CorrMatrix','Histogram','Hist','PartialDependenceLine','PartialDependenceBox','Partial_Dependence_Line','Partial_Dependence_Box') %in% PlotName)) {
-    return(unique(c(DataNames, ModelDataNames)))
-  } else {
-    return(ModelDataNames)
-  }
 }
 
 #' @title PlotLimits
@@ -263,51 +428,6 @@ textInput3 <- function (inputId, label, value = "", ...) {
       type = "text",
       value = value,
       ...))
-}
-
-#' @noRd
-AvailableAppInsightsPlots <- function(x = 'bla', PlotNamesLookup=NULL, Debug = FALSE) {
-  if(Debug) {
-    print('AvailableAppInsightsPlots Start')
-    print('ModelOutputListNames below')
-    print(x)
-  }
-
-  if(length(x) == 0) {
-    if(Debug) print('aaip here 1')
-    x <- NULL
-  } else {
-    if(Debug) print('aaip here 2')
-    if(Debug) {
-      print('PlotNamesLookup :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
-      print(PlotNamesLookup)
-      print('names(PlotNamesLookup) :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::')
-      print(names(PlotNamesLookup))
-      print('First for loop now ::::::::::::::::::::::::::::::::::::::::::')
-    }
-    for(i in seq_along(x)) {
-      if(Debug) {
-        print(paste0(x[i], "   x ::: PNL   ", PlotNamesLookup[[eval(x[i])]]))
-      }
-      x[i] <- PlotNamesLookup[[eval(x[i])]]
-    }
-    x <- c(x, 'ShapleyVarImp')
-    if(Debug) print('aaip here 3')
-    if(Debug) print(x)
-  }
-  StandardPlots <- c('Histogram','BoxPlot','ViolinPlot','Line','Bar','Scatter','Copula','CorrMatrix','PartialDependenceLine','PartialDependenceBox')
-  if(Debug) print('StandardPlots below')
-  if(Debug) print(StandardPlots)
-  if(Debug) print('Second for loop now ::::::::::::::::::::::::::::::::::::::::::')
-  for(i in seq_along(StandardPlots)) {
-    if(Debug) {
-      print(paste0(StandardPlots[i], "      standard plots :::  PNL    ", PlotNamesLookup[[StandardPlots[i]]]))
-    }
-    StandardPlots[i] <- PlotNamesLookup[[StandardPlots[i]]]
-  }
-  if(Debug) print('Return output below')
-  if(Debug) print(c(StandardPlots, x))
-  return(c(StandardPlots, x))
 }
 
 #' @noRd
@@ -1051,15 +1171,19 @@ ReactiveLoadCSV <- function(Infile = NULL, ProjectList = NULL, DateUpdateName = 
 
   if(Debug) print('ReactiveLoadCSV 5')
   g <- RemixAutoML:::ColTypes(x)
-  if(Debug) {print('ReactiveLoadCSV 6'); print(x); print(g); print(any('IDate' %in% g))}
-  if(any('IDate' %in% g)) {
-    if(Debug) print('ReactiveLoadCSV 7')
-    for(zz in seq_along(x)) {
-      if(Debug) print(paste0('ReactiveLoadCSV ', zz))
-      if(any(class(x[[names(x)[zz]]]) == 'IDate')) {
-        if(Debug) print(class(x[[names(x)[zz]]]))
-        x[, eval(names(x)[zz]) := as.Date(get(names(x)[zz]))]
-      }
+  if(Debug) {print('ReactiveLoadCSV 6'); print(g); print(any('IDate' %in% g))}
+  if(Debug) print('ReactiveLoadCSV 7')
+  for(zz in seq_along(x)) {
+    if(Debug) print(paste0('ReactiveLoadCSV ', zz))
+    if(any(class(x[[names(x)[zz]]]) == 'IDate')) {
+      if(Debug) print(class(x[[names(x)[zz]]]))
+      x[, eval(names(x)[zz]) := as.Date(get(names(x)[zz]))]
+    }
+    if(grepl(pattern = ' ', x = names(x)[zz])) {
+      data.table::setnames(x = x, old = names(x)[zz], new = gsub(pattern = ' ', replacement = '_', x = names(x)[zz]))
+    }
+    if(grepl(pattern = "[[:punct:]]", x = names(x)[zz])) {
+      data.table::setnames(x = x, old = names(x)[zz], new = gsub(pattern = "[[:punct:]]", replacement = '_', x = names(x)[zz]))
     }
   }
   return(x)
@@ -1524,34 +1648,24 @@ SelectizeInput <- function(InputID = "",
   Options[['allowEmptyOption']] <- TRUE
   if(Multiple) Options[['maxItems']] <- MaxVars else Options[['maxItems']] <- 1
   Options[['closeAfterSelect']] <- CloseAfterSelect
+  if(Debug) {
+    print(InputID);
+    print(Label);
+    print(c(unique(c("", Choices))));
+    print(SelectedDefault);
+    print(Options);
+    print(Multiple)
+  }
   return(
-    if(exists("ProjectList")) {
-      tryCatch({
-        if(!is.null(ProjectList[[InputID]])) {
-          if(!Update) {
-            shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
-          } else {
-            shiny::updateSelectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = ProjectList[[InputID]], options = Options, multiple = Multiple)
-          }
-        } else {
-          if(!Update) {
-            shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)
-          } else {
-            shiny::updateSelectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple)
-          }
-        }}, error = function(x) shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(c(Choices))), selected = SelectedDefault, options = Options, multiple = Multiple))
-    } else {
-      if(Debug) {print(InputID); print(Label); print(c(unique(c("", Choices)))); print(SelectedDefault); print(Options); print(Multiple)}
-      tryCatch({
-        if(!Update) {
-          shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(Choices)), selected = SelectedDefault, options = Options, multiple = Multiple)
-        } else {
-          shiny::updateSelectizeInput(inputId = InputID, label = Label, choices = c(unique(Choices)), selected = SelectedDefault, options = Options, multiple = Multiple)
-        }},
-        error = function(x) {
-          shiny::selectizeInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
-        })
-    })
+    tryCatch({
+      if(!Update) {
+        shiny::selectizeInput(inputId = InputID, label = Label, choices = c(unique(Choices)), selected = SelectedDefault, options = Options, multiple = Multiple)
+      } else {
+        shiny::updateSelectizeInput(inputId = InputID, label = Label, choices = c(unique(Choices)), selected = SelectedDefault, options = Options, multiple = Multiple, server = TRUE)
+      }}, error = function(x) {
+        shiny::selectizeInput(inputId = InputID, label = Label, choices = "No Data Loaded !!", selected = "No Data Loaded !!", options = Options, multiple = Multiple)
+      })
+    )
 }
 
 #' @title NumericInput
@@ -1852,16 +1966,16 @@ PreparePlotData <- function(data,
   if(Aggregate == "mean") {
     Agg <- as.function(x = , mean)
   } else if(Aggregate == "sum") {
-    Agg <- as.function(x = , sum)
+    Agg <- as.function(x = , sum, na.rm = TRUE)
   }
 
   AggFun <- function(dt = data, A = Agg, S = SubsetOnly, t = TargetVariable, G = GroupVariables, D = DateVariable) {
     if(!S && !is.null(G) && !is.null(D)) {
-      dt <- dt[, lapply(.SD, A), by = c(eval(G), eval(D)), .SDcols = c(t)]
+      dt <- dt[, lapply(.SD, A, na.rm = TRUE), by = c(eval(G), eval(D)), .SDcols = c(t)]
     } else if(!S && is.null(G) && !is.null(D)) {
-      dt <- dt[, lapply(.SD, A), by = c(eval(D)), .SDcols = c(t)]
+      dt <- dt[, lapply(.SD, A, na.rm = TRUE), by = c(eval(D)), .SDcols = c(t)]
     } else if(!S && !is.null(G) && is.null(D)) {
-      dt <- dt[, lapply(.SD, A), by = c(eval(G)), .SDcols = c(t)]
+      dt <- dt[, lapply(.SD, A, na.rm = TRUE), by = c(eval(G)), .SDcols = c(t)]
     }
     return(dt)
   }

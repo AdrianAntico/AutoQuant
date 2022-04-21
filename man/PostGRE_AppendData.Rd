@@ -11,7 +11,7 @@ PostGRE_AppendData(
   Connection = NULL,
   CloseConnection = FALSE,
   Host = "localhost",
-  DBName = "Testing",
+  DBName = "RemixAutoML",
   User = "postgres",
   Port = 5432,
   Password = ""
@@ -55,7 +55,7 @@ RemixAutoML::PostGRE_AppendData(
 # data = data
 # CloseConnection = FALSE,
 # Host = 'localhost'
-# DBName = 'Testing'
+# DBName = 'RemixAutoML'
 # User = 'postgres'
 # Port = 5432
 # Password = 'Aa...'
@@ -67,6 +67,7 @@ Other Database:
 \code{\link{AutoDataDictionaries}()},
 \code{\link{PostGRE_CreateTable}()},
 \code{\link{PostGRE_Query}()},
+\code{\link{PostGRE_RemoveCreateAppend}()},
 \code{\link{PostGRE_RemoveTable}()},
 \code{\link{SQL_ClearTable}()},
 \code{\link{SQL_DropTable}()},

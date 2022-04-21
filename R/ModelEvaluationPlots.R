@@ -159,6 +159,25 @@ ParDepCalPlots <- function(data,
                            PlotXLowColor = 'purple',
                            PlotXHighColor = 'purple') {
 
+
+  print('Args values here')
+
+  print('data'); print(data)
+  print('PredictionColName'); print(PredictionColName)
+  print('TargetColName'); print(TargetColName)
+  print('IndepVar'); print(IndepVar)
+  print('GraphType'); print(GraphType)
+  print('PercentileBucket'); print(PercentileBucket)
+  print('FactLevels'); print(FactLevels)
+  print('Function'); print(Function)
+  print('DateColumn'); print(DateColumn)
+  print('DateAgg_3D'); print(DateAgg_3D)
+  print('PlotYMeanColor'); print(PlotYMeanColor)
+  print('PlotXMeanColor'); print(PlotXMeanColor)
+  print('PlotXLowColor'); print(PlotXLowColor)
+  print('PlotXHighColor'); print(PlotXHighColor)
+
+
   # Turn off ggplot2 warnings ----
   options(warn = -1L)
 

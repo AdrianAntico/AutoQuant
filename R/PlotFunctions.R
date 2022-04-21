@@ -310,6 +310,7 @@ ShapImportancePlot <- function(data,
 #'
 #' @param data Source data.table
 #' @param CorrVars Column names of variables you want included in the correlation matrix
+#' @param Method 'spearman' default, 'pearson' otherwise
 #'
 #' @examples
 #' \dontrun{
@@ -327,10 +328,13 @@ ShapImportancePlot <- function(data,
 #'
 #' @export
 CorrMatrixPlot <- function(data = NULL,
-                           CorrVars = NULL) {
+                           CorrVars = NULL,
+                           Method = 'spearman') {
 
   # Plot
-  p <- cor(data[, .SD, .SDcols = c(CorrVars)])
+  nafree <- na.omit(data[, .SD, .SDcols = c(CorrVars)])
+  p <- cor(method = 'spearman', x = nafree)
+  print(p)
   p1 <- heatmaply::heatmaply_cor(
     p,
     colors = c('darkred', 'pink', 'black', 'lightblue', 'darkblue'),
@@ -942,6 +946,16 @@ BarPlot <- function(data = NULL,
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
+      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar1))
+      } else {
+        byvars <- unique(c(byvars, FacetVar1))
+      }
+      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar2))
+      } else {
+        byvars <- unique(c(byvars, FacetVar2))
+      }
       if(!is.null(byvars)) {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
       } else {
@@ -961,6 +975,16 @@ BarPlot <- function(data = NULL,
         numvars <- unique(c(numvars, XVar))
       } else {
         byvars <- unique(c(byvars, XVar))
+      }
+      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar1))
+      } else {
+        byvars <- unique(c(byvars, FacetVar1))
+      }
+      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar2))
+      } else {
+        byvars <- unique(c(byvars, FacetVar2))
       }
       if(!is.null(byvars)) {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
@@ -983,6 +1007,16 @@ BarPlot <- function(data = NULL,
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
+      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar1))
+      } else {
+        byvars <- unique(c(byvars, FacetVar1))
+      }
+      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar2))
+      } else {
+        byvars <- unique(c(byvars, FacetVar2))
+      }
       if(!is.null(byvars)) {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
       } else {
@@ -999,6 +1033,16 @@ BarPlot <- function(data = NULL,
         byvars <- unique(c(byvars, YVar))
       }
       if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, ColorVar))
+      } else {
+        byvars <- unique(c(byvars, ColorVar))
+      }
+      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, ColorVar))
+      } else {
+        byvars <- unique(c(byvars, ColorVar))
+      }
+      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, ColorVar))
       } else {
         byvars <- unique(c(byvars, ColorVar))
@@ -1025,6 +1069,16 @@ BarPlot <- function(data = NULL,
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
+      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar1))
+      } else {
+        byvars <- unique(c(byvars, FacetVar1))
+      }
+      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar2))
+      } else {
+        byvars <- unique(c(byvars, FacetVar2))
+      }
       if(!is.null(byvars)) {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
       } else {
@@ -1045,6 +1099,16 @@ BarPlot <- function(data = NULL,
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
+      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar1))
+      } else {
+        byvars <- unique(c(byvars, FacetVar1))
+      }
+      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+        numvars <- unique(c(numvars, FacetVar2))
+      } else {
+        byvars <- unique(c(byvars, FacetVar2))
+      }
       if(!is.null(byvars)) {
         temp <- data[, .N, by = c(byvars)]
         data.table::setnames(temp, 'N', byvars)
@@ -1064,7 +1128,7 @@ BarPlot <- function(data = NULL,
   p1 <- p1 + ggplot2::labs(title = 'Bar Plot', caption = 'RemixAutoML')
 
   # Add faceting (returns no faceting in none was requested)
-  p1 <- AddFacet(p1, fv1=FacetVar1, fv2=FacetVar2, Exclude = 'None', Debug = FALSE)
+  p1 <- AddFacet(p1, fv1=FacetVar1, fv2=FacetVar2, Exclude = 'None', Debug = Debug)
 
   # Add ChartTheme
   if(Debug) print('ChartTheme')
@@ -1351,6 +1415,7 @@ HistPlot <- function(data = NULL,
 #' @param YMax = input[['YMax']]
 #' @param XMin = input[['XMin']]
 #' @param XMax = input[['XMax']]
+#' @param MaxGroupTS = 50,
 #' @param ColorVariables = shiny::isolate(SelectedGroups())
 #' @param SizeVar1 = input[['SizeVar1']]
 #' @param FacetVar1 = shiny::isolate(input[['FacetVar1']])
@@ -1385,6 +1450,7 @@ AutoPlotter <- function(dt = NULL,
                         YMax = NULL,
                         XMin = NULL,
                         XMax = NULL,
+                        MaxGroupTS = 50,
                         ColorVariables = NULL,
                         SizeVar1 = 'None',
                         FacetVar1 = 'None',
@@ -1415,7 +1481,7 @@ AutoPlotter <- function(dt = NULL,
   if(Debug) print(paste0('AutoPlotter() begin, PlotType = ', PlotType))
 
   # Correlation Matrix Plot
-  if(tolower(PlotType) == 'corrmatrix') {
+  if(tolower(PlotType) == 'correlationmatrix') {
 
     # Plot
     p1 <- RemixAutoML::CorrMatrixPlot(data = dt, CorrVars = YVar)
@@ -1499,7 +1565,7 @@ AutoPlotter <- function(dt = NULL,
   }
 
   # Bar Plot
-  if(tolower(PlotType) == 'bar') {
+  if(tolower(PlotType) == 'barplot') {
     p1 <- RemixAutoML::BarPlot(
       data = dt,
       XVar = XVar,
@@ -1576,7 +1642,7 @@ AutoPlotter <- function(dt = NULL,
   }
 
   # Line
-  if(tolower(PlotType) == 'line') {
+  if(tolower(PlotType) == 'lineplot') {
 
     if(Debug) {print('Line Plot Here');print(paste0('ColorVariables: ', ColorVariables));print(paste0('XTicks: ', XTicks));print(paste0('XVar: ', XVar));print(paste0('names(dt): ', names(dt)))}
 
@@ -1588,7 +1654,7 @@ AutoPlotter <- function(dt = NULL,
       DateVariable = XVar,
       GroupVariables = ColorVariables,
       Aggregate = 'mean',
-      NumberGroupsDisplay = 5,
+      NumberGroupsDisplay = MaxGroupTS,
       LevelsToDisplay = NULL,
       OtherGroupLabel = "OtherGroups",
       DisplayOtherGroup = TRUE,
@@ -1629,7 +1695,7 @@ AutoPlotter <- function(dt = NULL,
   }
 
   # Scatter or Copula
-  if(tolower(PlotType) %in% c('scatter', 'copula')) {
+  if(tolower(PlotType) %in% c('scatterplot', 'copulaplot')) {
 
     N <- dt[,.N]
 
@@ -1777,10 +1843,10 @@ AutoPlotter <- function(dt = NULL,
 #' @author Adrian Antico
 #' @family Graphics
 #'
-#' @param ModelOutputList output list
 #' @param dt = NULL,
 #' @param PlotType = NULL,
 #' @param TargetVar = isolate(YVar()),
+#' @param TargetLevel = NULL,
 #' @param PredictVar = isolate(ScoreVar()),
 #' @param PDPVar = NULL,
 #' @param DateVar = isolate(DateVar()),
@@ -1789,13 +1855,30 @@ AutoPlotter <- function(dt = NULL,
 #' @param GamFit = FALSE,
 #' @param Buckets = 20,
 #' @param ShapAgg A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'geomean', 'harmmean', 'sd', 'median', 'absmedian', 'medianabs'
-#' @param Rebuild = FALSE,
 #' @param Check2 = FALSE,
 #' @param Debug = FALSE
-AppModelInsights <- function(ModelOutputList,
-                             dt = NULL,
+#' @examples
+#' \dontrun{
+#' dt = NULL,
+#' PlotType = NULL,
+#' TargetVar = NULL,
+#' TargetLevel = NULL,
+#' PredictVar = NULL,
+#' PDPVar = NULL,
+#' DateVar = NULL,
+#' FacetVar1 = NULL,
+#' FacetVar2 = NULL,
+#' GamFit = FALSE,
+#' Buckets = 20,
+#' ShapAgg = 'mean',
+#' Check2 = FALSE,
+#' Debug = FALSE
+#' }
+#'
+AppModelInsights <- function(dt = NULL,
                              PlotType = NULL,
                              TargetVar = NULL,
+                             TargetLevel = NULL,
                              PredictVar = NULL,
                              PDPVar = NULL,
                              DateVar = NULL,
@@ -1804,15 +1887,18 @@ AppModelInsights <- function(ModelOutputList,
                              GamFit = FALSE,
                              Buckets = 20,
                              ShapAgg = 'mean',
-                             Rebuild = FALSE,
                              Check2 = FALSE,
                              Debug = FALSE) {
 
   # Debugging
-  if(Debug) {print('Running AppModelInsights'); print(paste0('Rebuild = ', Rebuild))}
+  if(Debug) {print('Running AppModelInsights')}
+
+  # Plot Check
+  PredictNameCheck <- any(c('p1','Predict') %in% names(dt))
+  TargetNameCheck <- any(TargetVar %in% names(dt))
 
   # Shap VI ----
-  if(tolower(PlotType) == 'shapleyvarimp') {
+  if(PlotType == 'ShapelyImportance') {
 
     # Debugging
     if(Debug) {print(dt[1:3]); print(names(dt)); print(dt[, .N]); print(names(dt)[which(names(dt) %like% 'Shap_')]); print(length(names(dt)[which(names(dt) %like% 'Shap_')]))}
@@ -1838,47 +1924,16 @@ AppModelInsights <- function(ModelOutputList,
 
   # ----
 
-  # Test Evaluation Plot ----
-  if(any(PlotType %chin% "Test_EvaluationPlot")) {
-    if(Debug) print('Evaluation Plot')
-    if(!Rebuild) {
-      if(Debug) print('!Rebuild')
-      p1 <- ModelOutputList$PlotList[['Test_EvaluationPlot']]
-    } else {
-      if(Debug) {
-        print('! !Rebuild')
+  # Evaluation Plot ----
+  if(any(PlotType %chin% "CalibrationPlot")) {
+    if(Debug) print('Calibration Plot')
+    if(Debug) {
         print(paste0('Names in dt = ', names(dt)))
         print(paste0('PredictionColName = ', PredictVar))
         print(paste0('TargetVar = ', TargetVar))
         print(paste0('Buckets = ', Buckets))
       }
-      p1 <- RemixAutoML::EvalPlot(
-        data = dt,
-        PredictionColName = PredictVar,
-        TargetColName = TargetVar,
-        GraphType = "calibration", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Train Evaluation Plot ----
-  if(any(PlotType %chin% 'Train_EvaluationPlot')) {
-    if(Debug) print('Evaluation Plot')
-    if(Debug) print(Rebuild)
-    if(!Rebuild) {
-      if(Debug) print('!Rebuild')
-      p1 <- ModelOutputList$PlotList[['Train_EvaluationPlot']]
-    } else {
-      if(Debug) {
-        print('! !Rebuild')
-        print(paste0('Names in dt = ', names(dt)))
-        print(paste0('PredictionColName = ', PredictVar))
-        print(paste0('TargetVar = ', TargetVar))
-        print(paste0('Buckets = ', Buckets))
-      }
+    if(PredictNameCheck) {
       p1 <- RemixAutoML::EvalPlot(
         data = dt,
         PredictionColName = PredictVar,
@@ -1892,37 +1947,9 @@ AppModelInsights <- function(ModelOutputList,
   # ----
 
   # Evaluation BoxPlot ----
-  if(any(PlotType %chin% "Test_EvaluationBoxPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('EvalBoxPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Test_EvaluationBoxPlot']]
-    } else {
-      if(Debug) print('EvalBoxPlot ! !Rebuild')
-      p1 <- RemixAutoML::EvalPlot(
-        data = dt,
-        PredictionColName = PredictVar,
-        TargetColName = TargetVar,
-        GraphType = "boxplot", PercentileBucket = 1/Buckets, aggrfun = function(x) mean(x, na.rm = TRUE))
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Evaluation BoxPlot Train ----
-  if(any(PlotType %chin% "Train_EvaluationBoxPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('EvalBoxPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Train_EvaluationBoxPlot']]
-    } else {
-      if(Debug) {
-        print('! !Rebuild')
-        print(paste0('Names in dt = ', names(dt)))
-        print(paste0('PredictionColName = ', PredictVar))
-        print(paste0('TargetVar = ', TargetVar))
-        print(paste0('Buckets = ', Buckets))
-      }
+  if(any(PlotType %chin% "CalibrationBoxPlot")) {
+    if(Debug) print('CalibrationBoxPlot')
+    if(PredictNameCheck && TargetNameCheck) {
       p1 <- RemixAutoML::EvalPlot(
         data = dt,
         PredictionColName = PredictVar,
@@ -1936,113 +1963,40 @@ AppModelInsights <- function(ModelOutputList,
   # ----
 
   # ROC Plot ----
-  if(any(PlotType %chin% "Test_ROC_Plot")) {
-    if(!Rebuild) {
-      if(Debug) {
-        print('ROC !Rebuild')
-        print(names(ModelOutputList$PlotList))
-      }
-      p1 <- ModelOutputList$PlotList[['Test_ROC_Plot']]
-      if(Debug) {
-        print(is.null(p1))
-        print(class(p1))
-        print(names(ModelOutputList$PlotList))
-      }
-    } else {
-      if(Debug) print('Test_ROC_Plot ! !Rebuild')
+  if(any(PlotType %chin% "ROCPlot")) {
+    if(Debug) print('ROCPlot')
+    if(PredictNameCheck && TargetNameCheck) {
       p1 <- RemixAutoML::ROCPlot(
         data = dt,
         TargetName = TargetVar,
-        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # ROC Plot Train ----
-  if(any(PlotType %chin% "Train_ROC_Plot")) {
-    if(!Rebuild) {
-      if(Debug) print('Train_ROC_Plot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Train_ROC_Plot']]
-    } else {
-      if(Debug) print('Gains Plot ! !Rebuild')
-      p1 <- RemixAutoML::CumGainsChart(
-        data = dt,
-        TargetColumnName = TargetVar,
-        PredictedColumnName = PredictVar,
-        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
+        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$ROC_Plot
+      if(!exists('p1')) p1 <- NULL
+      return(eval(p1))
     }
   }
 
   # ----
 
   # Gains Plot ----
-  if(any(PlotType %chin% "Test_GainsPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('Test_GainsPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Test_GainsPlot']]
-    } else {
-      if(Debug) print('Gains Plot ! !Rebuild')
+  if(any(PlotType %chin% "GainsPlot")) {
+    if(Debug) print('GainsPlot')
+    if(PredictNameCheck && TargetNameCheck) {
       p1 <- RemixAutoML::CumGainsChart(
         data = dt,
         TargetColumnName = TargetVar,
         PredictedColumnName = PredictVar,
         SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
+      if(!exists('p1')) p1 <- NULL
+      return(eval(p1))
     }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Gains Plot Train ----
-  if(any(PlotType %chin% "Train_GainsPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('Gains Plot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Train_GainsPlot']]
-    } else {
-      if(Debug) print('Train_LiftPlot ! !Rebuild')
-      p1 <- RemixAutoML::CumGainsChart(
-        data = dt,
-        TargetColumnName = TargetVar,
-        PredictedColumnName = PredictVar,
-        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$GainsPlot
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
   }
 
   # ----
 
   # Lift Plot Test ----
-  if(any(PlotType %chin% "Test_LiftPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('Test_LiftPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Test_LiftPlot']]
-      if(Debug) print('You Are Inside AppModelInsights 1')
-    } else {
-      if(Debug) print('Test_LiftPlot ! !Rebuild')
-      p1 <- RemixAutoML::CumGainsChart(
-        data = dt,
-        TargetColumnName = TargetVar,
-        PredictedColumnName = PredictVar,
-        SavePlot = FALSE, Name = NULL, metapath = NULL, modelpath = NULL)$LiftPlot
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Lift Plot Train ----
-  if(any(PlotType %chin% "Train_LiftPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('Train_LiftPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Train_LiftPlot']]
-    } else {
-      if(Debug) print('Test_LiftPlot ! !Rebuild')
+  if(any(PlotType %chin% "LiftPlot")) {
+    if(Debug) print('LiftPlot')
+    if(PredictNameCheck && TargetNameCheck) {
       p1 <- RemixAutoML::CumGainsChart(
         data = dt,
         TargetColumnName = TargetVar,
@@ -2056,32 +2010,9 @@ AppModelInsights <- function(ModelOutputList,
   # ----
 
   # Scatter Plot Test ----
-  if(any(PlotType %chin% "Test_ScatterPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('Test_ScatterPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Test_ScatterPlot']]
-      if(Debug) print(class(p1))
-      if(Debug) print('Extracted the Test_ScatterPlot from ModelOutputList')
-    } else {
-      if(Debug) print('Test_ScatterPlot ! !Rebuild')
-      p1 <- RemixAutoML::ResidualPlots(
-        TestData = dt,
-        Target = TargetVar, Predicted = PredictVar,
-        DateColumnName = DateVar, Gam_Fit = GamFit)$ScatterPlot
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Scatter Plot Train ----
-  if(any(PlotType %chin% "Train_ScatterPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('Train_ScatterPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Train_ScatterPlot']]
-    } else {
-      if(Debug) print('Train_ScatterPlot ! !Rebuild')
+  if(any(PlotType %chin% "ResidualsScatterPlot")) {
+    if(Debug) print('ResidualsScatterPlot')
+    if(PredictNameCheck && TargetNameCheck) {
       p1 <- RemixAutoML::ResidualPlots(
         TestData = dt,
         Target = TargetVar, Predicted = PredictVar,
@@ -2094,30 +2025,9 @@ AppModelInsights <- function(ModelOutputList,
   # ----
 
   # Copula Plot Test ----
-  if(any(PlotType %chin% "Test_CopulaPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('Test_CopulaPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Test_CopulaPlot']]
-    } else {
-      if(Debug) print('Test_CopulaPlot ! !Rebuild')
-      p1 <- RemixAutoML::ResidualPlots(
-        TestData = dt,
-        Target = TargetVar, Predicted = PredictVar,
-        DateColumnName = DateVar, Gam_Fit = GamFit)$CopulaPlot
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Copula Plot Train ----
-  if(any(PlotType %chin% "Train_CopulaPlot")) {
-    if(!Rebuild) {
-      if(Debug) print('Train_CopulaPlot !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Train_CopulaPlot']]
-    } else {
-      if(Debug) print('Train_CopulaPlot ! !Rebuild')
+  if(any(PlotType %chin% "ResidualsCopulaPlot")) {
+    if(Debug) print('ResidualsCopulaPlot')
+    if(PredictNameCheck && TargetNameCheck) {
       p1 <- RemixAutoML::ResidualPlots(
         TestData = dt,
         Target = TargetVar, Predicted = PredictVar,
@@ -2130,30 +2040,9 @@ AppModelInsights <- function(ModelOutputList,
   # ----
 
   # Residuals Histogram Plot Test ----
-  if(any(PlotType %chin% "Test_ResidualsHistogram")) {
-    if(!Rebuild) {
-      if(Debug) print('Test_ResidualsHistogram !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Test_ResidualsHistogram']]
-    } else {
-      if(Debug) print('Test_ResidualsHistogram ! !Rebuild')
-      p1 <- RemixAutoML::ResidualPlots(
-        TestData = dt,
-        Target = TargetVar, Predicted = PredictVar,
-        DateColumnName = DateVar, Gam_Fit = GamFit)$ResidualsHistogram
-    }
-    if(!exists('p1')) p1 <- NULL
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Residuals Histogram Plot Train ----
-  if(any(PlotType %chin% "Train_ResidualsHistogram")) {
-    if(!Rebuild) {
-      if(Debug) print('Train_ResidualsHistogram !Rebuild')
-      p1 <- ModelOutputList$PlotList[['Train_ResidualsHistogram']]
-    } else {
-      if(Debug) print('Train_ResidualsHistogram ! !Rebuild')
+  if(any(PlotType %chin% "ResidualsHistogram")) {
+    if(Debug) print('ResidualsHistogram')
+    if(PredictNameCheck && TargetNameCheck) {
       p1 <- RemixAutoML::ResidualPlots(
         TestData = dt,
         Target = TargetVar, Predicted = PredictVar,
@@ -2166,48 +2055,18 @@ AppModelInsights <- function(ModelOutputList,
   # ----
 
   # Variable Importance Plot Test ----
-  if(any(PlotType %chin% "Test_VariableImportance")) {
-    if(Debug) print('Test_Importance ! !Rebuild')
-    if(Debug) print(ModelOutputList$VariableImportance[['Test_Importance']])
-    p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Test_Importance']], TopN = 25)
-    p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
-    if(!exists('p1')) p1 <- NULL
-    if(!is.null(p1)) {
-      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: Test data', caption = 'RemixAutoML')
+  if(any(PlotType %chin% "VariableImportance")) {
+    if(all(c('Importance','Variable') %in% names(dt))) {
+      p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = dt, TopN = 25)
       p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
-    }
-    return(eval(p1))
-  }
-
-  # ----
-
-  # Variable Importance Plot Validation ----
-  if(any(PlotType %chin% "Validation_VariableImportance")) {
-    if(Debug) print('Validation_Importance ! !Rebuild')
-    if(Debug) print(ModelOutputList$VariableImportance[['Validation_Importance']])
-    p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = ModelOutputList$VariableImportance[['Validation_Importance']], TopN = 25)
-    p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
-    if(!exists('p1')) p1 <- NULL
-    if(!is.null(p1)) {
-      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: Validation data', caption = 'RemixAutoML')
-      p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
-    }
-    return(eval(p1))
-
-  }
-
-  # ----
-
-  # Variable Importance Plot Train ----
-  if(any(PlotType %chin% 'Train_VariableImportance')) {
-    if(Debug) print('Train_Importance ! !Rebuild')
-    if(Debug) print(ModelOutputList$VariableImportance[['Train_Importance']])
-    p1 <- RemixAutoML:::VI_Plot(Type = 'catboost', VI_Data = ModelOutputList$VariableImportance[['Train_Importance']], TopN = 25)
-    p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
-    if(!exists('p1')) p1 <- NULL
-    if(!is.null(p1)) {
-      p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: Training data', caption = 'RemixAutoML')
-      p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
+      if(!exists('p1')) p1 <- NULL
+      if(!is.null(p1)) {
+        p1 <- p1 + ggplot2::labs(title = 'Global Variable Importance: Test data', caption = 'RemixAutoML')
+        p1 <- p1 + ggplot2::ylab('') + ggplot2::xlab('')
+      }
+    } else {
+      "all(c('Importance','Variables') %in% names(dt)) is FALSE"
+      p1 <- NULL
     }
     return(eval(p1))
   }
@@ -2216,13 +2075,23 @@ AppModelInsights <- function(ModelOutputList,
 
   # Partial Dependence Plot ----
   if(any(PlotType %chin% 'PartialDependenceLine') && !is.null(PDPVar)) {
+
+    # MultiClass Mgt
+    if(Debug) print(TargetLevel)
+    if(class(dt[[TargetVar]]) %in% c('factor', 'character') && TargetLevel %in% names(dt)) {
+      dt[, p1 := get(TargetLevel)]
+      dt[, paste0('Temp_', TargetLevel) := data.table::fifelse(get(TargetVar) == eval(TargetLevel), 1, 0)]
+      TargetVar <- paste0('Temp_', TargetLevel)
+      PredictVar <- 'p1'
+    }
+
+    # PDP Creation
     p1 <- RemixAutoML::ParDepCalPlots(
-        data = dt,
-        PredictionColName = PredictVar,
-        TargetColName = TargetVar,
-        IndepVar = PDPVar,
-        GraphType = 'calibration', PercentileBucket = 1 / Buckets, FactLevels = 10, Function = function(x) mean(x, na.rm = TRUE))
+      data = dt, PredictionColName = PredictVar, TargetColName = TargetVar, IndepVar = PDPVar,
+      GraphType = 'calibration', PercentileBucket = 1 / Buckets, FactLevels = 10,
+      Function = function(x) mean(x, na.rm = TRUE))
     p1 <- p1 + ggplot2::labs(subtitle = NULL)
+    p1 <- p1 + ggplot2::ylab(TargetVar)
     p1$layers[[6L]] <- NULL
     p1$layers[[5L]] <- NULL
     p1$layers[[4L]] <- NULL
@@ -2685,9 +2554,6 @@ TimeSeriesPlotter <- function(dt = NULL,
       print(paste0('length of unique levels = ', length(unique(PlotData[, .SD, .SDcols = c(GroupVariables)][[1L]]))))
 
     }
-
-
-
 
     if(Debug) print('TimeSeriesPlotter is here 1 :::::::  ')
 

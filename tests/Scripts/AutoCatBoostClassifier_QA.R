@@ -147,7 +147,7 @@ for(run in seq_len(CatBoost_QA_Results_Classifier[,.N])) {
   if(!is.null(TestModel)) CatBoost_QA_Results_Classifier[run, Success := "Success"]
   TestModel <- NULL
   gc(); Sys.sleep(5)
-  data.table::fwrite(CatBoost_QA_Results_Classifier, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Date/AutoCatBoostClassifier_QA.csv")
+  data.table::fwrite(CatBoost_QA_Results_Classifier, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoCatBoostClassifier_QA.csv")
 }
 
 # Defaults ----

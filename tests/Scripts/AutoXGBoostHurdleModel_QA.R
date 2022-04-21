@@ -125,7 +125,7 @@ for(run in seq_len(XGBoost_QA[,.N])) {
     Threshold = NULL)}, error = function(x) NULL)
 
   # Outcome
-  if(!is.null(Output)) XGBoost_QA[run, Score := "Success"]
+  if(!is.null(Output)) XGBoost_QA[run, ScoreSuccess := "Success"]
   TestModel <- NULL
   Output <- NULL
   TTrainData <- NULL

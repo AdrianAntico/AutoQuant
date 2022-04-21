@@ -389,7 +389,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   }
 
   # Dummify ----
-  if(length(CatFeatures) > 0L && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+  if(length(CatFeatures) > 0L) {#  && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
 
     # Regression Dummify Categorical Features ----
     if(!is.null(ValidationData.) && !is.null(TestData.) && !TrainOnFull.) {

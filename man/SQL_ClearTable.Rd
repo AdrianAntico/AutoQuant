@@ -29,6 +29,7 @@ Other Database:
 \code{\link{PostGRE_AppendData}()},
 \code{\link{PostGRE_CreateTable}()},
 \code{\link{PostGRE_Query}()},
+\code{\link{PostGRE_RemoveCreateAppend}()},
 \code{\link{PostGRE_RemoveTable}()},
 \code{\link{SQL_DropTable}()},
 \code{\link{SQL_Query_Push}()},

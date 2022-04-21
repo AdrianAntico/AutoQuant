@@ -480,7 +480,6 @@ if("DiffVars" == "DiffVars") {
 # Run: Calendar Variables   ----
 print("Run: Calendar Variables")
 if(any(ArgsList$Services %in% 'CalendarVariables')) {
-  Start <- Sys.time()
   Output <- RemixAutoML:::CalendarVariables(data=data, RunMode='train', ArgsList=ArgsList, SkipCols=NULL)
   data <- Output$data; Output$data <- NULL
   ArgsList <- Output$ArgsList; rm(Output)
