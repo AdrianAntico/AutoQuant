@@ -1127,23 +1127,6 @@ Post_Query_Helper <- function(RefTable){
   )
 }
 
-#' @noRd
-Post_Query_Helper <- function(RefTable){
-  .RefTable <- RefTable
-  str1 <- "SELECT * FROM "
-  str2 <- '"public"'
-  str3 <- '.'
-  RemixAutoML::PostGRE_Query(
-    Query = paste(str1, str2, str3, .RefTable, sep=""),
-    Connection = NULL,
-    CloseConnection = TRUE,
-    Host = "localhost",
-    DBName = "DBname",
-    User = "postgres",
-    Port = 5432,
-    Password = "It's_Free_Real_Estate"
-  )
-}
 
 #' @noRd
 Post_Append_Helper <- function(data, tableName){
