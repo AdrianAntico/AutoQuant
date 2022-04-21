@@ -1,0 +1,13 @@
+TOF,Classification,TaskType,Success,ScoreSuccess,PartitionInFunction,RunNumber
+TRUE,TRUE,CPU,Success,Success,FALSE,1
+TRUE,TRUE,GPU,Success,Success,FALSE,2
+TRUE,FALSE,CPU,Success,Success,FALSE,3
+TRUE,FALSE,GPU,Success,Success,FALSE,4
+FALSE,TRUE,CPU,Success,Success,TRUE,5
+FALSE,TRUE,CPU,Success,Success,FALSE,6
+FALSE,TRUE,GPU,Success,Success,TRUE,7
+FALSE,TRUE,GPU,Success,Success,FALSE,8
+FALSE,FALSE,CPU,Success,Success,TRUE,9
+FALSE,FALSE,CPU,Success,Success,FALSE,10
+FALSE,FALSE,GPU,Success,Success,TRUE,11
+FALSE,FALSE,GPU,Success,Success,FALSE,12

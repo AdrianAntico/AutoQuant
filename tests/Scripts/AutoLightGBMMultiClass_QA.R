@@ -231,7 +231,7 @@ for(run in seq_len(LightGBM_QA_Results_MultiClass[,.N])) {
   }
   TestModel <- NULL
   Sys.sleep(5)
-  data.table::fwrite(LightGBM_QA_Results_MultiClass, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoLightGBMMultiClass_QA.csv")
+  RemixAutoML:::Post_Append_Helper(LightGBM_QA_Results_MultiClass,'AutoLightGBMMultiClass_QA')
 }
 
 # Main Code ----

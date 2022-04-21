@@ -206,13 +206,7 @@ for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
   if(!is.null(TestModel)) CatBoost_QA_Results_Regression[run, Success := "Success"]
   TestModel <- NULL
   gc(); Sys.sleep(5)
-  RemixAutoML::PostGRE_AppendData(
-    data = CatBoost_QA_Results_Regression,
-    TableName = 'CatBoost_QA_Results_Regression',
-    CloseConnection = TRUE, Append = FALSE, Host = 'localhost', DBName = 'RemixAutoML', User = 'postgres', Port = 5432, Password = 'Aa1028#@')
-
-  # Replace PostGre_AppendData() with the below
-  data.table::fwrite(CatBoost_QA_Results_Regression, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoCatBoostRegression_QA.csv")
+  RemixAutoML:::Post_Append_Helper(CatBoost_QA_Results_Regression,'AutoCatBoostRegression_QA')
 }
 
 # Defaults ----

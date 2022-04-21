@@ -9,7 +9,8 @@ Authors@R:
              email = "adrianantico@gmail.com"),
       person("Douglas","Pestana", role="ctb"),
       person("Jan","Gorecki", role="ctb"),
-      person("Solomon","Daner", role="ctb"))
+      person("Solomon","Daner", role="ctb"),
+      person("Justin","Savage", role="ctb"))
 Maintainer: Adrian Antico <adrianantico@gmail.com>
 Description: R package for the automation of machine learning, forecasting, feature engineering, model evaluation, model interpretation, data generation, and recommenders. Built using data.table for all tabular data-related tasks.
 License: MPL-2.0 | file LICENSE

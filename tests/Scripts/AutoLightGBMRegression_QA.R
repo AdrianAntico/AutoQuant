@@ -245,7 +245,7 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
   }
   TestModel <- NULL
   Sys.sleep(5)
-  data.table::fwrite(LightGBM_QA_Results_Regression, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoLightGBMRegression_QA.csv")
+  RemixAutoML:::Post_Append_Helper(LightGBM_QA_Results_Regression,'AutoLightGBMRegression_QA')
 }
 
 # Scoring ----

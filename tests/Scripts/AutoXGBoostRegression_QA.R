@@ -143,7 +143,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
   if(!is.null(TestModel)) XGBoost_QA_Results_Regression[run, Success := "Success"]
   TestModel <- NULL
   Sys.sleep(5)
-  data.table::fwrite(XGBoost_QA_Results_Regression, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoXGBoostRegression_QA.csv")
+  RemixAutoML:::Post_Append_Helper(XGBoost_QA_Results_Regression,'AutoXGBoostRegression_QA')
 }
 
 # Remove all else
