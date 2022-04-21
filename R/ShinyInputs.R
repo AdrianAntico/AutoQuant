@@ -138,11 +138,13 @@ LoadDataInputs <- function(id = 'ExternalData',
             shiny::fluidRow(
               shiny::column(
                 width = 5L,
+                align = 'center',
                 tags$h4(tags$b('Local .csv Data')),
                 shiny::uiOutput('TabularData')),
-              shiny::column(width = 1L),
+              shiny::column(width = 1L, align = 'center'),
               shiny::column(
                 width = 5L,
+                align = 'center',
                 tags$h4(tags$b('Local RemixAutoML Model Object')),
                 shiny::uiOutput('ModelObjectLoad')))
 

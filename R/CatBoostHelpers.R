@@ -225,6 +225,7 @@ CatBoostArgsCheck <- function(ModelType = "regression",
 #' @author Adrian Antico
 #'
 #' @param OutputSelection. Passthrough
+#' @param EncodeMethod. Passthrough
 #' @param ModelType 'regression', 'vector', 'classification', or 'multiclass'
 #' @param data. Passthrough
 #' @param ValidationData. Passthrough
@@ -245,7 +246,8 @@ CatBoostArgsCheck <- function(ModelType = "regression",
 #'
 #' @noRd
 CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
-                             ModelType = "regression",
+                             EncodeMethod. = 'credibility',
+                             ModelType = 'regression',
                              data. = data,
                              ValidationData. = ValidationData,
                              TestData. = TestData,
@@ -389,66 +391,29 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   }
 
   # Dummify ----
-  if(length(CatFeatures) > 0L) {#  && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+  if(length(CatFeatures) > 0L) {
 
-    # Regression Dummify Categorical Features ----
-    if(!is.null(ValidationData.) && !is.null(TestData.) && !TrainOnFull.) {
-      data.table::set(data., j = "ID_Factorizer", value = "TRAIN")
-      data.table::set(ValidationData., j = "ID_Factorizer", value = "VALIDATE")
-      data.table::set(TestData., j = "ID_Factorizer", value = "TEST")
-      temp <- data.table::rbindlist(list(data., ValidationData., TestData.))
-      temp <- DummifyDT(
-        data = temp,
-        cols = if(!is.character(CatFeatures)) names(temp)[CatFeatures] else CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = SaveModelObjects.,
-        ReturnFactorLevels = TRUE,
-        SavePath = if(SaveModelObjects.) model_path. else NULL,
-        ImportFactorLevels = FALSE,
-        GroupVar = TRUE)
-      FactorLevelsList <- temp$FactorLevelsList
-      temp <- temp$data
-      data. <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(data., j = "ID_Factorizer", value = NULL)
-      ValidationData. <- temp[ID_Factorizer == "VALIDATE"]
-      data.table::set(ValidationData., j = "ID_Factorizer", value = NULL)
-      TestData. <- temp[ID_Factorizer == "TEST"]
-      data.table::set(TestData., j = "ID_Factorizer", value = NULL)
-      rm(temp)
-
-    } else {
-
-      data.table::set(data., j = "ID_Factorizer", value = "TRAIN")
-      if(!TrainOnFull.) {
-        data.table::set(ValidationData.,j = "ID_Factorizer", value = "VALIDATE")
-        temp <- data.table::rbindlist(list(data., ValidationData.))
-      } else {
-        temp <- data.
-      }
-      temp <- DummifyDT(
-        data = temp,
-        cols = if(!is.character(CatFeatures)) names(temp)[CatFeatures] else CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = FALSE,
-        SaveFactorLevels = if(SaveModelObjects.) TRUE else FALSE,
-        ReturnFactorLevels = TRUE,
-        SavePath = if(SaveModelObjects.) model_path. else NULL,
-        ImportFactorLevels = FALSE,
-        GroupVar = TRUE)
-      CatFeatures <- numeric(0)
-      FactorLevelsList <- temp$FactorLevelsList
-      temp <- temp$data
-      data. <- temp[ID_Factorizer == "TRAIN"]
-      data.table::set(data., j = "ID_Factorizer", value = NULL)
-      if(!TrainOnFull.) {
-        ValidationData. <- temp[ID_Factorizer == "VALIDATE"]
-        data.table::set(ValidationData., j = "ID_Factorizer", value = NULL)
-      }
-      rm(temp)
-    }
+    # Encode
+    Output <- RemixAutoML:::EncodeCharacterVariables(
+      RunMode = 'train',
+      ModelType = ModelType,
+      TrainData = data.,
+      ValidationData = ValidationData.,
+      TestData = TestData.,
+      TargetVariableName = TargetColumnName.[1L],
+      CategoricalVariableNames = if(!is.character(CatFeatures)) names(data.)[CatFeatures] else CatFeatures,
+      EncodeMethod = EncodeMethod.,
+      KeepCategoricalVariables = FALSE,
+      ReturnMetaData = TRUE,
+      MetaDataPath = model_path.,
+      MetaDataList = NULL,
+      ImputeMissingValue = 0)
+    data. <- Output$TrainData
+    ValidationData. <- Output$ValidationData
+    TestData. <- Output$TestData
+    MetaData <- Output$MetaData
   } else {
-    FactorLevelsList <- NULL
+    MetaData <- Output$MetaData
   }
 
   # Sort data if PrimaryDateColumn ----
@@ -609,8 +574,8 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
               Names = Names,
               UseBestModel = UseBestModel,
               TransformationResults = TransformationResults,
-              FactorLevelsList = FactorLevelsList,
-              TargetLevels = TargetLevels))
+              TargetLevels = TargetLevels,
+              EncodingMetaData = MetaData))
 }
 
 #' @title CatBoostDataConversion

@@ -14,6 +14,7 @@ AutoCatBoostRegression(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = NULL,
+  EncodeMethod = "credibility",
   TransformNumericColumns = NULL,
   Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   TrainOnFull = FALSE,
@@ -76,6 +77,8 @@ AutoCatBoostRegression(
 \item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
+
+\item{EncodeMethod}{'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TransformNumericColumns}{Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed}
 
@@ -207,6 +210,7 @@ TestModel <- RemixAutoML::AutoCatBoostRegression(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = c('IDcol_1','IDcol_2'),
+  EncodeMethod = 'credibility',
   TransformNumericColumns = 'Adrian',
   Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
     'LogPlus1', 'Sqrt', 'Logit'),

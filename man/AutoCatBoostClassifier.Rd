@@ -14,6 +14,7 @@ AutoCatBoostClassifier(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = NULL,
+  EncodeMethod = "credibility",
   TrainOnFull = FALSE,
   task_type = "GPU",
   NumGPUs = 1,
@@ -74,6 +75,8 @@ AutoCatBoostClassifier(
 \item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
 \item{IDcols}{A vector of column names or column numbers to keep in your data but not include in the modeling.}
+
+\item{EncodeMethod}{'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TrainOnFull}{Set to TRUE to train on full data and skip over evaluation steps}
 
@@ -201,6 +204,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = c('IDcol_1','IDcol_2'),
+  EncodeMethod = 'credibility',
 
   # Evaluation args
   ClassWeights = c(1L,1L),

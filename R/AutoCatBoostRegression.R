@@ -15,6 +15,7 @@
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
+#' @param EncodeMethod 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param task_type Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.
@@ -96,6 +97,7 @@
 #'   PrimaryDateColumn = NULL,
 #'   WeightsColumnName = NULL,
 #'   IDcols = c('IDcol_1','IDcol_2'),
+#'   EncodeMethod = 'credibility',
 #'   TransformNumericColumns = 'Adrian',
 #'   Methods = c('BoxCox', 'Asinh', 'Asin', 'Log',
 #'     'LogPlus1', 'Sqrt', 'Logit'),
@@ -146,6 +148,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
                                    PrimaryDateColumn = NULL,
                                    WeightsColumnName = NULL,
                                    IDcols = NULL,
+                                   EncodeMethod = 'credibility',
                                    TransformNumericColumns = NULL,
                                    Methods = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'),
                                    TrainOnFull = FALSE,
@@ -222,13 +225,14 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
 
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
-  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, EvalMetric.=EvalMetric)
+  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, EvalMetric.=EvalMetric)
   TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
-  FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
+  EncodingMetaData <- Output$EncodingMetaData; Output$EncodingMetaData <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
   UseBestModel <- Output$UseBestModel; Output$UseBestModel <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
   CatFeatures <- Output$CatFeatures; Output$CatFeatures <- NULL
+  if(length(CatFeatures) == 0) CatFeatures <- NULL
   TestTarget <- Output$TestTarget; Output$TestTarget <- NULL
   TrainMerge <- Output$TrainMerge; Output$TrainMerge <- NULL
   dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
@@ -399,7 +403,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
       GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists('Names')) Names else NULL,
       TransformationResults = if(exists('TransformationResults')) TransformationResults else NULL,
-      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL,
+      EncodingMetaData = if(exists('EncodingMetaData')) EncodingMetaData else NULL,
       ArgsList = ArgsList))
   }
 }

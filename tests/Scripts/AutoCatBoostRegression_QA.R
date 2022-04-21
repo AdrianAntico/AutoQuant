@@ -62,7 +62,7 @@ CatBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
 # 40:  TRUE           TRUE    FALSE         RMSE      GPU Failure               FALSE
 
 # AutoCatBoostRegression
-# run = 13
+# run = 1
 for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
 
   # Iteration number
@@ -162,6 +162,7 @@ for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
     PrimaryDateColumn = NULL,
     WeightsColumnName = "Weights",
     IDcols = c("IDcol_1","IDcol_2"),
+    EncodeMethod = 'credibility',
     TransformNumericColumns =  trans,
     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 
@@ -219,7 +220,7 @@ for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
 #
-# run = 7
+# run = 1
 #
 # # Iteration number
 # for(zzz in 1:10) print(run)
@@ -346,6 +347,7 @@ for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
 # score_function = "Cosine"
 # min_data_in_leaf = 1
 # DebugMode = TRUE
+# EncodeMethod = 'credibility'
 
 # DataPrep ----
 # OutputSelection.=OutputSelection
@@ -365,6 +367,7 @@ for(run in seq_len(CatBoost_QA_Results_Regression[,.N])) {
 # model_path.=model_path
 # ModelID.=ModelID
 # LossFunction.=LossFunction
+# EncodeMethod. = EncodeMethod
 # EvalMetric.=EvalMetric
 
 # Data Conversion ----

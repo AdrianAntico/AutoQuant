@@ -14,6 +14,7 @@
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
+#' @param EncodeMethod 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
 #' @param task_type Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.
 #' @param NumGPUs Numeric. If you have 4 GPUs supply 4 as a value.
@@ -94,6 +95,7 @@
 #'   PrimaryDateColumn = NULL,
 #'   WeightsColumnName = NULL,
 #'   IDcols = c('IDcol_1','IDcol_2'),
+#'   EncodeMethod = 'credibility',
 #'
 #'   # Evaluation args
 #'   ClassWeights = c(1L,1L),
@@ -142,6 +144,7 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
                                    PrimaryDateColumn = NULL,
                                    WeightsColumnName = NULL,
                                    IDcols = NULL,
+                                   EncodeMethod = 'credibility',
                                    TrainOnFull = FALSE,
                                    task_type = 'GPU',
                                    NumGPUs = 1,
@@ -216,11 +219,13 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
 
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
-  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, ModelType='classification', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
+  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='classification', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
+  EncodingMetaData <- Output$EncodingMetaData; Output$EncodingMetaData <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
   UseBestModel <- Output$UseBestModel; Output$UseBestModel <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
   CatFeatures <- Output$CatFeatures; Output$CatFeatures <- NULL
+  if(length(CatFeatures) == 0) CatFeatures <- NULL
   TestTarget <- Output$TestTarget; Output$TestTarget <- NULL
   TrainMerge <- Output$TrainMerge; Output$TrainMerge <- NULL
   dataTrain <- Output$dataTrain; Output$dataTrain <- NULL
@@ -370,5 +375,6 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
     InteractionImportance = if(exists('Interaction')) Interaction else NULL,
     GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
     ColNames = if(exists('Names')) Names else NULL,
+    EncodingMetaData = if(exists('EncodingMetaData')) EncodingMetaData else NULL,
     ArgsList = ArgsList))
 }

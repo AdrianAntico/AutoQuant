@@ -18,6 +18,9 @@ FE_Validate <- TRUE
 FE_Validate_Counter <- 0L
 Plotter_PlotDropDown1_Validate <- TRUE
 
+# Display NNN number of records from any given table displayed via DataTable()
+NNN <- 1000L
+
 # Temp data
 DataList <- list()
 DataList[['temp']] <- data.table::data.table(Random1=runif(5L), Random2=runif(5L), Random3=runif(5L), Random4=runif(5L), Random5=runif(5L), Random6=runif(5L))
@@ -1147,10 +1150,10 @@ server <- function(input, output, session) {
       data <- DataList[[CurrentData]]
 
       # Display DataTable
-      if(FE_Validate_Counter <= 3) {
+      if(FE_Validate_Counter <= 3L) {
         output$FE_DisplayData <- DT::renderDataTable({
           if(Debug) {print('here and data is :'); print(data)}
-          RemixAutoML::DataTable(data)
+          RemixAutoML::DataTable(data[seq_len(min(.N, NNN))])
         })
         FE_Validate <<- FALSE
       }
@@ -3255,7 +3258,7 @@ server <- function(input, output, session) {
       DataList[[CurrentData]] <<- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(dt)
+        RemixAutoML::DataTable(dt[seq_len(min(.N, NNN))])
       })
       shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
@@ -3270,7 +3273,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$DeleteFeatures_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
       shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
@@ -3291,7 +3294,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$CalendarVariables_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3315,7 +3318,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$HolidayVariables_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3333,7 +3336,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$PercRank_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3360,7 +3363,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$Interaction_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3383,7 +3386,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$Transformations_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3406,7 +3409,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$PartialDummies_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3430,7 +3433,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$CategoricalEncoding_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3460,7 +3463,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$AutoLagRollMode_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3519,7 +3522,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$AutoLagRollStats_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3553,7 +3556,7 @@ server <- function(input, output, session) {
       DataList[[eval(input$AutoDiff_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x)
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
     }
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
@@ -3589,7 +3592,7 @@ server <- function(input, output, session) {
     DataList[[eval(input$ModelDataPrep_SelectData)]] <- x
     DataList <<- DataList
     output$FE_DisplayData <- DT::renderDataTable({
-      RemixAutoML::DataTable(x)
+      RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
     })
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
   })
@@ -3617,7 +3620,7 @@ server <- function(input, output, session) {
     DataList[['TestData']] <- DataSets[['TestData']]
     DataList <<- DataList
     output$FE_DisplayData <- DT::renderDataTable({
-      RemixAutoML::DataTable(x)
+      RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
     })
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
   })

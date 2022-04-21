@@ -16,6 +16,7 @@
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param ClassWeights Supply a vector of weights for your target classes. E.g. c(0.25, 1) to weight your 0 class by 0.25 and your 1 class by 1.
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
+#' @param EncodeMethod 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param task_type Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.
 #' @param NumGPUs Set to 1, 2, 3, etc.
 #' @param NumOfParDepPlots Number of partial dependence plots to create for each target level
@@ -93,6 +94,7 @@
 #'  WeightsColumnName = NULL,
 #'  ClassWeights = c(1L,1L,1L,1L,1L),
 #'  IDcols = c('IDcol_1','IDcol_2'),
+#'  EncodeMethod = 'credibility',
 #'
 #'  # Model evaluation
 #'  eval_metric = 'MCC',
@@ -139,6 +141,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
                                    PrimaryDateColumn = NULL,
                                    WeightsColumnName = NULL,
                                    IDcols = NULL,
+                                   EncodeMethod = 'credibility',
                                    TrainOnFull = FALSE,
                                    task_type = 'GPU',
                                    NumGPUs = 1,
@@ -204,8 +207,10 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
 
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
-  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, ModelType='multiclass', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
+  Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='multiclass', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
+  EncodingMetaData <- Output$EncodingMetaData; Output$EncodingMetaData <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
+  TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
   UseBestModel <- Output$UseBestModel; Output$UseBestModel <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
   CatFeatures <- Output$CatFeatures; Output$CatFeatures <- NULL
@@ -215,7 +220,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   TestMerge <- Output$TestMerge; Output$TestMerge <- NULL
   dataTest <- Output$dataTest; Output$dataTest <- NULL
   TestData <- Output$TestData; Output$TestData <- NULL
-  TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
+  if(length(CatFeatures) == 0) CatFeatures <- NULL
   Names <- Output$Names; rm(Output)
 
   # Need TargetLevels from CatBoostDataPrep() so this code block is here instead of before CatBoostDataPrep()
@@ -418,6 +423,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists('Names') && !is.null(Names)) Names else NULL,
       TargetLevels = if(exists('TargetLevels') && !is.null(TargetLevels)) TargetLevels else NULL,
+      EncodingMetaData = if(exists('EncodingMetaData')) EncodingMetaData else NULL,
       ArgsList = ArgsList))
   }
 }
