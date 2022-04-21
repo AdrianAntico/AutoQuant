@@ -820,14 +820,14 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #'   Query = paste0("SELECT * FROM ", shQuote('Devices')),
 #'   Host = 'localhost',
 #'   CloseConnection = FALSE,
-#'   DBName = 'RemixAutoML',
+#'   DBName = 'Testing',
 #'   User = 'postgres',
 #'   Port = 5432,
 #'   Password = 'Aa...')
 #'
 #' # Query = 'Select * from static_data'
 #' # Host = 'localhost'
-#' # DBName = 'RemixAutoML'
+#' # DBName = 'Testing'
 #' # CloseConnection = FALSE,
 #' # User = 'postgres'
 #' # Port = 5432
@@ -839,7 +839,7 @@ SQL_Server_BulkPush <- function(Server = NULL,
 #'   Query = query,
 #'   Host = 'localhost',
 #'   CloseConnection = FALSE,
-#'   DBName = 'RemixAutoML',
+#'   DBName = 'Testing',
 #'   User = 'postgres',
 #'   Port = 5432,
 #'   Password = 'Aa...')
@@ -850,7 +850,7 @@ PostGRE_Query <- function(Query = NULL,
                           Connection = NULL,
                           CloseConnection = FALSE,
                           Host = 'localhost',
-                          DBName = 'RemixAutoML',
+                          DBName = 'Testing',
                           User = 'postgres',
                           Port = 5432,
                           Password = '') {
@@ -911,7 +911,7 @@ PostGRE_Query <- function(Query = NULL,
 #' # data = data
 #' # CloseConnection = FALSE,
 #' # Host = 'localhost'
-#' # DBName = 'RemixAutoML'
+#' # DBName = 'Testing'
 #' # User = 'postgres'
 #' # Port = 5432
 #' # Password = 'Aa...'
@@ -924,7 +924,7 @@ PostGRE_AppendData <- function(data = NULL,
                                Connection = NULL,
                                CloseConnection = FALSE,
                                Host = 'localhost',
-                               DBName = 'RemixAutoML',
+                               DBName = 'Testing',
                                User = 'postgres',
                                Port = 5432,
                                Password = '') {
@@ -979,7 +979,7 @@ PostGRE_AppendData <- function(data = NULL,
 #' \dontrun{
 #' RemixAutoML::PostGRE_CreateTable(
 #'   data,
-#'   DBName = 'RemixAutoML',
+#'   DBName = 'Testing',
 #'   Schema = NULL,
 #'   TableName = NULL,
 #'   Temporary = FALSE,
@@ -1064,7 +1064,7 @@ PostGRE_CreateTable <- function(data = NULL,
 #'   Connection = NULL,
 #'   CloseConnection = FALSE,
 #'   Host = 'localhost',
-#'   DBName = 'RemixAutoML',
+#'   DBName = 'Testing',
 #'   User = 'postgres',
 #'   Port = 5432,
 #'   Password = 'Aa...')
@@ -1072,7 +1072,7 @@ PostGRE_CreateTable <- function(data = NULL,
 #' # Host = 'localhost'
 #' # TableName = 'static_data'
 #' # Connection = NULL
-#' # DBName = 'RemixAutoML'
+#' # DBName = 'Testing'
 #' # User = 'postgres'
 #' # Port = 5432
 #' # Password = 'Aa...'
@@ -1083,7 +1083,7 @@ PostGRE_RemoveTable <- function(TableName = NULL,
                                 Connection = NULL,
                                 CloseConnection = FALSE,
                                 Host = 'localhost',
-                                DBName = 'RemixAutoML',
+                                DBName = 'Testing',
                                 User = 'postgres',
                                 Port = 5432,
                                 Password = '') {
@@ -1109,131 +1109,57 @@ PostGRE_RemoveTable <- function(TableName = NULL,
   }
 }
 
-#' @title PostGRE_RemoveCreateAppend
-#'
-#' @description PostGRE_RemoveCreateAppend will DROP the table specified
-#'
-#' @author Adrian Antico
-#' @family Database
-#'
-#' @param TableName Name of table you want created
-#' @param Connection NULL. If supplied, use this: Connection <- DBI::dbConnect(RPostgres::Postgres(), host = Host, dbname = DBName, user = User, port = Port, password = Password)
-#' @param CloseConnection = FALSE
-#' @param Host If Connection is NULL then this must be supplied. Host name
-#' @param DBName If Connection is NULL then this must be supplied. database name
-#' @param User If Connection is NULL then this must be supplied. user name
-#' @param Port If Connection is NULL then this must be supplied. port name
-#' @param Password If Connection is NULL then this must be supplied. user password
-#'
-#' @examples
-#' \dontrun{
-#' RemixAutoML::PostGRE_RemoveCreateAppend(
-#'   TableName = 'static_data',
-#'   Connection = NULL,
-#'   CloseConnection = FALSE,
-#'   Host = 'localhost',
-#'   DBName = 'RemixAutoML',
-#'   User = 'postgres',
-#'   Port = 5432,
-#'   Password = 'Aa...')
-#'
-#' # Host = 'localhost'
-#' # TableName = 'static_data'
-#' # Connection = NULL
-#' # DBName = 'Testing'
-#' # User = 'postgres'
-#' # Port = 5432
-#' # Password = 'Aa...'
-#' }
-#'
-#' @export
-PostGRE_RemoveCreateAppend <- function(data = NULL,
-                                       TableName = NULL,
-                                       CloseConnection = TRUE,
-                                       CreateSchema = NULL,
-                                       Host = 'localhost',
-                                       DBName = 'RemixAutoML',
-                                       User = 'postgres',
-                                       Port = 5432,
-                                       Password = '',
-                                       Temporary = FALSE,
-                                       Connection = NULL,
-                                       Append = FALSE) {
-
-  # Avoid argname issues since I don't always fill out all parameters
-  TableName. = TableName
-  Host. = Host
-  CloseConnection. = CloseConnection
-  DBName. = DBName
-  User. = User
-  Port. = Port
-  Password. = Password
-  Temporary. = Temporary
-  Connection. = Connection
-  Append. = Append
-  CreateSchema. = CreateSchema
-  data. = data
-
-  # POSTGRE: Remove Table
-  tryCatch({
-    RemixAutoML::PostGRE_RemoveTable(
-      TableName = TableName.,
-      Host = Host.,
-      CloseConnection = CloseConnection.,
-      DBName = DBName.,
-      User = User.,
-      Port = Port.,
-      Password = Password.)
-  }, error = function(x) cat(paste0(TableName., '  DOES NOT EXIST TO REMOVE')))
-
-  # POSTGRE: Create Data
-  tryCatch({
-    RemixAutoML::PostGRE_CreateTable(
-      data = data.,
-      DBName = DBName.,
-      Schema = CreateSchema.,
-      TableName = TableName.,
-      Temporary = Temporary.,
-      Connection = Connection.,
-      CloseConnection = CloseConnection.,
-      Host = Host.,
-      User = User.,
-      Port = Port.,
-      Password = Password.)
-  }, error = function(x) cat(paste0(TableName., ' DID NOT CREATE')))
-
-  # POSTGRE: Load Data
-  tryCatch({
-    RemixAutoML::PostGRE_AppendData(
-      data = data.,
-      DBName = DBName.,
-      TableName = TableName.,
-      Append = Append.,
-      Connection = Connection.,
-      CloseConnection = CloseConnection.,
-      Host = Host.,
-      User = User.,
-      Port = Port.,
-      Password = Password.)
-  }, error = function(x) cat(paste0(TableName., '  DID NOT APPEND DATA')))
-
-  # Return list of keys and values
-  return(
-    invisible(
-      list(
-        TableName = TableName.,
-        CreateSchema = CreateSchema.,
-        DBName = DBName.,
-        Host = Host.,
-        User = User.,
-        Port = Port.,
-        CloseConnection = CloseConnection.,
-        Temporary = Temporary.,
-        Connection = Connection.,
-        Append = Append.,
-        Password = Password.
-      )))
+#' @noRd
+Post_Query_Helper <- function(RefTable){
+  .RefTable <- RefTable
+  str1 <- "SELECT * FROM "
+  str2 <- '"public"'
+  str3 <- '.'
+  RemixAutoML::PostGRE_Query(
+    Query = paste(str1, str2, str3, .RefTable, sep=""),
+    Connection = NULL,
+    CloseConnection = TRUE,
+    Host = "localhost",
+    DBName = "DBname",
+    User = "postgres",
+    Port = 5432,
+    Password = "It's_Free_Real_Estate"
+  )
 }
+
+#' @noRd
+Post_Query_Helper <- function(RefTable){
+  .RefTable <- RefTable
+  str1 <- "SELECT * FROM "
+  str2 <- '"public"'
+  str3 <- '.'
+  RemixAutoML::PostGRE_Query(
+    Query = paste(str1, str2, str3, .RefTable, sep=""),
+    Connection = NULL,
+    CloseConnection = TRUE,
+    Host = "localhost",
+    DBName = "DBname",
+    User = "postgres",
+    Port = 5432,
+    Password = "It's_Free_Real_Estate"
+  )
+}
+
+#' @noRd
+Post_Append_Helper <- function(data, tableName){
+  RemixAutoML::PostGRE_AppendData(
+    data = data,
+    TableName = tableName,
+    Connection = NULL,
+    CloseConnection = FALSE,
+    Append = FALSE,
+    Host = "localhost",
+    DBName = "DBname",
+    User = "postgres",
+    Port = 5432,
+    Password = "It's_Free_Real_Estate")
+}
+
 
 #
 # RemixAutoML::PostGRE_RemoveCreateAppend(
