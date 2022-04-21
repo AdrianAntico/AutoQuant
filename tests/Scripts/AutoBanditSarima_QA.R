@@ -1,7 +1,8 @@
 # Build model
 Outputt <- data.table::data.table(Success = rep("Failure", 11), TimeAgg = rep("a", 11))
 Version <- 0L
-for(TimeAgg in opt$Test_TimeAggs) {
+
+for(i in c('month', 'week', 'day', 'hour') Test_TimeAggs) {
 
   # Increment
   Version <- Version + 1L
@@ -38,14 +39,13 @@ for(TimeAgg in opt$Test_TimeAggs) {
   }
 
   # Save data
-  data.table::fwrite(Outputt, file = "C:/Users/Bizon/Documents/GitHub/QA_Code/AutoBanditSarima_QA.csv")
-
+  RemixAutoML:::Post_Append_Helper(Outputt,'AutoBanditSarima_QA')
   # Pause a bit
   Sys.sleep(8)
 }
 
 # Store results
-data.table::fwrite(Outputt, file = file.path(opt$CSV_Path, "QA-AutoBanditSarima.csv"))
+RemixAutoML:::Post_Append_Helper(Outputt,'AutoBanditSarima_QA')
 
 ###################################################################################################################
 

@@ -12,37 +12,37 @@ QA_Results[, Success := "Failure"]
 
 # NOT Train On FULL TOF
 # run = 101
-for(run in seq_len(QA_Results[,.N])) {# seq_len(QA_Results[,.N])) {
+for(run in seq_len(QA_Results[,.N])) {
 
   # Data
   if(QA_Results[run, Group] == 0L) {
-    data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/NoGroup-Eval-Walmart.csv")
+    data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
   } else if(QA_Results[run, Group] == 1L) {
-    data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-Eval-Walmart.csv")
+    data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
   } else if(QA_Results[run, Group] == 2L) {
-    data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-Eval-Walmart.csv")
+    data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
   } else if(QA_Results[run, Group] == 3L) {
-    data <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-Eval-Walmart.csv")
+    data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
   }
 
   # xregs
   if(QA_Results[run, xregs] == 0L) {
     xregs <- NULL
   } else if(QA_Results[run, xregs] == 1L) {
-    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/NoGroup-FC-Walmart-XREG1.csv")
-    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/OneGroup-FC-Walmart-XREG1.csv")
-    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/TwoGroup-FC-Walmart-XREG1.csv")
-    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG1.csv")
+    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
+    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg1.csv"))[['data']]
+    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg1.csv"))[['data']]
+    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg1.csv"))[['data']]
   } else if(QA_Results[run, xregs] == 2L) {
-    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/NoGroup-FC-Walmart-XREG2.csv")
-    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/OneGroup-FC-Walmart-XREG2.csv")
-    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/TwoGroup-FC-Walmart-XREG2.csv")
-    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG2.csv")
+    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg2.csv"))[['data']]
+    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg2.csv"))[['data']]
+    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg2.csv"))[['data']]
+    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg2.csv"))[['data']]
   } else if(QA_Results[run, xregs] == 3L) {
-    if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/NoGroup-FC-Walmart-XREG3.csv")
-    if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/OneGroup-FC-Walmart-XREG3.csv")
-    if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/TwoGroup-FC-Walmart-XREG3.csv")
-    if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv")
+    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg3.csv"))[['data']]
+    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg3.csv"))[['data']]
+    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg3.csv"))[['data']]
+    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg3.csv"))[['data']]
   }
 
   # Testing params
@@ -199,7 +199,7 @@ for(run in seq_len(QA_Results[,.N])) {# seq_len(QA_Results[,.N])) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := "Success"]
   rm(TestModel)
-  data.table::fwrite(QA_Results, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoH2OCARMA_QA.csv")
+  RemixAutoML:::Post_Append_Helper(QA_Results,'AutoH2OCARMA_QA')
   Sys.sleep(5)
 }
 

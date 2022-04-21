@@ -130,7 +130,7 @@ for(run in seq_len(XGBoost_QA_Results_Classifier[,.N])) {
   if(!is.null(TestModel)) XGBoost_QA_Results_Classifier[run, Success := "Success"]
   TestModel <- NULL
   Sys.sleep(5)
-  data.table::fwrite(XGBoost_QA_Results_Classifier, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoXGBoostClassifier_QA.csv")
+  RemixAutoML:::Post_Append_Helper(XGBoost_QA_Results_Classifier,'AutoXGBoostClassifier_QA')
 }
 
 # Remove all else

@@ -13,7 +13,7 @@ CatBoost_QA <- CatBoost_QA[!(PartitionInFunction & TOF)]
 CatBoost_QA[, RunNumber := seq_len(.N)]
 
 # Path File
-Path <- "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data"
+#Path <- "C:/Users/Thess/Documents/GitHub/RemixAutoML/tests/Testing_Data"
 
 #       TOF Classification TaskType Success PartitionInFunction RunNumber
 # 1:   TRUE           TRUE      CPU Failure               FALSE         1  success
@@ -122,7 +122,7 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 
   # Outcome
   if(!is.null(TestModel)) CatBoost_QA[run, Success := "Success"]
-  data.table::fwrite(CatBoost_QA, file = file.path(Path, "AutoCatBoostHurdleModel_QA.csv"))
+  RemixAutoML:::Post_Append_Helper(CatBoost_QA,'AutoCatBoostHurdleModel_QA')
 
   # Remove Target Variable
   TTrainData[, c("Target_Buckets", "Adrian") := NULL]
@@ -144,7 +144,7 @@ for(run in seq_len(CatBoost_QA[,.N])) {
   VValidationData <- NULL
   TTestData <- NULL
   gc(); Sys.sleep(5)
-  data.table::fwrite(CatBoost_QA, file = file.path(Path, "AutoCatBoostHurdleModel_QA.csv"))
+  RemixAutoML:::Post_Append_Helper(CatBoost_QA,'AutoCatBoostHurdleModel_QA')
 }
 
 # Defaults ----

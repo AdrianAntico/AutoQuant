@@ -4,7 +4,8 @@ XGBoost_QA <- data.table::CJ(
   Classification = c(TRUE,FALSE),
   Success = "Failure",
   ScoreSuccess = "Failure",
-  PartitionInFunction = c(TRUE,FALSE), sorted = FALSE
+  PartitionInFunction = c(TRUE,FALSE),
+  sorted = FALSE
 )
 
 # Remove impossible combinations
@@ -12,7 +13,9 @@ XGBoost_QA <- XGBoost_QA[!(PartitionInFunction & TOF)]
 XGBoost_QA[, RunNumber := seq_len(.N)]
 
 # Path File
-Path <- "C:/Users/Bizon/Documents/GitHub/QA_Code/QA_CSV"
+Path <- "C:/Users/Bizon/GitHub"
+
+
 
 #      TOF Classification Success PartitionInFunction RunNumber
 # 1:  TRUE           TRUE Failure               FALSE         1
@@ -110,9 +113,9 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 
   # Outcome
   if(!is.null(TestModel)) XGBoost_QA[run, Success := "Success"]
-  data.table::fwrite(XGBoost_QA, file = "C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data/AutoXGBoostHurdleModel_QA.csv")
+  RemixAutoML:::Post_Append_Helper(XGBoost_QA,'AutoXGBoostHurdleModel_QA')
 
-  # Remove Target Variable
+   # Remove Target Variable
   TTrainData[, c("Target_Buckets", "Adrian") := NULL]
 
   # Score CatBoost Hurdle Model
@@ -132,8 +135,11 @@ for(run in seq_len(XGBoost_QA[,.N])) {
   VValidationData <- NULL
   TTestData <- NULL
   gc(); Sys.sleep(5)
-  data.table::fwrite(XGBoost_QA, file = file.path(Path, "AutoXGBoostHurdleModel_QA.csv"))
+  RemixAutoML:::Post_Append_Helper(XGBoost_QA,'AutoXGBoostHurdleModel_QA')
 }
+
+
+
 
 # Defaults ----
 # library(RemixAutoML)
