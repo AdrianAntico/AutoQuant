@@ -52,22 +52,7 @@ output$Table <- shiny::renderUI({RemixAutoML::DataTable(data)})
 }
 \seealso{
 Other Shiny: 
-\code{\link{ArgNullCheck2}()},
-\code{\link{ArgNullCheck}()},
-\code{\link{BlankRow}()},
-\code{\link{DateInput}()},
-\code{\link{GenerateEvaluationMetrics}()},
-\code{\link{NumericInput}()},
-\code{\link{PickerInput_GetLevels2}()},
-\code{\link{PickerInput_GetLevels}()},
-\code{\link{PickerInput}()},
-\code{\link{PreparePlotData}()},
-\code{\link{ReactiveLoadCSV}()},
-\code{\link{ReturnParam}()},
-\code{\link{SelectizeInput}()},
-\code{\link{StoreArgs}()},
-\code{\link{TextInput}()},
-\code{\link{observeEventLoad}()}
+\code{\link{PreparePlotData}()}
 }
 \author{
 Adrian Antico

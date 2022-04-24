@@ -20,6 +20,7 @@ AutoCatBoostCARMA(
   PDFOutputPath = NULL,
   SaveDataPath = NULL,
   NumOfParDepPlots = 10L,
+  EncodingMethod = "credibility",
   TargetTransformation = FALSE,
   Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   AnomalyDetection = NULL,
@@ -107,6 +108,8 @@ AutoCatBoostCARMA(
 \item{SaveDataPath}{NULL Or supply a path. Data saved will be called 'ModelID'_data.csv}
 
 \item{NumOfParDepPlots}{Supply a number for the number of partial dependence plots you want returned}
+
+\item{EncodingMethod}{'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TargetTransformation}{TRUE or FALSE. If TRUE, select the methods in the Methods arg you want tested. The best one will be applied.}
 
@@ -323,6 +326,7 @@ for(Run in seq_len(TotalRuns)) {
     DateColumnName = 'Date',
     HierarchGroups = NULL,
     GroupVariables = c('Store','Dept'),
+    EncodingMethod = 'credibility',
     TimeUnit = 'weeks',
     TimeGroups = if(Tuning[Run, MaxTimeGroups] == 'weeks') 'weeks' else if(Tuning[Run, MaxTimeGroups] == 'months') c('weeks','months') else c('weeks','months','quarters'),
 

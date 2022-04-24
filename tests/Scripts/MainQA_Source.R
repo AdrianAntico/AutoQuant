@@ -1,3 +1,34 @@
+# Ensure data exists in PostGRE
+# CSV_Path <- 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Testing_Data'
+# CSV_Path <- 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/QA_DataSets'
+# Files <- list.files(CSV_Path)
+#
+# # Create table loop
+# for(xxx in Files) {
+#
+#   # Print
+#   print(xxx)
+#
+#   # Load csv
+#   data <- data.table::fread(file = file.path(CSV_Path, xxx))
+#
+#   # TableNames
+#   TN <- sub(pattern = '', replacement = '', x = xxx)
+#   RemixAutoML::PostGRE_RemoveCreateAppend(
+#     data = data,
+#     TableName = TN,
+#     CloseConnection = TRUE,
+#     CreateSchema = NULL,
+#     Host = "localhost",
+#     DBName = "RemixAutoML",
+#     User = "postgres",
+#     Port = 5432,
+#     Password = "Aa1028#@",
+#     Temporary = FALSE,
+#     Connection = NULL,
+#     Append = FALSE)
+# }
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 # QA Main Script
@@ -7,8 +38,7 @@
 # Use job
 Job <- FALSE
 OverallStart <- Sys.time()
-ScriptsPath <- 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/scripts'
-#CSVPath
+ScriptsPath <- 'C:/Users/Bizon/Documents/GitHub/RemixAutoML/tests/Scripts'
 
 # Run time table
 RunTimes <- data.table::data.table(
@@ -23,7 +53,7 @@ RunTimes <- data.table::data.table(
   RunTimeMins = rep(NA_real_, 25))
 
 # Helpers
-KeepList <- c('RunTimes','Counter','Job','Start','OverallStart','ScriptsPath','CSVPath')
+KeepList <- c('RunTimes','Counter','Job','Start','OverallStart','ScriptsPath','KeepList')
 Packages <- c('RemixAutoML','data.table')
 
 # Incrementer
@@ -33,12 +63,11 @@ Counter <- 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostClassifier_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostClassifier_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostClassifier_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -47,12 +76,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostMultiClass_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostMultiClass_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostMultiClass_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -61,12 +89,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostRegression_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostRegression_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostRegression_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -75,12 +102,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostHurdleModel_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostHurdleModel_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostHurdleModel_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -93,12 +119,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMClassifier_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMClassifier_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMClassifier_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -107,12 +132,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMMultiClass_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMMultiClass_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMMultiClass_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -121,12 +145,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMRegression_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMRegression_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMRegression_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -135,12 +158,12 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleModel_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleModel_QA.R')))
+
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleModel_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -153,12 +176,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostClassifier_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostClassifier_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostClassifier_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -167,12 +189,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostMultiClass_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostMultiClass_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostMultiClass_QA.R')))
-  rm(list=ls()[!ls() %in% c('RunTimes','Counter','Counter','Job','Start','OverallStart','ScriptsPath','CSVPath')])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -181,12 +202,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostRegression_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostRegression_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostRegression_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -195,12 +215,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostHurdleModel_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostHurdleModel_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostHurdleModel_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -213,12 +232,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Classifier_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Classifier_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Classifier_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -227,12 +245,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_MultiClass_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_MultiClass_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_MultiClass_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -241,12 +258,12 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Regression_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Regression_QA.R')))
+
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Regression_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -259,12 +276,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostCARMA_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostCARMA_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostCARMA_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -273,12 +289,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMCARMA_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMCARMA_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMCARMA_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -287,12 +302,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostCARMA_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostCARMA_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostCARMA_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -305,12 +319,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostHurdleCARMA_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostHurdleCARMA_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostHurdleCARMA_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -319,12 +332,10 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostHurdleCARMA_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostHurdleCARMA_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostHurdleCARMA_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -333,12 +344,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleCARMA_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleCARMA_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleCARMA_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -351,12 +361,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostVectorCARMA_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostVectorCARMA_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostVectorCARMA_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -370,12 +379,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostFunnel_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostFunnel_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostFunnel_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -384,12 +392,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMFunnel_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMFunnel_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMFunnel_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -398,12 +405,11 @@ Counter <- Counter + 1L
 Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
-    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostFunnel_QA.R')));
-    rm(list=ls()[!ls() %in% KeepList])
+    system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostFunnel_QA.R')))
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostFunnel_QA.R')))
-  rm(list=ls()[!ls() %in% KeepList])
+
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -413,10 +419,10 @@ Counter <- Counter + 1L
 # . ----
 
 # CatBoost Evaluation ----
-CatBoost_QA_Results_Classifier <- RemixAutoML:::Post_Query_Helper('"autocatboostclassifierqa.csv"')[['data']]
-CatBoost_QA_Results_MultiClass <- RemixAutoML:::Post_Query_Helper('"autocatboostmulticlassqa.csv"')[['data']]
-CatBoost_QA_Results_Regression <- RemixAutoML:::Post_Query_Helper('"autocatboostregressionqa.csv"')[['data']]
-CatBoost_QA_Results_HurdleModel <- RemixAutoML:::Post_Query_Helper('"autocatboosthurdlemodelqa.csv"')[['data']]
+CatBoost_QA_Results_Classifier <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostClassifier_QA"')[['data']]
+CatBoost_QA_Results_MultiClass <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostMultiClass_QA"')[['data']]
+CatBoost_QA_Results_Regression <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostRegression_QA"')[['data']]
+CatBoost_QA_Results_HurdleModel <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostHurdleModel_QA"')[['data']]
 CatBoost_QA <- data.table::rbindlist(list(
   CatBoost_QA_Results_Classifier[, Type := 'Classifier'][, Model := 'CatBoost'],
   CatBoost_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'CatBoost'],
@@ -428,10 +434,10 @@ View(CatBoost_QA)
 # . ----
 
 # LightGBM Evaluation ----
-LightGBM_QA_Results_Classifier <- RemixAutoML:::Post_Query_Helper('"autolightgbmclassifierqa.csv"')[['data']]
-LightGBM_QA_Results_MultiClass <- RemixAutoML:::Post_Query_Helper('"autolightgbmmulticlassqa.csv"')[['data']]
-LightGBM_QA_Results_Regression <- RemixAutoML:::Post_Query_Helper('"autolightgbmregressionqa.csv"')[['data']]
-LightGBM_QA_Results_HurdleModel <- RemixAutoML:::Post_Query_Helper('"autolightgbmhurdlemodelqa.csv"')[['data']]
+LightGBM_QA_Results_Classifier <- RemixAutoML:::Post_Query_Helper('"AutoLightGBMClassifier_QA"')[['data']]
+LightGBM_QA_Results_MultiClass <- RemixAutoML:::Post_Query_Helper('"AutoLightGBMMultiClass_QA"')[['data']]
+LightGBM_QA_Results_Regression <- RemixAutoML:::Post_Query_Helper('"AutoLightGBMRegression_QA"')[['data']]
+LightGBM_QA_Results_HurdleModel <- RemixAutoML:::Post_Query_Helper('"AutoLightGBMHurdleModel_QA"')[['data']]
 LightGBM_QA <- data.table::rbindlist(list(
   LightGBM_QA_Results_Classifier[, Type := 'Classifier'][, Model := 'LightGBM'],
   LightGBM_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'LightGBM'],
@@ -443,10 +449,10 @@ View(LightGBM_QA)
 # . ----
 
 # XGBoost Evaluation ----
-XGBoost_QA_Results_Classifier <- RemixAutoML:::Post_Query_Helper('"autoxgboostclassifierqa.csv"')[['data']]
-XGBoost_QA_Results_MultiClass <- RemixAutoML:::Post_Query_Helper('"autoxgboostmulticlassqa.csv"')[['data']]
-XGBoost_QA_Results_Regression <- RemixAutoML:::Post_Query_Helper('"autoxgboostregressionqa.csv"')[['data']]
-XGBoost_QA_Results_HurdleModel <- RemixAutoML:::Post_Query_Helper('"autoxgboosthurdlemodelqa.csv"')[['data']]
+XGBoost_QA_Results_Classifier  <- RemixAutoML:::Post_Query_Helper('"AutoXGBoostClassifier_QA"')[['data']]
+XGBoost_QA_Results_MultiClass  <- RemixAutoML:::Post_Query_Helper('"AutoXGBoostMultiClass_QA"')[['data']]
+XGBoost_QA_Results_Regression  <- RemixAutoML:::Post_Query_Helper('"AutoXGBoostRegression_QA"')[['data']]
+XGBoost_QA_Results_HurdleModel <- RemixAutoML:::Post_Query_Helper('"AutoXGBoostHurdleModel_QA"')[['data']]
 XGBoost_QA <- data.table::rbindlist(list(
   XGBoost_QA_Results_Classifier[, Type := 'Classifier'][, Model := 'XGBoost'],
   XGBoost_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'XGBoost'],
@@ -458,9 +464,9 @@ View(XGBoost_QA)
 # . ----
 
 # H2O Evaluation ----
-H2O_QA_Results_Classifier <- RemixAutoML:::Post_Query_Helper('"autocatboostclassifierqa.csv"')[['data']]
-H2O_QA_Results_MultiClass <- RemixAutoML:::Post_Query_Helper('"autocatboostmulticlassqa.csv"')[['data']]
-H2O_QA_Results_Regression <- RemixAutoML:::Post_Query_Helper('"autocatboostregressionqa.csv"')[['data']]
+H2O_QA_Results_Classifier <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostClassifier_QA"')[['data']]
+H2O_QA_Results_MultiClass <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostMultiClass_QA"')[['data']]
+H2O_QA_Results_Regression <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostRegression_QA"')[['data']]
 H2O_QA <- data.table::rbindlist(list(
   H2O_QA_Results_Classifier[, Type := 'Classifier'][, Model := 'h2o'],
   H2O_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'h2o'],
@@ -471,9 +477,9 @@ View(H2O_QA)
 # . ----
 
 # CARMA Evaluation ----
-CatBoostCARMA <- RemixAutoML:::Post_Query_Helper('"autocatboostcarmaqa.csv"')[['data']]
-XGBoostCARMA <- RemixAutoML:::Post_Query_Helper('"autoxgboostcarmaqa.csv"')[['data']]
-LightGBMCARMA <- RemixAutoML:::Post_Query_Helper('"autolightgbmcarmaqa.csv"')[['data']]
+CatBoostCARMA <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostCARMA_QA"')[['data']]
+XGBoostCARMA <- RemixAutoML:::Post_Query_Helper('"AutoXGBoostCARMA_QA"')[['data']]
+LightGBMCARMA <- RemixAutoML:::Post_Query_Helper('"AutoLightGBMCARMA_QA"')[['data']]
 CARMA_QA <- data.table::rbindlist(list(
   CatBoostCARMA[, Type := 'CARMA'][, Model := 'CatBoost'],
   XGBoostCARMA[, Type := 'CARMA'][, Model := 'XGBoost'],
@@ -484,9 +490,9 @@ View(CARMA_QA)
 # . ----
 
 # Hurdle CARMA Evaluation ----
-CatBoostHurdleCARMA <- RemixAutoML:::Post_Query_Helper('"autocatboosthurdlecarmaqa.csv"')[['data']]
-XGBoostHurdleCARMA <- RemixAutoML:::Post_Query_Helper('"autoxgboosthurdlecarmaqa.csv"')[['data']]
-LightGBMHurdleCARMA <- RemixAutoML:::Post_Query_Helper('"autolightgbmhurdlecarmaqa.csv"')[['data']]
+CatBoostHurdleCARMA <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostHurdleCARMA_QA"')[['data']]
+XGBoostHurdleCARMA <- RemixAutoML:::Post_Query_Helper('"AutoXGBoostHurdleCARMA_QA"')[['data']]
+LightGBMHurdleCARMA <- RemixAutoML:::Post_Query_Helper('"AutoLightGBMHurdleCARMA_QA"')[['data']]
 HurdleCARMA_QA <- data.table::rbindlist(list(
   CatBoostHurdleCARMA[, Type := 'Hurdle_CARMA'][, Model := 'CatBoost'],
   XGBoostHurdleCARMA[, Type := 'Hurdle_CARMA'][, Model := 'XGBoost'],
@@ -497,15 +503,16 @@ View(HurdleCARMA_QA)
 # . ----
 
 # Vector CARMA Evaluation ----
-CatBoostVectorCARMA <- RemixAutoML:::Post_Query_Helper('"autocatboostvectorcarmaqa.csv"')[['data']]
+CatBoostVectorCARMA <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostVectorCARMA_QA"')[['data']]
+VectorCARMA <- CatBoostVectorCARMA[, Model := 'CatBoost']
 View(CatBoostVectorCARMA)
 
 # . ----
 
 # Funnel CARMA Evaluation ----
-CatBoostFunnel <- RemixAutoML:::Post_Query_Helper('"autocatboostfunnelqa.csv"')[['data']]
-LightGBMFunnel <- RemixAutoML:::Post_Query_Helper('"autolightgbmfunnelqa.csv"')[['data']]
-XGBoostFunnel <- RemixAutoML:::Post_Query_Helper('"autoxgboostfunnelqa.csv"')[['data']]
+CatBoostFunnel <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostFunnel_QA"')[['data']]
+LightGBMFunnel <- RemixAutoML:::Post_Query_Helper('"AutoLightGBMFunnel_QA"')[['data']]
+XGBoostFunnel <- RemixAutoML:::Post_Query_Helper('"AutoXGBoostFunnel_QA"')[['data']]
 Funnel_QA <- data.table::rbindlist(list(
   CatBoostFunnel[, Type := 'Funnel_CARMA'][, Model := 'CatBoost'],
   LightGBMFunnel[, Type := 'Funnel_CARMA'][, Model := 'LightGBM'],
@@ -519,15 +526,16 @@ View(Funnel_QA)
 
 # Meta ----
 if(exists("CatBoost_QA")) Cat <- CatBoost_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
-if(exists("LightGBM_QA")) Light <- LightGBM_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","Score")]
-if(exists("XGBoost_QA")) xgb <- XGBoost_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","Score")]
+if(exists("LightGBM_QA")) Light <- LightGBM_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
+if(exists("XGBoost_QA")) xgb <- XGBoost_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
 if(exists("H2O_QA")) h2o <- H2O_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success")]
 if(exists("CARMA_QA")) Carma <- CARMA_QA[, RunNumber := seq_len(.N)][, .SD, .SDcols = c("Model","Type","RunNumber","Success")]
 if(exists("HurdleCARMA_QA")) HurdleCARMA <- HurdleCARMA_QA[, RunNumber := seq_len(.N)][, .SD, .SDcols = c("Model","Type","RunNumber","Success")]
-if(exists("VectorCARMA")) VectorCARMA <- CatBoostVectorCARMA[, Model := "CatBoost"][, Type := "Vector_CARMA"][, RunNumber := seq_len(.N)][, .SD, .SDcols = c("Model","Type","RunNumber","Success")]
-if(exists("Funnel_QA")) FunnelCarma <- Funnel_QA[, Type := "Vector_CARMA"][, RunNumber := seq_len(.N)][, .SD, .SDcols = c("Model","Type","RunNumber","Training","Forecast")]
+if(exists("CatBoostVectorCARMA")) CatBoostVectorCARMA <- CatBoostVectorCARMA[, Model := "CatBoost"][, Type := "Vector_CARMA"][, RunNumber := seq_len(.N)][, .SD, .SDcols = c("Model","Type","RunNumber","Success")]
+if(exists("Funnel_QA")) FunnelCarma <- Funnel_QA[, Type := "Funnel_CARMA"][, RunNumber := seq_len(.N)][, .SD, .SDcols = c("Model","Type","RunNumber","Training","Forecast")]
 All_Methods <- list()
-for(zz in c("Cat","Light","xgb","h2o","Carma","HurdleCARMA","VectorCARMA","FunnelCarma")) {
+for(zz in c("Cat","Light","xgb","h2o","Carma","HurdleCARMA","FunnelCarma","CatBoostVectorCARMA")) { #
+  print(zz)
   if(exists(zz)) All_Methods[[zz]] <- eval(expr = parse(text = zz))
 }
 All_Methods <- data.table::rbindlist(All_Methods, fill = TRUE)

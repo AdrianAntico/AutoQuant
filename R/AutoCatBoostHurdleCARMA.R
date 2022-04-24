@@ -572,6 +572,7 @@ AutoCatBoostHurdleCARMA <- function(data,
     PrimaryDateColumn = eval(DateColumnName),
     WeightsColumnName = if('Weights' %chin% names(train)) 'Weights' else NULL,
     IDcols = IDcols,
+    EncodingMethod = list('classifier' = 'credibility', 'regression' = 'credibility'),
     DebugMode = DebugMode,
 
     # Metadata args
@@ -594,6 +595,8 @@ AutoCatBoostHurdleCARMA <- function(data,
 
     # Bandit grid args
     Trees = NTrees,
+    Langevin = FALSE,
+    DiffusionTemperature = 10000,
     Depth = Depth,
     RandomStrength = RandomStrength,
     BorderCount = BorderCount,
@@ -626,6 +629,9 @@ AutoCatBoostHurdleCARMA <- function(data,
 
   # ARMA PROCESS FORECASTING ----
   if(DebugMode) print('ARMA PROCESS FORECASTING----')
+  # i = 1
+  # i = 2
+  # i = 3
   for(i in seq_len(FC_Periods+1L)) {
 
     # Row counts----
@@ -672,6 +678,21 @@ AutoCatBoostHurdleCARMA <- function(data,
           Threshold = Threshold,
           CARMA = TRUE)
 
+        # ISSUE HERE
+        # [1] "Row counts----"
+        # [1] "Machine Learning: Generate predictions----"
+        # Error in catboost::catboost.predict(model = ModelObject, pool = ScoringPool,  :
+        #   C:/Program Files (x86)/Go Agent/pipelines/BuildMaster/catboost.git/catboost/libs/data/model_dataset_compatibility.cpp:81:
+        #   At position 0 should be feature with name Date_week (found HolidayCounts).
+        #
+        # TestData = data.table::copy(Step1SCore)
+        # Path = NULL
+        # ModelID = 'ModelTest'
+        # ModelList = TestModel$ModelList
+        # ArgsList = TestModel$ArgsList
+        # Threshold = Threshold
+        # CARMA = TRUE
+
         # Modify data to match AutoCatBoostCARMA output ----
         Preds[, (names(Preds)[2L:5L]) := NULL]
         if(DateColumnName %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName), value = NULL)
@@ -707,13 +728,21 @@ AutoCatBoostHurdleCARMA <- function(data,
         # Modify target reference ----
         if(Difference) IDcols = 'ModTarget' else IDcols <- eval(TargetColumnName)
 
-        # GroupVar or Hierarchical----
+        # GroupVar or Hierarchical ----
         if(!is.null(HierarchGroups)) {
           temp <- data.table::copy(UpdateData[, ID := 1:.N, by = c(eval(GroupVariables))])
           temp <- temp[ID == N][, ID := NULL]
         } else {
           temp <- data.table::copy(UpdateData[, ID := 1:.N, by = 'GroupVar'])
           temp <- temp[ID == N][, ID := NULL]
+        }
+
+        # Remove any encoded columns
+        x <- TestModel$ArgsList$EncodingMethod$regression
+        if(length(x) != 0L) {
+          x <- paste0(toupper(substr(x = x, start = 1L, stop = 1L)), substr(x = x, start = 2L, stop = nchar(x)))
+          x <- names(temp)[names(temp) %like% paste0('_', x)]
+          data.table::set(temp, j = x, value = NULL)
         }
 
         # Score model ----
@@ -725,6 +754,15 @@ AutoCatBoostHurdleCARMA <- function(data,
           ArgsList = TestModel$ArgsList,
           Threshold = Threshold,
           CARMA = TRUE)
+
+        # Issue here
+        # TestData = temp
+        # Path = NULL
+        # ModelID = 'ModelTest'
+        # ModelList = TestModel$ModelList
+        # ArgsList = TestModel$ArgsList
+        # Threshold = Threshold
+        # CARMA = TRUE
 
         # Modify data ----
         Preds[, (setdiff(names(Preds),'UpdatedPrediction')) := NULL]

@@ -28,7 +28,8 @@ AutoCatBoostScoring(
   MDP_RemoveDates = FALSE,
   MDP_MissFactor = "0",
   MDP_MissNum = -1,
-  RemoveModel = FALSE
+  RemoveModel = FALSE,
+  Debug = FALSE
 )
 }
 \arguments{
@@ -38,7 +39,7 @@ AutoCatBoostScoring(
 
 \item{FeatureColumnNames}{Supply either column names or column numbers used in the AutoCatBoostRegression() function}
 
-\item{FactorLevelsList}{List of factors levels to DummifyDT()}
+\item{FactorLevelsList}{List of factors levels to CharacterEncode()}
 
 \item{IDcols}{Supply ID column numbers for any metadata you want returned with your predicted values}
 
@@ -79,6 +80,8 @@ AutoCatBoostScoring(
 \item{MDP_MissNum}{If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with}
 
 \item{RemoveModel}{Set to TRUE if you want the model removed immediately after scoring}
+
+\item{Debug}{= FALSE}
 }
 \value{
 A data.table of predicted values with the option to return model features as well.
@@ -246,6 +249,35 @@ Preds <- RemixAutoML::AutoCatBoostScoring(
   MDP_MissFactor = '0',
   MDP_MissNum = -1,
   RemoveModel = FALSE)
+
+  # Step through scoring function
+  library(RemixAutoML)
+  library(data.table)
+  TargetType = 'regression'
+  ScoringData = data
+  FeatureColumnNames = names(data)[!names(data) \%in\% c('IDcol_1', 'IDcol_2','Adrian')]
+  FactorLevelsList = TestModel$FactorLevelsList
+  IDcols = c('IDcol_1','IDcol_2')
+  OneHot = FALSE
+  ReturnShapValues = TRUE
+  ModelObject = TestModel$Model
+  ModelPath = NULL
+  ModelID = 'Test_Model_1'
+  ReturnFeatures = TRUE
+  MultiClassTargetLevels = NULL
+  TransformNumeric = FALSE
+  BackTransNumeric = FALSE
+  TargetColumnName = NULL
+  TransformationObject = NULL
+  TransID = NULL
+  TransPath = NULL
+  MDP_Impute = TRUE
+  MDP_CharToFactor = TRUE
+  MDP_RemoveDates = TRUE
+  MDP_MissFactor = '0'
+  MDP_MissNum = -1
+  RemoveModel = FALSE
+  Debug = TRUE
 }
 }
 \seealso{

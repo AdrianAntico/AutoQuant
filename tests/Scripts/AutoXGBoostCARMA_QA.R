@@ -10,18 +10,21 @@ QA_Results <- data.table::CJ(
 QA_Results[, Success := 'Failure']
 QA_Results[, Encoding := data.table::fifelse(runif(.N) < 0.5, "credibility", "binary")]
 
+# run = 38
+# run = 39
 # run = 125
+# run = 126
 for(run in seq_len(QA_Results[,.N])) {
 
-  # Data
+  # Data ----
   if(QA_Results[run, Group] == 0L) {
-    data <- Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
+    data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
   } else if(QA_Results[run, Group] == 1L) {
-    data <- Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
+    data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
   } else if(QA_Results[run, Group] == 2L) {
-    data <- Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
+    data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
   } else if(QA_Results[run, Group] == 3L) {
-    data <- Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
+    data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
   }
 
   # xregs
@@ -87,7 +90,7 @@ for(run in seq_len(QA_Results[,.N])) {
   data1 <- data.table::copy(data)
   if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
 
-  # Build forecast
+  # Build forecast ----
   TestModel <- tryCatch({RemixAutoML::AutoXGBoostCARMA(
 
     # Data Artifacts
@@ -115,7 +118,7 @@ for(run in seq_len(QA_Results[,.N])) {
     TrainOnFull = TOF,
     NThreads = 64,
     Timer = TRUE,
-    DebugMode = TRUE,
+    DebugMode = FALSE,
     SaveDataPath = getwd(),
     PDFOutputPath = getwd(),
 
@@ -167,8 +170,6 @@ for(run in seq_len(QA_Results[,.N])) {
   Sys.sleep(5)
 }
 
-
-
 # Defaults ----
 # library(RemixAutoML)
 # library(data.table)
@@ -186,37 +187,40 @@ for(run in seq_len(QA_Results[,.N])) {
 # source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_ModelBased.R'))
 # source(file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R'))
 #
+# # run = 37
+# # run = 38
+# # run = 39
 # run = 125
 #
 # # Data
 # if(QA_Results[run, Group] == 0L) {
-#   data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-Eval-Walmart.csv')
+#   data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 1L) {
-#   data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-Eval-Walmart.csv')
+#   data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 2L) {
-#   data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-Eval-Walmart.csv')
+#   data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 3L) {
-#   data <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-Eval-Walmart.csv')
+#   data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
 # }
 #
 # # xregs
 # if(QA_Results[run, xregs] == 0L) {
 #   xregs <- NULL
 # } else if(QA_Results[run, xregs] == 1L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG1.csv')
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG1.csv')
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG1.csv')
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG1.csv')
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg1.csv"')[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg1.csv"')[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg1.csv"')[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg1.csv"')[['data']]
 # } else if(QA_Results[run, xregs] == 2L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG2.csv')
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG2.csv')
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG2.csv')
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG2.csv')
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg2.csv"')[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg2.csv"')[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg2.csv"')[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg2.csv"')[['data']]
 # } else if(QA_Results[run, xregs] == 3L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/NoGroup-FC-Walmart-XREG3.csv')
-#   if(QA_Results[run, Group] == 1L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/OneGroup-FC-Walmart-XREG3.csv')
-#   if(QA_Results[run, Group] == 2L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/TwoGroup-FC-Walmart-XREG3.csv')
-#   if(QA_Results[run, Group] == 3L) xregs <- data.table::fread(file = 'C:/Users/Bizon/Documents/GitHub/QA_DataSets/ThreeGroup-FC-Walmart-XREG3.csv')
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg3.csv"')[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg3.csv"')[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg3.csv"')[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg3.csv"')[['data']]
 # }
 #
 # # Testing params
@@ -442,6 +446,7 @@ for(run in seq_len(QA_Results[,.N])) {
 # FactorList.=FactorList
 
 # XGBoost Scoring ----
+# i == 1
 # TargetType = 'regression'
 # ScoringData = Step1SCore.
 # FeatureColumnNames = ModelFeatures.
@@ -479,61 +484,61 @@ for(run in seq_len(QA_Results[,.N])) {
 # KeepOriginalFactors=FALSE
 
 # Regression ----
-# OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')
-# WeightsColumnName = NULL
-# TreeMethod = TreeMethod
-# NThreads = NThreads
-# model_path = getwd()
-# metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd()
-# ModelID = 'XGBoost'
-# ReturnFactorLevels = TRUE
-# ReturnModelObjects = TRUE
-# SaveModelObjects = FALSE
-# SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE
-# data = train
-# TrainOnFull = TrainOnFull
-# ValidationData = valid
-# TestData = test
-# TargetColumnName = TargetVariable
-# FeatureColNames = ModelFeatures
-# IDcols = IDcols
-# TransformNumericColumns = NULL
-# Methods = NULL
-# LossFunction = LossFunction
-# eval_metric = EvalMetric
-# NumOfParDepPlots = 10
-# PassInGrid = NULL
-# GridTune = GridTune
-# grid_eval_metric = GridEvalMetric
-# BaselineComparison = 'default'
-# MaxModelsInGrid = ModelCount
-# MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
-# MaxRunMinutes = MaxRunMinutes
-# Verbose = 1L
-# Trees = NTrees
-# eta = LearningRate
-# max_depth = MaxDepth
-# min_child_weight = MinChildWeight
-# subsample = SubSample
-# colsample_bytree = ColSampleByTree
+OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')
+WeightsColumnName = NULL
+TreeMethod = TreeMethod
+NThreads = NThreads
+model_path = getwd()
+metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd()
+ModelID = 'XGBoost'
+ReturnFactorLevels = TRUE
+ReturnModelObjects = TRUE
+SaveModelObjects = FALSE
+SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE
+data = train
+TrainOnFull = TrainOnFull
+ValidationData = valid
+TestData = test
+TargetColumnName = TargetVariable
+FeatureColNames = ModelFeatures
+IDcols = IDcols
+TransformNumericColumns = NULL
+Methods = NULL
+LossFunction = LossFunction
+eval_metric = EvalMetric
+NumOfParDepPlots = 10
+PassInGrid = NULL
+GridTune = GridTune
+grid_eval_metric = GridEvalMetric
+BaselineComparison = 'default'
+MaxModelsInGrid = ModelCount
+MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
+MaxRunMinutes = MaxRunMinutes
+Verbose = 1L
+Trees = NTrees
+eta = LearningRate
+max_depth = MaxDepth
+min_child_weight = MinChildWeight
+subsample = SubSample
+colsample_bytree = ColSampleByTree
 
 # Data Prep ----
-# ModelType='regression'
-# data.=data
-# ValidationData.=ValidationData
-# TestData.=TestData
-# TargetColumnName.=TargetColumnName
-# FeatureColNames.=FeatureColNames
-# WeightsColumnName.=WeightsColumnName
-# IDcols.=IDcols
-# TransformNumericColumns.=TransformNumericColumns
-# Methods.=Methods
-# ModelID.=ModelID
-# model_path.=model_path
-# TrainOnFull.=TrainOnFull
-# SaveModelObjects.=SaveModelObjects
-# ReturnFactorLevels.=ReturnFactorLevels
-# EncodingMethod.=EncodingMethod
+ModelType='regression'
+data.=data
+ValidationData.=ValidationData
+TestData.=TestData
+TargetColumnName.=TargetColumnName
+FeatureColNames.=FeatureColNames
+WeightsColumnName.=WeightsColumnName
+IDcols.=IDcols
+TransformNumericColumns.=TransformNumericColumns
+Methods.=Methods
+ModelID.=ModelID
+model_path.=model_path
+TrainOnFull.=TrainOnFull
+SaveModelObjects.=SaveModelObjects
+ReturnFactorLevels.=ReturnFactorLevels
+EncodingMethod.=EncodingMethod
 
 # Binary Encoding issue ----
 # RunMode='train'

@@ -67,7 +67,7 @@ TimeSeriesFill <- function(data = data,
 
     # Merge
     if(!is.null(GroupVariables)) {
-      FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+      FillData <- merge(FillData, data, by = c(DateColumnName, GroupVariables), all = FALSE)
     } else {
       FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
     }
@@ -97,9 +97,9 @@ TimeSeriesFill <- function(data = data,
 
     # Merge
     if(!is.null(GroupVariables)) {
-      FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+      FillData <- merge(FillData, data, by = c(DateColumnName, GroupVariables), all.x = TRUE)
     } else {
-      FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
+      FillData <- merge(FillData, data, by = DateColumnName, all.x = TRUE)
     }
   }
 
@@ -127,9 +127,9 @@ TimeSeriesFill <- function(data = data,
 
     # Merge
     if(!is.null(GroupVariables)) {
-      FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+      FillData <- merge(FillData, data, by = c(DateColumnName, GroupVariables), all.x = TRUE)
     } else {
-      FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
+      FillData <- merge(FillData, data, by = DateColumnName, all.x = TRUE)
     }
   }
 
@@ -157,9 +157,9 @@ TimeSeriesFill <- function(data = data,
 
     # Merge
     if(!is.null(GroupVariables)) {
-      FillData <- merge(FillData, data, by = c(eval(DateColumnName),eval(GroupVariables)), all.x = TRUE)
+      FillData <- merge(FillData, data, by = c(DateColumnName, GroupVariables), all.x = TRUE)
     } else {
-      FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
+      FillData <- merge(FillData, data, by = DateColumnName, all.x = TRUE)
     }
   }
 

@@ -106,7 +106,8 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
   if(!identical(numeric(0), CatFeatures)) {
     CatFeatures <- names(data.)[CatFeatures]
-    CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols.]
+    CatFeatures <- CatFeatures[CatFeatures %in% FeatureColNames.]
+    if(!is.null(IDcols.)) CatFeatures <- CatFeatures[!CatFeatures %chin% IDcols.]
   } else if(length(CatFeatures) == 0L) {
     CatFeatures <- NULL
   }

@@ -279,12 +279,15 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   # Identify column numbers for factor variables ----
   if(ModelType != "multiclass") {
     CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
-    if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
+    CatFeatures <- CatFeatures[CatFeatures %in% which(names(data.) %in% FeatureColNames.)]
+    if(!is.null(IDcols.)) CatFeatures <- CatFeatures[!CatFeatures %in% which(names(data.) %in% IDcols.)]
+    if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
   } else {
-    CatFeatures <- sort(c(as.numeric(which(sapply(data, is.factor))), as.numeric(which(sapply(data, is.character)))))
-    TargetNum <- which(names(data) == TargetColumnName.)
-    CatFeatures <- setdiff(CatFeatures, TargetNum)
-    if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
+    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
+    CatFeatures <- CatFeatures[CatFeatures %in% which(names(data.) %in% FeatureColNames.)]
+    CatFeatures <- setdiff(CatFeatures, TargetColumnName.)
+    if(!is.null(IDcols.)) CatFeatures <- CatFeatures[!CatFeatures %in% IDcols.]
+    if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
   }
 
   # Partition
@@ -394,6 +397,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   if(length(CatFeatures) > 0L) {
 
     # Encode
+    xx <- names(data.table::copy(data.))
     Output <- RemixAutoML:::EncodeCharacterVariables(
       RunMode = 'train',
       ModelType = ModelType,
@@ -403,7 +407,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
       TargetVariableName = TargetColumnName.[1L],
       CategoricalVariableNames = if(!is.character(CatFeatures)) names(data.)[CatFeatures] else CatFeatures,
       EncodeMethod = EncodeMethod.,
-      KeepCategoricalVariables = FALSE,
+      KeepCategoricalVariables = TRUE,
       ReturnMetaData = TRUE,
       MetaDataPath = model_path.,
       MetaDataList = NULL,
@@ -412,8 +416,17 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     ValidationData. <- Output$ValidationData
     TestData. <- Output$TestData
     MetaData <- Output$MetaData
+
+    # Update FeatureColNames.
+    if(!is.character(CatFeatures)) zz <- names(data.)[CatFeatures] else zz <- CatFeatures
+    IDcols. <- c(IDcols., zz)
+    yy <- names(data.table::copy(data.))
+    FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% zz]
+    FeatureColNames. <- c(FeatureColNames., setdiff(yy,xx))
+    CatFeatures <- NULL
   } else {
-    MetaData <- Output$MetaData
+    MetaData <- NULL
+    CatFeatures <- NULL
   }
 
   # Sort data if PrimaryDateColumn ----
@@ -441,7 +454,6 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     keep <- unique(c(WeightsColumnName., IDcols.))
   }
 
-
   # Sorting is getting messed up here, I think
   if("score_traindata" %chin% tolower(OutputSelection.)) {
     TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), fill = TRUE)
@@ -449,8 +461,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     TrainMerge <- NULL
   }
 
-
-
+  # Remove cols
   if(!is.null(keep)) data.table::set(data., j = c(keep), value = NULL)
   if(!TrainOnFull. && !is.null(keep)) data.table::set(ValidationData., j = c(keep), value = NULL) else ValidationData. <- NULL
 
@@ -548,15 +559,15 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
   }
 
   # Identify column numbers for factor variables ----
-  if(ModelType != "multiclass" && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
-    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
-    if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
-  } else if(((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
-    CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data, is.character)))))
-    TargetNum <- which(names(data.) == TargetColumnName.)
-    CatFeatures <- setdiff(CatFeatures, TargetNum)
-    if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
-  }
+  # if(ModelType != "multiclass" && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+  #   CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
+  #   if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
+  # } else if(((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
+  #   CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data, is.character)))))
+  #   TargetNum <- which(names(data.) == TargetColumnName.)
+  #   CatFeatures <- setdiff(CatFeatures, TargetNum)
+  #   if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
+  # }
 
   # Convert CatFeatures to 1-indexed----
   if(length(CatFeatures) > 0L) CatFeatures <- CatFeatures - 1L
@@ -575,7 +586,8 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
               UseBestModel = UseBestModel,
               TransformationResults = TransformationResults,
               TargetLevels = TargetLevels,
-              EncodingMetaData = MetaData))
+              FactorLevelsList = MetaData,
+              FeatureColNames = FeatureColNames.))
 }
 
 #' @title CatBoostDataConversion

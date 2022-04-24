@@ -137,6 +137,7 @@
   PrimaryDateColumn <span class='op'>=</span> <span class='cn'>NULL</span>,
   WeightsColumnName <span class='op'>=</span> <span class='cn'>NULL</span>,
   IDcols <span class='op'>=</span> <span class='cn'>NULL</span>,
+  EncodeMethod <span class='op'>=</span> <span class='st'>"credibility"</span>,
   TrainOnFull <span class='op'>=</span> <span class='cn'>FALSE</span>,
   task_type <span class='op'>=</span> <span class='st'>"GPU"</span>,
   NumGPUs <span class='op'>=</span> <span class='fl'>1</span>,
@@ -217,6 +218,10 @@
     <tr>
       <th>IDcols</th>
       <td><p>A vector of column names or column numbers to keep in your data but not include in the modeling.</p></td>
+    </tr>
+    <tr>
+      <th>EncodeMethod</th>
+      <td><p>'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'</p></td>
     </tr>
     <tr>
       <th>TrainOnFull</th>
@@ -433,10 +438,11 @@
   TestData <span class='op'>=</span> <span class='cn'>NULL</span>,
   TargetColumnName <span class='op'>=</span> <span class='st'>'Adrian'</span>,
   FeatureColNames <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span> <span class='op'>%in%</span>
-     <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>,<span class='st'>'IDcol_2'</span>,<span class='st'>'Adrian'</span><span class='op'>)</span><span class='op'>]</span>,
+    <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>,<span class='st'>'IDcol_2'</span>,<span class='st'>'Adrian'</span><span class='op'>)</span><span class='op'>]</span>,
   PrimaryDateColumn <span class='op'>=</span> <span class='cn'>NULL</span>,
   WeightsColumnName <span class='op'>=</span> <span class='cn'>NULL</span>,
   IDcols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>,<span class='st'>'IDcol_2'</span><span class='op'>)</span>,
+  EncodeMethod <span class='op'>=</span> <span class='st'>'credibility'</span>,
 
   <span class='co'># Evaluation args</span>
   ClassWeights <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1L</span>,<span class='fl'>1L</span><span class='op'>)</span>,

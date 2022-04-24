@@ -1212,10 +1212,10 @@ Post_Query_Helper <- function(RefTable){
     Connection = NULL,
     CloseConnection = TRUE,
     Host = "localhost",
-    DBName = "DBname",
+    DBName = "RemixAutoML",
     User = "postgres",
     Port = 5432,
-    Password = "It's_Free_Real_Estate"
+    Password = "Aa1028#@"
   )
 }
 
@@ -1226,13 +1226,13 @@ Post_Append_Helper <- function(data, tableName){
     data = data,
     TableName = tableName,
     Connection = NULL,
-    CloseConnection = FALSE,
+    CloseConnection = TRUE,
     Append = FALSE,
     Host = "localhost",
-    DBName = "DBname",
+    DBName = "RemixAutoML",
     User = "postgres",
     Port = 5432,
-    Password = "It's_Free_Real_Estate")
+    Password = "Aa1028#@")
 }
 
 

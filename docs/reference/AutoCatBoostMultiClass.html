@@ -137,6 +137,7 @@
   PrimaryDateColumn <span class='op'>=</span> <span class='cn'>NULL</span>,
   WeightsColumnName <span class='op'>=</span> <span class='cn'>NULL</span>,
   IDcols <span class='op'>=</span> <span class='cn'>NULL</span>,
+  EncodeMethod <span class='op'>=</span> <span class='st'>"credibility"</span>,
   TrainOnFull <span class='op'>=</span> <span class='cn'>FALSE</span>,
   task_type <span class='op'>=</span> <span class='st'>"GPU"</span>,
   NumGPUs <span class='op'>=</span> <span class='fl'>1</span>,
@@ -215,6 +216,10 @@
     <tr>
       <th>IDcols</th>
       <td><p>A vector of column names or column numbers to keep in your data but not include in the modeling.</p></td>
+    </tr>
+    <tr>
+      <th>EncodeMethod</th>
+      <td><p>'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'</p></td>
     </tr>
     <tr>
       <th>TrainOnFull</th>
@@ -401,65 +406,66 @@
 <span class='co'># Run function</span>
 <span class='va'>TestModel</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'>AutoCatBoostMultiClass</span><span class='op'>(</span>
 
-    <span class='co'># GPU or CPU and the number of available GPUs</span>
-    task_type <span class='op'>=</span> <span class='st'>'GPU'</span>,
-    NumGPUs <span class='op'>=</span> <span class='fl'>1</span>,
-    TrainOnFull <span class='op'>=</span> <span class='cn'>FALSE</span>,
-    DebugMode <span class='op'>=</span> <span class='cn'>FALSE</span>,
+ <span class='co'># GPU or CPU and the number of available GPUs</span>
+ task_type <span class='op'>=</span> <span class='st'>'GPU'</span>,
+ NumGPUs <span class='op'>=</span> <span class='fl'>1</span>,
+ TrainOnFull <span class='op'>=</span> <span class='cn'>FALSE</span>,
+ DebugMode <span class='op'>=</span> <span class='cn'>FALSE</span>,
 
-    <span class='co'># Metadata args</span>
-    OutputSelection <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Importances'</span>, <span class='st'>'EvalPlots'</span>, <span class='st'>'EvalMetrics'</span>, <span class='st'>'Score_TrainData'</span><span class='op'>)</span>,
-    ModelID <span class='op'>=</span> <span class='st'>'Test_Model_1'</span>,
-    model_path <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/normalizePath.html'>normalizePath</a></span><span class='op'>(</span><span class='st'>'./'</span><span class='op'>)</span>,
-    metadata_path <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/normalizePath.html'>normalizePath</a></span><span class='op'>(</span><span class='st'>'./'</span><span class='op'>)</span>,
-    SaveModelObjects <span class='op'>=</span> <span class='cn'>FALSE</span>,
-    ReturnModelObjects <span class='op'>=</span> <span class='cn'>TRUE</span>,
+ <span class='co'># Metadata args</span>
+ OutputSelection <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Importances'</span>, <span class='st'>'EvalPlots'</span>, <span class='st'>'EvalMetrics'</span>, <span class='st'>'Score_TrainData'</span><span class='op'>)</span>,
+ ModelID <span class='op'>=</span> <span class='st'>'Test_Model_1'</span>,
+ model_path <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/normalizePath.html'>normalizePath</a></span><span class='op'>(</span><span class='st'>'./'</span><span class='op'>)</span>,
+ metadata_path <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/normalizePath.html'>normalizePath</a></span><span class='op'>(</span><span class='st'>'./'</span><span class='op'>)</span>,
+ SaveModelObjects <span class='op'>=</span> <span class='cn'>FALSE</span>,
+ ReturnModelObjects <span class='op'>=</span> <span class='cn'>TRUE</span>,
 
-    <span class='co'># Data args</span>
-    data <span class='op'>=</span> <span class='va'>data</span>,
-    ValidationData <span class='op'>=</span> <span class='cn'>NULL</span>,
-    TestData <span class='op'>=</span> <span class='cn'>NULL</span>,
-    TargetColumnName <span class='op'>=</span> <span class='st'>'Adrian'</span>,
-    FeatureColNames <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span> <span class='op'>%in%</span>
-      <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>, <span class='st'>'IDcol_2'</span>,<span class='st'>'Adrian'</span><span class='op'>)</span><span class='op'>]</span>,
-    PrimaryDateColumn <span class='op'>=</span> <span class='cn'>NULL</span>,
-    WeightsColumnName <span class='op'>=</span> <span class='cn'>NULL</span>,
-    ClassWeights <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1L</span>,<span class='fl'>1L</span>,<span class='fl'>1L</span>,<span class='fl'>1L</span>,<span class='fl'>1L</span><span class='op'>)</span>,
-    IDcols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>,<span class='st'>'IDcol_2'</span><span class='op'>)</span>,
+ <span class='co'># Data args</span>
+ data <span class='op'>=</span> <span class='va'>data</span>,
+ ValidationData <span class='op'>=</span> <span class='cn'>NULL</span>,
+ TestData <span class='op'>=</span> <span class='cn'>NULL</span>,
+ TargetColumnName <span class='op'>=</span> <span class='st'>'Adrian'</span>,
+ FeatureColNames <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span> <span class='op'>%in%</span>
+   <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>, <span class='st'>'IDcol_2'</span>,<span class='st'>'Adrian'</span><span class='op'>)</span><span class='op'>]</span>,
+ PrimaryDateColumn <span class='op'>=</span> <span class='cn'>NULL</span>,
+ WeightsColumnName <span class='op'>=</span> <span class='cn'>NULL</span>,
+ ClassWeights <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1L</span>,<span class='fl'>1L</span>,<span class='fl'>1L</span>,<span class='fl'>1L</span>,<span class='fl'>1L</span><span class='op'>)</span>,
+ IDcols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>,<span class='st'>'IDcol_2'</span><span class='op'>)</span>,
+ EncodeMethod <span class='op'>=</span> <span class='st'>'credibility'</span>,
 
-    <span class='co'># Model evaluation</span>
-    eval_metric <span class='op'>=</span> <span class='st'>'MCC'</span>,
-    loss_function <span class='op'>=</span> <span class='st'>'MultiClassOneVsAll'</span>,
-    grid_eval_metric <span class='op'>=</span> <span class='st'>'Accuracy'</span>,
-    MetricPeriods <span class='op'>=</span> <span class='fl'>10L</span>,
-    NumOfParDepPlots <span class='op'>=</span> <span class='fl'>3</span>,
+ <span class='co'># Model evaluation</span>
+ eval_metric <span class='op'>=</span> <span class='st'>'MCC'</span>,
+ loss_function <span class='op'>=</span> <span class='st'>'MultiClassOneVsAll'</span>,
+ grid_eval_metric <span class='op'>=</span> <span class='st'>'Accuracy'</span>,
+ MetricPeriods <span class='op'>=</span> <span class='fl'>10L</span>,
+ NumOfParDepPlots <span class='op'>=</span> <span class='fl'>3</span>,
 
-    <span class='co'># Grid tuning args</span>
-    PassInGrid <span class='op'>=</span> <span class='cn'>NULL</span>,
-    GridTune <span class='op'>=</span> <span class='cn'>FALSE</span>,
-    MaxModelsInGrid <span class='op'>=</span> <span class='fl'>30L</span>,
-    MaxRunsWithoutNewWinner <span class='op'>=</span> <span class='fl'>20L</span>,
-    MaxRunMinutes <span class='op'>=</span> <span class='fl'>24L</span><span class='op'>*</span><span class='fl'>60L</span>,
-    BaselineComparison <span class='op'>=</span> <span class='st'>'default'</span>,
+ <span class='co'># Grid tuning args</span>
+ PassInGrid <span class='op'>=</span> <span class='cn'>NULL</span>,
+ GridTune <span class='op'>=</span> <span class='cn'>FALSE</span>,
+ MaxModelsInGrid <span class='op'>=</span> <span class='fl'>30L</span>,
+ MaxRunsWithoutNewWinner <span class='op'>=</span> <span class='fl'>20L</span>,
+ MaxRunMinutes <span class='op'>=</span> <span class='fl'>24L</span><span class='op'>*</span><span class='fl'>60L</span>,
+ BaselineComparison <span class='op'>=</span> <span class='st'>'default'</span>,
 
-    <span class='co'># ML args</span>
-    langevin <span class='op'>=</span> <span class='cn'>FALSE</span>,
-    diffusion_temperature <span class='op'>=</span> <span class='fl'>10000</span>,
-    Trees <span class='op'>=</span> <span class='fl'>100L</span>,
-    Depth <span class='op'>=</span> <span class='fl'>4L</span>,
-    LearningRate <span class='op'>=</span> <span class='cn'>NULL</span>,
-    L2_Leaf_Reg <span class='op'>=</span> <span class='cn'>NULL</span>,
-    RandomStrength <span class='op'>=</span> <span class='fl'>1</span>,
-    BorderCount <span class='op'>=</span> <span class='fl'>254</span>,
-    RSM <span class='op'>=</span> <span class='cn'>NULL</span>,
-    BootStrapType <span class='op'>=</span> <span class='st'>'Bayesian'</span>,
-    GrowPolicy <span class='op'>=</span> <span class='st'>'SymmetricTree'</span>,
-    model_size_reg <span class='op'>=</span> <span class='fl'>0.5</span>,
-    feature_border_type <span class='op'>=</span> <span class='st'>'GreedyLogSum'</span>,
-    sampling_unit <span class='op'>=</span> <span class='st'>'Object'</span>,
-    subsample <span class='op'>=</span> <span class='cn'>NULL</span>,
-    score_function <span class='op'>=</span> <span class='st'>'Cosine'</span>,
-    min_data_in_leaf <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+ <span class='co'># ML args</span>
+ langevin <span class='op'>=</span> <span class='cn'>FALSE</span>,
+ diffusion_temperature <span class='op'>=</span> <span class='fl'>10000</span>,
+ Trees <span class='op'>=</span> <span class='fl'>100L</span>,
+ Depth <span class='op'>=</span> <span class='fl'>4L</span>,
+ LearningRate <span class='op'>=</span> <span class='cn'>NULL</span>,
+ L2_Leaf_Reg <span class='op'>=</span> <span class='cn'>NULL</span>,
+ RandomStrength <span class='op'>=</span> <span class='fl'>1</span>,
+ BorderCount <span class='op'>=</span> <span class='fl'>254</span>,
+ RSM <span class='op'>=</span> <span class='cn'>NULL</span>,
+ BootStrapType <span class='op'>=</span> <span class='st'>'Bayesian'</span>,
+ GrowPolicy <span class='op'>=</span> <span class='st'>'SymmetricTree'</span>,
+ model_size_reg <span class='op'>=</span> <span class='fl'>0.5</span>,
+ feature_border_type <span class='op'>=</span> <span class='st'>'GreedyLogSum'</span>,
+ sampling_unit <span class='op'>=</span> <span class='st'>'Object'</span>,
+ subsample <span class='op'>=</span> <span class='cn'>NULL</span>,
+ score_function <span class='op'>=</span> <span class='st'>'Cosine'</span>,
+ min_data_in_leaf <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
 <span class='op'>}</span>
 </pre>
   </div>

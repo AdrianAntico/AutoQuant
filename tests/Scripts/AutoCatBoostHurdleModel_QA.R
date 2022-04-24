@@ -5,15 +5,16 @@ CatBoost_QA <- data.table::CJ(
   TaskType = c("CPU","GPU"),
   Success = "Failure",
   ScoreSuccess = "Failure",
-  PartitionInFunction = c(TRUE,FALSE), sorted = FALSE
-)
+  PartitionInFunction = c(TRUE,FALSE))
 
 # Remove impossible combinations
 CatBoost_QA <- CatBoost_QA[!(PartitionInFunction & TOF)]
 CatBoost_QA[, RunNumber := seq_len(.N)]
+CatBoost_QA[, RunTime := 123.456]
+CatBoost_QA[, DateTime := Sys.time()]
 
 # Path File
-#Path <- "C:/Users/Thess/Documents/GitHub/RemixAutoML/tests/Testing_Data"
+Path <- "C:/Users/Thess/Documents/GitHub/RemixAutoML/tests/Testing_Data"
 
 #       TOF Classification TaskType Success PartitionInFunction RunNumber
 # 1:   TRUE           TRUE      CPU Failure               FALSE         1  success
@@ -30,8 +31,8 @@ CatBoost_QA[, RunNumber := seq_len(.N)]
 # 12: FALSE          FALSE      GPU Failure               FALSE        12  fail
 
 # AutoCatBoostHurdleModel
+# run = 1
 # run = 5
-# run = 6
 for(run in seq_len(CatBoost_QA[,.N])) {
 
   # Define values
@@ -67,6 +68,9 @@ for(run in seq_len(CatBoost_QA[,.N])) {
     TTestData <- NULL
   }
 
+  # Start Timer
+  Start <- Sys.time()
+
   # Run function
   TestModel <- tryCatch({RemixAutoML::AutoCatBoostHurdleModel(
 
@@ -87,6 +91,7 @@ for(run in seq_len(CatBoost_QA[,.N])) {
     FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
     PrimaryDateColumn = "DateTime",
     IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
+    EncodingMethod = list('regression' = 'credibility', 'classifier' = 'credibility'),
     DebugMode = TRUE,
 
     # Metadata args
@@ -129,12 +134,14 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 
   # Score CatBoost Hurdle Model
   Output <- tryCatch({RemixAutoML::AutoCatBoostHurdleModelScoring(
-    TestData = TTrainData,
+    TestData = data.table::copy(TTrainData),
     Path = Path,
     ModelID = "ModelTest",
     ModelList = TestModel$ModelList,
     ArgsList = TestModel$ArgsList,
     Threshold = NULL)}, error = function(x) NULL)
+  End <- Sys.time()
+  CatBoost_QA[run, RunTime := as.numeric(difftime(time1 = End, Start))]
 
   # Outcome
   if(!is.null(Output)) CatBoost_QA[run, ScoreSuccess := "Success"]
@@ -158,15 +165,19 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
 #
 # # Scoring
-# TestData = TTrainData
+# TestData = data.table::copy(TTrainData)
 # Path = Path
 # ModelID = "ModelTest"
 # ModelList = TestModel$ModelList
 # ArgsList = TestModel$ArgsList
 # Threshold = NULL
 # CARMA = FALSE
-
-# run = 5
+#
+# # !tof && MultiClass
+# run = 1
+#
+# # !tof && Classification
+# # run = 7
 #
 # # Define values
 # tasktypemode <- CatBoost_QA[run, TaskType]
@@ -218,6 +229,7 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 # FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")]
 # PrimaryDateColumn = "DateTime"
 # IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")
+# EncodingMethod = list('regression' = 'credibility', 'classification' = 'credibility')
 # DebugMode = FALSE
 #
 # # Metadata args
@@ -250,29 +262,30 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 # RSM = list('classifier' = 0.80, 'regression' = 0.80)
 # BootStrapType = list('classifier' = 'Bayesian', 'regression' = 'Bayesian')
 # GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree')
-
-# Scoring Multiclass ----
-# RemoveModel = TRUE
+#
+# # Scoring Multiclass ----
 # TargetType = TargetType
-# ScoringData = if(!is.null(TestData)) TestData else if(!is.null(ValidationData)) data.table::copy(ValidationData) else data
+# ScoringData = TestData
 # FeatureColumnNames = FeatureNames
 # IDcols = IDcols
+# FactorLevelsList = ArgsList[['FactorLevelsList']][['classifier']]
 # ModelObject = ClassModel
-# ModelPath = if(!is.null(ClassModel)) NULL else Paths
-# ModelID = ModelID
+# ModelPath = ArgsList[['Paths']]
+# ModelID = ArgsList[['ModelID']]
+# RemoveModel = TRUE
 # ReturnFeatures = TRUE
-# MultiClassTargetLevels = TargetLevels
+# ReturnShapValues = FALSE
+# MultiClassTargetLevels = ArgsList[['TargetLevels']]
+# TransformationObject = NULL
+# TargetColumnName = NULL
 # TransformNumeric = FALSE
 # BackTransNumeric = FALSE
-# ReturnShapValues = FALSE
-# TargetColumnName = NULL
-# TransformationObject = NULL
 # TransID = NULL
-# TransPath = Paths
+# TransPath = NULL
 # MDP_Impute = FALSE
 # MDP_CharToFactor = TRUE
 # MDP_RemoveDates = FALSE
-# MDP_MissFactor = '0'
+# MDP_MissFactor = "0"
 # MDP_MissNum = -1
 
 # Multiclass model ----
@@ -322,6 +335,27 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 # eval_metric = 'MultiClassOneVsAll'
 # loss_function = 'MultiClassOneVsAll'
 # NumGPUs = 1
+
+# MultiClass data prep ----
+# OutputSelection.=OutputSelection
+# EncodeMethod.=EncodeMethod
+# ModelType='multiclass'
+# data.=data
+# ValidationData.=ValidationData
+# TestData.=TestData
+# TargetColumnName.=TargetColumnName
+# FeatureColNames.=FeatureColNames
+# PrimaryDateColumn.=PrimaryDateColumn
+# WeightsColumnName.=WeightsColumnName
+# IDcols.=IDcols
+# TrainOnFull.=TrainOnFull
+# SaveModelObjects.=SaveModelObjects
+# TransformNumericColumns.=NULL
+# Methods.=NULL
+# model_path.=model_path
+# ModelID.=ModelID
+# LossFunction.=NULL
+# EvalMetric.=NULL
 
 # Regression model ----
 # task_type = task_type
@@ -402,3 +436,25 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 # FinalTestTarget.=FinalTestTarget
 # TrainOnFull.=TrainOnFull
 # Weights.=WeightsColumnName
+
+# Regression Scoring ----
+# TargetType = "regression"
+# ScoringData = TestData
+# FeatureColumnNames = FeatureNames
+# IDcols = IDcols
+# FactorLevelsList = ArgsList[['FactorLevelsList']][['regression']][[paste0('FLL_', bucket)]]
+# ModelObject = RegressionModel
+# ModelPath = ArgsList[['Paths']]
+# ModelID = ModelIDD
+# ReturnFeatures = TRUE
+# TransformationObject = TransformationResults
+# TargetColumnName = ArgsList[['TransformNumericColumns']]
+# TransformNumeric = Transform
+# BackTransNumeric = Transform
+# TransID = NULL
+# TransPath = NULL
+# MDP_Impute = TRUE
+# MDP_CharToFactor = TRUE
+# MDP_RemoveDates = FALSE
+# MDP_MissFactor = "0"
+# MDP_MissNum = -1

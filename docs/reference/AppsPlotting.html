@@ -129,9 +129,8 @@
 
     <pre class="usage"><span class='fu'>AppsPlotting</span><span class='op'>(</span>
   AzureCredsFile <span class='op'>=</span> <span class='cn'>NULL</span>,
-  PlotObjectHome <span class='op'>=</span> <span class='cn'>NULL</span>,
   HeaderColor <span class='op'>=</span> <span class='st'>"blue"</span>,
-  AppWidth <span class='op'>=</span> <span class='fl'>8L</span>,
+  AppWidth <span class='op'>=</span> <span class='fl'>12L</span>,
   LogoWidth <span class='op'>=</span> <span class='st'>"750px"</span>,
   LogoHeight <span class='op'>=</span> <span class='st'>"100px"</span>,
   GroupVarsBoxColor <span class='op'>=</span> <span class='st'>"navy"</span>,
@@ -149,6 +148,7 @@
   DockerPathToData <span class='op'>=</span> <span class='cn'>NULL</span>,
   UserName_Password_DT <span class='op'>=</span> <span class='cn'>NULL</span>,
   RunMode <span class='op'>=</span> <span class='st'>"package"</span>,
+  PlotObjectHome <span class='op'>=</span> <span class='cn'>NULL</span>,
   Debug <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
 
@@ -158,10 +158,6 @@
     <tr>
       <th>AzureCredsFile</th>
       <td><p>Path to your credentials file</p></td>
-    </tr>
-    <tr>
-      <th>PlotObjectHome</th>
-      <td><p>NULL</p></td>
     </tr>
     <tr>
       <th>HeaderColor</th>
@@ -232,6 +228,10 @@
       <td><p>= 'package', 'local'</p></td>
     </tr>
     <tr>
+      <th>PlotObjectHome</th>
+      <td><p>NULL</p></td>
+    </tr>
+    <tr>
       <th>Debug</th>
       <td><p>FALSE</p></td>
     </tr>
@@ -253,7 +253,6 @@
 
 <span class='co'># Run App</span>
 <span class='co'># RemixAutoML::AppsPlotting(</span>
-<span class='co'>#   PlotObjectHome = NULL,</span>
 <span class='co'>#   HeaderColor = 'black',</span>
 <span class='co'>#   AppWidth = 12L,</span>
 <span class='co'>#   LogoWidth = '1000px',</span>
@@ -271,6 +270,7 @@
 <span class='co'>#   Docker = FALSE,</span>
 <span class='co'>#   Browser = FALSE,</span>
 <span class='co'>#   UserName_Password_DT = NULL,</span>
+<span class='co'>#   PlotObjectHome = NULL,</span>
 <span class='co'>#   Debug = FALSE)</span>
 <span class='co'>#</span>
 <span class='co'># Debug = TRUE</span>

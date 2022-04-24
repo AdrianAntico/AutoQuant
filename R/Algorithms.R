@@ -15,7 +15,7 @@
 #' # 1
 #' }
 #'
-#' @export
+#' @noRd
 Bisection <- function(f = function(x) x ^ 2 - 4 * x + 3, a = 0, b = 2) {
   start <- a
   end <- b
@@ -86,7 +86,7 @@ BisectLeft <- function(sorted_collection = c(), item = 1L, lo = 1L, hi = -1L) {
 #' RemixAutoML::InsertSortedValue(vec = seq(2, 2000, 2), Val = 741, order = "left")
 #' }
 #'
-#' @export
+#' @noRd
 InsertSortedValue <- function(Vec, Val, order = "left") {
   if(order == "left") {
     Element <- BisectLeft(Vec, item = Val)

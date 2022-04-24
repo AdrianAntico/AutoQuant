@@ -9,6 +9,8 @@ QA_Results <- data.table::CJ(
 # Other tests
 QA_Results[, TimeWeights := data.table::fifelse(runif(.N) < 0.5, 0.9999, 1)]
 QA_Results[, Success := "Failure"]
+QA_Results[, RunTime := 123.456]
+QA_Results[, DateTime := Sys.time()]
 
 # NOT Train On FULL TOF
 # run = 101
@@ -88,6 +90,9 @@ for(run in seq_len(QA_Results[,.N])) {
   # Copy data
   data1 <- data.table::copy(data)
   if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
+
+  # Start Timer
+  Start <- Sys.time()
 
   # Build forecast
   TestModel <- tryCatch({RemixAutoML::AutoH2OCARMA(
@@ -195,6 +200,10 @@ for(run in seq_len(QA_Results[,.N])) {
     RemoveCollinearColumns = FALSE,
     InterceptInclude = TRUE,
     NonNegativeCoefficients = FALSE)}, error = function(x) NULL)
+
+  # Timer
+  End <- Sys.time()
+  QA_Results[run, RunTime := as.numeric(difftime(time1 = End, Start))]
 
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := "Success"]

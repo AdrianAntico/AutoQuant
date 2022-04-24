@@ -19,6 +19,7 @@
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param PDFOutputPath NULL or a path file to output PDFs to a specified folder
 #' @param SaveDataPath NULL Or supply a path. Data saved will be called 'ModelID'_data.csv
+#' @param EncodingMethod 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param TargetTransformation TRUE or FALSE. If TRUE, select the methods in the Methods arg you want tested. The best one will be applied.
 #' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
@@ -176,6 +177,7 @@
 #'     DateColumnName = 'Date',
 #'     HierarchGroups = NULL,
 #'     GroupVariables = c('Store','Dept'),
+#'     EncodingMethod = 'credibility',
 #'     TimeUnit = 'weeks',
 #'     TimeGroups = if(Tuning[Run, MaxTimeGroups] == 'weeks') 'weeks' else if(Tuning[Run, MaxTimeGroups] == 'months') c('weeks','months') else c('weeks','months','quarters'),
 #'
@@ -326,6 +328,7 @@ AutoCatBoostCARMA <- function(data,
                               PDFOutputPath = NULL,
                               SaveDataPath = NULL,
                               NumOfParDepPlots = 10L,
+                              EncodingMethod = 'credibility',
                               TargetTransformation = FALSE,
                               Methods = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'),
                               AnomalyDetection = NULL,
@@ -641,6 +644,7 @@ AutoCatBoostCARMA <- function(data,
     PrimaryDateColumn = eval(DateColumnName),
     WeightsColumnName = if('Weights' %in% names(train)) 'Weights' else NULL,
     IDcols = IDcols,
+    EncodeMethod = EncodingMethod,
     TransformNumericColumns = NULL,
     Methods = NULL,
 
@@ -682,6 +686,9 @@ AutoCatBoostCARMA <- function(data,
     min_data_in_leaf = MinDataInLeaf,
     DebugMode = DebugMode)
 
+  # Udpate ModelFeatures
+  # ModelFeatures <- TestModel$ArgsList$FeatureColNames
+
   # Return model object for when TrainOnFull is FALSE ----
   if(!TrainOnFull) return(TestModel)
 
@@ -698,12 +705,15 @@ AutoCatBoostCARMA <- function(data,
 
   # ARMA PROCESS FORECASTING ----
   if(DebugMode) print('ARMA PROCESS FORECASTING ----')
+  # i = 1
+  # i = 2
+  # i = 3
   for(i in seq_len(FC_Periods+1L)) {
 
     # Score model ----
     if(DebugMode) print('Score model ----')
     if(i == 1L) UpdateData <- NULL
-    Output <- CarmaScore(Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=NULL)
+    Output <- CarmaScore(Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod)
     UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
     Preds <- Output$Preds; Output$Preds <- NULL
     N <- Output$N; rm(Output)

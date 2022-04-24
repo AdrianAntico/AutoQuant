@@ -208,8 +208,9 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
   Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='multiclass', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
-  EncodingMetaData <- Output$EncodingMetaData; Output$EncodingMetaData <- NULL
+  FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
+  FeatureColNames <- Output$FeatureColNames; Output$FeatureColNames <- NULL
   TargetLevels <- Output$TargetLevels; Output$TargetLevels <- NULL
   UseBestModel <- Output$UseBestModel; Output$UseBestModel <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
@@ -423,7 +424,7 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists('Names') && !is.null(Names)) Names else NULL,
       TargetLevels = if(exists('TargetLevels') && !is.null(TargetLevels)) TargetLevels else NULL,
-      EncodingMetaData = if(exists('EncodingMetaData')) EncodingMetaData else NULL,
+      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL,
       ArgsList = ArgsList))
   }
 }

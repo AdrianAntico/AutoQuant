@@ -5,6 +5,9 @@ QA_Results <- data.table::CJ(
   Trans = c(TRUE, FALSE),
   Training = "Failure",
   Forecast = "Failure")
+QA_Results[, RunTimeTrain := 123.456]
+QA_Results[, RunTimeScore := 123.456]
+QA_Results[, DateTime := Sys.time()]
 
 # run = 1
 # run = 6
@@ -90,8 +93,8 @@ for(run in seq_len(QA_Results[,.N])) {
   keep <- keep[!keep %in% c(groupvars, "CalendarDateColumn")]
   ModelData[LeadsData, paste0(keep) := mget(paste0("i.", keep))]
 
-  # Set working directory
-  #setwd("C:/Users/Bizon/Documents/GitHub")
+  # Start Timer
+  Start <- Sys.time()
 
   # Build model
   TestModel <- tryCatch({RemixAutoML::AutoLightGBMFunnelCARMA(
@@ -247,6 +250,10 @@ for(run in seq_len(QA_Results[,.N])) {
     Gpu_Use_Dp = TRUE,
     Num_Gpu = 1)}, error = function(x) NULL)
 
+  # Timer
+  End <- Sys.time()
+  QA_Results[run, RunTimeTrain := as.numeric(difftime(time1 = End, Start))]
+
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Training := "Success"]
   RemixAutoML:::Post_Append_Helper(QA_Results,'AutoLightGBMFunnel_QA')
@@ -328,6 +335,9 @@ for(run in seq_len(QA_Results[,.N])) {
     # Shrink Forecast Periods
     LeadsData <- LeadsData[CalendarDateColumn < '2020-01-05']
 
+    # Start Timer
+    Start <- Sys.time()
+
     # Scoring
     Test <- tryCatch({RemixAutoML::AutoLightGBMFunnelCARMAScoring(
       TrainData = ModelData,
@@ -339,6 +349,11 @@ for(run in seq_len(QA_Results[,.N])) {
       ModelPath = NULL,
       MaxCohortPeriod = 15,
       DebugMode = TRUE)}, error = function(x) NULL)
+
+    # Timer
+    End <- Sys.time()
+    QA_Results[run, RunTimeScore := as.numeric(difftime(time1 = End, Start))]
+
   } else {
     Test <- NULL
   }

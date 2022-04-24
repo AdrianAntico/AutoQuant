@@ -127,29 +127,7 @@
     <p>Build a violin plot by simply passing arguments to a single function. It will sample your data using SampleSize number of rows. Sampled data is randomized.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>CorrMatrixPlot</span><span class='op'>(</span>
-  data <span class='op'>=</span> <span class='cn'>NULL</span>,
-  CorrVars <span class='op'>=</span> <span class='cn'>NULL</span>,
-  CorrMethod <span class='op'>=</span> <span class='st'>"pearson"</span>,
-  FacetVar1 <span class='op'>=</span> <span class='cn'>NULL</span>,
-  FacetVar2 <span class='op'>=</span> <span class='cn'>NULL</span>,
-  SampleSize <span class='op'>=</span> <span class='fl'>1000000L</span>,
-  DimnamesMaxNChar <span class='op'>=</span> <span class='fl'>20L</span>,
-  CorrValueTextSize <span class='op'>=</span> <span class='fl'>5.5</span>,
-  TextSize <span class='op'>=</span> <span class='fl'>12</span>,
-  AngleX <span class='op'>=</span> <span class='fl'>90</span>,
-  AngleY <span class='op'>=</span> <span class='fl'>0</span>,
-  ChartColor <span class='op'>=</span> <span class='st'>"lightsteelblue1"</span>,
-  BorderColor <span class='op'>=</span> <span class='st'>"darkblue"</span>,
-  TextColor <span class='op'>=</span> <span class='st'>"darkblue"</span>,
-  GridColor <span class='op'>=</span> <span class='st'>"white"</span>,
-  BackGroundColor <span class='op'>=</span> <span class='st'>"gray95"</span>,
-  SubTitleColor <span class='op'>=</span> <span class='st'>"blue"</span>,
-  LegendPosition <span class='op'>=</span> <span class='st'>"top"</span>,
-  LegendBorderSize <span class='op'>=</span> <span class='fl'>0.5</span>,
-  LegendLineType <span class='op'>=</span> <span class='st'>"solid"</span>,
-  Debug <span class='op'>=</span> <span class='cn'>FALSE</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>CorrMatrixPlot</span><span class='op'>(</span>data <span class='op'>=</span> <span class='cn'>NULL</span>, CorrVars <span class='op'>=</span> <span class='cn'>NULL</span>, Method <span class='op'>=</span> <span class='st'>"spearman"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -163,80 +141,8 @@
       <td><p>Column names of variables you want included in the correlation matrix</p></td>
     </tr>
     <tr>
-      <th>CorrMethod</th>
-      <td><p>'pearson', 'spearman', 'kendall'</p></td>
-    </tr>
-    <tr>
-      <th>FacetVar1</th>
-      <td><p>Column name of facet variable 1. If NULL then ignored</p></td>
-    </tr>
-    <tr>
-      <th>FacetVar2</th>
-      <td><p>Column name of facet variable 2. If NULL then ignored</p></td>
-    </tr>
-    <tr>
-      <th>SampleSize</th>
-      <td><p>An integer for the number of rows to use. Sampled data is randomized. If NULL then ignored</p></td>
-    </tr>
-    <tr>
-      <th>DimnamesMaxNChar</th>
-      <td><p>Default 20</p></td>
-    </tr>
-    <tr>
-      <th>CorrValueTextSize</th>
-      <td><p>Default 5.5</p></td>
-    </tr>
-    <tr>
-      <th>TextSize</th>
-      <td><p>14</p></td>
-    </tr>
-    <tr>
-      <th>AngleX</th>
-      <td><p>90</p></td>
-    </tr>
-    <tr>
-      <th>AngleY</th>
-      <td><p>0</p></td>
-    </tr>
-    <tr>
-      <th>ChartColor</th>
-      <td><p>'lightsteelblue'</p></td>
-    </tr>
-    <tr>
-      <th>BorderColor</th>
-      <td><p>'darkblue'</p></td>
-    </tr>
-    <tr>
-      <th>TextColor</th>
-      <td><p>'darkblue'</p></td>
-    </tr>
-    <tr>
-      <th>GridColor</th>
-      <td><p>'white'</p></td>
-    </tr>
-    <tr>
-      <th>BackGroundColor</th>
-      <td><p>'gray95'</p></td>
-    </tr>
-    <tr>
-      <th>SubTitleColor</th>
-      <td><p>'darkblue'</p></td>
-    </tr>
-    <tr>
-      <th>LegendPosition</th>
-      <td><p>'bottom'</p></td>
-    </tr>
-    <tr>
-      <th>LegendBorderSize</th>
-      <td><p>0.50</p></td>
-    </tr>
-    <tr>
-      <th>LegendLineType</th>
-      <td><p>'solid'</p></td>
-    </tr>
-    <tr>
-      <th>Debug</th>
-      <td><p>FALSE</p></td>
+      <th>Method</th>
+      <td><p>'spearman' default, 'pearson' otherwise</p></td>
     </tr>
     </table>
 
@@ -257,6 +163,21 @@
 
     <p>Adrian Antico</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fread.html'>fread</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/file.choose.html'>file.choose</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>CorrVars</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Weekly_Sales'</span>, <span class='st'>'XREG1'</span>, <span class='st'>'XREG2'</span>, <span class='st'>'XREG3'</span><span class='op'>)</span>
+<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/cor.html'>cor</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[</span>, <span class='va'>.SD</span>, .SDcols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>CorrVars</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span>
+<span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'>heatmaply</span><span class='fu'>::</span><span class='fu'><a href='https://talgalili.github.io/heatmaply/reference/heatmaply.html'>heatmaply_cor</a></span><span class='op'>(</span>
+  <span class='va'>p</span>,
+  colors <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'red'</span>, <span class='st'>'white'</span>, <span class='st'>'blue'</span><span class='op'>)</span>,
+  xlab <span class='op'>=</span> <span class='st'>"Features"</span>,
+  ylab <span class='op'>=</span> <span class='st'>"Features"</span>,
+  k_col <span class='op'>=</span> <span class='fl'>2</span>,
+  k_row <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
+<span class='op'>}</span>
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

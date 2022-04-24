@@ -1,3 +1,25 @@
+
+# Custom User Prompts: Possible Wizard
+
+# ui <- fluidPage(
+#   tags$head(tags$script("
+#     $(document).on('shiny:inputchanged', function(event) {
+#       if (event.name === 'go') {
+#         var text = prompt('Write me something nice:');
+#         Shiny.onInputChange('mytext', text);
+#       }
+#     });"
+#   )),
+#   actionButton("go", "Click for prompt"),
+#   textOutput("txt")
+# )
+#
+# server <- function(input, output, session) {
+#   output$txt <- renderText( {
+#     input$mytext
+#   })
+# }
+
 #' @param Debug = Debug
 #'
 #' @noRd
@@ -254,7 +276,7 @@ ExpandText <- function(x) {
   return(paste0("'",paste0(x, collapse = "','"),"'"))
 }
 
-#' @title PlotLimits
+#' @title InitializePlotObjects
 #'
 #' @param TotalPlots data.table
 #'
@@ -370,7 +392,7 @@ InitializePlotObjects <- function(TotalPlots) {
 #' @param XMax X Max Value
 #' @param Debug = FALSE
 #'
-#' @export
+#' @noRd
 PlotLimits <- function(p, YMin, YMax, XMin, XMax, Debug = FALSE) {
 
   if(Debug) {
@@ -678,7 +700,7 @@ CEPP <- function(x, Default = NULL, Type = 'character') if(missing(x)) Default e
 #' @param data data.table
 #' @param GroupVars passthrough
 #'
-#' @export
+#' @noRd
 UniqueLevels <- function(input, data, n, GroupVars=NULL) {
   if(missing(n) || missing(GroupVars) && is.null(GroupVars[[n]]) || is.na(GroupVars[[n]])) {
     return(NULL)
@@ -697,7 +719,7 @@ UniqueLevels <- function(input, data, n, GroupVars=NULL) {
 #' @param VarName Variable name
 #' @param type 1 for min, 2 for max
 #'
-#' @export
+#' @noRd
 FilterValues <- function(data, VarName = NULL, type = 1) {
 
   if(missing(data)) {
@@ -750,7 +772,7 @@ FilterValues <- function(data, VarName = NULL, type = 1) {
 #' @param FilterValue2 passthrough
 #' @param Debug passthrough
 #'
-#' @export
+#' @noRd
 FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
 
   if(Debug) {
@@ -822,7 +844,7 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
 #' @param VarName Variable name
 #' @param type 1 for min, 2 for max
 #'
-#' @export
+#' @noRd
 KeyVarsInit <- function(data, VarName = NULL, type = 1) {
 
   # Return of data is missing altogether
@@ -886,7 +908,7 @@ KeyVarsInit <- function(data, VarName = NULL, type = 1) {
 #' @param VarName Variable name
 #' @param type 1 for min, 2 for max
 #'
-#' @export
+#' @noRd
 GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
   if(missing(data)) {
     print('GetFilterValueLabel(): data was missing')
@@ -915,7 +937,7 @@ GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
 #' @param VarName Variable name
 #' @param type 1 for min, 2 for max
 #'
-#' @export
+#' @noRd
 GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
   if(missing(data)) {
     print('GetFilterValueMultiple(): data was missing')
@@ -1088,11 +1110,11 @@ IntNull <- function(x, Char = FALSE) {
 
 #' Assign a data.table by name from an environment
 #'
-#' @param df character, name of the object
+#' @param data character, name of the object
 #' @param env an environment
 #'
 #' @return the object
-#' @export
+#' @noRd
 AssignData <- function(data, env = globalenv()) {
   if(deparse(substitute(data)) %in% ls(name = env)) {
     get(x = data, envir = env)
@@ -1115,29 +1137,9 @@ AssignData <- function(data, env = globalenv()) {
 #' RemixAutoML::BlankRow(12)
 #' }
 #' @return Adds a row to your UI of width W
-#' @export
+#' @noRd
 BlankRow <- function(W = 12) {
   shiny::fluidRow(shiny::column(width = W, htmltools::tags$br()))
-}
-
-#' @title observeEventLoad
-#'
-#' @description Used to load .Rdata files in Shiny and assign the object a name
-#'
-#' @family Shiny
-#' @author Adrian Antico
-#'
-#' @param input Passthrough
-#' @param InputVal The values that goes after input$
-#' @param ObjectName The name of the object to assign the load output to
-#'
-#' @export
-observeEventLoad <- function(input, InputVal = NULL, ObjectName = NULL) {
-  shiny::observeEvent(eventExpr = input[[eval(InputVal)]], {
-    inFile <- input[[eval(InputVal)]]
-    e = new.env()
-    assign(x = ObjectName, value = readRDS(inFile$datapath), envir = .GlobalEnv)
-  })
 }
 
 #' @title ReactiveLoadCSV
@@ -1154,7 +1156,7 @@ observeEventLoad <- function(input, InputVal = NULL, ObjectName = NULL) {
 #' @param RemoveObjects List of objects to remove
 #' @param Debug FALSE
 #'
-#' @export
+#' @noRd
 ReactiveLoadCSV <- function(Infile = NULL, ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = FALSE) {
   if(Debug) print('ReactiveLoadCSV 1')
   if(is.null(Infile)) return(NULL)
@@ -1208,7 +1210,7 @@ ReactiveLoadCSV <- function(Infile = NULL, ProjectList = NULL, DateUpdateName = 
 #' }
 #'
 #' @return Updates ProjectList inside function. Do not assign function to anything
-#' @export
+#' @noRd
 StoreArgs <- function(input,
                       ProjectList,
                       VarName,
@@ -1253,11 +1255,11 @@ StoreArgs <- function(input,
 #'
 #' @examples
 #' \dontrun{
-#' Aggregate <- RemixAutoML::ReturnParam(input, VarName = "TS_AggregateFunction", Type = "character", Default = "mean")
+#' Aggregate <- RemixAutoML:::ReturnParam(input, VarName = "TS_AggregateFunction", Type = "character", Default = "mean")
 #' }
 #'
 #' @return Updates ProjectList inside function
-#' @export
+#' @noRd
 ReturnParam <- function(xx = NULL,
                         VarName = NULL,
                         Type = 'numeric',
@@ -1265,7 +1267,7 @@ ReturnParam <- function(xx = NULL,
                         Switch = TRUE,
                         Debug = FALSE) {
 
-  # Return if null or length(0) (can't have NULL elements or )
+  # Catches NULL, character(0), numeric(0), ...
   if(length(xx) == 0) {
     if(Debug) print('ReturnParam: length(xx) == 0 -> TRUE')
     return(Default)
@@ -1280,6 +1282,17 @@ ReturnParam <- function(xx = NULL,
     if(Debug) print('ReturnParam: any(is.na(xx)) -> TRUE')
     xx <- xx[!is.na(xx)]
     if(Debug) {print(xx); print('ReturnParam: any(is.na(xx)) -> TRUE END')}
+  }
+
+  # NaN's
+  if(all(is.nan(xx))) {
+    if(Debug) print('ReturnParam: all(is.nan(xx)) -> TRUE')
+    return(Default)
+  }
+  if(any(is.nan(xx))) {
+    if(Debug) print('ReturnParam: any(is.nan(xx)) -> TRUE')
+    xx <- xx[!is.nan(xx)]
+    if(Debug) {print(xx); print('ReturnParam: any(is.nan(xx)) -> TRUE END')}
   }
 
   # ""
@@ -1306,244 +1319,53 @@ ReturnParam <- function(xx = NULL,
     return(Default)
   }
 
-  # Type == numeric
-  if(Type == "numeric") {
-    if(Switch) {
-      if(!all(xx %in% c('None', 'Default'))) {
-        if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
-        return(as.numeric(xx))
-      } else if(exists("ProjectList")) {
-        if(!is.null(ProjectList[[VarName]])) {
-          return(ProjectList[[VarName]])
-        } else if(!all(xx %in% c('None', 'Default'))) {
-          if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
-          return(as.numeric(xx))
-        } else {
-          return(Default)
-        }
-      } else {
-        return(Default)
-      }
-    } else {
-      if(exists("ProjectList")) {
-        if(!is.null(ProjectList[[VarName]])) {
-          return(ProjectList[[VarName]])
-        } else if(!all(xx %in% c('None', 'Default'))) {
-          return(as.numeric(xx))
-        } else {
-          return(Default)
-        }
+
+  # Get Value then apply type casting
+  if(Switch) {
+    if(!all(xx %in% c('None', 'Default'))) {
+      if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
+      Value <- xx
+    } else if(exists("ProjectList")) {
+      if(!is.null(ProjectList[[VarName]])) {
+        Value <- ProjectList[[VarName]]
       } else if(!all(xx %in% c('None', 'Default'))) {
-        return(as.numeric(xx))
-      } else {
-        return(Default)
-      }
-    }
-  }
-
-  # Type == logical
-  if(Type == "logical") {
-    if(Switch) {
-      if(!all(xx %in% c('None', 'Default'))) {
         if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
-        return(as.logical(xx))
-      } else if(exists("ProjectList")) {
-        if(!is.null(ProjectList[[VarName]])) {
-          return(ProjectList[[VarName]])
-        } else if(!all(xx %in% c('None', 'Default'))) {
-          if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
-          return(as.logical(xx))
-        } else {
-          return(Default)
-        }
+        Value <- xx
       } else {
-        return(Default)
+        Value <- Default
       }
     } else {
-      if(exists("ProjectList")) {
-        if(!is.null(ProjectList[[VarName]])) {
-          return(ProjectList[[VarName]])
-        } else if(!all(xx %in% c('None', 'Default'))) {
-          return(as.logical(xx))
-        } else {
-          return(Default)
-        }
-      } else if(!all(xx %in% c('None', 'Default'))) {
-        return(as.logical(xx))
-      } else {
-        return(Default)
-      }
+      Value <- Default
     }
-  }
-
-  # Type == character
-  if(Type == "character") {
-    if(Switch) {
-      if(!all(xx %in% c('None', 'Default'))) {
-        if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
-        return(as.character(xx))
-      } else if(exists("ProjectList")) {
-        if(!is.null(ProjectList[[VarName]])) {
-          return(ProjectList[[VarName]])
-        } else if(!all(xx %in% c('None', 'Default'))) {
-          if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
-          return(as.character(xx))
-        } else {
-          return(Default)
-        }
-      } else {
-        return(Default)
-      }
-    } else {
-      if(exists("ProjectList")) {
-        if(!is.null(ProjectList[[VarName]])) {
-          return(ProjectList[[VarName]])
-        } else if(!all(xx %in% c('None', 'Default'))) {
-          return(as.character(xx))
-        } else {
-          return(Default)
-        }
-      } else if(!all(xx %in% c('None', 'Default'))) {
-        return(as.character(xx))
-      } else {
-        return(Default)
-      }
-    }
-  }
-
-  # Type == date
-  if(Type == "date") {
-    if(Switch) {
-      if(!all(xx %in% c('None', 'Default'))) {
-        if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
-        return(as.character(xx))
-      } else if(exists("ProjectList")) {
-        if(!is.null(ProjectList[[VarName]])) {
-          return(ProjectList[[VarName]])
-        } else if(any(class(xx) != "NULL") && !all(xx %in% c('None', 'Default'))) {
-          if(any(xx %in% c('None', 'Default'))) xx <- xx[!xx %in% c('None','Default')]
-          return(xx)
-        } else {
-          return(Default)
-        }
-      } else {
-        return(Default)
-      }
-    } else {
-      if(exists("ProjectList")) {
-        if(!is.null(ProjectList[[VarName]])) {
-          return(ProjectList[[VarName]])
-        } else if(any(class(xx) != "NULL") && !all(xx %in% c('None', 'Default'))) {
-          return(xx)
-        } else {
-          return(Default)
-        }
-      } else if(any(class(xx) != "NULL") && !all(xx %in% c('None', 'Default'))) {
-        return(xx)
-      } else {
-        return(Default)
-      }
-    }
-  }
-}
-
-#' @title ArgNullCheck
-#'
-#' @description ArgNullCheck
-#'
-#' @author Adrian Antico
-#' @family Shiny
-#'
-#' @param Input input
-#' @param InputID inputId
-#' @param Default Default value
-#' @examples
-#' \dontrun{
-#' ArgValue <<- RemixAutoML::ArgNullCheck(Input = input, InputID = "TS_Value", Default = 2)
-#' }
-#' @export
-ArgNullCheck <- function(Input,
-                         InputID,
-                         Default) {
-  if(!is.null(Input[[InputID]])) {
-    return(Input[[InputID]])
   } else {
-    return(Default)
-  }
-}
-
-#' @title ArgNullCheck2
-#'
-#' @description ArgNullCheck2
-#'
-#' @author Adrian Antico
-#' @family Shiny
-#'
-#' @param Input input
-#' @param InputID inputId
-#' @param Default Default value
-#' @param Type numeric character logical
-#' @examples
-#' \dontrun{
-#' ArgValue <<- RemixAutoML::ArgNullCheck2(Input = input, InputID = "TS_Value", Default = 2, Type = "numeric")
-#' }
-#' @export
-ArgNullCheck2 <- function(Input,
-                          InputID,
-                          Default,
-                          Type = "numeric") {
-
-  # Numeric
-  if(Type == "numeric") {
-    if(Type == "character") {
-      if(exists("ProjectList")) {
-        if(InputID %chin% names(ProjectList)) {
-          return(ProjectList[[InputID]])
-        } else if(any(class(Input[[InputID]]) != "NULL")) {
-          return(as.numeric(Input[[InputID]]))
-        } else {
-          return(Default)
-        }
-      } else if(any(class(Input[[InputID]]) != "NULL")) {
-        return(as.numeric(Input[[InputID]]))
-      } else {
-        return(Default)
-      }
-    }
-  }
-
-  # Character
-  if(Type == "character") {
     if(exists("ProjectList")) {
-      if(InputID %chin% names(ProjectList)) {
-        return(ProjectList[[InputID]])
-      } else if(any(class(Input[[InputID]]) != "NULL")) {
-        return(as.character(Input[[InputID]]))
+      if(!is.null(ProjectList[[VarName]])) {
+        Value <- ProjectList[[VarName]]
+      } else if(!all(xx %in% c('None', 'Default'))) {
+        Value <- xx
       } else {
-        return(Default)
+        Value <- Default
       }
-    } else if(any(class(Input[[InputID]]) != "NULL")) {
-      return(as.character(Input[[InputID]]))
+    } else if(!all(xx %in% c('None', 'Default'))) {
+      Value <- xx
     } else {
-      return(Default)
+      Value <- Default
     }
   }
 
-  # Logical
-  if(Type == "logical") {
-    if(exists("ProjectList")) {
-      if(InputID %chin% names(ProjectList)) {
-        return(ProjectList[[InputID]])
-      } else if(any(class(Input[[InputID]]) != "NULL")) {
-        return(as.logical(Input[[InputID]]))
-      } else {
-        return(Default)
-      }
-    } else if(any(class(Input[[InputID]]) != "NULL")) {
-      return(as.logical(Input[[InputID]]))
-    } else {
-      return(Default)
-    }
+  # Type Casting
+  if(Type == 'numeric') {
+    return(as.numeric(Value))
+  } else if(Type == 'character') {
+    return(as.character(Value))
+  } else if(Type == 'logical') {
+    return(as.logical(Value))
+  } else if(Type == 'factor') {
+    return(as.factor(Value))
+  } else if(Type == 'date') {
+    return(as.Date(Value))
+  } else if(Type == 'posix') {
+    return(as.POSIXct(Value))
   }
 }
 
@@ -1571,7 +1393,7 @@ ArgNullCheck2 <- function(Input,
 #'                            SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @export
+#' @noRd
 PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                         Label = "Select Holiday Count MA's",
                         Choices = as.character(0:50),
@@ -1630,11 +1452,11 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #' @examples
 #' \dontrun{
 #' output$TS_CARMA_HolidayMovingAverages <- renderUI({
-#'   RemixAutoML::SelectizeInput(InputID = "TS_CARMA_HolidayMovingAverages", Update = FALSE, Label = "Select Holiday Count MA's", Choices = as.character(0:50),
+#'   RemixAutoML:::SelectizeInput(InputID = "TS_CARMA_HolidayMovingAverages", Update = FALSE, Label = "Select Holiday Count MA's", Choices = as.character(0:50),
 #'                            SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
 #' }
 #' @return SelectizeInput object for server.R to go into renderUI({SelectizeInput()})
-#' @export
+#' @noRd
 SelectizeInput <- function(InputID = "",
                            Update = FALSE,
                            Label = "",
@@ -1693,7 +1515,7 @@ SelectizeInput <- function(InputID = "",
 #'                             Step = 1)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @export
+#' @noRd
 NumericInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                          Label = "Select Holiday Count MA's",
                          Step = 10,
@@ -1737,7 +1559,7 @@ NumericInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #'                          Format = "yyyy-mm-dd")})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @export
+#' @noRd
 DateInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                       Label = "Import Data Creation Date",
                       Value = Sys.Date(),
@@ -1777,7 +1599,7 @@ DateInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #'                          Placeholder = "yyyy-mm-dd")})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @export
+#' @noRd
 TextInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                       Label = "Path to Data",
                       Value = NULL,
@@ -1821,7 +1643,7 @@ TextInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #'     SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @export
+#' @noRd
 PickerInput_GetLevels <- function(input,
                                   data = 'SourceData',
                                   NumGroupVar = 3,
@@ -1875,7 +1697,7 @@ PickerInput_GetLevels <- function(input,
 #'     SelectedDefault = as.character(c(1,2)), Multiple = TRUE)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @export
+#' @noRd
 PickerInput_GetLevels2 <- function(DataExist = TRUE,
                                    NumGroupVar = 3,
                                    InputID = "TS_CARMA_HolidayMovingAverages",
@@ -2157,7 +1979,7 @@ PreparePlotData <- function(data,
 #'   PlotData <- RemixAutoML::PreparePlotData(input, TargetVariable = "TargetVariables", DateVariable = "DateVariables", GroupVariables = GroupVariables, G1Levels = "TS_Group1Levels", G2Levels = "TS_Group2Levels", G3Levels = "TS_Group3Levels")
 #' }
 #' @return PreparePlotData object for server.R to
-#' @export
+#' @noRd
 GenerateEvaluationMetrics <- function(EvalData = NULL,
                                       TargetName = NULL,
                                       DateName = NULL,
@@ -2319,26 +2141,26 @@ TimeSeriesMelt <- function(data,
 
 # # Scatterplot / copula plot marginals
 # output$Marginals1 <- shiny::renderUI({
-#   RemixAutoML::SelectizeInput(InputID = 'Marginals1', Label = tags$span(style='color: blue;', 'Marginals 1'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+#   RemixAutoML:::SelectizeInput(InputID = 'Marginals1', Label = tags$span(style='color: blue;', 'Marginals 1'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
 # })
 # output$Marginals2 <- shiny::renderUI({
-#   RemixAutoML::SelectizeInput(InputID = 'Marginals2', Label = tags$span(style='color: blue;', 'Marginals 2'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+#   RemixAutoML:::SelectizeInput(InputID = 'Marginals2', Label = tags$span(style='color: blue;', 'Marginals 2'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
 # })
 # output$Marginals3 <- shiny::renderUI({
-#   RemixAutoML::SelectizeInput(InputID = 'Marginals3', Label = tags$span(style='color: blue;', 'Marginals 3'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+#   RemixAutoML:::SelectizeInput(InputID = 'Marginals3', Label = tags$span(style='color: blue;', 'Marginals 3'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
 # })
 # output$Marginals4 <- shiny::renderUI({
-#   RemixAutoML::SelectizeInput(InputID = 'Marginals4', Label = tags$span(style='color: blue;', 'Marginals 4'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+#   RemixAutoML:::SelectizeInput(InputID = 'Marginals4', Label = tags$span(style='color: blue;', 'Marginals 4'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
 # })
 # output$MarginalType1 <- shiny::renderUI({
-#   RemixAutoML::SelectizeInput(InputID = 'MarginalType1', Label = tags$span(style='color: blue;', 'Marginal Type 1'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+#   RemixAutoML:::SelectizeInput(InputID = 'MarginalType1', Label = tags$span(style='color: blue;', 'Marginal Type 1'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
 # })
 # output$MarginalType2 <- shiny::renderUI({
-#   RemixAutoML::SelectizeInput(InputID = 'MarginalType2', Label = tags$span(style='color: blue;', 'Marginal Type 2'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+#   RemixAutoML:::SelectizeInput(InputID = 'MarginalType2', Label = tags$span(style='color: blue;', 'Marginal Type 2'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
 # })
 # output$MarginalType3 <- shiny::renderUI({
-#   RemixAutoML::SelectizeInput(InputID = 'MarginalType3', Label = tags$span(style='color: blue;', 'Marginal Type 3'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+#   RemixAutoML:::SelectizeInput(InputID = 'MarginalType3', Label = tags$span(style='color: blue;', 'Marginal Type 3'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
 # })
 # output$MarginalType4 <- shiny::renderUI({
-#   RemixAutoML::SelectizeInput(InputID = 'MarginalType4', Label = tags$span(style='color: blue;', 'Marginal Type 4'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+#   RemixAutoML:::SelectizeInput(InputID = 'MarginalType4', Label = tags$span(style='color: blue;', 'Marginal Type 4'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
 # })

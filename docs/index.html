@@ -7644,31 +7644,31 @@ Functions Description
 AutoRecommenderDataCreate() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co"># data comes in transactional form as a data.table</span></span>
-<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>RatingsMatrix <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">AutoRecommenderDataCreate</span>(</span>
-<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a>  data,</span>
-<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">EntityColName =</span> <span class="st">"CustomerID"</span>,</span>
-<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ProductColName =</span> <span class="st">"StockCode"</span>,</span>
-<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">MetricColName =</span> <span class="st">"TotalSales"</span>,</span>
-<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">ReturnMatrix =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb80-8"><a href="#cb80-8" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># data comes in transactional form as a data.table</span>
+<span class="va">RatingsMatrix</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu"><a href="reference/AutoRecommenderDataCreate.html">AutoRecommenderDataCreate</a></span><span class="op">(</span>
+  <span class="va">data</span>,
+  EntityColName <span class="op">=</span> <span class="st">"CustomerID"</span>,
+  ProductColName <span class="op">=</span> <span class="st">"StockCode"</span>,
+  MetricColName <span class="op">=</span> <span class="st">"TotalSales"</span>,
+  ReturnMatrix <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 
 </details><details><summary>
 AutoRecommenderTrain() Example
 </summary><p>
 </p>
-<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build Model</span></span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>WinningModel <span class="ot">&lt;-</span> RemixAutoML<span class="sc">::</span><span class="fu">AutoRecommender</span>(</span>
-<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  RatingsMatrix,</span>
-<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Partition =</span> <span class="st">"Split"</span>,</span>
-<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">KFolds =</span> <span class="dv">1</span>,</span>
-<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Ratio =</span> <span class="fl">0.75</span>,</span>
-<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Given =</span> <span class="dv">1</span>,</span>
-<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">RatingType =</span> <span class="st">"TopN"</span>,</span>
-<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">RatingsKeep =</span> <span class="dv">20</span>,</span>
-<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">SkipModels =</span> <span class="st">"AssociationRules"</span>,</span>
-<span id="cb81-11"><a href="#cb81-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">ModelMetric =</span> <span class="st">"TPR"</span>)</span>
-<span id="cb81-12"><a href="#cb81-12" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb81"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Build Model</span>
+<span class="va">WinningModel</span> <span class="op">&lt;-</span> <span class="fu">RemixAutoML</span><span class="fu">::</span><span class="fu">AutoRecommender</span><span class="op">(</span>
+  <span class="va">RatingsMatrix</span>,
+  Partition <span class="op">=</span> <span class="st">"Split"</span>,
+  KFolds <span class="op">=</span> <span class="fl">1</span>,
+  Ratio <span class="op">=</span> <span class="fl">0.75</span>,
+  Given <span class="op">=</span> <span class="fl">1</span>,
+  RatingType <span class="op">=</span> <span class="st">"TopN"</span>,
+  RatingsKeep <span class="op">=</span> <span class="fl">20</span>,
+  SkipModels <span class="op">=</span> <span class="st">"AssociationRules"</span>,
+  ModelMetric <span class="op">=</span> <span class="st">"TPR"</span><span class="op">)</span></code></pre></div>
 
 </details><details><summary>
 AutoRecommenderScore() Example
@@ -7760,7 +7760,7 @@ Expand to view content
 <p><code><a href="reference/multiplot.html">multiplot()</a></code> is useful for displaying multiple plots in a single pane. I’ve never had luck using grid so I just use this instead.</p>
 <p><code><a href="reference/FakeDataGenerator.html">FakeDataGenerator()</a></code> I use this to create fake data for the examples in the function help files</p>
 <p><code>DeleteFile()</code> If you are on a windows machine, you can use this functio to delete a file such that you don’t have to delete it again from the recycle bin.</p>
-<p><code><a href="reference/PrintToPDF.html">PrintToPDF()</a></code> You can have plots or tables printed to pdf with this function. It will manage the grDevices for you.</p>
+<p><code>PrintToPDF()</code> You can have plots or tables printed to pdf with this function. It will manage the grDevices for you.</p>
 
 </details>
 </div>

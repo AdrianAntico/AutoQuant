@@ -15,6 +15,7 @@ AutoCatBoostHurdleModel(
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
   IDcols = NULL,
+  EncodingMethod = list(classifier = "credibility", regression = "credibility"),
   TransformNumericColumns = NULL,
   Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
   ClassWeights = NULL,
@@ -67,6 +68,8 @@ AutoCatBoostHurdleModel(
 \item{WeightsColumnName}{Column name for weights variable}
 
 \item{IDcols}{Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions}
+
+\item{EncodingMethod}{'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TransformNumericColumns}{Transform numeric column inside the AutoCatBoostRegression() function}
 
@@ -227,6 +230,7 @@ for(run in seq_len(CatBoost_QA[,.N])) {
     FeatureColNames = names(TTrainData)[!names(data) \%in\% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")],
     PrimaryDateColumn = "DateTime",
     IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime"),
+    EncodingMethod = list('classifier' = 'credibility', 'regression' = 'credibility'),
     DebugMode = TRUE,
 
     # Metadata args

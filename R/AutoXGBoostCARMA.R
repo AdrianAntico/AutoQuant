@@ -533,6 +533,9 @@ AutoXGBoostCARMA <- function(data = NULL,
 
   # ARMA PROCESS FORECASTING ----
   if(DebugMode) print('ARMA PROCESS FORECASTING----')
+  # i = 1
+  # i = 2
+  # i = 3
   for(i in seq_len(ForecastRuns + 1L)) {
 
     # Score model ----

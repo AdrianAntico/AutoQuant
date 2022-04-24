@@ -11,6 +11,9 @@ LightGBM_QA_Results_MultiClass <- LightGBM_QA_Results_MultiClass[!(TOF & GridTun
 LightGBM_QA_Results_MultiClass <- LightGBM_QA_Results_MultiClass[!(PartitionInFunction & TOF)]
 LightGBM_QA_Results_MultiClass[, RunNumber := seq_len(.N)]
 LightGBM_QA_Results_MultiClass[, Score := "Failure"]
+LightGBM_QA_Results_MultiClass[, RunTime := 123.456]
+LightGBM_QA_Results_MultiClass[, DateTime := Sys.time()]
+
 
 #      TOF GridTune Success PartitionInFunction RunNumber
 # 1: FALSE    FALSE Failure               FALSE         1
@@ -73,6 +76,9 @@ for(run in seq_len(LightGBM_QA_Results_MultiClass[,.N])) {
     VValidationData <- NULL
     TTestData <- NULL
   }
+
+  # Start Timer
+  Start <- Sys.time()
 
   # Run function
   TestModel <- tryCatch({RemixAutoML::AutoLightGBMMultiClass(
@@ -198,9 +204,18 @@ for(run in seq_len(LightGBM_QA_Results_MultiClass[,.N])) {
     gpu_use_dp = TRUE,
     num_gpu = 1)}, error = function(x) NULL)
 
+  # Timer
+  End <- Sys.time()
+  LightGBM_QA_Results_MultiClass[run, RunTimeTrain := as.numeric(difftime(time1 = End, Start))]
+
   # Outcome
   if(!is.null(TestModel)) LightGBM_QA_Results_MultiClass[run, Success := "Success"]
   if(!is.null(TestModel)) {
+
+    # Start Timer
+    Start <- Sys.time()
+
+
     ModelID = "Test_Model_1"
     colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
     Preds <- tryCatch({RemixAutoML::AutoLightGBMScoring(
@@ -227,6 +242,10 @@ for(run in seq_len(LightGBM_QA_Results_MultiClass[,.N])) {
       MDP_RemoveDates = TRUE,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)}, error = function(x) NULL)
+
+    # Timer
+    End <- Sys.time()
+    LightGBM_QA_Results_MultiClass[run, RunTimeScore := as.numeric(difftime(time1 = End, Start))]
     if(!is.null(Preds)) LightGBM_QA_Results_MultiClass[run, Score := "Success"]
   }
   TestModel <- NULL

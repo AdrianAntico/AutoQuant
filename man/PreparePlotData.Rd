@@ -60,22 +60,7 @@ PreparePlotData automatically builds a picker input with tryCatch's and ProjectL
 }
 \seealso{
 Other Shiny: 
-\code{\link{ArgNullCheck2}()},
-\code{\link{ArgNullCheck}()},
-\code{\link{BlankRow}()},
-\code{\link{DataTable}()},
-\code{\link{DateInput}()},
-\code{\link{GenerateEvaluationMetrics}()},
-\code{\link{NumericInput}()},
-\code{\link{PickerInput_GetLevels2}()},
-\code{\link{PickerInput_GetLevels}()},
-\code{\link{PickerInput}()},
-\code{\link{ReactiveLoadCSV}()},
-\code{\link{ReturnParam}()},
-\code{\link{SelectizeInput}()},
-\code{\link{StoreArgs}()},
-\code{\link{TextInput}()},
-\code{\link{observeEventLoad}()}
+\code{\link{DataTable}()}
 }
 \author{
 Adrian Antico

@@ -131,6 +131,7 @@
   data <span class='op'>=</span> <span class='cn'>NULL</span>,
   XVar <span class='op'>=</span> <span class='cn'>NULL</span>,
   YVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  ColorVar <span class='op'>=</span> <span class='cn'>NULL</span>,
   FacetVar1 <span class='op'>=</span> <span class='cn'>NULL</span>,
   FacetVar2 <span class='op'>=</span> <span class='cn'>NULL</span>,
   SampleSize <span class='op'>=</span> <span class='fl'>1000000L</span>,
@@ -169,6 +170,10 @@
     <tr>
       <th>YVar</th>
       <td><p>Column name of Y-Axis variable. If NULL then ignored</p></td>
+    </tr>
+    <tr>
+      <th>ColorVar</th>
+      <td><p>Column name of Group Variable for distinct colored histograms by group levels</p></td>
     </tr>
     <tr>
       <th>FacetVar1</th>
@@ -277,6 +282,72 @@
 
     <p>Adrian Antico</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='co'># Load packages</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/AdrianAntico/RemixAutoML'>RemixAutoML</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-datatable.com'>data.table</a></span><span class='op'>)</span>
+
+<span class='co'># Load data</span>
+<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fread.html'>fread</a></span><span class='op'>(</span>file <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/file.path.html'>file.path</a></span><span class='op'>(</span><span class='st'>'C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv'</span><span class='op'>)</span><span class='op'>)</span>
+
+<span class='co'># Run function</span>
+<span class='va'>p1</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>:::</span><span class='fu'>HistPlot</span><span class='op'>(</span>
+  data <span class='op'>=</span> <span class='va'>data</span>,
+  XVar <span class='op'>=</span> <span class='cn'>NULL</span>,
+  YVar <span class='op'>=</span> <span class='st'>'Weekly_Sales'</span>,
+  ColorVar <span class='op'>=</span> <span class='st'>'Region'</span>,
+  FacetVar1 <span class='op'>=</span> <span class='st'>'Store'</span>,
+  FacetVar2 <span class='op'>=</span> <span class='st'>'Dept'</span>,
+  SampleSize <span class='op'>=</span> <span class='fl'>1000000L</span>,
+  Bins <span class='op'>=</span> <span class='fl'>20</span>,
+  FillColor <span class='op'>=</span> <span class='st'>'gray'</span>,
+  YTicks <span class='op'>=</span> <span class='st'>'Default'</span>,
+  XTicks <span class='op'>=</span> <span class='st'>'Default'</span>,
+  TextSize <span class='op'>=</span> <span class='fl'>12</span>,
+  AngleX <span class='op'>=</span> <span class='fl'>90</span>,
+  AngleY <span class='op'>=</span> <span class='fl'>0</span>,
+  ChartColor <span class='op'>=</span> <span class='st'>'lightsteelblue1'</span>,
+  BorderColor <span class='op'>=</span> <span class='st'>'darkblue'</span>,
+  TextColor <span class='op'>=</span> <span class='st'>'darkblue'</span>,
+  GridColor <span class='op'>=</span> <span class='st'>'white'</span>,
+  BackGroundColor <span class='op'>=</span> <span class='st'>'gray95'</span>,
+  SubTitleColor <span class='op'>=</span> <span class='st'>'blue'</span>,
+  LegendPosition <span class='op'>=</span> <span class='st'>'bottom'</span>,
+  LegendBorderSize <span class='op'>=</span> <span class='fl'>0.50</span>,
+  LegendLineType <span class='op'>=</span> <span class='st'>'solid'</span>,
+  Debug <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+
+<span class='co'># Step through function</span>
+<span class='co'># # plotly::ggplotly(p1)</span>
+<span class='co'># XVar = NULL</span>
+<span class='co'># YVar = 'Weekly_Sales'</span>
+<span class='co'># AggMethod = 'mean'</span>
+<span class='co'># ColorVar = 'Region'</span>
+<span class='co'># FacetVar1 = NULL</span>
+<span class='co'># FacetVar2 = NULL</span>
+<span class='co'># Bins = 20</span>
+<span class='co'># SampleSize = 1000000L</span>
+<span class='co'># FillColor = 'gray'</span>
+<span class='co'># YTicks = 'Default'</span>
+<span class='co'># XTicks = 'Default'</span>
+<span class='co'># TextSize = 12</span>
+<span class='co'># AngleX = 90</span>
+<span class='co'># AngleY = 0</span>
+<span class='co'># ChartColor = 'lightsteelblue1'</span>
+<span class='co'># BorderColor = 'darkblue'</span>
+<span class='co'># TextColor = 'darkblue'</span>
+<span class='co'># GridColor = 'white'</span>
+<span class='co'># BackGroundColor = 'gray95'</span>
+<span class='co'># SubTitleColor = 'blue'</span>
+<span class='co'># LegendPosition = 'bottom'</span>
+<span class='co'># LegendBorderSize = 0.50</span>
+<span class='co'># LegendLineType = 'solid'</span>
+<span class='co'># Debug = FALSE</span>
+<span class='co'># Bins</span>
+<span class='op'>}</span>
+
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

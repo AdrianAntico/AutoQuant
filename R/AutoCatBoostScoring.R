@@ -8,7 +8,7 @@
 #' @param TargetType Set this value to 'regression', 'classification', 'multiclass', or 'multiregression' to score models built using AutoCatBoostRegression(), AutoCatBoostClassifier() or AutoCatBoostMultiClass().
 #' @param ScoringData This is your data.table of features for scoring. Can be a single row or batch.
 #' @param FeatureColumnNames Supply either column names or column numbers used in the AutoCatBoostRegression() function
-#' @param FactorLevelsList List of factors levels to DummifyDT()
+#' @param FactorLevelsList List of factors levels to CharacterEncode()
 #' @param IDcols Supply ID column numbers for any metadata you want returned with your predicted values
 #' @param OneHot Passsed to DummifyD
 #' @param ReturnShapValues Set to TRUE to return a data.table of feature contributions to all predicted values generated
@@ -29,6 +29,7 @@
 #' @param MDP_MissFactor If you set MDP_Impute to TRUE, supply the character values to replace missing values with
 #' @param MDP_MissNum If you set MDP_Impute to TRUE, supply a numeric value to replace missing values with
 #' @param RemoveModel Set to TRUE if you want the model removed immediately after scoring
+#' @param Debug = FALSE
 #' @examples
 #' \dontrun{
 #'
@@ -189,6 +190,35 @@
 #'   MDP_MissFactor = '0',
 #'   MDP_MissNum = -1,
 #'   RemoveModel = FALSE)
+#'
+#'   # Step through scoring function
+#'   library(RemixAutoML)
+#'   library(data.table)
+#'   TargetType = 'regression'
+#'   ScoringData = data
+#'   FeatureColumnNames = names(data)[!names(data) %in% c('IDcol_1', 'IDcol_2','Adrian')]
+#'   FactorLevelsList = TestModel$FactorLevelsList
+#'   IDcols = c('IDcol_1','IDcol_2')
+#'   OneHot = FALSE
+#'   ReturnShapValues = TRUE
+#'   ModelObject = TestModel$Model
+#'   ModelPath = NULL
+#'   ModelID = 'Test_Model_1'
+#'   ReturnFeatures = TRUE
+#'   MultiClassTargetLevels = NULL
+#'   TransformNumeric = FALSE
+#'   BackTransNumeric = FALSE
+#'   TargetColumnName = NULL
+#'   TransformationObject = NULL
+#'   TransID = NULL
+#'   TransPath = NULL
+#'   MDP_Impute = TRUE
+#'   MDP_CharToFactor = TRUE
+#'   MDP_RemoveDates = TRUE
+#'   MDP_MissFactor = '0'
+#'   MDP_MissNum = -1
+#'   RemoveModel = FALSE
+#'   Debug = TRUE
 #' }
 #' @return A data.table of predicted values with the option to return model features as well.
 #' @export
@@ -215,7 +245,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
                                 MDP_RemoveDates = FALSE,
                                 MDP_MissFactor = '0',
                                 MDP_MissNum = -1,
-                                RemoveModel = FALSE) {
+                                RemoveModel = FALSE,
+                                Debug = FALSE) {
 
   # Load catboost ----
   loadNamespace(package = 'catboost')
@@ -227,6 +258,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Check arguments ----
   if(!data.table::is.data.table(ScoringData)) data.table::setDT(ScoringData)
 
+  # IDcols conversion ----
+  if(is.numeric(IDcols)) IDcols <- names(data)[IDcols]
+
   # Pull in ColNames ----
   if(is.null(FeatureColumnNames) && !is.null(ModelPath)) FeatureColumnNames <- data.table::fread(file = file.path(ModelPath, paste0(ModelID, '_ColNames.csv')))
 
@@ -237,38 +271,60 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Identify column numbers for factor variables ----
   CatFeatures <- tryCatch({sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))}, error = function(x) NULL)
+  CatFeatures <- CatFeatures[CatFeatures %in% which(names(ScoringData) %in% FeatureColumnNames)]
+  if(!is.null(IDcols)) CatFeatures <- CatFeatures[!CatFeatures %in% which(names(ScoringData) %in% IDcols)]
   if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
 
   # DummifyDT categorical columns ----
-  if(!is.null(CatFeatures) && TargetType == 'multiregression') {
-    if(!is.null(FactorLevelsList)) {
-      ScoringData <- DummifyDT(
-        data = ScoringData,
-        cols = if(!is.character(CatFeatures)) names(ScoringData)[CatFeatures] else CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = OneHot,
-        SaveFactorLevels = FALSE,
-        SavePath = ModelPath,
-        ImportFactorLevels = FALSE,
-        FactorLevelsList = FactorLevelsList,
-        ReturnFactorLevels = FALSE,
-        ClustScore = FALSE,
-        GroupVar = TRUE)
-    } else {
-      ScoringData <- DummifyDT(
-        data = ScoringData,
-        cols = if(!is.character(CatFeatures)) names(ScoringData)[CatFeatures] else CatFeatures,
-        KeepFactorCols = FALSE,
-        OneHot = OneHot,
-        SaveFactorLevels = FALSE,
-        SavePath = ModelPath,
-        ImportFactorLevels = TRUE,
-        ReturnFactorLevels = FALSE,
-        ClustScore = FALSE,
-        GroupVar = TRUE)
-    }
+  if(length(CatFeatures) > 0L) {
 
-    # Return value to CatFeatures as if there are no categorical variables
+    # Encode
+    x <- FactorLevelsList$EncodingMethod
+    x <- paste0(toupper(substr(x = x, start = 1, stop = 1)), substr(x = x, start = 2, stop = nchar(x)))
+    y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
+    if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
+    xx <- names(data.table::copy(ScoringData))
+    Output <- RemixAutoML:::EncodeCharacterVariables(
+      RunMode = 'score',
+      ModelType = TargetType,
+      TrainData = ScoringData,
+      ValidationData = NULL,
+      TestData = NULL,
+      TargetVariableName = NULL,
+      CategoricalVariableNames = if(!is.character(CatFeatures)) names(ScoringData)[CatFeatures] else CatFeatures,
+      EncodeMethod = FactorLevelsList$EncodingMethod,
+      KeepCategoricalVariables = TRUE,
+      ReturnMetaData = TRUE,
+      MetaDataPath = ModelPath,
+      MetaDataList = FactorLevelsList,
+      ImputeMissingValue = 0)
+    ScoringData <- Output$TrainData
+    MetaData <- Output$MetaData
+
+    # Args to step through
+    # RunMode = 'score'
+    # ModelType = TargetType
+    # TrainData = ScoringData
+    # ValidationData = NULL
+    # TestData = NULL
+    # TargetVariableName = NULL
+    # CategoricalVariableNames = if(!is.character(CatFeatures)) names(ScoringData)[CatFeatures] else CatFeatures
+    # EncodeMethod = FactorLevelsList$EncodingMethod
+    # KeepCategoricalVariables = TRUE
+    # ReturnMetaData = TRUE
+    # MetaDataPath = ModelPath
+    # MetaDataList = FactorLevelsList
+    # ImputeMissingValue = 0
+
+    # Update FeatureColumnNames
+    if(!is.character(CatFeatures)) zz <- names(ScoringData)[CatFeatures] else zz <- CatFeatures
+    yy <- names(data.table::copy(ScoringData))
+    FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %in% zz]
+    FeatureColumnNames <- c(FeatureColumnNames, setdiff(yy,xx))
+    CatFeatures <- NULL
+
+  } else {
+    MetaData <- NULL
     CatFeatures <- NULL
   }
 
@@ -276,7 +332,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(!is.null(CatFeatures)) CatFeatures <- CatFeatures - 1L
 
   # ModelDataPrep Check ----
-  if(any(c(MDP_Impute,MDP_CharToFactor,MDP_RemoveDates))) {
+  if(any(c(MDP_Impute, MDP_CharToFactor, MDP_RemoveDates))) {
     ScoringData <- ModelDataPrep(
       data = ScoringData,
       Impute = MDP_Impute,
@@ -285,9 +341,6 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       MissFactor = MDP_MissFactor,
       MissNum = MDP_MissNum)
   }
-
-  # IDcols conversion ----
-  if(is.numeric(IDcols)) IDcols <- names(data)[IDcols]
 
   # Apply Transform Numeric Variables ----
   if(TransformNumeric) {
@@ -305,7 +358,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(data.table::is.data.table(FeatureColumnNames)) {
     FeatureColumnNames <- FeatureColumnNames[[1L]]
   } else if(is.numeric(FeatureColumnNames)) {
-    FeatureColumnNames <- names(ScoringData)[FeatureColumnNames]
+    FeatureColumnNames <- names(ScoringData)
   }
 
   # Remove Target from FeatureColumnNames ----
@@ -322,8 +375,25 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     FeatureColumnNames <- c(FeatureColumnNames, temp)
     FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% 'GroupVar']
   }
+
+  # Debugging
+  if(Debug) {
+    print('AutoCatBoostHurdleModelScoring QA Check 1')
+    print(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != 'multiregression')
+  }
+
+  # Remove unnecessary columns
   if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != 'multiregression') {
-    data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
+
+    # Debugging
+    if(Debug) {
+      print('AutoCatBoostHurdleModelScoring QA Check 2')
+      print(c(setdiff(names(ScoringData), FeatureColumnNames)))
+      print(all(c(setdiff(names(ScoringData), FeatureColumnNames)) %in% names(ScoringData)))
+    }
+
+    data.table::set(ScoringData, j = c(setdiff(names(ScoringData), FeatureColumnNames)), value = NULL)
+
   } else if(TargetType == 'multiregression') {
     data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
   }

@@ -18,6 +18,7 @@ AutoCatBoostVectorCARMA(
   TimeUnit = "week",
   TimeGroups = c("weeks", "months"),
   NumOfParDepPlots = 10L,
+  EncodeMethod = "credibility",
   TargetTransformation = FALSE,
   Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Logit", "YeoJohnson"),
   AnomalyDetection = NULL,
@@ -101,6 +102,8 @@ AutoCatBoostVectorCARMA(
 \item{TimeGroups}{Select time aggregations for adding various time aggregated GDL features.}
 
 \item{NumOfParDepPlots}{Supply a number for the number of partial dependence plots you want returned}
+
+\item{EncodeMethod}{Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert' for multiclass cases and additionally 'm_estimator', 'credibility', 'woe', 'target_encoding' for classification use cases.}
 
 \item{TargetTransformation}{Run AutoTransformationCreate() to find best transformation for the target variable. Tests YeoJohnson, BoxCox, and Asigh (also Asin and Logit for proportion target variables).}
 
@@ -252,6 +255,7 @@ CatBoostResults <- RemixAutoML::AutoCatBoostVectorCARMA(
   DateColumnName = 'Date',
   HierarchGroups = NULL,
   GroupVariables = c('Store','Dept'),
+  EncodeMethod = 'credibility'
   TimeWeights = 1,
   TimeUnit = 'weeks',
   TimeGroups = c('weeks','months'),

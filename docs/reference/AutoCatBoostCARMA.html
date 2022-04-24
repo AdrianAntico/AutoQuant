@@ -143,6 +143,7 @@
   PDFOutputPath <span class='op'>=</span> <span class='cn'>NULL</span>,
   SaveDataPath <span class='op'>=</span> <span class='cn'>NULL</span>,
   NumOfParDepPlots <span class='op'>=</span> <span class='fl'>10L</span>,
+  EncodingMethod <span class='op'>=</span> <span class='st'>"credibility"</span>,
   TargetTransformation <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Methods <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"BoxCox"</span>, <span class='st'>"Asinh"</span>, <span class='st'>"Log"</span>, <span class='st'>"LogPlus1"</span>, <span class='st'>"Sqrt"</span>, <span class='st'>"Asin"</span>, <span class='st'>"Logit"</span><span class='op'>)</span>,
   AnomalyDetection <span class='op'>=</span> <span class='cn'>NULL</span>,
@@ -262,6 +263,10 @@
     <tr>
       <th>NumOfParDepPlots</th>
       <td><p>Supply a number for the number of partial dependence plots you want returned</p></td>
+    </tr>
+    <tr>
+      <th>EncodingMethod</th>
+      <td><p>'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'</p></td>
     </tr>
     <tr>
       <th>TargetTransformation</th>
@@ -597,6 +602,7 @@
     DateColumnName <span class='op'>=</span> <span class='st'>'Date'</span>,
     HierarchGroups <span class='op'>=</span> <span class='cn'>NULL</span>,
     GroupVariables <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Store'</span>,<span class='st'>'Dept'</span><span class='op'>)</span>,
+    EncodingMethod <span class='op'>=</span> <span class='st'>'credibility'</span>,
     TimeUnit <span class='op'>=</span> <span class='st'>'weeks'</span>,
     TimeGroups <span class='op'>=</span> <span class='kw'>if</span><span class='op'>(</span><span class='va'>Tuning</span><span class='op'>[</span><span class='va'>Run</span>, <span class='va'>MaxTimeGroups</span><span class='op'>]</span> <span class='op'>==</span> <span class='st'>'weeks'</span><span class='op'>)</span> <span class='st'>'weeks'</span> <span class='kw'>else</span> <span class='kw'>if</span><span class='op'>(</span><span class='va'>Tuning</span><span class='op'>[</span><span class='va'>Run</span>, <span class='va'>MaxTimeGroups</span><span class='op'>]</span> <span class='op'>==</span> <span class='st'>'months'</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'weeks'</span>,<span class='st'>'months'</span><span class='op'>)</span> <span class='kw'>else</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'weeks'</span>,<span class='st'>'months'</span>,<span class='st'>'quarters'</span><span class='op'>)</span>,
 

@@ -130,6 +130,7 @@
     <pre class="usage"><span class='fu'>PostGRE_AppendData</span><span class='op'>(</span>
   data <span class='op'>=</span> <span class='cn'>NULL</span>,
   TableName <span class='op'>=</span> <span class='cn'>NULL</span>,
+  Append <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Connection <span class='op'>=</span> <span class='cn'>NULL</span>,
   CloseConnection <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Host <span class='op'>=</span> <span class='st'>"localhost"</span>,
@@ -145,6 +146,10 @@
     <tr>
       <th>data</th>
       <td><p>Source data.table</p></td>
+    </tr>
+    <tr>
+      <th>Append</th>
+      <td><p>Set to TRUE to append data, FALSE to overwrite data</p></td>
     </tr>
     <tr>
       <th>Connection</th>
@@ -182,6 +187,7 @@
 <code><a href='AutoDataDictionaries.html'>AutoDataDictionaries</a>()</code>,
 <code><a href='PostGRE_CreateTable.html'>PostGRE_CreateTable</a>()</code>,
 <code><a href='PostGRE_Query.html'>PostGRE_Query</a>()</code>,
+<code><a href='PostGRE_RemoveCreateAppend.html'>PostGRE_RemoveCreateAppend</a>()</code>,
 <code><a href='PostGRE_RemoveTable.html'>PostGRE_RemoveTable</a>()</code>,
 <code><a href='SQL_ClearTable.html'>SQL_ClearTable</a>()</code>,
 <code><a href='SQL_DropTable.html'>SQL_DropTable</a>()</code>,
@@ -197,9 +203,11 @@
     <pre class="examples"><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'>PostGRE_AppendData</span><span class='op'>(</span>
   data <span class='op'>=</span> <span class='va'>data</span>,
+  TableName <span class='op'>=</span> <span class='st'>'somename'</span>,
+  Append <span class='op'>=</span> <span class='cn'>FALSE</span>,
   CloseConnection <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Host <span class='op'>=</span> <span class='st'>'localhost'</span>,
-  DBName <span class='op'>=</span> <span class='st'>'Testing'</span>,
+  DBName <span class='op'>=</span> <span class='st'>'RemixAutoML'</span>,
   User <span class='op'>=</span> <span class='st'>'postgres'</span>,
   Port <span class='op'>=</span> <span class='fl'>5432</span>,
   Password <span class='op'>=</span> <span class='st'>'Aa...'</span><span class='op'>)</span>

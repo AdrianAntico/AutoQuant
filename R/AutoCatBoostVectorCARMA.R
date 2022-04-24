@@ -15,6 +15,7 @@
 #' @param DateColumnName List the column name of your date column. E.g. 'DateTime'
 #' @param GroupVariables Defaults to NULL. Use NULL when you have a single series. Add in GroupVariables when you have a series for every level of a group or multiple groups.
 #' @param HierarchGroups Vector of hierachy categorical columns.
+#' @param EncodeMethod Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert' for multiclass cases and additionally 'm_estimator', 'credibility', 'woe', 'target_encoding' for classification use cases.
 #' @param TimeWeights NULL or a value.
 #' @param TimeUnit List the time unit your data is aggregated by. E.g. '1min', '5min', '10min', '15min', '30min', 'hour', 'day', 'week', 'month', 'quarter', 'year'.
 #' @param TimeGroups Select time aggregations for adding various time aggregated GDL features.
@@ -109,6 +110,7 @@
 #'   DateColumnName = 'Date',
 #'   HierarchGroups = NULL,
 #'   GroupVariables = c('Store','Dept'),
+#'   EncodeMethod = 'credibility'
 #'   TimeWeights = 1,
 #'   TimeUnit = 'weeks',
 #'   TimeGroups = c('weeks','months'),
@@ -207,6 +209,7 @@ AutoCatBoostVectorCARMA <- function(data,
                                     TimeUnit = 'week',
                                     TimeGroups = c('weeks','months'),
                                     NumOfParDepPlots = 10L,
+                                    EncodeMethod = 'credibility',
                                     TargetTransformation = FALSE,
                                     Methods = c('BoxCox', 'Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit', 'YeoJohnson'),
                                     AnomalyDetection = NULL,
@@ -809,6 +812,7 @@ AutoCatBoostVectorCARMA <- function(data,
     FeatureColNames = ModelFeatures,
     PrimaryDateColumn = eval(DateColumnName),
     IDcols = IDcols,
+    EncodeMethod = EncodeMethod,
     TransformNumericColumns = if(TargetTransformation) TargetVariable else NULL,
     Methods = Methods,
 
@@ -873,6 +877,9 @@ AutoCatBoostVectorCARMA <- function(data,
 
   # ARMA PROCESS FORECASTING ----
   if(DebugMode) print('ARMA PROCESS FORECASTING----')
+  # i = 1
+  # i = 2
+  # i = 3
   for(i in seq_len(ForecastRuns+1L)) {
 
     # Row counts ----
@@ -896,7 +903,7 @@ AutoCatBoostVectorCARMA <- function(data,
         if(DebugMode) print('# i = 1 Score Model With Group Variables----')
         Preds <- AutoCatBoostScoring(
           TargetType = 'multiregression',
-          ScoringData = Step1SCore,
+          ScoringData = data.table::copy(Step1SCore),
           FeatureColumnNames = ModelFeatures,
           ReturnShapValues = FALSE,
           FactorLevelsList = TestModel$FactorLevelsList,
@@ -968,22 +975,24 @@ AutoCatBoostVectorCARMA <- function(data,
           UpdateData <- cbind(FutureDateData[2L:(nrow(Step1SCore)+1L)], Step1SCore[, .SD, .SDcols = eval(TargetColumnName)],Preds)
         }
         data.table::setnames(UpdateData, 'FutureDateData', eval(DateColumnName))
+
       } else {
 
         # NonNeg Preds
         if(NonNegativePred) for(zz in seq_len(length(TargetColumnName))) Preds[, paste0('Predictions.V',zz) := data.table::fifelse(get(paste0('Predictions.V',zz)) < 0.5, 0, get(paste0('Predictions.V',zz)))]
 
-        # Convert dummies back to categoricals
-        zz <- names(Preds)[which(names(Preds) %like% 'Predictions.V')]
-        xx <- Preds[, .SD, .SDcols = c(names(Preds)[which(!names(Preds) %chin% c(zz,ModelFeatures,TargetColumnName))])]
-        for(cat in rev(CatFeatures)) {
-          aaa <- data.table::copy(xx[, .SD, .SDcols = c(paste0(eval(cat), '_', as.character(unique(data[[eval(cat)]]))))])
-          aa <- data.table::melt.data.table(data = aaa, id.vars = NULL, measure.vars = c(paste0(eval(cat), '_', as.character(unique(data[[eval(cat)]])))))[value != 0][, value := NULL]
-          aa[, variable := gsub(pattern = paste0(cat,'_'), replacement = '', x = variable)]
-          data.table::setnames(aa, 'variable', cat)
-          data.table::set(Preds, j = c(paste0(eval(cat), '_', as.character(unique(data[[eval(cat)]])))), value = NULL)
-          Preds <- cbind(Preds, aa)
-        }
+        # # Convert dummies back to categoricals
+        # if(TestModel$ArgsList$EncodeMethod == 'binary')
+        # zz <- names(Preds)[which(names(Preds) %like% 'Predictions.V')]
+        # xx <- Preds[, .SD, .SDcols = c(names(Preds)[which(!names(Preds) %chin% c(zz,ModelFeatures,TargetColumnName))])]
+        # for(cat in rev(CatFeatures)) {
+        #   aaa <- data.table::copy(xx[, .SD, .SDcols = c(paste0(eval(cat), '_', as.character(unique(data[[eval(cat)]]))))])
+        #   aa <- data.table::melt.data.table(data = aaa, id.vars = NULL, measure.vars = c(paste0(eval(cat), '_', as.character(unique(data[[eval(cat)]])))))[value != 0][, value := NULL]
+        #   aa[, variable := gsub(pattern = paste0(cat,'_'), replacement = '', x = variable)]
+        #   data.table::setnames(aa, 'variable', cat)
+        #   data.table::set(Preds, j = c(paste0(eval(cat), '_', as.character(unique(data[[eval(cat)]])))), value = NULL)
+        #   Preds <- cbind(Preds, aa)
+        # }
 
         # Combine data sets
         UpdateData <- cbind(FutureDateData[1L:N],Preds)
@@ -1002,6 +1011,13 @@ AutoCatBoostVectorCARMA <- function(data,
         } else {
           temp <- data.table::copy(UpdateData[, ID := 1:.N, by = 'GroupVar'])
           temp <- temp[ID == N][, ID := NULL]
+        }
+
+        x <- TestModel$ArgsList$EncodeMethod
+        if(length(x) != 0) {
+          x <- paste0(toupper(substr(x = x, start = 1, stop = 1)), substr(x = x, start = 2, stop = nchar(x)))
+          y <- names(temp)[which(names(temp) %like% paste0('_', x))]
+          data.table::set(temp, j = y, value = NULL)
         }
 
         # Score model----

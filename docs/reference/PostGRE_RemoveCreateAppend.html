@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SQL_SaveTable — SQL_SaveTable • RemixAutoML</title>
+<title>PostGRE_RemoveTable — PostGRE_RemoveCreateAppend • RemixAutoML</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="SQL_SaveTable — SQL_SaveTable" />
-<meta property="og:description" content="SQL_SaveTable create a database table" />
+<meta property="og:title" content="PostGRE_RemoveTable — PostGRE_RemoveCreateAppend" />
+<meta property="og:description" content="PostGRE_RemoveTable will DROP the table specified" />
 
 
 
@@ -118,65 +118,80 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>SQL_SaveTable</h1>
+    <h1>PostGRE_RemoveTable</h1>
     <small class="dont-index">Source: <a href='https://github.com/AdrianAntico/RemixAutoML/blob/master/R/SQL_Functions.R'><code>R/SQL_Functions.R</code></a></small>
-    <div class="hidden name"><code>SQL_SaveTable.Rd</code></div>
+    <div class="hidden name"><code>PostGRE_RemoveCreateAppend.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>SQL_SaveTable create a database table</p>
+    <p>PostGRE_RemoveTable will DROP the table specified</p>
     </div>
 
-    <pre class="usage"><span class='fu'>SQL_SaveTable</span><span class='op'>(</span>
-  <span class='va'>DataToPush</span>,
-  <span class='va'>DBConnection</span>,
-  SQLTableName <span class='op'>=</span> <span class='st'>""</span>,
-  RowNames <span class='op'>=</span> <span class='cn'>NULL</span>,
-  ColNames <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  CloseChannel <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  AppendData <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  AddPK <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  Safer <span class='op'>=</span> <span class='cn'>TRUE</span>
+    <pre class="usage"><span class='fu'>PostGRE_RemoveCreateAppend</span><span class='op'>(</span>
+  data <span class='op'>=</span> <span class='va'>data</span>,
+  TableName <span class='op'>=</span> <span class='st'>""</span>,
+  CloseConnection <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  CreateSchema <span class='op'>=</span> <span class='cn'>NULL</span>,
+  Host <span class='op'>=</span> <span class='st'>"localhost"</span>,
+  DBName <span class='op'>=</span> <span class='st'>"RemixAutoML"</span>,
+  User <span class='op'>=</span> <span class='st'>"postgres"</span>,
+  Port <span class='op'>=</span> <span class='fl'>5432</span>,
+  Password <span class='op'>=</span> <span class='st'>""</span>,
+  Temporary <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  Connection <span class='op'>=</span> <span class='cn'>NULL</span>,
+  Append <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>DataToPush</th>
-      <td><p>data to be sent to warehouse</p></td>
+      <th>data</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     <tr>
-      <th>DBConnection</th>
-      <td><p>RemixAutoML::SQL_Server_DBConnection()</p></td>
+      <th>TableName</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     <tr>
-      <th>SQLTableName</th>
-      <td><p>The SQL statement you want to run</p></td>
+      <th>CloseConnection</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     <tr>
-      <th>RowNames</th>
-      <td><p>c("Segment","Date")</p></td>
+      <th>CreateSchema</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     <tr>
-      <th>ColNames</th>
-      <td><p>Column names in first row</p></td>
+      <th>Host</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     <tr>
-      <th>CloseChannel</th>
-      <td><p>TRUE to close when done, FALSE to leave the channel open</p></td>
+      <th>DBName</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     <tr>
-      <th>AppendData</th>
-      <td><p>TRUE or FALSE</p></td>
+      <th>User</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     <tr>
-      <th>AddPK</th>
-      <td><p>Add a PK column to table</p></td>
+      <th>Port</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     <tr>
-      <th>Safer</th>
-      <td><p>TRUE</p></td>
+      <th>Password</th>
+      <td><p>See args from related functions</p></td>
+    </tr>
+    <tr>
+      <th>Temporary</th>
+      <td><p>See args from related functions</p></td>
+    </tr>
+    <tr>
+      <th>Connection</th>
+      <td><p>See args from related functions</p></td>
+    </tr>
+    <tr>
+      <th>Append</th>
+      <td><p>See args from related functions</p></td>
     </tr>
     </table>
 
@@ -187,12 +202,12 @@
 <code><a href='PostGRE_AppendData.html'>PostGRE_AppendData</a>()</code>,
 <code><a href='PostGRE_CreateTable.html'>PostGRE_CreateTable</a>()</code>,
 <code><a href='PostGRE_Query.html'>PostGRE_Query</a>()</code>,
-<code><a href='PostGRE_RemoveCreateAppend.html'>PostGRE_RemoveCreateAppend</a>()</code>,
 <code><a href='PostGRE_RemoveTable.html'>PostGRE_RemoveTable</a>()</code>,
 <code><a href='SQL_ClearTable.html'>SQL_ClearTable</a>()</code>,
 <code><a href='SQL_DropTable.html'>SQL_DropTable</a>()</code>,
 <code><a href='SQL_Query_Push.html'>SQL_Query_Push</a>()</code>,
 <code><a href='SQL_Query.html'>SQL_Query</a>()</code>,
+<code><a href='SQL_SaveTable.html'>SQL_SaveTable</a>()</code>,
 <code><a href='SQL_Server_DBConnection.html'>SQL_Server_DBConnection</a>()</code></p></div>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 

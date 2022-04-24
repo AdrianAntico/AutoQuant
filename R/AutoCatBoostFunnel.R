@@ -862,6 +862,7 @@ AutoCatBoostFunnelCARMA <- function(data,
         TargetColumnName = ConversionRateMeasure,
         FeatureColNames = Features,
         PrimaryDateColumn = CohortDate,
+        EncodeMethod = 'credibility',
         IDcols = idcols,
         TransformNumericColumns = NULL,
         Methods = TransformMethods,
@@ -898,6 +899,15 @@ AutoCatBoostFunnelCARMA <- function(data,
         subsample = SubSample,
         score_function = ScoreFunction,
         min_data_in_leaf = MinDataInLeaf))
+
+      # FactorLevelsList
+      print("ISSUE HAPPENING RIGHT HERE")
+      print(length(TestModel$ArgsList[['FactorLevelsList']]) == 0L && proc %in% c("training","train"))
+      if(length(TestModel$ArgsList[['FactorLevelsList']]) == 0L && proc %in% c("training","train")) {
+        print("TestModel$FactorLevelsList")
+        print(TestModel$FactorLevelsList)
+        ArgsList[['FactorLevelsList']] <- TestModel$FactorLevelsList
+      }
 
       # Define number of trees ----
       if(proc %chin% c("eval","evaluate")) {
@@ -1428,11 +1438,32 @@ AutoCatBoostFunnelCARMAScoring <- function(TrainData,
     temp1 <- data.table::copy(TrainData)
     temp <- temp1[ScoreRecords == 1]
     Features <- TrainOutput$ColNames[[1L]]
+    if(length(ArgsList[['FactorLevelsList']]) != 0L) {
+
+      # Use temp1 because it has more than 1 record which should be mroe reliable in terms of finding variable types
+      CatFeatures <- sort(c(as.numeric(which(sapply(temp1, is.factor))), as.numeric(which(sapply(temp1, is.character)))))
+      CatFeatures <- CatFeatures[CatFeatures %in% which(names(temp1) %in% c(ArgsList$GroupVariables))]
+      if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
+      x <- ArgsList[['FactorLevelsList']]$EncodingMethod
+      x <- paste0(toupper(substr(x = x, start = 1, stop = 1)), substr(x = x, start = 2, stop = nchar(x)))
+      y <- names(temp1)[which(names(temp1) %like% paste0('_', x))]
+
+      # Remove encoded columns from data
+      if(length(y) != 0) data.table::set(temp, j = c(names(temp)[which(names(temp) %like% paste0('_', x))]), value = NULL)
+
+      # remove encoded columns from Features
+      xx <- Features
+      Features <- Features[!Features %in% Features[c(which(Features %like% paste0("_", x)))]]
+
+      # add base categoricals to Features
+      Features <- unique(c(Features, gsub(pattern = '_Credibility', replacement = "", x = xx[c(which(xx %like% paste0("_", x)))])))
+    }
     temp <- RemixAutoML::AutoCatBoostScoring(
       TargetType = "regression",
       ScoringData = temp,
       FeatureColumnNames = Features,
       IDcols = names(temp)[!names(temp) %chin% Features],
+      FactorLevelsList = ArgsList$FactorLevelsList,
       ModelObject = TrainOutput$Model,
       ModelPath = if(is.null(TrainOutput)) ArgsList$ModelPath else NULL,
       ModelID = ArgsList$ModelID,
@@ -1450,6 +1481,30 @@ AutoCatBoostFunnelCARMAScoring <- function(TrainData,
       MDP_MissFactor = "0",
       MDP_MissNum = -1,
       RemoveModel = FALSE)
+
+    # Debugging args
+    # TargetType = "regression"
+    # ScoringData = temp
+    # FeatureColumnNames = Features
+    # IDcols = names(temp)[!names(temp) %chin% Features]
+    # ModelObject = TrainOutput$Model
+    # ModelPath = if(is.null(TrainOutput)) ArgsList$ModelPath else NULL
+    # ModelID = ArgsList$ModelID
+    # ReturnFeatures = FALSE
+    # MultiClassTargetLevels = NULL
+    # TransformNumeric = FALSE
+    # BackTransNumeric = FALSE
+    # TargetColumnName = "Rate"
+    # TransformationObject = TestModel$TransformationResults
+    # TransID = NULL
+    # TransPath = NULL
+    # MDP_Impute = TRUE
+    # MDP_CharToFactor = TRUE
+    # MDP_RemoveDates = TRUE
+    # MDP_MissFactor = "0"
+    # MDP_MissNum = -1
+    # ReturnShapValues = FALSE
+    # RemoveModel = FALSE
 
     # DE: Update forecast TrainData ----
     if(DebugMode) print("DE: Update forecast TrainData ----")

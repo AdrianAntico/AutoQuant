@@ -12,6 +12,7 @@
 #' @param ModelList Output from the hurdle model
 #' @param Threshold NULL to use raw probabilities to predict. Otherwise, supply a threshold
 #' @param CARMA Keep FALSE. Used for CARMA functions internals
+#' @param DebugMode = FALSE
 #' @return A data.table with the final predicted value, the intermediate model predictions, and your source data
 #' @examples
 #' \dontrun{
@@ -98,7 +99,8 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
                                            ArgsList = NULL,
                                            ModelList = NULL,
                                            Threshold = NULL,
-                                           CARMA = FALSE) {
+                                           CARMA = FALSE,
+                                           DebugMode = FALSE) {
 
   # Load ArgsList and ModelList if NULL ----
   if(is.null(Path) && (is.null(ArgsList) || is.null(ModelList))) stop("Supply a value to the Path argument to where the ArgsList and ModelList are located")
@@ -111,10 +113,10 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
   # Define Buckets ----
   Buckets <- ArgsList$Buckets
 
-  # Score Classification Model ----
+  # Target Type Classifier ----
   if(length(Buckets) == 1L) TargetType <- "Classification" else TargetType <- "Multiclass"
 
-  # Store classifier model----
+  # Store classifier model ----
   if(!is.null(ModelList)) {
     ClassModel <- ModelList[[1L]]
   } else if(!is.null(ArgsList$ModelID)) {
@@ -126,9 +128,6 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
   # Store FeatureNames ----
   FeatureNames <- ArgsList$FeatureColNames
 
-  # Factor levels list ----
-  if(!is.null(ArgsList$FactorLevelsList)) FactorLevelsList <- ArgsList$FactorLevelsList else FactorLevelsList <- NULL
-
   # Store IDcols ----
   IDcols <- c(setdiff(names(TestData), c(ArgsList$FeatureColNames)))
 
@@ -136,17 +135,19 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
   ColumnNames <- names(TestData)
 
   # Classification Model Scoring ----
-  temp <- AutoCatBoostScoring(
+  temp <- RemixAutoML::AutoCatBoostScoring(
     TargetType = TargetType,
-    ScoringData = TestData,
+    ScoringData = data.table::copy(TestData),
     FeatureColumnNames = FeatureNames,
     IDcols = IDcols,
+    FactorLevelsList = ArgsList[['FactorLevelsList']][['classifier']],
     ModelObject = ClassModel,
-    ModelPath = ArgsList$Paths,
-    ModelID = ArgsList$ModelID,
+    ModelPath = ArgsList[['Paths']],
+    ModelID = ArgsList[['ModelID']],
     RemoveModel = TRUE,
     ReturnFeatures = TRUE,
-    MultiClassTargetLevels = ArgsList$TargetLevels,
+    ReturnShapValues = FALSE,
+    MultiClassTargetLevels = ArgsList[['TargetLevels']],
     TransformationObject = NULL,
     TargetColumnName = NULL,
     TransformNumeric = FALSE,
@@ -157,7 +158,8 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
     MDP_CharToFactor = TRUE,
     MDP_RemoveDates = FALSE,
     MDP_MissFactor = "0",
-    MDP_MissNum = -1)
+    MDP_MissNum = -1,
+    Debug = DebugMode)
 
   # Nuance
   if(TargetType != "Classification") {
@@ -184,22 +186,30 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
   counter <- max(looper)
 
   # Loop through model scoring ----
+  # bucket = 3
+  # bucket = 2
+  # bucket = 1
   for(bucket in looper) {
-
-    # Update IDcols----
-    IDcolsModified <- c(IDcols, setdiff(names(TestData), ColumnNames))
 
     # Check for constant value bucket----
     if(!any(bucket %in% c(ArgsList$degenerate))) {
 
-      # Increment----
+      # Increment ----
       counter <- counter - 1L
 
-      # Score TestData----
-      if(bucket == max(looper)) ModelIDD <- paste0(ArgsList$ModelID,"_",bucket,"+") else ModelIDD <- paste0(ArgsList$ModelID, "_", bucket)
+      # Score TestData ----
+      if(bucket == max(looper)) {
+        ModelIDD <- paste0(ArgsList$ModelID,"_",bucket,"+")
+      } else {
+        ModelIDD <- paste0(ArgsList$ModelID, "_", bucket)
+      }
 
       # Manage TransformationResults
-      if(is.null(ArgsList$TransformNumericColumns)) TransformationResults <- NULL else TransformationResults <- ArgsList$TransformNumericColumns
+      if(is.null(ArgsList$TransformNumericColumns)) {
+        TransformationResults <- NULL
+      } else {
+        TransformationResults <- ArgsList$TransformNumericColumns
+      }
 
       # Store Transformations----
       if(!is.null(ArgsList$TransformNumericColumns)) {
@@ -217,18 +227,38 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
         RegressionModel <- catboost::catboost.load_model(model_path = file.path(ArgsList$Paths, ModelIDD))
       }
 
-      # Catboost Model Scroring ----
+      # Debugging
+      if(DebugMode) {
+        print(tryCatch({names(ArgsList[['FactorLevelsList']])}, error = function(x) print("ArgsList[['FactorLevelsList]] is NULL")))
+        print(ArgsList[['FactorLevelsList']][['regression']])
+      }
+
+      # ::::::::::::::::::::::::::::: START HERE  :::::::::::::::::::::::::::::
+      # ::::::::::::::::::::::::::::: START HERE  :::::::::::::::::::::::::::::
+      # ::::::::::::::::::::::::::::: START HERE  :::::::::::::::::::::::::::::
+      # ::::::::::::::::::::::::::::: START HERE  :::::::::::::::::::::::::::::
+
+      # Encode for Group Variables
+      if(length(ArgsList[['FactorLevelsList']][['regression']][[paste0('FLL_', bucket)]][['EncodingMethod']]) != 0) {
+        x <- ArgsList[['FactorLevelsList']][['regression']][[paste0('FLL_', bucket)]][['EncodingMethod']]
+        x <- paste0(toupper(substr(x = x, start = 1, stop = 1)), substr(x = x, start = 2, stop = nchar(x)))
+        y <- names(TestData)[which(names(TestData) %like% paste0('_', x))]
+        if(length(y) != 0) data.table::set(TestData, j = c(names(TestData)[which(names(TestData) %like% paste0('_', x))]), value = NULL)
+      }
+
+      # Catboost Model Scoring ----
       TestData <- AutoCatBoostScoring(
         TargetType = "regression",
         ScoringData = TestData,
         FeatureColumnNames = FeatureNames,
-        IDcols = IDcolsModified,
+        IDcols = IDcols, # IDcolsModified,
+        FactorLevelsList = ArgsList[['FactorLevelsList']][['regression']][[paste0('FLL_', bucket)]],
         ModelObject = RegressionModel,
-        ModelPath = ArgsList$Paths,
+        ModelPath = ArgsList[['Paths']],
         ModelID = ModelIDD,
         ReturnFeatures = TRUE,
         TransformationObject = TransformationResults,
-        TargetColumnName = ArgsList$TransformNumericColumns,
+        TargetColumnName = ArgsList[['TransformNumericColumns']],
         TransformNumeric = Transform,
         BackTransNumeric = Transform,
         TransID = NULL,
@@ -237,12 +267,37 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
         MDP_CharToFactor = TRUE,
         MDP_RemoveDates = FALSE,
         MDP_MissFactor = "0",
-        MDP_MissNum = -1)
+        MDP_MissNum = -1,
+        Debug = DebugMode)
+
+      # Issue here
+      # TargetType = "regression"
+      # ScoringData = TestData
+      # FeatureColumnNames = FeatureNames
+      # IDcols = IDcols
+      # FactorLevelsList = ArgsList[['FactorLevelsList']][['regression']][[paste0('FLL_', bucket)]]
+      # ModelObject = RegressionModel
+      # ModelPath = ArgsList[['Paths']]
+      # ModelID = ModelIDD
+      # ReturnFeatures = TRUE
+      # TransformationObject = TransformationResults
+      # TargetColumnName = ArgsList[['TransformNumericColumns']]
+      # TransformNumeric = Transform
+      # BackTransNumeric = Transform
+      # TransID = NULL
+      # TransPath = NULL
+      # MDP_Impute = TRUE
+      # MDP_CharToFactor = TRUE
+      # MDP_RemoveDates = FALSE
+      # MDP_MissFactor = "0"
+      # MDP_MissNum = -1
+      # ReturnShapValues = FALSE
+      # Debug = DebugMode
 
       # Remove Model----
       rm(RegressionModel)
 
-      # Change prediction name to prevent duplicates----
+      # Change prediction name to prevent duplicates ----
       if(bucket == max(looper)) Val <- paste0('Predictions_', bucket - 1L, '+') else Val <- paste0('Predictions_', bucket)
       if(length(which(names(TestData) == "Predictions")) > 1) {
         zzz <- names(TestData)
@@ -254,11 +309,14 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
 
     } else {
 
+      print('Right Before: data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))')
+      print(names(TestData))
+
       # Use single value for predictions in the case of zero variance ----
       if(bucket == max(seq_len(length(Buckets) + 1L))) {
         data.table::setalloccol(DT = TestData, n = 10)
         data.table::set(TestData, j = paste0("Predictions", Buckets[bucket - 1L], "+"), value = Buckets[bucket])
-        data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))
+        data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
       } else {
         data.table::setalloccol(DT = TestData, n = ncol(TestData) + 10)
         data.table::set(TestData, j = paste0("Predictions", Buckets[bucket]), value = Buckets[bucket])
@@ -273,17 +331,25 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
   # Final Combination of Predictions ----
   counter <- length(Buckets)
   if(counter > 2L || (counter == 2L && length(Buckets) != 1L)) {
+    print('counter > 2L || (counter == 2L && length(Buckets) != 1L) == TRUE')
     for(i in rev(looper)) {
       if(i == 1L) {
+        print(paste0('i == 1L ; names(TestData)'))
+        names(TestData)
         TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + 1L + (length(looper))]]]
       } else {
+        print(paste0('i != 1L ; names(TestData)'))
+        names(TestData)
         TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + 1L + length(looper)]]]
       }
     }
   } else {
+    print('counter > 2L || (counter == 2L && length(Buckets) != 1L) == FALSE')
     if(0 %in% Buckets) {
+      names(TestData)
       TestData[, UpdatedPrediction := TestData[[2L]] * TestData[[4L]]]
     } else {
+      names(TestData)
       TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
     }
   }

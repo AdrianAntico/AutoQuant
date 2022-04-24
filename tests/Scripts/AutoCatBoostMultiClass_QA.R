@@ -34,7 +34,7 @@ CatBoost_QA_Results_MultiClass[, RunNumber := seq_len(.N)]
 # 10: TRUE    FALSE      GPU Failure               FALSE
 
 # AutoCatBoostMultiClass
-# run = 3
+# run = 1
 for(run in seq_len(CatBoost_QA_Results_MultiClass[,.N])) {
 
   # Define values
@@ -113,6 +113,7 @@ for(run in seq_len(CatBoost_QA_Results_MultiClass[,.N])) {
     WeightsColumnName = "Weights",
     ClassWeights = c(1L,1L,1L,1L,1L),
     IDcols = c("IDcol_1","IDcol_2","DateTime"),
+    EncodeMethod = 'credibility',
 
     # Model evaluation
     eval_metric = "MCC",

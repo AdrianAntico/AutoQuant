@@ -227,8 +227,9 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
   if(DebugMode) print('Running CatBoostDataPrep()')
   Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='regression', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=TransformNumericColumns, Methods.=Methods, model_path.=model_path, ModelID.=ModelID, LossFunction.=LossFunction, EvalMetric.=EvalMetric)
   TransformationResults <- Output$TransformationResults; Output$TransformationResults <- NULL
-  EncodingMetaData <- Output$EncodingMetaData; Output$EncodingMetaData <- NULL
+  FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
+  FeatureColNames <- Output$FeatureColNames; Output$FeatureColNames <- NULL
   UseBestModel <- Output$UseBestModel; Output$UseBestModel <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
   CatFeatures <- Output$CatFeatures; Output$CatFeatures <- NULL
@@ -403,7 +404,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
       GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
       ColNames = if(exists('Names')) Names else NULL,
       TransformationResults = if(exists('TransformationResults')) TransformationResults else NULL,
-      EncodingMetaData = if(exists('EncodingMetaData')) EncodingMetaData else NULL,
+      FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL,
       ArgsList = ArgsList))
   }
 }

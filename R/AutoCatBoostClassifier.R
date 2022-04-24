@@ -220,8 +220,9 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
   # Data Prep (model data prep, dummify, create sets) ----
   if(DebugMode) print('Running CatBoostDataPrep()')
   Output <- CatBoostDataPrep(OutputSelection.=OutputSelection, EncodeMethod. = EncodeMethod, ModelType='classification', data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, PrimaryDateColumn.=PrimaryDateColumn, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols,TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, TransformNumericColumns.=NULL, Methods.=NULL, model_path.=model_path, ModelID.=ModelID, LossFunction.=NULL, EvalMetric.=NULL)
-  EncodingMetaData <- Output$EncodingMetaData; Output$EncodingMetaData <- NULL
+  FactorLevelsList <- Output$FactorLevelsList; Output$FactorLevelsList <- NULL
   FinalTestTarget <- Output$FinalTestTarget; Output$FinalTestTarget <- NULL
+  FeatureColNames <- Output$FeatureColNames; Output$FeatureColNames <- NULL
   UseBestModel <- Output$UseBestModel; Output$UseBestModel <- NULL
   TrainTarget <- Output$TrainTarget; Output$TrainTarget <- NULL
   CatFeatures <- Output$CatFeatures; Output$CatFeatures <- NULL
@@ -375,6 +376,6 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
     InteractionImportance = if(exists('Interaction')) Interaction else NULL,
     GridMetrics = if(exists('ExperimentalGrid') && !is.null(ExperimentalGrid)) ExperimentalGrid else NULL,
     ColNames = if(exists('Names')) Names else NULL,
-    EncodingMetaData = if(exists('EncodingMetaData')) EncodingMetaData else NULL,
+    FactorLevelsList = if(exists('FactorLevelsList')) FactorLevelsList else NULL,
     ArgsList = ArgsList))
 }

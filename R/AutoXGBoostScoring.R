@@ -127,10 +127,11 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   # DummifyDT categorical columns ----
   if(!is.null(EncodingMethod) && EncodingMethod == "binary") {
     if(!is.null(FactorLevelsList)) {
-      ScoringData <- DummifyDT(data=ScoringData, cols=names(FactorLevelsList), KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
+      ScoringData <- DummifyDT(data=ScoringData, cols=names(FactorLevelsList)[-length(names(FactorLevelsList))], KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=FALSE, FactorLevelsList=FactorLevelsList, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
     } else {
       CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
       CatFeatures <- names(ScoringData)[CatFeatures]
+      CatFeatures <- CatFeatures[!CatFeatures %in% IDcols]
       if(!identical(CatFeatures, character(0)) && !is.null(CatFeatures)) {
         ScoringData <- DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
       }

@@ -131,6 +131,8 @@
   data <span class='op'>=</span> <span class='cn'>NULL</span>,
   x_var <span class='op'>=</span> <span class='cn'>NULL</span>,
   y_var <span class='op'>=</span> <span class='cn'>NULL</span>,
+  Marginals <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  MarginalType <span class='op'>=</span> <span class='st'>"density"</span>,
   GroupVariable <span class='op'>=</span> <span class='cn'>NULL</span>,
   FacetCol <span class='op'>=</span> <span class='cn'>NULL</span>,
   FacetRow <span class='op'>=</span> <span class='cn'>NULL</span>,
@@ -164,6 +166,14 @@
     <tr>
       <th>y_var</th>
       <td><p>Numeric variable</p></td>
+    </tr>
+    <tr>
+      <th>Marginals</th>
+      <td><p>= FALSE,</p></td>
+    </tr>
+    <tr>
+      <th>MarginalType</th>
+      <td><p>= 'density',</p></td>
     </tr>
     <tr>
       <th>GroupVariable</th>
@@ -257,6 +267,8 @@
   data <span class='op'>=</span> <span class='va'>data</span>,
   x_var <span class='op'>=</span> <span class='st'>'Independent_Variable1'</span>,
   y_var <span class='op'>=</span> <span class='st'>'Independent_Variable2'</span>,
+  Marginals <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  MarginalType <span class='op'>=</span> <span class='st'>'density'</span>,
   GroupVariable <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='co'>#'Factor_1',</span>
   FacetCol <span class='op'>=</span> <span class='st'>'Factor_1'</span>,
   FacetRow <span class='op'>=</span> <span class='cn'>NULL</span>,

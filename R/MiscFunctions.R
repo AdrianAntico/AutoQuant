@@ -13,7 +13,7 @@
 #' @param Paper 'USr' for landscape. 'special' means that Width and Height are used to determine page size
 #' @param BackgroundColor Default is 'transparent'
 #' @param ForegroundColor Default is 'black'
-#' @export
+#' @noRd
 PrintToPDF <- function(Path,
                        OutputName,
                        ObjectList = NULL,

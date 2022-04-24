@@ -151,7 +151,8 @@
   MDP_RemoveDates <span class='op'>=</span> <span class='cn'>FALSE</span>,
   MDP_MissFactor <span class='op'>=</span> <span class='st'>"0"</span>,
   MDP_MissNum <span class='op'>=</span> <span class='op'>-</span><span class='fl'>1</span>,
-  RemoveModel <span class='op'>=</span> <span class='cn'>FALSE</span>
+  RemoveModel <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  Debug <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -171,7 +172,7 @@
     </tr>
     <tr>
       <th>FactorLevelsList</th>
-      <td><p>List of factors levels to DummifyDT()</p></td>
+      <td><p>List of factors levels to CharacterEncode()</p></td>
     </tr>
     <tr>
       <th>IDcols</th>
@@ -252,6 +253,10 @@
     <tr>
       <th>RemoveModel</th>
       <td><p>Set to TRUE if you want the model removed immediately after scoring</p></td>
+    </tr>
+    <tr>
+      <th>Debug</th>
+      <td><p>= FALSE</p></td>
     </tr>
     </table>
 
@@ -428,6 +433,35 @@
   MDP_MissFactor <span class='op'>=</span> <span class='st'>'0'</span>,
   MDP_MissNum <span class='op'>=</span> <span class='op'>-</span><span class='fl'>1</span>,
   RemoveModel <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+
+  <span class='co'># Step through scoring function</span>
+  <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/AdrianAntico/RemixAutoML'>RemixAutoML</a></span><span class='op'>)</span>
+  <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-datatable.com'>data.table</a></span><span class='op'>)</span>
+  <span class='va'>TargetType</span> <span class='op'>=</span> <span class='st'>'regression'</span>
+  <span class='va'>ScoringData</span> <span class='op'>=</span> <span class='va'>data</span>
+  <span class='va'>FeatureColumnNames</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>, <span class='st'>'IDcol_2'</span>,<span class='st'>'Adrian'</span><span class='op'>)</span><span class='op'>]</span>
+  <span class='va'>FactorLevelsList</span> <span class='op'>=</span> <span class='va'>TestModel</span><span class='op'>$</span><span class='va'>FactorLevelsList</span>
+  <span class='va'>IDcols</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'IDcol_1'</span>,<span class='st'>'IDcol_2'</span><span class='op'>)</span>
+  <span class='va'>OneHot</span> <span class='op'>=</span> <span class='cn'>FALSE</span>
+  <span class='va'>ReturnShapValues</span> <span class='op'>=</span> <span class='cn'>TRUE</span>
+  <span class='va'>ModelObject</span> <span class='op'>=</span> <span class='va'>TestModel</span><span class='op'>$</span><span class='va'>Model</span>
+  <span class='va'>ModelPath</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+  <span class='va'>ModelID</span> <span class='op'>=</span> <span class='st'>'Test_Model_1'</span>
+  <span class='va'>ReturnFeatures</span> <span class='op'>=</span> <span class='cn'>TRUE</span>
+  <span class='va'>MultiClassTargetLevels</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+  <span class='va'>TransformNumeric</span> <span class='op'>=</span> <span class='cn'>FALSE</span>
+  <span class='va'>BackTransNumeric</span> <span class='op'>=</span> <span class='cn'>FALSE</span>
+  <span class='va'>TargetColumnName</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+  <span class='va'>TransformationObject</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+  <span class='va'>TransID</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+  <span class='va'>TransPath</span> <span class='op'>=</span> <span class='cn'>NULL</span>
+  <span class='va'>MDP_Impute</span> <span class='op'>=</span> <span class='cn'>TRUE</span>
+  <span class='va'>MDP_CharToFactor</span> <span class='op'>=</span> <span class='cn'>TRUE</span>
+  <span class='va'>MDP_RemoveDates</span> <span class='op'>=</span> <span class='cn'>TRUE</span>
+  <span class='va'>MDP_MissFactor</span> <span class='op'>=</span> <span class='st'>'0'</span>
+  <span class='va'>MDP_MissNum</span> <span class='op'>=</span> <span class='op'>-</span><span class='fl'>1</span>
+  <span class='va'>RemoveModel</span> <span class='op'>=</span> <span class='cn'>FALSE</span>
+  <span class='va'>Debug</span> <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>}</span>
 </pre>
   </div>

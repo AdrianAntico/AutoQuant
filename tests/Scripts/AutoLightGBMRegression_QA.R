@@ -4,14 +4,16 @@ LightGBM_QA_Results_Regression <- data.table::CJ(
   Transformation = c(TRUE,FALSE),
   GridTune = c(TRUE,FALSE),
   Success = "Failure",
-  PartitionInFunction = c(TRUE,FALSE)
-)
+  PartitionInFunction = c(TRUE,FALSE))
 
 # Remove impossible combinations
 LightGBM_QA_Results_Regression <- LightGBM_QA_Results_Regression[!(TOF & GridTune)]
 LightGBM_QA_Results_Regression <- LightGBM_QA_Results_Regression[!(PartitionInFunction & TOF)]
 LightGBM_QA_Results_Regression[, RunNumber := seq_len(.N)]
 LightGBM_QA_Results_Regression[, Score := "Failure"]
+LightGBM_QA_Results_Regression[, RunTimeTrain := 123.456]
+LightGBM_QA_Results_Regression[, RunTimeScore := 123.456]
+LightGBM_QA_Results_Regression[, DateTime := Sys.time()]
 
 #      TOF Transformation GridTune Success PartitionInFunction
 # 1: FALSE          FALSE    FALSE Failure               FALSE
@@ -84,6 +86,9 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
     VValidationData <- NULL
     TTestData <- NULL
   }
+
+  # Start Timer
+  Start <- Sys.time()
 
   # Run function
   TestModel <- tryCatch({RemixAutoML::AutoLightGBMRegression(
@@ -212,9 +217,17 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
     gpu_use_dp = TRUE,
     num_gpu = 1)}, error = function(x) NULL)
 
+  # End Time
+  End <- Sys.time()
+  LightGBM_QA_Results_Regression[run, RunTimeTrain := as.numeric(difftime(time1 = End, Start))]
+
   # Outcome
   if(!is.null(TestModel)) LightGBM_QA_Results_Regression[run, Success := "Success"]
   if(!is.null(TestModel)) {
+
+    # Start Timer
+    Start <- Sys.time()
+
     ModelID = "Test_Model_1"
     colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
     Preds <- tryCatch({RemixAutoML::AutoLightGBMScoring(
@@ -242,6 +255,10 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
       MDP_MissFactor = "0",
       MDP_MissNum = -1)}, error = function(x) NULL)
     if(!is.null(Preds)) LightGBM_QA_Results_Regression[run, Score := "Success"]
+
+    # Timer
+    End <- Sys.time()
+    LightGBM_QA_Results_Regression[run, RunTimeScore := as.numeric(difftime(time1 = End, Start))]
   }
   TestModel <- NULL
   Sys.sleep(5)

@@ -141,6 +141,7 @@
   TimeUnit <span class='op'>=</span> <span class='st'>"week"</span>,
   TimeGroups <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"weeks"</span>, <span class='st'>"months"</span><span class='op'>)</span>,
   NumOfParDepPlots <span class='op'>=</span> <span class='fl'>10L</span>,
+  EncodeMethod <span class='op'>=</span> <span class='st'>"credibility"</span>,
   TargetTransformation <span class='op'>=</span> <span class='cn'>FALSE</span>,
   Methods <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"BoxCox"</span>, <span class='st'>"Asinh"</span>, <span class='st'>"Asin"</span>, <span class='st'>"Log"</span>, <span class='st'>"LogPlus1"</span>, <span class='st'>"Logit"</span>, <span class='st'>"YeoJohnson"</span><span class='op'>)</span>,
   AnomalyDetection <span class='op'>=</span> <span class='cn'>NULL</span>,
@@ -252,6 +253,10 @@
     <tr>
       <th>NumOfParDepPlots</th>
       <td><p>Supply a number for the number of partial dependence plots you want returned</p></td>
+    </tr>
+    <tr>
+      <th>EncodeMethod</th>
+      <td><p>Choose from 'binary', 'poly_encode', 'backward_difference', 'helmert' for multiclass cases and additionally 'm_estimator', 'credibility', 'woe', 'target_encoding' for classification use cases.</p></td>
     </tr>
     <tr>
       <th>TargetTransformation</th>
@@ -485,127 +490,7 @@
     <p>Adrian Antico</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='co'># Two group variables and xregs</span>
-
-<span class='co'># Load Walmart Data from Dropbox</span>
-<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/fread.html'>fread</a></span><span class='op'>(</span>
- <span class='st'>'https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1'</span><span class='op'>)</span>
-
-<span class='co'># Filter out zeros</span>
-<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span><span class='op'>[</span><span class='va'>Weekly_Sales</span> <span class='op'>!=</span> <span class='fl'>0</span><span class='op'>]</span>
-
-<span class='co'># Subset for Stores / Departments With Full Series</span>
-<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span><span class='op'>[</span>, <span class='va'>Counts</span> <span class='op'>:=</span> <span class='va'>.N</span>, by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Store'</span>,<span class='st'>'Dept'</span><span class='op'>)</span><span class='op'>]</span><span class='op'>[</span><span class='va'>Counts</span> <span class='op'>==</span> <span class='fl'>143</span><span class='op'>]</span><span class='op'>[</span>
- , <span class='va'>Counts</span> <span class='op'>:=</span> <span class='cn'>NULL</span><span class='op'>]</span>
-
-<span class='co'># Subset Columns (remove IsHoliday column)----</span>
-<span class='va'>keep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Store'</span>,<span class='st'>'Dept'</span>,<span class='st'>'Date'</span>,<span class='st'>'Weekly_Sales'</span><span class='op'>)</span>
-<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span><span class='op'>[</span>, <span class='va'>..keep</span><span class='op'>]</span>
-<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span><span class='op'>[</span><span class='va'>Store</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>2</span><span class='op'>)</span><span class='op'>]</span>
-<span class='va'>xregs</span> <span class='op'>&lt;-</span> <span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/copy.html'>copy</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span>
-<span class='va'>xregs</span><span class='op'>[</span>, <span class='va'>GroupVar</span> <span class='op'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/do.call.html'>do.call</a></span><span class='op'>(</span><span class='va'>paste</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>.SD</span>, sep <span class='op'>=</span> <span class='st'>' '</span><span class='op'>)</span><span class='op'>)</span>, .SDcols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Store'</span>,<span class='st'>'Dept'</span><span class='op'>)</span><span class='op'>]</span>
-<span class='va'>xregs</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Store'</span>,<span class='st'>'Dept'</span><span class='op'>)</span> <span class='op'>:=</span> <span class='cn'>NULL</span><span class='op'>]</span>
-<span class='fu'>data.table</span><span class='fu'>::</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/setattr.html'>setnames</a></span><span class='op'>(</span><span class='va'>xregs</span>, <span class='st'>'Weekly_Sales'</span>, <span class='st'>'Other'</span><span class='op'>)</span>
-<span class='va'>xregs</span><span class='op'>[</span>, <span class='va'>Other</span> <span class='op'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/jitter.html'>jitter</a></span><span class='op'>(</span><span class='va'>Other</span>, factor <span class='op'>=</span> <span class='fl'>25</span><span class='op'>)</span><span class='op'>]</span>
-<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span><span class='op'>(</span><span class='va'>Date</span><span class='op'>)</span> <span class='op'>&lt;</span> <span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span><span class='op'>(</span><span class='st'>'2012-09-28'</span><span class='op'>)</span><span class='op'>]</span>
-
-<span class='co'># Vector CARMA testing</span>
-<span class='va'>data</span><span class='op'>[</span>, <span class='va'>Weekly_Profit</span> <span class='op'>:=</span> <span class='va'>Weekly_Sales</span> <span class='op'>*</span> <span class='fl'>0.75</span><span class='op'>]</span>
-
-<span class='co'># Build forecast</span>
-<span class='va'>CatBoostResults</span> <span class='op'>&lt;-</span> <span class='fu'>RemixAutoML</span><span class='fu'>::</span><span class='fu'>AutoCatBoostVectorCARMA</span><span class='op'>(</span>
-
-  <span class='co'># data args</span>
-  data <span class='op'>=</span> <span class='va'>data</span>, <span class='co'># TwoGroup_Data,</span>
-  TargetColumnName <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Weekly_Sales'</span>,<span class='st'>'Weekly_Profit'</span><span class='op'>)</span>,
-  DateColumnName <span class='op'>=</span> <span class='st'>'Date'</span>,
-  HierarchGroups <span class='op'>=</span> <span class='cn'>NULL</span>,
-  GroupVariables <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'Store'</span>,<span class='st'>'Dept'</span><span class='op'>)</span>,
-  TimeWeights <span class='op'>=</span> <span class='fl'>1</span>,
-  TimeUnit <span class='op'>=</span> <span class='st'>'weeks'</span>,
-  TimeGroups <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'weeks'</span>,<span class='st'>'months'</span><span class='op'>)</span>,
-
-  <span class='co'># Production args</span>
-  TaskType <span class='op'>=</span> <span class='st'>'GPU'</span>,
-  NumGPU <span class='op'>=</span> <span class='fl'>1</span>,
-  TrainOnFull <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  SplitRatios <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>-</span> <span class='fl'>10</span> <span class='op'>/</span> <span class='fl'>138</span>, <span class='fl'>10</span> <span class='op'>/</span> <span class='fl'>138</span><span class='op'>)</span>,
-  PartitionType <span class='op'>=</span> <span class='st'>'random'</span>,
-  FC_Periods <span class='op'>=</span> <span class='fl'>4</span>,
-  Timer <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  DebugMode <span class='op'>=</span> <span class='cn'>TRUE</span>,
-
-  <span class='co'># Target transformations</span>
-  TargetTransformation <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  Methods <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'BoxCox'</span>, <span class='st'>'Asinh'</span>, <span class='st'>'Asin'</span>, <span class='st'>'Log'</span>,
-              <span class='st'>'LogPlus1'</span>, <span class='st'>'Logit'</span>, <span class='st'>'YeoJohnson'</span><span class='op'>)</span>,
-  Difference <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  NonNegativePred <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  RoundPreds <span class='op'>=</span> <span class='cn'>FALSE</span>,
-
-  <span class='co'># Date features</span>
-  CalendarVariables <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'week'</span>, <span class='st'>'month'</span>, <span class='st'>'quarter'</span><span class='op'>)</span>,
-  HolidayVariable <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'USPublicHolidays'</span>,
-                      <span class='st'>'EasterGroup'</span>,
-                      <span class='st'>'ChristmasGroup'</span>,<span class='st'>'OtherEcclesticalFeasts'</span><span class='op'>)</span>,
-  HolidayLookback <span class='op'>=</span> <span class='cn'>NULL</span>,
-  HolidayLags <span class='op'>=</span> <span class='fl'>1</span>,
-  HolidayMovingAverages <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>2</span>,
-
-  <span class='co'># Time series features</span>
-  Lags <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>'weeks'</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>2L</span>, <span class='fl'>10L</span>, <span class='fl'>2L</span><span class='op'>)</span>,
-              <span class='st'>'months'</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span><span class='op'>)</span><span class='op'>)</span>,
-  MA_Periods <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>'weeks'</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>2L</span>, <span class='fl'>10L</span>, <span class='fl'>2L</span><span class='op'>)</span>,
-                    <span class='st'>'months'</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span>,<span class='fl'>3</span><span class='op'>)</span><span class='op'>)</span>,
-  SD_Periods <span class='op'>=</span> <span class='cn'>NULL</span>,
-  Skew_Periods <span class='op'>=</span> <span class='cn'>NULL</span>,
-  Kurt_Periods <span class='op'>=</span> <span class='cn'>NULL</span>,
-  Quantile_Periods <span class='op'>=</span> <span class='cn'>NULL</span>,
-  Quantiles_Selected <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>'q5'</span>,<span class='st'>'q95'</span><span class='op'>)</span>,
-
-  <span class='co'># Bonus features</span>
-  AnomalyDetection <span class='op'>=</span> <span class='cn'>NULL</span>,
-  XREGS <span class='op'>=</span> <span class='va'>xregs</span>,
-  FourierTerms <span class='op'>=</span> <span class='fl'>2</span>,
-  TimeTrendVariable <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  ZeroPadSeries <span class='op'>=</span> <span class='cn'>NULL</span>,
-  DataTruncate <span class='op'>=</span> <span class='cn'>FALSE</span>,
-
-  <span class='co'># Eval args</span>
-  NumOfParDepPlots <span class='op'>=</span> <span class='fl'>100L</span>,
-  EvalMetric <span class='op'>=</span> <span class='st'>'MultiRMSE'</span>,
-  EvalMetricValue <span class='op'>=</span> <span class='fl'>1.5</span>,
-  LossFunction <span class='op'>=</span> <span class='st'>'MultiRMSE'</span>,
-  LossFunctionValue <span class='op'>=</span> <span class='fl'>1.5</span>,
-
-  <span class='co'># Grid args</span>
-  GridTune <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  PassInGrid <span class='op'>=</span> <span class='cn'>NULL</span>,
-  ModelCount <span class='op'>=</span> <span class='fl'>5</span>,
-  MaxRunsWithoutNewWinner <span class='op'>=</span> <span class='fl'>50</span>,
-  MaxRunMinutes <span class='op'>=</span> <span class='fl'>60</span><span class='op'>*</span><span class='fl'>60</span>,
-
-  <span class='co'># ML Args</span>
-  NTrees <span class='op'>=</span> <span class='fl'>1000</span>,
-  Depth <span class='op'>=</span> <span class='fl'>6</span>,
-  LearningRate <span class='op'>=</span> <span class='cn'>NULL</span>,
-  L2_Leaf_Reg <span class='op'>=</span> <span class='cn'>NULL</span>,
-  RandomStrength <span class='op'>=</span> <span class='fl'>1</span>,
-  BorderCount <span class='op'>=</span> <span class='fl'>254</span>,
-  RSM <span class='op'>=</span> <span class='fl'>1</span>,
-  BootStrapType <span class='op'>=</span> <span class='st'>'Bayesian'</span>,
-  GrowPolicy <span class='op'>=</span> <span class='st'>'SymmetricTree'</span>,
-  Langevin <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  DiffusionTemperature <span class='op'>=</span> <span class='fl'>10000</span>,
-  ModelSizeReg <span class='op'>=</span> <span class='fl'>0.5</span>,
-  FeatureBorderType <span class='op'>=</span> <span class='st'>'GreedyLogSum'</span>,
-  SamplingUnit <span class='op'>=</span> <span class='st'>'Group'</span>,
-  SubSample <span class='op'>=</span> <span class='cn'>NULL</span>,
-  ScoreFunction <span class='op'>=</span> <span class='st'>'Cosine'</span>,
-  MinDataInLeaf <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
-<span class='op'>}</span>
-</pre>
+    <pre class="examples"></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

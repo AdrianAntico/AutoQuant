@@ -266,7 +266,7 @@ AutoTS builds the best time series models for each type, using optimized box-cox
                          circular<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>data</span><span class='op'>[</span>, <span class='va'>temp</span> <span class='op'>:=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>100</span><span class='op'>)</span><span class='op'>]</span><span class='op'>[</span>, <span class='va'>DateTime</span> <span class='op'>:=</span> <span class='va'>DateTime</span> <span class='op'>-</span> <span class='va'>temp</span><span class='op'>]</span><span class='op'>[</span>
   , <span class='va'>temp</span> <span class='op'>:=</span> <span class='cn'>NULL</span><span class='op'>]</span>
-<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/order.html'>order</a></span><span class='op'>(</span><span class='va'>DateTime</span><span class='op'>)</span><span class='op'>]</span>
+<span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span><span class='op'>[</span><span class='fu'><a href='https://Rdatatable.gitlab.io/data.table/reference/setorder.html'>order</a></span><span class='op'>(</span><span class='va'>DateTime</span><span class='op'>)</span><span class='op'>]</span>
 <span class='va'>output</span> <span class='op'>&lt;-</span>   <span class='fu'>AutoTS</span><span class='op'>(</span>
   <span class='va'>data</span>,
   TargetName              <span class='op'>=</span> <span class='st'>"Target"</span>,

@@ -138,6 +138,7 @@
   PrimaryDateColumn <span class='op'>=</span> <span class='cn'>NULL</span>,
   WeightsColumnName <span class='op'>=</span> <span class='cn'>NULL</span>,
   IDcols <span class='op'>=</span> <span class='cn'>NULL</span>,
+  EncodingMethod <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>classifier <span class='op'>=</span> <span class='st'>"credibility"</span>, regression <span class='op'>=</span> <span class='st'>"credibility"</span><span class='op'>)</span>,
   TransformNumericColumns <span class='op'>=</span> <span class='cn'>NULL</span>,
   Methods <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Asinh"</span>, <span class='st'>"Asin"</span>, <span class='st'>"Log"</span>, <span class='st'>"LogPlus1"</span>, <span class='st'>"Sqrt"</span>, <span class='st'>"Logit"</span><span class='op'>)</span>,
   ClassWeights <span class='op'>=</span> <span class='cn'>NULL</span>,
@@ -212,6 +213,10 @@
     <tr>
       <th>IDcols</th>
       <td><p>Includes PrimaryDateColumn and any other columns you want returned in the validation data with predictions</p></td>
+    </tr>
+    <tr>
+      <th>EncodingMethod</th>
+      <td><p>'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'</p></td>
     </tr>
     <tr>
       <th>TransformNumericColumns</th>
@@ -444,6 +449,7 @@
     FeatureColNames <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>TTrainData</span><span class='op'>)</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span> <span class='op'>%in%</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Adrian"</span>,<span class='st'>"IDcol_1"</span>,<span class='st'>"IDcol_2"</span>,<span class='st'>"IDcol_3"</span>,<span class='st'>"IDcol_4"</span>,<span class='st'>"IDcol_5"</span>,<span class='st'>"DateTime"</span><span class='op'>)</span><span class='op'>]</span>,
     PrimaryDateColumn <span class='op'>=</span> <span class='st'>"DateTime"</span>,
     IDcols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"IDcol_1"</span>,<span class='st'>"IDcol_2"</span>,<span class='st'>"IDcol_3"</span>,<span class='st'>"IDcol_4"</span>,<span class='st'>"IDcol_5"</span>,<span class='st'>"DateTime"</span><span class='op'>)</span>,
+    EncodingMethod <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>'classifier'</span> <span class='op'>=</span> <span class='st'>'credibility'</span>, <span class='st'>'regression'</span> <span class='op'>=</span> <span class='st'>'credibility'</span><span class='op'>)</span>,
     DebugMode <span class='op'>=</span> <span class='cn'>TRUE</span>,
 
     <span class='co'># Metadata args</span>

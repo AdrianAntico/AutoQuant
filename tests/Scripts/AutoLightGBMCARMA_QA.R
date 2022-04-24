@@ -5,6 +5,8 @@ QA_Results <- data.table::CJ(
   TOF = c(TRUE, FALSE),
   Trans = c(TRUE, FALSE),
   Diff = c(TRUE, FALSE))
+QA_Results[, RunTime := 123.456]
+QA_Results[, DateTime := Sys.time()]
 
 # Other tests
 QA_Results[, Success := "Failure"]
@@ -86,6 +88,9 @@ for(run in seq_len(QA_Results[,.N])) {
   # Copy data
   data1 <- data.table::copy(data)
   if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
+
+  # Start Timer
+  Start <- Sys.time()
 
   # Build forecast
   TestModel <- tryCatch({RemixAutoML::AutoLightGBMCARMA(
@@ -232,6 +237,10 @@ for(run in seq_len(QA_Results[,.N])) {
     Gpu_Device_Id = -1,
     Gpu_Use_Dp = TRUE,
     Num_Gpu = 1)}, error = function(x) NULL)
+
+  # Timer
+  End <- Sys.time()
+  QA_Results[run, RunTime := as.numeric(difftime(time1 = End, Start))]
 
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := "Success"]

@@ -834,17 +834,21 @@ EncodeCharacterVariables <- function(RunMode = 'train',
   if(RunMode != 'train') Score <- TRUE else Score <- FALSE
 
   # Prepare data
-  if(!is.null(ValidationData) && !is.null(TestData)) {
-    data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
-    data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
-    data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
-    temp <- data.table::rbindlist(list(TrainData, ValidationData, TestData))
-  } else if(!is.null(ValidationData)) {
-    data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
-    data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
-    temp <- data.table::rbindlist(list(TrainData, ValidationData))
+  if(RunMode == 'train') {
+    if(!is.null(ValidationData) && !is.null(TestData)) {
+      data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
+      data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
+      data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
+      temp <- data.table::rbindlist(list(TrainData, ValidationData, TestData))
+    } else if(!is.null(ValidationData)) {
+      data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
+      data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
+      temp <- data.table::rbindlist(list(TrainData, ValidationData))
+    } else {
+      data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
+      temp <- TrainData
+    }
   } else {
-    data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
     temp <- TrainData
   }
 
@@ -854,10 +858,25 @@ EncodeCharacterVariables <- function(RunMode = 'train',
     MetaData <- temp$FactorLevelsList
     temp <- temp$data
   } else if(EncodeMethod %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
-    temp_train <- temp[ID_Factorizer == "TRAIN"]
+    if(RunMode == 'train') temp_train <- temp[ID_Factorizer == "TRAIN"] else temp_train <- temp
     temp1 <- CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
     MetaData <- temp1$FactorCompenents
-    temp_train <- temp1$data
+    if(RunMode == 'train') temp_train <- temp1$data else temp_train <- temp1
+
+    # Args for debugging
+    # data=temp_train
+    # ML_Type=ModelType
+    # GroupVariables=CategoricalVariableNames
+    # TargetVariable=TargetVariableName
+    # Method=EncodeMethod
+    # SavePath=MetaDataPath
+    # Scoring=Score
+    # ImputeValueScoring=ImputeMissingValue
+    # ReturnFactorLevelList=TRUE
+    # SupplyFactorLevelList=MetaDataList
+    # KeepOriginalFactors=KeepCategoricalVariables
+
+    # Encoding
     if(!is.null(ValidationData) && !is.null(TestData)) {
       temp_validate <- temp[ID_Factorizer == "VALIDATE"]
       temp_test <- temp[ID_Factorizer == "TEST"]
@@ -878,16 +897,21 @@ EncodeCharacterVariables <- function(RunMode = 'train',
   }
 
   # Finalize data
-  TrainData <- temp[ID_Factorizer == "TRAIN"]
-  data.table::set(TrainData, j = "ID_Factorizer", value = NULL)
-  if(!is.null(ValidationData)) {
-    ValidationData <- temp[ID_Factorizer == "VALIDATE"]
-    data.table::set(ValidationData, j = "ID_Factorizer", value = NULL)
+  if(RunMode == 'train') {
+    TrainData <- temp[ID_Factorizer == "TRAIN"]
+    data.table::set(TrainData, j = "ID_Factorizer", value = NULL)
+    if(!is.null(ValidationData)) {
+      ValidationData <- temp[ID_Factorizer == "VALIDATE"]
+      data.table::set(ValidationData, j = "ID_Factorizer", value = NULL)
+    }
+    if(!is.null(TestData)) {
+      TestData <- temp[ID_Factorizer == "TEST"]
+      data.table::set(TestData, j = "ID_Factorizer", value = NULL)
+    }
   }
-  if(!is.null(TestData)) {
-    TestData <- temp[ID_Factorizer == "TEST"]
-    data.table::set(TestData, j = "ID_Factorizer", value = NULL)
-  }
+
+  # Attach Encoding Method to list
+  MetaData$EncodingMethod <- EncodeMethod
 
   # Return
   return(list(

@@ -40,7 +40,7 @@
 #' }
 #'
 #' @return List with two elements: VectorizedText and Tokenizer.
-#' @export
+#' @noRd
 KerasTokenizerFit <- function(Fit_Object = NULL,
                               Fit_Text = NULL,
                               Tok_num_words = NULL,
@@ -99,7 +99,7 @@ KerasTokenizerFit <- function(Fit_Object = NULL,
 #'
 #' }
 #'
-#' @export
+#' @noRd
 Keras_t2s_pad <- function(RunText2Seq = TRUE,
                           RunPadding = FALSE,
 
@@ -258,7 +258,7 @@ Keras_t2s_pad <- function(RunText2Seq = TRUE,
 #' }
 #'
 #'
-#' @export
+#' @noRd
 Keras <- function(LayerFunc,
                   PriorOutput = NULL,
                   Name = NULL,
@@ -399,7 +399,7 @@ Keras <- function(LayerFunc,
 #' ConfMatThresh = 0.50
 #' }
 #'
-#' @export
+#' @noRd
 KerasTrainEval <- function(PriorOutput = NULL,
                            inputs = NULL,
                            outputs = NULL,
@@ -517,7 +517,7 @@ KerasTrainEval <- function(PriorOutput = NULL,
 #' @param ReturnMetrics = TRUE. FALSE and only the score data will be returned
 #' @param ReturnFeatures = TRUE. FALSE and only the predicted values will be returned
 #'
-#' @export
+#' @noRd
 Keras_BinaryScoreEval <- function(CompiledModel = NULL, # model_word2vec
                                   YTest = NULL,         # y_test
                                   Features = NULL,      # input_test_text

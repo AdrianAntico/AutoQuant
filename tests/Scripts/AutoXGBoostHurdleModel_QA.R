@@ -5,8 +5,7 @@ XGBoost_QA <- data.table::CJ(
   Success = "Failure",
   ScoreSuccess = "Failure",
   PartitionInFunction = c(TRUE,FALSE),
-  sorted = FALSE
-)
+  sorted = FALSE)
 
 # Remove impossible combinations
 XGBoost_QA <- XGBoost_QA[!(PartitionInFunction & TOF)]
@@ -14,8 +13,6 @@ XGBoost_QA[, RunNumber := seq_len(.N)]
 
 # Path File
 Path <- "C:/Users/Bizon/GitHub"
-
-
 
 #      TOF Classification Success PartitionInFunction RunNumber
 # 1:  TRUE           TRUE Failure               FALSE         1
@@ -25,7 +22,6 @@ Path <- "C:/Users/Bizon/GitHub"
 # 5: FALSE          FALSE Failure                TRUE         5
 # 6: FALSE          FALSE Failure               FALSE         6
 
-# AutoCatBoostHurdleModel
 # run = 5
 # run = 6
 for(run in seq_len(XGBoost_QA[,.N])) {
