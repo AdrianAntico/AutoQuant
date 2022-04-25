@@ -10,7 +10,7 @@ LightGBM_QA_Results_MultiClass <- data.table::CJ(
 LightGBM_QA_Results_MultiClass <- LightGBM_QA_Results_MultiClass[!(TOF & GridTune)]
 LightGBM_QA_Results_MultiClass <- LightGBM_QA_Results_MultiClass[!(PartitionInFunction & TOF)]
 LightGBM_QA_Results_MultiClass[, RunNumber := seq_len(.N)]
-LightGBM_QA_Results_MultiClass[, Score := "Failure"]
+LightGBM_QA_Results_MultiClass[, ScoreSuccess := "Failure"]
 LightGBM_QA_Results_MultiClass[, RunTime := 123.456]
 LightGBM_QA_Results_MultiClass[, DateTime := Sys.time()]
 
@@ -246,7 +246,7 @@ for(run in seq_len(LightGBM_QA_Results_MultiClass[,.N])) {
     # Timer
     End <- Sys.time()
     LightGBM_QA_Results_MultiClass[run, RunTimeScore := as.numeric(difftime(time1 = End, Start))]
-    if(!is.null(Preds)) LightGBM_QA_Results_MultiClass[run, Score := "Success"]
+    if(!is.null(Preds)) LightGBM_QA_Results_MultiClass[run, ScoreSuccess := "Success"]
   }
   TestModel <- NULL
   Sys.sleep(5)

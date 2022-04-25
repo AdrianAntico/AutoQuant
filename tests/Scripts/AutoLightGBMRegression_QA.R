@@ -10,7 +10,7 @@ LightGBM_QA_Results_Regression <- data.table::CJ(
 LightGBM_QA_Results_Regression <- LightGBM_QA_Results_Regression[!(TOF & GridTune)]
 LightGBM_QA_Results_Regression <- LightGBM_QA_Results_Regression[!(PartitionInFunction & TOF)]
 LightGBM_QA_Results_Regression[, RunNumber := seq_len(.N)]
-LightGBM_QA_Results_Regression[, Score := "Failure"]
+LightGBM_QA_Results_Regression[, ScoreSuccess := "Failure"]
 LightGBM_QA_Results_Regression[, RunTimeTrain := 123.456]
 LightGBM_QA_Results_Regression[, RunTimeScore := 123.456]
 LightGBM_QA_Results_Regression[, DateTime := Sys.time()]
@@ -254,7 +254,7 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
       MDP_RemoveDates = TRUE,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)}, error = function(x) NULL)
-    if(!is.null(Preds)) LightGBM_QA_Results_Regression[run, Score := "Success"]
+    if(!is.null(Preds)) LightGBM_QA_Results_Regression[run, ScoreSuccess := "Success"]
 
     # Timer
     End <- Sys.time()

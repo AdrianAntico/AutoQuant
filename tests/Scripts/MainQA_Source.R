@@ -526,7 +526,7 @@ View(Funnel_QA)
 
 # Meta ----
 if(exists("CatBoost_QA")) Cat <- CatBoost_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
-if(exists("LightGBM_QA")) Light <- LightGBM_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
+if(exists("LightGBM_QA")) Light <- LightGBM_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","Score")]
 if(exists("XGBoost_QA")) xgb <- XGBoost_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
 if(exists("H2O_QA")) h2o <- H2O_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success")]
 if(exists("CARMA_QA")) Carma <- CARMA_QA[, RunNumber := seq_len(.N)][, .SD, .SDcols = c("Model","Type","RunNumber","Success")]

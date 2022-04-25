@@ -189,7 +189,7 @@ for(run in seq_len(LightGBM_QA[,.N])) {
   # Start Timer
   Start <- Sys.time()
 
-  # Score CatBoost Hurdle Model
+  # ScoreSuccess CatBoost Hurdle Model
   Output <- tryCatch({RemixAutoML::AutoLightGBMHurdleModelScoring(
     TestData = TTrainData,
     Path = "C:/Users/Thess/Github",
@@ -203,7 +203,7 @@ for(run in seq_len(LightGBM_QA[,.N])) {
   LightGBM_QA[run, RunTimeScore := as.numeric(difftime(time1 = End, Start))]
 
   # Outcome
-  if(!is.null(Output)) LightGBM_QA[run, Score := "Success"]
+  if(!is.null(Output)) LightGBM_QA[run, ScoreSuccess := "Success"]
   TestModel <- NULL
   Output <- NULL
   TTrainData <- NULL

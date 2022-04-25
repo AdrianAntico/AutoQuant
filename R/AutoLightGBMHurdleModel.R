@@ -2610,7 +2610,7 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
       aggrfun = function(x) mean(x, na.rm = TRUE))
 
     # Add Number of Trees to Title----
-    EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0('Calibration Evaluation Plot: R2 = ',round(r_squared, 3L)))
+    EvaluationBoxPlot <- EvaluationBoxPlot + ggplot2::ggtitle(paste0('Calibration Evaluation Plot: R2 = ', round(r_squared, 3L)))
 
     # Save plot to file----
     if(SaveModelObjects) {

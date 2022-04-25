@@ -9,7 +9,7 @@ LightGBM_QA_Results_Classifier <- data.table::CJ(
 LightGBM_QA_Results_Classifier <- LightGBM_QA_Results_Classifier[!(TOF & GridTune)]
 LightGBM_QA_Results_Classifier <- LightGBM_QA_Results_Classifier[!(PartitionInFunction & TOF)]
 LightGBM_QA_Results_Classifier[, RunNumber := seq_len(.N)]
-LightGBM_QA_Results_Classifier[, Score := "Failure"]
+LightGBM_QA_Results_Classifier[, ScoreSuccess := "Failure"]
 LightGBM_QA_Results_Classifier[, RunTime := 123.456]
 LightGBM_QA_Results_Classifier[, DateTime := Sys.time()]
 
@@ -238,7 +238,7 @@ for(run in seq_len(LightGBM_QA_Results_Classifier[,.N])) {
       MDP_RemoveDates = TRUE,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)}, error = function(x) NULL)
-    if(!is.null(Preds)) LightGBM_QA_Results_Classifier[run, Score := "Success"]
+    if(!is.null(Preds)) LightGBM_QA_Results_Classifier[run, ScoreSuccess := "Success"]
 
     # Timer
     End <- Sys.time()
