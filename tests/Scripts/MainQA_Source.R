@@ -67,7 +67,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostClassifier_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -80,7 +79,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostMultiClass_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -93,7 +91,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostRegression_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -106,7 +103,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostHurdleModel_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -123,7 +119,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMClassifier_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -136,7 +131,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMMultiClass_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -149,7 +143,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMRegression_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -159,11 +152,9 @@ Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
     system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleModel_QA.R')))
-
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleModel_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -180,7 +171,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostClassifier_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -193,7 +183,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostMultiClass_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -206,7 +195,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostRegression_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -219,7 +207,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostHurdleModel_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -236,7 +223,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Classifier_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -249,7 +235,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_MultiClass_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -259,11 +244,9 @@ Start <- Sys.time()
 if(Job) {
   job::job(packages = Packaages, {
     system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Regression_QA.R')))
-
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoH2O_Regression_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -280,7 +263,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostCARMA_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -293,7 +275,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMCARMA_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -306,7 +287,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostCARMA_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -323,7 +303,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostHurdleCARMA_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -348,7 +327,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMHurdleCARMA_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -365,7 +343,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostVectorCARMA_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -383,7 +360,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoCatBoostFunnel_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -396,7 +372,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoLightGBMFunnel_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L
@@ -409,7 +384,6 @@ if(Job) {
   })
 } else {
   system(paste0('Rscript --vanilla ', file.path(ScriptsPath, 'AutoXGBoostFunnel_QA.R')))
-
 }
 data.table::set(RunTimes, i = Counter, j = 'RunTimes', value = difftime(Sys.time(), Start, units = 'mins'))
 Counter <- Counter + 1L

@@ -96,7 +96,7 @@ for(run in seq_len(QA_Results[,.N])) {
   # Start Timer
   Start <- Sys.time()
 
-  # Build model
+  # Build model ----
   TestModel <- tryCatch({RemixAutoML::AutoLightGBMFunnelCARMA(
 
     # Data Arguments
@@ -139,15 +139,15 @@ for(run in seq_len(QA_Results[,.N])) {
 
     # Time Series Features
     ImputeRollStats = -0.001,
-    CalendarLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L,10L,12L,25L,26L)),
-    CalendarMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L,10L,12L,20L,24L), "month" = c(6L,12L)),
+    CalendarLags = list("day" = c(1L,2L,7L), "week" = c(5L,6L)),
+    CalendarMovingAverages = list("day" = c(7L), "week" = c(5L,6L), "month" = c(6L)),
     CalendarStandardDeviations = NULL,
     CalendarSkews = NULL,
     CalendarKurts = NULL,
     CalendarQuantiles = NULL,
     CalendarQuantilesSelected = "q50",
-    CohortLags = list("day" = c(1L,2L,7L,35L,42L), "week" = c(5L,6L)),
-    CohortMovingAverages = list("day" = c(7L,14L,35L,42L), "week" = c(5L,6L), "month" = c(1L,2L)),
+    CohortLags = list("day" = c(1L,2L), "week" = c(5L,6L)),
+    CohortMovingAverages = list("day" = c(7L,14L), "week" = c(5L,6L), "month" = c(1L,2L)),
     CohortStandardDeviations = NULL,
     CohortSkews = NULL,
     CohortKurts = NULL,
@@ -258,7 +258,7 @@ for(run in seq_len(QA_Results[,.N])) {
   if(!is.null(TestModel)) QA_Results[run, Training := "Success"]
   RemixAutoML:::Post_Append_Helper(QA_Results,'AutoLightGBMFunnel_QA')
 
-  # Forecast QA
+  # Forecast QA ----
   if(!is.null(TestModel)) {
 
     # Refresh data
@@ -358,7 +358,7 @@ for(run in seq_len(QA_Results[,.N])) {
     Test <- NULL
   }
 
-  # Outcome
+  # Outcome ----
   if(!is.null(Test)) QA_Results[run, Forecast := "Success"]
   rm(TestModel, Test)
   RemixAutoML:::Post_Append_Helper(QA_Results,'AutoLightGBMFunnel_QA')
