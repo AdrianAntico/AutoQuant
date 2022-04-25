@@ -221,9 +221,9 @@ for(run in seq_len(LightGBM_QA_Results_Classifier[,.N])) {
       FeatureColumnNames = colnames[[1L]],
       IDcols = c("IDcol_1","IDcol_2","DateTime"),
       EncodingMethod = "credibility",
-      FactorLevelsList = NULL,
+      FactorLevelsList = TestModel$FactorLevelsList,
       TargetLevels = NULL,
-      ModelObject = NULL,
+      ModelObject = TestModel$Model,
       ModelPath = getwd(),
       ModelID = "Test_Model_1",
       ReturnFeatures = TRUE,
@@ -237,7 +237,8 @@ for(run in seq_len(LightGBM_QA_Results_Classifier[,.N])) {
       MDP_CharToFactor = TRUE,
       MDP_RemoveDates = TRUE,
       MDP_MissFactor = "0",
-      MDP_MissNum = -1)}, error = function(x) NULL)
+      MDP_MissNum = -1)
+    }, error = function(x) NULL)
     if(!is.null(Preds)) LightGBM_QA_Results_Classifier[run, ScoreSuccess := "Success"]
 
     # Timer

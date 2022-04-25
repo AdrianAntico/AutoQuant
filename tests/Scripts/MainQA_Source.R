@@ -403,7 +403,6 @@ CatBoost_QA <- data.table::rbindlist(list(
   CatBoost_QA_Results_Regression[, Type := 'Regression'][, Model := 'CatBoost'],
   CatBoost_QA_Results_HurdleModel[, Type := 'Hurdle'][, Model := 'CatBoost']),
   use.names = TRUE, fill = TRUE)
-View(CatBoost_QA)
 
 # . ----
 
@@ -418,7 +417,6 @@ LightGBM_QA <- data.table::rbindlist(list(
   LightGBM_QA_Results_Regression[, Type := 'Regression'][, Model := 'LightGBM'],
   LightGBM_QA_Results_HurdleModel[, Type := 'Hurdle'][, Model := 'LightGBM']),
   use.names = TRUE, fill = TRUE)
-View(LightGBM_QA)
 
 # . ----
 
@@ -433,7 +431,6 @@ XGBoost_QA <- data.table::rbindlist(list(
   XGBoost_QA_Results_Regression[, Type := 'Regression'][, Model := 'XGBoost'],
   XGBoost_QA_Results_HurdleModel[, Type := 'Hurdle'][, Model := 'XGBoost']),
   use.names = TRUE, fill = TRUE)
-View(XGBoost_QA)
 
 # . ----
 
@@ -446,7 +443,6 @@ H2O_QA <- data.table::rbindlist(list(
   H2O_QA_Results_MultiClass[, Type := 'MultiClass'][, Model := 'h2o'],
   H2O_QA_Results_Regression[, Type := 'Regression'][, Model := 'h2o']),
   use.names = TRUE, fill = TRUE)
-View(H2O_QA)
 
 # . ----
 
@@ -459,7 +455,6 @@ CARMA_QA <- data.table::rbindlist(list(
   XGBoostCARMA[, Type := 'CARMA'][, Model := 'XGBoost'],
   LightGBMCARMA[, Type := 'CARMA'][, Model := 'LightGBM']),
   use.names = TRUE, fill = TRUE)
-View(CARMA_QA)
 
 # . ----
 
@@ -472,14 +467,12 @@ HurdleCARMA_QA <- data.table::rbindlist(list(
   XGBoostHurdleCARMA[, Type := 'Hurdle_CARMA'][, Model := 'XGBoost'],
   LightGBMHurdleCARMA[, Type := 'Hurdle_CARMA'][, Model := 'LightGBM']),
   use.names = TRUE, fill = TRUE)
-View(HurdleCARMA_QA)
 
 # . ----
 
 # Vector CARMA Evaluation ----
 CatBoostVectorCARMA <- RemixAutoML:::Post_Query_Helper('"AutoCatBoostVectorCARMA_QA"')[['data']]
 VectorCARMA <- CatBoostVectorCARMA[, Model := 'CatBoost']
-View(CatBoostVectorCARMA)
 
 # . ----
 
@@ -492,7 +485,6 @@ Funnel_QA <- data.table::rbindlist(list(
   LightGBMFunnel[, Type := 'Funnel_CARMA'][, Model := 'LightGBM'],
   XGBoostFunnel[, Type := 'Funnel_CARMA'][, Model := 'XGBoost']),
   use.names = TRUE, fill = TRUE)
-View(Funnel_QA)
 
 # . ----
 
@@ -500,7 +492,7 @@ View(Funnel_QA)
 
 # Meta ----
 if(exists("CatBoost_QA")) Cat <- CatBoost_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
-if(exists("LightGBM_QA")) Light <- LightGBM_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","Score")]
+if(exists("LightGBM_QA")) Light <- LightGBM_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
 if(exists("XGBoost_QA")) xgb <- XGBoost_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success","ScoreSuccess")]
 if(exists("H2O_QA")) h2o <- H2O_QA[, .SD, .SDcols = c("Model","Type","RunNumber","Success")]
 if(exists("CARMA_QA")) Carma <- CARMA_QA[, RunNumber := seq_len(.N)][, .SD, .SDcols = c("Model","Type","RunNumber","Success")]
@@ -516,6 +508,15 @@ All_Methods <- data.table::rbindlist(All_Methods, fill = TRUE)
 OverallEnd <- Sys.time()
 print(difftime(time1 = OverallEnd, time2 = OverallStart, units = 'mins'))
 View(All_Methods)
+
+All_Methods[, OverallSuccess := data.table::fcase(
+  tolower(Success) == 'failure', 'FAILURE',
+  tolower(ScoreSuccess) == 'failure', 'FAILURE',
+  tolower(Training) == 'failure', 'FAILURE',
+  tolower(Forecast) == 'failure', 'FAILURE',
+  default = 'SUCCESS')]
+All_Methods <- All_Methods[, .SD, .SDcols = c('Model', 'Type', 'RunNumber', 'OverallSuccess')]
+RemixAutoML:::Post_Append_Helper(All_Methods, 'AAA_FINAL_QA_ALL_METHODS')
 
 # . ----
 
