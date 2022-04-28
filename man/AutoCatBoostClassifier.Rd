@@ -28,7 +28,7 @@ AutoCatBoostClassifier(
   LossFunction = "Logloss",
   grid_eval_metric = "MCC",
   ClassWeights = c(1, 1),
-  CostMatrixWeights = c(1, 0, 0, 1),
+  CostMatrixWeights = c(0, 1, 1, 0),
   NumOfParDepPlots = 0L,
   PassInGrid = NULL,
   GridTune = FALSE,
@@ -208,7 +208,7 @@ TestModel <- RemixAutoML::AutoCatBoostClassifier(
 
   # Evaluation args
   ClassWeights = c(1L,1L),
-  CostMatrixWeights = c(1,0,0,1),
+  CostMatrixWeights = c(0,1,1,0),
   EvalMetric = 'AUC',
   grid_eval_metric = 'MCC',
   LossFunction = 'Logloss',

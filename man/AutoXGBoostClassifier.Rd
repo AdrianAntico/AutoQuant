@@ -171,7 +171,7 @@ TestModel <- RemixAutoML::AutoXGBoostClassifier(
 
   # Model evaluation
   LossFunction = 'reg:logistic',
-  CostMatrixWeights = c(1,0,0,1),
+  CostMatrixWeights = c(0,1,1,0),
   eval_metric = "auc",
   grid_eval_metric = "MCC",
   NumOfParDepPlots = 3L,
