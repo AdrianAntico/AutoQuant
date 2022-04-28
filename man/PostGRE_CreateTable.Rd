@@ -65,6 +65,7 @@ RemixAutoML::PostGRE_CreateTable(
 Other Database: 
 \code{\link{AutoDataDictionaries}()},
 \code{\link{PostGRE_AppendData}()},
+\code{\link{PostGRE_ListTables}()},
 \code{\link{PostGRE_Query}()},
 \code{\link{PostGRE_RemoveCreateAppend}()},
 \code{\link{PostGRE_RemoveTable}()},

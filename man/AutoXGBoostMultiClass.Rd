@@ -86,7 +86,7 @@ AutoXGBoostMultiClass(
 
 \item{NThreads}{Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8}
 
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"}
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from 'merror' or 'mlogloss'}
 
 \item{grid_eval_metric}{"accuracy", "logloss", "microauc"}
 

@@ -26,7 +26,7 @@ AutoXGBoostClassifier(
   NumOfParDepPlots = 3L,
   NThreads = max(1L, parallel::detectCores() - 2L),
   LossFunction = "reg:logistic",
-  CostMatrixWeights = c(1, 0, 0, 1),
+  CostMatrixWeights = c(0, 1, 1, 0),
   grid_eval_metric = "MCC",
   eval_metric = "auc",
   TreeMethod = "hist",

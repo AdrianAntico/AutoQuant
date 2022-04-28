@@ -14,8 +14,8 @@
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
-#' @param LossFunction Select from 'reg:logistic', "binary:logistic"
 #' @param CostMatrixWeights A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),
+#' @param LossFunction Select from 'reg:logistic', "binary:logistic"
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss","error","aucpr","auc"
 #' @param grid_eval_metric Case sensitive. I typically choose 'Utility' or 'MCC'. Choose from 'Utility', 'MCC', 'Acc', 'F1_Score', 'F2_Score', 'F0.5_Score', 'TPR', 'TNR', 'FNR', 'FPR', 'FDR', 'FOR', 'NPV', 'PPV', 'ThreatScore'
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
@@ -132,7 +132,7 @@ AutoXGBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots'
                                   NumOfParDepPlots = 3L,
                                   NThreads = max(1L, parallel::detectCores()-2L),
                                   LossFunction = 'reg:logistic',
-                                  CostMatrixWeights = c(1,0,0,1),
+                                  CostMatrixWeights = c(0,1,1,0),
                                   grid_eval_metric = "MCC",
                                   eval_metric = "auc",
                                   TreeMethod = "hist",

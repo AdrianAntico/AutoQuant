@@ -1007,8 +1007,15 @@ XGBoostValidationData <- function(model.=model,
         }
       }
     } else if(!is.null(TrainMerge.)) {
+      print('nrow(predict.)')
+      print(nrow(predict.))
+      print('nrow(TrainMerge.)')
+      print(nrow(TrainMerge.))
+      print('nrow(data.)')
+      print(data.)
       ValidationData <- data.table::as.data.table(cbind(predict., TrainMerge.))
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
+        if(!is.null(dataTest.)) data. <- data.table::rbindlist(list(data., dataTest.), use.names = TRUE, fill = TRUE)
         ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
       } else {
         ShapValues <- NULL

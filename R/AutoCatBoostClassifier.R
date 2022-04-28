@@ -14,7 +14,7 @@
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
-#' @param EncodeMethod 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
+#' @param EncodeMethod 'credibility', 'binary', 'm_estimator', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
 #' @param task_type Set to 'GPU' to utilize your GPU for training. Default is 'CPU'.
 #' @param NumGPUs Numeric. If you have 4 GPUs supply 4 as a value.

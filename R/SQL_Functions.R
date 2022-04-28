@@ -1201,6 +1201,52 @@ PostGRE_RemoveCreateAppend <- function(data = data,
   }, error = function(x) NULL)
 }
 
+#' @title PostGRE_ListTables
+#'
+#' @description PostGRE_ListTables will list all tables with an associated db
+#'
+#' @author Adrian Antico
+#' @family Database
+#'
+#' @param DBName See args from related functions
+#' @param Host See args from related functions
+#' @param User See args from related functions
+#' @param Port See args from related functions
+#' @param Password See args from related functions
+#' @param Temporary See args from related functions
+#' @param Connection See args from related functions
+#' @param CloseConnection See args from related functions
+#'
+#' @export
+PostGRE_ListTables <- function(DBName = 'RemixAutoML',
+                               Connection = NULL,
+                               CloseConnection = TRUE,
+                               Host = 'localhost',
+                               Port = 5432,
+                               User = 'postgres',
+                               Password = '') {
+
+  # Connect to db
+  Connection <- DBI::dbConnect(
+    RPostgres::Postgres(),
+    host = Host,
+    dbname = DBName,
+    user = User,
+    port = Port,
+    password = Password)
+
+  # Truncate table
+  x <- DBI::dbListTables(conn = Connection)
+
+  # Close Connection
+  if(CloseConnection) {
+    suppressWarnings(DBI::dbDisconnect(Connection))
+    return(list(data = x, Conn = NULL))
+  } else {
+    return(list(data = x, Conn = Connection))
+  }
+}
+
 #' @noRd
 Post_Query_Helper <- function(RefTable){
   .RefTable <- RefTable
@@ -1234,6 +1280,9 @@ Post_Append_Helper <- function(data, tableName){
     Port = 5432,
     Password = "Aa1028#@")
 }
+
+
+
 
 
 #

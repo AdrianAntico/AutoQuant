@@ -23,13 +23,10 @@ body, h1, h2, h3, h4, h5, h6 {
   border: 3px solid #00ff0d;
 }
 
-
-
 /* MAIN HEADER COLOR OF ENTIRE APP */
 .skin-blue .main-header .navbar {
 	background-color: #b299ff;
 }
-
 
 /* DROPDOWN BOX BACKGROUND COLOR */
 .sw-dropdown-content .animated .sw-show {

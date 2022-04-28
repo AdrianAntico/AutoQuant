@@ -50,10 +50,6 @@ output$Table <- shiny::renderUI({RemixAutoML::DataTable(data)})
 }
 
 }
-\seealso{
-Other Shiny: 
-\code{\link{PreparePlotData}()}
-}
 \author{
 Adrian Antico
 }

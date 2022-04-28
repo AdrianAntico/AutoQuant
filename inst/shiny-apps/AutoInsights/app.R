@@ -87,6 +87,14 @@ if(!is.null(AzureCredsFile)) {
   Key <- NULL
 }
 
+# Local PostGRE Creds
+LocalPostGRE_DBNames = c('RemixAutoML','ControlTower')
+LocalPostGRE_Host <- 'localhost'
+LocalPostGRE_Port <- 5432
+LocalPostGRE_User <- 'postgres'
+LocalPostGRE_Password <- 'Aa1028#@'
+
+
 # Initialize a few variables
 PlotWidth <- 1500
 PlotHeight <- 550
@@ -522,7 +530,7 @@ server <- function(input, output, session) {
   print('Server Side Begins')
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Setup Elements                       ----
+  #    Setup Elements                    ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Initialize data reactive. Gets overwritten after first data load or when user updates data selected
@@ -564,7 +572,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Initialize Load Data Inputs          ----
+  #    Inputs Load Data                  ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   print('LoadDataPage Initialization')
@@ -599,7 +607,7 @@ server <- function(input, output, session) {
         } else {
           rawfiles_csv <<- NULL
         }
-        RemixAutoML:::SelectizeInput(InputID='AzureBlobStorageTabular', Label='Azure Blob .csv Files', Choices=rawfiles_csv, SelectedDefault=NULL, Multiple=TRUE, MaxVars=1, CloseAfterSelect=TRUE, Debug=Debug)
+        RemixAutoML:::SelectizeInput(InputID='AzureBlobStorageTabular', Label=tags$span(style=paste0('color: blue;'),'Azure Blob .csv Files'), Choices=rawfiles_csv, SelectedDefault=NULL, Multiple=TRUE, MaxVars=1, CloseAfterSelect=TRUE, Debug=Debug)
       })
 
       # .Rdata or .rds
@@ -609,7 +617,25 @@ server <- function(input, output, session) {
         } else {
           rawfiles_rdata <- NULL
         }
-        RemixAutoML:::SelectizeInput(InputID='AzureBlobStorageRdata', Label='Azure Blob .Rdata Files', Choices=rawfiles_rdata, SelectedDefault=NULL, Multiple=TRUE, MaxVars=1, CloseAfterSelect=TRUE, Debug=Debug)
+        RemixAutoML:::SelectizeInput(InputID='AzureBlobStorageRdata', Label=tags$span(style=paste0('color: blue;'),'Azure Blob .Rdata Files'), Choices=rawfiles_rdata, SelectedDefault=NULL, Multiple=TRUE, MaxVars=1, CloseAfterSelect=TRUE, Debug=Debug)
+      })
+
+      # Local PostGRE DBNames Available
+      output$LocalPostGRE_Database <- shiny::renderUI({
+        RemixAutoML:::SelectizeInput(InputID = 'LocalPostGRE_Database', Label = NULL, Choices = LocalPostGRE_DBNames, SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1L, CloseAfterSelect = FALSE, Debug = Debug)
+      })
+      DBName <- shiny::reactive({tryCatch({input[['LocalPostGRE_Database']]}, error = function(x) NULL)})
+
+      # Local POSTGRE DB
+      output$LocalPostGRE <- shiny::renderUI({
+        DBNameSelected <- tryCatch({shiny::req(DBName())}, error = function(x) 'RemixAutoML')
+        if(DBNameSelected == 'RemixAutoML') {
+          x <- RemixAutoML::PostGRE_ListTables(DBName = 'RemixAutoML', Connection = NULL, CloseConnection = TRUE, Host = LocalPostGRE_Host, Port = LocalPostGRE_Port, User = LocalPostGRE_User, Password = LocalPostGRE_Password)$data
+        } else if(DBNameSelected == 'ControlTower') {
+          x <- RemixAutoML::PostGRE_ListTables(DBName = 'ControlTower', Connection = NULL, CloseConnection = TRUE, Host = LocalPostGRE_Host, Port = LocalPostGRE_Port, User = LocalPostGRE_User, Password = LocalPostGRE_Password)$data
+        }
+        if(length(x) == 0L) x <- NULL
+        RemixAutoML:::SelectizeInput(InputID = 'LocalPostGRE', Label = NULL, Choices = sort(x), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1L, CloseAfterSelect = FALSE, Debug = Debug)
       })
     }
   })
@@ -619,7 +645,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Initialize Shiny Inputs on Start     ----
+  #    Initialize Shiny Inputs on Start  ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(InitalizeInputs, {
     print('App Initialization')
@@ -632,7 +658,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Download azure blob storage data     ----
+  # :: Obs Event azure blob storage data ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$LoadAzure, {
 
@@ -658,7 +684,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Load data event                      ----
+  # :: Obs Event Load data               ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$LoadDataButton, {
 
@@ -667,73 +693,94 @@ server <- function(input, output, session) {
 
     # Local data loading
     CodeCollection <- list()
-    if(!is.null(input[['TabularData']])) {
+    x <- tryCatch({input[['TabularData']]}, error = function(x) NULL)
+    print('TabularData')
+    print(x)
+    if(length(x) != 0) {
       filename <<- basename(input[['TabularData']][['name']])
       DataList[[filename]] <<- RemixAutoML:::ReactiveLoadCSV(Infile = input[['TabularData']], ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
-      Data <<- reactive({DataList[[filename]]})
+      DataList <<- DataList
       CurrentData <<- filename
     }
 
     # Load ModelOutputList
-    inFile1 <- tryCatch({input[['ModelObjectLoad']]}, error = function(x) NULL)
-    if(!is.null(inFile1)) {
-      filename <<- basename(inFile1[['datapath']])
-      ModelOutputList <<- readRDS(inFile1[['datapath']])
+    x <- tryCatch({input[['ModelObjectLoad']]}, error = function(x) NULL)
+    print('ModelObjectLoad')
+    print(x)
+    if(length(x) != 0L) {
+      filename <<- basename(x[['datapath']])
+      ModelOutputList <<- readRDS(x[['datapath']])
       if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
         DataList[[filename]] <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
-        if(!all(names(Data()) %in% c('Random1', 'Random2', 'Random3', 'Random4', 'Random5', 'Random6'))) {
-          Data <<- shiny::reactive({DataList[[filename]]})
-          CurrentData <<- filename
-        }
+        DataList <<- DataList
+        CurrentData <<- filename
       } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
         DataList[[filename]] <<- ModelOutputList$TestData
-        if(!all(names(Data()) %in% c('Random1', 'Random2', 'Random3', 'Random4', 'Random5', 'Random6'))) {
-          Data <<- shiny::reactive({DataList[[filename]]})
-          CurrentData <<- filename
-        }
+        DataList <<- DataList
+        CurrentData <<- filename
       } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
         DataList[[filename]] <<- ModelOutputList$TrainData
-        if(!all(names(Data()) %in% c('Random1', 'Random2', 'Random3', 'Random4', 'Random5', 'Random6'))) {
-          Data <<- shiny::reactive({DataList[[filename]]})
-          CurrentData <<- filename
-        }
-      }
-    }
-
-    # Azure .csv
-    if(!is.null(input[['AzureBlobStorageTabular']])) {
-      filename <<- basename(input$AzureBlobStorageTabular)
-      DataList[[filename]] <<- RemixAutoML:::ReactiveLoadCSV(Infile = file.path('/inputdata', input[['AzureBlobStorageTabular']]), ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
-      if(!all(names(Data()) %in% c('Random1', 'Random2', 'Random3', 'Random4', 'Random5', 'Random6'))) {
-        Data <<- shiny::reactive({DataList[[filename]]})
+        DataList <<- DataList
         CurrentData <<- filename
       }
     }
 
+    # Azure .csv
+    x <- tryCatch({input[['AzureBlobStorageTabular']]}, error = function(x) NULL)
+    print('AzureBlobStorageTabular')
+    print(x)
+    if(length(x) != 0L) {
+      filename <<- basename(input$AzureBlobStorageTabular)
+      DataList[[filename]] <<- RemixAutoML:::ReactiveLoadCSV(Infile = file.path('/inputdata', input[['AzureBlobStorageTabular']]), ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
+      DataList <<- DataList
+      CurrentData <<- filename
+    }
+
     # Load ModelOutputList
-    inFile1 <- tryCatch({input[['AzureBlobStorageRdata']]}, error = function(x) NULL)
-    if(!is.null(inFile1)) {
-      filename <- basename(inFile1)
-      ModelOutputList <<- readRDS(file.path('/inputdata', inFile1))
+    x <- tryCatch({input[['AzureBlobStorageRdata']]}, error = function(x) NULL)
+    print('AzureBlobStorageRdata')
+    print(x)
+    if(length(x) != 0L) {
+      filename <- basename(x)
+      ModelOutputList <<- readRDS(file.path('/inputdata', x))
       if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
         DataList[[filename]] <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
-        if(!all(names(Data()) %in% c('Random1', 'Random2', 'Random3', 'Random4', 'Random5', 'Random6'))) {
-          Data <- shiny::reactive({DataList[[filename]]})
-          CurrentData <<- filename
-        }
+        DataList <<- DataList
+        CurrentData <<- filename
       } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
         DataList[[filename]] <<- ModelOutputList$TestData
-        if(!all(names(Data()) %in% c('Random1', 'Random2', 'Random3', 'Random4', 'Random5', 'Random6'))) {
-          Data <- shiny::reactive({DataList[[filename]]})
-          CurrentData <<- filename
-        }
+        DataList <<- DataList
+        CurrentData <<- filename
       } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
         DataList[[filename]] <<- ModelOutputList$TrainData
-        if(!all(names(Data()) %in% c('Random1', 'Random2', 'Random3', 'Random4', 'Random5', 'Random6'))) {
-          Data <- shiny::reactive({DataList[[filename]]})
-          CurrentData <<- filename
-        }
+        DataList <<- DataList
+        CurrentData <<- filename
       }
+    }
+
+    # Local PostGRE Data
+    print(tryCatch({input[['LocalPostGRE']]}, error = function(x) NULL))
+    print(tryCatch({input[['LocalPostGRE_Database']]}, error = function(x) NULL))
+    LocalPostGRE_TableName <- tryCatch({input[['LocalPostGRE']]}, error = function(x) NULL)
+    LocalPostGRE_DBName <- tryCatch({input[['LocalPostGRE_Database']]}, error = function(x) NULL)
+    print(LocalPostGRE_TableName)
+    print(LocalPostGRE_DBName)
+    if(length(LocalPostGRE_DBName) != 0L && length(LocalPostGRE_TableName) != 0L) {
+      query <- paste0("SELECT * FROM ", shQuote(LocalPostGRE_TableName), " ;")
+      print(query)
+      DataList[[LocalPostGRE_TableName]] <- RemixAutoML::PostGRE_Query(
+        Query = query,
+        Host = LocalPostGRE_Host,
+        CloseConnection = TRUE,
+        DBName = LocalPostGRE_DBName,
+        User = LocalPostGRE_User,
+        Port = LocalPostGRE_Port,
+        Password = LocalPostGRE_Password)$data
+      print('here')
+      DataList <<- DataList
+      CurrentData <<- LocalPostGRE_TableName
+      print(CurrentData)
+      print(DataList[[CurrentData]])
     }
 
     # Initialize
@@ -749,7 +796,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Update Feature Engineering Inputs    ----
+  #    Inputs Feature Engineering        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # input$DeleteVariablesParams is a shinyWidgets::dropdown inputId
@@ -992,19 +1039,19 @@ server <- function(input, output, session) {
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DateVariable', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(dt()), Multiple = TRUE, MaxVars = 1)
     })
     output$AutoDiffLagN_GroupVariables <- shiny::renderUI({
-      nam <- RemixAutoML:::CEPP(x = unique(c(names(dt())[which(unlist(lapply(dt(), is.character)))], names(dt())[which(unlist(lapply(dt(), is.factor)))])), Default = NULL)
-      RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_GroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By-Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100)
+      #nam <- RemixAutoML:::CEPP(x = unique(c(names(dt())[which(unlist(lapply(dt(), is.character)))], names(dt())[which(unlist(lapply(dt(), is.factor)))])), Default = NULL)
+      RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_GroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By-Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 100)
     })
     output$AutoDiffLagN_DiffVariables <- shiny::renderUI({
-      nam <- RemixAutoML:::CEPP(x = names(dt())[which(unlist(lapply(dt(), is.numeric)))], Default = NULL)
-      RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DiffVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Numeric Diff Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100)
+      #nam <- RemixAutoML:::CEPP(x = names(dt())[which(unlist(lapply(dt(), is.numeric)))], Default = NULL)
+      RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DiffVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Numeric Diff Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 100)
     })
     output$AutoDiffLagN_DiffDateVariables <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DiffDateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Diff Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 1)
     })
     output$AutoDiffLagN_DiffGroupVariables <- shiny::renderUI({
-      nam <- RemixAutoML:::CEPP(x = unique(c(names(dt())[which(unlist(lapply(dt(), is.character)))], names(dt())[which(unlist(lapply(dt(), is.factor)))])), Default = NULL)
-      RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DiffGroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Diff Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100)
+      #nam <- RemixAutoML:::CEPP(x = unique(c(names(dt())[which(unlist(lapply(dt(), is.character)))], names(dt())[which(unlist(lapply(dt(), is.factor)))])), Default = NULL)
+      RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DiffGroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Diff Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 100)
     })
     output$AutoDiffLagN_NLag1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_NLag1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Base Period'), Choices = c(0:100), Multiple = TRUE, MaxVars = 1, SelectedDefault = 0)
@@ -1083,11 +1130,14 @@ server <- function(input, output, session) {
     })
   })
 
-  # SaveData
+  # Save Data
   shiny::observeEvent(input$SaveDataInputs, {
     print('Save Data Inputs Dropdown')
     output$SaveData_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='SaveData_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
+    })
+    output$SaveData_SelectDataPostGRE <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='SaveData_SelectDataPostGRE', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
     })
     save_data <- shiny::reactive({shiny::req(tryCatch({DataList[[input$SaveData_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$SaveData_CSV <- shiny::downloadHandler(
@@ -1098,44 +1148,47 @@ server <- function(input, output, session) {
         data.table::fwrite(x = shiny::isolate(save_data()), file = file.path(file))
       })
 
-    # output$SaveData_PostGRE <- shiny::renderUI({ ----
-    #
-    #   # Delete Table
-    #   RemixAutoML::PostGRE_RemoveTable(
-    #     TableName = 'sku_lookup', #'ECCBC_MetaData',
-    #     Connection = NULL,
-    #     CloseConnection = TRUE,
-    #     Host = 'localhost',
-    #     DBName = 'ControlTower',
-    #     User = 'postgres',
-    #     Port = 5432,
-    #     Password = 'Aa1028#@')
-    #
-    #   # Create tables
-    #   RemixAutoML::PostGRE_CreateTable(
-    #     data = data, # TablesInfo,
-    #     TableName = 'sku_lookup',
-    #     Schema = NULL,
-    #     Temporary = FALSE,
-    #     Connection = NULL,
-    #     CloseConnection = FALSE,
-    #     Host = 'localhost',
-    #     DBName = 'ControlTower',
-    #     User = 'postgres',
-    #     Port = 5432,
-    #     Password = 'Aa1028#@')
-    #
-    #   # Load table
-    #   RemixAutoML::PostGRE_AppendData(
-    #     data = data, # TablesInfo,
-    #     TableName = 'sku_lookup',
-    #     Connection = NULL,
-    #     CloseConnection = TRUE,
-    #     Host = 'localhost',
-    #     DBName = 'ControlTower',
-    #     User = 'postgres',
-    #     Port = 5432,
-    #     Password = 'Aa1028#@')
+    # Get data
+    output$SaveData_DataBaseName <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='SaveData_DataBaseName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'PostGRE Database Name'), Choices = c(LocalPostGRE_DBNames), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1L, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$SaveData_TableName <- shiny::renderUI({
+      RemixAutoML:::TextInput(InputID='SaveData_TableName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'PostGRE Table Name'), Value = paste0('TEMP_', substr(x = as.character(round(runif(1),5)), start = 3, nchar(as.character(round(runif(1),5))))), Placeholder = NULL)
+    })
+  })
+
+  # PostGRE Save Data
+  shiny::observeEvent(input$PostGRE_Push, {
+
+    # Data Name
+    TableName <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['SaveData_TableName']]}, error=function(x) NULL), Type='character', Default=NULL)
+
+    # Database Name
+    DataBaseName <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['SaveData_DataBaseName']]}, error=function(x) NULL), Type='character', Default=NULL)
+
+    # Data
+    postgre_data <- tryCatch({shiny::req(DataList[[input[['SaveData_SelectDataPostGRE']]]])}, error = function(x) NULL)
+
+    # Push to PostGRE
+    if(length(TableName) != 0L && length(DataBaseName) != 0L && data.table::is.data.table(postgre_data)) {
+      RemixAutoML::PostGRE_RemoveCreateAppend(
+        data = postgre_data,
+        DBName = DataBaseName,
+        TableName = TableName,
+        Host = LocalPostGRE_Host,
+        User = LocalPostGRE_User,
+        Port = LocalPostGRE_Port,
+        Password = LocalPostGRE_PasswordPassword,
+        CloseConnection = TRUE,
+        CreateSchema = NULL,
+        Temporary = FALSE,
+        Connection = NULL,
+        Append = TRUE)
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    } else {
+      print('length(TableName) == 0L or length(DataBaseName) == 0L or postgre_data is not a data.table')
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'data not sent', btn_colors = 'red', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    }
   })
 
   # Initialize DataTable output
@@ -1165,7 +1218,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Update CatBoost ML Inputs            ----
+  #    Inputs CatBoost ML                ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # CatBoost DropDown
@@ -1240,7 +1293,7 @@ server <- function(input, output, session) {
     # Model ID
     output$CatBoost_ModelID <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MetaData, InputName = 'CatBoost_ModelID', ArgName = 'SelectedDefault', Default = 'Model1', Debug = Debug)
-      RemixAutoML::TextInput(InputID='CatBoost_ModelID', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Create Model ID'), Value = selected_default, Placeholder = 'Name your model')
+      RemixAutoML:::TextInput(InputID='CatBoost_ModelID', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Create Model ID'), Value = selected_default, Placeholder = 'Name your model')
     })
 
     # Args Storage
@@ -1323,6 +1376,18 @@ server <- function(input, output, session) {
     # Args Storage
     Cat_DataParameters[['CatBoost_PrimaryDateColumn']][['SelectedDefault']][[length(Cat_DataParameters[['CatBoost_PrimaryDateColumn']][['SelectedDefault']]) + 1L]] <- input$CatBoost_PrimaryDateColumn
     Cat_DataParameters <<- Cat_DataParameters
+
+    # Date Column
+    output$CatBoost_EncodeMethod <- shiny::renderUI({
+      print('Adrian Antico 6')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_EncodeMethod', ArgName = 'SelectedDefault', Default = 'credibility', Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_EncodeMethod', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Character Encoding'), Choices = c('credibility','binary','m_estimator','woe','target_encoding','poly_encode','backward_difference','helmert'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    Cat_DataParameters[['CatBoost_EncodeMethod']][['SelectedDefault']][[length(Cat_DataParameters[['CatBoost_EncodeMethod']][['SelectedDefault']]) + 1L]] <- input$CatBoost_PrimaryDateColumn
+    Cat_DataParameters <<- Cat_DataParameters
+
 
     # Weigths Column
     output$CatBoost_WeightsColumnName <- shiny::renderUI({
@@ -1644,7 +1709,7 @@ server <- function(input, output, session) {
     # Class Weights 0
     output$CatBoost_ClassWeights0 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_EvalParameters, InputName = 'CatBoost_ClassWeights0', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
-      RemixAutoML::TextInput(InputID='CatBoost_ClassWeights0', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Class Weight for 0'), Value = '1', Placeholder = selected_default)
+      RemixAutoML:::TextInput(InputID='CatBoost_ClassWeights0', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Class Weight for 0'), Value = '1', Placeholder = selected_default)
     })
 
     # Args Storage
@@ -1654,7 +1719,7 @@ server <- function(input, output, session) {
     # Class Weights 1
     output$CatBoost_ClassWeights1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_EvalParameters, InputName = 'CatBoost_ClassWeights1', ArgName = 'SelectedDefault', Default = '1', Debug = Debug)
-      RemixAutoML::TextInput(InputID='CatBoost_ClassWeights1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Class Weight for 1'), Value = '1', Placeholder = selected_default)
+      RemixAutoML:::TextInput(InputID='CatBoost_ClassWeights1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Class Weight for 1'), Value = '1', Placeholder = selected_default)
     })
 
     # Args Storage
@@ -1677,7 +1742,402 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Update Plotting Inputs               ----
+  #    Inputs XGBoost ML                ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # XGBoost DropDown
+  shiny::observeEvent(input$XGBoost, {
+
+    # Create List
+    if(!exists('XGBoost')) XGBoost <- list(Debug = Debug)
+    print('XGBoost Target Type')
+
+    # Target Type
+    output$XGBoost_TargetType <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGBoost, InputName = 'XGBoost_TargetType', ArgName = 'SelectedDefault', Default = 'Regression', Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'XGBoost_TargetType', Label = 'Select Supervised Learning Type', Choices = c('Regression','Binary Classification','MultiClass'), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1, Debug = Debug)
+    })
+
+    # Create reactive
+    TTx <- shiny::reactive({input$XGBoost_TargetType})
+    TTx <<- TTx
+
+    # Args Storage
+    XGBoost[['XGBoost_TargetType']][['SelectedDefault']][[length(XGBoost[['XGBoost_TargetType']][['SelectedDefault']]) + 1L]] <- input$XGBoost_TargetType
+    XGBoost <<- XGBoost
+  })
+
+  # XGBoost MetaData Parameters
+  shiny::observeEvent(input$XGB_MetaData, {
+
+    # Initialize List
+    if(!exists('XGB_MetaData')) XGB_MetaData <- list(Debug = Debug)
+    print('Metadata Parameters')
+
+    # Number of cpu threads
+    output$XGBoost_NThreads <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_NThreads', ArgName = 'SelectedDefault', Default = max(1L, parallel::detectCores() - 2L), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_NThreads', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'CPU Threads'), Choices = c(-1,1:128), Multiple = TRUE, MaxVars = 1, SelectedDefault = max(1L, parallel::detectCores() - 2L))
+    })
+
+    # Args Storage
+    XGB_MetaData[['XGBoost_NThreads']][['SelectedDefault']][[length(XGB_MetaData[['XGBoost_NThreads']][['SelectedDefault']]) + 1L]] <- input$XGBoost_NThreads
+    XGB_MetaData <<- XGB_MetaData
+
+    # Number of GPUs
+    output$XGBoost_NumGPUs <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_NumGPUs', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_NumGPUs', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of GPUs'), Choices = c(1:12), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1)
+    })
+
+    # Args Storage
+    XGB_MetaData[['XGBoost_NumGPUs']][['SelectedDefault']][[length(XGB_MetaData[['XGBoost_NumGPUs']][['SelectedDefault']]) + 1L]] <- input$XGBoost_NumGPUs
+    XGB_MetaData <<- XGB_MetaData
+
+    # Train on Full Data
+    output$XGBoost_TrainOnFull <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_TrainOnFull', ArgName = 'SelectedDefault', Default = FALSE, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TrainOnFull', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train on Full Data'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_MetaData[['XGBoost_TrainOnFull']][['SelectedDefault']][[length(XGB_MetaData[['XGBoost_TrainOnFull']][['SelectedDefault']]) + 1L]] <- input$XGBoost_TrainOnFull
+    XGB_MetaData <<- XGB_MetaData
+
+    # Model ID
+    output$XGBoost_ModelID <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_ModelID', ArgName = 'SelectedDefault', Default = 'Model1', Debug = Debug)
+      RemixAutoML:::TextInput(InputID='XGBoost_ModelID', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Create Model ID'), Value = selected_default, Placeholder = 'Name your model')
+    })
+
+    # Args Storage
+    XGB_MetaData[['XGBoost_ModelID']][['SelectedDefault']][[length(XGB_MetaData[['XGBoost_ModelID']][['SelectedDefault']]) + 1L]] <- input$XGBoost_ModelID
+    XGB_MetaData <<- XGB_MetaData
+  })
+
+  # XGBoost Data Parameters
+  shiny::observeEvent(input$XGB_DataParameters, {
+
+    # Initialize List
+    if(!exists('XGB_DataParameters')) XGB_DataParameters <- list(Debug = Debug)
+    print('Data Parameters')
+
+    # Data
+    output$XGBoost_data <- shiny::renderUI({
+      print('XGBoost Data Parameters 1')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_data', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_data', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Training Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_data']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_data']][['SelectedDefault']]) + 1L]] <- input$XGBoost_data
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # Reactive
+    XGB_dt <- shiny::reactive({tryCatch({DataList[[input$XGBoost_data]]}, error = function(x) DataList[[1L]])})
+
+    # Validation Data
+    output$XGBoost_ValidationData <- shiny::renderUI({
+      print('XGBoost Data Parameters 2')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_ValidationData', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_ValidationData']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_ValidationData']][['SelectedDefault']]) + 1L]] <- input$XGBoost_ValidationData
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # Test Data
+    output$XGBoost_TestData <- shiny::renderUI({
+      print('XGBoost Data Parameters 3')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_TestData', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_TestData']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_TestData']][['SelectedDefault']]) + 1L]] <- input$XGBoost_TestData
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # Target Column
+    output$XGBoost_TargetColumnName <- shiny::renderUI({
+      print('XGBoost Data Parameters 4')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_TargetColumnName', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TargetColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Target'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_TargetColumnName']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_TargetColumnName']][['SelectedDefault']]) + 1L]] <- input$XGBoost_TargetColumnName
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # Feature Columns
+    output$XGBoost_FeatureColNames <- shiny::renderUI({
+      print('XGBoost Data Parameters 5')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_FeatureColNames', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_FeatureColNames']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_FeatureColNames']][['SelectedDefault']]) + 1L]] <- input$XGBoost_FeatureColNames
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # Date Column
+    output$XGBoost_PrimaryDateColumn <- shiny::renderUI({
+      print('Adrian Antico 6')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_PrimaryDateColumn', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_PrimaryDateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Date'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_PrimaryDateColumn']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_PrimaryDateColumn']][['SelectedDefault']]) + 1L]] <- input$XGBoost_PrimaryDateColumn
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # Date Column
+    output$XGBoost_EncodeMethod <- shiny::renderUI({
+      print('Adrian Antico 6')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_EncodeMethod', ArgName = 'SelectedDefault', Default = 'credibility', Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_EncodeMethod', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Character Encoding'), Choices = c('credibility','binary','m_estimator','woe','target_encoding','poly_encode','backward_difference','helmert'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_EncodeMethod']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_EncodeMethod']][['SelectedDefault']]) + 1L]] <- input$XGBoost_PrimaryDateColumn
+    XGB_DataParameters <<- XGB_DataParameters
+
+
+    # Weigths Column
+    output$XGBoost_WeightsColumnName <- shiny::renderUI({
+      print('XGBoost Data Parameters 7')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_WeightsColumnName', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_WeightsColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Weights Column'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_WeightsColumnName']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_WeightsColumnName']][['SelectedDefault']]) + 1L]] <- input$XGBoost_WeightsColumnName
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # ID Columns
+    output$XGBoost_IDcols <- shiny::renderUI({
+      print('XGBoost Data Parameters 8')
+      gg <- c(input$XGBoost_TargetColumnName, input$XGBoost_FeatureColNames, input$XGBoost_PrimaryDateColumn, input$XGBoost_WeightsColumnName)
+      gg <- gg[!is.na(gg)]; hh <- tryCatch({names(XGB_dt())}, error = function(x) NULL); choices <- tryCatch({hh[!hh %in% gg]}, error = function(x) NULL)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_IDcols', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_IDcols']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_IDcols']][['SelectedDefault']]) + 1L]] <- input$XGBoost_IDcols
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # Transformation Columns
+    output$XGBoost_TransformNumericColumns <- shiny::renderUI({
+      print('XGBoost Data Parameters 10')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_TransformNumericColumns', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TransformNumericColumns', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Columns'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_TransformNumericColumns']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_TransformNumericColumns']][['SelectedDefault']]) + 1L]] <- input$XGBoost_TransformNumericColumns
+    XGB_DataParameters <<- XGB_DataParameters
+
+    # Transformation Methods
+    output$XGBoost_Methods <- shiny::renderUI({
+      print('XGBoost Data Parameters 11')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_Methods', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Methods'), Choices = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_DataParameters[['XGBoost_Methods']][['SelectedDefault']][[length(XGB_DataParameters[['XGBoost_Methods']][['SelectedDefault']]) + 1L]] <- input$XGBoost_Methods
+    XGB_DataParameters <<- XGB_DataParameters
+  })
+
+  # XGBoost Grid Tuning Parameters
+  shiny::observeEvent(input$XGB_GridTuningParameters, {
+
+    # Initialize List
+    if(!exists('XG_GridTuningParameters')) XGB_GridTuningParameters <- list(Debug = Debug)
+    print('Grid Tuning Parameters')
+
+    # Pass In Grid
+    output$XGBoost_PassInGrid <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_PassInGrid', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_PassInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Previous Grid Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_MetaData[['XGBoost_PassInGrid']][['SelectedDefault']][[length(XGB_MetaData[['XGBoost_PassInGrid']][['SelectedDefault']]) + 1L]] <- input$XGBoost_PassInGrid
+    XGB_MetaData <<- XGB_MetaData
+
+    # Grid Tune
+    output$XGBoost_GridTune <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_GridTune', ArgName = 'SelectedDefault', Default = FALSE, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_GridTune', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Grid Tune'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_GridTuningParameters[['XGBoost_GridTune']][['SelectedDefault']][[length(XGB_GridTuningParameters[['XGBoost_GridTune']][['SelectedDefault']]) + 1L]] <- input$XGBoost_GridTune
+    XGB_GridTuningParameters <<- XGB_GridTuningParameters
+
+    # grid eval metric
+    output$XGBoost_grid_eval_metric <- shiny::renderUI({
+      out <- RemixAutoML:::CatBoostGridEvalMetricsOptions(TTx())
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_grid_eval_metric', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_grid_eval_metric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_GridTuningParameters[['XGBoost_grid_eval_metric']][['SelectedDefault']][[length(XGB_GridTuningParameters[['XGBoost_grid_eval_metric']][['SelectedDefault']]) + 1L]] <- input$XGBoost_grid_eval_metric
+    XGB_GridTuningParameters <<- XGB_GridTuningParameters
+
+    # Max Models
+    output$XGBoost_MaxModelsInGrid <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_MaxModelsInGrid', ArgName = 'SelectedDefault', Default = 25, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxModelsInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Models'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_GridTuningParameters[['XGBoost_MaxModelsInGrid']][['SelectedDefault']][[length(XGB_GridTuningParameters[['XGBoost_MaxModelsInGrid']][['SelectedDefault']]) + 1L]] <- input$XGBoost_MaxModelsInGrid
+    XGB_GridTuningParameters <<- XGB_GridTuningParameters
+
+    # Runs without a New Winner
+    output$XGBoost_MaxRunsWithoutNewWinner <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_MaxRunsWithoutNewWinner', ArgName = 'SelectedDefault', Default = 10, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxRunsWithoutNewWinner', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Runs Without Winner'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_GridTuningParameters[['XGBoost_MaxRunsWithoutNewWinner']][['SelectedDefault']][[length(XGB_GridTuningParameters[['XGBoost_MaxRunsWithoutNewWinner']][['SelectedDefault']]) + 1L]] <- input$XGBoost_MaxRunsWithoutNewWinner
+    XGB_GridTuningParameters <<- XGB_GridTuningParameters
+
+    # Max Runtime in Minutes
+    output$XGBoost_MaxRunMinutes <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_MaxRunMinutes', ArgName = 'SelectedDefault', Default = 30, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxRunMinutes', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Run Time (mins)'), Choices = c(seq(30,60*24*7,30)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_GridTuningParameters[['XGBoost_MaxRunMinutes']][['SelectedDefault']][[length(XGB_GridTuningParameters[['XGBoost_MaxRunMinutes']][['SelectedDefault']]) + 1L]] <- input$XGBoost_MaxRunMinutes
+    XGB_GridTuningParameters <<- XGB_GridTuningParameters
+
+    # Baseline Comparison
+    output$XGBoost_BaselineComparison <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_BaselineComparison', ArgName = 'SelectedDefault', Default = 'default', Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_BaselineComparison', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = c('default','best'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_GridTuningParameters[['XGBoost_BaselineComparison']][['SelectedDefault']][[length(XGB_GridTuningParameters[['XGBoost_BaselineComparison']][['SelectedDefault']]) + 1L]] <- input$XGBoost_BaselineComparison
+    XGB_GridTuningParameters <<- XGB_GridTuningParameters
+  })
+
+  # XGBoost ML Parameters
+  shiny::observeEvent(input$XGB_MLParameters, {
+
+    # Initialize List
+    if(!exists('XGB_MLParameters')) XGB_MLParameters <- list(Debug = Debug)
+    print('ML Parameters')
+
+    # Trees
+    output$XGBoost_Trees <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_Trees', ArgName = 'SelectedDefault', Default = 1000, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_Trees', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Trees'), Choices = c(5:50, seq(75,475,25), seq(500,9500,500), seq(10000, 25000, 1000)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_MLParameters[['XGBoost_Trees']][['SelectedDefault']][[length(XGB_MLParameters[['XGBoost_Trees']][['SelectedDefault']]) + 1L]] <- input$XGBoost_Trees
+    XGB_MLParameters <<- XGB_MLParameters
+
+    # Depth
+    output$XGBoost_max_depth <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_max_depth', ArgName = 'SelectedDefault', Default = 8, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_max_depth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Tree Depth'), Choices = 4:20, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_MLParameters[['XGBoost_max_depth']][['SelectedDefault']][[length(XGB_MLParameters[['XGBoost_max_depth']][['SelectedDefault']]) + 1L]] <- input$XGBoost_max_depth
+    XGB_MLParameters <<- XGB_MLParameters
+
+    # Learning Rate
+    output$XGBoost_eta <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_eta', ArgName = 'SelectedDefault', Default = 0.10, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_eta', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Learning Rate'), Choices = seq(0.01,0.50,0.002), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_MLParameters[['XGBoost_eta']][['SelectedDefault']][[length(XGB_MLParameters[['XGBoost_eta']][['SelectedDefault']]) + 1L]] <- input$XGBoost_eta
+    XGB_MLParameters <<- XGB_MLParameters
+
+    # min_child_weight
+    output$XGBoost_min_child_weight <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_min_child_weight', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_min_child_weight', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Min Child Weight'), Choices = 0:50, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_MLParameters[['XGBoost_min_child_weight']][['SelectedDefault']][[length(XGB_MLParameters[['XGBoost_min_child_weight']][['SelectedDefault']]) + 1L]] <- input$XGBoost_min_child_weight
+    XGB_MLParameters <<- XGB_MLParameters
+
+    # subsample
+    output$XGBoost_subsample <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_subsample', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_subsample', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Subsample'), Choices = seq(0.05,1,0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_MLParameters[['XGBoost_subsample']][['SelectedDefault']][[length(XGB_MLParameters[['XGBoost_subsample']][['SelectedDefault']]) + 1L]] <- input$XGBoost_subsample
+    XGB_MLParameters <<- XGB_MLParameters
+
+    # colsample by tree
+    output$XGBoost_colsample_bytree <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_colsample_bytree', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_colsample_bytree', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Colsample Rate'), Choices = seq(0.05,1,0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_MLParameters[['XGBoost_colsample_bytree']][['SelectedDefault']][[length(XGB_MLParameters[['XGBoost_colsample_bytree']][['SelectedDefault']]) + 1L]] <- input$XGBoost_colsample_bytree
+    XGB_MLParameters <<- XGB_MLParameters
+  })
+
+  # XGBoost Eval Parameters
+  shiny::observeEvent(input$XGB_EvalParameters, {
+
+    # Initialize List
+    if(!exists('XGB_EvalParameters')) XGB_EvalParameters <- list(Debug = Debug)
+    print('Evaluation Parameters')
+
+    # Loss Function
+    output$XGBoost_LossFunction <- shiny::renderUI({
+      out <- RemixAutoML:::XGBoostLossFunctionOptions(TTx())
+      print(out)
+      print(TTx())
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_EvalParameters, InputName = 'XGBoost_LossFunction', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_LossFunction', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Loss Function'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_EvalParameters[['XGBoost_LossFunction']][['SelectedDefault']][[length(XGB_EvalParameters[['XGBoost_LossFunction']][['SelectedDefault']]) + 1L]] <- input$XGBoost_LossFunction
+    XGB_EvalParameters <<- XGB_EvalParameters
+
+    # Evaluation Metric
+    output$XGBoost_EvalMetric <- shiny::renderUI({
+      out <- RemixAutoML:::XGBoostEvalMetricOptions(TTx())
+      print(out)
+      print(TTx())
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_EvalParameters, InputName = 'XGBoost_EvalMetric', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_EvalMetric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    XGB_EvalParameters[['XGBoost_EvalMetric']][['SelectedDefault']][[length(XGB_EvalParameters[['XGBoost_EvalMetric']][['SelectedDefault']]) + 1L]] <- input$XGBoost_EvalMetric
+    XGB_EvalParameters <<- XGB_EvalParameters
+  })
+
+  # ----
+
+  # ----
+
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  #    Inputs Plotting                   ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Dragula, globals
@@ -1844,9 +2304,9 @@ server <- function(input, output, session) {
       if(Debug) {print('Levels_1_1 logic check for data'); print(length(sgs) != 0 && length(dt1()) != 0 && sgs[1L] %in% names(dt1()))}
       if(length(sgs) != 0 && length(dt1()) != 0 && sgs[1L] %in% names(dt1())) {
         if(Debug) print('here for data')
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('dt1'), InputID='Levels_1_1', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt1(), 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('dt1'), InputID='Levels_1_1', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt1(), 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -1859,9 +2319,9 @@ server <- function(input, output, session) {
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'Levels_1_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) {print('PickerInput_GetLevels 2'); print(sgs)}
       if(length(sgs) != 0 && length(dt1()) != 0 && sgs[1L] %in% names(dt1())) {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('dt1'), InputID='Levels_1_2', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt1(), 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('dt1'), InputID='Levels_1_2', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt1(), 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -1874,9 +2334,9 @@ server <- function(input, output, session) {
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'Levels_1_3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       sgs <- RemixAutoML:::LevelValues(SelectedGroups1()); if(Debug) {print('PickerInput_GetLevels 3'); print(sgs)}
       if(length(sgs) != 0 && length(dt1()) != 0 && sgs[1L] %in% names(dt1())) {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_3', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt1(), 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_1_3', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt1(), 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_1_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -1927,7 +2387,7 @@ server <- function(input, output, session) {
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel1 <- shiny::renderUI({
       if(length(YVar1()) != 0L && length(dt1()) != 0) {
-        if(!any(class(dt1()[[YVar1()]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt1()[[YVar1()]])) else vals <- NULL
+        if(!any(class(dt1()[[YVar1()[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt1()[[YVar1()]])) else vals <- NULL
       } else {
         vals <- NULL
       }
@@ -2040,9 +2500,9 @@ server <- function(input, output, session) {
       if(Debug) {print('Levels_2_1 logic check for data'); print(length(sgs) != 0 && length(dt2()) != 0 && sgs[1L] %in% names(dt2()))}
       if(length(sgs) != 0 && length(dt2()) != 0 && sgs[1L] %in% names(dt2())) {
         if(Debug) print('here for data')
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('dt2'), InputID='Levels_2_1', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt2(), 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('dt2'), InputID='Levels_2_1', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt2(), 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2055,9 +2515,9 @@ server <- function(input, output, session) {
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'Levels_2_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) {print('PickerInput_GetLevels 2'); print(sgs)}
       if(length(sgs) != 0 && length(dt2()) != 0 && sgs[1L] %in% names(dt2())) {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('dt2'), InputID='Levels_2_2', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt2(), 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('dt2'), InputID='Levels_2_2', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt2(), 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2070,9 +2530,9 @@ server <- function(input, output, session) {
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'Levels_2_3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       sgs <- RemixAutoML:::LevelValues(SelectedGroups2()); if(Debug) {print('PickerInput_GetLevels 3'); print(sgs)}
       if(length(sgs) != 0 && length(dt2()) != 0 && sgs[1L] %in% names(dt2())) {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_3', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt2(), 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_2_3', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt2(), 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_2_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2123,7 +2583,7 @@ server <- function(input, output, session) {
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel2 <- shiny::renderUI({
       if(length(YVar2()) != 0L && length(dt2()) != 0) {
-        if(!any(class(dt2()[[YVar2()]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt2()[[YVar2()]])) else vals <- NULL
+        if(!any(class(dt2()[[YVar2()[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt2()[[YVar2()]])) else vals <- NULL
       } else {
         vals <- NULL
       }
@@ -2236,9 +2696,9 @@ server <- function(input, output, session) {
       if(Debug) {print('Levels_3_1 logic check for data'); print(length(sgs) != 0 && length(dt3()) != 0 && sgs[1L] %in% names(dt3()))}
       if(length(sgs) != 0 && length(dt3()) != 0 && sgs[1L] %in% names(dt3())) {
         if(Debug) print('here for data')
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('dt3'), InputID='Levels_3_1', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt3(), 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('dt3'), InputID='Levels_3_1', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt3(), 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2251,9 +2711,9 @@ server <- function(input, output, session) {
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'Levels_3_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) {print('PickerInput_GetLevels 2'); print(sgs)}
       if(length(sgs) != 0 && length(dt3()) != 0 && sgs[1L] %in% names(dt3())) {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('dt3'), InputID='Levels_3_2', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt3(), 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('dt3'), InputID='Levels_3_2', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt3(), 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2266,9 +2726,9 @@ server <- function(input, output, session) {
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'Levels_3_3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       sgs <- RemixAutoML:::LevelValues(SelectedGroups3()); if(Debug) {print('PickerInput_GetLevels 3'); print(sgs)}
       if(length(sgs) != 0 && length(dt3()) != 0 && sgs[1L] %in% names(dt3())) {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_3', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt3(), 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_3_3', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt3(), 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_3_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2319,7 +2779,7 @@ server <- function(input, output, session) {
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel3 <- shiny::renderUI({
       if(length(YVar3()) != 0L && length(dt3()) != 0) {
-        if(!any(class(dt3()[[YVar3()]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt3()[[YVar3()]])) else vals <- NULL
+        if(!any(class(dt3()[[YVar3()[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt3()[[YVar3()]])) else vals <- NULL
       } else {
         vals <- NULL
       }
@@ -2432,9 +2892,9 @@ server <- function(input, output, session) {
       if(Debug) {print('Levels_4_1 logic check for data'); print(length(sgs) != 0 && length(dt4()) != 0 && sgs[1L] %in% names(dt4()))}
       if(length(sgs) != 0 && length(dt4()) != 0 && sgs[1L] %in% names(dt4())) {
         if(Debug) print('here for data')
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('dt4'), InputID='Levels_4_1', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt4(), 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('dt4'), InputID='Levels_4_1', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt4(), 1L, GroupVars=sgs), NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_1', InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2447,9 +2907,9 @@ server <- function(input, output, session) {
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'Levels_4_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) {print('PickerInput_GetLevels 2'); print(sgs)}
       if(length(sgs) != 0 && length(dt4()) != 0 && sgs[1L] %in% names(dt4())) {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('dt4'), InputID='Levels_4_2', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt4(), 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('dt4'), InputID='Levels_4_2', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt4(), 2L, GroupVars=sgs), NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_2', InputID2=NULL, Choices=NULL, NumGroupVar=2L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2462,9 +2922,9 @@ server <- function(input, output, session) {
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'Levels_4_3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       sgs <- RemixAutoML:::LevelValues(SelectedGroups4()); if(Debug) {print('PickerInput_GetLevels 4'); print(sgs)}
       if(length(sgs) != 0 && length(dt4()) != 0 && sgs[1L] %in% names(dt4())) {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_3', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt4(), 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('data'), InputID='Levels_4_3', InputID2=sgs, Choices=RemixAutoML:::UniqueLevels(input, dt4(), 3L, GroupVars=sgs), NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
       } else {
-        RemixAutoML::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
+        RemixAutoML:::PickerInput_GetLevels2(DataExist=exists('aaasdfasdfsdf'), InputID='Levels_4_3', InputID2=NULL, Choices=NULL, NumGroupVar=3L, Multiple=TRUE, SelectedDefault=selected_default)
       }
     })
 
@@ -2515,7 +2975,7 @@ server <- function(input, output, session) {
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel4 <- shiny::renderUI({
       if(length(YVar4()) != 0L && length(dt4()) != 0) {
-        if(!any(class(dt4()[[YVar4()]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt4()[[YVar4()]])) else vals <- NULL
+        if(!any(class(dt4()[[YVar4()[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt4()[[YVar4()]])) else vals <- NULL
       } else {
         vals <- NULL
       }
@@ -2532,52 +2992,52 @@ server <- function(input, output, session) {
   # Axis Limits UI Inputs
   shiny::observeEvent(input$AxisLimitsInputs, {
     output$YLimMin1 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'YLimMin1', Label = tags$span(style='color: blue;', 'Y Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'YLimMin1', Label = tags$span(style='color: blue;', 'Y Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$YLimMax1 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'YLimMax1', Label = tags$span(style='color: blue;', 'Y Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'YLimMax1', Label = tags$span(style='color: blue;', 'Y Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$YLimMin2 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'YLimMin2', Label = tags$span(style='color: blue;', 'Y Min Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'YLimMin2', Label = tags$span(style='color: blue;', 'Y Min Limit 2'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$YLimMax2 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'YLimMax2', Label = tags$span(style='color: blue;', 'Y Max Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'YLimMax2', Label = tags$span(style='color: blue;', 'Y Max Limit 2'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$YLimMin3 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'YLimMin3', Label = tags$span(style='color: blue;', 'Y Min Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'YLimMin3', Label = tags$span(style='color: blue;', 'Y Min Limit 3'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$YLimMax3 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'YLimMax3', Label = tags$span(style='color: blue;', 'Y Max Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'YLimMax3', Label = tags$span(style='color: blue;', 'Y Max Limit 3'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$YLimMin4 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'YLimMin4', Label = tags$span(style='color: blue;', 'Y Min Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'YLimMin4', Label = tags$span(style='color: blue;', 'Y Min Limit 4'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$YLimMax4 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'YLimMax4', Label = tags$span(style='color: blue;', 'Y Max Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'YLimMax4', Label = tags$span(style='color: blue;', 'Y Max Limit 4'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$XLimMin1 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'XLimMin1', Label = tags$span(style='color: blue;', 'X Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'XLimMin1', Label = tags$span(style='color: blue;', 'X Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$XLimMax1 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'XLimMax1', Label = tags$span(style='color: blue;', 'X Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'XLimMax1', Label = tags$span(style='color: blue;', 'X Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$XLimMin2 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'XLimMin2', Label = tags$span(style='color: blue;', 'X Min Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'XLimMin2', Label = tags$span(style='color: blue;', 'X Min Limit 2'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$XLimMax2 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'XLimMax2', Label = tags$span(style='color: blue;', 'X Max Limit 2'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'XLimMax2', Label = tags$span(style='color: blue;', 'X Max Limit 2'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$XLimMin3 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'XLimMin3', Label = tags$span(style='color: blue;', 'X Min Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'XLimMin3', Label = tags$span(style='color: blue;', 'X Min Limit 3'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$XLimMax3 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'XLimMax3', Label = tags$span(style='color: blue;', 'X Max Limit 3'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'XLimMax3', Label = tags$span(style='color: blue;', 'X Max Limit 3'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$XLimMin4 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'XLimMin4', Label = tags$span(style='color: blue;', 'X Min Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'XLimMin4', Label = tags$span(style='color: blue;', 'X Min Limit 4'), Value = NULL, Placeholder = 'Insert a number')
     })
     output$XLimMax4 <- shiny::renderUI({
-      RemixAutoML::TextInput(InputID = 'XLimMax4', Label = tags$span(style='color: blue;', 'X Max Limit 4'), Value = NULL, Placeholder = 'Insert a number')
+      RemixAutoML:::TextInput(InputID = 'XLimMax4', Label = tags$span(style='color: blue;', 'X Max Limit 4'), Value = NULL, Placeholder = 'Insert a number')
     })
   })
 
@@ -2711,97 +3171,98 @@ server <- function(input, output, session) {
       RemixAutoML:::SelectizeInput(InputID = 'TextColor1', Label = tags$span(style='color: blue;', 'Plot 1 Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Multiple = FALSE)
     })
     output$TextColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'TextColor2', Label = tags$span(style='color: blue;', 'Plot 1 Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'TextColor2', Label = tags$span(style='color: blue;', 'Plot 2 Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Multiple = FALSE)
     })
     output$TextColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'TextColor3', Label = tags$span(style='color: blue;', 'Plot 1 Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'TextColor3', Label = tags$span(style='color: blue;', 'Plot 3 Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Multiple = FALSE)
     })
     output$TextColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'TextColor4', Label = tags$span(style='color: blue;', 'Plot 1 Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'TextColor4', Label = tags$span(style='color: blue;', 'Plot 4 Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Multiple = FALSE)
     })
     output$ChartColor1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'ChartColor1', Label = tags$span(style='color: blue;', 'Plot 1 Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE)
     })
     output$ChartColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'ChartColor2', Label = tags$span(style='color: blue;', 'Plot 1 Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'ChartColor2', Label = tags$span(style='color: blue;', 'Plot 2 Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE)
     })
     output$ChartColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'ChartColor3', Label = tags$span(style='color: blue;', 'Plot 1 Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'ChartColor3', Label = tags$span(style='color: blue;', 'Plot 3 Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE)
     })
     output$ChartColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'ChartColor4', Label = tags$span(style='color: blue;', 'Plot 1 Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'ChartColor4', Label = tags$span(style='color: blue;', 'Plot 4 Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE)
     })
     output$GridColor1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'GridColor1', Label = tags$span(style='color: blue;', 'Plot 1 Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE)
     })
     output$GridColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'GridColor2', Label = tags$span(style='color: blue;', 'Plot 1 Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'GridColor2', Label = tags$span(style='color: blue;', 'Plot 2 Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE)
     })
     output$GridColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'GridColor3', Label = tags$span(style='color: blue;', 'Plot 1 Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'GridColor3', Label = tags$span(style='color: blue;', 'Plot 3 Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE)
     })
     output$GridColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'GridColor4', Label = tags$span(style='color: blue;', 'Plot 1 Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'GridColor4', Label = tags$span(style='color: blue;', 'Plot 4 Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE)
     })
     output$BackGroundColor1 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'BackGroundColor1', Label = tags$span(style='color: blue;', 'Plot 1 Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE)
+      colourpicker::colourInput(inputId = "BackGroundColor1", tags$span(style='color: blue;', 'Plot 1 Background Color'), value = "gray95")
+      #RemixAutoML:::SelectizeInput(InputID = 'BackGroundColor1', Label = tags$span(style='color: blue;', 'Plot 1 Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE)
     })
     output$BackGroundColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'BackGroundColor2', Label = tags$span(style='color: blue;', 'Plot 1 Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'BackGroundColor2', Label = tags$span(style='color: blue;', 'Plot 2 Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE)
     })
     output$BackGroundColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'BackGroundColor3', Label = tags$span(style='color: blue;', 'Plot 1 Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'BackGroundColor3', Label = tags$span(style='color: blue;', 'Plot 3 Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE)
     })
     output$BackGroundColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'BackGroundColor4', Label = tags$span(style='color: blue;', 'Plot 1 Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'BackGroundColor4', Label = tags$span(style='color: blue;', 'Plot 4 Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE)
     })
     output$BorderColor1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'BorderColor1', Label = tags$span(style='color: blue;', 'Plot 1 Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE)
     })
     output$BorderColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'BorderColor2', Label = tags$span(style='color: blue;', 'Plot 1 Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'BorderColor2', Label = tags$span(style='color: blue;', 'Plot 2 Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE)
     })
     output$BorderColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'BorderColor3', Label = tags$span(style='color: blue;', 'Plot 1 Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'BorderColor3', Label = tags$span(style='color: blue;', 'Plot 3 Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE)
     })
     output$BorderColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'BorderColor4', Label = tags$span(style='color: blue;', 'Plot 1 Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'BorderColor4', Label = tags$span(style='color: blue;', 'Plot 4 Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE)
     })
     output$OutlierColor1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'OutlierColor1', Label = tags$span(style='color: blue;', 'Plot 1 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
     })
     output$OutlierColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor2', Label = tags$span(style='color: blue;', 'Plot 1 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor2', Label = tags$span(style='color: blue;', 'Plot 2 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
     })
     output$OutlierColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor3', Label = tags$span(style='color: blue;', 'Plot 1 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor3', Label = tags$span(style='color: blue;', 'Plot 3 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
     })
     output$OutlierColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor4', Label = tags$span(style='color: blue;', 'Plot 1 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor4', Label = tags$span(style='color: blue;', 'Plot 4 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
     })
     output$FillColor1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'FillColor1', Label = tags$span(style='color: blue;', 'Plot 1 BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE)
     })
     output$FillColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FillColor2', Label = tags$span(style='color: blue;', 'Plot 1 BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'FillColor2', Label = tags$span(style='color: blue;', 'Plot 2 BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE)
     })
     output$FillColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FillColor3', Label = tags$span(style='color: blue;', 'Plot 1 BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'FillColor3', Label = tags$span(style='color: blue;', 'Plot 3 BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE)
     })
     output$FillColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FillColor4', Label = tags$span(style='color: blue;', 'Plot 1 BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'FillColor4', Label = tags$span(style='color: blue;', 'Plot 4 BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE)
     })
     output$SubTitleColor1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'SubTitleColor1', Label = tags$span(style='color: blue;', 'Plot 1 Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
     })
     output$SubTitleColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'SubTitleColor2', Label = tags$span(style='color: blue;', 'Plot 1 Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'SubTitleColor2', Label = tags$span(style='color: blue;', 'Plot 2 Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
     })
     output$SubTitleColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'SubTitleColor3', Label = tags$span(style='color: blue;', 'Plot 1 Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'SubTitleColor3', Label = tags$span(style='color: blue;', 'Plot 3 Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
     })
     output$SubTitleColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'SubTitleColor4', Label = tags$span(style='color: blue;', 'Plot 1 Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+      RemixAutoML:::SelectizeInput(InputID = 'SubTitleColor4', Label = tags$span(style='color: blue;', 'Plot 4 Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
     })
   })
 
@@ -3246,7 +3707,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Feature Engineering Observe Events   ----
+  # :: Obs Event Feature Engineering     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Delete Columns
@@ -3283,7 +3744,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton_CalendarVariables, {
     print('FE Calendar Variables')
     CalendarVar_DateVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CalendarVariables_DateVariables']]}, error=function(x) NULL), VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
-    if(length(CalendarVar_DateVariables) != 0 && all(CalendarVar_DateVariables %in% names(Data()))) {
+    if(length(CalendarVar_DateVariables) != 0) {
       CalendarVar_TimeUnits <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CalendarVariables_TimeUnits']]}, error=function(x) NULL), VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
       x <- DataList[[eval(input$CalendarVariables_SelectData)]]
       x <- RemixAutoML::CreateCalendarVariables(
@@ -3304,7 +3765,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton_HolidayVariables, {
     print('FE Holiday Variables')
     HolidayVar_DateVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['HolidayVariables_DateVariables']]}, error=function(x) NULL), VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
-    if(length(HolidayVar_DateVariables) != 0 && all(HolidayVar_DateVariables %in% names(Data()))) {
+    if(length(HolidayVar_DateVariables) != 0) {
       HolidayVar_HolidayGroups <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['HolidayVariables_HolidayGroups']]}, error=function(x) NULL), VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
       HolidayVar_LookbackDays <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['HolidayVariables_LookbackDays']]}, error=function(x) NULL), VarName = NULL, Type = 'numeric', Default = NULL, Debug = Debug)
       x <- DataList[[eval(input$HolidayVariables_SelectData)]]
@@ -3328,7 +3789,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton_PercRank, {
     print('FE Percent Rank')
     PercentRank_ColNames <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['PercentRank_ColNames']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(PercentRank_ColNames) != 0 && all(PercentRank_ColNames %in% names(Data()))) {
+    if(length(PercentRank_ColNames) != 0 && all(PercentRank_ColNames %in% names(DataList[[eval(input$PercRank_SelectData)]]))) {
       PercentRank_GroupVars <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['PercentRank_GroupVars']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
       PercentRank_Granularity <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['PercentRank_Granularity']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
       x <- DataList[[eval(input$PercRank_SelectData)]]
@@ -3346,7 +3807,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton_Interaction, {
     print('FE Interaction')
     AutoInteraction_NumericVars <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoInteraction_NumericVars']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(AutoInteraction_NumericVars) != 0 && all(AutoInteraction_NumericVars %in% names(Data()))) {
+    if(length(AutoInteraction_NumericVars) != 0) {
       AutoInteraction_InteractionDepth <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoInteraction_InteractionDepth']]}, error=function(x) NULL), Type = 'numeric', Default = 2, Debug = Debug)
       AutoInteraction_Scale <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoInteraction_Scale']]}, error=function(x) NULL), Type = 'logical', Default = TRUE, Debug = Debug)
       AutoInteraction_Center <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoInteraction_Center']]}, error=function(x) NULL), Type = 'logical', Default = TRUE, Debug = Debug)
@@ -3373,7 +3834,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton_Transformations, {
     print('FE Transformations')
     AutoTransformationCreate_ColumnNames <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoTransformationCreate_ColumnNames']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(AutoTransformationCreate_ColumnNames) != 0 && all(AutoTransformationCreate_ColumnNames %in% names(Data()))) {
+    if(length(AutoTransformationCreate_ColumnNames) != 0) {
       AutoTransformationCreate_Methods <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoTransformationCreate_Methods']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
       x <- DataList[[eval(input$Transformations_SelectData)]]
       x <- RemixAutoML::AutoTransformationCreate(
@@ -3396,7 +3857,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton_PartialDummies, {
     print('FE Partial Dummies')
     DummifyDT_Cols <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['DummifyDT_Cols']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(DummifyDT_Cols) != 0 && all(DummifyDT_Cols %in% names(Data()))) {
+    if(length(DummifyDT_Cols) != 0) {
       DummifyDT_TopN <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['DummifyDT_TopN']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
       DummifyDT_KeepBaseCols <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['DummifyDT_KeepBaseCols']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
       x <- DataList[[eval(input$PartialDummies_SelectData)]]
@@ -3419,7 +3880,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton_CategoricalEncoding, {
     print('FE Categorical Encoding')
     CategoricalEncoding_GroupVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CategoricalEncoding_GroupVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(CategoricalEncoding_GroupVariables) != 0 && all(CategoricalEncoding_GroupVariables %in% names(Data()))) {
+    if(length(CategoricalEncoding_GroupVariables) != 0) {
       CategoricalEncoding_TargetVariable <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CategoricalEncoding_TargetVariable']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
       CategoricalEncoding_Method <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CategoricalEncoding_Method']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
       x <- DataList[[eval(input$CategoricalEncoding_SelectData)]]
@@ -3443,7 +3904,7 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$FeatureEngineeringButton_AutoLagRollMode, {
     print('FE Auto Lag Roll Mode')
     AutoLagRollMode_Targets <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_Targets']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(AutoLagRollMode_Targets) != 0 && all(AutoLagRollMode_Targets %in% names(Data()))) {
+    if(length(AutoLagRollMode_Targets) != 0) {
       AutoLagRollMode_Lags <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_Lags', Type = 'numeric']]}, error=function(x) NULL), Default = NULL, Debug = Debug)
       AutoLagRollMode_ModePeriods <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_ModePeriods']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
       AutoLagRollMode_GroupingVars <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_GroupingVars']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
@@ -3541,7 +4002,7 @@ server <- function(input, output, session) {
       AutoDiffLagN_DiffVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_DiffVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
       AutoDiffLagN_DiffDateVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_DiffDateVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
       AutoDiffLagN_DiffGroupVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_DiffGroupVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$AutoDiff_SelectData)]]
+      x <- DataList[[eval(input$AutoDiffLagN_SelectData)]]
       x <- RemixAutoML::AutoDiffLagN(
         data = x,
         DateVariable = AutoDiffLagN_DateVariable,
@@ -3553,7 +4014,7 @@ server <- function(input, output, session) {
         NLag2 = AutoDiffLagN_NLag2,
         Sort = FALSE,
         RemoveNA = TRUE)
-      DataList[[eval(input$AutoDiff_SelectData)]] <- x
+      DataList[[eval(input$AutoDiffLagN_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
         RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
@@ -3633,7 +4094,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # ML Observe Events                    ----
+  # :: Obs Event Machine Learning        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$BuildModels, {
 
@@ -3702,6 +4163,7 @@ server <- function(input, output, session) {
       print(' ::  BuildModels 4  :: ')
 
       CatBoostArgsList[['PrimaryDateColumn']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_PrimaryDateColumn']]}, error=function(x) NULL), Type='character', Default=NULL)
+      CatBoostArgsList[['EncodeMethod']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_EncodeMethod']]}, error=function(x) NULL), Type='character', Default='credibility')
       CatBoostArgsList[['WeightsColumnName']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_WeightsColumnName']]}, error=function(x) NULL), Type='character', Default=NULL)
       CatBoostArgsList[['IDcols']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_IDcols']]}, error=function(x) NULL), Type='character', Default=NULL)
       CatBoostArgsList[['TransformNumericColumns']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_TransformNumericColumns']]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -3785,7 +4247,7 @@ server <- function(input, output, session) {
       # Store in DataList
       print(' ::  BuildModels 10 :: ')
       KeyName <- CatBoostArgsList[['ModelID']]
-      Output <- RemixAutoML:::ModelDataObjects(ModelOutputList)
+      Output <- RemixAutoML:::ModelDataObjects(ModelOutputList, TT = 'catboost')
       DataList[[paste0(KeyName, '_ScoringData')]] <- Output$ScoringDataCombined
       DataList[[paste0(KeyName, '_Test_VI_Data')]] <- Output$VI_Train
       DataList[[paste0(KeyName, '_Train_VI_Data')]] <- Output$VI_Validation
@@ -3800,37 +4262,69 @@ server <- function(input, output, session) {
     }
 
     # XGBoost check
-    temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TrainData']]}, error=function(x) NULL), Type='character', Default=NULL)
+    temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_data']]}, error=function(x) NULL), Type='character', Default=NULL)
     if(length(temp) != 0) XGBoostArgsList[['data']] <- DataList[[temp]] else XGBoostArgsList[['data']] <- NULL
     XGBoostArgsList[['TargetColumnName']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TargetColumnName']]}, error=function(x) NULL), Type='character', Default=NULL)
     XGBoostArgsList[['FeatureColNames']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_FeatureColNames']]}, error=function(x) NULL), Type='character', Default=NULL)
-    if(length(XGBoostArgsList[['data']]) != 0L && length(XGBoostArgsList[['TargetColumnName']]) != 0L && length(XGBoostArgsList[['FeatureColNames']]) != 0L) {
+    print("class(XGBoostArgsList[['data']])[[1L]] %in% 'data.table' && length(XGBoostArgsList[['TargetColumnName']]) != 0L && length(XGBoostArgsList[['FeatureColNames']]) != 0L")
+    if(class(XGBoostArgsList[['data']])[[1L]] %in% 'data.table' && length(XGBoostArgsList[['TargetColumnName']]) != 0L && length(XGBoostArgsList[['FeatureColNames']]) != 0L) {
+      print("length(XGBoostArgsList[['data']])[[1L]] != 0L && length(XGBoostArgsList[['TargetColumnName']]) != 0L && length(XGBoostArgsList[['FeatureColNames']]) != 0L == TRUE")
       XGBoostRun <- TRUE
     } else {
+      print("length(XGBoostArgsList[['data']])[[1L]] != 0L && length(XGBoostArgsList[['TargetColumnName']]) != 0L && length(XGBoostArgsList[['FeatureColNames']]) != 0L == FALSE")
+      print(XGBoostArgsList[['data']])
+      print(XGBoostArgsList[['TargetColumnName']])
+      print(XGBoostArgsList[['FeatureColNames']])
       XGBoostRun <- FALSE
     }
 
     # XGBoost ML Build
     if(XGBoostRun) {
 
+      print(' ::  BuildModels 0 :: ')
+
       XGBoost_TargetType <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TargetType']]}, error=function(x) NULL), Type='character', Default='MultiClass')
 
       # Notification of starting
       shiny::showNotification('XGBoost Building has Begun!')
 
+      # Constants for now
+      XGBoostArgsList[['Verbose']] <- 0L
+      XGBoostArgsList[['ReturnModelObjects']] <- TRUE
+      XGBoostArgsList[['NumOfParDepPlots']] <- 1L
+
       # XGBoost MetaData Parameters
+      XGBoostArgsList[['DebugMode']] <- Debug
+      XGBoostArgsList[['NThreads']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_NThreads']]}, error=function(x) NULL), Type='numeric', Default=-1)
       XGBoostArgsList[['OutputSelection']] <- c('Importances','EvalMetrics','Score_TrainData')
       XGBoostArgsList[['TrainOnFull']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TrainOnFull']]}, error=function(x) NULL), Type='logical', Default=FALSE)
       XGBoostArgsList[['ModelID']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_ModelID']]}, error=function(x) NULL), Type='character', Default='Model_1')
 
+      print(' ::  BuildModels 1 :: ')
+
       # XGBoost Data Parameters
-      XGBoostArgsList[['ValidationData']] <- DataList[[RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_ValidationDataSelection']]}, error=function(x) NULL), Type='character', Default=NULL)]]
-      XGBoostArgsList[['TestData']] <- DataList[[RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TestDataSelection']]}, error=function(x) NULL), Type='character', Default=NULL)]]
-      XGBoostArgsList[['PrimaryDateColumn']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_PrimaryDateColumn']]}, error=function(x) NULL), Type='character', Default=NULL)
+
+      # ValidationData
+      temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_ValidationData']]}, error=function(x) NULL), Type='character', Default=NULL)
+      if(Debug) {print("RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_ValidationData']]}, error=function(x) NULL), Type='character', Default=NULL)"); print(temp)}
+      if(length(temp) != 0) XGBoostArgsList[['ValidationData']] <- DataList[[temp]] else XGBoostArgsList[['ValidationData']] <- NULL
+
+      print(' ::  BuildModels 3  :: ')
+
+      # TestData
+      temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TestData']]}, error=function(x) NULL), Type='character', Default=NULL)
+      if(Debug) {print("RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TestData']]}, error=function(x) NULL), Type='character', Default=NULL)"); print(temp)}
+      if(length(temp) != 0) XGBoostArgsList[['TestData']] <- DataList[[temp]] else XGBoostArgsList[['TestData']] <- NULL
+
+      print(' ::  BuildModels 4  :: ')
+
       XGBoostArgsList[['WeightsColumnName']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_WeightsColumnName']]}, error=function(x) NULL), Type='character', Default=NULL)
       XGBoostArgsList[['IDcols']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_IDcols']]}, error=function(x) NULL), Type='character', Default=NULL)
+      XGBoostArgsList[['EncodingMethod']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EncodingMethod']]}, error=function(x) NULL), Type='character', Default='credibility')
       XGBoostArgsList[['TransformNumericColumns']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TransformNumericColumns']]}, error=function(x) NULL), Type='character', Default=NULL)
       XGBoostArgsList[['Methods']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_Methods']]}, error=function(x) NULL), Type='character', Default=NULL)
+
+      print(' ::  BuildModels 5 :: ')
 
       # XGBoost Grid Tuning Parameters
       XGBoostArgsList[['PassInGrid']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_PassInGrid']]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -3840,59 +4334,79 @@ server <- function(input, output, session) {
       XGBoostArgsList[['MaxRunMinutes']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_MaxRunMinutes']]}, error=function(x) NULL), Type='numeric', Default=30)
       XGBoostArgsList[['BaselineComparison']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_BaselineComparison']]}, error=function(x) NULL), Type='character', Default='default')
 
-      # XGBoost ML Parameters
-      XGBoostArgsList[['Trees']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGoost_Trees']]}, error=function(x) NULL), Type='numeric', Default=1000)
-      XGBoostArgsList[['Depth']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_Depth']]}, error=function(x) NULL), Type='numeric', Default=8)
-      XGBoostArgsList[['LearningRate']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LearningRate']]}, error=function(x) NULL), Type='numeric', Default=NULL)
-      XGBoostArgsList[['L2_Leaf_Reg']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_L2_Leaf_Reg']]}, error=function(x) NULL), Type='numeric', Default=NULL)
-      XGBoostArgsList[['RSM']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_RSM']]}, error=function(x) NULL), Type='numeric', Default=1)
-      XGBoostArgsList[['subsample']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_subsample']]}, error=function(x) NULL), Type='numeric', Default=1)
-      XGBoostArgsList[['min_data_in_leaf']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_min_data_in_leaf']]}, error=function(x) NULL), Type='numeric', Default=1)
+      print(' ::  BuildModels 6 :: ')
 
-      # CatBoost Eval Parameters
+      # XGBoost ML Parameters
+      XGBoostArgsList[['Trees']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_Trees']]}, error=function(x) NULL), Type='numeric', Default=1000)
+      XGBoostArgsList[['max_depth']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_max_depth']]}, error=function(x) NULL), Type='numeric', Default=8)
+      XGBoostArgsList[['eta']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_eta']]}, error=function(x) NULL), Type='numeric', Default=NULL)
+      XGBoostArgsList[['min_child_weight']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_min_child_weight']]}, error=function(x) NULL), Type='numeric', Default=NULL)
+      XGBoostArgsList[['subsample']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_subsample']]}, error=function(x) NULL), Type='numeric', Default=1)
+      XGBoostArgsList[['colsample_bytree']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_colsample_bytree']]}, error=function(x) NULL), Type='numeric', Default=1)
+
+      print(' ::  BuildModels 7 :: ')
+      print(XGBoost_TargetType)
+
+      # XGBoost Eval Parameters
       if(XGBoost_TargetType == 'Regression') {
-        XGBoostArgsList[['loss_function']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='RMSE')
-        XGBoostArgsList[['eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='RMSE')
-        XGBoostArgsList[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='mse')
-        cw0 <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_ClassWeights0']]}, error=function(x) NULL), Type='numeric', Default=1)
-        cw1 <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_ClassWeights1']]}, error=function(x) NULL), Type='numeric', Default=1)
-        XGBoostArgsList[['ClassWeights']] <- c(cw0, cw1)
-        XGBoostArgsList[['MetricPeriods']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_MetricPeriods']]}, error=function(x) NULL), Type='numeric', Default=10)
+        print(' ::  BuildModels 7.1 :: ')
+        XGBoostArgsList[['LossFunction']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='reg:squarederror')
+        XGBoostArgsList[['eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='rmse')
+        XGBoostArgsList[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='r2')
       } else if(XGBoost_TargetType == 'Binary Classification') {
-        XGBoostArgsList[['LossFunction']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='Logloss')
-        XGBoostArgsList[['EvalMetric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='AUC')
+        print(' ::  BuildModels 7.2 :: ')
+        XGBoostArgsList[['LossFunction']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='binary:logistic')
+        XGBoostArgsList[['eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='auc')
         XGBoostArgsList[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='MCC')
-        XGBoostArgsList[['MetricPeriods']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_MetricPeriods']]}, error=function(x) NULL), Type='numeric', Default=10)
-      } else if(XGBoost_TargetType == 'MultiClass') {
-        XGBoostArgsList[['loss_function']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='MultiClassOneVsAll')
-        XGBoostArgsList[['eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='MultiClassOneVsAll')
-        XGBoostArgsList[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='Accuracy')
-        XGBoostArgsList[['MetricPeriods']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_MetricPeriods']]}, error=function(x) NULL), Type='numeric', Default=10)
+      } else {
+        print(' ::  BuildModels 7.3 :: ')
+        print(tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL))
+        print(RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='multi:softprob'))
+        XGBoostArgsList[['LossFunction']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='multi:softprob')
+        XGBoostArgsList[['eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='mlogloss')
+        XGBoostArgsList[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='microauc')
       }
 
+      print("RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TargetType']]}, error=function(x) NULL), Type='character', Default='MultiClass')")
+
       # Build model
+      print(' ::  BuildModels 8 :: ')
       if(XGBoost_TargetType == 'Regression') {
+        print(' ::  BuildModels 8.1 :: ')
+        XGBoostArgsList[['PrimaryDateColumn']] <- RemixAutoML:::ReturnParam(xx=input[['XGBoost_PrimaryDateColumn']], Type='character', Default=NULL)
+        XGBoostArgsList[['SaveInfoToPDF']] <- FALSE
+        print(XGBoostArgsList)
         Model <- do.call(RemixAutoML::AutoXGBoostRegression, XGBoostArgsList)
       }
       if(XGBoost_TargetType == 'Binary Classification') {
+        print(' ::  BuildModels 8.2 :: ')
+        XGBoostArgsList[['CostMatrixWeights']] <- c(0,1,1,0)
+        XGBoostArgsList[['SaveInfoToPDF']] <- FALSE
+        print(XGBoostArgsList)
         Model <- do.call(RemixAutoML::AutoXGBoostClassifier, XGBoostArgsList)
       }
       if(XGBoost_TargetType == 'MultiClass') {
+        print(' ::  BuildModels 8.3 :: ')
+        print(XGBoostArgsList)
         Model <- do.call(RemixAutoML::AutoXGBoostMultiClass, XGBoostArgsList)
       }
 
+      print(' ::  BuildModels 9 :: ')
+
       # Store in DataList
       KeyName <- XGBoostArgsList[['ModelID']]
-      Output <- RemixAutoML:::ModelDataObjects(Model)
+      Output <- RemixAutoML:::ModelDataObjects(Model, TT = 'xgboost')
       DataList[[paste0(KeyName, '_ScoringData')]] <- Output$ScoringDataCombined
       DataList[[paste0(KeyName, '_Test_VI_Data')]] <- Output$VI_Train
+
+      print(' ::  BuildModels 10 :: ')
 
       # Save output
       DataList <<- DataList
     }
 
     # LightGBM check
-    temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_TrainData']]}, error=function(x) NULL), Type='character', Default=NULL)
+    temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_data']]}, error=function(x) NULL), Type='character', Default=NULL)
     if(length(temp) != 0) LightGBMArgsList[['data']] <- DataList[[temp]] else LightGBMArgsList[['data']] <- NULL
     LightGBMArgsList[['TargetColumnName']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_TargetColumnName']]}, error=function(x) NULL), Type='character', Default=NULL)
     LightGBMArgsList[['FeatureColNames']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_FeatureColNames']]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -3993,7 +4507,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Plotting Observe Event               ----
+  # :: Obs Event Plotting                ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$TrendPlotExecute, {
 
@@ -4405,12 +4919,12 @@ server <- function(input, output, session) {
 
           # Subset Rows and Columns
           if(PlotType == 'LinePlot' && length(XVar) != 0) {
-            data1 <- RemixAutoML::PreparePlotData(
+            data1 <- RemixAutoML:::PreparePlotData(
               SubsetOnly = FALSE,
               data = data1, Aggregate = 'mean', TargetVariable = YVar, DateVariable = XVar,
               GroupVariables = GroupVars,
               G1Levels = Levels1, G2Levels = Levels2, G3Levels = Levels3)
-            CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML::PreparePlotData(SubsetOnly = ", FALSE,", data=data1, Aggregate='mean', TargetVariable=", RemixAutoML:::CEP(YVar),", DateVariable=", RemixAutoML:::CEP(XVar), ", GroupVariables=", RemixAutoML:::CEP(GroupVars),", G1Levels=", RemixAutoML:::CEP(Levels1),", G2Levels=", RemixAutoML:::CEP(Levels2),", G3Levels=", RemixAutoML:::CEP(Levels3),")")
+            CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML:::PreparePlotData(SubsetOnly = ", FALSE,", data=data1, Aggregate='mean', TargetVariable=", RemixAutoML:::CEP(YVar),", DateVariable=", RemixAutoML:::CEP(XVar), ", GroupVariables=", RemixAutoML:::CEP(GroupVars),", G1Levels=", RemixAutoML:::CEP(Levels1),", G2Levels=", RemixAutoML:::CEP(Levels2),", G3Levels=", RemixAutoML:::CEP(Levels3),")")
 
           } else {
 
@@ -4774,7 +5288,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Print Code to UI                     ----
+  # :: Obs Event Print Code to UI        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$PrintCodeButton, {
     if(Debug) {print('Print Code UI Begin'); print(paste0('Check if CodeCollection exists: exists = ', exists('CodeCollection')))}
@@ -4792,7 +5306,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # Close app after closing browser      ----
+  #    Close app after closing browser   ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   session$onSessionEnded(function() {
   suppressWarnings(rm(BlobStorageURL, PlotObjectHome, CodeCollection, data1, PlotCollectionList, SubsetList, rawfiles, cont, ModelOutputList, envir = .GlobalEnv))
@@ -4805,7 +5319,7 @@ server <- function(input, output, session) {
 # ----
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-# Run App                              ----
+#    Run App                           ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 shiny::shinyApp(ui = ui, server = server)
 

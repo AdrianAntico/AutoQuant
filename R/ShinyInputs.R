@@ -136,19 +136,57 @@ LoadDataInputs <- function(id = 'ExternalData',
 
             # Local data
             shiny::fluidRow(
+              shiny::column(1L),
               shiny::column(
-                width = 5L,
+                width = 4L,
                 align = 'center',
                 tags$h4(tags$b('Local .csv Data')),
                 shiny::uiOutput('TabularData')),
-              shiny::column(width = 1L, align = 'center'),
+              shiny::column(2L),
               shiny::column(
-                width = 5L,
+                width = 4L,
                 align = 'center',
-                tags$h4(tags$b('Local RemixAutoML Model Object')),
+                tags$h4(tags$b('Local Model Output')),
                 shiny::uiOutput('ModelObjectLoad')))
 
-            )),
+            ), # end dropdown
+          ), # end column
+
+        # Dropdown for local data
+        shiny::column(
+          width = 3L,
+          align = 'center',
+          tags$h4(tags$b('Local PostGRE')),
+          shinyWidgets::dropdown(
+            right = DropdownRight, animate = DropDownAnimate, circle = FALSE, tooltip = FALSE, status = DropDownStatus, width = LogoWidth,
+            tags$h3(tags$span(style=paste0('color: ', H3Color, ';'),'Local PostGRE')),
+            RemixAutoML:::BlankRow(AppWidth),
+            shiny::fluidRow(
+              shiny::column(1L),
+              shiny::column(
+                width = 4L,
+                align = 'center',
+                tags$h4(tags$b('Select Database')),
+                shiny::uiOutput('LocalPostGRE_Database')),
+              shiny::column(2L),
+              shiny::column(
+                width = 4L,
+                align = 'center',
+                tags$h4(tags$b('Select Table')),
+                shiny::uiOutput('LocalPostGRE'))),
+
+            # Add space so area underneath selected item remains inside the dropdown
+            #   Otherwise, the dropdown closes prematurely
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth)
+
+            ) # end dropdown
+          ), # end column
 
         # Dropdown for external data
         shiny::column(
@@ -163,9 +201,10 @@ LoadDataInputs <- function(id = 'ExternalData',
             RemixAutoML:::BlankRow(AppWidth),
             shiny::fluidRow(
               width = AppWidth,
-              shiny::column(5L, align='center', shiny::uiOutput('AzureBlobStorageTabular')),
-              shiny::column(1L),
-              shiny::column(5L, align='center', shiny::uiOutput('AzureBlobStorageRdata'))),
+              shiny::column(1L, align = 'center'),
+              shiny::column(4L, align='center', shiny::uiOutput('AzureBlobStorageTabular')),
+              shiny::column(2L, align = 'center'),
+              shiny::column(4L, align='center', shiny::uiOutput('AzureBlobStorageRdata'))),
 
             # Add row
             RemixAutoML:::BlankRow(AppWidth),
@@ -179,7 +218,14 @@ LoadDataInputs <- function(id = 'ExternalData',
                   inputId = 'LoadAzure',
                   label = 'Download Data'))),
 
-            # Add row
+            # Add space so area underneath selected item remains inside the dropdown
+            #   Otherwise, the dropdown closes prematurely
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
+            RemixAutoML:::BlankRow(AppWidth),
             RemixAutoML:::BlankRow(AppWidth)
 
             ) # end dropdown
@@ -264,40 +310,100 @@ ShinySaveData <- function(id = 'SaveData_CSV_UI',
       width = ButtonWidth,
       align = Align,
 
-
-
       # Dropdown Button
       tags$h4(tags$b('Save Data')),
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'SaveDataInputs',
+        shiny::fluidRow(shiny::column(12L, align = 'center', tags$h4(tags$b('Save Data')))),
+        RemixAutoML:::BlankRow(AppWidth),
         RemixAutoML:::BlankRow(AppWidth),
         shiny::fluidRow(
-          tags$h4(tags$b('Select Data Set')),
-          shiny::column(6L, align = 'center', shiny::uiOutput('SaveData_SelectData')),
-          tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Save Data locally as .csv'))),
-          shiny::column(width = 4L, align = 'center', shiny::downloadButton(outputId = "SaveData_CSV"))),
 
-        # Add row
-        # RemixAutoML:::BlankRow(AppWidth),
-        #
-        # # Dropdowns on same row: otherwise they get put on diff rows
-        # tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Save to PostGRE'))),
-        # shiny::fluidRow(
-        #   shiny::column(
-        #     width = 4L,
-        #     shiny::uiOutput(outputId = 'SaveData_PostGRE'))),
-        #
-        # # Add row
-        # RemixAutoML:::BlankRow(AppWidth),
-        #
-        # # Dropdowns on same row: otherwise they get put on diff rows
-        # tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Save to Azure Blob Storage as .csv'))),
-        # shiny::fluidRow(
-        #   shiny::column(
-        #     width = 4L,
-        #     shiny::uiOutput(outputId = 'SaveData_AzureBlob'))),
+          # PostGRE DropDown
+          shiny::column(
+            width = 4L,
+            tags$h4(tags$b('Local PostGRE')),
+            shinyWidgets::dropdown(
+              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'SaveDataPostGRE',
+              tags$h4(tags$b('PostGRE Table Creation')),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(width = 1L, align = 'center'),
+                shiny::column(width = 4L, align = 'center', shiny::uiOutput('SaveData_SelectDataPostGRE'))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(width = 1L, align = 'center'),
+                shiny::column(width = 4L, align = 'center', shiny::uiOutput('SaveData_DataBaseName')),
+                shiny::column(width = 4L, align = 'center', shiny::uiOutput('SaveData_TableName'))),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(width = 1L, align = 'center'),
+                shiny::column(
+                  width = 4L,
+                  align = 'center',
+                  shinyjs::useShinyjs(),
+                  shinyWidgets::actionBttn(
+                    inputId = 'PostGRE_Push', label = 'PostGRE CreateTable',
+                    icon = shiny::icon('database', lib='font-awesome')))),
 
-        )))
+              # Add space so area underneath selected item remains inside the dropdown
+              #   Otherwise, the dropdown closes prematurely
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+            ) # end postgre dropdown
+          ), # end column
+
+          # Local Data DropDown
+          shiny::column(
+            width = 4L,
+            tags$h4(tags$b('Local Directory')),
+            shinyWidgets::dropdown(
+              right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'SaveDataLocal',
+              tags$h4(tags$b('Local Directory .csv')),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(width = 1L, align = 'center'),
+                shiny::column(width = 4L, align = 'center', shiny::uiOutput('SaveData_SelectData')),
+                shiny::column(width = 2L, align = 'center'),
+                shiny::column(width = 4L, align = 'center', tags$h4(tags$span(style=paste0('color: blue;'),'Press to Save')),
+                              shiny::downloadButton(outputId = "SaveData_CSV", label = 'Save Data'))),
+
+              # Add space so area underneath selected item remains inside the dropdown
+              #   Otherwise, the dropdown closes prematurely
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ) # end dropdown
+            ), # end column
+
+          # Dropdowns on same row: otherwise they get put on diff rows
+          # tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Save to Azure Blob Storage as .csv'))),
+          # shiny::fluidRow(
+          #   shiny::column(
+          #     width = 4L,
+          #     shiny::uiOutput(outputId = 'SaveData_AzureBlob'))),
+        ),
+
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title FE_CalendarVariables
@@ -411,7 +517,21 @@ FE_DateVariables <- function(id='CalendarVariables',
                     label = 'Run',
                     icon = shiny::icon('chevron-right', lib='font-awesome'),
                     style = Style,
-                    color = Color)))))),
+                    color = Color))),
+
+              # Add space so area underneath selected item remains inside the dropdown
+              #   Otherwise, the dropdown closes prematurely
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+            ) # end dropdown
+          ) # end column
+        ), # end fluid row
 
         # Add space at bottom of box
         RemixAutoML:::BlankRow(AppWidth)
@@ -497,7 +617,20 @@ FE_NumericVariables <- function(id='NumericVariables',
                     label = 'Run',
                     icon = shiny::icon('chevron-right', lib='font-awesome'),
                     style = Style,
-                    color = Color))))),
+                    color = Color))),
+
+              # Add space so area underneath selected item remains inside the dropdown
+              #   Otherwise, the dropdown closes prematurely
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ) # end dropdown
+            ), # end column
 
           # Auto Interaction Selection
           shiny::column(
@@ -532,7 +665,15 @@ FE_NumericVariables <- function(id='NumericVariables',
                     label = 'Run',
                     icon = shiny::icon('chevron-right', lib='font-awesome'),
                     style = Style,
-                    color = Color))))),
+                    color = Color))),
+
+              # Add space so area underneath selected item remains inside the dropdown
+              #   Otherwise, the dropdown closes prematurely
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+            ) # end dropdown
+          ), # end column
 
           # Transformations
           shiny::column(
@@ -683,7 +824,21 @@ FE_CategoricalVariables <- function(id='CategoricalVariables',
                     label = 'Run',
                     icon = shiny::icon('chevron-right', lib='font-awesome'),
                     style = Style,
-                    color = Color)))))),
+                    color = Color))),
+
+              # Add space so area underneath selected item remains inside the dropdown
+              #   Otherwise, the dropdown closes prematurely
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ) # end dropdown
+            ) # end column
+          ), # end fluid row
 
         # Add space at bottom of box
         RemixAutoML:::BlankRow(AppWidth)
@@ -763,7 +918,7 @@ FE_WindowingVariables <- function(id='WindowingVariables',
               # Blank space
               RemixAutoML:::BlankRow(AppWidth),
 
-              # AutoLagRollMode Build Button
+              # Build Button
               shiny::fluidRow(
                 shiny::column(
                   width = 3L,
@@ -773,7 +928,20 @@ FE_WindowingVariables <- function(id='WindowingVariables',
                     label = 'Run',
                     icon = shiny::icon('chevron-right', lib='font-awesome'),
                     style = Style,
-                    color = Color))))),
+                    color = Color))),
+
+              # Add space so area underneath selected item remains inside the dropdown
+              #   Otherwise, the dropdown closes prematurely
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+            ) # end dropdown
+          ), # end column
 
           # Rolling Numeric
           shiny::column(
@@ -859,9 +1027,24 @@ FE_WindowingVariables <- function(id='WindowingVariables',
                     label = 'Run',
                     icon = shiny::icon('chevron-right', lib='font-awesome'),
                     style = Style,
-                    color = Color)))))),
+                    color = Color))),
+
+              # Add space so area underneath selected item remains inside the dropdown
+              #   Otherwise, the dropdown closes prematurely
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ) # end dropdown
+            ), # end column
+          ), # end fluid row
 
         # Add space at bottom of box
+        RemixAutoML:::BlankRow(AppWidth),
         RemixAutoML:::BlankRow(AppWidth)
 
         ) # end dropdown
@@ -931,14 +1114,8 @@ FE_DataWrangling <- function(id='GeneralFeatureEngineering',
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 width=AppWidth,
-                shiny::column(6L, align = 'center', shiny::uiOutput('DeleteVariables_SelectData'))),
-              RemixAutoML:::BlankRow(AppWidth),
-
-              # Dropdowns on same row: otherwise they get put on diff rows
-              shiny::fluidRow(
-                shiny::column(
-                  width = 6L,
-                  shiny::uiOutput('DeleteVariables'))),
+                shiny::column(6L, align = 'center', shiny::uiOutput('DeleteVariables_SelectData')),
+                shiny::column(6L, align = 'center', shiny::uiOutput('DeleteVariables'))),
 
               # Blank space
               RemixAutoML:::BlankRow(AppWidth),
@@ -973,14 +1150,8 @@ FE_DataWrangling <- function(id='GeneralFeatureEngineering',
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 width=AppWidth,
-                shiny::column(6L, align = 'center', shiny::uiOutput('ConcatColumns_SelectData'))),
-              RemixAutoML:::BlankRow(AppWidth),
-
-              # Dropdowns on same row: otherwise they get put on diff rows
-              shiny::fluidRow(
-                shiny::column(
-                  width = 6L,
-                  shiny::uiOutput('ConcatColumns'))),
+                shiny::column(6L, align = 'center', shiny::uiOutput('ConcatColumns_SelectData')),
+                shiny::column(6L, align = 'center', shiny::uiOutput('ConcatColumns'))),
 
               # Blank space
               RemixAutoML:::BlankRow(AppWidth),
@@ -1029,16 +1200,16 @@ FE_DataWrangling <- function(id='GeneralFeatureEngineering',
 #'
 #' @noRd
 FE_DataSets <- function(id='DataSets',
-                             AppWidth=parent.frame()$AppWidth,
-                             LogoWidth=parent.frame()$LogoWidth,
-                             ButtonWidth=3L,
-                             Style = 'gradient',
-                             Color = 'royal',
-                             Align='left',
-                             DropDownRight=FALSE,
-                             Animate=TRUE,
-                             Status='custom',
-                             H3Color = 'blue') {
+                        AppWidth=parent.frame()$AppWidth,
+                        LogoWidth=parent.frame()$LogoWidth,
+                        ButtonWidth=3L,
+                        Style = 'gradient',
+                        Color = 'royal',
+                        Align='left',
+                        DropDownRight=FALSE,
+                        Animate=TRUE,
+                        Status='custom',
+                        H3Color = 'blue') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -1055,7 +1226,7 @@ FE_DataSets <- function(id='DataSets',
         # Dropdowns on same row: otherwise they get put on diff rows
         shiny::fluidRow(
 
-          # Calendar Variables Selection
+          # Model Data Prep
           shiny::column(
             width = 3L,
             tags$h4(tags$b('Type Casting')),
@@ -1082,7 +1253,7 @@ FE_DataSets <- function(id='DataSets',
               # Blank space
               RemixAutoML:::BlankRow(AppWidth),
 
-              # Date Variable Build Button
+              # Build Button
               shiny::fluidRow(
                 shiny::column(
                   width = 3L,
@@ -1275,6 +1446,7 @@ ML_CatBoost <- function(id='CatBoostML',
                 shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_FeatureColNames')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_PrimaryDateColumn'))),
               shiny::fluidRow(
+                shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_EncodeMethod')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_WeightsColumnName')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_IDcols'))),
               shiny::fluidRow(
@@ -1349,9 +1521,10 @@ ML_XGBoost <- function(id='XGBoostML',
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'XGBoost',
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
         RemixAutoML:::BlankRow(AppWidth),
-        shiny::fluidRow(width=AppWidth, shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_TargetType'))),
+        shiny::fluidRow(width=AppWidth, shiny::column(1L, align = 'center'), shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TargetType'))),
 
         # Parameters
+        RemixAutoML:::BlankRow(AppWidth),
         RemixAutoML:::BlankRow(AppWidth),
         shiny::fluidRow(
 
@@ -1364,7 +1537,7 @@ ML_XGBoost <- function(id='XGBoostML',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('XGBoost Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_task_type')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_NThreads')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_NumGPUs'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_TrainOnFull')),
@@ -1381,7 +1554,8 @@ ML_XGBoost <- function(id='XGBoostML',
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_PassInGrid')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_GridTune')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_MaxModelsInGrid'))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_MaxModelsInGrid')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_grid_eval_metric'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_MaxRunsWithoutNewWinner')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_MaxRunMinutes')),
@@ -1401,12 +1575,12 @@ ML_XGBoost <- function(id='XGBoostML',
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_Trees')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_Depth')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_LearningRate')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_L2_Leaf_Reg'))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_max_depth')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_min_child_weight'))),
               shiny::fluidRow(
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_model_size_reg')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_langevin'))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_eta')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_subsample')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_colsample_bytree'))))),
 
           # Data Parameters
           shiny::column(
@@ -1417,16 +1591,18 @@ ML_XGBoost <- function(id='XGBoostML',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('XGBoost Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
-                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TrainDataSelection')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_ValidationDataSelection')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TestDataSelection'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_data')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_ValidationData')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TestData'))),
+              RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TargetColumnName')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_FeatureColNames')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_PrimaryDateColumn'))),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_WeightsColumnName')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_IDcols'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_IDcols')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_EncodingMethod'))),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TransformNumericColumns')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_Methods'))))),
@@ -1440,12 +1616,13 @@ ML_XGBoost <- function(id='XGBoostML',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('XGBoost Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_LossFunction')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_ClassWeights0')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_ClassWeights1'))),
-              shiny::fluidRow(
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_EvalMetric')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_MetricPeriods'))))))
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_LossFunction')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_EvalMetric')))))),
+
+        # Add space at bottom of box
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
 
       ), # end XGboost dropdown
 
@@ -1712,7 +1889,21 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
           width=AppWidth,
           shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars1']) >= 1", shiny::uiOutput(paste0('Levels_', PlotNumber, '_1')))),
           shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars2']) >= 2", shiny::uiOutput(paste0('Levels_', PlotNumber, '_2')))),
-          shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars3']) >= 3", shiny::uiOutput(paste0('Levels_', PlotNumber, '_3'))))))))
+          shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars3']) >= 3", shiny::uiOutput(paste0('Levels_', PlotNumber, '_3'))))),
+
+        # Add space so area underneath selected item remains inside the dropdown
+        #   Otherwise, the dropdown closes prematurely
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title DataFilters
@@ -1776,7 +1967,18 @@ DataFilters <- function(id='DataFiltersContents',
           shiny::column(3L, shiny::uiOutput(paste0('FilterValue_', PlotNumber, '_1_2'))),
           shiny::column(3L, shiny::uiOutput(paste0('FilterValue_', PlotNumber, '_2_2'))),
           shiny::column(3L, shiny::uiOutput(paste0('FilterValue_', PlotNumber, '_3_2'))),
-          shiny::column(3L, shiny::uiOutput(paste0('FilterValue_', PlotNumber, '_4_2')))))))
+          shiny::column(3L, shiny::uiOutput(paste0('FilterValue_', PlotNumber, '_4_2')))),
+
+        # Add space so area underneath selected item remains inside the dropdown
+        #   Otherwise, the dropdown closes prematurely
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title AxisLimits
@@ -1837,7 +2039,16 @@ AxisLimits <- function(id = 'AxisLimitsContents',
           shiny::column(3L, shiny::uiOutput('YLimMin4')),
           shiny::column(3L, shiny::uiOutput('YLimMax4')),
           shiny::column(3L, shiny::uiOutput('XLimMin4')),
-          shiny::column(3L, shiny::uiOutput('XLimMax4'))))))
+          shiny::column(3L, shiny::uiOutput('XLimMax4'))),
+
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title Formatting
@@ -1916,7 +2127,20 @@ Formatting <- function(id = 'FormattingContents',
         #   shiny::column(3L, shiny::uiOutput('LegendLineType2')),
         #   shiny::column(3L, shiny::uiOutput('LegendLineType3')),
         #   shiny::column(3L, shiny::uiOutput('LegendLineType4')))
-        )))
+
+        # Add space so area underneath selected item remains inside the dropdown
+        #   Otherwise, the dropdown closes prematurely
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title Coloring
@@ -2000,7 +2224,18 @@ Coloring <- function(id = 'ColoringContents',
           shiny::column(3L, shiny::uiOutput('GridColor1')),
           shiny::column(3L, shiny::uiOutput('GridColor2')),
           shiny::column(3L, shiny::uiOutput('GridColor3')),
-          shiny::column(3L, shiny::uiOutput('GridColor4'))))))
+          shiny::column(3L, shiny::uiOutput('GridColor4'))),
+
+        # Add space so area underneath selected item remains inside the dropdown
+        #   Otherwise, the dropdown closes prematurely
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title GamFitting
@@ -2043,7 +2278,18 @@ GamFitting <- function(id = 'GamFittingContents',
           shiny::column(3L, shiny::uiOutput('GamFitScatter1')),
           shiny::column(3L, shiny::uiOutput('GamFitScatter2')),
           shiny::column(3L, shiny::uiOutput('GamFitScatter3')),
-          shiny::column(3L, shiny::uiOutput('GamFitScatter4'))))))
+          shiny::column(3L, shiny::uiOutput('GamFitScatter4'))),
+
+        # Add space so area underneath selected item remains inside the dropdown
+        #   Otherwise, the dropdown closes prematurely
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title HistBins
@@ -2086,7 +2332,18 @@ HistBins <- function(id = 'HistBinsContents',
           shiny::column(3L, shiny::uiOutput('NumberBins1')),
           shiny::column(3L, shiny::uiOutput('NumberBins2')),
           shiny::column(3L, shiny::uiOutput('NumberBins3')),
-          shiny::column(3L, shiny::uiOutput('NumberBins4'))))))
+          shiny::column(3L, shiny::uiOutput('NumberBins4'))),
+
+        # Add space so area underneath selected item remains inside the dropdown
+        #   Otherwise, the dropdown closes prematurely
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title PercentileBuckets
@@ -2129,7 +2386,18 @@ PercentileBuckets <- function(id = 'PercentileBucketsContents',
           shiny::column(3L, shiny::uiOutput('Percentile_Buckets1')),
           shiny::column(3L, shiny::uiOutput('Percentile_Buckets2')),
           shiny::column(3L, shiny::uiOutput('Percentile_Buckets3')),
-          shiny::column(3L, shiny::uiOutput('Percentile_Buckets4'))))))
+          shiny::column(3L, shiny::uiOutput('Percentile_Buckets4'))),
+
+        # Add space so area underneath selected item remains inside the dropdown
+        #   Otherwise, the dropdown closes prematurely
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title ShapAgg
@@ -2172,7 +2440,18 @@ ShapAgg <- function(id = 'ShapAggContents',
           shiny::column(3L, shiny::uiOutput('ShapAggMethod1')),
           shiny::column(3L, shiny::uiOutput('ShapAggMethod2')),
           shiny::column(3L, shiny::uiOutput('ShapAggMethod3')),
-          shiny::column(3L, shiny::uiOutput('ShapAggMethod4'))))))
+          shiny::column(3L, shiny::uiOutput('ShapAggMethod4'))),
+
+        # Add space so area underneath selected item remains inside the dropdown
+        #   Otherwise, the dropdown closes prematurely
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)
+
+      ) # end dropdown
+    ) # end column
+  ) # end tagList
 }
 
 #' @title Plotter
@@ -2335,6 +2614,14 @@ InitalizeInputs <- function(id) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
+
+      # ----
+
+      # ----
+
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      # Plot Data                            ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       for(i in seq_len(4L)) {
         output[[paste0('YVar', i)]] <- shiny::renderUI({
           RemixAutoML::SelectizeInput(InputID = paste0('YVar', i), Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable'), Choices = NULL, Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
@@ -2458,6 +2745,26 @@ InitalizeInputs <- function(id) {
         })
 
       } # end for loop
+
+      # ----
+
+      # ----
+
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      # Load Data                            ----
+      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+      output$LocalPostGRE_Database <- shiny::renderUI({
+        RemixAutoML:::SelectizeInput(InputID = 'LocalPostGRE_Database', Label = NULL, Choices = LocalPostGRE_DBNames, SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1L, CloseAfterSelect = FALSE, Debug = Debug)
+      })
+
+      # Local POSTGRE DB
+      output$LocalPostGRE <- shiny::renderUI({
+        RemixAutoML:::SelectizeInput(InputID = 'LocalPostGRE', Label = NULL, Choices = sort(x), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1L, CloseAfterSelect = FALSE, Debug = Debug)
+      })
+
+      # ----
+
+      # ----
 
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # FE Variables                         ----
@@ -2810,11 +3117,11 @@ DeleteVariablesServer <- function(id) {
   shiny::observeEvent(input$DeleteVariablesInputs, {
     print('Delete Variables Inputs Dropdown')
     output$DeleteVariables_SelectData <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='DeleteVariables_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
+      RemixAutoML::SelectizeInput(InputID='DeleteVariables_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L], CloseAfterSelect = FALSE)
     })
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$DeleteVariables_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$DeleteVariables <- shiny::renderUI({
-      RemixAutoML::SelectizeInput(InputID='DeleteVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Delete Columns'), Choices = names(dt()), Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML::SelectizeInput(InputID='DeleteVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Delete Columns'), Choices = names(dt()), Multiple = TRUE, MaxVars = 1000, CloseAfterSelect = FALSE)
     })
   })
 }

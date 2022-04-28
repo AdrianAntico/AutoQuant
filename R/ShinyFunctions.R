@@ -105,6 +105,24 @@ CatBoostEvalMetricOptions <- function(TT) {
 #' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
 #'
 #' @noRd
+XGBoostEvalMetricOptions <- function(TT) {
+  print(TT)
+  if(TT == 'Regression') {
+    choices <- c('rmse','mae','mape')
+    default <- 'r2'
+  } else if(TT == 'Binary Classification') {
+    choices <- c('logloss','error','aucpr','auc')
+    default <- 'logloss'
+  } else if(TT == 'MultiClass') {
+    choices <- c('merror','mlogloss')
+    default <- 'mlogloss'
+  }
+  return(list(Choices = choices, Default = default))
+}
+
+#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
+#'
+#' @noRd
 CatBoostLossFunctionOptions <- function(TT) {
   print(TT)
   if(TT == 'Regression') {
@@ -120,10 +138,28 @@ CatBoostLossFunctionOptions <- function(TT) {
   return(list(Choices = choices, Default = default))
 }
 
+#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
+#'
+#' @noRd
+XGBoostLossFunctionOptions <- function(TT) {
+  print(TT)
+  if(TT == 'Regression') {
+    choices <- c('reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie')
+    default <- 'reg:squaredlogerror'
+  } else if(TT == 'Binary Classification') {
+    choices <- c('reg:logistic', 'binary:logistic')
+    default <- 'reg:logistic'
+  } else if(TT == 'MultiClass') {
+    choices <- c('multi:softprob')
+    default <- 'multi:softprob'
+  }
+  return(list(Choices = choices, Default = default))
+}
+
 #' @param ModelOutput Output from RemixAutoML:: supervised learning functions
 #'
 #' @noRd
-ModelDataObjects <- function(ModelOutput) {
+ModelDataObjects <- function(ModelOutput, TT = 'catboost') {
   if(!is.null(ModelOutput$TrainData) && !is.null(ModelOutput$TestData)) {
     temp1 <- data.table::rbindlist(list(
       'TRAIN' = ModelOutput$TrainData,
@@ -134,13 +170,24 @@ ModelDataObjects <- function(ModelOutput) {
   } else if(!is.null(ModelOutput$TrainData) && is.null(ModelOutput$TestData)) {
     temp1 <- ModelOutput$TrainData
   }
-  return(
-    list(
-      ScoringDataCombined = temp1,
-      VI_Train = ModelOutput$VariableImportance$Train_Importance,
-      VI_Validation = ModelOutput$VariableImportance$Validation_Importance,
-      VI_Test = ModelOutput$VariableImportance$Test_Importance,
-      II_Train = ModelOutput$InteractionImportance$Train_Interaction))
+  if(tolower(TT) == 'catboost') {
+    return(
+      list(
+        ScoringDataCombined = temp1,
+        VI_Train = ModelOutput$VariableImportance$Train_Importance,
+        VI_Validation = ModelOutput$VariableImportance$Validation_Importance,
+        VI_Test = ModelOutput$VariableImportance$Test_Importance,
+        II_Train = ModelOutput$InteractionImportance$Train_Interaction))
+  } else if(tolower(TT) == 'xgboost') {
+    return(
+      list(
+        ScoringDataCombined = temp1,
+        VI_Train = ModelOutput$VariableImportance,
+        VI_Validation = NULL,
+        VI_Test = NULL,
+        II_Train = NULL))
+  }
+
 }
 
 #' @param X Vector
@@ -1772,7 +1819,7 @@ PickerInput_GetLevels2 <- function(DataExist = TRUE,
 #'     G3Levels = "TS_Group3Levels")
 #' }
 #' @return PreparePlotData object for server.R to
-#' @export
+#' @noRd
 PreparePlotData <- function(data,
                             SubsetOnly = FALSE,
                             Aggregate = NULL,
@@ -1783,6 +1830,9 @@ PreparePlotData <- function(data,
                             G2Levels = NULL,
                             G3Levels = NULL,
                             Debug = FALSE) {
+
+  # Debug Check
+  if(Debug) print('Starting PreparePlotData()')
 
   # Define function ----
   if(Aggregate == "mean") {
@@ -1918,20 +1968,28 @@ PreparePlotData <- function(data,
   # G1 ----
   if(!is.null(GroupVariables[1L]) && !is.na(GroupVariables[1L]) && (is.null(GroupVariables[2L]) || (!is.null(GroupVariables[2L]) && is.na(GroupVariables[2L])))) {
 
-    if(Debug) print('G1 Tope ----')
+    if(Debug) print('G1 Agg Begins Now ----')
 
     # None ----
-    if(is.null(G1Levels)) {
-      if(Debug) print('None ----')
+    if(length(G1Levels) == 0L) {
+      if(Debug) print('G1Levels is NULL ----')
       x <- AggFun(dt = data, A = Agg, S = SubsetOnly)
+      if(Debug) {
+        print('length(G1Levels) == 0L')
+        print(data)
+      }
       return(x)
     }
 
     # G1 ----
-    if(!is.null(G1Levels)) {
-      if(Debug) print('G1 ----')
+    if(length(G1Levels) != 0L) {
+      if(Debug) print('length(G1Levels) == 0L')
       x <- data[get(GroupVariables[1L]) %in% c(eval(G1Levels))]
       x <- AggFun(dt = x, A = Agg, S = SubsetOnly)
+      if(Debug) {
+        print('length(G1Levels) != 0L')
+        print(x)
+      }
       return(x)
     }
   }
@@ -1956,7 +2014,8 @@ PreparePlotData <- function(data,
     return(x)
   }
 
-  if(Debug) print('PreparePlotData return')
+  # Debug
+  if(Debug) print('PreparePlotData() return NULL')
 
   # Return
   return(NULL)

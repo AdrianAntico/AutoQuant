@@ -333,6 +333,13 @@ CorrMatrixPlot <- function(data = NULL,
 
   # Plot
   nafree <- na.omit(data[, .SD, .SDcols = c(CorrVars)])
+  for(i in seq_along(names(nafree))) {
+    yy <- names(nafree)[i]
+    zz <- nchar(yy)
+    print(yy)
+    print(substr(x = yy, start = max(0L, zz - 40L), stop = nchar(yy)))
+    data.table::setnames(nafree, yy, substr(x = yy, start = max(0L, zz - 40L), stop = nchar(yy)))
+  }
   p <- cor(method = 'spearman', x = nafree)
   print(p)
   p1 <- heatmaply::heatmaply_cor(
@@ -931,33 +938,47 @@ BarPlot <- function(data = NULL,
   byvars <- c()
   if(check1) {
     if(length(ColorVar) != 0) {
-      if(any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(YVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, YVar))
       } else {
         byvars <- unique(c(byvars, YVar))
       }
-      if(any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) {
-        numvars <- unique(c(numvars, XVar))
+      if(any(tryCatch({class(data[[eval(XVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
+        if(length(numvars) > 0) {
+          x <- length(unique(data[[XVar]]))
+          y <- length(unique(data[[YVar]]))
+          if(x > y) {
+            byvars <- unique(c(byvars, YVar))
+            numvars[1L] <- XVar
+          } else {
+            byvars <- unique(c(byvars, XVar))
+          }
+        } else {
+          numvars <- unique(c(numvars, XVar))
+        }
       } else {
         byvars <- unique(c(byvars, XVar))
       }
-      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(ColorVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, ColorVar))
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
-      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar1)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar1))
       } else {
         byvars <- unique(c(byvars, FacetVar1))
       }
-      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar2)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar2))
       } else {
         byvars <- unique(c(byvars, FacetVar2))
       }
       if(!is.null(byvars)) {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
+        if(class(temp[[byvars]]) %in% c('numeric','integer')) {
+          temp[, eval(byvars) := as.character(get(byvars))]
+        }
       } else {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
       }
@@ -966,28 +987,42 @@ BarPlot <- function(data = NULL,
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(XVar)) + ggplot2::ylab(eval(YVar))
     } else {
-      if(any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(YVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, YVar))
       } else {
         byvars <- unique(c(byvars, YVar))
       }
-      if(any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) {
-        numvars <- unique(c(numvars, XVar))
+      if(any(tryCatch({class(data[[eval(XVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
+        if(length(numvars) > 0) {
+          x <- length(unique(data[[XVar]]))
+          y <- length(unique(data[[YVar]]))
+          if(x > y) {
+            byvars <- unique(c(byvars, YVar))
+            numvars[1L] <- XVar
+          } else {
+            byvars <- unique(c(byvars, XVar))
+          }
+        } else {
+          numvars <- unique(c(numvars, XVar))
+        }
       } else {
         byvars <- unique(c(byvars, XVar))
       }
-      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar1)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar1))
       } else {
         byvars <- unique(c(byvars, FacetVar1))
       }
-      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar2)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar2))
       } else {
         byvars <- unique(c(byvars, FacetVar2))
       }
       if(!is.null(byvars)) {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
+        if(class(temp[[byvars]]) %in% c('numeric','integer')) {
+          temp[, eval(byvars) := as.character(get(byvars))]
+        }
       } else {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
       }
@@ -997,22 +1032,22 @@ BarPlot <- function(data = NULL,
     }
   } else if(check2) {
     if(length(ColorVar) != 0) {
-      if(any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(YVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, YVar))
       } else {
         byvars <- unique(c(byvars, YVar))
       }
-      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(ColorVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, ColorVar))
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
-      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar1)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar1))
       } else {
         byvars <- unique(c(byvars, FacetVar1))
       }
-      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar2)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar2))
       } else {
         byvars <- unique(c(byvars, FacetVar2))
@@ -1027,22 +1062,22 @@ BarPlot <- function(data = NULL,
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(YVar))
     } else {
-      if(any(class(data[[eval(YVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(YVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, YVar))
       } else {
         byvars <- unique(c(byvars, YVar))
       }
-      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(ColorVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, ColorVar))
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
-      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar1)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, ColorVar))
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
-      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar2)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, ColorVar))
       } else {
         byvars <- unique(c(byvars, ColorVar))
@@ -1059,22 +1094,22 @@ BarPlot <- function(data = NULL,
     }
   } else if(check3) {
     if(length(ColorVar) != 0) {
-      if(any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(XVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, XVar))
       } else {
         byvars <- unique(c(byvars, XVar))
       }
-      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(ColorVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, ColorVar))
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
-      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar1)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar1))
       } else {
         byvars <- unique(c(byvars, FacetVar1))
       }
-      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar2)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar2))
       } else {
         byvars <- unique(c(byvars, FacetVar2))
@@ -1089,22 +1124,22 @@ BarPlot <- function(data = NULL,
       p1 <- p1 + ggplot2::labs(fill = eval(ColorVar))
       p1 <- p1 + ggplot2::xlab(eval(XVar))
     } else {
-      if(any(class(data[[eval(XVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(XVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, XVar))
       } else {
         byvars <- unique(c(byvars, XVar))
       }
-      if(any(class(data[[eval(ColorVar)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(ColorVar)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, ColorVar))
       } else {
         byvars <- unique(c(byvars, ColorVar))
       }
-      if(any(class(data[[eval(FacetVar1)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar1)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar1))
       } else {
         byvars <- unique(c(byvars, FacetVar1))
       }
-      if(any(class(data[[eval(FacetVar2)]]) %in% c('numeric','integer'))) {
+      if(any(tryCatch({class(data[[eval(FacetVar2)]])}, error = function(x) "bla") %in% c('numeric','integer'))) {
         numvars <- unique(c(numvars, FacetVar2))
       } else {
         byvars <- unique(c(byvars, FacetVar2))
@@ -1644,6 +1679,9 @@ AutoPlotter <- function(dt = NULL,
   # Line
   if(tolower(PlotType) == 'lineplot') {
 
+    x <- class(dt[[XVar]])
+    if(!any(x %in% c('Date', 'POSIXct'))) return(NULL)
+
     if(Debug) {print('Line Plot Here');print(paste0('ColorVariables: ', ColorVariables));print(paste0('XTicks: ', XTicks));print(paste0('XVar: ', XVar));print(paste0('names(dt): ', names(dt)))}
 
     # TS Line Plot
@@ -1734,6 +1772,14 @@ AutoPlotter <- function(dt = NULL,
     }
     rm(temp)
 
+    # Check on ColorVariables
+    if(length(ColorVariables) != 0 && ColorVariables %in% names(dt)) {
+      x <- class(dt[[ColorVariables]])
+      if(any(x %in% c('numeric', 'integer'))) {
+        dt[, eval(ColorVariables) := as.character(get(ColorVariables))]
+      }
+    }
+
     # Build plot objects
     if(Debug) print('Build plot objects')
     Output <- RemixAutoML::ScatterCopula(
@@ -1760,24 +1806,21 @@ AutoPlotter <- function(dt = NULL,
 
     # Modify by plot type
     if(Debug) print('Modify by plot type')
-    if(PlotType %chin% 'Scatter') {
+    if(PlotType %chin% 'ScatterPlot') {
       p1 <- Output[['ScatterPlot']]
       p1 <- p1 + ggplot2::labs(
         title = paste0('Scatter Plot'),
         subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
                           "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
         caption = 'RemixAutoML')
-      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
 
-    } else if(PlotType %chin% 'Copula') {
-
+    } else if(PlotType %chin% 'CopulaPlot') {
       p1 <- Output[['CopulaPlot']]
       p1 <- p1 + ggplot2::labs(
         title = paste0('Empirical Copula Plot'),
         subtitle = paste0("r-sq pearson xbar = ", round(mean(R2_Pearson),3L), " +/- ", round(sd(R2_Pearson) / sqrt(30L), 5L)," :: ",
                           "r-sq spearman xbar = ", round(mean(R2_Spearman),3L), " +/- ", round(sd(R2_Spearman) / sqrt(30L), 5L)),
         caption = 'RemixAutoML')
-      p1 <- p1 + RemixAutoML::ChartTheme(Size = TextSize, AngleX = AngleX, AngleY = AngleY, ChartColor = ChartColor, BorderColor = BorderColor, TextColor = TextColor, GridColor = GridColor, BackGroundColor = BackGroundColor)
     }
 
     # Tick Marks
@@ -1819,9 +1862,13 @@ AutoPlotter <- function(dt = NULL,
       x_vals <- XTicks
     }
 
-    if(Debug) print('Update X and Y Ticks')
-    if(!'Default' %in% XTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
-    if(!'Default' %in% YTicks && PlotType == 'Scatter') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
+    if(Debug) {
+      print('Update X and Y Ticks')
+      print(!'Default' %in% XTicks)
+      print(!'Default' %in% XTicks && PlotType == 'ScatterPlot')
+    }
+    if(!'Default' %in% XTicks && PlotType == 'ScatterPlot') p1 <- p1 + ggplot2::scale_x_continuous(breaks = as.numeric(x_vals))
+    if(!'Default' %in% YTicks && PlotType == 'ScatterPlot') p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(y_vals))
 
     # Add ChartTheme
     if(Debug) print('ChartTheme')
@@ -1829,7 +1876,7 @@ AutoPlotter <- function(dt = NULL,
 
     # Limit Y
     if(Debug) print('Limit Y'); print(PlotType)
-    if(PlotType == 'Scatter' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
+    if(PlotType == 'ScatterPlot' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
 
     # Return plot
     return(eval(p1))

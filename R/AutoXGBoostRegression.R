@@ -20,9 +20,9 @@
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
 #' @param Methods Choose from "BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson". Function will determine if one cannot be used because of the underlying data.
 #' @param LossFunction Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'
-#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"
-#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
+#' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "rmse", "mae", "mape"
 #' @param grid_eval_metric "mae", "mape", "rmse", "r2". Case sensitive
+#' @param GridTune Set to TRUE to run a grid tuning procedure. Set a number in MaxModelsInGrid to tell the procedure how many models you want to test.
 #' @param NThreads Set the maximum number of threads you'd like to dedicate to the model run. E.g. 8
 #' @param TreeMethod Choose from "hist", "gpu_hist"
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
@@ -217,8 +217,12 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
   # Build model ----
   if(DebugMode) print("Build model ----")
   if(!is.null(WeightsVector)) {
+    print('Adrian Wants to see the Arg Values')
+    print(base_params)
     model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose, weight = WeightsVector)
   } else {
+    print('Adrian Wants to see the Arg Values')
+    print(base_params)
     model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose)
   }
 

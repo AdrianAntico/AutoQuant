@@ -98,7 +98,7 @@ AutoXGBoostRegression(
 
 \item{LossFunction}{Default is 'reg:squarederror'. Other options include 'reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie'}
 
-\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "r2", "RMSE", "MSE", "MAE"}
+\item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "rmse", "mae", "mape"}
 
 \item{grid_eval_metric}{"mae", "mape", "rmse", "r2". Case sensitive}
 
