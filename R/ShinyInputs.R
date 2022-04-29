@@ -1873,8 +1873,9 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
           shiny::column(3L, shiny::uiOutput(paste0('BarPlotAgg', PlotNumber)))),
         shiny::fluidRow(
           width=AppWidth,
-          shiny::column(6L, shiny::uiOutput(paste0('YVar', PlotNumber))),
-          shiny::column(6L, shiny::uiOutput(paste0('XVar', PlotNumber)))),
+          shiny::column(4L, shiny::uiOutput(paste0('YVar', PlotNumber))),
+          shiny::column(4L, shiny::uiOutput(paste0('XVar', PlotNumber))),
+          shiny::column(4L, shiny::uiOutput(paste0('ZVar', PlotNumber)))),
         shiny::fluidRow(
           width=AppWidth,
           shiny::column(6L, shiny::uiOutput(paste0('FacetVar_', PlotNumber, '_1'))),
@@ -2624,10 +2625,13 @@ InitalizeInputs <- function(id) {
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       for(i in seq_len(4L)) {
         output[[paste0('YVar', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('YVar', i), Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable'), Choices = NULL, Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('YVar', i), Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Y-Variable'), Choices = NULL, Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL, CloseAfterSelect = TRUE)
         })
         output[[paste0('XVar', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('XVar', i), Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable'), Choices = NULL, Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('XVar', i), Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'X-Variable'), Choices = NULL, Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL, CloseAfterSelect = TRUE)
+        })
+        output[[paste0('ZVar', i)]] <- shiny::renderUI({
+          RemixAutoML::SelectizeInput(InputID = paste0('ZVar', i), Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Z-Variable'), Choices = NULL, Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL, CloseAfterSelect = TRUE)
         })
         output[[paste0('GroupVars', i)]] <- shiny::renderUI({
           RemixAutoML::SelectizeInput(InputID=paste0('GroupVars', i), Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices= NULL, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)

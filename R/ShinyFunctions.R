@@ -577,7 +577,7 @@ YTicks <- function(data, yvar = 'None') {
 }
 
 #' @noRd
-XTicks <- function(data, xvar='None',datevar='None') {
+XTicks <- function(data, xvar='None') {
   if(!any(xvar %in% 'None') && length(xvar) == 1L) {
     Uniques <- tryCatch({data[, unique(get(xvar))]}, error = function(x) NULL)
     x <- class(data[[eval(xvar)]])[1L]
@@ -589,16 +589,6 @@ XTicks <- function(data, xvar='None',datevar='None') {
       choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
     } else if(any(x %like% c('character','numeric','integer'))) {
       choices <- c('Default', Uniques)
-    } else {
-      choices <- c('Default', Uniques)
-    }
-  } else if(datevar != 'None') {
-    Uniques <- tryCatch({data[, unique(get(datevar))]}, error = function(x) NULL)
-    x <- class(data[[eval(datevar)]])[1L]
-    if(any(x %chin% c('Date'))) {
-      choices <- c('Default', '1 year', '1 day', '1 week', '1 month', '3 day', '2 week', '3 month', '6 month', '2 year', '5 year', '10 year')
-    } else if(any(x %like% c('POSIX'))) {
-      choices <- c('Default', '1 year', '1 day', '3 day', '1 week', '2 week', '1 month', '3 month', '6 month', '2 year', '5 year', '10 year', '1 minute', '15 minutes', '30 minutes', '1 hour', '3 hour', '6 hour', '12 hour')
     } else {
       choices <- c('Default', Uniques)
     }

@@ -67,7 +67,7 @@ TimeSeriesFill <- function(data = data,
 
     # Merge
     if(!is.null(GroupVariables)) {
-      FillData <- merge(FillData, data, by = c(DateColumnName, GroupVariables), all = FALSE)
+      FillData <- merge(FillData, data, by = c(DateColumnName, GroupVariables), all.x = TRUE)
     } else {
       FillData <- merge(FillData, data, by = eval(DateColumnName), all.x = TRUE)
     }

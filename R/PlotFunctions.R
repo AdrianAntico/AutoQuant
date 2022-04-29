@@ -1,3 +1,178 @@
+#' @title HeatMapPlot
+#'
+#' @description Create heat maps with numeric or categorical dt
+#'
+#' @param dt Source data.table
+#' @param x X-Axis variable
+#' @param y Y-Axis variable
+#' @param z Z-Axis variable
+#' @param AggMethod 'mean', 'median', 'sum', 'sd', 'count'
+#' @param PercentileBuckets_X = 0.10
+#' @param PercentileBuckets_Y = 0.10
+#' @param NLevels_X = 20
+#' @param NLevels_Y = 20
+#' @param RankLevels_X = 'mean'
+#'
+#' @export
+HeatMapPlot <- function(dt,
+                        x = NULL,
+                        y = NULL,
+                        z = NULL,
+                        AggMethod = 'mean',
+                        PercentileBuckets_X = 0.10,
+                        PercentileBuckets_Y = 0.10,
+                        NLevels_X = 33,
+                        NLevels_Y = 33) {
+
+
+  # Subset cols
+  dt <- dt[, .SD, .SDcols = c(x,y,z)]
+
+  # Build pltos
+  if(class(dt[[x]])[[1L]] %in% c('numeric','integer') && class(dt[[y]])[[1L]] %in% c('numeric','integer')) {
+
+    # rank x and y
+    dt[, eval(x) := round(data.table::frank(dt[[x]]) * (1/PercentileBuckets_X) /.N) * PercentileBuckets_X]
+    dt[, eval(y) := round(data.table::frank(dt[[y]]) * (1/PercentileBuckets_X) /.N) * PercentileBuckets_X]
+    data.table::setnames(dt, eval(z), 'Measure_Variable')
+
+    # Formatting
+    vals <- unique(scales::rescale(c(dt[['Measure_Variable']])))
+    o <- order(vals, decreasing = FALSE)
+    cols <- scales::col_numeric("Purples", domain = NULL)(vals)
+    colz <- setNames(data.frame(vals[o], cols[o]), NULL)
+
+    # Create final data for plot
+    fig <- plotly::plot_ly(dt, x = ~get(x), y = ~get(y), z = ~Measure_Variable, colorscale = colz, type = "heatmap")
+    fig <- plotly::layout(
+      p = fig,
+      title = eval(z),
+      xaxis = list(title = eval(x)),
+      yaxis = list(title = eval(y)))
+
+  } else if(!class(dt[[x]])[[1L]] %in% c('numeric','integer') && class(dt[[y]])[[1L]] %in% c('numeric','integer')) {
+
+    # rank y
+    dt[, eval(y) := round(data.table::frank(dt[[y]]) * (1/PercentileBuckets_X) /.N) * PercentileBuckets_X]
+    data.table::setnames(dt, eval(z), 'Measure_Variable')
+
+    # Top Y Levels
+    temp <- dt[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c('Measure_Variable'), by = c(y)][order(-Measure_Variable)]
+    temp <- temp[seq_len(min(NLevels_Y, temp[, .N]))][[1L]]
+    dt <- dt[get(y) %in% eval(temp)]
+
+    # Formatting
+    vals <- unique(scales::rescale(c(dt[['Measure_Variable']])))
+    o <- order(vals, decreasing = FALSE)
+    cols <- scales::col_numeric("Purples", domain = NULL)(vals)
+    colz <- setNames(data.frame(vals[o], cols[o]), NULL)
+
+    # Create final data for plot
+    fig <- plotly::plot_ly(dt, x = ~get(x), y = ~get(y), z = ~Measure_Variable, colorscale = colz, type = "heatmap")
+    fig <- plotly::layout(
+      p = fig,
+      title = eval(z),
+      xaxis = list(title = eval(x)),
+      yaxis = list(title = eval(y)))
+
+
+  } else if(class(dt[[x]])[[1L]] %in% c('numeric','integer') && !class(dt[[y]])[[1L]] %in% c('numeric','integer')) {
+
+    # rank x
+    dt[, eval(x) := round(data.table::frank(dt[[x]]) * (1/PercentileBuckets_X) /.N) * PercentileBuckets_X]
+    data.table::setnames(dt, eval(z), 'Measure_Variable')
+
+    # Top Y Levels
+    temp <- dt[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c('Measure_Variable'), by = c(y)][order(-Measure_Variable)]
+    temp <- temp[seq_len(min(NLevels_X, temp[, .N]))][[1L]]
+
+    dt <- dt[get(y) %in% eval(temp)]
+
+    # Formatting
+    vals <- unique(scales::rescale(c(dt[['Measure_Variable']])))
+    o <- order(vals, decreasing = FALSE)
+    cols <- scales::col_numeric("Purples", domain = NULL)(vals)
+    colz <- setNames(data.frame(vals[o], cols[o]), NULL)
+
+    # Create final dt for plot
+    fig <- plotly::plot_ly(dt, x = ~get(x), y = ~get(y), z = ~Measure_Variable, colorscale = colz, type = "heatmap")
+    fig <- plotly::layout(
+      p = fig,
+      title = eval(z),
+      xaxis = list(title = eval(x)),
+      yaxis = list(title = eval(y)))
+
+  } else {
+
+    print("HeatMapPlot AggMethod Here")
+    print(AggMethod)
+
+    # Starter pack
+    if(AggMethod == 'mean') {
+      temp_y <- dt[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(z), by = c(y)][order(-get(z))]
+      temp_x <- dt[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(z), by = c(x)][order(-get(z))]
+      temp_yy <- temp_y[seq_len(min(NLevels_Y, temp_y[, .N]))][[1L]]
+      temp_xx <- temp_x[seq_len(min(NLevels_X, temp_x[, .N]))][[1L]]
+      dt <- dt[get(y) %in% eval(temp_yy) & get(x) %in% eval(temp_xx)]
+      dt <- dt[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(z), by = c(x,y)]
+    } else if(AggMethod == 'median') {
+      temp_y <- dt[, lapply(.SD, median, na.rm = TRUE), .SDcols = c(z), by = c(y)][order(-get(z))]
+      temp_x <- dt[, lapply(.SD, median, na.rm = TRUE), .SDcols = c(z), by = c(x)][order(-get(z))]
+      temp_y <- temp_y[seq_len(min(NLevels_Y, temp_y[, .N]))][[1L]]
+      temp_x <- temp_x[seq_len(min(NLevels_X, temp_x[, .N]))][[1L]]
+      dt <- dt[get(y) %in% eval(temp_y) & get(x) %in% eval(temp_x)]
+      dt <- dt[, lapply(.SD, median, na.rm = TRUE), .SDcols = c(z), by = c(x,y)]
+    } else if(AggMethod == 'sum') {
+      temp_y <- dt[, lapply(.SD, sum, na.rm = TRUE), .SDcols = c(z), by = c(y)][order(-get(z))]
+      temp_x <- dt[, lapply(.SD, sum, na.rm = TRUE), .SDcols = c(z), by = c(x)][order(-get(z))]
+      temp_y <- temp_y[seq_len(min(NLevels_Y, temp_y[, .N]))][[1L]]
+      temp_x <- temp_x[seq_len(min(NLevels_X, temp_x[, .N]))][[1L]]
+      dt <- dt[get(y) %in% eval(temp_y) & get(x) %in% eval(temp_x)]
+      dt <- dt[, lapply(.SD, sum, na.rm = TRUE), .SDcols = c(z), by = c(x,y)]
+    } else if(AggMethod == 'sd') {
+      temp_y <- dt[, lapply(.SD, sd, na.rm = TRUE), .SDcols = c(z), by = c(y)][order(-get(z))]
+      temp_x <- dt[, lapply(.SD, sd, na.rm = TRUE), .SDcols = c(z), by = c(x)][order(-get(z))]
+      temp_y <- temp_y[seq_len(min(NLevels_Y, temp_y[, .N]))][[1L]]
+      temp_x <- temp_x[seq_len(min(NLevels_X, temp_x[, .N]))][[1L]]
+      dt <- dt[get(y) %in% eval(temp_y) & get(x) %in% eval(temp_x)]
+      dt <- dt[, lapply(.SD, sd, na.rm = TRUE), .SDcols = c(z), by = c(x,y)]
+    } else if(AggMethod == 'count') {
+      temp_y <- dt[, lapply(.SD, .N, na.rm = TRUE), .SDcols = c(z), by = c(y)][order(-get(z))]
+      temp_x <- dt[, lapply(.SD, .N, na.rm = TRUE), .SDcols = c(z), by = c(x)][order(-get(z))]
+      temp_y <- temp_y[seq_len(min(NLevels_Y, temp_y[, .N]))][[1L]]
+      temp_x <- temp_x[seq_len(min(NLevels_X, temp_x[, .N]))][[1L]]
+      dt <- dt[get(y) %in% eval(temp_y) & get(x) %in% eval(temp_x)]
+      dt <- dt[, lapply(.SD, .N, na.rm = TRUE), .SDcols = c(z), by = c(x,y)]
+    }
+
+    # Update names
+    data.table::setnames(dt, eval(z), 'Measure_Variable')
+
+    # Formatting
+    xform <- list(categoryarray = c(as.character(unique(dt[[x]]))), categoryorder = "array")
+    yform <- list(categoryarray = c(as.character(unique(dt[[y]]))), categoryorder = "array")
+
+    # Create final dt for plot
+    # fig <- plotly::plot_ly(dt, x = ~get(x), y = ~get(y), z = ~Measure_Variable, colorscale = colz, type = "heatmap")
+    fig <- plotly::plot_ly(
+      dt,
+      x = ~get(x),
+      y = ~get(y),
+      z = ~Measure_Variable,
+      colors = grDevices::colorRamp(c('aliceblue','purple')),
+      type = "heatmap")
+    fig <- plotly::layout(
+      p = fig,
+      plot_bgcolor = '#F0F8FF',
+      title = eval(z),
+      xaxis = list(title = eval(x)),
+      yaxis = list(title = eval(y)))
+  }
+
+  # Return plot
+  return(eval(fig))
+}
+
 #' Automated Word Frequency and Word Cloud Creation
 #'
 #' This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
@@ -124,10 +299,12 @@ AutoWordFreq <- function(data,
 #'
 #' @export
 PlotlyConversion <- function(p1) {
-  if(!is.null(p1$plot_env$ForecastLineColor) || any(p1$layers[[1]]$mapping %like% 'PredictionColName')) {
-    p1 <- plotly::rangeslider(plotly::ggplotly(p1, dynamicTicks = TRUE))
-  } else {
-    p1 <- plotly::ggplotly(p1)
+  if(class(p1)[[1L]] != 'plotly') {
+    if(!is.null(p1$plot_env$ForecastLineColor) || any(p1$layers[[1]]$mapping %like% 'PredictionColName')) {
+      p1 <- plotly::rangeslider(plotly::ggplotly(p1, dynamicTicks = TRUE))
+    } else {
+      p1 <- plotly::ggplotly(p1)
+    }
   }
   return(p1)
 }
@@ -1446,6 +1623,7 @@ HistPlot <- function(data = NULL,
 #' @param SampleSize = input[['SampleSize']]
 #' @param YVar = shiny::isolate(YVar())
 #' @param XVar = shiny::isolate(DateVar())
+#' @param ZVar = ZVar
 #' @param YMin = input[['YMin']]
 #' @param YMax = input[['YMax']]
 #' @param XMin = input[['XMin']]
@@ -1481,10 +1659,13 @@ AutoPlotter <- function(dt = NULL,
                         SampleSize = 100000L,
                         YVar = NULL,
                         XVar = NULL,
+                        ZVar = NULL,
                         YMin = NULL,
                         YMax = NULL,
                         XMin = NULL,
                         XMax = NULL,
+                        NumLevels_Y = 75,
+                        NumLevels_X = 40,
                         MaxGroupTS = 50,
                         ColorVariables = NULL,
                         SizeVar1 = 'None',
@@ -1877,6 +2058,24 @@ AutoPlotter <- function(dt = NULL,
     # Limit Y
     if(Debug) print('Limit Y'); print(PlotType)
     if(PlotType == 'ScatterPlot' && !is.null(RemixAutoML:::CEPP(YMin, Default = NULL)) && !is.null(RemixAutoML:::CEPP(YMax, Default = NULL))) p1 <- p1 + ggplot2::ylim(as.numeric(eval(YMin)), as.numeric(eval(YMax)))
+
+    # Return plot
+    return(eval(p1))
+  }
+
+  # Heat Map
+  if(tolower(PlotType) %in% c('heatmapplot')) {
+    print(names(dt))
+    p1 <- RemixAutoML::HeatMapPlot(
+      dt = dt,
+      y = YVar,
+      x = XVar,
+      z = ZVar,
+      AggMethod = BarPlotAggMethod,
+      PercentileBuckets_Y = 0.10,
+      PercentileBuckets_X = 0.10,
+      NLevels_Y = NumLevels_Y,
+      NLevels_X = NumLevels_X)
 
     # Return plot
     return(eval(p1))

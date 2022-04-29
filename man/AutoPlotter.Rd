@@ -10,10 +10,13 @@ AutoPlotter(
   SampleSize = 100000L,
   YVar = NULL,
   XVar = NULL,
+  ZVar = NULL,
   YMin = NULL,
   YMax = NULL,
   XMin = NULL,
   XMax = NULL,
+  NumLevels_Y = 75,
+  NumLevels_X = 40,
   MaxGroupTS = 50,
   ColorVariables = NULL,
   SizeVar1 = "None",
@@ -52,6 +55,8 @@ AutoPlotter(
 \item{YVar}{= shiny::isolate(YVar())}
 
 \item{XVar}{= shiny::isolate(DateVar())}
+
+\item{ZVar}{= ZVar}
 
 \item{YMin}{= input[['YMin']]}
 

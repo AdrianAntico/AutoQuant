@@ -34,7 +34,7 @@ InitalizeInputs <- TRUE
 
 # List of Plot Types to choose
 AvailablePlots <- c(
-  'Histogram', 'ViolinPlot', 'BoxPlot', 'BarPlot', 'LinePlot', 'ScatterPlot', 'CopulaPlot', 'CorrelationMatrix',
+  'Histogram','ViolinPlot','BoxPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','CorrelationMatrix','HeatMapPlot',
   'ShapelyImportance',
   'PartialDependenceLine', 'PartialDependenceBox',
   'CalibrationPlot', 'CalibrationBoxPlot',
@@ -2225,6 +2225,7 @@ server <- function(input, output, session) {
 
     # Reactives
     dt1 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot1_SelectData]]}, error = function(x) DataList[[1L]]))})
+    dt1 <<- dt1
 
     # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
     output$Plot1 <- shiny::renderUI({
@@ -2274,9 +2275,28 @@ server <- function(input, output, session) {
     PlotDropDown1[['XVar1']][['SelectedDefault']][[length(PlotDropDown1[['XVar1']][['SelectedDefault']]) + 1L]] <- input$XVar1
     PlotDropDown1 <<- PlotDropDown1
 
+    # Z Variable
+    output$ZVar1 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'ZVar1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      if('HeatMapPlot' %in% tryCatch({Plot1_react()}, error = 'none')) {
+        MaxVars <- 1
+        choices <- names(dt1())
+      } else {
+        MaxVars <- 0
+        choices <- NULL
+      }
+      RemixAutoML:::SelectizeInput(InputID = 'ZVar1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Z-Variable'), Choices = choices, Multiple = TRUE, MaxVars = MaxVars, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    PlotDropDown1[['ZVar1']][['SelectedDefault']][[length(PlotDropDown1[['ZVar1']][['SelectedDefault']]) + 1L]] <- input$ZVar1
+    PlotDropDown1 <<- PlotDropDown1
+
     # Reactives
     YVar1 <- shiny::reactive({shiny::req(input[['YVar1']])})
+    YVar1 <<- YVar1
     XVar1 <- shiny::reactive({shiny::req(input[['XVar1']])})
+    XVar1 <<- XVar1
 
     # Select GroupVars
     output$GroupVars1 <- shiny::renderUI({
@@ -2377,7 +2397,7 @@ server <- function(input, output, session) {
     # Bar Plot Aggregation Method
     output$BarPlotAgg1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'BarPlotAgg1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'BarPlotAgg1', Label = tags$span(style='color: blue;', 'Bar Plot Agg Method'), Choices = c('mean','median','sd'), Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID = 'BarPlotAgg1', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('sum','mean','median','sd'), Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2421,6 +2441,7 @@ server <- function(input, output, session) {
 
     # Reactives
     dt2 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot2_SelectData]]}, error = function(x) DataList[[1L]]))})
+    dt2 <<- dt2
 
     # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
     output$Plot2 <- shiny::renderUI({
@@ -2470,9 +2491,28 @@ server <- function(input, output, session) {
     PlotDropDown2[['XVar2']][['SelectedDefault']][[length(PlotDropDown2[['XVar2']][['SelectedDefault']]) + 1L]] <- input$XVar2
     PlotDropDown2 <<- PlotDropDown2
 
+    # Z Variable
+    output$ZVar2 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'ZVar2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      if('HeatMapPlot' %in% tryCatch({Plot2_react()}, error = 'none')) {
+        MaxVars <- 1
+        choices <- names(dt2())
+      } else {
+        MaxVars <- 0
+        choices <- NULL
+      }
+      RemixAutoML:::SelectizeInput(InputID = 'ZVar2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Z-Variable'), Choices = choices, Multiple = TRUE, MaxVars = MaxVars, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    PlotDropDown2[['ZVar2']][['SelectedDefault']][[length(PlotDropDown2[['ZVar2']][['SelectedDefault']]) + 1L]] <- input$ZVar2
+    PlotDropDown2 <<- PlotDropDown2
+
     # Reactives
     YVar2 <- shiny::reactive({shiny::req(input[['YVar2']])})
+    YVar2 <<- YVar2
     XVar2 <- shiny::reactive({shiny::req(input[['XVar2']])})
+    XVar2 <<- XVar2
 
     # Select GroupVars
     output$GroupVars2 <- shiny::renderUI({
@@ -2573,7 +2613,7 @@ server <- function(input, output, session) {
     # Bar Plot Aggregation Method
     output$BarPlotAgg2 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'BarPlotAgg2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'BarPlotAgg2', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID = 'BarPlotAgg2', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('sum','mean','median','sd'), Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2617,6 +2657,7 @@ server <- function(input, output, session) {
 
     # Reactives
     dt3 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot3_SelectData]]}, error = function(x) DataList[[1L]]))})
+    dt3 <<- dt3
 
     # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
     output$Plot3 <- shiny::renderUI({
@@ -2666,9 +2707,28 @@ server <- function(input, output, session) {
     PlotDropDown3[['XVar3']][['SelectedDefault']][[length(PlotDropDown3[['XVar3']][['SelectedDefault']]) + 1L]] <- input$XVar3
     PlotDropDown3 <<- PlotDropDown3
 
+    # Z Variable
+    output$ZVar3 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'ZVar3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      if('HeatMapPlot' %in% tryCatch({Plot3_react()}, error = 'none')) {
+        MaxVars <- 1
+        choices <- names(dt3())
+      } else {
+        MaxVars <- 0
+        choices <- NULL
+      }
+      RemixAutoML:::SelectizeInput(InputID = 'ZVar3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Z-Variable'), Choices = choices, Multiple = TRUE, MaxVars = MaxVars, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    PlotDropDown3[['ZVar3']][['SelectedDefault']][[length(PlotDropDown3[['ZVar3']][['SelectedDefault']]) + 1L]] <- input$ZVar3
+    PlotDropDown3 <<- PlotDropDown3
+
     # Reactives
     YVar3 <- shiny::reactive({shiny::req(input[['YVar3']])})
+    YVar3 <<- YVar3
     XVar3 <- shiny::reactive({shiny::req(input[['XVar3']])})
+    XVar3 <<- XVar3
 
     # Select GroupVars
     output$GroupVars3 <- shiny::renderUI({
@@ -2769,7 +2829,7 @@ server <- function(input, output, session) {
     # Bar Plot Aggregation Method
     output$BarPlotAgg3 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'BarPlotAgg3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'BarPlotAgg3', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID = 'BarPlotAgg3', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('sum','mean','median','sd'), Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2813,6 +2873,7 @@ server <- function(input, output, session) {
 
     # Reactives
     dt4 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot4_SelectData]]}, error = function(x) DataList[[1L]]))})
+    dt4 <<- dt4
 
     # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
     output$Plot4 <- shiny::renderUI({
@@ -2862,9 +2923,28 @@ server <- function(input, output, session) {
     PlotDropDown4[['XVar4']][['SelectedDefault']][[length(PlotDropDown4[['XVar4']][['SelectedDefault']]) + 1L]] <- input$XVar4
     PlotDropDown4 <<- PlotDropDown4
 
+    # Z Variable
+    output$ZVar4 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'ZVar4', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      if('HeatMapPlot' %in% tryCatch({Plot4_react()}, error = 'none')) {
+        MaxVars <- 1
+        choices <- names(dt4())
+      } else {
+        MaxVars <- 0
+        choices <- NULL
+      }
+      RemixAutoML:::SelectizeInput(InputID = 'ZVar4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Z-Variable'), Choices = choices, Multiple = TRUE, MaxVars = MaxVars, SelectedDefault = selected_default)
+    })
+
+    # Args Storage
+    PlotDropDown4[['ZVar4']][['SelectedDefault']][[length(PlotDropDown4[['ZVar4']][['SelectedDefault']]) + 1L]] <- input$ZVar4
+    PlotDropDown4 <<- PlotDropDown4
+
     # Reactives
     YVar4 <- shiny::reactive({shiny::req(input[['YVar4']])})
+    YVar4 <<- YVar4
     XVar4 <- shiny::reactive({shiny::req(input[['XVar4']])})
+    XVar4 <<- XVar4
 
     # Select GroupVars
     output$GroupVars4 <- shiny::renderUI({
@@ -2965,7 +3045,7 @@ server <- function(input, output, session) {
     # Bar Plot Aggregation Method
     output$BarPlotAgg4 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'BarPlotAgg4', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'BarPlotAgg4', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('mean','median','sd'), Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID = 'BarPlotAgg4', Label = tags$span(style='color: blue;', 'Aggregate Method'), Choices = c('sum','mean','median','sd'), Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -3044,6 +3124,38 @@ server <- function(input, output, session) {
   # Plot Structure Inputs
   shiny::observeEvent(input$PlotStructureInputs, {
 
+    # Dependency reactive values
+    xx1 <- tryCatch({XVar1()}, error = function(x) 'None')
+    xx2 <- tryCatch({XVar2()}, error = function(x) 'None')
+    xx3 <- tryCatch({XVar3()}, error = function(x) 'None')
+    xx4 <- tryCatch({XVar4()}, error = function(x) 'None')
+    yy1 <- tryCatch({YVar1()}, error = function(x) 'None')
+    yy2 <- tryCatch({YVar2()}, error = function(x) 'None')
+    yy3 <- tryCatch({YVar3()}, error = function(x) 'None')
+    yy4 <- tryCatch({YVar4()}, error = function(x) 'None')
+    dd1 <- tryCatch({dt1()}, error = function(x) NULL)
+    dd2 <- tryCatch({dt2()}, error = function(x) NULL)
+    dd3 <- tryCatch({dt3()}, error = function(x) NULL)
+    dd4 <- tryCatch({dt4()}, error = function(x) NULL)
+
+    # Tick Marks debugging
+    if(Debug) {
+      print('Tick Marks Inspection start here')
+      print(xx1)
+      print(xx2)
+      print(xx3)
+      print(xx4)
+      print(yy1)
+      print(yy2)
+      print(yy3)
+      print(yy4)
+      print(dd1)
+      print(dd2)
+      print(dd3)
+      print(dd4)
+      print('Tick Marks Inspection end here')
+    }
+
     # Y Text Angles
     output$AngleY1 <- shiny::renderUI({
       RemixAutoML:::NumericInput(InputID = 'AngleY1', Label = tags$span(style='color: blue;', 'Plot 1 Y-Axis Text Angle'), Step = 5, Min = 0, Max = 360, Value = 0)
@@ -3074,38 +3186,30 @@ server <- function(input, output, session) {
 
     # YTicks Values (NULL is whats handled by RemixAutoML:::YTicks())
     output$YTicks1 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'YTicks1', Label = tags$span(style='color: blue;', 'Plot 1 Y-Axis Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID = 'YTicks1', Label = tags$span(style='color: blue;', 'Plot 1 Y-Axis Ticks'), Choices = RemixAutoML:::YTicks(dd1, yvar = yy1), SelectedDefault = 'Default', Multiple = TRUE)
     })
     output$YTicks2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'YTicks2', Label = tags$span(style='color: blue;', 'Plot 2 Y-Axis Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID = 'YTicks2', Label = tags$span(style='color: blue;', 'Plot 2 Y-Axis Ticks'), Choices = RemixAutoML:::YTicks(dd2, yvar = yy2), SelectedDefault = 'Default', Multiple = TRUE)
     })
     output$YTicks3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'YTicks3', Label = tags$span(style='color: blue;', 'Plot 3 Y-Axis Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID = 'YTicks3', Label = tags$span(style='color: blue;', 'Plot 3 Y-Axis Ticks'), Choices = RemixAutoML:::YTicks(dd3, yvar = yy3), SelectedDefault = 'Default', Multiple = TRUE)
     })
     output$YTicks4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'YTicks4', Label = tags$span(style='color: blue;', 'Plot 4 Y-Axis Ticks'), Choices = RemixAutoML:::YTicks(data, yvar = yy), SelectedDefault = 'Default', Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID = 'YTicks4', Label = tags$span(style='color: blue;', 'Plot 4 Y-Axis Ticks'), Choices = RemixAutoML:::YTicks(dd4, yvar = yy4), SelectedDefault = 'Default', Multiple = TRUE)
     })
 
     # XTicks Values ('None' is whats handled by RemixAutoML:::XTicks())
     output$XTicks1 <- shiny::renderUI({
-      xx <- tryCatch({XVar1()}, error = function(x) 'None')
-      dd <- tryCatch({DateVar1()}, error = function(x) 'None')
-      RemixAutoML:::SelectizeInput(InputID = 'XTicks1', Label = tags$span(style='color: blue;', 'Plot 1 X-Axis Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID = 'XTicks1', Label = tags$span(style='color: blue;', 'Plot 1 X-Axis Ticks'), Choices = RemixAutoML:::XTicks(dd1, xvar=xx1), SelectedDefault = 'Default', Multiple = TRUE)
     })
     output$XTicks2 <- shiny::renderUI({
-      xx <- tryCatch({XVar2()}, error = function(x) 'None')
-      dd <- tryCatch({DateVar2()}, error = function(x) 'None')
-      RemixAutoML:::SelectizeInput(InputID = 'XTicks2', Label = tags$span(style='color: blue;', 'Plot 2 X-Axis Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID = 'XTicks2', Label = tags$span(style='color: blue;', 'Plot 2 X-Axis Ticks'), Choices = RemixAutoML:::XTicks(dd2, xvar=xx2), SelectedDefault = 'Default', Multiple = TRUE)
     })
     output$XTicks3 <- shiny::renderUI({
-      xx <- tryCatch({XVar3()}, error = function(x) 'None')
-      dd <- tryCatch({DateVar3()}, error = function(x) 'None')
-      RemixAutoML:::SelectizeInput(InputID = 'XTicks3', Label = tags$span(style='color: blue;', 'Plot 3 X-Axis Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID = 'XTicks3', Label = tags$span(style='color: blue;', 'Plot 3 X-Axis Ticks'), Choices = RemixAutoML:::XTicks(dd3, xvar=xx3), SelectedDefault = 'Default', Multiple = TRUE)
     })
     output$XTicks4 <- shiny::renderUI({
-      xx <- tryCatch({XVar4()}, error = function(x) 'None')
-      dd <- tryCatch({DateVar4()}, error = function(x) 'None')
-      RemixAutoML:::SelectizeInput(InputID = 'XTicks4', Label = tags$span(style='color: blue;', 'Plot 4 X-Axis Ticks'), Choices = RemixAutoML:::XTicks(data, xvar=xx,datevar=dd), SelectedDefault = 'Default', Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID = 'XTicks4', Label = tags$span(style='color: blue;', 'Plot 4 X-Axis Ticks'), Choices = RemixAutoML:::XTicks(dd4, xvar=xx4), SelectedDefault = 'Default', Multiple = TRUE)
     })
 
     # Text Size
@@ -3836,7 +3940,7 @@ server <- function(input, output, session) {
     AutoTransformationCreate_ColumnNames <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoTransformationCreate_ColumnNames']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
     if(length(AutoTransformationCreate_ColumnNames) != 0) {
       AutoTransformationCreate_Methods <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoTransformationCreate_Methods']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$Transformations_SelectData)]]
+      x <- DataList[[eval(input$AutoTransformationCreate_SelectData)]]
       x <- RemixAutoML::AutoTransformationCreate(
         data = x,
         ColumnNames = AutoTransformationCreate_ColumnNames,
@@ -3844,7 +3948,7 @@ server <- function(input, output, session) {
         Path = NULL,
         TransID = "ModelID",
         SaveOutput = FALSE)$Data
-      DataList[[eval(input$Transformations_SelectData)]] <- x
+      DataList[[eval(input$AutoTransformationCreate_SelectData)]] <- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
         RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
@@ -4579,6 +4683,7 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['YTicks']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('YTicks', run)]]}, error=function(x) NULL), Type='character', Default='Default')
       PlotObjectHome[[paste0('Plot_', run)]][['XVar']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('XVar', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['XTicks']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('XTicks', run)]]}, error=function(x) NULL), Type='character', Default='Default')
+      PlotObjectHome[[paste0('Plot_', run)]][['ZVar']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('ZVar', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['CorMethod']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('CorMethod', run)]]}, error=function(x) NULL), Type='character', Default='pearson')
       PlotObjectHome[[paste0('Plot_', run)]][['ScoreVar']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('ScoreVar', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['GroupVars']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('GroupVars', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -4659,6 +4764,7 @@ server <- function(input, output, session) {
         YTicks <- PlotObjectHome[[paste0('Plot_', run)]][['YTicks']]
         XVar <- PlotObjectHome[[paste0('Plot_', run)]][['XVar']]
         XTicks <- PlotObjectHome[[paste0('Plot_', run)]][['XTicks']]
+        ZVar <- PlotObjectHome[[paste0('Plot_', run)]][['ZVar']]
         CorMethod <- PlotObjectHome[[paste0('Plot_', run)]][['CorMethod']]
         ScoreVar <- PlotObjectHome[[paste0('Plot_', run)]][['ScoreVar']]
         GroupVars <- PlotObjectHome[[paste0('Plot_', run)]][['GroupVars']]
@@ -4933,15 +5039,15 @@ server <- function(input, output, session) {
 
             # Subset columns
             if(Debug) print('Subset Columns Here')
-            if(!PlotType %in% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','CorrelationMatrix','ShapelyImportance')) {
+            if(!PlotType %in% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','CorrelationMatrix','HeatMapPlot','ShapelyImportance')) {
               if(length(unique(c(XVar))) != 0) {
-                Keep <- unique(c(YVar, XVar, ScoreVar)); if(Debug) {print(Keep); print(names(data1))}
+                Keep <- unique(c(YVar, XVar, ZVar, ScoreVar)); if(Debug) {print(Keep); print(names(data1))}
                 data1 <- data1[, .SD, .SDcols = c(Keep)]; if(Debug) print('Subset Columns Here predone')
                 CodeCollection[[run]][[length(CodeCollection)+1L]] <- paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]"); if(Debug) print('Subset Columns Here done')
               }
             } else if(!PlotType %in% 'ShapelyImportance') {
-              if(length(unique(c(YVar, XVar, GroupVars, SizeVars, FacetVar1, FacetVar2))) != 0) {
-                Keep <- unique(c(YVar, XVar, GroupVars, SizeVars, FacetVar1, FacetVar2))
+              if(length(unique(c(YVar, XVar, ZVar, GroupVars, SizeVars, FacetVar1, FacetVar2))) != 0) {
+                Keep <- unique(c(YVar, XVar, ZVar, GroupVars, SizeVars, FacetVar1, FacetVar2))
                 if(PlotType %in% 'VariableImportance') Keep <- unique(keep, 'Variable','Importance')
                 data1 <- data1[, .SD, .SDcols = c(Keep)]; if(Debug) print('Subset Columns Here predone')
                 CodeCollection[[run]][[length(CodeCollection)+1L]] <- paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]"); if(Debug) print('Subset Columns Here done')
@@ -4973,7 +5079,7 @@ server <- function(input, output, session) {
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         # Create Plots                         ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        if(PlotType %chin% c('BoxPlot', 'ViolinPlot', 'BarPlot', 'LinePlot', 'ScatterPlot', 'CopulaPlot', 'Histogram', 'CorrelationMatrix')) {
+        if(PlotType %chin% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','CorrelationMatrix','HeatMapPlot')) {
 
           # AutoPlotter()
           if(Debug) print('Run AutoPlotter')
@@ -4983,6 +5089,7 @@ server <- function(input, output, session) {
             SampleSize = SampleSize,
             YVar = YVar,
             XVar = XVar,
+            ZVar = ZVar,
             Bins = NumberBins,
             ColorVariables = GroupVars,
             SizeVar1 = SizeVars,
@@ -5014,6 +5121,7 @@ server <- function(input, output, session) {
             print(RemixAutoML:::CEPP(PlotType))
             print(paste0('YVar = ', RemixAutoML:::CEP(YVar)))
             print(paste0('XVar = ', RemixAutoML:::CEP(XVar)))
+            print(paste0('ZVar = ', RemixAutoML:::CEP(ZVar)))
             print(paste0('Bins = ', RemixAutoML:::CEP(NumberBins)))
             print(paste0('ColorVariables = ', RemixAutoML:::CEP(GroupVars[[1L]])))
             print(paste0('SizeVar1 = ', RemixAutoML:::CEP(SizeVars)))
@@ -5044,6 +5152,7 @@ server <- function(input, output, session) {
             "RemixAutoML:::AutoPlotter(dt = data1, PlotType = ", RemixAutoML:::CEP(PlotType),
             ", YVar=", RemixAutoML:::CEP(YVar),
             ", XVar=", RemixAutoML:::CEP(XVar),
+            ", ZVar=", RemixAutoML:::CEP(ZVar),
             ", Bins=", RemixAutoML:::CEP(NumberBins),
             ", ColorVariables=", RemixAutoML:::CEP(GroupVars[[1L]]),
             ", SizeVar1=", RemixAutoML:::CEP(SizeVars),
