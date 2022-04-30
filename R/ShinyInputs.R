@@ -1855,53 +1855,67 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
       tags$h4(tags$b(paste0('Plot ', PlotNumber))),
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = paste0('PlotDropDown', PlotNumber),
-        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Core Variables for Plot ', PlotNumber))),
-        RemixAutoML:::BlankRow(AppWidth),
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), 'Plot Settings')),
 
         # Select Data
+        RemixAutoML:::BlankRow(AppWidth),
         shiny::fluidRow(
           width=AppWidth,
-          shiny::column(6L, align = 'center', shiny::uiOutput(paste0('Plot', PlotNumber, '_SelectData'))),
-          shiny::column(6L, shiny::uiOutput(paste0('SampleSize', PlotNumber)))),
-        RemixAutoML:::BlankRow(AppWidth),
+          shiny::column(5L, align = 'center', shiny::uiOutput(paste0('Plot', PlotNumber, '_SelectData'))),
+          shiny::column(4L, shiny::uiOutput(paste0('Plot', PlotNumber))),
+          shiny::column(3L, shiny::uiOutput(paste0('SampleSize', PlotNumber)))),
 
-        # PlotType Selection
+        # Dropdown Button
+        # Select Data
+        RemixAutoML:::BlankRow(AppWidth),
         shiny::fluidRow(
-          width=AppWidth,
-          shiny::column(6L, shiny::uiOutput(paste0('Plot', PlotNumber))),
-          shiny::column(3L, shiny::uiOutput(paste0('TargetLevel', PlotNumber))),
-          shiny::column(3L, shiny::uiOutput(paste0('BarPlotAgg', PlotNumber)))),
-        shiny::fluidRow(
-          width=AppWidth,
-          shiny::column(4L, shiny::uiOutput(paste0('YVar', PlotNumber))),
-          shiny::column(4L, shiny::uiOutput(paste0('XVar', PlotNumber))),
-          shiny::column(4L, shiny::uiOutput(paste0('ZVar', PlotNumber)))),
-        shiny::fluidRow(
-          width=AppWidth,
-          shiny::column(6L, shiny::uiOutput(paste0('FacetVar_', PlotNumber, '_1'))),
-          shiny::column(6L, shiny::uiOutput(paste0('FacetVar_', PlotNumber, '_2')))),
-        shiny::fluidRow(
-          width=AppWidth,
-          shiny::column(6L, shiny::uiOutput(paste0('GroupVars', PlotNumber))),
-          shiny::column(6L, shiny::uiOutput(paste0('SizeVar', PlotNumber)))),
+          tags$h4(tags$b(paste0('Plot ', PlotNumber))),
 
-        # Group-Levels
-        shiny::fluidRow(
-          width=AppWidth,
-          shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars1']) >= 1", shiny::uiOutput(paste0('Levels_', PlotNumber, '_1')))),
-          shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars2']) >= 2", shiny::uiOutput(paste0('Levels_', PlotNumber, '_2')))),
-          shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars3']) >= 3", shiny::uiOutput(paste0('Levels_', PlotNumber, '_3'))))),
+          # # dropdown
+          # shinyWidgets::dropdown(
+          #   right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = paste0('PlotDropDown', PlotNumber),
+          #   tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Core Variables for Plot ', PlotNumber))),
 
-        # Add space so area underneath selected item remains inside the dropdown
-        #   Otherwise, the dropdown closes prematurely
-        RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth)
+            # PlotType Selection
+            # Box
+            shinydashboard::box(
+              title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, shiny::uiOutput(paste0('YVar', PlotNumber))),
+                shiny::column(4L, shiny::uiOutput(paste0('XVar', PlotNumber))),
+                shiny::column(4L, shiny::uiOutput(paste0('ZVar', PlotNumber)))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, shiny::uiOutput(paste0('TargetLevel', PlotNumber))),
+                shiny::column(4L, shiny::uiOutput(paste0('BarPlotAgg', PlotNumber))),
+                shiny::column(4L, shiny::uiOutput(paste0('FacetVar_', PlotNumber, '_1'))))
 
+              ), # end box
+
+            RemixAutoML:::BlankRow(AppWidth),
+
+            # Box
+            shinydashboard::box(
+              title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+              # Group-Levels
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(shiny::column(6L, shiny::uiOutput(paste0('GroupVars', PlotNumber)))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars1']) >= 1", shiny::uiOutput(paste0('Levels_', PlotNumber, '_1')))),
+                shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars2']) >= 2", shiny::uiOutput(paste0('Levels_', PlotNumber, '_2')))),
+                shiny::column(4L, shiny::conditionalPanel(width = 3L, condition = "length(input['GroupVars3']) >= 3", shiny::uiOutput(paste0('Levels_', PlotNumber, '_3')))))),
+
+            # Add space so area underneath selected item remains inside the dropdown
+            #   Otherwise, the dropdown closes prematurely
+            RemixAutoML:::BlankRow(AppWidth)
+
+          #) # end dropdown
+        ) # end fluid row
       ) # end dropdown
     ) # end column
   ) # end tagList
@@ -2214,12 +2228,12 @@ Coloring <- function(id = 'ColoringContents',
           shiny::column(3L, shiny::uiOutput('FillColor2')),
           shiny::column(3L, shiny::uiOutput('FillColor3')),
           shiny::column(3L, shiny::uiOutput('FillColor4'))),
-        shiny::fluidRow(
-          width = AppWidth,
-          shiny::column(3L, shiny::uiOutput('OutlierColor1')),
-          shiny::column(3L, shiny::uiOutput('OutlierColor2')),
-          shiny::column(3L, shiny::uiOutput('OutlierColor3')),
-          shiny::column(3L, shiny::uiOutput('OutlierColor4'))),
+        # shiny::fluidRow(
+        #   width = AppWidth,
+        #   shiny::column(3L, shiny::uiOutput('OutlierColor1')),
+        #   shiny::column(3L, shiny::uiOutput('OutlierColor2')),
+        #   shiny::column(3L, shiny::uiOutput('OutlierColor3')),
+        #   shiny::column(3L, shiny::uiOutput('OutlierColor4'))),
         shiny::fluidRow(
           width = AppWidth,
           shiny::column(3L, shiny::uiOutput('GridColor1')),
@@ -2641,9 +2655,9 @@ InitalizeInputs <- function(id) {
             RemixAutoML:::PickerInput_GetLevels2(DataExist=FALSE, InputID=paste0('Levels_', i, '_', j), InputID2=NULL, Choices=NULL, NumGroupVar=1L, Multiple=TRUE, SelectedDefault=NULL)
           })
         }
-        for(j in seq_len(2L)) {
+        for(j in seq_len(1L)) {
           output[[paste0('FacetVar_', i, '_', j)]] <- shiny::renderUI({
-            RemixAutoML::SelectizeInput(InputID=paste0('FacetVar_', i, '_', j), Label = tags$span(style='color: blue;', paste0('Facet Variable ', j)), Choices = NULL, Multiple = FALSE)
+            RemixAutoML::SelectizeInput(InputID=paste0('FacetVar_', i, '_', j), Label = tags$span(style='color: blue;', 'Facet Variables'), Choices = NULL, Multiple = FALSE)
           })
         }
         output[[paste0('SizeVar', i)]] <- shiny::renderUI({

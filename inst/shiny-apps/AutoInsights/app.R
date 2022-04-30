@@ -2223,6 +2223,15 @@ server <- function(input, output, session) {
     PlotDropDown1[['Plot1_SelectData']][['SelectedDefault']][[length(PlotDropDown1[['Plot1_SelectData']][['SelectedDefault']]) + 1L]] <- input$Plot1_SelectData
     PlotDropDown1 <<- PlotDropDown1
 
+    # Select data
+    output$SampleSize1 <- shiny::renderUI({
+      RemixAutoML:::NumericInput(InputID='SampleSize1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Sample Size'), Step = 100000, Value = 100000, Min = 0, Max = 5000000)
+    })
+
+    # Args Storage
+    PlotDropDown1[['SampleSize1']][['SelectedDefault']][[length(PlotDropDown1[['SampleSize1']][['SelectedDefault']]) + 1L]] <- input$SampleSize1
+    PlotDropDown1 <<- PlotDropDown1
+
     # Reactives
     dt1 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot1_SelectData]]}, error = function(x) DataList[[1L]]))})
     dt1 <<- dt1
@@ -2367,21 +2376,11 @@ server <- function(input, output, session) {
     # Facet Var 1
     output$FacetVar_1_1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'FacetVar_1_1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='FacetVar_1_1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = names(dt1()), Multiple = TRUE, MaxVars = 1)
+      RemixAutoML:::SelectizeInput(InputID='FacetVar_1_1', Label = tags$span(style='color: blue;', 'Facet Variables'), Choices = names(dt1()), Multiple = TRUE, MaxVars = 2)
     })
 
     # Args Storage
     PlotDropDown1[['FacetVar_1_1']][['SelectedDefault']][[length(PlotDropDown1[['FacetVar_1_1']][['SelectedDefault']]) + 1L]] <- input$FacetVar_1_1
-    PlotDropDown1 <<- PlotDropDown1
-
-    # Facet Var 2
-    output$FacetVar_1_2 <- shiny::renderUI({
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'FacetVar_1_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='FacetVar_1_2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = names(dt1()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
-    })
-
-    # Args Storage
-    PlotDropDown1[['FacetVar_1_2']][['SelectedDefault']][[length(PlotDropDown1[['FacetVar_1_2']][['SelectedDefault']]) + 1L]] <- input$FacetVar_1_2
     PlotDropDown1 <<- PlotDropDown1
 
     # Size Var 1
@@ -2406,8 +2405,8 @@ server <- function(input, output, session) {
 
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel1 <- shiny::renderUI({
-      if(length(YVar1()) != 0L && length(dt1()) != 0) {
-        if(!any(class(dt1()[[YVar1()[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt1()[[YVar1()]])) else vals <- NULL
+      if(length(shiny::req(YVar1())) != 0L && length(shiny::req(dt1())) != 0) {
+        if(!any(class(shiny::req(dt1())[[shiny::req(YVar1())[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(shiny::req(dt1())[[shiny::req(YVar1())]])) else vals <- NULL
       } else {
         vals <- NULL
       }
@@ -2437,6 +2436,15 @@ server <- function(input, output, session) {
 
     # Args Storage
     PlotDropDown2[['Plot2_SelectData']][['SelectedDefault']][[length(PlotDropDown2[['Plot2_SelectData']][['SelectedDefault']]) + 1L]] <- input$Plot2_SelectData
+    PlotDropDown2 <<- PlotDropDown2
+
+    # Select data
+    output$SampleSize2 <- shiny::renderUI({
+      RemixAutoML:::NumericInput(InputID='SampleSize2', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Sample Size'), Step = 100000, Value = 100000, Min = 0, Max = 5000000)
+    })
+
+    # Args Storage
+    PlotDropDown2[['SampleSize2']][['SelectedDefault']][[length(PlotDropDown2[['SampleSize2']][['SelectedDefault']]) + 1L]] <- input$SampleSize2
     PlotDropDown2 <<- PlotDropDown2
 
     # Reactives
@@ -2583,21 +2591,11 @@ server <- function(input, output, session) {
     # Facet Var 1
     output$FacetVar_2_1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'FacetVar_2_1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='FacetVar_2_1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = names(dt2()), Multiple = TRUE, MaxVars = 1)
+      RemixAutoML:::SelectizeInput(InputID='FacetVar_2_1', Label = tags$span(style='color: blue;', 'Facet Variables'), Choices = names(dt2()), Multiple = TRUE, MaxVars = 2)
     })
 
     # Args Storage
     PlotDropDown2[['FacetVar_2_1']][['SelectedDefault']][[length(PlotDropDown2[['FacetVar_2_1']][['SelectedDefault']]) + 1L]] <- input$FacetVar_2_1
-    PlotDropDown2 <<- PlotDropDown2
-
-    # Facet Var 2
-    output$FacetVar_2_2 <- shiny::renderUI({
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'FacetVar_2_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='FacetVar_2_2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = names(dt2()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
-    })
-
-    # Args Storage
-    PlotDropDown2[['FacetVar_2_2']][['SelectedDefault']][[length(PlotDropDown2[['FacetVar_2_2']][['SelectedDefault']]) + 1L]] <- input$FacetVar_2_2
     PlotDropDown2 <<- PlotDropDown2
 
     # Size Var 2
@@ -2622,8 +2620,8 @@ server <- function(input, output, session) {
 
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel2 <- shiny::renderUI({
-      if(length(YVar2()) != 0L && length(dt2()) != 0) {
-        if(!any(class(dt2()[[YVar2()[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt2()[[YVar2()]])) else vals <- NULL
+      if(length(shiny::req(YVar2())) != 0L && length(dt2()) != 0) {
+        if(!any(class(shiny::req(dt2())[[shiny::req(YVar2())[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(shiny::req(dt2())[[shiny::req(YVar2())]])) else vals <- NULL
       } else {
         vals <- NULL
       }
@@ -2653,6 +2651,15 @@ server <- function(input, output, session) {
 
     # Args Storage
     PlotDropDown3[['Plot3_SelectData']][['SelectedDefault']][[length(PlotDropDown3[['Plot3_SelectData']][['SelectedDefault']]) + 1L]] <- input$Plot3_SelectData
+    PlotDropDown3 <<- PlotDropDown3
+
+    # Select data
+    output$SampleSize3 <- shiny::renderUI({
+      RemixAutoML:::NumericInput(InputID='SampleSize3', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Sample Size'), Step = 100000, Value = 100000, Min = 0, Max = 5000000)
+    })
+
+    # Args Storage
+    PlotDropDown3[['SampleSize3']][['SelectedDefault']][[length(PlotDropDown3[['SampleSize3']][['SelectedDefault']]) + 1L]] <- input$SampleSize3
     PlotDropDown3 <<- PlotDropDown3
 
     # Reactives
@@ -2799,21 +2806,11 @@ server <- function(input, output, session) {
     # Facet Var 1
     output$FacetVar_3_1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'FacetVar_3_1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='FacetVar_3_1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = names(dt3()), Multiple = TRUE, MaxVars = 1)
+      RemixAutoML:::SelectizeInput(InputID='FacetVar_3_1', Label = tags$span(style='color: blue;', 'Facet Variables'), Choices = names(dt3()), Multiple = TRUE, MaxVars = 2)
     })
 
     # Args Storage
     PlotDropDown3[['FacetVar_3_1']][['SelectedDefault']][[length(PlotDropDown3[['FacetVar_3_1']][['SelectedDefault']]) + 1L]] <- input$FacetVar_3_1
-    PlotDropDown3 <<- PlotDropDown3
-
-    # Facet Var 2
-    output$FacetVar_3_2 <- shiny::renderUI({
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'FacetVar_3_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='FacetVar_3_2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = names(dt3()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
-    })
-
-    # Args Storage
-    PlotDropDown3[['FacetVar_3_2']][['SelectedDefault']][[length(PlotDropDown3[['FacetVar_3_2']][['SelectedDefault']]) + 1L]] <- input$FacetVar_3_2
     PlotDropDown3 <<- PlotDropDown3
 
     # Size Var 2
@@ -2838,8 +2835,8 @@ server <- function(input, output, session) {
 
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel3 <- shiny::renderUI({
-      if(length(YVar3()) != 0L && length(dt3()) != 0) {
-        if(!any(class(dt3()[[YVar3()[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt3()[[YVar3()]])) else vals <- NULL
+      if(length(shiny::req(YVar3())) != 0L && length(shiny::req(dt3())) != 0) {
+        if(!any(class(shiny::req(dt3())[[shiny::req(YVar3())[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(shiny::req(dt3())[[shiny::req(YVar3())]])) else vals <- NULL
       } else {
         vals <- NULL
       }
@@ -2856,7 +2853,6 @@ server <- function(input, output, session) {
   # Plot 4 DropDown
   shiny::observeEvent(input$PlotDropDown4, {
 
-
     # Create intra-session tracking list
     if(!exists('PlotDropDown4')) PlotDropDown4 <- list(Debug = Debug)
     print('Plot4_SelectData')
@@ -2869,6 +2865,15 @@ server <- function(input, output, session) {
 
     # Args Storage
     PlotDropDown4[['Plot4_SelectData']][['SelectedDefault']][[length(PlotDropDown4[['Plot4_SelectData']][['SelectedDefault']]) + 1L]] <- input$Plot4_SelectData
+    PlotDropDown4 <<- PlotDropDown4
+
+    # Select data
+    output$SampleSize4 <- shiny::renderUI({
+      RemixAutoML:::NumericInput(InputID='SampleSize4', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Sample Size'), Step = 100000, Value = 100000, Min = 0, Max = 5000000)
+    })
+
+    # Args Storage
+    PlotDropDown4[['SampleSize4']][['SelectedDefault']][[length(PlotDropDown4[['SampleSize4']][['SelectedDefault']]) + 1L]] <- input$SampleSize4
     PlotDropDown4 <<- PlotDropDown4
 
     # Reactives
@@ -3015,21 +3020,11 @@ server <- function(input, output, session) {
     # Facet Var 1
     output$FacetVar_4_1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'FacetVar_4_1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='FacetVar_4_1', Label = tags$span(style='color: blue;', 'Facet Variable 1'), Choices = names(dt4()), Multiple = TRUE, MaxVars = 1)
+      RemixAutoML:::SelectizeInput(InputID='FacetVar_4_1', Label = tags$span(style='color: blue;', 'Facet Variables'), Choices = names(dt4()), Multiple = TRUE, MaxVars = 2)
     })
 
     # Args Storage
     PlotDropDown4[['FacetVar_4_1']][['SelectedDefault']][[length(PlotDropDown4[['FacetVar_4_1']][['SelectedDefault']]) + 1L]] <- input$FacetVar_4_1
-    PlotDropDown4 <<- PlotDropDown4
-
-    # Facet Var 2
-    output$FacetVar_4_2 <- shiny::renderUI({
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'FacetVar_4_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='FacetVar_4_2', Label = tags$span(style='color: blue;', 'Facet Variable 2'), Choices = names(dt4()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
-    })
-
-    # Args Storage
-    PlotDropDown4[['FacetVar_4_2']][['SelectedDefault']][[length(PlotDropDown4[['FacetVar_4_2']][['SelectedDefault']]) + 1L]] <- input$FacetVar_4_2
     PlotDropDown4 <<- PlotDropDown4
 
     # Size Var 2
@@ -3054,8 +3049,8 @@ server <- function(input, output, session) {
 
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel4 <- shiny::renderUI({
-      if(length(YVar4()) != 0L && length(dt4()) != 0) {
-        if(!any(class(dt4()[[YVar4()[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(dt4()[[YVar4()]])) else vals <- NULL
+      if(length(shiny::req(YVar4())) != 0L && length(shiny::req(dt4())) != 0) {
+        if(!any(class(shiny::req(dt4())[[shiny::req(YVar4())[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(shiny::req(dt4())[[shiny::req(YVar4())]])) else vals <- NULL
       } else {
         vals <- NULL
       }
@@ -3332,18 +3327,18 @@ server <- function(input, output, session) {
     output$BorderColor4 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'BorderColor4', Label = tags$span(style='color: blue;', 'Plot 4 Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE)
     })
-    output$OutlierColor1 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor1', Label = tags$span(style='color: blue;', 'Plot 1 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
-    })
-    output$OutlierColor2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor2', Label = tags$span(style='color: blue;', 'Plot 2 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
-    })
-    output$OutlierColor3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor3', Label = tags$span(style='color: blue;', 'Plot 3 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
-    })
-    output$OutlierColor4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'OutlierColor4', Label = tags$span(style='color: blue;', 'Plot 4 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
-    })
+    # output$OutlierColor1 <- shiny::renderUI({
+    #   RemixAutoML:::SelectizeInput(InputID = 'OutlierColor1', Label = tags$span(style='color: blue;', 'Plot 1 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+    # })
+    # output$OutlierColor2 <- shiny::renderUI({
+    #   RemixAutoML:::SelectizeInput(InputID = 'OutlierColor2', Label = tags$span(style='color: blue;', 'Plot 2 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+    # })
+    # output$OutlierColor3 <- shiny::renderUI({
+    #   RemixAutoML:::SelectizeInput(InputID = 'OutlierColor3', Label = tags$span(style='color: blue;', 'Plot 3 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+    # })
+    # output$OutlierColor4 <- shiny::renderUI({
+    #   RemixAutoML:::SelectizeInput(InputID = 'OutlierColor4', Label = tags$span(style='color: blue;', 'Plot 4 Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE)
+    # })
     output$FillColor1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'FillColor1', Label = tags$span(style='color: blue;', 'Plot 1 BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE)
     })
@@ -4690,9 +4685,7 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['Levels1']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('Levels_',run,'_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['Levels2']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('Levels_',run,'_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['Levels3']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('Levels_',run,'_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
-      PlotObjectHome[[paste0('Plot_', run)]][['SizeVars']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('SizeVars', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FacetVar1']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('FacetVar_', run, '_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
-      PlotObjectHome[[paste0('Plot_', run)]][['FacetVar2']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('FacetVar_', run, '_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar1']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar2']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterVar3']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('FilterVariable_',run, '_3')]]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -4771,9 +4764,7 @@ server <- function(input, output, session) {
         Levels1 <- PlotObjectHome[[paste0('Plot_', run)]][['Levels1']]
         Levels2 <- PlotObjectHome[[paste0('Plot_', run)]][['Levels2']]
         Levels3 <- PlotObjectHome[[paste0('Plot_', run)]][['Levels3']]
-        SizeVars <- PlotObjectHome[[paste0('Plot_', run)]][['SizeVars']]
         FacetVar1 <- PlotObjectHome[[paste0('Plot_', run)]][['FacetVar1']]
-        FacetVar2 <- PlotObjectHome[[paste0('Plot_', run)]][['FacetVar2']]
         FilterVar1 <- PlotObjectHome[[paste0('Plot_', run)]][['FilterVar1']]
         FilterVar2 <- PlotObjectHome[[paste0('Plot_', run)]][['FilterVar2']]
         FilterVar3 <- PlotObjectHome[[paste0('Plot_', run)]][['FilterVar3']]
@@ -4871,8 +4862,6 @@ server <- function(input, output, session) {
           SubsetList[[paste0('Levels_', run, '_2')]] <- Levels2
           SubsetList[[paste0('Levels_', run, '_3')]] <- Levels3
           SubsetList[[paste0('FacetVar_', run, '_1')]] <- FacetVar1
-          SubsetList[[paste0('FacetVar_', run, '_2')]] <- FacetVar2
-          SubsetList[[paste0('SizeVar', run)]] <- SizeVars
 
           # Filter Variables
           SubsetList[[paste0('FilterVariable_', run, '_1')]] <- if(length(FilterVar1) != 0 && FilterVar1 != 'None') stringr::str_remove(string = FilterVar1, pattern = 'ModelVar-') else 'None'
@@ -4917,7 +4906,7 @@ server <- function(input, output, session) {
             SubsetList[[paste0('DataPrep', run)]] <- TRUE
           }
 
-          # Levels.., FacetVar1.., SizeVars
+          # Levels & FacetVar1
           if(!all(SubsetList[[paste0('Levels_', run, '_1')]] == Level1) || length(SubsetList[[paste0('Levels_', run, '_1')]]) > length(Level1)) {
             SubsetList[[paste0('Levels_', run, '_1')]] <- Level1; SubsetList[[paste0('DataPrep', run)]] <- TRUE
           }
@@ -4929,12 +4918,6 @@ server <- function(input, output, session) {
           }
           if(!all(SubsetList[[paste0('FacetVar_', run, '_1')]] == FacetVar1) || length(SubsetList[[paste0('FacetVar_', run, '_1')]]) > length(FacetVar1)) {
             SubsetList[[paste0('FacetVar_', run, '_1')]] <- FacetVar1; SubsetList[[paste0('DataPrep', run)]] <- TRUE
-          }
-          if(!all(SubsetList[[paste0('FacetVar_', run, '_2')]] == FacetVar2) || length(SubsetList[[paste0('FacetVar_', run, '_2')]]) > length(FacetVar2)) {
-            SubsetList[[paste0('FacetVar_', run, '_2')]] <- FacetVar2; SubsetList[[paste0('DataPrep', run)]] <- TRUE
-          }
-          if(!all(SubsetList[[paste0('SizeVar', run)]] == SizeVars) || length(SubsetList[[paste0('SizeVar', run)]]) > length(SizeVars)) {
-            SubsetList[[paste0('SizeVar', run)]] <- SizeVars; SubsetList[[paste0('DataPrep', run)]] <- TRUE
           }
 
           # Filter Variables
@@ -5035,7 +5018,7 @@ server <- function(input, output, session) {
           } else {
 
             # Debugging
-            if(Debug) {print(YVar); print(XVar); print(ScoreVar); print(GroupVars); print(SizeVars); print(FacetVar1); print(FacetVar2)}
+            if(Debug) {print(YVar); print(XVar); print(ScoreVar); print(GroupVars); print(FacetVar1)}
 
             # Subset columns
             if(Debug) print('Subset Columns Here')
@@ -5046,8 +5029,8 @@ server <- function(input, output, session) {
                 CodeCollection[[run]][[length(CodeCollection)+1L]] <- paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]"); if(Debug) print('Subset Columns Here done')
               }
             } else if(!PlotType %in% 'ShapelyImportance') {
-              if(length(unique(c(YVar, XVar, ZVar, GroupVars, SizeVars, FacetVar1, FacetVar2))) != 0) {
-                Keep <- unique(c(YVar, XVar, ZVar, GroupVars, SizeVars, FacetVar1, FacetVar2))
+              if(length(unique(c(YVar, XVar, ZVar, GroupVars, FacetVar1))) != 0) {
+                Keep <- unique(c(YVar, XVar, ZVar, GroupVars, FacetVar1))
                 if(PlotType %in% 'VariableImportance') Keep <- unique(keep, 'Variable','Importance')
                 data1 <- data1[, .SD, .SDcols = c(Keep)]; if(Debug) print('Subset Columns Here predone')
                 CodeCollection[[run]][[length(CodeCollection)+1L]] <- paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]"); if(Debug) print('Subset Columns Here done')
@@ -5092,9 +5075,9 @@ server <- function(input, output, session) {
             ZVar = ZVar,
             Bins = NumberBins,
             ColorVariables = GroupVars,
-            SizeVar1 = SizeVars,
-            FacetVar1 = FacetVar1,
-            FacetVar2 = FacetVar2,
+            SizeVar1 = NULL,
+            FacetVar1 = if(length(FacetVar1) != 0) FacetVar1[1L] else NULL,
+            FacetVar2 = if(length(FacetVar1) > 1) FacetVar1[2L] else NULL,
             YTicks = YTicks,
             XTicks = XTicks,
             OutlierSize = OutlierSize,
@@ -5124,9 +5107,7 @@ server <- function(input, output, session) {
             print(paste0('ZVar = ', RemixAutoML:::CEP(ZVar)))
             print(paste0('Bins = ', RemixAutoML:::CEP(NumberBins)))
             print(paste0('ColorVariables = ', RemixAutoML:::CEP(GroupVars[[1L]])))
-            print(paste0('SizeVar1 = ', RemixAutoML:::CEP(SizeVars)))
-            print(paste0('FacetVar1 = ', RemixAutoML:::CEP(FacetVar1)))
-            print(paste0('FacetVar2 = ', RemixAutoML:::CEP(FacetVar2)))
+            print(paste0('FacetVar1 = ', RemixAutoML:::CEP(FacetVar1[1L])))
             print(paste0('YTicks = ', RemixAutoML:::CEP(YTicks)))
             print(paste0('XTicks = ', RemixAutoML:::CEP(XTicks)))
             print(paste0('OutlierSize = ', RemixAutoML:::CEP(OutlierSize)))
@@ -5155,9 +5136,7 @@ server <- function(input, output, session) {
             ", ZVar=", RemixAutoML:::CEP(ZVar),
             ", Bins=", RemixAutoML:::CEP(NumberBins),
             ", ColorVariables=", RemixAutoML:::CEP(GroupVars[[1L]]),
-            ", SizeVar1=", RemixAutoML:::CEP(SizeVars),
             ", FacetVar1=", RemixAutoML:::CEP(FacetVar1),
-            ", FacetVar2=", RemixAutoML:::CEP(FacetVar2),
             ", YTicks=", RemixAutoML:::CEP(YTicks),
             ", XTicks=", RemixAutoML:::CEP(XTicks),
             ", OutlierSize=", RemixAutoML:::CEP(OutlierSize),

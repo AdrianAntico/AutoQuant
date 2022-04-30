@@ -173,185 +173,8 @@ HeatMapPlot <- function(dt,
   return(eval(fig))
 }
 
-#' Automated Word Frequency and Word Cloud Creation
-#'
-#' This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
-#' @author Adrian Antico
-#' @family EDA
-#' @param data Source data table
-#' @param TextColName A string name for the column
-#' @param GroupColName Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)
-#' @param GroupLevel Must be set if GroupColName is defined. Set to cluster ID (or factor level)
-#' @param RemoveEnglishStopwords Set to TRUE to remove English stop words, FALSE to ignore
-#' @param Stemming Set to TRUE to run stemming on your text data
-#' @param StopWords Add your own stopwords, in vector format
-#' @examples
-#' \dontrun{
-#' data <- data.table::data.table(
-#' DESCR = c(
-#'   "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Gru",
-#'   "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Urkle",
-#'   "Urkle", "Urkle", "Urkle", "Urkle", "Urkle", "Urkle",
-#'   "Gru", "Gru", "Gru", "bears", "bears", "bears",
-#'   "bears", "bears", "bears", "smug", "smug", "smug", "smug",
-#'   "smug", "smug", "smug", "smug", "smug", "smug",
-#'   "smug", "smug", "smug", "smug", "smug", "eats", "eats",
-#'   "eats", "eats", "eats", "eats", "beats", "beats", "beats", "beats",
-#'   "beats", "beats", "beats", "beats", "beats", "beats",
-#'   "beats", "science", "science", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
-#'   "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
-#'   "Schrute", "Schrute", "Schrute", "Schrute", "Schrute",
-#'   "Schrute", "Schrute", "James", "James", "James", "James",
-#'   "James", "James", "James", "James", "James", "James",
-#'   "Halpert", "Halpert", "Halpert", "Halpert",
-#'   "Halpert", "Halpert", "Halpert", "Halpert"))
-#' data <- AutoWordFreq(
-#'   data,
-#'   TextColName = "DESCR",
-#'   GroupColName = NULL,
-#'   GroupLevel = NULL,
-#'   RemoveEnglishStopwords = FALSE,
-#'   Stemming = FALSE,
-#'   StopWords = c("Bla"))
-#' }
-#' @export
-AutoWordFreq <- function(data,
-                         TextColName = "DESCR",
-                         GroupColName = "ClusterAllNoTarget",
-                         GroupLevel = 0,
-                         RemoveEnglishStopwords = TRUE,
-                         Stemming = TRUE,
-                         StopWords = c("bla",
-                                       "bla2")) {
-  # Check data.table
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
-
-  # Ensure stringCol is character (not factor)
-  if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
-
-  # Prepare data
-  if(is.null(GroupColName)) {
-    desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
-  } else {
-    if(!is.character(data[[GroupColName]])) {
-      data[, eval(GroupColName) := as.character(get(GroupColName))]
-      desc <- tm::Corpus(tm::VectorSource(data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]]))
-    }
-  }
-
-  # Clean text
-  toSpace <- tm::content_transformer(function(x , pattern) gsub(pattern, " ", x))
-  text <- tm::tm_map(desc, toSpace, "/")
-  text <- tm::tm_map(text, toSpace, "@")
-  text <- tm::tm_map(text, toSpace, "\\|")
-
-  # Convert the text to lower case
-  text <- tm::tm_map(text, tm::content_transformer(tolower))
-
-  # Remove numbers
-  text <- tm::tm_map(text, tm::removeNumbers)
-
-  # Remove english common stopwords
-  if(RemoveEnglishStopwords)
-    text <- tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
-
-  # specify your stopwords as a character vector
-  text <- tm::tm_map(text, tm::removeWords, StopWords)
-
-  # Remove punctuations
-  text <- tm::tm_map(text, tm::removePunctuation)
-
-  # Eliminate extra white spaces
-  text <- tm::tm_map(text, tm::stripWhitespace)
-
-  # Text stemming
-  if(Stemming) text <- tm::tm_map(text, tm::stemDocument)
-
-  # Finalize
-  dtm <- tm::TermDocumentMatrix(text)
-  m <- as.matrix(dtm)
-  v <- sort(rowSums(m), decreasing = TRUE)
-  d <- data.table::data.table(word = names(v), freq = v)
-  print(head(d, 10))
-
-  # Word Cloud
-  xx <- wordcloud::wordcloud(
-    words = d$word,
-    freq = d$freq,
-    min.freq = 1,
-    max.words = 200,
-    random.order = FALSE,
-    rot.per = 0.35,
-    colors = RColorBrewer::brewer.pal(8, "Dark2"))
-
-  # Return
-  return(d)
-}
-
 # Correlation Matrix Updates: https://okanbulut.github.io/bigdata/visualizing-big-data.html
 
-#' @title PlotlyConversion
-#'
-#' @author Adrian Antico
-#' @family Graphics
-#'
-#' @param p1 ggplot2 object
-#'
-#' @export
-PlotlyConversion <- function(p1) {
-  if(class(p1)[[1L]] != 'plotly') {
-    if(!is.null(p1$plot_env$ForecastLineColor) || any(p1$layers[[1]]$mapping %like% 'PredictionColName')) {
-      p1 <- plotly::rangeslider(plotly::ggplotly(p1, dynamicTicks = TRUE))
-    } else {
-      p1 <- plotly::ggplotly(p1)
-    }
-  }
-  return(p1)
-}
-
-#' @noRd
-BlankPlot <- function() {
-  `Y Axis` <- rnorm(20)
-  `X Axis` <- rnorm(20,1,0.5)
-  df <- data.frame(`X Axis`,`Y Axis`)
-  return(
-    eval(ggplot2::ggplot(df, ggplot2::aes(`X Axis`,`Y Axis`)) +
-           ggplot2::geom_blank() +
-           RemixAutoML::ChartTheme(ChartColor = 'aliceblue', GridColor = 'lightsteelblue1', BorderColor = 'lightsteelblue2') +
-           ggplot2::labs(title = 'Title', subtitle = 'Subtitle', caption = 'RemixAutoML'))
-
-  )
-}
-
-#' @title AddFacet
-#'
-#' @description Add up to two facet variables for plots
-#'
-#' @author Adrian Antico
-#' @family Graphics
-#'
-#' @param data Source data.table
-#' @param ShapColNames Names of the columns that contain shap values you want included
-#' @param FacetVar1 Column name
-#' @param FacetVar2 Column name
-#' @param AggMethod A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'sd', 'median', 'absmedian', 'medianabs'
-#' @param TopN The number of variables to plot
-#' @param Debug = FALSE
-#'
-#' @export
-AddFacet <- function(p, fv1=NULL, fv2=NULL, Exclude = 'None', Debug = FALSE) {
-  if(length(fv1) != 0 && fv1 != Exclude && length(fv2) != 0 && fv2 != Exclude) {
-    if(Debug) print('FacetVar1 and FacetVar2')
-    p <- p + ggplot2::facet_grid(get(fv1) ~ get(fv2))
-  } else if(length(fv1) != 0 && fv1 != Exclude) {
-    if(Debug) print('FacetVar1')
-    p <- p + ggplot2::facet_wrap(~ get(fv1))
-  } else if(length(fv2) != 0 && fv2 != Exclude) {
-    if(Debug) print('FacetVar2')
-    p <- p + ggplot2::facet_wrap(~ get(fv2))
-  }
-  return(eval(p))
-}
 
 #' @title ShapImportancePlot
 #'
@@ -648,11 +471,25 @@ ViolinPlot <- function(data = NULL,
   if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
   # Used multiple times
-  check1 <- length(XVar) != 0 && length(YVar) != 0
+  X_and_Y <- length(XVar) != 0 && length(YVar) != 0
+
+  # Check class of XVar
+  if(X_and_Y) {
+    if(any(c('Date','POSIXct','POSIXt') %in% tryCatch({class(data[[XVar]])}, error = function(x) NULL))) {
+      class_x <- 'Date'
+    } else {
+      class_x <- NULL
+      if(any(c('numeric','integer') %in% tryCatch({class(data[[XVar]])}, error = function(x) NULL))) {
+        data[, eval(XVar) := as.character(get(XVar))]
+      }
+    }
+  } else {
+    class_x <- NULL
+  }
 
   # Create base plot object
   if(Debug) print('Create Plot with only data')
-  if(check1) {
+  if(X_and_Y) {
     p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
   } else if(length(YVar) != 0) {
     p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(YVar), x = ""))
@@ -676,14 +513,14 @@ ViolinPlot <- function(data = NULL,
 
   # Create Plot labs
   if(Debug) print('Create Plot labs')
-  if(check1) {
-    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+  if(X_and_Y) {
+    p1 <- p1 + ggplot2::labs(title = paste0('BoxPlot by ', stringr::str_to_title(gsub(pattern = '_', replacement = ' ', x = XVar))), subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
   } else {
-    p1 <- p1 + ggplot2::labs(title = 'ViolinPlot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+    p1 <- p1 + ggplot2::labs(title = 'Violin Plot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
   }
 
   # Labels
-  if(check1) {
+  if(X_and_Y) {
     p1 <- p1 + ggplot2::ylab(YVar)
     p1 <- p1 + ggplot2::xlab(XVar)
   } else if(length(YVar) != 0) {
@@ -737,7 +574,7 @@ ViolinPlot <- function(data = NULL,
   if(length(YTicks) != 0) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(YTicks))
 
   # Add XTicks for Date Case
-  if(check1) {
+  if('Date' %in% class_x) {
     if(Debug) {print('XTicks'); print(XTicks)}
     date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
     if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
@@ -875,11 +712,25 @@ BoxPlot <- function(data = NULL,
   if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
   # Used multiple times
-  check1 <- length(XVar) != 0 && length(YVar) != 0
+  X_and_Y <- length(XVar) != 0 && length(YVar) != 0
+
+  # Check class of XVar
+  if(X_and_Y) {
+    if(any(c('Date','POSIXct','POSIXt') %in% tryCatch({class(data[[XVar]])}, error = function(x) NULL))) {
+      class_x <- 'Date'
+    } else {
+      class_x <- NULL
+      if(any(c('numeric','integer') %in% tryCatch({class(data[[XVar]])}, error = function(x) NULL))) {
+        data[, eval(XVar) := as.character(get(XVar))]
+      }
+    }
+  } else {
+    class_x <- NULL
+  }
 
   # Create base plot object
   if(Debug) print('Create Plot with only data')
-  if(check1) {
+  if(X_and_Y) {
     p1 <- ggplot2::ggplot(data = data, ggplot2::aes(x = get(XVar), y = get(YVar), group = get(XVar)))
   } else if(length(YVar) != 0) {
     p1 <- ggplot2::ggplot(data = data, ggplot2::aes(y = get(YVar)))
@@ -903,14 +754,14 @@ BoxPlot <- function(data = NULL,
 
   # Create Plot labs
   if(Debug) print('Create Plot labs')
-  if(check1) {
-    p1 <- p1 + ggplot2::labs(title = 'Distribution over Time', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+  if(X_and_Y) {
+    p1 <- p1 + ggplot2::labs(title = paste0('Violin Plot by ', stringr::str_to_title(gsub(pattern = '_', replacement = ' ', x = XVar))), subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
   } else {
     p1 <- p1 + ggplot2::labs(title = 'BoxPlot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
   }
 
   # Labels
-  if(check1) {
+  if(X_and_Y) {
     p1 <- p1 + ggplot2::ylab(YVar)
     p1 <- p1 + ggplot2::xlab(XVar)
   } else if(length(YVar) != 0) {
@@ -964,7 +815,7 @@ BoxPlot <- function(data = NULL,
   if(length(YTicks) != 0) p1 <- p1 + ggplot2::scale_y_continuous(breaks = as.numeric(YTicks))
 
   # Add XTicks for Date Case
-  if(check1) {
+  if('Date' %in% class_x) {
     if(Debug) {print('XTicks'); print(XTicks)}
     date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
     if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
@@ -1513,10 +1364,10 @@ HistPlot <- function(data = NULL,
                      TextSize = 12,
                      AngleX = 90,
                      AngleY = 0,
-                     ChartColor = 'lightsteelblue1',
+                     ChartColor = 'aliceblue',
                      BorderColor = 'darkblue',
                      TextColor = 'darkblue',
-                     GridColor = 'white',
+                     GridColor = '#d3d3e0',
                      BackGroundColor = 'gray95',
                      SubTitleColor = 'blue',
                      LegendPosition = 'bottom',
@@ -3043,4 +2894,184 @@ AutoBanditSarima2x2LagMA <- function(Output) {
 
   # Return
   return(LagsMAPlot)
+}
+
+
+#' Automated Word Frequency and Word Cloud Creation
+#'
+#' This function builds a word frequency table and a word cloud. It prepares data, cleans text, and generates output.
+#' @author Adrian Antico
+#' @family EDA
+#' @param data Source data table
+#' @param TextColName A string name for the column
+#' @param GroupColName Set to NULL to ignore, otherwise set to Cluster column name (or factor column name)
+#' @param GroupLevel Must be set if GroupColName is defined. Set to cluster ID (or factor level)
+#' @param RemoveEnglishStopwords Set to TRUE to remove English stop words, FALSE to ignore
+#' @param Stemming Set to TRUE to run stemming on your text data
+#' @param StopWords Add your own stopwords, in vector format
+#' @examples
+#' \dontrun{
+#' data <- data.table::data.table(
+#' DESCR = c(
+#'   "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Gru",
+#'   "Gru", "Gru", "Gru", "Gru", "Gru", "Gru", "Urkle",
+#'   "Urkle", "Urkle", "Urkle", "Urkle", "Urkle", "Urkle",
+#'   "Gru", "Gru", "Gru", "bears", "bears", "bears",
+#'   "bears", "bears", "bears", "smug", "smug", "smug", "smug",
+#'   "smug", "smug", "smug", "smug", "smug", "smug",
+#'   "smug", "smug", "smug", "smug", "smug", "eats", "eats",
+#'   "eats", "eats", "eats", "eats", "beats", "beats", "beats", "beats",
+#'   "beats", "beats", "beats", "beats", "beats", "beats",
+#'   "beats", "science", "science", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
+#'   "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt", "Dwigt",
+#'   "Schrute", "Schrute", "Schrute", "Schrute", "Schrute",
+#'   "Schrute", "Schrute", "James", "James", "James", "James",
+#'   "James", "James", "James", "James", "James", "James",
+#'   "Halpert", "Halpert", "Halpert", "Halpert",
+#'   "Halpert", "Halpert", "Halpert", "Halpert"))
+#' data <- AutoWordFreq(
+#'   data,
+#'   TextColName = "DESCR",
+#'   GroupColName = NULL,
+#'   GroupLevel = NULL,
+#'   RemoveEnglishStopwords = FALSE,
+#'   Stemming = FALSE,
+#'   StopWords = c("Bla"))
+#' }
+#' @export
+AutoWordFreq <- function(data,
+                         TextColName = "DESCR",
+                         GroupColName = "ClusterAllNoTarget",
+                         GroupLevel = 0,
+                         RemoveEnglishStopwords = TRUE,
+                         Stemming = TRUE,
+                         StopWords = c("bla",
+                                       "bla2")) {
+  # Check data.table
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
+  # Ensure stringCol is character (not factor)
+  if(!is.character(data[[eval(TextColName)]])) data[, eval(TextColName) := as.character(get(TextColName))]
+
+  # Prepare data
+  if(is.null(GroupColName)) {
+    desc <- tm::Corpus(tm::VectorSource(data[[eval(TextColName)]]))
+  } else {
+    if(!is.character(data[[GroupColName]])) {
+      data[, eval(GroupColName) := as.character(get(GroupColName))]
+      desc <- tm::Corpus(tm::VectorSource(data[get(GroupColName) == eval(GroupLevel)][[eval(TextColName)]]))
+    }
+  }
+
+  # Clean text
+  toSpace <- tm::content_transformer(function(x , pattern) gsub(pattern, " ", x))
+  text <- tm::tm_map(desc, toSpace, "/")
+  text <- tm::tm_map(text, toSpace, "@")
+  text <- tm::tm_map(text, toSpace, "\\|")
+
+  # Convert the text to lower case
+  text <- tm::tm_map(text, tm::content_transformer(tolower))
+
+  # Remove numbers
+  text <- tm::tm_map(text, tm::removeNumbers)
+
+  # Remove english common stopwords
+  if(RemoveEnglishStopwords)
+    text <- tm::tm_map(text, tm::removeWords, tm::stopwords("english"))
+
+  # specify your stopwords as a character vector
+  text <- tm::tm_map(text, tm::removeWords, StopWords)
+
+  # Remove punctuations
+  text <- tm::tm_map(text, tm::removePunctuation)
+
+  # Eliminate extra white spaces
+  text <- tm::tm_map(text, tm::stripWhitespace)
+
+  # Text stemming
+  if(Stemming) text <- tm::tm_map(text, tm::stemDocument)
+
+  # Finalize
+  dtm <- tm::TermDocumentMatrix(text)
+  m <- as.matrix(dtm)
+  v <- sort(rowSums(m), decreasing = TRUE)
+  d <- data.table::data.table(word = names(v), freq = v)
+  print(head(d, 10))
+
+  # Word Cloud
+  xx <- wordcloud::wordcloud(
+    words = d$word,
+    freq = d$freq,
+    min.freq = 1,
+    max.words = 200,
+    random.order = FALSE,
+    rot.per = 0.35,
+    colors = RColorBrewer::brewer.pal(8, "Dark2"))
+
+  # Return
+  return(d)
+}
+
+
+#' @title PlotlyConversion
+#'
+#' @author Adrian Antico
+#' @family Graphics
+#'
+#' @param p1 ggplot2 object
+#'
+#' @export
+PlotlyConversion <- function(p1) {
+  if(class(p1)[[1L]] != 'plotly') {
+    if(!is.null(p1$plot_env$ForecastLineColor) || any(p1$layers[[1]]$mapping %like% 'PredictionColName')) {
+      p1 <- plotly::rangeslider(plotly::ggplotly(p1, dynamicTicks = TRUE))
+    } else {
+      p1 <- plotly::ggplotly(p1)
+    }
+  }
+  return(p1)
+}
+
+#' @noRd
+BlankPlot <- function() {
+  `Y Axis` <- rnorm(20)
+  `X Axis` <- rnorm(20,1,0.5)
+  df <- data.frame(`X Axis`,`Y Axis`)
+  return(
+    eval(ggplot2::ggplot(df, ggplot2::aes(`X Axis`,`Y Axis`)) +
+           ggplot2::geom_blank() +
+           RemixAutoML::ChartTheme(ChartColor = 'aliceblue', GridColor = 'lightsteelblue1', BorderColor = 'lightsteelblue2') +
+           ggplot2::labs(title = 'Title', subtitle = 'Subtitle', caption = 'RemixAutoML'))
+
+  )
+}
+
+#' @title AddFacet
+#'
+#' @description Add up to two facet variables for plots
+#'
+#' @author Adrian Antico
+#' @family Graphics
+#'
+#' @param data Source data.table
+#' @param ShapColNames Names of the columns that contain shap values you want included
+#' @param FacetVar1 Column name
+#' @param FacetVar2 Column name
+#' @param AggMethod A string for aggregating shapely values for importances. Choices include, 'mean', 'absmean', 'meanabs', 'sd', 'median', 'absmedian', 'medianabs'
+#' @param TopN The number of variables to plot
+#' @param Debug = FALSE
+#'
+#' @export
+AddFacet <- function(p, fv1=NULL, fv2=NULL, Exclude = 'None', Debug = FALSE) {
+  if(length(fv1) != 0 && fv1 != Exclude && length(fv2) != 0 && fv2 != Exclude) {
+    if(Debug) print('FacetVar1 and FacetVar2')
+    p <- p + ggplot2::facet_grid(get(fv1) ~ get(fv2))
+  } else if(length(fv1) != 0 && fv1 != Exclude) {
+    if(Debug) print('FacetVar1')
+    p <- p + ggplot2::facet_wrap(~ get(fv1))
+  } else if(length(fv2) != 0 && fv2 != Exclude) {
+    if(Debug) print('FacetVar2')
+    p <- p + ggplot2::facet_wrap(~ get(fv2))
+  }
+  return(eval(p))
 }

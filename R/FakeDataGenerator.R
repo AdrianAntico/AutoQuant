@@ -217,8 +217,8 @@ FakeDataGenerator <- function(Correlation = 0.70,
   data <- data.table::data.table(Adrian = runif(N))
   data[, x1 := qnorm(Adrian)]
   data[, x2 := runif(N)]
-  data[, Independent_Variable1 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
-  data[, Independent_Variable2 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+  data[, Independent_Variable1 := (pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
+  data[, Independent_Variable2 := log(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
   data[, Independent_Variable3 := exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
   data[, Independent_Variable4 := exp(exp(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2))))]
   data[, Independent_Variable5 := sqrt(pnorm(Correl * x1 + sqrt(1-Correl^2) * qnorm(x2)))]
@@ -235,10 +235,10 @@ FakeDataGenerator <- function(Correlation = 0.70,
     RandomValues <- sort(c(runif(n = 4L, min = 0.01, max = 0.99)))
     RandomLetters <- sort(c(sample(x = LETTERS, size = 5L, replace = FALSE)))
     data[, paste0("Factor_", i) := as.factor(
-      data.table::fifelse(Independent_Variable2 < RandomValues[1L], RandomLetters[1L],
-                          data.table::fifelse(Independent_Variable2 < RandomValues[2L], RandomLetters[2L],
-                                              data.table::fifelse(Independent_Variable2 < RandomValues[3L],  RandomLetters[3L],
-                                                                  data.table::fifelse(Independent_Variable2 < RandomValues[4L],  RandomLetters[4L], RandomLetters[5L])))))]
+      data.table::fifelse(Independent_Variable1 < RandomValues[1L], RandomLetters[1L],
+                          data.table::fifelse(Independent_Variable1 < RandomValues[2L], RandomLetters[2L],
+                                              data.table::fifelse(Independent_Variable1 < RandomValues[3L],  RandomLetters[3L],
+                                                                  data.table::fifelse(Independent_Variable1 < RandomValues[4L],  RandomLetters[4L], RandomLetters[5L])))))]
   }
 
   # Add date----

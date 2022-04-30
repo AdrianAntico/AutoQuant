@@ -37,7 +37,7 @@ body, h1, h2, h3, h4, h5, h6 {
 
 /* BORDER OF DROPDOWN BOX */
 .sw-dropdown-in {
-  background-image: linear-gradient(to top, #fcffff, #f7ffff, #f7ffff);
+  background-image: linear-gradient(to top, #f3faff, #edf2f6);
   border: #4a44fc;
   border-style: solid;
   color: #4a44fc;
@@ -66,6 +66,45 @@ body, h1, h2, h3, h4, h5, h6 {
   background-image: linear-gradient(to top, #f7f7f7, #dfe3ee, #d0dcf4);
   border: 3px solid #bbd6fa;
 }
+
+/* dark blue */
+.box.box-solid.box-warning {
+  background-image: linear-gradient(to top, #ffffff, #fafdff);
+  border: 3px solid #bbd6fa;
+}
+
+.box.box-solid.box-warning>.box-header {
+	color: #4a44fc;
+	background: #4a44fc;
+	background-color: #4a44fc
+}
+
+.box.box-solid.box-warning>.box-header a,
+.box.box-solid.box-warning>.box-header .btn {
+	color: #4a44fc
+}
+
+/* Silver bluish */
+.box.box-solid.box-primary {
+  background-image: linear-gradient(to top, #ffffdb, #bbd6fa, #a4cafc);
+  border: 3px solid #bbd6fa;
+}
+
+/* https://www.color-hex.com/color-palette/425 */
+
+/* #d2d4dc
+	 #afafaf
+	 #f8f8fa
+	 #e5e6eb
+	 #c0c2ce */
+
+/* Deep Purple */
+.box.box-solid.box-success {
+  background-image: linear-gradient(to top, #d2d4dc, #f8f8fa, #e5e6eb, #c0c2ce);
+  border: 3px solid #bbd6fa;
+}
+
+
 
 /* THIS IS WHERE YOU CHANGE THE LENGTH OF THE COLOR THAT GOES OVER THE PAGE LABELS ON SIDEBAR */
 /* 205px seems to be the extra long default */
@@ -277,51 +316,6 @@ body, h1, h2, h3, h4, h5, h6 {
 
 
 
-
-/* dark blue */
-.box.box-solid.box-warning {
-  background-image: linear-gradient(to top, #8fbfff, #716dfc, #4a44fc);
-  border: 3px solid #bbd6fa;
-}
-
-
-.box.box-solid.box-warning>.box-header {
-	color: #4a44fc;
-	background: #4a44fc;
-	background-color: #4a44fc
-}
-
-.box.box-solid.box-warning>.box-header a,
-.box.box-solid.box-warning>.box-header .btn {
-	color: #4a44fc
-}
-
-
-
-/* Silver bluish */
-.box.box-solid.box-primary {
-  background-image: linear-gradient(to top, #ffffdb, #bbd6fa, #a4cafc);
-  border: 3px solid #bbd6fa;
-}
-
-
-
-/* https://www.color-hex.com/color-palette/425 */
-
-/* #d2d4dc
-	 #afafaf
-	 #f8f8fa
-	 #e5e6eb
-	 #c0c2ce */
-
-
-
-
-/* Deep Purple */
-.box.box-solid.box-success {
-  background-image: linear-gradient(to top, #d2d4dc, #f8f8fa, #e5e6eb, #c0c2ce);
-  border: 3px solid #bbd6fa;
-}
 
 
 
