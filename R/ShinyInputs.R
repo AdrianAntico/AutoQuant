@@ -1844,6 +1844,11 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
                                  Animate=TRUE,
                                  Status='custom',
                                  H3Color = 'blue') {
+
+  RelationshipPlots <- c('ScatterPlot','CopulaPlot','HeatMapPlot')
+  StandardPlots <- c('BarPlot','LinePlot','Lollipop')
+  DistributionPlots <- c('BoxPlot','Histogram','ViolinPlot')
+
   if(PlotNumber > 2) DropDownRight <- TRUE
   ns <- shiny::NS(id)
   shiny::tagList(
@@ -1864,6 +1869,69 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
           shiny::column(5L, align = 'center', shiny::uiOutput(paste0('Plot', PlotNumber, '_SelectData'))),
           shiny::column(4L, shiny::uiOutput(paste0('Plot', PlotNumber))),
           shiny::column(3L, shiny::uiOutput(paste0('SampleSize', PlotNumber)))),
+
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+
+        # Distributions
+        shiny::fluidRow(
+          shiny::column(
+            width=3L, tags$button(
+              id=paste0("BoxPlot_MenuButton",PlotNumber),class="btn action-button",
+              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Distribution_BoxPlot.PNG?raw=true", height = "125px"))),
+          shiny::column(
+            width=3L, tags$button(
+              id=paste0("HistogramPlot_MenuButton",PlotNumber),class="btn action-button",
+              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Distribution_HistogramPlot.PNG?raw=true", height = "125px"))),
+          shiny::column(
+            width=3L, tags$button(
+              id=paste0("ViolinPlot_MenuButton",PlotNumber),class="btn action-button",
+              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Distributions_ViolinPlot.PNG?raw=true", height = "125px")))),
+
+        RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
+
+        # Standard Plots
+        shiny::fluidRow(
+          shiny::column(
+            width = 3L,
+            tags$button(
+              id = paste0("BarPlot_MenuButton", PlotNumber), class = "btn action-button",
+              tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_BarPlot.PNG?raw=true"), height = "125px"))),
+          shiny::column(
+            width = 3L,
+            tags$button(
+              id = paste0("LinePlot_MenuButton", PlotNumber), class = "btn action-button",
+              tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_LinePlot.PNG?raw=true"), height = "125px"))),
+          shiny::column(
+            width = 3L,
+            tags$button(
+              id = paste0("Lollipop_MenuButton", PlotNumber), class = "btn action-button",
+              tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_Lollipop.PNG?raw=true"), height = "125px")))
+          ),
+
+        # Relationships
+        shiny::fluidRow(
+          shiny::column(
+            width = 3L,
+            tags$button(
+              id = paste0("ScatterPlot_MenuButton", PlotNumber), class = "btn action-button",
+              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Correlations_ScatterPlot.PNG?raw=true", height = "125px"))),
+          shiny::column(
+            width = 3L,
+            tags$button(
+              id = paste0("CopulaPlot_MenuButton", PlotNumber), class = "btn action-button",
+              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Correlations_ScatterPlot.PNG?raw=true", height = "125px"))),
+          shiny::column(
+            width = 3L,
+            tags$button(
+              id = paste0("HeatMapPlot_MenuButton", PlotNumber), class = "btn action-button",
+              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Correlations_HeatMap.PNG?raw=true", height = "125px")))
+          ),
+
+
+          #), # end dropdown
+
 
         # Dropdown Button
         # Select Data
