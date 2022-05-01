@@ -79,7 +79,7 @@
 AppsPlotting <- function(AzureCredsFile = NULL,
                          HeaderColor = 'blue',
                          AppWidth = 12L,
-                         LogoWidth = '750px',
+                         LogoWidth = '800px',
                          LogoHeight = '100px',
                          GroupVarsBoxColor = 'navy',
                          VarsBoxColor = 'purple',
