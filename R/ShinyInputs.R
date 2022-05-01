@@ -1848,7 +1848,7 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
   # RelationshipPlots <- c('ScatterPlot','CopulaPlot','HeatMapPlot')
   # StandardPlots <- c('BarPlot','LinePlot','Lollipop')
   # DistributionPlots <- c('BoxPlot','Histogram','ViolinPlot')
-  Height <- "62px"
+  Height <- "95px"
   if(PlotNumber > 2) DropDownRight <- TRUE
   ns <- shiny::NS(id)
   shiny::tagList(
@@ -1860,80 +1860,85 @@ PlotDropDownContents <- function(id = 'PlotDropDown',
       tags$h4(tags$b(paste0('Plot ', PlotNumber))),
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = paste0('PlotDropDown', PlotNumber),
-        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), 'Data & Plot Selection')),
 
-        # Select Data
-        # Box
+        # Select Data Box
+        RemixAutoML:::BlankRow(AppWidth),
         shinydashboard::box(
           title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+          shiny::fluidRow(shiny::column(width=12L, align = 'center',tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), 'Data Selection')))),
+          RemixAutoML:::BlankRow(AppWidth),
           shiny::fluidRow(
             shiny::column(5L, align = 'center', shiny::uiOutput(paste0('Plot', PlotNumber, '_SelectData'))),
             shiny::column(4L, shiny::uiOutput(paste0('Plot', PlotNumber))),
-            shiny::column(3L, shiny::uiOutput(paste0('SampleSize', PlotNumber)))),
+            shiny::column(3L, shiny::uiOutput(paste0('SampleSize', PlotNumber))))),
 
-          RemixAutoML:::BlankRow(AppWidth)),
-
-        RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth),
-
-        # Distributions
+        # Select Plot Box
         shinydashboard::box(
           title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
-          tags$h5(align = 'left', tags$span(style=paste0('color: ', H3Color, ';'), 'Plot Selection')),
+          shiny::fluidRow(shiny::column(width=12L, align = 'center',tags$h4(align = 'left', tags$span(style=paste0('color: ', H3Color, ';'), 'Plot Selection')))),
+          RemixAutoML:::BlankRow(AppWidth),
+
+          # Distributions
           shiny::fluidRow(
             shiny::column(
-              width=2L, align = 'center', tags$button(
+              width=3L, align = 'center', tags$button(
                 id=paste0("BoxPlot_MenuButton",PlotNumber),class="btn action-button",
                 tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Final_BoxPlot.PNG?raw=true", height = Height))),
             shiny::column(
-              width=2L, align = 'center', tags$button(
+              width=3L, align = 'center', tags$button(
                 id=paste0("HistogramPlot_MenuButton",PlotNumber),class="btn action-button",
                 tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Final_Histograms.PNG?raw=true", height = Height))),
             shiny::column(
-              width=2L, align = 'center', tags$button(
+              width=3L, align = 'center', tags$button(
                 id=paste0("ViolinPlot_MenuButton",PlotNumber),class="btn action-button",
                 tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Distribution_ViolinPlot.PNG?raw=true", height = Height))) ,
             shiny::column(
-              width = 2L, align = 'center',
+              width=3L, align = 'center',
               tags$button(
                 id = paste0("BarPlot_MenuButton", PlotNumber), class = "btn action-button",
-                tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_BarPlot.PNG?raw=true"), height = Height))),
-            shiny::column(
-              width = 2L, align = 'center',
-              tags$button(
-                id = paste0("LinePlot_MenuButton", PlotNumber), class = "btn action-button",
-                tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_LinePlot.PNG?raw=true"), height = Height)))),
+                tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_BarPlot.PNG?raw=true"), height = Height)))),
 
           RemixAutoML:::BlankRow(AppWidth),
 
           # Standard Plots
-          tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), 'Ranking and Time')),
           shiny::fluidRow(
             shiny::column(
-              width = 2L,
+              width = 3L, align = 'center',
+              tags$button(
+                id = paste0("LinePlot_MenuButton", PlotNumber), class = "btn action-button",
+                tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_LinePlot.PNG?raw=true"), height = Height))),
+            shiny::column(
+              width = 3L,
               align = 'center',
               tags$button(
                 id = paste0("ScatterPlot_MenuButton", PlotNumber), class = "btn action-button",
                 tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Correlations_ScatterPlot.PNG?raw=true", height = Height))),
             shiny::column(
-              width = 2L,
+              width = 3L,
               align = 'center',
               tags$button(
                 id = paste0("CopulaPlot_MenuButton", PlotNumber), class = "btn action-button",
                 tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Correlations_ScatterPlot.PNG?raw=true", height = Height))),
             shiny::column(
-              width = 2L,
+              width = 3L,
               align = 'center',
               tags$button(
                 id = paste0("HeatMapPlot_MenuButton", PlotNumber), class = "btn action-button",
-                tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Correlations_HeatMap.PNG?raw=true", height = Height))),
+                tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Correlations_HeatMap.PNG?raw=true", height = Height)))),
+
+          RemixAutoML:::BlankRow(AppWidth),
+
+          # Additional Plots
+          shiny::fluidRow(
             shiny::column(
-              width = 2L,
+              width = 3L,
               align = 'center',
               tags$button(
                 id = paste0("Lollipop_MenuButton", PlotNumber), class = "btn action-button",
-                tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_Lollipop.PNG?raw=true"), height = Height)))
-          ) # end fluid row
+                tags$img(src = paste0("https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Standard_Lollipop.PNG?raw=true"), height = Height)))),
+
+          RemixAutoML:::BlankRow(AppWidth),
+
         ), # end box
 
         # Dropdown Button
