@@ -755,7 +755,7 @@ BoxPlot <- function(data = NULL,
   # Create Plot labs
   if(Debug) print('Create Plot labs')
   if(X_and_Y) {
-    p1 <- p1 + ggplot2::labs(title = paste0('Violin Plot by ', stringr::str_to_title(gsub(pattern = '_', replacement = ' ', x = XVar))), subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
+    p1 <- p1 + ggplot2::labs(title = paste0('Box Plot by ', stringr::str_to_title(gsub(pattern = '_', replacement = ' ', x = XVar))), subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
   } else {
     p1 <- p1 + ggplot2::labs(title = 'BoxPlot', subtitle = 'Blue line = mean(Y)', caption = 'RemixAutoML')
   }
@@ -1548,7 +1548,7 @@ AutoPlotter <- function(dt = NULL,
   if(Debug) print(paste0('AutoPlotter() begin, PlotType = ', PlotType))
 
   # Correlation Matrix Plot
-  if(tolower(PlotType) == 'correlationmatrix') {
+  if(tolower(PlotType) == 'correlogram') {
 
     # Plot
     p1 <- RemixAutoML::CorrMatrixPlot(data = dt, CorrVars = YVar)

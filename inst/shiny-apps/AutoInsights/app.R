@@ -1,5 +1,7 @@
 options(shiny.maxRequestSize = 250000*1024^2)
 
+source(file.path(system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'), "global.R"))
+
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -21,20 +23,19 @@ Plotter_PlotDropDown1_Validate <- TRUE
 # Display NNN number of records from any given table displayed via DataTable()
 NNN <- 1000L
 
-# Temp data
-DataList <- list()
-DataList[['temp']] <- data.table::data.table(Random1=runif(5L), Random2=runif(5L), Random3=runif(5L), Random4=runif(5L), Random5=runif(5L), Random6=runif(5L))
-
 # Initialize Data
 data <- NULL
 DataList <- list()
+
+# Temp data
+#DataList[['temp']] <- data.table::data.table(Random1=runif(5L), Random2=runif(5L), Random3=runif(5L), Random4=runif(5L), Random5=runif(5L), Random6=runif(5L))
 
 # First pass
 InitalizeInputs <- TRUE
 
 # List of Plot Types to choose
 AvailablePlots <- c(
-  'Histogram','ViolinPlot','BoxPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','CorrelationMatrix','HeatMapPlot',
+  'Histogram','ViolinPlot','BoxPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Correlogram','HeatMapPlot',
   'ShapelyImportance',
   'PartialDependenceLine', 'PartialDependenceBox',
   'CalibrationPlot', 'CalibrationBoxPlot',
@@ -73,7 +74,11 @@ H3Color <- shiny::getShinyOption('H3Color')
 AppTextColor <- shiny::getShinyOption('AppTextColor')
 Debug <- shiny::getShinyOption('Debug')
 
-# if(Debug) options(shiny.trace = TRUE)
+# Dropdown args collection lists
+PlotDropDown1 <- list(Debug = Debug)
+PlotDropDown2 <- list(Debug = Debug)
+PlotDropDown3 <- list(Debug = Debug)
+PlotDropDown4 <- list(Debug = Debug)
 
 # Load credentials
 if(!is.null(AzureCredsFile)) {
@@ -165,12 +170,12 @@ ui <- shinydashboard::dashboardPage(
       id = 'sidebar',
 
       # Login Page
-      RemixAutoML:::BlankRow(AppWidth),
-      shinydashboard::menuItem(text = 'Login', tabName = 'Login', icon = shiny::icon('sign-in-alt'), selected = TRUE),
+      # RemixAutoML:::BlankRow(AppWidth),
+      # shinydashboard::menuItem(text = 'Login', tabName = 'Login', icon = shiny::icon('sign-in-alt'), selected = TRUE),
 
       # Load Data Page
       RemixAutoML:::BlankRow(AppWidth),
-      shinydashboard::menuItem(text = 'Import Data', tabName = 'LoadDataPage', icon=shiny::icon('database')),
+      shinydashboard::menuItem(text = 'Import Data', tabName = 'LoadDataPage', selected = TRUE, icon=shiny::icon('database')),
 
       # Feature Engineering Page
       RemixAutoML:::BlankRow(AppWidth),
@@ -186,7 +191,8 @@ ui <- shinydashboard::dashboardPage(
 
       # Code Print Page
       RemixAutoML:::BlankRow(AppWidth),
-      shinydashboard::menuItem(text = 'Print Code', tabName = 'CodePrint', icon = shiny::icon('code')))),
+      shinydashboard::menuItem(text = 'Print Code', tabName = 'CodePrint', icon = shiny::icon('code')))
+    ),
 
   # ----
 
@@ -207,25 +213,10 @@ ui <- shinydashboard::dashboardPage(
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # TabItems                             ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-    shinydashboard::tabItems(
-
-      # ----
-
-      # ----
-
-      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-      # Login Page                           ----
-      # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-      shinydashboard::tabItem(
-
-        # Tab MetaData
-        selected = TRUE, tabName = 'Login',
-
-        # Box with Username and Password inputs
-        RemixAutoML:::LoginInputs(id='LoginBox', BoxStatus='danger', UserNameLabel="Select from Names", PassWordLabel='Input Password', UserNameChoices=Credentials[['UserName']], BoxTitle=NULL, SolidHeader=TRUE, Collapsible=FALSE, AppWidth=AppWidth),
-
-        # Button to login and go to Load Data
-        RemixAutoML:::LoginButton(id='LoginButton', Label='Check Credentials', AppWidth=AppWidth, Width=3L, Icon=shiny::icon('chevron-right', lib = 'font-awesome'), Style='gradient', Color='royal')),
+    #shinydashboard::tabItems(
+    shiny::tabsetPanel(
+      id = 'tabs',
+      selected = 'LoadDataPage',
 
       # ----
 
@@ -234,15 +225,11 @@ ui <- shinydashboard::dashboardPage(
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Load Data Page                       ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-      shinydashboard::tabItem(
-
-        # Tab MetaData
-        tabName = 'LoadDataPage',
-
-        # Load Inputs Box
+      #shinydashboard::tabItem(
+      shiny::tabPanel(
+        title = 'LoadDataPage',
+        icon = shiny::icon('database'),
         RemixAutoML:::LoadDataInputs(id = 'ExternalData', AppWidth=AppWidth, LogoWidth=LogoWidth, SolidHeader=TRUE, BoxTitle=NULL, BoxStatus='danger', DropdownRight=FALSE, DropDownAnimate=TRUE, DropDownStatus='custom'),
-
-        # Button to Load Data
         RemixAutoML:::LoadDataButton(id = 'DataButton', AppWidth = AppWidth)),
 
       # ----
@@ -252,59 +239,37 @@ ui <- shinydashboard::dashboardPage(
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Feature Engineering Page             ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-      shinydashboard::tabItem(
-
-        # -- TAB REFERENCE VALUE
-        tabName = "FeatureEngineering",
-
-        # Add row
+      #shinydashboard::tabItem(
+      shiny::tabPanel(
+        title = "FeatureEngineering",
+        icon = shiny::icon('blender'),
         RemixAutoML:::BlankRow(AppWidth),
-
-        # Box
         shinydashboard::box(
           title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
-
-          # Add Space
           RemixAutoML:::BlankRow(AppWidth),
-
-          # Feature Engineering DropDowns by Feature Engineering Type
           shiny::fluidRow(
             width=AppWidth,
             RemixAutoML:::FE_WindowingVariables(id   = 'WindowingVariables',   AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
             RemixAutoML:::FE_CategoricalVariables(id = 'CategoricalVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
             RemixAutoML:::FE_DateVariables(id        = 'CalendarVariables',    AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE, Animate=TRUE, Status='custom', H3Color = 'blue'),
             RemixAutoML:::FE_NumericVariables(id     = 'NumericVariables',     AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE, Animate=TRUE, Status='custom', H3Color = 'blue')),
-
-          # Add Space
           RemixAutoML:::BlankRow(AppWidth),
-
-          # Other
           shiny::fluidRow(
             width=AppWidth,
-            RemixAutoML:::ShinySaveData(id = 'SaveData_CSV_UI',           AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_DataSets(  id = 'DataSets',                  AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
+            RemixAutoML:::ShinySaveData(      id = 'SaveData_CSV_UI',           AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
+            RemixAutoML:::FE_DataSets(        id = 'DataSets',                  AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
             RemixAutoML:::FE_DataWrangling(   id = 'GeneralFeatureEngineering', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE,  Animate=TRUE, Status='custom', H3Color = 'blue')),
-
-          # Add Space to act as a bigger boarder for box
           RemixAutoML:::BlankRow(AppWidth),
-          RemixAutoML:::BlankRow(AppWidth),
-
-        ), # End of box
+          RemixAutoML:::BlankRow(AppWidth)), # End of box
 
         # Box
         shinydashboard::box(
           title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
-
-          # Tabular Output
           RemixAutoML:::BlankRow(AppWidth),
           shiny::fluidRow(
             width = AppWidth,
             DT::dataTableOutput('FE_DisplayData'))),
-
-          # Add extra row for padding
-          RemixAutoML:::BlankRow(AppWidth)
-
-      ), # End of tabItem
+          RemixAutoML:::BlankRow(AppWidth)), # End of tabItem
 
       # ----
 
@@ -313,19 +278,13 @@ ui <- shinydashboard::dashboardPage(
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Machine Learning Page                ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-      shinydashboard::tabItem(
-
-        # -- TAB REFERENCE VALUE
-        tabName = 'MachineLearning',
-
-        # Add row
+      #shinydashboard::tabItem(
+      shiny::tabPanel(
+        title = 'MachineLearning',
+        icon = shiny::icon('asterisk'),
         RemixAutoML:::BlankRow(AppWidth),
-
-        # Box
         shinydashboard::box(
           title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
-
-          # CatBoost ML
           RemixAutoML:::BlankRow(AppWidth),
           shiny::fluidRow(
             RemixAutoML:::ML_CatBoost(id = 'CatBoostML', Align = 'center', ButtonWidth = 2L),
@@ -333,11 +292,7 @@ ui <- shinydashboard::dashboardPage(
             RemixAutoML:::ML_LightGBM( id = 'LightGBMML', Align = 'center', ButtonWidth = 2L)),
           shiny::fluidRow(
             RemixAutoML:::BuildModelsButton(id = 'MLBuildButton')),
-
-          # Add row so box has larger border
-          RemixAutoML:::BlankRow(AppWidth),
-
-        ), # End of box
+          RemixAutoML:::BlankRow(AppWidth)), # End of box
 
         # # Box
         # shinydashboard::box(
@@ -361,10 +316,13 @@ ui <- shinydashboard::dashboardPage(
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Plotter Page                         ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-      shinydashboard::tabItem(
+      #shinydashboard::tabItem(
+      shiny::tabPanel(
 
         # -- TAB REFERENCE VALUE
-        tabName = "Plotter",
+        # tabName = "Plotter",
+        title = "Plotter",
+        icon = shiny::icon("chart-line"),
 
         # ----
 
@@ -373,6 +331,8 @@ ui <- shinydashboard::dashboardPage(
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         # Plot Inputs                          ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+        RemixAutoML:::BlankRow(AppWidth),
 
         # Box
         shinydashboard::box(
@@ -502,10 +462,15 @@ ui <- shinydashboard::dashboardPage(
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
       # Code Print                           ----
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-      shinydashboard::tabItem(
+      # shinydashboard::tabItem(
+      shiny::tabPanel(
 
         # -- TAB REFERENCE VALUE
-        tabName = "CodePrint",
+        # tabName = "CodePrint",
+        title = "CodePrint",
+        icon = shiny::icon('code'),
+
+        RemixAutoML:::BlankRow(AppWidth),
 
         # Print Code!
         shiny::fluidRow(shiny::column(width = 3L, shinyjs::useShinyjs(), shinyWidgets::actionBttn(inputId='PrintCodeButton', label='Print Code', icon=shiny::icon('chevron-right', lib = 'font-awesome'), style='gradient', color=eval(CreatePlotButtonColor)))),
@@ -537,34 +502,77 @@ server <- function(input, output, session) {
   Data <<- reactive({DataList[['temp']]})
   CurrentData <- 'temp'
 
-  # Button to disable / enable Data Load Page
-  shinyjs::addCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
-  shinyjs::addCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
-  shinyjs::addCssClass(selector = "a[data-value='FeatureEngineering']", class = "inactiveLink")
-  shinyjs::addCssClass(selector = "a[data-value='MachineLearning']", class = "inactiveLink")
-  shinyjs::addCssClass(selector = "a[data-value='CodePrint']", class = "inactiveLink")
-
   # Inputs
   UserName <- shiny::reactive({input$UserName})
   Password <- shiny::reactive({input$Password})
 
-  # Login
+  # login modal
+  shiny::showModal(
+    shiny::modalDialog(
+      title = 'Login',
+      easyClose = FALSE,
+      list(shiny::selectInput(inputId = 'UserName', label =  "Fill out username", choices = Credentials[['UserName']], selected = 'UserName'),
+           shiny::passwordInput(inputId = "Password", label =  "Fill out password", value = 'Password', placeholder = 'password')),
+      footer = shiny::tagList(shiny::fluidRow(shiny::column(width = 3L, align = 'center', shinyWidgets::actionBttn(inputId = 'Check_Credentials', label = 'Sign In', icon = shiny::icon('chevron-right', lib = 'font-awesome'), style ='gradient', color='royal'))))))
+
+  # Logout - takes you back to login modal
+  shiny::observeEvent(input$Logout, {
+    shiny::showModal(
+      shiny::modalDialog(
+        title = 'Login',
+        easyClose = FALSE,
+        list(
+          shiny::selectInput(inputId = 'UserName', label =  "Fill out username", choices = Credentials[['UserName']], selected = 'UserName'),
+          shiny::passwordInput(inputId = "Password", label =  "Fill out password", value = 'Password', placeholder = 'password')
+        ),
+        footer = shiny::tagList(
+          shiny::fluidRow(shiny::column(width = 3L, align = 'center', shinyWidgets::actionBttn(inputId = 'Check_Credentials', label = 'Sign In', icon = shiny::icon('chevron-right', lib = 'font-awesome'), style ='gradient', color='royal')))
+        )
+      )
+    )
+  })
+
+  # Login Check
   shiny::observeEvent(input$Check_Credentials, {
     if(UserName() %in% Credentials$UserName && Password() %in% Credentials[UserName == eval(UserName())]$Password) {
-      shinyjs::removeCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
-      shinyjs::removeCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
-      shinyjs::removeCssClass(selector = "a[data-value='FeatureEngineering']", class = "inactiveLink")
-      shinyjs::removeCssClass(selector = "a[data-value='MachineLearning']", class = "inactiveLink")
-      shinyjs::removeCssClass(selector = "a[data-value='CodePrint']", class = "inactiveLink")
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Success', type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      shiny::removeModal()
     } else {
-      shinyjs::addCssClass(selector = "a[data-value='LoadDataPage']", class = "inactiveLink")
-      shinyjs::addCssClass(selector = "a[data-value='Plotter']", class = "inactiveLink")
-      shinyjs::addCssClass(selector = "a[data-value='FeatureEngineering']", class = "inactiveLink")
-      shinyjs::addCssClass(selector = "a[data-value='MachineLearning']", class = "inactiveLink")
-      shinyjs::addCssClass(selector = "a[data-value='CodePrint']", class = "inactiveLink")
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Username and / or password is incorrect', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      shiny::showModal(
+        shiny::modalDialog(
+          title = 'Login Failed: Please Try Again',
+          easyClose = FALSE,
+          list(
+            shiny::selectInput(inputId = 'UserName', label =  "Fill out username", choices = Credentials[['UserName']], selected = 'UserName'),
+            shiny::passwordInput(inputId = "Password", label =  "Fill out password", value = 'Password', placeholder = 'password')
+          ),
+          footer = shiny::tagList(
+            shiny::fluidRow(shiny::column(width = 3L, align = 'center', shinyWidgets::actionBttn(inputId = 'Check_Credentials', label = 'Sign In', icon = shiny::icon('chevron-right', lib = 'font-awesome'), style ='gradient', color='royal')))
+          )
+        )
+      )
     }
+  })
+
+  # Switch tabs via sidepanel
+  shiny::observeEvent(input$sidebar, {
+    if(input$sidebar == 'LoadDataPage')
+      shiny::updateTabsetPanel(session, inputId = "tabs", selected = "LoadDataPage")
+  })
+  shiny::observeEvent(input$sidebar, {
+    if(input$sidebar == 'FeatureEngineering')
+      shiny::updateTabsetPanel(session, inputId = "tabs", selected = "FeatureEngineering")
+  })
+  shiny::observeEvent(input$sidebar, {
+    if(input$sidebar == 'MachineLearning')
+      shiny::updateTabsetPanel(session, inputId = "tabs", selected = "MachineLearning")
+  })
+  shiny::observeEvent(input$sidebar, {
+    if(input$sidebar == 'Plotter')
+      shiny::updateTabsetPanel(session, inputId = "tabs", selected = "Plotter")
+  })
+  shiny::observeEvent(input$sidebar, {
+    if(input$sidebar == 'CodePrint')
+      shiny::updateTabsetPanel(session, inputId = "tabs", selected = "CodePrint")
   })
 
   # ----
@@ -578,8 +586,8 @@ server <- function(input, output, session) {
   print('LoadDataPage Initialization')
 
   # Prepare Data Loaders
-  shiny::observeEvent(input$sidebar, {
-    if(input$sidebar == 'LoadDataPage') {
+  shiny::observeEvent(input$tabs, {
+    if(input$tabs == 'LoadDataPage') {
 
       # Local .csv or .txt
       output$TabularData <- shiny::renderUI({
@@ -607,7 +615,7 @@ server <- function(input, output, session) {
         } else {
           rawfiles_csv <<- NULL
         }
-        RemixAutoML:::SelectizeInput(InputID='AzureBlobStorageTabular', Label=tags$span(style=paste0('color: blue;'),'Azure Blob .csv Files'), Choices=rawfiles_csv, SelectedDefault=NULL, Multiple=TRUE, MaxVars=1, CloseAfterSelect=TRUE, Debug=Debug)
+        RemixAutoML:::SelectizeInput(InputID='AzureBlobStorageTabular', Label=tags$span(tags$h4(style=paste0('color: blue;'),'Azure Blob .csv Files')), Choices=rawfiles_csv, SelectedDefault=NULL, Multiple=TRUE, MaxVars=1, CloseAfterSelect=TRUE, Debug=Debug)
       })
 
       # .Rdata or .rds
@@ -617,7 +625,7 @@ server <- function(input, output, session) {
         } else {
           rawfiles_rdata <- NULL
         }
-        RemixAutoML:::SelectizeInput(InputID='AzureBlobStorageRdata', Label=tags$span(style=paste0('color: blue;'),'Azure Blob .Rdata Files'), Choices=rawfiles_rdata, SelectedDefault=NULL, Multiple=TRUE, MaxVars=1, CloseAfterSelect=TRUE, Debug=Debug)
+        RemixAutoML:::SelectizeInput(InputID='AzureBlobStorageRdata', Label=tags$span(tags$h4(style=paste0('color: blue;'),'Azure Blob .Rdata Files')), Choices=rawfiles_rdata, SelectedDefault=NULL, Multiple=TRUE, MaxVars=1, CloseAfterSelect=TRUE, Debug=Debug)
       })
 
       # Local PostGRE DBNames Available
@@ -1192,21 +1200,19 @@ server <- function(input, output, session) {
   })
 
   # Initialize DataTable output
-  shiny::observeEvent(input$sidebar, {
-    if(input$sidebar == 'FeatureEngineering') {
-
-      # Meta
+  shiny::observeEvent(input$tabs, {
+    if(input$tabs == 'FeatureEngineering') {
       FE_Validate_Counter <<- FE_Validate_Counter + 1L
-      if(Debug) {print(FE_Validate_Counter); print(CurrentData); print(names(DataList)); print(' :: R#2184 error ::'); print(FE_Validate); print('input$sidebar'); print(input$sidebar)}
-
-      # Data
-      data <- DataList[[CurrentData]]
-
-      # Display DataTable
+      if(Debug) {print(FE_Validate_Counter); print(CurrentData); print(names(DataList)); print(' :: R#2184 error ::'); print(FE_Validate)}
+      data <- tryCatch({DataList[[CurrentData]]}, error = function(x) NULL)
       if(FE_Validate_Counter <= 3L) {
         output$FE_DisplayData <- DT::renderDataTable({
           if(Debug) {print('here and data is :'); print(data)}
-          RemixAutoML::DataTable(data[seq_len(min(.N, NNN))])
+          if(length(data) == 0L) {
+            RemixAutoML::DataTable(data.table::data.table(Random1=runif(5L), Random2=runif(5L), Random3=runif(5L), Random4=runif(5L), Random5=runif(5L), Random6=runif(5L)))
+          } else {
+            RemixAutoML::DataTable(data[seq_len(min(.N, NNN))])
+          }
         })
         FE_Validate <<- FALSE
       }
@@ -1742,7 +1748,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  #    Inputs XGBoost ML                ----
+  #    Inputs XGBoost ML                 ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # XGBoost DropDown
@@ -2141,8 +2147,8 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Dragula, globals
-  shiny::observeEvent(input$sidebar, {
-    if(input$sidebar == 'Plotter') {
+  shiny::observeEvent(input$tabs, {
+   if(input$tabs == 'Plotter') {
       output$PlotEngine <- shiny::renderUI({
         shiny::checkboxGroupInput(inputId = "PlotEngine", label = tags$span(style='color: blue;', 'Plot Engine'),choices = list("plotly" = 1, "ggplot2" = 2), selected = 1)
       })
@@ -2206,22 +2212,698 @@ server <- function(input, output, session) {
     }
   })
 
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # :: Obs Event Ok Buttons in Modals    ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Plot 1
+  shiny::observeEvent(input$BoxPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$BarPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$LinePlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$ViolinPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$HistogramPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$ScatterPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$CopulaPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$HeatMapPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$CorrelogramPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$CalibrationLinePlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$CalibrationBoxPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$PartialDependenceLinePlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$PartialDependenceBoxPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$ResidualsHistogramPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$ResidualsScatterPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$ROCPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$LiftPlotOK1, {shiny::removeModal()})
+  shiny::observeEvent(input$GainsPlotOK1, {shiny::removeModal()})
+
+  # Plot 2
+  shiny::observeEvent(input$BoxPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$BarPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$LinePlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$ViolinPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$HistogramPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$ScatterPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$CopulaPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$HeatMapPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$CorrelogramPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$CalibrationLinePlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$CalibrationBoxPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$PartialDependenceLinePlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$PartialDependenceBoxPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$ResidualsHistogramPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$ResidualsScatterPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$ROCPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$LiftPlotOK2, {shiny::removeModal()})
+  shiny::observeEvent(input$GainsPlotOK2, {shiny::removeModal()})
+
+  # Plot 3
+  shiny::observeEvent(input$BoxPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$BarPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$LinePlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$ViolinPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$HistogramPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$ScatterPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$CopulaPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$HeatMapPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$CorrelogramPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$CalibrationLinePlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$CalibrationBoxPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$PartialDependenceLinePlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$PartialDependenceBoxPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$ResidualsHistogramPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$ResidualsScatterPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$ROCPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$LiftPlotOK3, {shiny::removeModal()})
+  shiny::observeEvent(input$GainsPlotOK3, {shiny::removeModal()})
+
+  # Plot 4
+  shiny::observeEvent(input$BoxPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$BarPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$LinePlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$ViolinPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$HistogramPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$ScatterPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$CopulaPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$HeatMapPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$CorrelogramPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$CalibrationLinePlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$CalibrationBoxPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$PartialDependenceLinePlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$PartialDependenceBoxPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$ResidualsHistogramPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$ResidualsScatterPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$ROCPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$LiftPlotOK4, {shiny::removeModal()})
+  shiny::observeEvent(input$GainsPlotOK4, {shiny::removeModal()})
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # :: Obs Event Modals                  ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$BoxPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$BoxPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$BoxPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$BoxPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4; PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # Histogram Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$HistogramPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Histogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$HistogramPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Histogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$HistogramPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Histogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$HistogramPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Histogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4; PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # ViolinPlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ViolinPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ViolinPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ViolinPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ViolinPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ViolinPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ViolinPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ViolinPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ViolinPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # BarPlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$BarPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BarPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$BarPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BarPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal2(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$BarPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BarPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal2(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$BarPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BarPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # LinePlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$LinePlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LinePlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$LinePlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LinePlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal2(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$LinePlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LinePlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal2(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$LinePlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LinePlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # LinePlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ScatterPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ScatterPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal2(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ScatterPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal2(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ScatterPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # CopulaPlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CopulaPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CopulaPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CopulaPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CopulaPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal2(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CopulaPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CopulaPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal2(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CopulaPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CopulaPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # HeatMapPlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$HeatMapPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'HeatMapPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$HeatMapPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'HeatMapPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal2(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$HeatMapPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'HeatMapPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal2(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$HeatMapPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'HeatMapPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # Correlogram Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CorrelogramPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CorrelogramPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CorrelogramPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CorrelogramPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal2(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CorrelogramPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CorrelogramPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal2(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CorrelogramPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CorrelogramPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal2(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # Residual Histogram Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ResidualsHistogram_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsHistogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ResidualsHistogram_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsHistogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ResidualsHistogram_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsHistogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ResidualsHistogram_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsHistogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # Residual ScatterPlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ResidualsScatterPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ResidualsScatterPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ResidualsScatterPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ResidualsScatterPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # PartialDependenceLine Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$PartialDependenceLine_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$PartialDependenceLine_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$PartialDependenceLine_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$PartialDependenceLine_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # PartialDependenceBox Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$PartialDependenceBox_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceBox', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$PartialDependenceBox_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceBox', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$PartialDependenceBox_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceBox', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$PartialDependenceBox_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceBox', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # Variable Importance Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$VariableImportance_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'VariableImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$VariableImportance_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'VariableImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$VariableImportance_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'VariableImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$VariableImportance_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'VariableImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # Shapely Importance Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ShapelyImportance_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ShapelyImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ShapelyImportance_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ShapelyImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ShapelyImportance_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ShapelyImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ShapelyImportance_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ShapelyImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # ROC Plot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ROCPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ROCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ROCPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ROCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ROCPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ROCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$ROCPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ROCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # Lift Plot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$LiftPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LiftPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$LiftPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LiftPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$LiftPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LiftPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$LiftPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LiftPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # Gains Plot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$GainsPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'GainsPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$GainsPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'GainsPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    StandardPlotsModal1(PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$GainsPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'GainsPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    StandardPlotsModal1(PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$GainsPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'GainsPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+    StandardPlotsModal1(PlotNumber = 1L)
+  })
+
+
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # :: Obs Event PlotDropDowns           ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
   # Plot 1 DropDown
   shiny::observeEvent(input$PlotDropDown1, {
-
-    # Create intra-session tracking list
-    if(!exists('PlotDropDown1')) PlotDropDown1 <- list(Debug = Debug)
-    print('Plot1_SelectData')
 
     # Select data
     output$Plot1_SelectData <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'Plot1_SelectData', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID='Plot1_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
     })
-
-    # Args Storage
     PlotDropDown1[['Plot1_SelectData']][['SelectedDefault']][[length(PlotDropDown1[['Plot1_SelectData']][['SelectedDefault']]) + 1L]] <- input$Plot1_SelectData
     PlotDropDown1 <<- PlotDropDown1
+
+    print('Step 2')
+
+    # Reactives
+    Plot1_react <- shiny::reactive({
+      print(tryCatch({input$Plot1}, error = function(x) NULL))
+      tryCatch({input$Plot1}, error = function(x) NULL)
+    })
 
     # Select data
     output$SampleSize1 <- shiny::renderUI({
@@ -2232,27 +2914,16 @@ server <- function(input, output, session) {
     PlotDropDown1[['SampleSize1']][['SelectedDefault']][[length(PlotDropDown1[['SampleSize1']][['SelectedDefault']]) + 1L]] <- input$SampleSize1
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Step 4')
+
     # Reactives
     dt1 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot1_SelectData]]}, error = function(x) DataList[[1L]]))})
     dt1 <<- dt1
 
-    # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
-    output$Plot1 <- shiny::renderUI({
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'Plot1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(AvailablePlots), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
-    })
-
-    # Args Storage
-    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1
-    PlotDropDown1 <<- PlotDropDown1
-
-    # Reactives
-    Plot1_react <- shiny::reactive({input[['Plot1']]})
-
     # Y Variable
     output$YVar1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'YVar1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot1_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot1_react()}, error = 'none')) {
         choices <- names(dt1())[which(RemixAutoML:::ColTypes(dt1()) %in% c('numeric','integer'))]
         MaxVars <- 30
         if(length(choices) == 0) choices <- NULL
@@ -2267,10 +2938,12 @@ server <- function(input, output, session) {
     PlotDropDown1[['YVar1']][['SelectedDefault']][[length(PlotDropDown1[['YVar1']][['SelectedDefault']]) + 1L]] <- input$YVar1
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Step 5')
+
     # X Variable
     output$XVar1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'XVar1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot1_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot1_react()}, error = 'none')) {
         MaxVars <- 100
         choices <- NULL
       } else {
@@ -2283,6 +2956,8 @@ server <- function(input, output, session) {
     # Args Storage
     PlotDropDown1[['XVar1']][['SelectedDefault']][[length(PlotDropDown1[['XVar1']][['SelectedDefault']]) + 1L]] <- input$XVar1
     PlotDropDown1 <<- PlotDropDown1
+
+    print('Step 6')
 
     # Z Variable
     output$ZVar1 <- shiny::renderUI({
@@ -2301,16 +2976,20 @@ server <- function(input, output, session) {
     PlotDropDown1[['ZVar1']][['SelectedDefault']][[length(PlotDropDown1[['ZVar1']][['SelectedDefault']]) + 1L]] <- input$ZVar1
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Step 7')
+
     # Reactives
     YVar1 <- shiny::reactive({shiny::req(input[['YVar1']])})
     YVar1 <<- YVar1
     XVar1 <- shiny::reactive({shiny::req(input[['XVar1']])})
     XVar1 <<- XVar1
 
+    print('Step 8')
+
     # Select GroupVars
     output$GroupVars1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'GroupVars1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot1_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot1_react()}, error = 'none')) {
         choices <- names(dt1())[which(RemixAutoML:::ColTypes(dt1()) %in% c('numeric','integer'))]
         if(length(choices) == 0) choices <- NULL
       } else {
@@ -2323,8 +3002,12 @@ server <- function(input, output, session) {
     PlotDropDown1[['GroupVars1']][['SelectedDefault']][[length(PlotDropDown1[['GroupVars1']][['SelectedDefault']]) + 1L]] <- input$GroupVars1
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Step 9')
+
     # Reactives
     SelectedGroups1 <- shiny::reactive({RemixAutoML:::ReturnParam(xx = input[['GroupVars1']], VarName = 'GroupVars1', Default = NULL, Switch = TRUE, Type = 'character')})
+
+    print('Step 10')
 
     # Group Levels 1
     output$Levels_1_1 <- shiny::renderUI({
@@ -2343,6 +3026,8 @@ server <- function(input, output, session) {
     PlotDropDown1[['Levels_1_1']][['SelectedDefault']][[length(PlotDropDown1[['Levels_1_1']][['SelectedDefault']]) + 1L]] <- input$Levels_1_1
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Step 11')
+
     # Group Levels 2
     output$Levels_1_2 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'Levels_1_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
@@ -2357,6 +3042,8 @@ server <- function(input, output, session) {
     # Args Storage
     PlotDropDown1[['Levels_1_2']][['SelectedDefault']][[length(PlotDropDown1[['Levels_1_2']][['SelectedDefault']]) + 1L]] <- input$Levels_1_2
     PlotDropDown1 <<- PlotDropDown1
+
+    print('Step 12')
 
     # Group Levels 3
     output$Levels_1_3 <- shiny::renderUI({
@@ -2373,6 +3060,8 @@ server <- function(input, output, session) {
     PlotDropDown1[['Levels_1_3']][['SelectedDefault']][[length(PlotDropDown1[['Levels_1_3']][['SelectedDefault']]) + 1L]] <- input$Levels_1_3
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Step 13')
+
     # Facet Var 1
     output$FacetVar_1_1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'FacetVar_1_1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
@@ -2382,6 +3071,8 @@ server <- function(input, output, session) {
     # Args Storage
     PlotDropDown1[['FacetVar_1_1']][['SelectedDefault']][[length(PlotDropDown1[['FacetVar_1_1']][['SelectedDefault']]) + 1L]] <- input$FacetVar_1_1
     PlotDropDown1 <<- PlotDropDown1
+
+    print('Step 14')
 
     # Size Var 1
     output$SizeVar1 <- shiny::renderUI({
@@ -2393,6 +3084,8 @@ server <- function(input, output, session) {
     PlotDropDown1[['SizeVar1']][['SelectedDefault']][[length(PlotDropDown1[['SizeVar1']][['SelectedDefault']]) + 1L]] <- input$SizeVar1
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Step 15')
+
     # Bar Plot Aggregation Method
     output$BarPlotAgg1 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'BarPlotAgg1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
@@ -2403,10 +3096,16 @@ server <- function(input, output, session) {
     PlotDropDown1[['BarPlotAgg1']][['SelectedDefault']][[length(PlotDropDown1[['BarPlotAgg1']][['SelectedDefault']]) + 1L]] <- input$BarPlotAgg1
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Step 16')
+
     # MultiClass Level Selection for PDP Model Insight Plot
     output$TargetLevel1 <- shiny::renderUI({
-      if(length(shiny::req(YVar1())) != 0L && length(shiny::req(dt1())) != 0) {
-        if(!any(class(shiny::req(dt1())[[shiny::req(YVar1())[[1L]]]]) %in% c('numeric','integer'))) vals <- as.character(unique(shiny::req(dt1())[[shiny::req(YVar1())]])) else vals <- NULL
+      if(length(YVar1()) != 0L && length(dt1()) != 0) {
+        if(!any(c('numeric','integer') %in% tryCatch({class(shiny::req(dt1())[[shiny::req(YVar1())[[1L]]]])}, error = function(x) 'blabla'))) {
+          vals <- as.character(unique(dt1()[[shiny::req(YVar1())]]))
+        } else {
+          vals <- NULL
+        }
       } else {
         vals <- NULL
       }
@@ -2418,20 +3117,29 @@ server <- function(input, output, session) {
     PlotDropDown1[['TargetLevel1']][['SelectedDefault']][[length(PlotDropDown1[['TargetLevel1']][['SelectedDefault']]) + 1L]] <- input$TargetLevel1
     PlotDropDown1 <<- PlotDropDown1
 
+    print('Plot1DropDown is done')
+
   })
 
   # Plot 2 DropDown
   shiny::observeEvent(input$PlotDropDown2, {
 
-
     # Create intra-session tracking list
     if(!exists('PlotDropDown2')) PlotDropDown2 <- list(Debug = Debug)
     print('Plot2_SelectData')
 
+    # Plot
+    output$Plot2 <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = 'Plot Selection', Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2
+    PlotDropDown2 <<- PlotDropDown2
+
+
     # Select data
     output$Plot2_SelectData <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'Plot2_SelectData', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='Plot2_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='Plot2_SelectData', Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2451,12 +3159,6 @@ server <- function(input, output, session) {
     dt2 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot2_SelectData]]}, error = function(x) DataList[[1L]]))})
     dt2 <<- dt2
 
-    # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
-    output$Plot2 <- shiny::renderUI({
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'Plot2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(AvailablePlots), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
-    })
-
     # Args Storage
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2
     PlotDropDown2 <<- PlotDropDown2
@@ -2467,7 +3169,7 @@ server <- function(input, output, session) {
     # Y Variable
     output$YVar2 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'YVar2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot2_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot2_react()}, error = 'none')) {
         choices <- names(dt2())[which(RemixAutoML:::ColTypes(dt2()) %in% c('numeric','integer'))]
         MaxVars <- 30
         if(length(choices) == 0) choices <- NULL
@@ -2485,7 +3187,7 @@ server <- function(input, output, session) {
     # X Variable
     output$XVar2 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'XVar2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot2_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot2_react()}, error = 'none')) {
         MaxVars <- 100
         choices <- NULL
       } else {
@@ -2525,7 +3227,7 @@ server <- function(input, output, session) {
     # Select GroupVars
     output$GroupVars2 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown2, InputName = 'GroupVars2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot2_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot2_react()}, error = 'none')) {
         choices <- names(dt2())[which(RemixAutoML:::ColTypes(dt2()) %in% c('numeric','integer'))]
         if(length(choices) == 0) choices <- NULL
       } else {
@@ -2643,10 +3345,16 @@ server <- function(input, output, session) {
     if(!exists('PlotDropDown3')) PlotDropDown3 <- list(Debug = Debug)
     print('Plot3_SelectData')
 
+    output$Plot3 <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = 'Plot Selection', Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3
+    PlotDropDown3 <<- PlotDropDown3
+
     # Select data
     output$Plot3_SelectData <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'Plot3_SelectData', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='Plot3_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='Plot3_SelectData', Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2666,12 +3374,6 @@ server <- function(input, output, session) {
     dt3 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot3_SelectData]]}, error = function(x) DataList[[1L]]))})
     dt3 <<- dt3
 
-    # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
-    output$Plot3 <- shiny::renderUI({
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'Plot3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(AvailablePlots), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
-    })
-
     # Args Storage
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3
     PlotDropDown3 <<- PlotDropDown3
@@ -2682,7 +3384,7 @@ server <- function(input, output, session) {
     # Y Variable
     output$YVar3 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'YVar3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot3_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot3_react()}, error = 'none')) {
         choices <- names(dt3())[which(RemixAutoML:::ColTypes(dt3()) %in% c('numeric','integer'))]
         MaxVars <- 30
         if(length(choices) == 0) choices <- NULL
@@ -2700,7 +3402,7 @@ server <- function(input, output, session) {
     # X Variable
     output$XVar3 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'XVar3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot3_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot3_react()}, error = 'none')) {
         MaxVars <- 100
         choices <- NULL
       } else {
@@ -2740,7 +3442,7 @@ server <- function(input, output, session) {
     # Select GroupVars
     output$GroupVars3 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown3, InputName = 'GroupVars3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot3_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot3_react()}, error = 'none')) {
         choices <- names(dt3())[which(RemixAutoML:::ColTypes(dt3()) %in% c('numeric','integer'))]
         if(length(choices) == 0) choices <- NULL
       } else {
@@ -2857,10 +3559,16 @@ server <- function(input, output, session) {
     if(!exists('PlotDropDown4')) PlotDropDown4 <- list(Debug = Debug)
     print('Plot4_SelectData')
 
+    output$Plot4 <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = 'Plot Selection', Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+    })
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4
+    PlotDropDown4 <<- PlotDropDown4
+
     # Select data
     output$Plot4_SelectData <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'Plot4_SelectData', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='Plot4_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='Plot4_SelectData', Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2880,12 +3588,6 @@ server <- function(input, output, session) {
     dt4 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot4_SelectData]]}, error = function(x) DataList[[1L]]))})
     dt4 <<- dt4
 
-    # Plot Selection + reactives for enabling smart selection for YVar, XVar, etc.
-    output$Plot4 <- shiny::renderUI({
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'Plot4', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = c(AvailablePlots), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
-    })
-
     # Args Storage
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4
     PlotDropDown4 <<- PlotDropDown4
@@ -2896,7 +3598,7 @@ server <- function(input, output, session) {
     # Y Variable
     output$YVar4 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'YVar4', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot4_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot4_react()}, error = 'none')) {
         choices <- names(dt4())[which(RemixAutoML:::ColTypes(dt4()) %in% c('numeric','integer'))]
         MaxVars <- 30
         if(length(choices) == 0) choices <- NULL
@@ -2914,7 +3616,7 @@ server <- function(input, output, session) {
     # X Variable
     output$XVar4 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'XVar4', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot4_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot4_react()}, error = 'none')) {
         MaxVars <- 100
         choices <- NULL
       } else {
@@ -2954,7 +3656,7 @@ server <- function(input, output, session) {
     # Select GroupVars
     output$GroupVars4 <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown4, InputName = 'GroupVars4', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      if('CorrelationMatrix' %in% tryCatch({Plot4_react()}, error = 'none')) {
+      if('Correlogram' %in% tryCatch({Plot4_react()}, error = 'none')) {
         choices <- names(dt4())[which(RemixAutoML:::ColTypes(dt4()) %in% c('numeric','integer'))]
         if(length(choices) == 0) choices <- NULL
       } else {
@@ -4834,9 +5536,9 @@ server <- function(input, output, session) {
       }
 
       # PLOT LOGIC CHECK THEN BUILD PLOT:
-      if(length(YVar) == 0 && length(XVar) == 0 && PlotType %in% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','CorrelationMatrix')) {
+      if(length(YVar) == 0 && length(XVar) == 0 && PlotType %in% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','Correlogram')) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = 'You need to specify additional variables to generate additional plots', type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-      } else if(PlotType %in% 'CorrelationMatrix' && length(YVar) == 0) {
+      } else if(PlotType %in% 'Correlogram' && length(YVar) == 0) {
         shinyWidgets::sendSweetAlert(session, title = NULL, text = "YVar needs to have at least two variables selected to build this plot", type = NULL, btn_labels = "error", btn_colors = "red", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
       } else {
 
@@ -5022,7 +5724,7 @@ server <- function(input, output, session) {
 
             # Subset columns
             if(Debug) print('Subset Columns Here')
-            if(!PlotType %in% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','CorrelationMatrix','HeatMapPlot','ShapelyImportance')) {
+            if(!PlotType %in% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','Correlogram','HeatMapPlot','ShapelyImportance')) {
               if(length(unique(c(XVar))) != 0) {
                 Keep <- unique(c(YVar, XVar, ZVar, ScoreVar)); if(Debug) {print(Keep); print(names(data1))}
                 data1 <- data1[, .SD, .SDcols = c(Keep)]; if(Debug) print('Subset Columns Here predone')
@@ -5062,7 +5764,7 @@ server <- function(input, output, session) {
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
         # Create Plots                         ----
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-        if(PlotType %chin% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','CorrelationMatrix','HeatMapPlot')) {
+        if(PlotType %chin% c('BoxPlot','ViolinPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Histogram','Correlogram','HeatMapPlot')) {
 
           # AutoPlotter()
           if(Debug) print('Run AutoPlotter')
@@ -5397,7 +6099,6 @@ server <- function(input, output, session) {
   #    Close app after closing browser   ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   session$onSessionEnded(function() {
-  suppressWarnings(rm(BlobStorageURL, PlotObjectHome, CodeCollection, data1, PlotCollectionList, SubsetList, rawfiles, cont, ModelOutputList, envir = .GlobalEnv))
     shiny::stopApp()
   })
 }
