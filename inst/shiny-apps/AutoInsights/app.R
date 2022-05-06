@@ -312,7 +312,7 @@ ui <- shinydashboard::dashboardPage(
           shiny::fluidRow(
             width = AppWidth,
             shinycssloaders::withSpinner(
-              DT::dataTableOutput('ML_ResultsTable'))),
+              DT::dataTableOutput(outputId = 'ML_ExperimentTable'))),
           RemixAutoML:::BlankRow(AppWidth)),
 
       ), # End of tabItem
@@ -5122,6 +5122,17 @@ server <- function(input, output, session) {
       DataList[[paste0(KeyName, '_Validation_VI_Data')]] <- Output$VI_Test
       DataList[[paste0(KeyName, '_All_II_Data')]] <- Output$II_Train
       rm(Output); gc()
+
+      # Update ML_ExperimentTable
+      data.table::set(ML_ExperimentTable, i = iter, j = 'ProjectID', value = '')
+      data.table::set(ML_ExperimentTable, i = iter, j = 'Date', value = '')
+      data.table::set(ML_ExperimentTable, i = iter, j = 'ModelID', value = '')
+      data.table::set(ML_ExperimentTable, i = iter, j = 'TargetType', value = '')
+      data.table::set(ML_ExperimentTable, i = iter, j = 'Algorithm', value = '')
+      data.table::set(ML_ExperimentTable, i = iter, j = 'GridTune', value = '')
+      data.table::set(ML_ExperimentTable, i = iter, j = 'Metric1', value = '')
+      data.table::set(ML_ExperimentTable, i = iter, j = 'Metric2', value = '')
+      data.table::set(ML_ExperimentTable, i = iter, j = 'Metric3', value = '')
 
       # Save output
       print(' ::  BuildModels 11  :: ')
