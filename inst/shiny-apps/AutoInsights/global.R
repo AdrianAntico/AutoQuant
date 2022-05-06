@@ -83,3 +83,36 @@ StandardPlotsModal2 <- function(PlotNumber, AppWidth=12L) {
     )
   )
 }
+
+
+# BoxPlotModal <- function(input,AppTextColor) {
+#
+#   # Show modal when button is clicked.
+#   shiny::observeEvent(input$PartialDependenceLine_MenuButton1, {
+#     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+#     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
+#     StandardPlotsModal1(PlotNumber = 1L)
+#   })
+#
+#   # Show modal when button is clicked.
+#   shiny::observeEvent(input$PartialDependenceLine_MenuButton2, {
+#     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+#     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+#     StandardPlotsModal1(PlotNumber = 2L)
+#   })
+#
+#   # Show modal when button is clicked.
+#   shiny::observeEvent(input$PartialDependenceLine_MenuButton3, {
+#     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+#     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+#     StandardPlotsModal1(PlotNumber = 3L)
+#   })
+#
+#   # Show modal when button is clicked.
+#   shiny::observeEvent(input$PartialDependenceLine_MenuButton4, {
+#     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+#     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
+#     StandardPlotsModal1(PlotNumber = 1L)
+#   })
+# }
+

@@ -1931,7 +1931,7 @@ PlotDropDownContents <- function(id,
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Line.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0('LinePlot_MenuButton', PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(paste0('Scatter Plot'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(paste0('Pearson Scatter'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0('ScatterPlot_MenuButton', PlotNumber), #style = htmltools::css(width = '95px'),
                       type = "button", class = "btn btn-default action-button",
@@ -1943,7 +1943,7 @@ PlotDropDownContents <- function(id,
                 # Additional Plots
                 shiny::fluidRow(
                   shiny::column(
-                    tags$h4(tags$b(paste0('Copula Plot'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(paste0('Spearman Scatter'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0('CopulaPlot_MenuButton', PlotNumber), #style = htmltools::css(width = '95px'),
                       type = "button", class = "btn btn-default action-button",
@@ -2639,7 +2639,15 @@ Plotter <- function(id = 'PlotOutput',
   ns <- shiny::NS(id)
   shiny::tagList(
     RemixAutoML:::BlankRow(AppWidth),
-    shiny::fluidRow(shiny::column(width = AppWidth, align = 'center', plotly::plotlyOutput('TrendPlotly', width = PlotWidth, height = PlotHeight))))
+    shiny::fluidRow(
+      shiny::column(
+        width = AppWidth,
+        align = 'center',
+        shinycssloaders::withSpinner(
+          plotly::plotlyOutput(
+            'TrendPlotly',
+            width = PlotWidth,
+            height = PlotHeight)))))
 }
 
 #' @title MarginalInputs
