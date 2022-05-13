@@ -1,7 +1,5 @@
 options(shiny.maxRequestSize = 250000*1024^2)
 
-#source(file.path(system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'), "global.R"))
-
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
