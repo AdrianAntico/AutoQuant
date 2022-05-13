@@ -131,6 +131,7 @@ Other Feature Engineering:
 \code{\link{H2OAutoencoderScoring}()},
 \code{\link{H2OAutoencoder}()},
 \code{\link{ModelDataPrep}()},
+\code{\link{TimeSeriesFillRoll}()},
 \code{\link{TimeSeriesFill}()}
 }
 \author{

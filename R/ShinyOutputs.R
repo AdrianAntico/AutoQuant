@@ -1,87 +1,133 @@
-#' @title ExternalDataServer
+#' @title StandardPlotsModal1
 #'
-#' @description Create output objects for csv external data and .Rdata external data
+#' @description Plot Variables Modals
 #'
 #' @author Adrian Antico
 #' @family Shiny
 #'
-#' @param id = 'ExternalData'
-#' @param StorageAccount = NULL
-#' @param Container = NULL
-#' @param BlobStorageURL = NULL
-#' @param Key = NULL
-#' @param Debug = FALSE
+#' @param id = 'PlotVariablesModals'
+#' @param PlotNumber 1
+#' @param AppWidth = 12L
 #'
-#' @noRd
-ExternalDataServer <- function(id = 'ExternalData',
-                               StorageAccount = NULL,
-                               Container = NULL,
-                               BlobStorageURL = NULL,
-                               Key = NULL,
-                               Debug = FALSE) {
-
-  # Module
+#' @export
+StandardPlotsModal1 <- function(id, PlotNumber, AppWidth=12L) {
   shiny::moduleServer(
-    id,
+    id = id,
+    module = function(input, output, session) {
+      ns <- session$ns
+      shiny::showModal(
+        shiny::modalDialog(
+          title = 'Plot Inputs',
+          size = "l",
+          easyClose = TRUE,
+          fade = TRUE,
+          shiny::tagList(
+            shinydashboard::box(
+              title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+              shiny::fluidRow(
+                shiny::column(width = 4L, align = 'center', shiny::uiOutput(paste0('YVar', PlotNumber))),
+                shiny::column(width = 4L, align = 'center', shiny::uiOutput(paste0('XVar', PlotNumber))),
+                shiny::column(width = 4L, align = 'center', shiny::uiOutput(paste0('SampleSize', PlotNumber))))),
+            RemixAutoML:::BlankRow(AppWidth),
+            shinydashboard::box(
+              title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(width = 6L, align = 'center', shiny::uiOutput(paste0('GroupVars', PlotNumber))),
+                shiny::column(width = 6L, align = 'center', shiny::uiOutput(paste0('FacetVar_', PlotNumber, '_1')))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(width = 4L, align = 'center', shiny::conditionalPanel(condition = paste0("length(input['GroupVars", PlotNumber, "']) >= 1"), shiny::uiOutput(paste0('Levels_', PlotNumber, '_1')))),
+                shiny::column(width = 4L, align = 'center', shiny::conditionalPanel(condition = paste0("length(input['GroupVars", PlotNumber, "']) >= 2"), shiny::uiOutput(paste0('Levels_', PlotNumber, '_2')))),
+                shiny::column(width = 4L, align = 'center', shiny::conditionalPanel(condition = paste0("length(input['GroupVars", PlotNumber, "']) >= 3"), shiny::uiOutput(paste0('Levels_', PlotNumber, '_3'))))))),
+          footer = shiny::tagList(
+            shiny::modalButton(label = "Cancel"),
+            shiny::actionButton(paste0("BoxPlotOK", PlotNumber), "OK", width = '50px'))
+        )
+      )
+    })
+}
 
-    # Anonomous function
-    function(input, output, session) {
-
-      # .csv from Local
-      output$DataLoad <- shiny::renderUI({
-        shiny::fileInput(
-          inputId = 'DataLoad',
-          label = NULL,
-          accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
-      })
-
-      # .Rdata from local
-      output$ModelObjectLoad <- shiny::renderUI({
-        shiny::fileInput(inputId = "ModelObjectLoad", label = NULL)
-      })
-
-      # .csv from Azure Blob Storage
-      output$blob <- shiny::renderUI({
-        if(Debug) paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
-        BlobStorageURL <- paste0('https://', StorageAccount, '.blob.core.windows.net/', Container)
-        assign(x = 'BlobStorageURL', value = BlobStorageURL, envir = .GlobalEnv)
-        cont <<- AzureStor::blob_container(BlobStorageURL, key = Key)
-        rawfiles <- AzureStor::list_storage_files(cont, info = 'name')
-        rawfiles <<- rawfiles[c(which(grepl(pattern = '.csv', x = rawfiles)), which(grepl(pattern = '.Rdata', x = rawfiles)))]
-        RemixAutoML::SelectizeInput(
-          InputID = 'blob',
-          Label = 'Select Azure .csv File',
-          Choices = rawfiles[which(grepl(pattern = '.csv', x = rawfiles))],
-          SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-      })
-
-      # .Rdata from Azure Blob Storage
-      output$rdatablob <- shiny::renderUI({
-        RemixAutoML::SelectizeInput(
-          InputID = 'rdatablob',
-          Label = 'Select Azure .Rdata File',
-          Choices = rawfiles[which(grepl(pattern = '.Rdata', x = rawfiles))],
-          SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-      })
-
-      shiny::observeEvent(eventExpr = input$LoadAzure, {
-
-        # csv
-        FileName <- tryCatch({input[['blob']]}, error = function(x) NULL)
-        if(Debug) print(FileName)
-        if(length(FileName) != 0 && FileName != "Load" && FileName != "") {
-          data
-          AzureStor::download_blob(container = cont, src = input[['blob']], dest = file.path('/inputdata', input[['blob']]), overwrite=TRUE)
-        }
-
-        # .Rdata
-        inFile2 <- tryCatch({input[['rdatablob']]}, error = function(x) NULL)
-        if(!is.null(inFile2)) print(inFile2)
-        if(length(inFile2) != 0 && inFile2 != "") {
-          if(Debug) {print('data check 3')}
-          AzureStor::download_blob(container = cont, src = input[['rdatablob']], dest = file.path('/inputdata', input[['rdatablob']]), overwrite=TRUE)
-        }
-      })
+#' @title StandardPlotsModal2
+#'
+#' @description Plot Variables Modals
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'PlotVariablesModals'
+#' @param PlotNumber 1
+#' @param AppWidth = 12L
+#'
+#' @export
+StandardPlotsModal2 <- function(id, PlotNumber, AppWidth=12L) {
+  shiny::moduleServer(
+    id = id,
+    module = function(input, output, session) {
+      ns <- session$ns
+      shiny::showModal(
+        shiny::modalDialog(
+          title = 'Plot Inputs',
+          size = "l",
+          easyClose = TRUE,
+          fade = TRUE,
+          list(
+            shinydashboard::box(
+              title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput(paste0('YVar', PlotNumber))),
+                shiny::column(4L, align = 'center', shiny::uiOutput(paste0('XVar', PlotNumber))),
+                shiny::column(4L, align = 'center', shiny::uiOutput(paste0('ZVar', PlotNumber)))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(4L, align = 'center', shiny::uiOutput(paste0('SampleSize', PlotNumber))),
+                shiny::column(4L, align = 'center', shiny::uiOutput(paste0('BarPlotAgg', PlotNumber))),
+                shiny::column(4L, align = 'center', shiny::uiOutput(paste0('TargetLevel', PlotNumber))))),
+            RemixAutoML:::BlankRow(AppWidth),
+            shinydashboard::box(
+              title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(width = 6L, align = 'center', shiny::uiOutput(paste0('GroupVars', PlotNumber))),
+                shiny::column(width = 6L, align = 'center', shiny::uiOutput(paste0('FacetVar_', PlotNumber, '_1')))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(width = 4L, align = 'center', shiny::conditionalPanel(condition = paste0("length(input['GroupVars", PlotNumber, "']) >= 1"), shiny::uiOutput(paste0('Levels_', PlotNumber, '_1')))),
+                shiny::column(width = 4L, align = 'center', shiny::conditionalPanel(condition = paste0("length(input['GroupVars", PlotNumber, "']) >= 2"), shiny::uiOutput(paste0('Levels_', PlotNumber, '_2')))),
+                shiny::column(width = 4L, align = 'center', shiny::conditionalPanel(condition = paste0("length(input['GroupVars", PlotNumber, "']) >= 3"), shiny::uiOutput(paste0('Levels_', PlotNumber, '_3'))))))),
+          footer = shiny::tagList(
+            shiny::modalButton(label = "Cancel"),
+            shiny::actionButton(paste0("BoxPlotOK", PlotNumber), "OK", width = '50px'))
+        )
+      )
     }
-  )
+  )}
+
+#' @title StandardPlotsModal2
+#'
+#' @description Plot Variables Modals
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'PlotVariablesModals'
+#' @param PlotNumber 1
+#' @param AppWidth = 12L
+#'
+#' @export
+BoxPlotModals <- function(id, NumberPlots, AppWidth=12L) {
+  shiny::moduleServer(
+    id = id,
+    module = function(input, output, session) {
+      ns <- session$ns
+      for(i in seq_len(NumberPlots)) {
+        shiny::observeEvent(input[[paste0('BoxPlot_MenuButton', i)]], {
+          assign(x = 'PlotDropDown', value = get('PlotDropDown'))
+          output[[paste0('Plot', i)]] <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = ns(paste0('Plot', i)), Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+          PlotDropDown[[paste0('Plot', i)]][['SelectedDefault']][[length(PlotDropDown[[paste0('Plot', i)]][['SelectedDefault']]) + 1L]] <- input[[paste0('Plot', i)]]; PlotDropDown <<- PlotDropDown
+          RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = i)
+        })
+      }
+    })
 }

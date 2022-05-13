@@ -169,6 +169,7 @@ Other Feature Engineering:
 \code{\link{DummifyDT}()},
 \code{\link{H2OAutoencoder}()},
 \code{\link{ModelDataPrep}()},
+\code{\link{TimeSeriesFillRoll}()},
 \code{\link{TimeSeriesFill}()}
 }
 \author{

@@ -889,6 +889,8 @@ AutoLagRollStats <- function(data,
 
     # Loop through IndependentGroups----
     Counter <- 0L
+    # Fact = IndependentGroups[1]
+    # timeaggs = TimeGroups[1]
     for(Fact in IndependentGroups) {
 
       # Loop through all TimeGroups----
@@ -930,10 +932,10 @@ AutoLagRollStats <- function(data,
 
         } else {
 
-          # Set up for binary search instead of vector scan----
+          # Set up for binary search instead of vector scan
           data.table::setkeyv(x = data, cols = c(eval(Fact),eval(DateColumn)))
 
-          # Build GDL Features----
+          # Build GDL Features
           data <- DT_GDL_Feature_Engineering(
             data,
             lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags,
@@ -951,6 +953,22 @@ AutoLagRollStats <- function(data,
             WindowingLag    = RollOnLag1,
             Type            = Type,
             SimpleImpute    = SimpleImpute)
+
+          # lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags
+          # periods         = if(is.list(MA_RollWindows))       MA_RollWindows[[timeaggs]]       else MA_RollWindows
+          # SDperiods       = if(is.list(SD_RollWindows))       SD_RollWindows[[timeaggs]]       else SD_RollWindows
+          # Skewperiods     = if(is.list(Skew_RollWindows))     Skew_RollWindows[[timeaggs]]     else Skew_RollWindows
+          # Kurtperiods     = if(is.list(Kurt_RollWindows))     Kurt_RollWindows[[timeaggs]]     else Kurt_RollWindows
+          # Quantileperiods = if(is.list(Quantile_RollWindows)) Quantile_RollWindows[[timeaggs]] else Quantile_RollWindows
+          # statsFUNs       = RollFunctions
+          # targets         = Targets
+          # groupingVars    = Fact
+          # sortDateName    = DateColumn
+          # timeDiffTarget  = TimeBetween
+          # timeAgg         = timeaggs
+          # WindowingLag    = RollOnLag1
+          # Type            = Type
+          # SimpleImpute    = SimpleImpute
         }
 
         # Check if timeaggs is same of TimeUnit ----
@@ -1570,7 +1588,7 @@ DT_GDL_Feature_Engineering <- function(data,
                                        Type            = c("Lag"),
                                        SimpleImpute    = TRUE) {
 
-  # timeAgg----
+  # timeAgg
   if(is.null(timeAgg)) {
     timeAgg <- "TimeUnitNULL"
   } else if(tolower(timeAgg) == "raw") {
@@ -1583,7 +1601,7 @@ DT_GDL_Feature_Engineering <- function(data,
   # Number of targets
   tarNum <- length(targets)
 
-  # Argument Checks ----
+  # Argument Checks
   if(is.null(lags) && WindowingLag == 1) lags <- 1
   if(!(1 %in% lags) && WindowingLag == 1) lags <- c(1, lags)
   if(any(lags < 0)) stop("lags need to be positive integers")
@@ -1595,7 +1613,7 @@ DT_GDL_Feature_Engineering <- function(data,
   if(!(tolower(Type) %chin% c("lag", "lead"))) stop("Type needs to be either Lag or Lead")
   if(!is.logical(SimpleImpute)) stop("SimpleImpute needs to be TRUE or FALSE")
 
-  # Ensure enough columns are allocated beforehand----
+  # Ensure enough columns are allocated beforehand
   if(!is.null(groupingVars)) {
     if(ncol(data) + (length(lags) + length(periods)) * tarNum * length(groupingVars) * length(statsFUNs) > data.table::truelength(data)) {
       data.table::alloc.col(DT = data, n = ncol(data) + (length(lags) + length(periods)) * tarNum * length(groupingVars) * length(statsFUNs))
@@ -1623,7 +1641,7 @@ DT_GDL_Feature_Engineering <- function(data,
       # Lags ----
       LAG_Names <- c()
       for(t in Targets) LAG_Names <- c(LAG_Names, paste0(timeAggss, "_", groupingVars[i], "_LAG_", lags, "_", t))
-      data[, paste0(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"), by = c(groupingVars[i]), .SDcols = Targets]
+      data[, paste0(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"), by = c(groupingVars[i]), .SDcols = c(Targets)]
 
       # Define targets----
       if(WindowingLag != 0L) {

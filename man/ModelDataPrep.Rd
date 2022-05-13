@@ -104,6 +104,7 @@ Other Feature Engineering:
 \code{\link{DummifyDT}()},
 \code{\link{H2OAutoencoderScoring}()},
 \code{\link{H2OAutoencoder}()},
+\code{\link{TimeSeriesFillRoll}()},
 \code{\link{TimeSeriesFill}()}
 }
 \author{

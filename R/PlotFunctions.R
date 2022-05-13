@@ -1004,8 +1004,10 @@ BarPlot <- function(data = NULL,
       }
       if(!is.null(byvars)) {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
-        if(class(temp[[byvars]]) %in% c('numeric','integer')) {
-          temp[, eval(byvars) := as.character(get(byvars))]
+        for(i in byvars) {
+          if(class(temp[[i]]) %in% c('numeric','integer')) {
+            temp[, eval(i) := as.character(get(i))]
+          }
         }
       } else {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
@@ -1048,8 +1050,10 @@ BarPlot <- function(data = NULL,
       }
       if(!is.null(byvars)) {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars), by = c(byvars)]
-        if(class(temp[[byvars]]) %in% c('numeric','integer')) {
-          temp[, eval(byvars) := as.character(get(byvars))]
+        for(i in byvars) {
+          if(class(temp[[i]]) %in% c('numeric','integer')) {
+            temp[, eval(i) := as.character(get(i))]
+          }
         }
       } else {
         temp <- data[, lapply(.SD, function(x) eval(parse(text = paste0(AggMethod, '(x)')))), .SDcols = c(numvars)]
@@ -1519,9 +1523,9 @@ AutoPlotter <- function(dt = NULL,
                         NumLevels_X = 40,
                         MaxGroupTS = 50,
                         ColorVariables = NULL,
-                        SizeVar1 = 'None',
-                        FacetVar1 = 'None',
-                        FacetVar2 = 'None',
+                        SizeVar1 = NULL,
+                        FacetVar1 = NULL,
+                        FacetVar2 = NULL,
                         BarPlotAggMethod = 'mean',
                         YTicks = 'Default',
                         XTicks = 'Default',
@@ -1559,6 +1563,7 @@ AutoPlotter <- function(dt = NULL,
 
   # Box Plot
   if(tolower(PlotType) == 'boxplot') {
+
     p1 <- RemixAutoML::BoxPlot(
       data = dt,
       XVar = if(!is.null(XVar)) XVar else if(!is.null(ColorVariables)) ColorVariables[1L] else NULL,
@@ -1595,8 +1600,46 @@ AutoPlotter <- function(dt = NULL,
     return(eval(p1))
   }
 
+  # Box Plot
+  if(tolower(PlotType) == 'stepplot') {
+    RemixAutoML::StepPlot(
+      data = dt,
+      XVar = if(!is.null(XVar)) XVar else if(!is.null(ColorVariables)) ColorVariables[1L] else NULL,
+      YVar = YVar,
+      FacetVar1 = FacetVar1,
+      FacetVar2 = FacetVar2,
+      SampleSize = SampleSize,
+      Direction = 'hv',
+      Stat = 'identity',
+      YTicks = YTicks,
+      XTicks = XTicks,
+      TextSize = TextSize,
+      AngleX = AngleX,
+      AngleY = AngleY,
+      ChartColor = ChartColor,
+      BorderColor = BorderColor,
+      TextColor = TextColor,
+      GridColor = GridColor,
+      BackGroundColor = BackGroundColor,
+      SubTitleColor = SubTitleColor,
+      LegendPosition = LegendPosition,
+      LegendBorderSize = LegendBorderSize,
+      LegendLineType = LegendLineType,
+      Debug = Debug)
+
+    # Modify x-axis scale
+    if(Debug) {print('XTicks'); print(XTicks)}
+    date_check <- c("1 year", "1 day", "3 day", "1 week", "2 week", "1 month", "3 month", "6 month", "2 year", "5 year", "10 year", "1 minute", "15 minutes", "30 minutes", "1 hour", "3 hour", "6 hour", "12 hour")
+    if(length(XTicks) > 1L && 'Default' %in% XTicks) XTicks <- XTicks[!XTicks %in% 'Default'][1L]
+    if(!'Default' %in% XTicks && length(XTicks) == 1 && any(XTicks %in% date_check) && class(dt[[XVar]])[1L] == 'Date') p1 <- p1 + suppressMessages(ggplot2::scale_x_date(date_breaks = XTicks))
+
+    # Return plot
+    return(eval(p1))
+  }
+
   # Violin Plot
   if(tolower(PlotType) == 'violinplot') {
+
     p1 <- RemixAutoML::ViolinPlot(
       data = dt,
       XVar = if(!is.null(XVar)) XVar else if(!is.null(ColorVariables)) ColorVariables[1L] else NULL,
@@ -1711,8 +1754,11 @@ AutoPlotter <- function(dt = NULL,
   # Line
   if(tolower(PlotType) == 'lineplot') {
 
-    x <- class(dt[[XVar]])
-    if(!any(x %in% c('Date', 'POSIXct'))) return(NULL)
+    if(is.character(dt[[XVar]])) {
+      x <- dt[1L][[XVar]]
+      x1 <- lubridate::guess_formats(x, orders = c('mdY', 'BdY', 'Bdy', 'bdY', 'bdy', 'mdy', 'dby', 'Ymd', 'Ydm'))
+      tryCatch({dt[, eval(XVar) := as.Date(get(XVar), tryFormats = x1)]}, error = function(x) return(NULL))
+    }
 
     if(Debug) {print('Line Plot Here');print(paste0('ColorVariables: ', ColorVariables));print(paste0('XTicks: ', XTicks));print(paste0('XVar: ', XVar));print(paste0('names(dt): ', names(dt)))}
 
@@ -1769,7 +1815,7 @@ AutoPlotter <- function(dt = NULL,
 
     N <- dt[,.N]
 
-    # Cap number of records----
+    # Cap number of records
     if(Debug) print('Scatter or Copula Plot Here')
     if(N > 1000000) dt <- dt[order(runif(.N))][seq_len(1000000)]
 

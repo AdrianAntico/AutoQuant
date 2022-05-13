@@ -1946,7 +1946,7 @@ PreparePlotData <- function(data,
     if(is.null(G1Levels) && is.null(G2Levels)) {
       if(Debug) print('None ----')
       if(!SubsetOnly && !is.null(DateVariable)) {
-        if(GroupVariables == 'None') GroupVariables <- NULL
+        if(any(GroupVariables == 'None')) {for(i in seq_along(GroupVariables)) if(GroupVariables[i] == 'None') GroupVariables[i] <- NULL}
         x <- data[, lapply(.SD, Agg), by = c(eval(DateVariable), eval(GroupVariables)), .SDcols = c(TargetVariable)]
       } else {
         x <- data

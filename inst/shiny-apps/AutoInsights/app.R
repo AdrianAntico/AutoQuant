@@ -1,11 +1,12 @@
 options(shiny.maxRequestSize = 250000*1024^2)
 
-source(file.path(system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'), "global.R"))
+#source(file.path(system.file('shiny-apps', 'AutoInsights', package = 'RemixAutoML'), "global.R"))
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 StartEnv <- as.list(environment())
+library(RemixAutoML)
 library(data.table)
 library(shiny)
 data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
@@ -84,10 +85,15 @@ AppTextColor <- shiny::getShinyOption('AppTextColor')
 Debug <- shiny::getShinyOption('Debug')
 
 # Dropdown args collection lists
+PlotDropDown <- list(Debug = Debug)
 PlotDropDown1 <- list(Debug = Debug)
 PlotDropDown2 <- list(Debug = Debug)
 PlotDropDown3 <- list(Debug = Debug)
 PlotDropDown4 <- list(Debug = Debug)
+FilterDropDown1 <- list(Debug = Debug)
+FilterDropDown2 <- list(Debug = Debug)
+FilterDropDown3 <- list(Debug = Debug)
+FilterDropDown4 <- list(Debug = Debug)
 
 # Load credentials
 if(!is.null(AzureCredsFile)) {
@@ -102,12 +108,11 @@ if(!is.null(AzureCredsFile)) {
 }
 
 # Local PostGRE Creds
-LocalPostGRE_DBNames = c('RemixAutoML','ControlTower')
+LocalPostGRE_DBNames = c('RemixAutoML','ControlTower','KompsProcessed')
 LocalPostGRE_Host <- 'localhost'
 LocalPostGRE_Port <- 5432
 LocalPostGRE_User <- 'postgres'
 LocalPostGRE_Password <- 'Aa1028#@'
-
 
 # Initialize a few variables
 PlotWidth <- 1500
@@ -645,11 +650,7 @@ server <- function(input, output, session) {
       # Local POSTGRE DB
       output$LocalPostGRE <- shiny::renderUI({
         DBNameSelected <- tryCatch({shiny::req(DBName())}, error = function(x) 'RemixAutoML')
-        if(DBNameSelected == 'RemixAutoML') {
-          x <- RemixAutoML::PostGRE_ListTables(DBName = 'RemixAutoML', Connection = NULL, CloseConnection = TRUE, Host = LocalPostGRE_Host, Port = LocalPostGRE_Port, User = LocalPostGRE_User, Password = LocalPostGRE_Password)$data
-        } else if(DBNameSelected == 'ControlTower') {
-          x <- RemixAutoML::PostGRE_ListTables(DBName = 'ControlTower', Connection = NULL, CloseConnection = TRUE, Host = LocalPostGRE_Host, Port = LocalPostGRE_Port, User = LocalPostGRE_User, Password = LocalPostGRE_Password)$data
-        }
+        x <- RemixAutoML::PostGRE_ListTables(DBName = DBNameSelected, Connection = NULL, CloseConnection = TRUE, Host = LocalPostGRE_Host, Port = LocalPostGRE_Port, User = LocalPostGRE_User, Password = LocalPostGRE_Password)$data
         if(length(x) == 0L) x <- NULL
         RemixAutoML:::SelectizeInput(InputID = 'LocalPostGRE', Label = NULL, Choices = sort(x), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1L, CloseAfterSelect = FALSE, Debug = Debug)
       })
@@ -2212,6 +2213,11 @@ server <- function(input, output, session) {
     }
   })
 
+
+  # ----
+
+  # ----
+
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # :: Obs Event Ok Buttons in Modals    ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
@@ -2308,28 +2314,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$BoxPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$BoxPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$BoxPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$BoxPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4; PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2340,28 +2346,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$HistogramPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Histogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$HistogramPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Histogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$HistogramPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Histogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$HistogramPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Histogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4; PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2372,28 +2378,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$ViolinPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ViolinPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ViolinPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ViolinPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ViolinPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ViolinPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ViolinPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ViolinPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2404,28 +2410,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$BarPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BarPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$BarPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BarPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal2(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$BarPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BarPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal2(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$BarPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BarPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2436,60 +2442,60 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$LinePlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LinePlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$LinePlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LinePlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal2(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$LinePlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LinePlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal2(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$LinePlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LinePlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-  # LinePlot Modals
+  # Scatter Plot Modals
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ScatterPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ScatterPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal2(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ScatterPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal2(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ScatterPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2500,28 +2506,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$CopulaPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CopulaPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CopulaPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CopulaPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal2(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CopulaPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CopulaPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal2(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CopulaPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CopulaPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2532,28 +2538,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$HeatMapPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'HeatMapPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$HeatMapPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'HeatMapPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal2(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$HeatMapPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'HeatMapPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal2(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$HeatMapPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'HeatMapPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2564,28 +2570,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$CorrelogramPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Correlogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CorrelogramPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Correlogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal2(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CorrelogramPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Correlogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal2(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CorrelogramPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'Correlogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal2(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal2(id = 'SPM2', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2596,28 +2602,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$ResidualsHistogram_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsHistogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ResidualsHistogram_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsHistogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ResidualsHistogram_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsHistogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ResidualsHistogram_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsHistogram', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2628,32 +2634,29 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$ResidualsScatterPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ResidualsScatterPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ResidualsScatterPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ResidualsScatterPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ResidualsScatterPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
-
-
-
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   # CalibrationLine Modals
@@ -2663,28 +2666,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$CalibrationLine_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationLine_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationLine_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationLine_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2695,28 +2698,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$CalibrationBox_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationBoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationBox_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationBoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationBox_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationBoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationBox_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationBoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2727,28 +2730,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$PartialDependenceLine_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceLine_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceLine_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceLine_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2759,28 +2762,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$PartialDependenceBox_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceBox', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceBox_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceBox', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceBox_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceBox', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceBox_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceBox', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2791,28 +2794,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$VariableImportance_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'VariableImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$VariableImportance_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'VariableImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$VariableImportance_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'VariableImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$VariableImportance_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'VariableImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2823,28 +2826,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$ShapelyImportance_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ShapelyImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ShapelyImportance_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ShapelyImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ShapelyImportance_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ShapelyImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ShapelyImportance_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ShapelyImportance', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2855,28 +2858,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$ROCPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ROCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ROCPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ROCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ROCPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ROCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$ROCPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'ROCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2887,28 +2890,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$LiftPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LiftPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$LiftPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LiftPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$LiftPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LiftPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$LiftPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'LiftPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2919,31 +2922,29 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$GainsPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'GainsPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$GainsPlot_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'GainsPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    StandardPlotsModal1(PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$GainsPlot_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'GainsPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    StandardPlotsModal1(PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$GainsPlot_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'GainsPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    StandardPlotsModal1(PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
-
-
 
   # ----
 
@@ -4207,17 +4208,32 @@ server <- function(input, output, session) {
 
     # Filter Columns
     output$FilterVariable_1_1 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_1_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = names(ft1()), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterVariable_1_1', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_1_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = names(ft1()), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown1[['FilterVariable_1_1']][['SelectedDefault']][[length(FilterDropDown1[['FilterVariable_1_1']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_1_1
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterVariable_1_2 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterVariable_1_2', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_1_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = names(ft1()), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown1[['FilterVariable_1_2']][['SelectedDefault']][[length(FilterDropDown1[['FilterVariable_1_2']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_1_2
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterVariable_1_3 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterVariable_1_3', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_1_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = names(ft1()), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown1[['FilterVariable_1_3']][['SelectedDefault']][[length(FilterDropDown1[['FilterVariable_1_3']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_1_3
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterVariable_1_4 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterVariable_1_4', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_1_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = names(ft1()), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown1[['FilterVariable_1_4']][['SelectedDefault']][[length(FilterDropDown1[['FilterVariable_1_4']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_1_4
+    FilterDropDown1 <<- FilterDropDown1
 
     # Filter Column Reactives
     FilterVariable_1_1 <- shiny::reactive({shiny::req(input[['FilterVariable_1_1']])})
@@ -4227,67 +4243,113 @@ server <- function(input, output, session) {
 
     # Filter Logic
     output$FilterLogic_1_1 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_1_1', selected=RemixAutoML:::FL_Default(ft1(), x=tryCatch({FilterVariable_1_1()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterLogic_1_1', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(ft1(), x=tryCatch({FilterVariable_1_1()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_1_1', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1, Debug = Debug)
     })
+    FilterDropDown1[['FilterLogic_1_1']][['SelectedDefault']][[length(FilterDropDown1[['FilterLogic_1_1']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_1_1
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterLogic_1_2 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_1_2', selected=RemixAutoML:::FL_Default(ft1(), x=tryCatch({FilterVariable_1_2()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterLogic_1_2', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(ft1(), x=tryCatch({FilterVariable_1_2()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_1_2', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1, Debug = Debug)
     })
+    FilterDropDown1[['FilterLogic_1_2']][['SelectedDefault']][[length(FilterDropDown1[['FilterLogic_1_2']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_1_2
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterLogic_1_3 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_1_3', selected=RemixAutoML:::FL_Default(ft1(), x=tryCatch({FilterVariable_1_3()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterLogic_1_3', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(ft1(), x=tryCatch({FilterVariable_1_3()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_1_3', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1, Debug = Debug)
     })
+    FilterDropDown1[['FilterLogic_1_3']][['SelectedDefault']][[length(FilterDropDown1[['FilterLogic_1_3']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_1_3
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterLogic_1_4 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_1_4', selected=RemixAutoML:::FL_Default(ft1(), x=tryCatch({FilterVariable_1_4()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterLogic_1_4', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(ft1(), x=tryCatch({FilterVariable_1_4()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_1_4', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1, Debug = Debug)
     })
+    FilterDropDown1[['FilterLogic_1_4']][['SelectedDefault']][[length(FilterDropDown1[['FilterLogic_1_4']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_1_4
+    FilterDropDown1 <<- FilterDropDown1
 
     # Filter Values
     output$FilterValue_1_1_1 <- shiny::renderUI({
       params <- list(ft1(), VarName=tryCatch({input[['FilterVariable_1_1']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterVariable_1_1']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(ft1(), VarName=input[['FilterVariable_1_1']])
-      RemixAutoML:::SelectizeInput(Multiple=Mult, InputID='FilterValue_1_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterValue_1_1_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple=Mult, InputID='FilterValue_1_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices = RemixAutoML::CharNull(choices), SelectedDefault = selected_default)
     })
+    FilterDropDown1[['FilterValue_1_1_1']][['SelectedDefault']][[length(FilterDropDown1[['FilterValue_1_1_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_1_1_1
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterValue_1_1_2 <- shiny::renderUI({
       params <- list(data=ft1(), VarName=tryCatch({input[['FilterVariable_1_1']]}, error = function(x) NULL), type=2)
-      choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterVariable_1_1']])$ChoiceInput}, error = function(x) NULL)
+      choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterValue_1_1_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data=ft1(), VarName=input[['FilterVariable_1_1']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterValue_1_1_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple=Mult, InputID='FilterValue_1_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown1[['FilterValue_1_1_2']][['SelectedDefault']][[length(FilterDropDown1[['FilterValue_1_1_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_1_1_2
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterValue_1_2_1 <- shiny::renderUI({
       params <- list(data=ft1(), VarName=tryCatch({input[['FilterVariable_1_2']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterVariable_1_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(ft1(), VarName=input[['FilterVariable_1_2']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterValue_1_2_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple=Mult, InputID='FilterValue_1_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
+    FilterDropDown1[['FilterValue_1_2_1']][['SelectedDefault']][[length(FilterDropDown1[['FilterValue_1_2_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_1_2_1
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterValue_1_2_2 <- shiny::renderUI({
       params <- list(data=ft1(), VarName=tryCatch({input[['FilterVariable_1_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterVariable_1_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(ft1(), VarName=input[['FilterVariable_1_2']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterValue_1_2_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple=Mult, InputID='FilterValue_1_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown1[['FilterValue_1_2_2']][['SelectedDefault']][[length(FilterDropDown1[['FilterValue_1_2_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_1_2_2
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterValue_1_3_1 <- shiny::renderUI({
       params <- list(data=ft1(), VarName=tryCatch({input[['FilterVariable_1_3']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterVariable_1_3']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(ft1(), VarName=input[['FilterVariable_1_3']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterValue_1_3_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_1_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
+    FilterDropDown1[['FilterValue_1_3_1']][['SelectedDefault']][[length(FilterDropDown1[['FilterValue_1_3_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_1_3_1
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterValue_1_3_2 <- shiny::renderUI({
       params <- list(data=ft1(), VarName=tryCatch({input[['FilterVariable_1_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterVariable_1_3']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(ft1(), VarName=input[['FilterVariable_1_3']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterValue_1_3_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_1_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown1[['FilterValue_1_3_2']][['SelectedDefault']][[length(FilterDropDown1[['FilterValue_1_3_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_1_3_2
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterValue_1_4_1 <- shiny::renderUI({
       params <- list(data=ft1(), VarName=tryCatch({input[['FilterVariable_1_4']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterVariable_1_4']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(ft1(), VarName=input[['FilterVariable_1_4']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterValue_1_4_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_1_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
+    FilterDropDown1[['FilterValue_1_4_1']][['SelectedDefault']][[length(FilterDropDown1[['FilterValue_1_4_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_1_4_1
+    FilterDropDown1 <<- FilterDropDown1
+
     output$FilterValue_1_4_2 <- shiny::renderUI({
       params <- list(data=ft1(), VarName=tryCatch({input[['FilterVariable_1_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(ft1(), VarName = input[['FilterVariable_1_4']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(ft1(), VarName=input[['FilterVariable_1_4']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown1, InputName = 'FilterValue_1_4_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple=Mult, InputID='FilterValue_1_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown1[['FilterValue_1_4_2']][['SelectedDefault']][[length(FilterDropDown1[['FilterValue_1_4_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_1_4_2
+    FilterDropDown1 <<- FilterDropDown1
   })
 
   # Filter Variables Plot 2
@@ -4300,17 +4362,32 @@ server <- function(input, output, session) {
     # Plot 2
     # Filter Columns
     output$FilterVariable_2_1 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterVariable_2_1', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_2_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown2[['FilterVariable_2_1']][['SelectedDefault']][[length(FilterDropDown2[['FilterVariable_2_1']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_2_1
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterVariable_2_2 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterVariable_2_2', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_2_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown2[['FilterVariable_2_2']][['SelectedDefault']][[length(FilterDropDown2[['FilterVariable_2_2']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_2_2
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterVariable_2_3 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterVariable_2_3', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_2_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown2[['FilterVariable_2_3']][['SelectedDefault']][[length(FilterDropDown2[['FilterVariable_2_3']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_2_3
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterVariable_2_4 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterVariable_2_4', ArgName = 'SelectedDefault', Default = names(DataList)[[1L]], Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_2_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown2[['FilterVariable_2_4']][['SelectedDefault']][[length(FilterDropDown2[['FilterVariable_2_4']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_2_4
+    FilterDropDown2 <<- FilterDropDown2
 
     # Filter Column Reactives
     FilterVariable_2_1 <- shiny::reactive({shiny::req(input[['FilterVariable_2_1']])})
@@ -4320,67 +4397,114 @@ server <- function(input, output, session) {
 
     # Filter Logic
     output$FilterLogic_2_1 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_2_1', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_2_1()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterLogic_2_1', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_2_1()}, error = function(x) NULL)), Debug = Debug)
+      shiny::selectInput(inputId='FilterLogic_2_1', selected=selected_default, label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
     })
+    FilterDropDown2[['FilterLogic_2_1']][['SelectedDefault']][[length(FilterDropDown2[['FilterLogic_2_1']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_2_1
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterLogic_2_2 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_2_2', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_2_2()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterLogic_2_2', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_2_2()}, error = function(x) NULL)), Debug = Debug)
+      shiny::selectInput(inputId='FilterLogic_2_2', selected=selected_default, label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
     })
+    FilterDropDown2[['FilterLogic_2_2']][['SelectedDefault']][[length(FilterDropDown2[['FilterLogic_2_2']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_2_2
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterLogic_2_3 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_2_3', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_2_3()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterLogic_2_3', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_2_3()}, error = function(x) NULL)), Debug = Debug)
+      shiny::selectInput(inputId='FilterLogic_2_3', selected=selected_default, label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
     })
+    FilterDropDown2[['FilterLogic_2_3']][['SelectedDefault']][[length(FilterDropDown2[['FilterLogic_2_3']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_2_3
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterLogic_2_4 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_2_4', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_2_4()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterLogic_2_4', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_2_4()}, error = function(x) NULL)), Debug = Debug)
+      shiny::selectInput(inputId='FilterLogic_2_4', selected=selected_default, label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
     })
+    FilterDropDown2[['FilterLogic_2_4']][['SelectedDefault']][[length(FilterDropDown2[['FilterLogic_2_4']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_2_4
+    FilterDropDown2 <<- FilterDropDown2
 
     # Filter Values
     output$FilterValue_2_1_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_1']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_2_1']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_2_1']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterValue_2_1_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
+    FilterDropDown2[['FilterValue_2_1_1']][['SelectedDefault']][[length(FilterDropDown2[['FilterValue_2_1_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_2_1_1
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterValue_2_1_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_2_1']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_2_1']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterValue_2_1_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown2[['FilterValue_2_1_2']][['SelectedDefault']][[length(FilterDropDown2[['FilterValue_2_1_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_2_1_2
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterValue_2_2_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_2']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_2_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_2_2']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterValue_2_2_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
+    FilterDropDown2[['FilterValue_2_2_1']][['SelectedDefault']][[length(FilterDropDown2[['FilterValue_2_2_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_2_2_1
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterValue_2_2_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_2_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_2_2']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterValue_2_2_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown2[['FilterValue_2_2_2']][['SelectedDefault']][[length(FilterDropDown2[['FilterValue_2_2_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_2_2_2
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterValue_2_3_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_3']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_2_3']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_2_3']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterValue_2_3_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
+    FilterDropDown2[['FilterValue_2_3_1']][['SelectedDefault']][[length(FilterDropDown2[['FilterValue_2_3_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_2_3_1
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterValue_2_3_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_2_3']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_2_3']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterValue_2_3_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown2[['FilterValue_2_3_2']][['SelectedDefault']][[length(FilterDropDown2[['FilterValue_2_3_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_2_3_2
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterValue_2_4_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_4']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_2_4']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_2_4']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterValue_2_4_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
     })
+    FilterDropDown2[['FilterValue_2_4_1']][['SelectedDefault']][[length(FilterDropDown2[['FilterValue_2_4_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_2_4_1
+    FilterDropDown2 <<- FilterDropDown2
+
     output$FilterValue_2_4_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_2_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_2_4']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_2_4']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown2, InputName = 'FilterValue_2_4_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_2_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown2[['FilterValue_2_4_2']][['SelectedDefault']][[length(FilterDropDown2[['FilterValue_2_4_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_2_4_2
+    FilterDropDown2 <<- FilterDropDown2
+
   })
 
   # Filter Variables Plot 3
@@ -4393,17 +4517,32 @@ server <- function(input, output, session) {
     # Plot 3
     # Filter Columns
     output$FilterVariable_3_1 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_3_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterVariable_3_1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_3_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = names(data), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown3[['FilterVariable_3_1']][['SelectedDefault']][[length(FilterDropDown3[['FilterVariable_3_1']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_3_1
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterVariable_3_2 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterVariable_3_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_3_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown3[['FilterVariable_3_2']][['SelectedDefault']][[length(FilterDropDown3[['FilterVariable_3_2']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_3_2
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterVariable_3_3 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterVariable_3_3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_3_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown3[['FilterVariable_3_3']][['SelectedDefault']][[length(FilterDropDown3[['FilterVariable_3_3']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_3_3
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterVariable_3_4 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterVariable_3_4', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
       RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_3_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown3[['FilterVariable_3_4']][['SelectedDefault']][[length(FilterDropDown3[['FilterVariable_3_4']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_3_4
+    FilterDropDown3 <<- FilterDropDown3
 
     # Filter Column Reactives
     FilterVariable_3_1 <- shiny::reactive({shiny::req(input[['FilterVariable_3_1']])})
@@ -4413,67 +4552,113 @@ server <- function(input, output, session) {
 
     # Filter Logic
     output$FilterLogic_3_1 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_3_1', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_3_1()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterLogic_3_1', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_3_1()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_3_1', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1L)
     })
+    FilterDropDown3[['FilterLogic_3_1']][['SelectedDefault']][[length(FilterDropDown3[['FilterLogic_3_1']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_3_1
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterLogic_3_2 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_3_2', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_3_2()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterLogic_3_2', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_3_2()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_3_2', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1L)
     })
+    FilterDropDown3[['FilterLogic_3_2']][['SelectedDefault']][[length(FilterDropDown3[['FilterLogic_3_2']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_3_2
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterLogic_3_3 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_3_3', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_3_3()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterLogic_3_3', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_3_3()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_3_3', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1L)
     })
+    FilterDropDown3[['FilterLogic_3_3']][['SelectedDefault']][[length(FilterDropDown3[['FilterLogic_3_3']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_3_3
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterLogic_3_4 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_3_4', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_3_4()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterLogic_3_4', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_3_4()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_3_4', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1L)
     })
+    FilterDropDown3[['FilterLogic_3_4']][['SelectedDefault']][[length(FilterDropDown3[['FilterLogic_3_4']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_3_4
+    FilterDropDown3 <<- FilterDropDown3
 
     # Filter Values
     output$FilterValue_3_1_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_1']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_3_1']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_3_1']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterValue_3_1_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
+    FilterDropDown3[['FilterValue_3_1_1']][['SelectedDefault']][[length(FilterDropDown3[['FilterValue_3_1_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_3_1_1
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterValue_3_1_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_3_1']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_3_1']])
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterValue_3_1_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
       RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
     })
+    FilterDropDown3[['FilterValue_3_1_2']][['SelectedDefault']][[length(FilterDropDown3[['FilterValue_3_1_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_3_1_2
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterValue_3_2_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_2']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_3_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_3_2']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterValue_3_2_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
+    FilterDropDown3[['FilterValue_3_2_1']][['SelectedDefault']][[length(FilterDropDown3[['FilterValue_3_2_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_3_2_1
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterValue_3_2_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_3_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_3_2']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterValue_3_2_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[length(choices)]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
+    FilterDropDown3[['FilterValue_3_2_2']][['SelectedDefault']][[length(FilterDropDown3[['FilterValue_3_2_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_3_2_2
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterValue_3_3_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_3']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_3_3']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_3_3']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterValue_3_3_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
+    FilterDropDown3[['FilterValue_3_3_1']][['SelectedDefault']][[length(FilterDropDown3[['FilterValue_3_3_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_3_3_1
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterValue_3_3_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_3_3']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_3_3']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterValue_3_3_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[length(choices)]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
+    FilterDropDown3[['FilterValue_3_3_2']][['SelectedDefault']][[length(FilterDropDown3[['FilterValue_3_3_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_3_3_2
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterValue_3_4_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_4']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_3_4']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_3_4']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterValue_3_4_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
+    FilterDropDown3[['FilterValue_3_4_1']][['SelectedDefault']][[length(FilterDropDown3[['FilterValue_3_4_1']][['SelectedDefault']]) + 1L]] <- input$FilterValue_3_4_1
+    FilterDropDown3 <<- FilterDropDown3
+
     output$FilterValue_3_4_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_3_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_3_4']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_3_4']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown3, InputName = 'FilterValue_3_4_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[length(choices)]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_3_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
+    FilterDropDown3[['FilterValue_3_4_2']][['SelectedDefault']][[length(FilterDropDown3[['FilterValue_3_4_2']][['SelectedDefault']]) + 1L]] <- input$FilterValue_3_4_2
+    FilterDropDown3 <<- FilterDropDown3
 
   })
 
@@ -4487,17 +4672,32 @@ server <- function(input, output, session) {
     # Plot 4
     # Filter Columns
     output$FilterVariable_4_1 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_4_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterVariable_4_1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_4_1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 1'), Choices = names(data), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown4[['FilterVariable_4_1']][['SelectedDefault']][[length(FilterDropDown4[['FilterVariable_4_1']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_4_1
+    FilterDropDown4 <<- FilterDropDown4
+
     output$FilterVariable_4_2 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_4_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterVariable_4_2', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_4_2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 2'), Choices = names(data), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown4[['FilterVariable_4_2']][['SelectedDefault']][[length(FilterDropDown4[['FilterVariable_4_2']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_4_2
+    FilterDropDown4 <<- FilterDropDown4
+
     output$FilterVariable_4_3 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_4_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterVariable_4_3', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_4_3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 3'), Choices = names(data), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown4[['FilterVariable_4_3']][['SelectedDefault']][[length(FilterDropDown4[['FilterVariable_4_3']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_4_3
+    FilterDropDown4 <<- FilterDropDown4
+
     output$FilterVariable_4_4 <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_4_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = names(data), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterVariable_4_4', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterVariable_4_4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Filter Variable 4'), Choices = names(data), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1)
     })
+    FilterDropDown4[['FilterVariable_4_4']][['SelectedDefault']][[length(FilterDropDown4[['FilterVariable_4_4']][['SelectedDefault']]) + 1L]] <- input$FilterVariable_4_4
+    FilterDropDown4 <<- FilterDropDown4
 
     # Filter Column Reactives
     FilterVariable_4_1 <- shiny::reactive({shiny::req(input[['FilterVariable_4_1']])})
@@ -4507,66 +4707,89 @@ server <- function(input, output, session) {
 
     # Filter Logic
     output$FilterLogic_4_1 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_4_1', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_4_1()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterLogic_4_1', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_4_1()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_4_1', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1L)
     })
+    FilterDropDown4[['FilterLogic_4_1']][['SelectedDefault']][[length(FilterDropDown4[['FilterLogic_4_1']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_4_1
+    FilterDropDown4 <<- FilterDropDown4
+
     output$FilterLogic_4_2 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_4_2', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_4_2()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterLogic_4_2', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_4_2()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_4_2', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1L)
     })
+    FilterDropDown4[['FilterLogic_4_2']][['SelectedDefault']][[length(FilterDropDown4[['FilterLogic_4_2']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_4_2
+    FilterDropDown4 <<- FilterDropDown4
+
     output$FilterLogic_4_3 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_4_3', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_4_3()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterLogic_4_3', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_4_3()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_4_3', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1L)
     })
+    FilterDropDown4[['FilterLogic_4_3']][['SelectedDefault']][[length(FilterDropDown4[['FilterLogic_4_3']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_4_3
+    FilterDropDown4 <<- FilterDropDown4
+
     output$FilterLogic_4_4 <- shiny::renderUI({
-      shiny::selectInput(inputId='FilterLogic_4_4', selected=RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_4_4()}, error = function(x) NULL)), label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterLogic_4_4', ArgName = 'SelectedDefault', Default = RemixAutoML:::FL_Default(data, x=tryCatch({FilterVariable_4_4()}, error = function(x) NULL)), Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'FilterLogic_4_4', SelectedDefault = selected_default, Label = tags$span(style='color: blue;', 'Logical Operation'), Choices = c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), Multiple = TRUE, MaxVars = 1L)
     })
+    FilterDropDown4[['FilterLogic_4_4']][['SelectedDefault']][[length(FilterDropDown4[['FilterLogic_4_4']][['SelectedDefault']]) + 1L]] <- input$FilterLogic_4_4
+    FilterDropDown4 <<- FilterDropDown4
 
     # Filter Values
     output$FilterValue_4_1_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_1']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_4_1']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_4_1']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterValue_4_1_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_1_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
     output$FilterValue_4_1_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_1']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_4_1']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_4_1']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterValue_4_1_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[length(choices)]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_1_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
     output$FilterValue_4_2_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_2']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_4_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_4_2']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterValue_4_2_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_2_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
     output$FilterValue_4_2_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_2']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_4_2']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_4_2']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterValue_4_2_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[length(choices)]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_2_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
     output$FilterValue_4_3_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_3']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_4_3']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_4_3']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterValue_4_3_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_3_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
     output$FilterValue_4_3_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_3']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_4_3']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_4_3']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterValue_4_3_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[length(choices)]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_3_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
     output$FilterValue_4_4_1 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_4']]}, error = function(x) NULL), type=1)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_4_4']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_4_4']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[1L]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterValue_4_4_1', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[1L]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_4_1', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
     output$FilterValue_4_4_2 <- shiny::renderUI({
       params <- list(data=data, VarName=tryCatch({input[['FilterVariable_4_4']]}, error = function(x) NULL), type=2)
       choices <- tryCatch({RemixAutoML:::KeyVarsInit(data, VarName = input[['FilterVariable_4_4']])$ChoiceInput}, error = function(x) NULL)
       Mult <- RemixAutoML:::GetFilterValueMultiple(data, VarName=input[['FilterVariable_4_4']])
-      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=RemixAutoML::CharNull(choices[length(choices)]))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = FilterDropDown4, InputName = 'FilterValue_4_4_2', ArgName = 'SelectedDefault', Default = RemixAutoML::CharNull(choices[length(choices)]), Debug = Debug)
+      RemixAutoML:::SelectizeInput(Multiple = Mult, InputID='FilterValue_4_4_2', Label=tags$span(style='color: blue;', do.call(RemixAutoML:::GetFilterValueLabel, params)), Choices=RemixAutoML::CharNull(choices), SelectedDefault=selected_default)
     })
   })
 
@@ -4577,6 +4800,11 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   # :: Obs Event Feature Engineering     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Raw code run
+  # output$CodeRun <- shiny::renderUI({
+  #   shiny::textInput(inputId = "CodeRun", label = "Code to Run", value = '')
+  # })
 
   # Delete Columns
   shiny::observeEvent(input$FeatureEngineeringButton_DeleteFeatures, {
@@ -5607,12 +5835,6 @@ server <- function(input, output, session) {
       # Define data
       data1 <- DataList[[input[[paste0('Plot', run, '_SelectData')]]]]
 
-      # Sample from data
-      if(length(SampleSize) > 0 && is.numeric(SampleSize) && SampleSize > 0 && SampleSize < 1) {
-        data1 <- data1[order(runif(.N))][seq_len(floor(.N * SampleSize))]
-        TotalRowsData1 <- data1[, .N]
-      }
-
       # For PDP's
       print('ScoreVar')
       print(names(data1))
@@ -5799,12 +6021,16 @@ server <- function(input, output, session) {
 
           # Subset Rows and Columns
           if(PlotType == 'LinePlot' && length(XVar) != 0) {
+            print('PreparePlotData() Start   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+            print(data1)
             data1 <- RemixAutoML:::PreparePlotData(
               SubsetOnly = FALSE,
               data = data1, Aggregate = 'mean', TargetVariable = YVar, DateVariable = XVar,
               GroupVariables = GroupVars,
               G1Levels = Levels1, G2Levels = Levels2, G3Levels = Levels3)
             CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML:::PreparePlotData(SubsetOnly = ", FALSE,", data=data1, Aggregate='mean', TargetVariable=", RemixAutoML:::CEP(YVar),", DateVariable=", RemixAutoML:::CEP(XVar), ", GroupVariables=", RemixAutoML:::CEP(GroupVars),", G1Levels=", RemixAutoML:::CEP(Levels1),", G2Levels=", RemixAutoML:::CEP(Levels2),", G3Levels=", RemixAutoML:::CEP(Levels3),")")
+            print('PreparePlotData() Start   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+            print(data1)
 
           } else {
 
@@ -5827,6 +6053,15 @@ server <- function(input, output, session) {
                 CodeCollection[[run]][[length(CodeCollection)+1L]] <- paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]"); if(Debug) print('Subset Columns Here done')
               }
             }
+          }
+        }
+
+        # Sample from data
+        if(length(SampleSize) > 0 && is.numeric(SampleSize) && SampleSize > 0 && SampleSize < 1) {
+          print(SampleSize)
+          N <- data1[, .N]
+          if(N > SampleSize) {
+            data1 <- data1[order(runif(.N))][seq_len(min(.N, SampleSize))]
           }
         }
 
