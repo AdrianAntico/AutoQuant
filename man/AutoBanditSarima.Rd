@@ -99,7 +99,7 @@ Output <- RemixAutoML::AutoBanditSarima(
   MaxConsecutiveFails = 50L,
   MaxNumberModels = 100L,
   MaxRunTimeMinutes = 10L,
-  NumberCores Default max(1L, min(4L, parallel::detectCores()-2L)),
+  NumberCores = max(1L, min(4L, parallel::detectCores()-2L)),
   DebugMode = FALSE)
 
 # Output

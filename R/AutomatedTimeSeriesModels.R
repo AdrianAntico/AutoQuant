@@ -51,7 +51,7 @@
 #'   MaxConsecutiveFails = 50L,
 #'   MaxNumberModels = 100L,
 #'   MaxRunTimeMinutes = 10L,
-#'   NumberCores Default max(1L, min(4L, parallel::detectCores()-2L)),
+#'   NumberCores = max(1L, min(4L, parallel::detectCores()-2L)),
 #'   DebugMode = FALSE)
 #'
 #' # Output
@@ -239,7 +239,7 @@ AutoBanditSarima <- function(data,
           if(TimeAggLevel %chin% c("quarter","quarters")) XTickMarkss <- "2 year"
           if(TimeAggLevel %chin% c("year","years","yr","yrs")) XTickMarkss <- "5 year"
           Output$ForecastPlot <- tryCatch({RemixAutoML::TimeSeriesPlotter(
-            data = Output$Forecast,
+            dt = Output$Forecast,
             TargetVariable = c(TargetVariableName,"Forecast"),
             DateVariable = DateColumnName,
             GroupVariables = NULL,

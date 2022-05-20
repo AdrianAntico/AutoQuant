@@ -89,13 +89,13 @@ AutoDataPartition <- function(data,
 
     # Stratification management ----
     if(!is.null(StratifyColumnNames)) {
-      if(length(StratifyColumnNames) > 1) {
+      if(length(StratifyColumnNames) > 1 && StratifyColumnNames %in% names(copy_data)) {
         copy_data[, rank := do.call(paste, c(.SD, sep = " ")), .SDcols = c(StratifyColumnNames)]
       } else {
         if(Check1) {
           copy_data[, rank := round(data.table::frank(get(keep)) * 20 / .N) * 1/20]
         } else {
-          data.table::setnames(copy_data, StratifyColumnNames, "rank")
+          data.table::setnames(copy_data, StratifyColumnNames, "rank", skip_absent = TRUE)
         }
       }
     }

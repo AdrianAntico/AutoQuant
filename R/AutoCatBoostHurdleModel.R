@@ -680,7 +680,56 @@ AutoCatBoostHurdleModel <- function(data = NULL,
       score_function = 'Cosine',
       min_data_in_leaf = 1)
 
+    # task_type = task_type
+    # NumGPUs = 1
+    # OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData')
+    # ModelID = ModelID
+    # model_path = Paths
+    # metadata_path = MetaDataPaths
+    # CostMatrixWeights = c(0,1,1,0)
+    # SaveModelObjects = SaveModelObjects
+    # ReturnModelObjects = ReturnModelObjects
+    # data = data.table::copy(data)
+    # TrainOnFull = FALSE
+    # ValidationData = data.table::copy(ValidationData)
+    # TestData = data.table::copy(TestData)
+    # TargetColumnName = 'Target_Buckets'
+    # FeatureColNames = FeatureNames
+    # PrimaryDateColumn = PrimaryDateColumn
+    # WeightsColumnName = WeightsColumnName
+    # ClassWeights = ClassWeights
+    # IDcols = IDcols
+    # EncodeMethod = ClassifierEncodingMethod
+    # EvalMetric = 'MCC'
+    # LossFunction = 'Logloss'
+    # MetricPeriods = MetricPeriods
+    # NumOfParDepPlots = NumOfParDepPlots
+    # PassInGrid = PassInGrid
+    # GridTune = GridTune
+    # MaxModelsInGrid = MaxModelsInGrid
+    # MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner
+    # MaxRunMinutes = MaxRunMinutes
+    # BaselineComparison = BaselineComparison
+    # Trees = ClassifierTrees
+    # Depth = ClassifierDepth
+    # LearningRate = ClassifierLearningRate
+    # RandomStrength = ClassifierRandomStrength
+    # BorderCount = ClassifierBorderCount
+    # L2_Leaf_Reg = ClassifierL2_Leaf_Reg
+    # RSM = ClassifierRSM
+    # BootStrapType = ClassifierBootStrapType
+    # GrowPolicy = ClassifierGrowPolicy
+    # langevin = FALSE
+    # diffusion_temperature = 10000
+    # model_size_reg = 0.5
+    # feature_border_type = 'GreedyLogSum'
+    # sampling_unit = 'Object'
+    # subsample = NULL
+    # score_function = 'Cosine'
+    # min_data_in_leaf = 1
+
   } else {
+
     ClassifierModel <- AutoCatBoostMultiClass(
 
       # GPU or CPU

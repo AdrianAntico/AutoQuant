@@ -576,7 +576,7 @@ AutoCatBoostHurdleCARMA <- function(data,
     DebugMode = DebugMode,
 
     # Metadata args
-    Paths = normalizePath('./'),
+    Paths = getwd(),
     MetaDataPaths = NULL,
     TransformNumericColumns = NULL,
     Methods = NULL,
@@ -602,15 +602,61 @@ AutoCatBoostHurdleCARMA <- function(data,
     BorderCount = BorderCount,
     LearningRate = LearningRate,
     L2_Leaf_Reg = L2_Leaf_Reg,
-    RSM = list('classifier' = c(1.0), 'regression' = c(1.0)),
     BootStrapType = BootStrapType,
+    RSM = list('classifier' = c(1.0), 'regression' = c(1.0)),
     GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree'))
+
+
+  # task_type = TaskType
+  # ModelID = 'ModelTest'
+  # SaveModelObjects = FALSE
+  # ReturnModelObjects = TRUE
+  # data = data.table::copy(train)
+  # TrainOnFull = TrainOnFull
+  # ValidationData = data.table::copy(valid)
+  # TestData = data.table::copy(test)
+  # Buckets = 0L
+  # TargetColumnName = TargetVariable
+  # FeatureColNames = ModelFeatures
+  # PrimaryDateColumn = eval(DateColumnName)
+  # WeightsColumnName = if('Weights' %chin% names(train)) 'Weights' else NULL
+  # IDcols = IDcols
+  # EncodingMethod = list('classifier' = 'credibility', 'regression' = 'credibility')
+  # DebugMode = DebugMode
+  # Paths = getwd()
+  # MetaDataPaths = NULL
+  # TransformNumericColumns = NULL
+  # Methods = NULL
+  # ClassWeights = c(1,1)
+  # SplitRatios = c(0.70, 0.20, 0.10)
+  # NumOfParDepPlots = NumOfParDepPlots
+  # PassInGrid = PassInGrid
+  # GridTune = GridTune
+  # BaselineComparison = 'default'
+  # MaxModelsInGrid = 500L
+  # MaxRunsWithoutNewWinner = 100L
+  # MaxRunMinutes = 60*60
+  # MetricPeriods = 10L
+  # Trees = NTrees
+  # Langevin = FALSE
+  # DiffusionTemperature = 10000
+  # Depth = Depth
+  # RandomStrength = RandomStrength
+  # BorderCount = BorderCount
+  # LearningRate = LearningRate
+  # L2_Leaf_Reg = L2_Leaf_Reg
+  # BootStrapType = BootStrapType
+  # RSM = list('classifier' = c(1.0), 'regression' = c(1.0))
+  # GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree')
 
   # Grab threshold if turned on ----
   if(!is.null(Threshold)) {
     threshold <- TestModel$ClassifierModel$EvaluationMetrics
+    print(names(threshold))
+    print(grep(pattern = Threshold, x = names(threshold)))
+    print(names(threshold)[grep(pattern = Threshold, x = names(threshold))])
     col <- names(threshold)[grep(pattern = Threshold, x = names(threshold))]
-    Threshold <- threshold[, .SD, .SDcols = c('Threshold', eval(col))][order(-get(col))][1,1][[1]]
+    Threshold <- threshold[, .SD, .SDcols = c('Threshold', eval(col[[1L]]))][order(-get(col[[1L]]))][1L,1L][[1L]]
   }
 
   # Return model object for when TrainOnFull is FALSE ----
