@@ -34,9 +34,10 @@ ML_ExperimentTable <- data.table::data.table(
 # Initialize Data
 data <- NULL
 DataList <- list()
+DataList[['StockSymbols']] <- RemixAutoML:::StockSymbols()
 
 # Temp data
-#DataList[['temp']] <- data.table::data.table(Random1=runif(5L), Random2=runif(5L), Random3=runif(5L), Random4=runif(5L), Random5=runif(5L), Random6=runif(5L))
+# DataList[['temp']] <- data.table::data.table(Random1=runif(5L), Random2=runif(5L), Random3=runif(5L), Random4=runif(5L), Random5=runif(5L), Random6=runif(5L))
 
 # First pass
 InitalizeInputs <- TRUE
@@ -45,11 +46,11 @@ InitalizeInputs <- TRUE
 AvailablePlots <- c(
   'Histogram','ViolinPlot','BoxPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Correlogram','HeatMapPlot',
   'ShapelyImportance',
-  'PartialDependenceLine', 'PartialDependenceBox',
-  'CalibrationPlot', 'CalibrationBoxPlot',
-  'ResidualsHistogram', 'ResidualsScatterPlot', 'ResidualsCopulaPlot',
+  'PartialDependenceLine','PartialDependenceBox',
+  'CalibrationPlot','CalibrationBoxPlot',
+  'ResidualsHistogram','ResidualsScatterPlot','ResidualsCopulaPlot',
   'VariableImportance',
-  'GainsPlot', 'LiftPlot', 'ROCPlot')
+  'GainsPlot','LiftPlot','ROCPlot')
 
 # ----
 
@@ -510,8 +511,8 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Initialize data reactive. Gets overwritten after first data load or when user updates data selected
-  Data <<- reactive({DataList[['temp']]})
-  CurrentData <- 'temp'
+  # Data <<- reactive({DataList[['temp']]})
+  # CurrentData <- 'temp'
 
   # Inputs
   UserName <- shiny::reactive({input$UserName})

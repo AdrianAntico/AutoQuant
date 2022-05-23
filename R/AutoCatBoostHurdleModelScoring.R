@@ -309,8 +309,8 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
 
     } else {
 
-      print('Right Before: data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))')
-      print(names(TestData))
+      if(DebugMode) print('Right Before: data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData)-1L)))')
+      if(DebugMode) print(names(TestData))
 
       # Use single value for predictions in the case of zero variance ----
       if(bucket == max(seq_len(length(Buckets) + 1L))) {
@@ -331,25 +331,25 @@ AutoCatBoostHurdleModelScoring <- function(TestData = NULL,
   # Final Combination of Predictions ----
   counter <- length(Buckets)
   if(counter > 2L || (counter == 2L && length(Buckets) != 1L)) {
-    print('counter > 2L || (counter == 2L && length(Buckets) != 1L) == TRUE')
+    if(DebugMode) print('counter > 2L || (counter == 2L && length(Buckets) != 1L) == TRUE')
     for(i in rev(looper)) {
       if(i == 1L) {
-        print(paste0('i == 1L ; names(TestData)'))
+        if(DebugMode) print(paste0('i == 1L ; names(TestData)'))
         names(TestData)
         TestData[, UpdatedPrediction := TestData[[i]] * TestData[[i + 1L + (length(looper))]]]
       } else {
-        print(paste0('i != 1L ; names(TestData)'))
+        if(DebugMode) print(paste0('i != 1L ; names(TestData)'))
         names(TestData)
         TestData[, UpdatedPrediction := UpdatedPrediction + TestData[[i]] * TestData[[i + 1L + length(looper)]]]
       }
     }
   } else {
-    print('counter > 2L || (counter == 2L && length(Buckets) != 1L) == FALSE')
+    if(DebugMode) print('counter > 2L || (counter == 2L && length(Buckets) != 1L) == FALSE')
     if(0 %in% Buckets) {
-      names(TestData)
+      if(DebugMode) print(names(TestData))
       TestData[, UpdatedPrediction := TestData[[2L]] * TestData[[4L]]]
     } else {
-      names(TestData)
+      if(DebugMode) print(names(TestData))
       TestData[, UpdatedPrediction := TestData[[1L]] * TestData[[3L]] + TestData[[2L]] * TestData[[4L]]]
     }
   }

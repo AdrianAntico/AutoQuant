@@ -54,6 +54,7 @@ AutoCatBoostHurdleCARMA(
   ModelCount = 100,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 24L * 60L,
+  Langevin = FALSE,
   NTrees = list(classifier = 200, regression = 200),
   Depth = list(classifier = 9, regression = 9),
   LearningRate = list(classifier = NULL, regression = NULL),
@@ -157,6 +158,8 @@ AutoCatBoostHurdleCARMA(
 \item{MaxRunsWithoutNewWinner}{Default is 50}
 
 \item{MaxRunMinutes}{Default is 60*60}
+
+\item{Langevin}{= FALSE}
 
 \item{NTrees}{Select the number of trees you want to have built to train the model}
 
@@ -270,6 +273,7 @@ AutoCatBoostHurdleCARMA is an intermittent demand, Mutlivariate Forecasting algo
   NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60*60,
+  Langevin = FALSE,
   NTrees = 2500,
   L2_Leaf_Reg = 3.0,
   LearningRate = list('classifier' = seq(0.01,0.25,0.01), 'regression' = seq(0.01,0.25,0.01)),
@@ -374,6 +378,7 @@ Output <- RemixAutoML::AutoCatBoostHurdleCARMA(
   NumGPU = 1,
   MaxRunsWithoutNewWinner = 50,
   MaxRunMinutes = 60*60,
+  Langevin = FALSE,
   NTrees = list('classifier' = 200, 'regression' = 200),
   Depth = list('classifier' = 9, 'regression' = 9),
   LearningRate = list('classifier' = NULL, 'regression' = NULL),

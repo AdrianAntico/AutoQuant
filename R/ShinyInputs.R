@@ -1986,7 +1986,6 @@ PlotDropDownContents <- function(id,
             shiny::fluidRow(
               shinydashboard::box(
                 title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
-                # shiny::fluidRow(shiny::column(width=12L, align = 'center',tags$h3(tags$span(style=paste0('color: #660000;'), 'Model Evaluation Plots')))),
                 RemixAutoML:::BlankRow(AppWidth),
 
                 # Model Evaluation Plots
@@ -2083,6 +2082,49 @@ PlotDropDownContents <- function(id,
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/ROC.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0("GainsPlot_MenuButton", PlotNumber), default = NULL)))),
+
+                RemixAutoML:::BlankRow(AppWidth),
+
+              ) # end box
+            ) # end fluid row
+          ), # end tabPanel
+          # ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+          # ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+          shiny::tabPanel(
+
+            id = 'FinanceTab',
+
+            # -- TAB REFERENCE VALUE
+            # tabName = "CodePrint",
+            title = "Finance",
+            icon = shiny::icon('code'),
+
+            # ---------------------------------------------------------------------------------------------------------------------------------------------------
+            # Model Eval Plots
+            shiny::fluidRow(
+              shinydashboard::box(
+                title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+                # shiny::fluidRow(shiny::column(width=12L, align = 'center',tags$h3(tags$span(style=paste0('color: #660000;'), 'Model Evaluation Plots')))),
+                RemixAutoML:::BlankRow(AppWidth),
+
+                # Model Evaluation Plots
+                shiny::fluidRow(
+                  shiny::column(
+                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Candlestick Plot'))), width = 4L, align = 'center',
+                    tags$button(
+                      id = paste0('Candlestick_MenuButton', PlotNumber), #style = htmltools::css(width = '95px'),
+                      type = "button", class = "btn btn-default action-button",
+                      tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Candlestick.PNG?raw=true", height = Height),
+                      `data-val` = shiny::restoreInput(id = paste0('Candlestick_MenuButton', PlotNumber), default = NULL))),
+                  shiny::column(
+                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'OHCL Plot'))), width = 4L, align = 'center',
+                    tags$button(
+                      id = paste0('OHCL_MenuButton', PlotNumber), #style = htmltools::css(width = '95px'),
+                      type = "button", class = "btn btn-default action-button",
+                      tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/OHCL.PNG?raw=true", height = Height),
+                      `data-val` = shiny::restoreInput(id = paste0('OHCL_MenuButton', PlotNumber), default = NULL)))),
 
                 RemixAutoML:::BlankRow(AppWidth),
 
