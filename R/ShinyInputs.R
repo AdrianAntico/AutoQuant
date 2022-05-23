@@ -2123,7 +2123,7 @@ PlotDropDownContents <- function(id,
                     tags$button(
                       id = paste0('OHCL_MenuButton', PlotNumber), #style = htmltools::css(width = '95px'),
                       type = "button", class = "btn btn-default action-button",
-                      tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/OHCL.PNG?raw=true", height = Height),
+                      tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/OHLC.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0('OHCL_MenuButton', PlotNumber), default = NULL)))),
 
                 RemixAutoML:::BlankRow(AppWidth),
