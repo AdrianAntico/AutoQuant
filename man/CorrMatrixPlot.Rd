@@ -39,8 +39,10 @@ Other Graphics:
 \code{\link{BarPlot}()},
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
+\code{\link{HeatMapPlot}()},
 \code{\link{HistPlot}()},
 \code{\link{PlotlyConversion}()},
+\code{\link{StockPlot}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
 }

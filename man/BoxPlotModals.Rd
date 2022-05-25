@@ -2,7 +2,7 @@
 % Please edit documentation in R/ShinyOutputs.R
 \name{BoxPlotModals}
 \alias{BoxPlotModals}
-\title{StandardPlotsModal2}
+\title{BoxPlotModals}
 \usage{
 BoxPlotModals(id, NumberPlots, AppWidth = 12L)
 }
@@ -20,7 +20,8 @@ Plot Variables Modals
 Other Shiny: 
 \code{\link{DataTable}()},
 \code{\link{StandardPlotsModal1}()},
-\code{\link{StandardPlotsModal2}()}
+\code{\link{StandardPlotsModal2}()},
+\code{\link{StandardPlotsModal3}()}
 }
 \author{
 Adrian Antico

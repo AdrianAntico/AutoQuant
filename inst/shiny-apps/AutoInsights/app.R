@@ -34,7 +34,7 @@ ML_ExperimentTable <- data.table::data.table(
 # Initialize Data
 data <- NULL
 DataList <- list()
-DataList[['StockSymbols']] <- RemixAutoML:::StockSymbols()
+StockSymbolsData <- data.table::fread(file = file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/inst/shiny-apps/AutoInsights/ticker_data.csv'))
 
 # Temp data
 # DataList[['temp']] <- data.table::data.table(Random1=runif(5L), Random2=runif(5L), Random3=runif(5L), Random4=runif(5L), Random5=runif(5L), Random6=runif(5L))
@@ -46,6 +46,7 @@ InitalizeInputs <- TRUE
 AvailablePlots <- c(
   'Histogram','ViolinPlot','BoxPlot','BarPlot','LinePlot','ScatterPlot','CopulaPlot','Correlogram','HeatMapPlot',
   'ShapelyImportance',
+  'CandlestickPlot','OHLCPlot',
   'PartialDependenceLine','PartialDependenceBox',
   'CalibrationPlot','CalibrationBoxPlot',
   'ResidualsHistogram','ResidualsScatterPlot','ResidualsCopulaPlot',
@@ -127,6 +128,8 @@ if(!is.null(UserName_Password_DT) && 'UserName' %in% names(UserName_Password_DT)
 } else {
   Credentials <- data.table::data.table(UserName = c('Guest'), Password = c('Password'))
 }
+
+APIKey <- 'hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20'
 
 # ----
 
@@ -2309,6 +2312,10 @@ server <- function(input, output, session) {
   # :: Obs Event Modals                  ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # BoxPlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
   # Show modal when button is clicked.
   shiny::observeEvent(input$BoxPlot_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'BoxPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
@@ -2945,12 +2952,76 @@ server <- function(input, output, session) {
     RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
   })
 
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # CandlestickPlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CandlestickPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CandlestickPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    RemixAutoML:::StandardPlotsModal3(id = 'SPM3', PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CandlestickPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CandlestickPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    RemixAutoML:::StandardPlotsModal3(id = 'SPM3', PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CandlestickPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CandlestickPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    RemixAutoML:::StandardPlotsModal3(id = 'SPM3', PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$CandlestickPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CandlestickPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4; PlotDropDown4 <<- PlotDropDown4
+    RemixAutoML:::StandardPlotsModal3(id = 'SPM3', PlotNumber = 4L)
+  })
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+  # CandlestickPlot Modals
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$OHLCPlot_MenuButton1, {
+    output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'OHLCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1; PlotDropDown1 <<- PlotDropDown1
+    RemixAutoML:::StandardPlotsModal3(id = 'SPM3', PlotNumber = 1L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$OHLCPlot_MenuButton2, {
+    output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'OHLCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
+    RemixAutoML:::StandardPlotsModal3(id = 'SPM3', PlotNumber = 2L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$OHLCPlot_MenuButton3, {
+    output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'OHLCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
+    RemixAutoML:::StandardPlotsModal3(id = 'SPM3', PlotNumber = 3L)
+  })
+
+  # Show modal when button is clicked.
+  shiny::observeEvent(input$OHLCPlot_MenuButton4, {
+    output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'OHLCPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
+    PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4; PlotDropDown4 <<- PlotDropDown4
+    RemixAutoML:::StandardPlotsModal3(id = 'SPM3', PlotNumber = 4L)
+  })
+
   # ----
 
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  #   PlotDropDowns                      ----
+  #   Inputs PlotDropDowns               ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Plot 1 DropDown
@@ -2984,7 +3055,7 @@ server <- function(input, output, session) {
     print('Step 4')
 
     # Reactives
-    dt1 <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Plot1_SelectData]]}, error = function(x) DataList[[1L]]))})
+    dt1 <- shiny::reactive({tryCatch({DataList[[input$Plot1_SelectData]]}, error = function(x) tryCatch({DataList[[1L]]}, error = function(x) NULL))})
     dt1 <<- dt1
 
     # Y Variable
@@ -3006,6 +3077,56 @@ server <- function(input, output, session) {
     PlotDropDown1 <<- PlotDropDown1
 
     print('Step 5')
+
+    output$Symbols1 <- shiny::renderUI({
+      Choices <- sort(unique(StockSymbolsData$ticker))
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'Symbols1', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
+      RemixAutoML:::PickerInput(InputID = 'Symbols1', Label = 'Ticker Selection', Choices = Choices, SelectedDefault = selected_default, Multiple = FALSE, Debug = Debug)
+    })
+    PlotDropDown1[['Symbols1']][['SelectedDefault']][[length(PlotDropDown1[['Symbols1']][['SelectedDefault']]) + 1L]] <- input$Symbols1
+    PlotDropDown1 <<- PlotDropDown1
+
+    output$StockMetric1 <- shiny::renderUI({
+      Choices <- c('Stock Price', '% Daily Return')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'StockMetric1', ArgName = 'SelectedDefault', Default = 'Stock Price', Debug = Debug)
+      if(length(selected_default) > 0) {
+        Default <- selected_default
+      } else {
+        Default <- Choices
+      }
+      RemixAutoML:::SelectizeInput(InputID = 'StockMetric1', Label = 'Metric Selection', Choices = Choices, SelectedDefault = Default, Multiple = TRUE, MaxVars = 1L, Debug = Debug)
+    })
+    PlotDropDown1[['StockMetric1']][['SelectedDefault']][[length(PlotDropDown1[['StockMetric1']][['SelectedDefault']]) + 1L]] <- input$StockMetric1
+    PlotDropDown1 <<- PlotDropDown1
+
+    # Date Range for stock data
+    output$StockDateRange1 <- shiny::renderUI({
+      shiny::dateRangeInput(inputId = 'StockDateRange1', label = "Date range:", startview = "month", start = as.character(Sys.Date()-365L), end = as.character(Sys.Date()))
+    })
+    PlotDropDown1[['StockDateRange1']][['SelectedDefault']][[length(PlotDropDown1[['StockDateRange1']][['SelectedDefault']]) + 1L]] <- input$StockDateRange1
+    PlotDropDown1 <<- PlotDropDown1
+
+    # Stock Metric: price, returns, index
+    output$StockMetric1 <- shiny::renderUI({
+      Choices <- c('Stock Price', '% Returns', '% Log Returns', 'Index','Quadratic Variation')
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'StockMetric1', ArgName = 'SelectedDefault', Default = 'Stock Price', Debug = Debug)
+      if(length(selected_default) > 0) {
+        Default <- selected_default
+      } else {
+        Default <- Choices
+      }
+      RemixAutoML:::SelectizeInput(InputID = 'StockMetric1', Label = 'Metric Selection', Choices = Choices, SelectedDefault = Default, Multiple = TRUE, MaxVars = 1L, Debug = Debug)
+    })
+    PlotDropDown1[['StockMetric1']][['SelectedDefault']][[length(PlotDropDown1[['StockMetric1']][['SelectedDefault']]) + 1L]] <- input$StockMetric1
+    PlotDropDown1 <<- PlotDropDown1
+
+    # Stock Time Aggregate Level
+    output$StockTimeAgg1 <- shiny::renderUI({
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = PlotDropDown1, InputName = 'StockTimeAgg1', ArgName = 'SelectedDefault', Default = 'days', Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'StockTimeAgg1', Label = "Time Aggregation", Choices = c('days','weeks','months','quarters','years'), SelectedDefault = selected_default)
+    })
+    PlotDropDown1[['StockTimeAgg1']][['SelectedDefault']][[length(PlotDropDown1[['StockTimeAgg1']][['SelectedDefault']]) + 1L]] <- input$StockTimeAgg1
+    PlotDropDown1 <<- PlotDropDown1
 
     # X Variable
     output$XVar1 <- shiny::renderUI({
@@ -5639,6 +5760,10 @@ server <- function(input, output, session) {
     if(length(Plot3) != 0) NumPlots[length(NumPlots) + 1L] <- 3
     if(length(Plot4) != 0) NumPlots[length(NumPlots) + 1L] <- 4
 
+
+    print(Plot1)
+
+
     # PlotType Determination
     ULP <- input[['PlotTypeDragula']][['target']][['TopLeft']]
     BLP <- input[['PlotTypeDragula']][['target']][['LowerLeft']]
@@ -5681,6 +5806,10 @@ server <- function(input, output, session) {
 
     # Initialize PlotObjectHome List
     for(run in PlotRefs) {
+      PlotObjectHome[[paste0('Plot_', run)]][['Symbols']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('Symbols', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
+      PlotObjectHome[[paste0('Plot_', run)]][['StockMetric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('StockMetric', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
+      PlotObjectHome[[paste0('Plot_', run)]][['StockTimeAgg']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('StockTimeAgg', run)]]}, error=function(x) NULL), Type='character', Default='days')
+      PlotObjectHome[[paste0('Plot_', run)]][['StockDateRange']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('StockDateRange', run)]]}, error=function(x) NULL), Type='date', Default=c('2022-01-01', as.character(Sys.Date())))
       PlotObjectHome[[paste0('Plot_', run)]][['DataSource']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('DataSource', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['PlotType']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('Plot', run)]]}, error=function(x) NULL), Type='character', Default=NULL, Debug = TRUE)
       PlotObjectHome[[paste0('Plot_', run)]][['UpdateMethod']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('UpdateMethod', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -5765,6 +5894,10 @@ server <- function(input, output, session) {
         NumberGroupsDisplay <- PlotObjectHome[[paste0('Plot_', run)]][['NumberGroupsDisplay']]
 
         # Variable Selection
+        Symbols <- PlotObjectHome[[paste0('Plot_', run)]][['Symbols']]
+        StockMetric <- PlotObjectHome[[paste0('Plot_', run)]][['StockMetric']]
+        StockTimeAgg <- PlotObjectHome[[paste0('Plot_', run)]][['StockTimeAgg']]
+        StockDateRange <- PlotObjectHome[[paste0('Plot_', run)]][['StockDateRange']]
         YVar <- PlotObjectHome[[paste0('Plot_', run)]][['YVar']]
         YTicks <- PlotObjectHome[[paste0('Plot_', run)]][['YTicks']]
         XVar <- PlotObjectHome[[paste0('Plot_', run)]][['XVar']]
@@ -5832,15 +5965,23 @@ server <- function(input, output, session) {
       # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
       # Define data
-      data1 <- DataList[[input[[paste0('Plot', run, '_SelectData')]]]]
+      if(!PlotType %chin% c('CandlestickPlot','OHLCPlot')) {
+        data1 <- DataList[[input[[paste0('Plot', run, '_SelectData')]]]]
+      } else {
+        data1 <- NULL
+      }
 
       # For PDP's
       print('ScoreVar')
-      print(names(data1))
-      if('p1' %in% names(data1)) {
-        ScoreVar <- 'p1'
-      } else if('Predict' %in% names(data1)) {
-        ScoreVar <- 'Predict'
+      if(length(data1) > 0L) {
+        print(names(data1))
+        if('p1' %in% names(data1)) {
+          ScoreVar <- 'p1'
+        } else if('Predict' %in% names(data1)) {
+          ScoreVar <- 'Predict'
+        } else {
+          ScoreVar <- NULL
+        }
       } else {
         ScoreVar <- NULL
       }
@@ -6000,7 +6141,7 @@ server <- function(input, output, session) {
         # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
         # Filter Data if DataPrep = TRUE
-        if(SubsetList[[paste0('DataPrep', run)]]) {
+        if(SubsetList[[paste0('DataPrep', run)]] && !PlotType %in% c('CandlestickPlot','OHLCPlot')) {
 
           # Subset by FilterVariable
           if(Debug) print('Here 23')
@@ -6056,7 +6197,7 @@ server <- function(input, output, session) {
         }
 
         # Sample from data
-        if(length(SampleSize) > 0 && is.numeric(SampleSize) && SampleSize > 0 && SampleSize < 1) {
+        if(length(SampleSize) > 0 && is.numeric(SampleSize) && SampleSize > 0 && SampleSize < 1 && !PlotType %in% c('CandlestickPlot','OHLCPlot')) {
           print(SampleSize)
           N <- data1[, .N]
           if(N > SampleSize) {
@@ -6155,7 +6296,7 @@ server <- function(input, output, session) {
           # Code Collection
           if(Debug) print('Debug Code Collection Start')
           CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0(
-            "RemixAutoML:::AutoPlotter(dt = data1, PlotType = ", RemixAutoML:::CEP(PlotType),
+            "RemixAutoML:::AutoPlotter(\ndt = data1, PlotType = ", RemixAutoML:::CEP(PlotType),
             ", YVar=", RemixAutoML:::CEP(YVar),
             ", XVar=", RemixAutoML:::CEP(XVar),
             ", ZVar=", RemixAutoML:::CEP(ZVar),
@@ -6179,6 +6320,30 @@ server <- function(input, output, session) {
             ", BackGroundColor=", RemixAutoML:::CEP(BackGroundColor), ")")
           CodeCollection <<- CodeCollection
           if(Debug) print(unlist(CodeCollection))
+
+        } else if(PlotType %in% c('CandlestickPlot','OHLCPlot')) {
+
+          print(StockDateRange)
+          PlotCollectionList[[paste0('p', run)]] <- RemixAutoML::StockPlot(
+            Type = PlotType,
+            Metric = StockMetric,
+            TimeAgg = StockTimeAgg,
+            Symbol = Symbols,
+            Company = StockSymbolsData[ticker == eval(Symbols)][['name']][[1L]],
+            StartDate = StockDateRange[1L],
+            EndDate = StockDateRange[2L],
+            APIKey = 'hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20')
+
+          # Code Collection
+          CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0(
+            "RemixAutoML::StockPlot(Type =", RemixAutoML:::CEP(PlotType),
+            ", Metric = ", RemixAutoML:::CEP(StockMetric),
+            ", TimeAgg = ", RemixAutoML:::CEP(StockTimeAgg),
+            ", Symbol =", RemixAutoML:::CEP(Symbols),
+            ", Company =", RemixAutoML:::CEP(StockSymbolsData[ticker == eval(Symbols)][['name']][[1L]]),
+            ", StartDate  = ", StockDateRange[1L],
+            ", EndDate  = ", StockDateRange[2L],
+            ", APIKey =", RemixAutoML:::CEP(paste0('************', substr(APIKey, start = nchar(APIKey)-2L, stop = nchar(APIKey)))), ")")
 
         } else {
 

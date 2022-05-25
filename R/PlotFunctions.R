@@ -26,7 +26,7 @@ holidayNYSE <- function(year = getRmetricsOptions("currentYear")) {
   #   [5] [2004-05-31] [2004-07-05] [2004-09-06] [2004-11-25]
 
   # FUNCTION:
-
+  library(timeDate)
   #  Settings:
   holidays <- NULL
 
@@ -100,345 +100,123 @@ holidayNYSE <- function(year = getRmetricsOptions("currentYear")) {
 
 #' @noRd
 StockSymbols <- function() {
-  counter <- 1L
-  for(i in c('DOW','DOWGLOBAL','SP400','SP500','SP600')) {
-    if(counter == 1L) {
-      x <- data.table::setDT(tidyquant::tq_index(x = i))
-    } else {
-      x <- data.table::rbindlist(list(x, data.table::setDT(tidyquant::tq_index(x = i))))
-    }
-    counter <- counter + 1L
-  }
-  counter <- 1L
-  for(i in c(tidyquant::tq_exchange_options())) {
-    if(counter == 1L) {
-      y <- data.table::setDT(tidyquant::tq_exchange(x = i))
-    } else {
-      y <- data.table::rbindlist(list(x, data.table::setDT(tidyquant::tq_exchange(x = i))), fill = TRUE, use.names = TRUE)
-    }
-    counter <- counter + 1L
-  }
-  xx <- data.table::rbindlist(list(x,y), fill = TRUE, use.names = TRUE)
-  xx[, sector := data.table::fifelse(is.na(sector), industry, sector)]
-  return(xx[, .SD, .SDcols = c('symbol','company','sector')])
+  x <- jsonlite::fromJSON("https://api.polygon.io/v3/reference/tickers?active=true&sort=ticker&order=asc&limit=1000&apiKey=hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20")
+  xx <- data.table::setDT(x$results)
+  return(xx[, .SD, .SDcols = c(names(xx)[c(1,2,5,6,12)])])
 }
 
-#' @title Stock
+#' @noRd
+GetAllTickers <- function() {
+  x <- jsonlite::fromJSON("https://api.polygon.io/v3/reference/tickers?active=true&sort=ticker&order=asc&limit=1000&apiKey=hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20")
+  xx <- data.table::setDT(x$results)
+  counter <- 1000L
+  while(is.list(x)) {
+    print(paste0('Working on first ', counter, ' ticker symbols'))
+    x <- tryCatch({jsonlite::fromJSON(paste0(x$next_url, "&apiKey=hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20"))}, error = function(x) 1)
+    xx <- data.table::rbindlist(list(xx, data.table::setDT(x$results)), fill = TRUE, use.names = TRUE)
+    counter <- counter + 1000L
+    Sys.sleep(12L)
+  }
+  xx <- xx[, .SD, .SDcols = c(names(xx)[c(1,2,5,6,12)])]
+  data.table::fwrite(xx, file = file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/inst/shiny-apps/AutoInsights/ticker_data.csv'))
+  RemixAutoML::PostGRE_RemoveCreateAppend(
+    data = xx,
+    TableName = "ticker_data",
+    CloseConnection = TRUE,
+    CreateSchema = NULL,
+    Host = "localhost",
+    DBName = "RemixAutoML",
+    User = "postgres",
+    Port = 5432,
+    Password = "Aa1028#@",
+    Temporary = FALSE,
+    Connection = NULL,
+    Append = TRUE)
+  return(xx)
+}
+
+#' @noRd
+OptionsSymbols <- function() {
+  x <- jsonlite::fromJSON('https://api.polygon.io/v3/reference/tickers/types?asset_class=options&locale=us&apiKey=hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20')
+  xx <- data.table::setDT(x$results)
+  return(xx[, .SD, .SDcols = c(names(xx)[c(1,2,5,6,12)])])
+}
+
+#' @noRd
+CryptoSymbols <- function() {
+  x <- jsonlite::fromJSON('https://api.polygon.io/v3/reference/tickers/types?asset_class=crypto&locale=us&apiKey=hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20')
+  xx <- data.table::setDT(x$results)
+  return(xx[, .SD, .SDcols = c(names(xx)[c(1,2,5,6,12)])])
+}
+
+#' @noRd
+Financials <- function() {
+  x <- jsonlite::fromJSON("https://api.polygon.io/vX/reference/financials?apiKey=hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20")
+}
+
+#' @title StockPlot
 #'
-#' @description Create a candlestick plot for stocks
+#' @description  Create a candlestick plot for stocks. See https://plotly.com/r/figure-labels/
 #'
-#' @details
-#' A candlestick trace is initialized with plot_ly or add_trace:
-#' plot_ly(df, type="candlestick"[, ...])
-#' add_trace(p, type="candlestick"[, ...])
-#' A candlestick trace accepts any of the keys listed below.
-#'
-#' The candlestick is a style of financial chart describing open, high, low and close for a given `x` coordinate (most likely time). The boxes represent the spread between the `open` and `close` values and the lines represent the spread between the `low` and `high` values Sample points where the close value is higher (lower) then the open value are called increasing (decreasing). By default, increasing candles are drawn in green whereas decreasing are drawn in red.
-#'
-#' type
-#' Parent: data[type=candlestick]
-#' Type: "candlestick"
-#' name
-#' Parent: data[type=candlestick]
-#' Type: string
-#'
-#' Sets the trace name. The trace name appear as the legend item and on hover.
-#' visible
-#' Parent: data[type=candlestick]
-#' Type: enumerated , one of ( TRUE | FALSE | "legendonly" )
-#' Default: TRUE
-#'
-#' Determines whether or not this trace is visible. If "legendonly", the trace is not drawn, but can appear as a legend item (provided that the legend itself is visible).
-#' showlegend
-#' Parent: data[type=candlestick]
-#' Type: boolean
-#' Default: TRUE
-#'
-#' Determines whether or not an item corresponding to this trace is shown in the legend.
-#' legendrank
-#' Parent: data[type=candlestick]
-#' Type: number
-#' Default: 1000
-#'
-#' Sets the legend rank for this trace. Items and groups with smaller ranks are presented on top/left side while with `"reversed" `legend.traceorder` they are on bottom/right side. The default legendrank is 1000, so that you can use ranks less than 1000 to place certain items before all unranked items, and ranks greater than 1000 to go after all unranked items.
-#' legendgroup
-#' Parent: data[type=candlestick]
-#' Type: string
-#' Default: ""
-#'
-#' Sets the legend group for this trace. Traces part of the same legend group hide/show at the same time when toggling legend items.
-#' legendgrouptitle
-#' Parent: data[type=candlestick]
-#' Type: named list containing one or more of the keys listed below.
-#' font
-#' Parent: data[type=candlestick].legendgrouptitle
-#' Type: named list containing one or more of the keys listed below.
-#'
-#' Sets this legend group's title font.
-#'             color
-#'             Parent: data[type=candlestick].legendgrouptitle.font
-#'             Type: color
-#'             family
-#'             Parent: data[type=candlestick].legendgrouptitle.font
-#'             Type: string
-#'
-#'             HTML font family - the typeface that will be applied by the web browser. The web browser will only be able to apply a font if it is available on the system which it operates. Provide multiple font families, separated by commas, to indicate the preference in which to apply fonts if they aren't available on the system. The Chart Studio Cloud (at https://chart-studio.plotly.com or on-premise) generates images on a server, where only a select number of fonts are installed and supported. These include "Arial", "Balto", "Courier New", "Droid Sans",, "Droid Serif", "Droid Sans Mono", "Gravitas One", "Old Standard TT", "Open Sans", "Overpass", "PT Sans Narrow", "Raleway", "Times New Roman".
-#' size
-#' Parent: data[type=candlestick].legendgrouptitle.font
-#' Type: number greater than or equal to 1
-#' text
-#' Parent: data[type=candlestick].legendgrouptitle
-#' Type: string
-#' Default: ""
-#'
-#' Sets the title of the legend group.
-#' opacity
-#' Parent: data[type=candlestick]
-#' Type: number between or equal to 0 and 1
-#' Default: 1
-#'
-#' Sets the opacity of the trace.
-#' ids
-#' Parent: data[type=candlestick]
-#' Type: dataframe column, list, vector
-#'
-#' Assigns id labels to each datum. These ids for object constancy of data points during animation. Should be an array of strings, not numbers or any other type.
-#' x
-#' Parent: data[type=candlestick]
-#' Type: dataframe column, list, vector
-#'
-#' Sets the x coordinates. If absent, linear coordinate will be generated.
-#' close
-#' Parent: data[type=candlestick]
-#' Type: dataframe column, list, vector
-#'
-#' Sets the close values.
-#' open
-#' Parent: data[type=candlestick]
-#' Type: dataframe column, list, vector
-#'
-#' Sets the open values.
-#' high
-#' Parent: data[type=candlestick]
-#' Type: dataframe column, list, vector
-#'
-#' Sets the high values.
-#' low
-#' Parent: data[type=candlestick]
-#' Type: dataframe column, list, vector
-#'
-#' Sets the low values.
-#' text
-#' Parent: data[type=candlestick]
-#' Type: string or array of strings
-#' Default: ""
-#'
-#' Sets hover text elements associated with each sample point. If a single string, the same string appears over all the data points. If an array of string, the items are mapped in order to this trace's sample points.
-#'     hovertext
-#'     Parent: data[type=candlestick]
-#'     Type: string or array of strings
-#'     Default: ""
-#'
-#'     Same as `text`.
-#'     hoverinfo
-#'     Parent: data[type=candlestick]
-#'     Type: flaglist string. Any combination of "x", "y", "z", "text", "name" joined with a "+" OR "all" or "none" or "skip".
-#'     Examples: "x", "y", "x+y", "x+y+z", "all"
-#'     Default: "all"
-#'
-#'     Determines which trace information appear on hover. If `none` or `skip` are set, no information is displayed upon hovering. But, if `none` is set, click and hover events are still fired.
-#'     xhoverformat
-#'     Parent: data[type=candlestick]
-#'     Type: string
-#'     Default: ""
-#'
-#'     Sets the hover text formatting rulefor `x` using d3 formatting mini-languages which are very similar to those in Python. For numbers, see: https://github.com/d3/d3-format/tree/v1.4.5#d3-format. And for dates see: https://github.com/d3/d3-time-format/tree/v2.2.3#locale_format. We add two items to d3's date formatter: "%h" for half of the year as a decimal number as well as "%{n}f" for fractional seconds with n digits. For example, "2016-10-13 09:15:23.456" with tickformat "%H~%M~%S.%2f" would display "09~15~23.46"By default the values are formatted using `xaxis.hoverformat`.
-#' yhoverformat
-#' Parent: data[type=candlestick]
-#' Type: string
-#' Default: ""
-#'
-#' Sets the hover text formatting rulefor `y` using d3 formatting mini-languages which are very similar to those in Python. For numbers, see: https://github.com/d3/d3-format/tree/v1.4.5#d3-format. And for dates see: https://github.com/d3/d3-time-format/tree/v2.2.3#locale_format. We add two items to d3's date formatter: "%h" for half of the year as a decimal number as well as "%{n}f" for fractional seconds with n digits. For example, "2016-10-13 09:15:23.456" with tickformat "%H~%M~%S.%2f" would display "09~15~23.46"By default the values are formatted using `yaxis.hoverformat`.
-#' meta
-#' Parent: data[type=candlestick]
-#' Type: number or categorical coordinate string
-#'
-#' Assigns extra meta information associated with this trace that can be used in various text attributes. Attributes such as trace `name`, graph, axis and colorbar `title.text`, annotation `text` `rangeselector`, `updatemenues` and `sliders` `label` text all support `meta`. To access the trace `meta` values in an attribute in the same trace, simply use `%{meta[i]}` where `i` is the index or key of the `meta` item in question. To access trace `meta` in layout attributes, use `%{data[n[.meta[i]}` where `i` is the index or key of the `meta` and `n` is the trace index.
-#' customdata
-#' Parent: data[type=candlestick]
-#' Type: dataframe column, list, vector
-#'
-#' Assigns extra data each datum. This may be useful when listening to hover, click and selection events. Note that, "scatter" traces also appends customdata items in the markers DOM elements
-#' xaxis
-#' Parent: data[type=candlestick]
-#' Type: subplotid
-#' Default: x
-#'
-#' Sets a reference between this trace's x coordinates and a 2D cartesian x axis. If "x" (the default value), the x coordinates refer to `layout.xaxis`. If "x2", the x coordinates refer to `layout.xaxis2`, and so on.
-#'     yaxis
-#'     Parent: data[type=candlestick]
-#'     Type: subplotid
-#'     Default: y
-#'
-#'     Sets a reference between this trace's y coordinates and a 2D cartesian y axis. If "y" (the default value), the y coordinates refer to `layout.yaxis`. If "y2", the y coordinates refer to `layout.yaxis2`, and so on.
-#' xperiod
-#' Parent: data[type=candlestick]
-#' Type: number or categorical coordinate string
-#' Default: 0
-#'
-#' Only relevant when the axis `type` is "date". Sets the period positioning in milliseconds or "M<n>" on the x axis. Special values in the form of "M<n>" could be used to declare the number of months. In this case `n` must be a positive integer.
-#' xperiodalignment
-#' Parent: data[type=candlestick]
-#' Type: enumerated , one of ( "start" | "middle" | "end" )
-#' Default: "middle"
-#'
-#' Only relevant when the axis `type` is "date". Sets the alignment of data points on the x axis.
-#' xperiod0
-#' Parent: data[type=candlestick]
-#' Type: number or categorical coordinate string
-#'
-#' Only relevant when the axis `type` is "date". Sets the base for period positioning in milliseconds or date string on the x0 axis. When `x0period` is round number of weeks, the `x0period0` by default would be on a Sunday i.e. 2000-01-02, otherwise it would be at 2000-01-01.
-#' line
-#' Parent: data[type=candlestick]
-#' Type: named list containing one or more of the keys listed below.
-#' width
-#' Parent: data[type=candlestick].line
-#' Type: number greater than or equal to 0
-#' Default: 2
-#'
-#' Sets the width (in px) of line bounding the box(es). Note that this style setting can also be set per direction via `increasing.line.width` and `decreasing.line.width`.
-#' whiskerwidth
-#' Parent: data[type=candlestick]
-#' Type: number between or equal to 0 and 1
-#' Default: 0
-#'
-#' Sets the width of the whiskers relative to the box' width. For example, with 1, the whiskers are as wide as the box(es).
-#'     selectedpoints
-#'     Parent: data[type=candlestick]
-#'     Type: number or categorical coordinate string
-#'
-#'     Array containing integer indices of selected points. Has an effect only for traces that support selections. Note that an empty array means an empty selection where the `unselected` are turned on for all points, whereas, any other non-array values means no selection all where the `selected` and `unselected` styles have no effect.
-#'     increasing
-#'     Parent: data[type=candlestick]
-#'     Type: named list containing one or more of the keys listed below.
-#'         fillcolor
-#'         Parent: data[type=candlestick].increasing
-#'         Type: color
-#'
-#'         Sets the fill color. Defaults to a half-transparent variant of the line color, marker color, or marker line color, whichever is available.
-#'         line
-#'         Parent: data[type=candlestick].increasing
-#'         Type: named list containing one or more of the keys listed below.
-#'             color
-#'             Parent: data[type=candlestick].increasing.line
-#'             Type: color
-#'             Default: "#3D9970"
-#'
-#'             Sets the color of line bounding the box(es).
-#'             width
-#'             Parent: data[type=candlestick].increasing.line
-#'             Type: number greater than or equal to 0
-#'             Default: 2
-#'
-#'             Sets the width (in px) of line bounding the box(es).
-#'     decreasing
-#'     Parent: data[type=candlestick]
-#'     Type: named list containing one or more of the keys listed below.
-#'         fillcolor
-#'         Parent: data[type=candlestick].decreasing
-#'         Type: color
-#'
-#'         Sets the fill color. Defaults to a half-transparent variant of the line color, marker color, or marker line color, whichever is available.
-#'         line
-#'         Parent: data[type=candlestick].decreasing
-#'         Type: named list containing one or more of the keys listed below.
-#'             color
-#'             Parent: data[type=candlestick].decreasing.line
-#'             Type: color
-#'             Default: "#FF4136"
-#'
-#'             Sets the color of line bounding the box(es).
-#'             width
-#'             Parent: data[type=candlestick].decreasing.line
-#'             Type: number greater than or equal to 0
-#'             Default: 2
-#'
-#'             Sets the width (in px) of line bounding the box(es).
-#'     hoverlabel
-#'     Parent: data[type=candlestick]
-#'     Type: named list containing one or more of the keys listed below.
-#'         align
-#'         Parent: data[type=candlestick].hoverlabel
-#'         Type: enumerated or array of enumerateds , one of ( "left" | "right" | "auto" )
-#'         Default: "auto"
-#'
-#'         Sets the horizontal alignment of the text content within hover label box. Has an effect only if the hover label text spans more two or more lines
-#'         bgcolor
-#'         Parent: data[type=candlestick].hoverlabel
-#'         Type: color or array of colors
-#'
-#'         Sets the background color of the hover labels for this trace
-#'         bordercolor
-#'         Parent: data[type=candlestick].hoverlabel
-#'         Type: color or array of colors
-#'
-#'         Sets the border color of the hover labels for this trace.
-#'         font
-#'         Parent: data[type=candlestick].hoverlabel
-#'         Type: named list containing one or more of the keys listed below.
-#'
-#'         Sets the font used in hover labels.
-#'             color
-#'             Parent: data[type=candlestick].hoverlabel.font
-#'             Type: color or array of colors
-#'             family
-#'             Parent: data[type=candlestick].hoverlabel.font
-#'             Type: string or array of strings
-#'
-#'             HTML font family - the typeface that will be applied by the web browser. The web browser will only be able to apply a font if it is available on the system which it operates. Provide multiple font families, separated by commas, to indicate the preference in which to apply fonts if they aren't available on the system. The Chart Studio Cloud (at https://chart-studio.plotly.com or on-premise) generates images on a server, where only a select number of fonts are installed and supported. These include "Arial", "Balto", "Courier New", "Droid Sans",, "Droid Serif", "Droid Sans Mono", "Gravitas One", "Old Standard TT", "Open Sans", "Overpass", "PT Sans Narrow", "Raleway", "Times New Roman".
-#' size
-#' Parent: data[type=candlestick].hoverlabel.font
-#' Type: number or array of numbers greater than or equal to 1
-#' namelength
-#' Parent: data[type=candlestick].hoverlabel
-#' Type: integer or array of integers greater than or equal to -1
-#' Default: 15
-#'
-#' Sets the default length (in number of characters) of the trace name in the hover labels for all traces. -1 shows the whole name regardless of length. 0-3 shows the first 0-3 characters, and an integer >3 will show the whole name if it is less than that many characters, but if it is longer, will truncate to `namelength - 3` characters and add an ellipsis.
-#' split
-#' Parent: data[type=candlestick].hoverlabel
-#' Type: boolean
-#'
-#' Show hover information (open, close, high, low) in separate labels.
-#' xcalendar
-#' Parent: data[type=candlestick]
-#' Type: enumerated , one of ( "chinese" | "coptic" | "discworld" | "ethiopian" | "gregorian" | "hebrew" | "islamic" | "jalali" | "julian" | "mayan" | "nanakshahi" | "nepali" | "persian" | "taiwan" | "thai" | "ummalqura" )
-#' Default: "gregorian"
-#'
-#' Sets the calendar system to use with `x` date data.
-#' uirevision
-#' Parent: data[type=candlestick]
-#' Type: number or categorical coordinate string
-#'
-#' Controls persistence of some user-driven changes to the trace: `constraintrange` in `parcoords` traces, as well as some `editable: TRUE` modifications such as `name` and `colorbar.title`. Defaults to `layout.uirevision`. Note that other user-driven trace attribute changes are controlled by `layout` attributes: `trace.visible` is controlled by `layout.legend.uirevision`, `selectedpoints` is controlled by `layout.selectionrevision`, and `colorbar.(x|y)` (accessible with `config: {editable: TRUE}`) is controlled by `layout.editrevision`. Trace changes are tracked by `uid`, which only falls back on trace index if no `uid` is provided. So if your app can add/remove traces before the end of the `data` array, such that the same trace has a different index, you can still preserve user-driven changes if you give each trace a `uid` that stays with it as it moves.
+#' @family Graphics
+#' @author Adrian Antico
 #'
 #' @param Type 'candlestick', 'ohlc'
+#' @param Metric Stock Price, Percent Returns (use symbol for percent), Percent Log Returns (use symbol for percent), Index, Quadratic Variation
+#' @param TimeAgg = 'days', 'weeks', 'months'
 #' @param Symbol ticker symbol string
+#' @param CompanyName company name if you have it. ends up in title, that is all
 #' @param StartDate Supply a start date. E.g. '2022-01-01'
-#' @param EndDate Supply an end date. E.g. Sys.Date()
+#' @param EndDate Supply an end date. E.g. `Sys.Date()`
 #' @param APIKey Supply your polygon API key
 #'
 #' @export
-StockPlot <- function(Type = 'candlestick', Symbol = 'TSLA', StartDate = '2022-01-01', EndDate = Sys.Date(), APIKey = NULL) {
+StockPlot <- function(Type = 'candlestick',
+                      Metric = 'Stock Price',
+                      TimeAgg = 'days',
+                      Symbol = 'TSLA',
+                      CompanyName = NULL,
+                      StartDate = '2022-01-01',
+                      EndDate = Sys.Date()-1L,
+                      APIKey = NULL) {
+
+  if(Type == 'CandlestickPlot') Type <- 'candlestick'
+  if(Type == 'OHLCPlot') Type <- 'ohlc'
+
   StartDate <- as.Date(StartDate)
   EndDate <- as.Date(EndDate)
-  Output <- jsonlite::fromJSON(paste0("https://api.polygon.io/v2/aggs/ticker/",Symbol,"/range/1/day/",StartDate, "/", EndDate, "?adjusted=true&sort=asc&limit=120&apiKey=", APIKey))
+  Output <- jsonlite::fromJSON(paste0("https://api.polygon.io/v2/aggs/ticker/",Symbol,"/range/1/day/",StartDate, "/", EndDate, "?adjusted=true&sort=asc&limit=10000&apiKey=", APIKey))
   data <- data.table::setDT(Output$results)
   datas <- data.table::data.table(Date = seq(StartDate, EndDate, 'days'))
   datas <- RemixAutoML::CreateCalendarVariables(data = datas, DateCols = 'Date', AsFactor = FALSE, TimeUnits = 'wday')
   datas <- datas[Date_wday %in% c(2L:6L)]
-  datas <- datas[!Date %in% as.Date(holidayNYSE(year = 2022))]
-  data <- cbind(data.table::setDT(Output$results), datas)
+  datas <- datas[!Date %in% as.Date(holidayNYSE(year = c(data.table::year(StartDate),data.table::year(EndDate))))]
+  if(nrow(datas) == nrow(data) + 1L) {
+    datas <- datas[seq_len(.N-1L)]
+  }
+  data <- cbind(data, datas)
+  if(TimeAgg == 'weeks') {
+    data[, Date := lubridate::floor_date(Date, unit = 'weeks')]
+    data <- data[, lapply(.SD, mean, na.rm = TRUE), .SD = c('v','vw','o','c','h','l','t','n'), by = 'Date']
+  } else if(TimeAgg == 'months') {
+    data[, Date := lubridate::floor_date(Date, unit = 'months')]
+    data <- data[, lapply(.SD, mean, na.rm = TRUE), .SD = c('v','vw','o','c','h','l','t','n'), by = 'Date']
+  } else if(TimeAgg == 'quarters') {
+    data[, Date := lubridate::floor_date(Date, unit = 'quarters')]
+    data <- data[, lapply(.SD, mean, na.rm = TRUE), .SD = c('v','vw','o','c','h','l','t','n'), by = 'Date']
+  } else if(TimeAgg == 'years') {
+    data[, Date := lubridate::floor_date(Date, unit = 'years')]
+    data <- data[, lapply(.SD, mean, na.rm = TRUE), .SD = c('v','vw','o','c','h','l','t','n'), by = 'Date']
+  }
+  if(Metric == '% Returns') {
+    for(i in c('o','c','h','l')) data[, paste0(i) := get(i) / data.table::shift(x = get(i)) - 1]
+  } else if(Metric  == '% Log Returns') {
+    for(i in c('o','c','h','l')) data[, paste0(i) := log(get(i)) - log(data.table::shift(x = get(i)))]
+  } else if(Metric  == 'Index') {
+    for(i in c('o','c','h','l')) data[, paste0(i) := get(i) / data.table::first(get(i))]
+  } else if(Metric  == 'Quadratic Variation') {
+    for(i in c('o','c','h','l')) data[, temp_temp := data.table::shift(x = get(i), n = 1L, fill = NA, type = 'lag')][, paste0(i) := (get(i) - temp_temp)^2][, temp_temp := NULL]
+  }
   p1 <- plotly::plot_ly(
     data = data,
     x = ~Date,
@@ -446,11 +224,14 @@ StockPlot <- function(Type = 'candlestick', Symbol = 'TSLA', StartDate = '2022-0
     open = ~o,
     close = ~c,
     high = ~h,
-    low = ~l)
+    low = ~l,
+    decreasing = list(line = list(color = '#bf0a0a')),
+    increasing = list(line = list(color = '#15ff00')))
   p1 <- plotly::layout(
     p = p1,
-    title = list(text = paste0(Symbol, ": ", StartDate, " to ", EndDate), font = 'Segoe UI'),
+    title = if(length(CompanyName) == 0L) list(text = paste0(Symbol, ": ", StartDate, " to ", EndDate), font = 'Segoe UI') else list(text = paste0(CompanyName, " - ", Symbol, ": ", StartDate, " to ", EndDate), font = 'Segoe UI'),
     plot_bgcolor = "#f0f8ff",
+    yaxis = list(title = Metric),
     xaxis = list(title = 'Date'))
   return(p1)
 }
@@ -459,6 +240,9 @@ StockPlot <- function(Type = 'candlestick', Symbol = 'TSLA', StartDate = '2022-0
 #' @title HeatMapPlot
 #'
 #' @description Create heat maps with numeric or categorical dt
+#'
+#' @family Graphics
+#' @author Adrian Antico
 #'
 #' @param dt Source data.table
 #' @param x X-Axis variable

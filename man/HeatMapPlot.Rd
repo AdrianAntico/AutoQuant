@@ -40,3 +40,22 @@ HeatMapPlot(
 \description{
 Create heat maps with numeric or categorical dt
 }
+\seealso{
+Other Graphics: 
+\code{\link{AddFacet}()},
+\code{\link{AppModelInsights}()},
+\code{\link{AutoPlotter}()},
+\code{\link{BarPlot}()},
+\code{\link{BoxPlot}()},
+\code{\link{ChartTheme}()},
+\code{\link{CorrMatrixPlot}()},
+\code{\link{HistPlot}()},
+\code{\link{PlotlyConversion}()},
+\code{\link{StockPlot}()},
+\code{\link{ViolinPlot}()},
+\code{\link{multiplot}()}
+}
+\author{
+Adrian Antico
+}
+\concept{Graphics}

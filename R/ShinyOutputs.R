@@ -104,7 +104,66 @@ StandardPlotsModal2 <- function(id, PlotNumber, AppWidth=12L) {
     }
   )}
 
-#' @title StandardPlotsModal2
+
+#' @title StandardPlotsModal3
+#'
+#' @description Plot Variables Modals
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'PlotVariablesModals'
+#' @param PlotNumber 1
+#' @param AppWidth = 12L
+#'
+#' @export
+StandardPlotsModal3 <- function(id, PlotNumber, AppWidth=12L) {
+  shiny::moduleServer(
+    id = id,
+    module = function(input, output, session) {
+      ns <- session$ns
+      shiny::showModal(
+        shiny::modalDialog(
+          title = 'Plot Inputs',
+          size = "l",
+          easyClose = TRUE,
+          fade = TRUE,
+          list(
+            shinydashboard::box(
+              title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(8L, align = 'center', shiny::uiOutput(paste0('Companies', PlotNumber)))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(
+                  8L,
+                  align = 'center',
+                  shiny::uiOutput(paste0('StockDateRange', PlotNumber)))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                shiny::column(
+                  4L,
+                  align = 'center',
+                  shiny::uiOutput(paste0('Symbols', PlotNumber))),
+                shiny::column(
+                  4L,
+                  align = 'center',
+                  shiny::uiOutput(paste0('StockMetric', PlotNumber))),
+                shiny::column(
+                  4L,
+                  align = 'center',
+                  shiny::uiOutput(paste0('StockTimeAgg', PlotNumber))))),
+            RemixAutoML:::BlankRow(AppWidth)),
+          footer = shiny::tagList(
+            shiny::modalButton(label = "Cancel"),
+            shiny::actionButton(paste0("BoxPlotOK", PlotNumber), "OK", width = '50px'))
+        )
+      )
+    }
+  )}
+
+#' @title BoxPlotModals
 #'
 #' @description Plot Variables Modals
 #'

@@ -20,7 +20,8 @@ Plot Variables Modals
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
 \code{\link{DataTable}()},
-\code{\link{StandardPlotsModal2}()}
+\code{\link{StandardPlotsModal2}()},
+\code{\link{StandardPlotsModal3}()}
 }
 \author{
 Adrian Antico

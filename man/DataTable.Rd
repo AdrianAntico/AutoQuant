@@ -54,7 +54,8 @@ output$Table <- shiny::renderUI({RemixAutoML::DataTable(data)})
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
 \code{\link{StandardPlotsModal1}()},
-\code{\link{StandardPlotsModal2}()}
+\code{\link{StandardPlotsModal2}()},
+\code{\link{StandardPlotsModal3}()}
 }
 \author{
 Adrian Antico
