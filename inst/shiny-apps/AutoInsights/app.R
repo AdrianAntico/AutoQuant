@@ -5956,26 +5956,26 @@ server <- function(input, output, session) {
             XGBoostArgsList[['PrimaryDateColumn']] <- RemixAutoML:::ReturnParam(xx=input[['XGBoost_PrimaryDateColumn']], Type='character', Default=NULL)
             XGBoostArgsList[['SaveInfoToPDF']] <- FALSE
             print(XGBoostArgsList)
-            Model <- do.call(RemixAutoML::AutoXGBoostRegression, XGBoostArgsList)
+            ModelOutputList <<- do.call(RemixAutoML::AutoXGBoostRegression, XGBoostArgsList)
           }
           if(XGBoost_TargetType == 'Binary Classification') {
             print(' ::  BuildModels 8.2 :: ')
             XGBoostArgsList[['CostMatrixWeights']] <- c(0,1,1,0)
             XGBoostArgsList[['SaveInfoToPDF']] <- FALSE
             print(XGBoostArgsList)
-            Model <- do.call(RemixAutoML::AutoXGBoostClassifier, XGBoostArgsList)
+            ModelOutputList <<- do.call(RemixAutoML::AutoXGBoostClassifier, XGBoostArgsList)
           }
           if(XGBoost_TargetType == 'MultiClass') {
             print(' ::  BuildModels 8.3 :: ')
             print(XGBoostArgsList)
-            Model <- do.call(RemixAutoML::AutoXGBoostMultiClass, XGBoostArgsList)
+            ModelOutputList <<- do.call(RemixAutoML::AutoXGBoostMultiClass, XGBoostArgsList)
           }
 
           print(' ::  BuildModels 9 :: ')
 
           # Store in DataList
           KeyName <- XGBoostArgsList[['ModelID']]
-          Output <- RemixAutoML:::ModelDataObjects(Model, TT = 'xgboost')
+          Output <- RemixAutoML:::ModelDataObjects(ModelOutputList, TT = 'xgboost')
           DataList[[paste0(KeyName, '_ScoringData')]] <- Output$ScoringDataCombined
           DataList[[paste0(KeyName, '_Test_VI_Data')]] <- Output$VI_Train
 
@@ -5984,10 +5984,12 @@ server <- function(input, output, session) {
           # Update ML_ExperimentTable
           data.table::set(ML_ExperimentTable, i = iter, j = 'ProjectID', value = 'AA')
           data.table::set(ML_ExperimentTable, i = iter, j = 'Date', value = Sys.time())
-          data.table::set(ML_ExperimentTable, i = iter, j = 'ModelID', value = ModelOutputList$ArgsList$ModelID)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'ModelID', value = KeyName)
           data.table::set(ML_ExperimentTable, i = iter, j = 'TargetType', value = if(XGBoost_TargetType == 'Binary Classification') 'Classification' else XGBoost_TargetType)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Algorithm', value = 'XGBoost')
           data.table::set(ML_ExperimentTable, i = iter, j = 'GridTune', value = XGBoostArgsList[['GridTune']])
+
+          print(' ::  BuildModels 11 :: ')
 
           data.table::set(ML_ExperimentTable, i = iter, j = 'Test_r-sq', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'R2', MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_r-sq', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue] else NA_real_)
@@ -5997,6 +5999,8 @@ server <- function(input, output, session) {
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAE', MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAPE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAPE', MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAPE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAPE', MetricValue] else NA_real_)
+
+          print(' ::  BuildModels 12 :: ')
 
           data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Accuracy] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Threshold] else NA_real_)
@@ -6011,8 +6015,10 @@ server <- function(input, output, session) {
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',  value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold] else NA_real_)
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
+          print(' ::  BuildModels 13 :: ')
+
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue] else NA_real_)
@@ -6165,18 +6171,18 @@ server <- function(input, output, session) {
 
           # Build model
           if(LightGBM_TargetType == 'Regression') {
-            Model <- do.call(RemixAutoML::AutoLightGBMRegression, LightGBMArgsList)
+            ModelOutputList <<- do.call(RemixAutoML::AutoLightGBMRegression, LightGBMArgsList)
           }
           if(LightGBM_TargetType == 'Binary Classification') {
-            Model <- do.call(RemixAutoML::AutoLightGBMClassifier, LightGBMArgsList)
+            ModelOutputList <<- do.call(RemixAutoML::AutoLightGBMClassifier, LightGBMArgsList)
           }
           if(LightGBM_TargetType == 'MultiClass') {
-            Model <- do.call(RemixAutoML::AutoLightGBMMultiClass, LightGBMArgsList)
+            ModelOutputList <<- do.call(RemixAutoML::AutoLightGBMMultiClass, LightGBMArgsList)
           }
 
           # Store in DataList
           KeyName <- LightGBMArgsList[['ModelID']]
-          Output <- RemixAutoML:::ModelDataObjects(Model)
+          Output <- RemixAutoML:::ModelDataObjects(ModelOutputList)
           DataList[[paste0(KeyName, '_ScoringData')]] <- Output$ScoringDataCombined
           DataList[[paste0(KeyName, '_Test_VI_Data')]] <- Output$VI_Train
 
@@ -6210,8 +6216,8 @@ server <- function(input, output, session) {
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',  value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold] else NA_real_)
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
           data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue] else NA_real_)
