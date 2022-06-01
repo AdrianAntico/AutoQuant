@@ -20,8 +20,18 @@ Plot Variables Modals
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
 \code{\link{DataTable}()},
+\code{\link{DateInput}()},
+\code{\link{GenerateEvaluationMetrics}()},
+\code{\link{NumericInput}()},
+\code{\link{PickerInput_GetLevels2}()},
+\code{\link{PickerInput_GetLevels}()},
+\code{\link{PickerInput}()},
+\code{\link{PreparePlotData}()},
+\code{\link{ReturnParam}()},
+\code{\link{SelectizeInput}()},
 \code{\link{StandardPlotsModal1}()},
-\code{\link{StandardPlotsModal2}()}
+\code{\link{StandardPlotsModal2}()},
+\code{\link{TextInput}()}
 }
 \author{
 Adrian Antico

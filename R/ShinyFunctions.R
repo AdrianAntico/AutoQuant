@@ -20,28 +20,34 @@
 #   })
 # }
 
-#' @param Debug = Debug
+#' @title ChoicesByType
 #'
-#' @noRd
+#' @param data data.table
+#'
+#' @return a list of columns names by data type
+#'
+#' @keywords internal
 ChoicesByType <- function(data) {
   categorical_cols <- RemixAutoML:::CEPP(names(data)[c(unique(which(unlist(lapply(data, is.character))), which(unlist(lapply(data, is.factor)))))])
   date_cols <- RemixAutoML:::CEPP(names(data)[c(unique(which(unlist(lapply(data, lubridate::is.Date))), which(unlist(lapply(data, lubridate::is.POSIXct)))))])
   numeric_cols <- RemixAutoML:::CEPP(names(data)[which(unlist(lapply(data, is.numeric)))])
   logical_cols <- RemixAutoML:::CEPP(names(data)[which(unlist(lapply(data, is.logical)))])
   return(list(
-    Date = date_cols,
-    Categorical = categorical_cols,
-    Numeric = numeric_cols,
-    Logical = logical_cols))
+    Date = if(length(date_cols) > 0L) date_cols else NULL,
+    Categorical = if(length(categorical_cols) > 0L) categorical_cols else NULL,
+    Numeric = if(length(numeric_cols) > 0L) numeric_cols else NULL,
+    Logical = if(length(logical_cols) > 0L) logical_cols else NULL))
 }
 
-#' @param List = NULL
-#' @param InputName = 'Plot1_SelectData'
-#' @param ArgName = 'SelectedDefault'
-#' @param Default = names(DataList)[[1L]]
-#' @param Debug = Debug
+#' @title IntraSessionDefaults
 #'
-#' @noRd
+#' @param List named list of args where the args can be many
+#' @param InputName 'Plot1_SelectData' in input$Plot1_SelectData
+#' @param ArgName 'SelectedDefault' in List[[InputName]][[Default]]
+#' @param Default default value to assign
+#' @param Debug Logical
+#'
+#' @keywords internal
 IntraSessionDefaults <- function(List = NULL,
                                  InputName = 'Plot1_SelectData',
                                  ArgName = 'SelectedDefault',
@@ -67,9 +73,11 @@ IntraSessionDefaults <- function(List = NULL,
   return(selected_default)
 }
 
+#' @title CatBoostGridEvalMetricsOptions
+#'
 #' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
 #'
-#' @noRd
+#' @keywords internal
 CatBoostGridEvalMetricsOptions <- function(TT) {
   if(TT == 'Regression') {
     choices <- c('mae','mape','rmse','r2')
@@ -84,9 +92,11 @@ CatBoostGridEvalMetricsOptions <- function(TT) {
   return(list(Choices = choices, Default = default))
 }
 
+#' @title CatBoostEvalMetricOptions
+#'
 #' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
 #'
-#' @noRd
+#' @keywords internal
 CatBoostEvalMetricOptions <- function(TT) {
   print(TT)
   if(TT == 'Regression') {
@@ -102,9 +112,11 @@ CatBoostEvalMetricOptions <- function(TT) {
   return(list(Choices = choices, Default = default))
 }
 
+#' @title XGBoostEvalMetricOptions
+#'
 #' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
 #'
-#' @noRd
+#' @keywords internal
 XGBoostEvalMetricOptions <- function(TT) {
   print(TT)
   if(TT == 'Regression') {
@@ -120,9 +132,11 @@ XGBoostEvalMetricOptions <- function(TT) {
   return(list(Choices = choices, Default = default))
 }
 
+#' @title CatBoostLossFunctionOptions
+#'
 #' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
 #'
-#' @noRd
+#' @keywords internal
 CatBoostLossFunctionOptions <- function(TT) {
   print(TT)
   if(TT == 'Regression') {
@@ -138,9 +152,11 @@ CatBoostLossFunctionOptions <- function(TT) {
   return(list(Choices = choices, Default = default))
 }
 
+#' @title XGBoostLossFunctionOptions
+#'
 #' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
 #'
-#' @noRd
+#' @keywords internal
 XGBoostLossFunctionOptions <- function(TT) {
   print(TT)
   if(TT == 'Regression') {
@@ -156,9 +172,11 @@ XGBoostLossFunctionOptions <- function(TT) {
   return(list(Choices = choices, Default = default))
 }
 
+#' @title ModelDataObjects
+#'
 #' @param ModelOutput Output from RemixAutoML:: supervised learning functions
 #'
-#' @noRd
+#' @keywords internal
 ModelDataObjects <- function(ModelOutput, TT = 'catboost') {
   if(!is.null(ModelOutput$TrainData) && !is.null(ModelOutput$TestData)) {
     temp1 <- data.table::rbindlist(list(
@@ -809,7 +827,7 @@ FilterValues <- function(data, VarName = NULL, type = 1) {
 #' @param FilterValue2 passthrough
 #' @param Debug passthrough
 #'
-#' @noRd
+#' @keywords internal
 FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterVariable = input[['FilterVariable_1']], FilterValue = input[['FilterValue_1a']], FilterValue2 = input[['FilterValue_1b']], Debug = FALSE) {
 
   if(Debug) {
@@ -881,7 +899,7 @@ FilterLogicData <- function(data1, FilterLogic = input[['FilterLogic']], FilterV
 #' @param VarName Variable name
 #' @param type 1 for min, 2 for max
 #'
-#' @noRd
+#' @keywords internal
 KeyVarsInit <- function(data, VarName = NULL, type = 1) {
 
   # Return of data is missing altogether
@@ -945,7 +963,7 @@ KeyVarsInit <- function(data, VarName = NULL, type = 1) {
 #' @param VarName Variable name
 #' @param type 1 for min, 2 for max
 #'
-#' @noRd
+#' @keywords internal
 GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
   if(missing(data)) {
     print('GetFilterValueLabel(): data was missing')
@@ -974,7 +992,7 @@ GetFilterValueLabel <- function(data, VarName = NULL, type = 1) {
 #' @param VarName Variable name
 #' @param type 1 for min, 2 for max
 #'
-#' @noRd
+#' @keywords internal
 GetFilterValueMultiple <- function(data, VarName = NULL, type = 1) {
   if(missing(data)) {
     print('GetFilterValueMultiple(): data was missing')
@@ -1296,7 +1314,7 @@ StoreArgs <- function(input,
 #' }
 #'
 #' @return Updates ProjectList inside function
-#' @noRd
+#' @keywords internal
 ReturnParam <- function(xx = NULL,
                         VarName = NULL,
                         Type = 'numeric',
@@ -1430,7 +1448,7 @@ ReturnParam <- function(xx = NULL,
 #'                            SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @noRd
+#' @keywords internal
 PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                         Label = "Select Holiday Count MA's",
                         Choices = as.character(0:50),
@@ -1493,7 +1511,7 @@ PickerInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #'                            SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
 #' }
 #' @return SelectizeInput object for server.R to go into renderUI({SelectizeInput()})
-#' @noRd
+#' @keywords internal
 SelectizeInput <- function(InputID = "",
                            Update = FALSE,
                            Label = "",
@@ -1552,7 +1570,7 @@ SelectizeInput <- function(InputID = "",
 #'                             Step = 1)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @noRd
+#' @keywords internal
 NumericInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                          Label = "Select Holiday Count MA's",
                          Step = 10,
@@ -1596,7 +1614,7 @@ NumericInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #'                          Format = "yyyy-mm-dd")})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @noRd
+#' @keywords internal
 DateInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                       Label = "Import Data Creation Date",
                       Value = Sys.Date(),
@@ -1636,7 +1654,7 @@ DateInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #'                          Placeholder = "yyyy-mm-dd")})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @noRd
+#' @keywords internal
 TextInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                       Label = "Path to Data",
                       Value = NULL,
@@ -1680,7 +1698,7 @@ TextInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
 #'     SelectedDefault = as.character(c(1,2)), Size = 10, SelectedText = "count > 1", Multiple = TRUE, ActionBox = TRUE)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @noRd
+#' @keywords internal
 PickerInput_GetLevels <- function(input,
                                   data = 'SourceData',
                                   NumGroupVar = 3,
@@ -1734,7 +1752,7 @@ PickerInput_GetLevels <- function(input,
 #'     SelectedDefault = as.character(c(1,2)), Multiple = TRUE)})
 #' }
 #' @return PickerInput object for server.R to go into renderUI({PickerInput()})
-#' @noRd
+#' @keywords internal
 PickerInput_GetLevels2 <- function(DataExist = TRUE,
                                    NumGroupVar = 3,
                                    InputID = "TS_CARMA_HolidayMovingAverages",
@@ -1809,7 +1827,7 @@ PickerInput_GetLevels2 <- function(DataExist = TRUE,
 #'     G3Levels = "TS_Group3Levels")
 #' }
 #' @return PreparePlotData object for server.R to
-#' @noRd
+#' @keywords internal
 PreparePlotData <- function(data,
                             SubsetOnly = FALSE,
                             Aggregate = NULL,
@@ -2028,7 +2046,7 @@ PreparePlotData <- function(data,
 #'   PlotData <- RemixAutoML::PreparePlotData(input, TargetVariable = "TargetVariables", DateVariable = "DateVariables", GroupVariables = GroupVariables, G1Levels = "TS_Group1Levels", G2Levels = "TS_Group2Levels", G3Levels = "TS_Group3Levels")
 #' }
 #' @return PreparePlotData object for server.R to
-#' @noRd
+#' @keywords internal
 GenerateEvaluationMetrics <- function(EvalData = NULL,
                                       TargetName = NULL,
                                       DateName = NULL,

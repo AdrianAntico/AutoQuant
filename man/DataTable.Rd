@@ -53,9 +53,19 @@ output$Table <- shiny::renderUI({RemixAutoML::DataTable(data)})
 \seealso{
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
+\code{\link{DateInput}()},
+\code{\link{GenerateEvaluationMetrics}()},
+\code{\link{NumericInput}()},
+\code{\link{PickerInput_GetLevels2}()},
+\code{\link{PickerInput_GetLevels}()},
+\code{\link{PickerInput}()},
+\code{\link{PreparePlotData}()},
+\code{\link{ReturnParam}()},
+\code{\link{SelectizeInput}()},
 \code{\link{StandardPlotsModal1}()},
 \code{\link{StandardPlotsModal2}()},
-\code{\link{StandardPlotsModal3}()}
+\code{\link{StandardPlotsModal3}()},
+\code{\link{TextInput}()}
 }
 \author{
 Adrian Antico
