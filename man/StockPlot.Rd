@@ -4,33 +4,12 @@
 \alias{StockPlot}
 \title{StockPlot}
 \usage{
-StockPlot(
-  Type = "candlestick",
-  Metric = "Stock Price",
-  TimeAgg = "days",
-  Symbol = "TSLA",
-  CompanyName = NULL,
-  StartDate = "2022-01-01",
-  EndDate = Sys.Date() - 1L,
-  APIKey = NULL
-)
+StockPlot(StockDataOutput, Type = "candlestick")
 }
 \arguments{
+\item{StockDataOutput}{PolyOut returned from StockData()}
+
 \item{Type}{'candlestick', 'ohlc'}
-
-\item{Metric}{Stock Price, Percent Returns (use symbol for percent), Percent Log Returns (use symbol for percent), Index, Quadratic Variation}
-
-\item{TimeAgg}{= 'days', 'weeks', 'months'}
-
-\item{Symbol}{ticker symbol string}
-
-\item{CompanyName}{company name if you have it. ends up in title, that is all}
-
-\item{StartDate}{Supply a start date. E.g. '2022-01-01'}
-
-\item{EndDate}{Supply an end date. E.g. `Sys.Date()`}
-
-\item{APIKey}{Supply your polygon API key}
 }
 \description{
 Create a candlestick plot for stocks. See https://plotly.com/r/figure-labels/
@@ -47,6 +26,7 @@ Other Graphics:
 \code{\link{HeatMapPlot}()},
 \code{\link{HistPlot}()},
 \code{\link{PlotlyConversion}()},
+\code{\link{StockData}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}
 }

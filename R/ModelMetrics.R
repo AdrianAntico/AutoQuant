@@ -499,8 +499,40 @@ MultiClassMetrics <- function(ModelClass = "catboost",
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
   }
 
+  # MCC for MultiClass
+  ConfusionMatrix <- table(ValidationData.$Predict, ValidationData.[[eval(TargetColumnName.)]])
+  c <- sum(diag(ConfusionMatrix))
+  s <- sum(ConfusionMatrix)
+  # i = as.character(TargetLevels.[['OriginalLevels']])[[1L]]
+
+  # pk * tk
+  sumPkTk <- c()
+  for(i in as.character(TargetLevels.[['OriginalLevels']])) {
+    pk <- ValidationData.[Predict == eval(i), .N]
+    tk <- ValidationData.[get(TargetColumnName.) == eval(i), .N]
+    sumPkTk <- c(sumPkTk, pk * tk)
+  }
+
+  # (s^2 - sum(pk^2))
+  sumPk2 <- c()
+  for(i in as.character(TargetLevels.[['OriginalLevels']])) {
+    pk <- ValidationData.[Predict == eval(i), .N]
+    sumPk2 <- c(sumPk2, pk * pk)
+  }
+
+  # (s^2 - sum(tk^2))
+  sumTk2 <- c()
+  for(i in as.character(TargetLevels.[['OriginalLevels']])) {
+    tk <- ValidationData.[get(TargetColumnName.) == eval(i), .N]
+    sumTk2 <- c(sumTk2, tk * tk)
+  }
+
+  # Result
+  denom <- sqrt((s^2 - sum(sumPk2))) * sqrt((s^2 - sum(sumTk2)))
+  MCC <- (c / denom * s  - sum(sumPkTk) / denom)
+
   # MultiClass Evaluation Metrics
-  EvaluationMetrics <- data.table::data.table(Metric = c("MicroAUC", "Accuracy", "LogLoss"), MetricValue = c(MetricAUC, MetricAcc, logloss))
+  EvaluationMetrics <- data.table::data.table(Metric = c("MCC","MicroAUC","Accuracy","LogLoss"), MetricValue = c(MCC, MetricAUC, MetricAcc, logloss))
   if(SaveModelObjects.) {
     if(!is.null(metadata_path.)) {
       if(tolower(DataType) == "train") data.table::fwrite(EvaluationMetrics, file = file.path(metadata_path., paste0(ModelID., "_Train_EvaluationMetrics.csv")))

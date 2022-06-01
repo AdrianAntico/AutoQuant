@@ -23,6 +23,7 @@ Other Graphics:
 \code{\link{CorrMatrixPlot}()},
 \code{\link{HeatMapPlot}()},
 \code{\link{HistPlot}()},
+\code{\link{StockData}()},
 \code{\link{StockPlot}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}

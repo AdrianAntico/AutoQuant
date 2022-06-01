@@ -429,56 +429,6 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     CatFeatures <- NULL
   }
 
-  # Sort data if PrimaryDateColumn ----
-  if(!is.null(PrimaryDateColumn.)) {
-    data.table::setorderv(x = data., cols = eval(PrimaryDateColumn.), order = 1L)
-    if(!(eval(PrimaryDateColumn.) %in% IDcols.)) data.table::set(data., j = eval(PrimaryDateColumn.), value = NULL)
-  }
-
-  # Sort ValidationData if PrimaryDateColumn ----
-  if(!is.null(PrimaryDateColumn.) && !TrainOnFull.) {
-    data.table::setorderv(x = ValidationData., cols = eval(PrimaryDateColumn.), order = 1L)
-    if(!(eval(PrimaryDateColumn.) %in% IDcols.)) data.table::set(ValidationData., j = eval(PrimaryDateColumn.), value = NULL)
-  }
-
-  # Sort TestData if PrimaryDateColumn ----
-  if(!is.null(TestData.) && !TrainOnFull. && !is.null(PrimaryDateColumn.)) {
-    data.table::setorderv(x = TestData., cols = eval(PrimaryDateColumn.), order = -1L)
-    if(!(eval(PrimaryDateColumn.) %in% IDcols.)) data.table::set(TestData., j = eval(PrimaryDateColumn.), value = NULL)
-  }
-
-  # Data Subset Columns Needed ----
-  if(!is.null(PrimaryDateColumn.) && PrimaryDateColumn. %chin% names(data.)) {
-    keep <- unique(c(PrimaryDateColumn., WeightsColumnName., IDcols.))
-  } else {
-    keep <- unique(c(WeightsColumnName., IDcols.))
-  }
-
-  # Sorting is getting messed up here, I think
-  if("score_traindata" %chin% tolower(OutputSelection.)) {
-    TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), fill = TRUE)
-  } else {
-    TrainMerge <- NULL
-  }
-
-  # Remove cols
-  if(!is.null(keep)) data.table::set(data., j = c(keep), value = NULL)
-  if(!TrainOnFull. && !is.null(keep)) data.table::set(ValidationData., j = c(keep), value = NULL) else ValidationData. <- NULL
-
-  # TestData Subset Columns Needed ----
-  if(!is.null(TestData.)) {
-    TestMerge <- data.table::copy(TestData.)
-    if(!is.null(keep)) data.table::set(TestData., j = c(keep), value = NULL)
-  } else {
-    TestMerge <- NULL
-    TestData. <- NULL
-  }
-
-  # Train ModelDataPrep ----
-  data. <- ModelDataPrep(data = data., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, IntToNumeric = TRUE, FactorToChar = FALSE, DateToChar = FALSE, IgnoreCols = NULL)
-  if(!TrainOnFull.) ValidationData. <- ModelDataPrep(data = ValidationData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
-  if(!is.null(TestData.)) TestData. <- ModelDataPrep(data = TestData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
-
   # Multiclass target levels
   if(ModelType == "multiclass") {
 
@@ -533,6 +483,57 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     TargetLevels <- NULL
   }
 
+  # Sort data if PrimaryDateColumn ----
+  if(!is.null(PrimaryDateColumn.)) {
+    data.table::setorderv(x = data., cols = eval(PrimaryDateColumn.), order = 1L)
+    data.table::set(data., j = PrimaryDateColumn., value = NULL)
+    if(!(eval(PrimaryDateColumn.) %in% IDcols.)) IDcols. <- unique(c(IDcols., PrimaryDateColumn.))
+  }
+
+  # Sort ValidationData if PrimaryDateColumn ----
+  if(!is.null(PrimaryDateColumn.) && !TrainOnFull.) {
+    data.table::setorderv(x = ValidationData., cols = eval(PrimaryDateColumn.), order = 1L)
+    data.table::set(ValidationData., j = PrimaryDateColumn., value = NULL)
+  }
+
+  # Sort TestData if PrimaryDateColumn ----
+  if(!is.null(TestData.) && !TrainOnFull. && !is.null(PrimaryDateColumn.)) {
+    data.table::setorderv(x = TestData., cols = eval(PrimaryDateColumn.), order = -1L)
+    data.table::set(TestData., j = PrimaryDateColumn., value = NULL)
+  }
+
+  # Data Subset Columns Needed ----
+  if(!is.null(PrimaryDateColumn.) && PrimaryDateColumn. %chin% names(data.)) {
+    keep <- unique(c(PrimaryDateColumn., WeightsColumnName., IDcols.))
+  } else {
+    keep <- unique(c(WeightsColumnName., IDcols.))
+  }
+
+  # Sorting is getting messed up here, I think
+  if("score_traindata" %chin% tolower(OutputSelection.)) {
+    TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), fill = TRUE)
+  } else {
+    TrainMerge <- NULL
+  }
+
+  # Remove cols
+  if(!is.null(keep)) data.table::set(data., j = c(keep[c(keep %in% names(data.))]), value = NULL)
+  if(!TrainOnFull. && !is.null(keep)) data.table::set(ValidationData., j = c(keep[c(keep %in% names(ValidationData.))]), value = NULL) else ValidationData. <- NULL
+
+  # TestData Subset Columns Needed ----
+  if(!is.null(TestData.)) {
+    TestMerge <- data.table::copy(TestData.)
+    if(!is.null(keep)) data.table::set(TestData., j = c(keep[c(keep %in% names(TestData.))]), value = NULL)
+  } else {
+    TestMerge <- NULL
+    TestData. <- NULL
+  }
+
+  # Train ModelDataPrep ----
+  data. <- ModelDataPrep(data = data., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, IntToNumeric = TRUE, FactorToChar = FALSE, DateToChar = FALSE, IgnoreCols = NULL)
+  if(!TrainOnFull.) ValidationData. <- ModelDataPrep(data = ValidationData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
+  if(!is.null(TestData.)) TestData. <- ModelDataPrep(data = TestData., Impute = TRUE, CharToFactor = TRUE, RemoveDates = TRUE, MissFactor = "0", MissNum = -1, FactorToChar = FALSE, IntToNumeric = TRUE, DateToChar = FALSE, IgnoreCols = NULL)
+
   # Save Names of data ----
   Names <- data.table::as.data.table(setdiff(names(data.), c(TargetColumnName., PrimaryDateColumn., IDcols.)))
   if(!"V1" %chin% names(Names)) data.table::setnames(Names, "FeatureColNames.", "ColNames", skip_absent = TRUE) else data.table::setnames(Names, "V1", "ColNames", skip_absent = TRUE)
@@ -557,17 +558,6 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     TestTarget <- NULL
     FinalTestTarget <- NULL
   }
-
-  # Identify column numbers for factor variables ----
-  # if(ModelType != "multiclass" && ((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
-  #   CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data., is.character)))))
-  #   if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
-  # } else if(((!is.null(LossFunction.) && LossFunction. == "MultiRMSE") || (!is.null(EvalMetric.) && EvalMetric. == "MultiRMSE"))) {
-  #   CatFeatures <- sort(c(as.numeric(which(sapply(data., is.factor))), as.numeric(which(sapply(data, is.character)))))
-  #   TargetNum <- which(names(data.) == TargetColumnName.)
-  #   CatFeatures <- setdiff(CatFeatures, TargetNum)
-  #   if(length(CatFeatures) > 0) CatFeatureNames <- names(data.)[CatFeatures] else CatFeatureNames <- NULL
-  # }
 
   # Convert CatFeatures to 1-indexed----
   if(length(CatFeatures) > 0L) CatFeatures <- CatFeatures - 1L
@@ -944,11 +934,12 @@ CatBoostFinalParams <- function(ModelType = "classification",
 #' @param GridTune. Passthrough regression
 #' @param TransformationResults. Passthrough regression
 #' @param TargetLevels. Passthrough multiclass
+#' @param Debug = FALSE
 #'
 #' @noRd
 CatBoostValidationData <- function(ModelType = "classification",
                                    TrainOnFull. = TrainOnFull,
-                                   TestDataCheck = !is.null(TestData),
+                                   TestDataCheck = FALSE,
                                    FinalTestTarget. = FinalTestTarget,
                                    TestTarget. = TestTarget,
                                    TrainTarget. = TrainTarget,
@@ -966,7 +957,8 @@ CatBoostValidationData <- function(ModelType = "classification",
                                    TransformNumericColumns. = TransformNumericColumns,
                                    GridTune. = GridTune,
                                    TransformationResults. = TransformationResults,
-                                   TargetLevels.=TargetLevels) {
+                                   TargetLevels.=TargetLevels,
+                                   Debug = FALSE) {
 
   # Classification
   if(ModelType == "classification") {
@@ -1122,75 +1114,118 @@ CatBoostValidationData <- function(ModelType = "classification",
   # MultiClass
   if(ModelType == "multiclass") {
 
+    if(Debug) print('Start Here 1')
+
     # MultiClass Grid Validation Data ----
     if(TestDataCheck) {
+      if(Debug) print('Start Here 2')
       zz <- unique(names(TestMerge.))
       zz <- zz[!zz %chin% TargetColumnName.]
       ValidationData <- data.table::as.data.table(cbind(Target = FinalTestTarget., predict., TestMerge.[, .SD, .SDcols = zz]))
-    } else if(!TrainOnFull.) {
+    } else if(!TrainOnFull. & length(TestTarget.) == predict.[, .N]) {
+      if(Debug) print('Start Here 3')
       ValidationData <- data.table::as.data.table(cbind(Target = TestTarget., predict.))
     } else {
+      if(Debug) print('Start Here 4')
       if(!is.null(TrainMerge.)) {
+        if(Debug) print('Start Here 5')
         ValidationData <- data.table::as.data.table(cbind(TrainMerge., predict.))
+        data.table::setnames(ValidationData, TargetColumnName., 'Target')
+        data.table::set(ValidationData, j = 'Target', value = as.integer(ValidationData[['Target']]))
       } else {
+        if(Debug) print('Start Here 6')
         ValidationData <- data.table::as.data.table(cbind(Target = TrainTarget., predict.))
       }
     }
-    if(TrainOnFull. && is.null(TrainMerge.)) {
+    if(Debug) print('Start Here 7')
+    if(TrainOnFull.) {
+      if(Debug) print('Start Here 8')
       ValidationData <- merge(
         ValidationData,
         TargetLevels.,
         by.x = "Target",
         by.y = "NewLevels",
         all = FALSE)
+      if(Debug) print('Start Here 9')
       ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
+      if(Debug) print('Start Here 10')
       ValidationData <- merge(
         ValidationData,
         TargetLevels.,
         by.x = "V1",
         by.y = "NewLevels",
         all = FALSE)
+      if(Debug) print('Start Here 11')
       ValidationData[, V1 := OriginalLevels][, OriginalLevels := NULL]
     } else if(is.null(TrainMerge.)) {
+      if(Debug) print('Start Here 12')
       ValidationData <- merge(
         ValidationData,
         TargetLevels.,
         by.x = "V1",
         by.y = "NewLevels",
         all = FALSE)
+      if(Debug) print('Start Here 13')
       ValidationData[, V1 := OriginalLevels][, OriginalLevels := NULL]
+      if(Debug) print('Start Here 14')
       ValidationData <- merge(
         ValidationData,
         TargetLevels.,
         by.x = "Target",
         by.y = "NewLevels",
         all = FALSE)
+      if(Debug) print('Start Here 15')
       ValidationData[, Target := OriginalLevels][, OriginalLevels := NULL]
     }
 
     # MultiClass Update Names for Predicted Value Columns ----
+    if(Debug) print('Start Here 16')
     k <- 1L
     for(name in as.character(TargetLevels.[[1L]])) {
       k <- k + 1L
       data.table::setnames(ValidationData, paste0("V", k), name)
     }
-    if(!TrainOnFull. || !is.null(TrainMerge.)) {
+    if(Debug) print('Start Here 17')
+    if(!all(c("V1","Target") %in% names(ValidationData)) && !TrainOnFull. || !is.null(TrainMerge.)) {
+      if(Debug) print('Start Here 18')
       data.table::setnames(ValidationData, c("V1","Target"), c("Predict", eval(TargetColumnName.)), skip_absent = TRUE)
-      data.table::set(ValidationData, j = eval(TargetColumnName.), value = as.character(ValidationData[[eval(TargetColumnName.)]]))
+      if(Debug) print('Start Here 19')
+      if(!class(ValidationData[[eval(TargetColumnName.)]])[[1L]] %in% c('character','factor')) data.table::set(ValidationData, j = eval(TargetColumnName.), value = as.integer(ValidationData[[eval(TargetColumnName.)]]))
+      if(Debug) print('Start Here 20')
+      if(!class(ValidationData[['Predict']])[[1L]] %in% c('character','factor')) data.table::set(ValidationData, j = 'Predict', value = as.integer(ValidationData[[eval(TargetColumnName.)]]))
+      if(Debug) print('Start Here 21')
       if(!is.null(TrainMerge.)) {
-        ValidationData <- merge(
-          ValidationData,
-          TargetLevels.,
-          by.x = "Predict",
-          by.y = "NewLevels",
-          all = FALSE)
-        ValidationData[, Predict := OriginalLevels][, OriginalLevels := NULL]
-        data.table::setcolorder(ValidationData, c(1, (ncol(ValidationData)-TargetLevels.[,.N]+1):ncol(ValidationData), 2:(ncol(ValidationData)-TargetLevels.[,.N])))
+        if(!class(ValidationData[['Predict']])[[1L]] %in% c('character','factor')) {
+          print('Start Here 22')
+          ValidationData <- merge(
+            ValidationData,
+            TargetLevels.,
+            by.x = "Predict",
+            by.y = "NewLevels",
+            all = FALSE)
+          ValidationData[, Predict := OriginalLevels][, OriginalLevels := NULL]
+        }
+        if(Debug) print('Start Here 24')
+        data.table::setcolorder(ValidationData, c(1L, (ncol(ValidationData)-TargetLevels.[,.N]+1L):ncol(ValidationData), 2L:(ncol(ValidationData)-TargetLevels.[,.N])))
+        if(Debug) print('Start Here 25')
+        if(!class(ValidationData[[eval(TargetColumnName.)]])[[1L]] %in% c('character','factor')) {
+          ValidationData <- merge(
+            ValidationData,
+            TargetLevels.,
+            by.x = TargetColumnName.,
+            by.y = "NewLevels",
+            all = FALSE)
+          if(Debug) print('Start Here 26')
+          ValidationData[, eval(TargetColumnName.) := OriginalLevels][, OriginalLevels := NULL]
+        }
       }
     } else {
+      if(Debug) print('Start Here 27')
       data.table::setnames(ValidationData, c("V1","Target"), c("Predict", eval(TargetColumnName.)))
+      if(Debug) print('Start Here 28')
       data.table::set(ValidationData, j = eval(TargetColumnName.), value = as.character(ValidationData[[eval(TargetColumnName.)]]))
     }
+    if(Debug) print('Start Here 29')
     data.table::set(ValidationData, j = "Predict", value = as.character(ValidationData[["Predict"]]))
 
     # Save validation data

@@ -166,6 +166,7 @@ Other Graphics:
 \code{\link{CorrMatrixPlot}()},
 \code{\link{HeatMapPlot}()},
 \code{\link{PlotlyConversion}()},
+\code{\link{StockData}()},
 \code{\link{StockPlot}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}

@@ -51,6 +51,7 @@ Other Graphics:
 \code{\link{CorrMatrixPlot}()},
 \code{\link{HistPlot}()},
 \code{\link{PlotlyConversion}()},
+\code{\link{StockData}()},
 \code{\link{StockPlot}()},
 \code{\link{ViolinPlot}()},
 \code{\link{multiplot}()}

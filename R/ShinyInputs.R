@@ -1347,11 +1347,14 @@ ML_CatBoost <- function(id='CatBoostML',
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'CatBoost',
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
-        RemixAutoML:::BlankRow(AppWidth),
-        shiny::fluidRow(width=AppWidth, shiny::column(1L, align = 'center'), shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_TargetType'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(1L, align = 'center'),
+          shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_TargetType')),
+          shiny::column(1L, align = 'center'),
+          shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_Runs'))),
 
         # Parameters
-        RemixAutoML:::BlankRow(AppWidth),
         RemixAutoML:::BlankRow(AppWidth),
         shiny::fluidRow(
 
@@ -1464,9 +1467,14 @@ ML_CatBoost <- function(id='CatBoostML',
 
         # Add space at bottom of box
         RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth)
 
-        ) # end Catboost dropdown
+        # Build button
+        RemixAutoML:::BuildModelsButton(
+          id = 'MLBuildButton',
+          Algo = 'CatBoost',
+          AppWidth = parent.frame()$AppWidth,
+          Style = 'gradient',
+          Color = 'royal')) # end Catboost dropdown
 
       ))
 }
@@ -1513,11 +1521,14 @@ ML_XGBoost <- function(id='XGBoostML',
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'XGBoost',
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
-        RemixAutoML:::BlankRow(AppWidth),
-        shiny::fluidRow(width=AppWidth, shiny::column(1L, align = 'center'), shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TargetType'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(1L, align = 'center'),
+          shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TargetType')),
+          shiny::column(1L, align = 'center'),
+          shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_Runs'))),
 
         # Parameters
-        RemixAutoML:::BlankRow(AppWidth),
         RemixAutoML:::BlankRow(AppWidth),
         shiny::fluidRow(
 
@@ -1614,10 +1625,14 @@ ML_XGBoost <- function(id='XGBoostML',
 
         # Add space at bottom of box
         RemixAutoML:::BlankRow(AppWidth),
-        RemixAutoML:::BlankRow(AppWidth)
 
-
-      ), # end XGboost dropdown
+        # Build button
+        RemixAutoML:::BuildModelsButton(
+          id = 'MLBuildButton',
+          Algo = 'XGBoost',
+          AppWidth = parent.frame()$AppWidth,
+          Style = 'gradient',
+          Color = 'royal')), # end XGboost dropdown
 
       # Add space at bottom of box
       RemixAutoML:::BlankRow(AppWidth),
@@ -1668,8 +1683,12 @@ ML_LightGBM <- function(id='LightGBMML',
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LightGBM',
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
-        RemixAutoML:::BlankRow(AppWidth),
-        shiny::fluidRow(width=AppWidth, shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_TargetType'))),
+        shiny::fluidRow(
+          width=AppWidth,
+          shiny::column(1L, align = 'center'),
+          shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_TargetType')),
+          shiny::column(1L, align = 'center'),
+          shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_Runs'))),
 
         # Parameters
         RemixAutoML:::BlankRow(AppWidth),
@@ -1764,9 +1783,18 @@ ML_LightGBM <- function(id='LightGBMML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_ClassWeights1'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_EvalMetric')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_MetricPeriods'))))))
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_MetricPeriods')))))),
 
-      ), # end LightGBM dropdown
+        # Add space at bottom of box
+        RemixAutoML:::BlankRow(AppWidth),
+
+        # Build button
+        RemixAutoML:::BuildModelsButton(
+          id = 'MLBuildButton',
+          Algo = 'LightGBM',
+          AppWidth = parent.frame()$AppWidth,
+          Style = 'gradient',
+          Color = 'royal')), # end LightGBM dropdown
 
       # Add space at bottom of box
       RemixAutoML:::BlankRow(AppWidth),
@@ -1783,12 +1811,14 @@ ML_LightGBM <- function(id='LightGBMML',
 #' @family Shiny
 #'
 #' @param id = 'MLBuildButton'
+#' @param Algo = 'CatBoost'
 #' @param AppWidth = AppWidth
 #' @param Style = 'gradient'
 #' @param Color = 'royal'
 #'
 #' @noRd
 BuildModelsButton <- function(id = 'MLBuildButton',
+                              Algo = 'CatBoost',
                               AppWidth = parent.frame()$AppWidth,
                               Style = 'gradient',
                               Color = 'royal')  {
@@ -1801,11 +1831,12 @@ BuildModelsButton <- function(id = 'MLBuildButton',
         shinyjs::useShinyjs(),
         align = 'center',
         shinyWidgets::actionBttn(
-          inputId = 'BuildModels',
-          label = 'Build Models',
+          inputId = paste0('BuildModels_', Algo),
+          label = paste0('Build ', Algo),
           icon = shiny::icon('chevron-right', lib='font-awesome'),
           style = Style,
-          color = Color))))
+          color = Color))),
+    RemixAutoML:::BlankRow(AppWidth))
 }
 
 #' @title PlotDropDownContents
@@ -1854,7 +1885,6 @@ PlotDropDownContents <- function(id,
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = paste0('PlotDropDown', PlotNumber),
 
-        # ---------------------------------------------------------------------------------------------------------------------------------------------------
         # Select Data Box
         RemixAutoML:::BlankRow(AppWidth),
         shiny::fluidRow(
@@ -1870,18 +1900,18 @@ PlotDropDownContents <- function(id,
 
           ) # end box
         ), # end fluid row
-        # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
         # Tabs
         shiny::tabsetPanel(
           id = paste0('PlotTabs', PlotNumber),
           selected = 'Standard Plots',
 
+          # Standard Plots ----
           shiny::tabPanel(
             title = "Standard Plots",
             icon = shiny::icon('code'),
 
-            # Basic Plots ---------------------------------------------------------------------------------------------------------------------------------------------------
+            # Basic Plots
             shiny::fluidRow(
               shinydashboard::box(
                 title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
@@ -1969,8 +1999,7 @@ PlotDropDownContents <- function(id,
             ) # end fluid row
           ), # end tabPanel for Standard Plots
 
-          # ---------------------------------------------------------------------------------------------------------------------------------------------------
-
+          # Model Eval Tab ----
           shiny::tabPanel(
 
             id = 'ModelEvalTab',
@@ -1980,7 +2009,6 @@ PlotDropDownContents <- function(id,
             title = "Model Eval",
             icon = shiny::icon('code'),
 
-            # ---------------------------------------------------------------------------------------------------------------------------------------------------
             # Model Eval Plots
             shiny::fluidRow(
               shinydashboard::box(
@@ -2054,7 +2082,14 @@ PlotDropDownContents <- function(id,
                       id = paste0("ShapelyImportance_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/VariableImportance.PNG?raw=true", height = Height),
-                      `data-val` = shiny::restoreInput(id = paste0("ShapelyImportance_MenuButton", PlotNumber), default = NULL)))),
+                      `data-val` = shiny::restoreInput(id = paste0("ShapelyImportance_MenuButton", PlotNumber), default = NULL))),
+                  shiny::column(
+                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Confusion Matrix'))), width = 4L, align = 'center',
+                    tags$button(
+                      id = paste0("ConfusionMatrix_MenuButton", PlotNumber),
+                      type = "button", class = "btn btn-default action-button",
+                      tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/ConfusionMatrixHeatmap.PNG?raw=true", height = Height),
+                      `data-val` = shiny::restoreInput(id = paste0("ConfusionMatrix_MenuButton", PlotNumber), default = NULL)))),
 
                 RemixAutoML:::BlankRow(AppWidth),
 
@@ -2087,10 +2122,8 @@ PlotDropDownContents <- function(id,
               ) # end box
             ) # end fluid row
           ), # end tabPanel
-          # ---------------------------------------------------------------------------------------------------------------------------------------------------
 
-          # ---------------------------------------------------------------------------------------------------------------------------------------------------
-
+          # Finance Tab ----
           shiny::tabPanel(
 
             id = 'FinanceTab',
@@ -2099,7 +2132,6 @@ PlotDropDownContents <- function(id,
             title = "Finance",
             icon = shiny::icon('code'),
 
-            # ---------------------------------------------------------------------------------------------------------------------------------------------------
             # Financial Plots
             shiny::fluidRow(
               shinydashboard::box(
@@ -2128,7 +2160,6 @@ PlotDropDownContents <- function(id,
               ) # end box
             ) # end fluid row
           ) # end tabPanel
-          # ---------------------------------------------------------------------------------------------------------------------------------------------------
         ) # end tabsetPanel
       ) # end dropdown
     ) # end column

@@ -35,14 +35,14 @@ ChoicesByType <- function(data) {
     Logical = logical_cols))
 }
 
-#' @param List = PlotDropDown1
+#' @param List = NULL
 #' @param InputName = 'Plot1_SelectData'
 #' @param ArgName = 'SelectedDefault'
 #' @param Default = names(DataList)[[1L]]
 #' @param Debug = Debug
 #'
 #' @noRd
-IntraSessionDefaults <- function(List = PlotDropDown1,
+IntraSessionDefaults <- function(List = NULL,
                                  InputName = 'Plot1_SelectData',
                                  ArgName = 'SelectedDefault',
                                  Default = names(DataList)[[1L]],

@@ -154,13 +154,14 @@ Financials <- function() {
   x <- jsonlite::fromJSON("https://api.polygon.io/vX/reference/financials?apiKey=hvyL7ZOsKK_5PNplOmv55tBTRd8rdA20")
 }
 
-#' @title StockPlot
+#' @title StockData
 #'
-#' @description  Create a candlestick plot for stocks. See https://plotly.com/r/figure-labels/
+#' @description  Create stock data for plotting using StockPlot()
 #'
 #' @family Graphics
 #' @author Adrian Antico
 #'
+#' @param PolyOut NULL. If NULL, data is pulled. If supplied, data is not pulled.
 #' @param Type 'candlestick', 'ohlc'
 #' @param Metric Stock Price, Percent Returns (use symbol for percent), Percent Log Returns (use symbol for percent), Index, Quadratic Variation
 #' @param TimeAgg = 'days', 'weeks', 'months'
@@ -171,29 +172,23 @@ Financials <- function() {
 #' @param APIKey Supply your polygon API key
 #'
 #' @export
-StockPlot <- function(Type = 'candlestick',
+StockData <- function(PolyOut = NULL,
+                      Symbol = 'TSLA',
+                      CompanyName = 'Tesla Inc. Common Stock',
                       Metric = 'Stock Price',
                       TimeAgg = 'days',
-                      Symbol = 'TSLA',
-                      CompanyName = NULL,
                       StartDate = '2022-01-01',
-                      EndDate = Sys.Date()-1L,
+                      EndDate = '2022-01-01',
                       APIKey = NULL) {
-
-  if(Type == 'CandlestickPlot') Type <- 'candlestick'
-  if(Type == 'OHLCPlot') Type <- 'ohlc'
-
   StartDate <- as.Date(StartDate)
   EndDate <- as.Date(EndDate)
-  Output <- jsonlite::fromJSON(paste0("https://api.polygon.io/v2/aggs/ticker/",Symbol,"/range/1/day/",StartDate, "/", EndDate, "?adjusted=true&sort=asc&limit=10000&apiKey=", APIKey))
-  data <- data.table::setDT(Output$results)
+  PolyOut <- jsonlite::fromJSON(paste0("https://api.polygon.io/v2/aggs/ticker/",Symbol,"/range/1/day/",StartDate, "/", EndDate, "?adjusted=true&sort=asc&limit=10000&apiKey=", APIKey))
+  data <- data.table::setDT(PolyOut$results)
   datas <- data.table::data.table(Date = seq(StartDate, EndDate, 'days'))
   datas <- RemixAutoML::CreateCalendarVariables(data = datas, DateCols = 'Date', AsFactor = FALSE, TimeUnits = 'wday')
   datas <- datas[Date_wday %in% c(2L:6L)]
   datas <- datas[!Date %in% as.Date(holidayNYSE(year = c(data.table::year(StartDate),data.table::year(EndDate))))]
-  if(nrow(datas) == nrow(data) + 1L) {
-    datas <- datas[seq_len(.N-1L)]
-  }
+  if(nrow(datas) == nrow(data) + 1L) datas <- datas[seq_len(.N-1L)]
   data <- cbind(data, datas)
   if(TimeAgg == 'weeks') {
     data[, Date := lubridate::floor_date(Date, unit = 'weeks')]
@@ -217,21 +212,40 @@ StockPlot <- function(Type = 'candlestick',
   } else if(Metric  == 'Quadratic Variation') {
     for(i in c('o','c','h','l')) data[, temp_temp := data.table::shift(x = get(i), n = 1L, fill = NA, type = 'lag')][, paste0(i) := (get(i) - temp_temp)^2][, temp_temp := NULL]
   }
+  return(list(data = data, PolyOut = PolyOut, CompanyName = CompanyName, Symbol = Symbol, Metric = Metric, StartDate = StartDate, EndDate = EndDate, APIKey = APIKey))
+}
+
+#' @title StockPlot
+#'
+#' @description  Create a candlestick plot for stocks. See https://plotly.com/r/figure-labels/
+#'
+#' @family Graphics
+#' @author Adrian Antico
+#'
+#' @param Type 'candlestick', 'ohlc'
+#' @param StockDataOutput PolyOut returned from StockData()
+#'
+#' @export
+StockPlot <- function(StockDataOutput,
+                      Type = 'candlestick') {
+  if(missing(StockDataOutput)) stop('StockDataOutput cannot be missing')
+  if(Type == 'CandlestickPlot') Type <- 'candlestick'
+  if(Type == 'OHLCPlot') Type <- 'ohlc'
   p1 <- plotly::plot_ly(
-    data = data,
+    data = StockDataOutput$data,
     x = ~Date,
     type = Type,
     open = ~o,
     close = ~c,
     high = ~h,
     low = ~l,
-    decreasing = list(line = list(color = '#bf0a0a')),
-    increasing = list(line = list(color = '#15ff00')))
+    decreasing = list(line = list(color = '#ff0055')),
+    increasing = list(line = list(color = '#66ff00')))
   p1 <- plotly::layout(
     p = p1,
-    title = if(length(CompanyName) == 0L) list(text = paste0(Symbol, ": ", StartDate, " to ", EndDate), font = 'Segoe UI') else list(text = paste0(CompanyName, " - ", Symbol, ": ", StartDate, " to ", EndDate), font = 'Segoe UI'),
+    title = if(length(StockDataOutput$CompanyName) == 0L) list(text = paste0(StockDataOutput$Symbol, ": ", StockDataOutput$StartDate, " to ", StockDataOutput$EndDate), font = 'Segoe UI') else list(text = paste0(StockDataOutput$CompanyName, " - ", StockDataOutput$Symbol, ": ", StockDataOutput$StartDate, " to ", StockDataOutput$EndDate), font = 'Segoe UI'),
     plot_bgcolor = "#f0f8ff",
-    yaxis = list(title = Metric),
+    yaxis = list(title = StockDataOutput$Metric),
     xaxis = list(title = 'Date'))
   return(p1)
 }
@@ -2378,7 +2392,7 @@ AppModelInsights <- function(dt = NULL,
 
   # ----
 
-  # Lift Plot Test ----
+  # Lift Plot ----
   if(any(PlotType %chin% "LiftPlot")) {
     if(Debug) print('LiftPlot')
     if(PredictNameCheck && TargetNameCheck) {
@@ -2394,7 +2408,7 @@ AppModelInsights <- function(dt = NULL,
 
   # ----
 
-  # Scatter Plot Test ----
+  # Scatter Plot ----
   if(any(PlotType %chin% "ResidualsScatterPlot")) {
     if(Debug) print('ResidualsScatterPlot')
     if(PredictNameCheck && TargetNameCheck) {
@@ -2409,7 +2423,7 @@ AppModelInsights <- function(dt = NULL,
 
   # ----
 
-  # Copula Plot Test ----
+  # Copula Plot ----
   if(any(PlotType %chin% "ResidualsCopulaPlot")) {
     if(Debug) print('ResidualsCopulaPlot')
     if(PredictNameCheck && TargetNameCheck) {
@@ -2424,7 +2438,7 @@ AppModelInsights <- function(dt = NULL,
 
   # ----
 
-  # Residuals Histogram Plot Test ----
+  # Residuals Histogram Plot ----
   if(any(PlotType %chin% "ResidualsHistogram")) {
     if(Debug) print('ResidualsHistogram')
     if(PredictNameCheck && TargetNameCheck) {
@@ -2432,6 +2446,7 @@ AppModelInsights <- function(dt = NULL,
         TestData = dt,
         Target = TargetVar, Predicted = PredictVar,
         DateColumnName = DateVar, Gam_Fit = GamFit)$ResidualsHistogram
+      p1 <- p1 + ggplot2::ggtitle('Residuals')
     }
     if(!exists('p1')) p1 <- NULL
     return(eval(p1))
@@ -2439,7 +2454,7 @@ AppModelInsights <- function(dt = NULL,
 
   # ----
 
-  # Variable Importance Plot Test ----
+  # Variable Importance Plot ----
   if(any(PlotType %chin% "VariableImportance")) {
     if(all(c('Importance','Variable') %in% names(dt))) {
       p1 <- RemixAutoML:::VI_Plot(Type = "catboost", VI_Data = dt, TopN = 25)
@@ -2454,6 +2469,33 @@ AppModelInsights <- function(dt = NULL,
       p1 <- NULL
     }
     return(eval(p1))
+  }
+
+  # ----
+
+  # Confusion Matrix Heatmap ----
+  if(any(PlotType %chin% "ConfusionMatrixHeatmap")) {
+    if('Predict' %in% names(dt)) {
+      pred <- 'Predict'
+      cm <- dt[, .N, by = c('Predict', eval(TargetVar))]
+    } else {
+      pred <- 'p1'
+      cm <- dt[, .N, by = c('p1', eval(TargetVar))]
+    }
+    fig <- plotly::plot_ly(
+      cm,
+      x = ~Predict,
+      y = ~get(TargetVar),
+      z = ~N,
+      colors = grDevices::colorRamp(c('aliceblue','purple')),
+      type = "heatmap")
+    fig <- plotly::layout(
+      p = fig,
+      plot_bgcolor = '#F0F8FF',
+      title = 'Confusion Matrix',
+      xaxis = list(title = eval(pred)),
+      yaxis = list(title = eval(TargetVar)))
+    return(eval(fig))
   }
 
   # ----
