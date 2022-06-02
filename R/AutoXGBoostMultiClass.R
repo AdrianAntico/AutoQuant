@@ -144,7 +144,15 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
                                   subsample = NULL,
                                   colsample_bytree = NULL) {
 
-  # Check args ----
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@ ----
+  # DE                 ----
+  # @@@@@@@@@@@@@@@@@@ ----
+
+  # Check args
   if(DebugMode) print("Check args ----")
   XGBoostArgsCheck(GridTune.=GridTune, model_path.=model_path, metadata_path.=metadata_path, Trees.=Trees, max_depth.=max_depth, eta.=eta, min_child_weight.=min_child_weight, subsample.=subsample, colsample_bytree.=colsample_bytree)
 
@@ -161,7 +169,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     }
   }
 
-  # Data prep ----
+  # Data prep
   if(DebugMode) print("Data prep ----")
   if(EncodingMethod %chin% c("target_encode", "credibility", "m_estimator", "woe")) EncodingMethod <- "poly_encode"
   Output <- XGBoostDataPrep(Algo="xgboost", ModelType="multiclass", data.=data, ValidationData.=ValidationData, TestData.=TestData, TargetColumnName.=TargetColumnName, FeatureColNames.=FeatureColNames, WeightsColumnName.=WeightsColumnName, IDcols.=IDcols, TransformNumericColumns.=NULL, Methods.=NULL, ModelID.=ModelID, model_path.=model_path, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, ReturnFactorLevels.=ReturnFactorLevels, EncodingMethod.=EncodingMethod, DebugMode.=DebugMode)
@@ -185,10 +193,18 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   IDcols <- Output$IDcols; Output$IDcols <- NULL
   Names <- Output$Names; rm(Output)
 
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@ ----
+  # ML                 ----
+  # @@@@@@@@@@@@@@@@@@ ----
+
   # Bring into existence
   ExperimentalGrid <- NULL; BestGrid <- NULL
 
-  # Grid tuning ----
+  # Grid tuning
   if(DebugMode) print("Grid tuning ----")
   if(GridTune) {
     Output <- XGBoostGridTuner(ModelType="multiclass", TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, DebugMode.=DebugMode, TreeMethod.=TreeMethod, Trees.=Trees, Depth.=max_depth, LearningRate.=eta, min_child_weight.=min_child_weight, subsample.=subsample, colsample_bytree.=colsample_bytree, LossFunction=LossFunction, EvalMetric=eval_metric, grid_eval_metric.=grid_eval_metric, CostMatrixWeights=NULL, datatrain.=datatrain, datavalidate.=datavalidate, datatest.=datatest, EvalSets.=EvalSets, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TargetLevels.=TargetLevels, MaxRunsWithoutNewWinner=MaxRunsWithoutNewWinner, MaxModelsInGrid=MaxModelsInGrid, MaxRunMinutes=MaxRunMinutes, BaselineComparison.=BaselineComparison, SaveModelObjects=SaveModelObjects, metadata_path=metadata_path, model_path=model_path, ModelID=ModelID, Verbose.=Verbose, NumLevels.=NumLevels)
@@ -196,22 +212,22 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     BestGrid <- Output$BestGrid
   }
 
-  # Final Params ----
+  # Final Params
   if(DebugMode) print("Final Params ----")
   Output <- XGBoostFinalParams(TrainOnFull.=TrainOnFull, PassInGrid.=PassInGrid, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees)
   base_params <- Output$base_params
   NTrees <- if(length(Output$NTrees) > 1L) max(Output$NTrees) else Output$NTrees; rm(Output)
   base_params[["num_class"]] <- NumLevels
 
-  # Train Final Model ----
+  # Train Final Model
   if(DebugMode) print("Train Final Model ----")
   model <- xgboost::xgb.train(params=base_params, data=datatrain, watchlist=EvalSets, nrounds=NTrees)
 
-  # Save Model ----
+  # Save Model
   if(DebugMode) print("Save Model ----")
   if(SaveModelObjects) save(model, file = file.path(model_path, ModelID))
 
-  # Grid Score Model ----
+  # Grid Score Model
   if(DebugMode) print("Grid Score Model ----")
   if(!is.null(datatest)) {
     predict <- XGBoostMultiClassPredict(model=model, datatest=datatest, TargetLevels=TargetLevels, NumLevels=NumLevels, NumberRows=nrow(datatest))
@@ -221,13 +237,21 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     predict <- XGBoostMultiClassPredict(model=model, datatest=datatrain, TargetLevels=TargetLevels, NumLevels=NumLevels, NumberRows=nrow(datatrain))
   }
 
-  # Validation, Importance, Shap data ----
+  # Validation, Importance, Shap data
   if(DebugMode) print("Validation, Importance, Shap data ----")
   Output <- XGBoostValidationData(TrainMerge.=TrainMerge, ModelType="multiclass", TestDataCheck=!is.null(TestData), TrainOnFull.=TrainOnFull, model.=model, TargetColumnName.=TargetColumnName, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TestData.=TestData, TestTarget.=TestTarget, FinalTestTarget.=FinalTestTarget, TestMerge.=TestMerge, dataTest.=dataTest, TrainTarget.=TrainTarget, predict.=predict, TransformNumericColumns.=NULL, TransformationResults.=NULL, GridTune.=NULL, data.=dataTrain, LossFunction.=LossFunction)
   VariableImportance <- Output[['VariableImportance']]; Output$VariableImportance <- NULL
   ValidationData <- Output$ValidationData; rm(Output)
 
-  # TrainData + ValidationData Scoring + Shap ----
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@ ----
+  # Output Selection   ----
+  # @@@@@@@@@@@@@@@@@@ ----
+
+  # TrainData + ValidationData Scoring + Shap
   if(DebugMode) print("TrainData + ValidationData Scoring + Shap ----")
   if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
     predict <- XGBoostMultiClassPredict(model=model, datatest=datatrain, TargetLevels=TargetLevels, NumLevels=NumLevels, NumberRows=nrow(datatrain))
@@ -242,7 +266,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     TrainData <- NULL
   }
 
-  # Generate EvaluationMetrics ----
+  # Generate EvaluationMetrics
   if(DebugMode) print("Running MultiClassMetrics()")
   MultinomialMetrics <- list()
   MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Test", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
@@ -250,7 +274,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Train", SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
-  # Generate EvaluationMetrics ----
+  # Generate EvaluationMetrics
   if(DebugMode) print("Running BinaryMetrics()")
   EvalMetricsList <- list()
   EvalMetrics2List <- list()
@@ -280,7 +304,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     }
   }
 
-  # Classification evaluation plots ----
+  # Classification evaluation plots
   if(DebugMode) print("Running ML_EvalPlots()")
   PlotList <- list()
   options(warn = -1)
@@ -314,7 +338,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     }
   }
 
-  # Save GridCollect and grid_metrics ----
+  # Save GridCollect and grid_metrics
   if(DebugMode) print("Save GridCollect and grid_metrics ----")
   if(SaveModelObjects & GridTune) {
     if(!is.null(metadata_path)) {
@@ -324,13 +348,21 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
     }
   }
 
-  # Running CatBoostPDF() ----
+  # Running CatBoostPDF()
   if(DebugMode) print("Running CatBoostPDF()")
   if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
     CatBoostPDF(ModelClass = "xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=PlotList, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
-  # Return Model Objects ----
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@ ----
+  # Return Output      ----
+  # @@@@@@@@@@@@@@@@@@ ----
+
+  # Return Model Objects
   if(DebugMode) print("Return Model Objects ----")
   if(ReturnModelObjects) {
     return(list(
@@ -348,4 +380,9 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
       TargetLevels = if(exists("TargetLevels") && !is.null(TargetLevels)) TargetLevels else NULL,
       ArgsList = ArgsList))
   }
+
+  # ----
+
+  # ----
+
 }
