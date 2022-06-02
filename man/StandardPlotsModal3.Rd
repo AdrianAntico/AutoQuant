@@ -31,6 +31,7 @@ Other Shiny:
 \code{\link{SelectizeInput}()},
 \code{\link{StandardPlotsModal1}()},
 \code{\link{StandardPlotsModal2}()},
+\code{\link{StandardPlotsModal4}()},
 \code{\link{TextInput}()}
 }
 \author{

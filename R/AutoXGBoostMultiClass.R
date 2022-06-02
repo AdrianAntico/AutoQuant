@@ -247,7 +247,7 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
   MultinomialMetrics <- list()
   MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Test", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Train", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Train", SaveModelObjects.=SaveModelObjects, ValidationData.=TrainData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Generate EvaluationMetrics ----

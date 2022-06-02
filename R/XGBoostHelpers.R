@@ -142,7 +142,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       dataSets <- AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
-        Ratios = c(0.70, 0.20, 0.10),
+        Ratios = c(0.85, 0.05, 0.10),
         PartitionType = 'random',
         StratifyColumnNames = TargetColumnName.,
         TimeColumnName = NULL)
@@ -317,7 +317,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
         dataSets <- AutoDataPartition(
           data.,
           NumDataSets = 3L,
-          Ratios = c(0.70, 0.20, 0.10),
+          Ratios = c(0.85, 0.05, 0.10),
           PartitionType = 'random',
           StratifyColumnNames = NULL,
           TimeColumnName = NULL)
@@ -406,7 +406,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       dataSets <- AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
-        Ratios = c(0.70, 0.20, 0.10),
+        Ratios = c(0.85, 0.05, 0.10),
         PartitionType = 'random',
         StratifyColumnNames = TargetColumnName.,
         TimeColumnName = NULL)
@@ -430,6 +430,41 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       FeatureColNames. <- c(FeatureColNames., y)
     } else {
       FactorLevelsList <- NULL
+    }
+
+    # MultiClass Obtain Unique Target Levels
+    if(DebugMode.) print("MultiClass Obtain Unique Target Levels")
+    if(!is.null(ValidationData.) && !is.null(TestData.)) {
+      temp <- data.table::rbindlist(list(data., ValidationData., TestData.))
+    } else if(!is.null(ValidationData.)) {
+      temp <- data.table::rbindlist(list(data., ValidationData.))
+    } else {
+      temp <- data.
+    }
+    TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName.)]])))
+    data.table::setnames(TargetLevels, 'V1', 'OriginalLevels')
+    TargetLevels[, NewLevels := 0L:(.N - 1L)]
+    if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., '_TargetLevels.csv')))
+
+    # Number of levels
+    if(DebugMode.) print("Number of levels")
+    NumLevels <- TargetLevels[, .N]
+
+    # MultiClass Convert Target to Numeric Factor
+    if(DebugMode.) print("MultiClass Convert Target to Numeric Factor")
+    data. <- merge(data., TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
+    data.[, paste0(TargetColumnName.) := NewLevels]
+    data.[, NewLevels := NULL]
+    # Merging causes data to sort differently
+    if(!is.null(ValidationData.)) {
+      ValidationData. <- merge(ValidationData., TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
+      ValidationData.[, paste0(TargetColumnName.) := NewLevels]
+      ValidationData.[, NewLevels := NULL]
+      if(!is.null(TestData.)) {
+        TestData. <- merge(TestData., TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
+        TestData.[, paste0(TargetColumnName.) := NewLevels]
+        TestData.[, NewLevels := NULL]
+      }
     }
 
     # combine data and Subset Columns Needed
@@ -471,39 +506,40 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     # TestData. <- Output$TestData; Output$TestData. <- NULL
     # FactorLevelsList <- Output$MetaData; rm(Output)
 
-    # MultiClass Obtain Unique Target Levels
-    if(DebugMode.) print("MultiClass Obtain Unique Target Levels")
-    if(!is.null(dataTest) && !is.null(TestData.)) {
-      temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
-    } else if(!is.null(dataTest)) {
-      temp <- data.table::rbindlist(list(dataTrain, dataTest))
-    } else {
-      temp <- dataTrain
-    }
-    TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName.)]])))
-    data.table::setnames(TargetLevels, 'V1', 'OriginalLevels')
-    TargetLevels[, NewLevels := 0L:(.N - 1L)]
-    if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., '_TargetLevels.csv')))
-
-    # Number of levels
-    if(DebugMode.) print("Number of levels")
-    NumLevels <- TargetLevels[, .N]
-
-    # MultiClass Convert Target to Numeric Factor
-    if(DebugMode.) print("MultiClass Convert Target to Numeric Factor")
-    dataTrain <- merge(dataTrain, TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
-    dataTrain[, paste0(TargetColumnName.) := NewLevels]
-    dataTrain[, NewLevels := NULL]
-    if(!is.null(dataTest)) {
-      dataTest <- merge(dataTest, TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
-      dataTest[, paste0(TargetColumnName.) := NewLevels]
-      dataTest[, NewLevels := NULL]
-      if(!is.null(TestData.)) {
-        TestData. <- merge(TestData., TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
-        TestData.[, paste0(TargetColumnName.) := NewLevels]
-        TestData.[, NewLevels := NULL]
-      }
-    }
+    # # MultiClass Obtain Unique Target Levels
+    # if(DebugMode.) print("MultiClass Obtain Unique Target Levels")
+    # if(!is.null(dataTest) && !is.null(TestData.)) {
+    #   temp <- data.table::rbindlist(list(dataTrain, dataTest, TestData.))
+    # } else if(!is.null(dataTest)) {
+    #   temp <- data.table::rbindlist(list(dataTrain, dataTest))
+    # } else {
+    #   temp <- dataTrain
+    # }
+    # TargetLevels <- data.table::as.data.table(sort(unique(temp[[eval(TargetColumnName.)]])))
+    # data.table::setnames(TargetLevels, 'V1', 'OriginalLevels')
+    # TargetLevels[, NewLevels := 0L:(.N - 1L)]
+    # if(SaveModelObjects.) data.table::fwrite(TargetLevels, file = file.path(model_path., paste0(ModelID., '_TargetLevels.csv')))
+    #
+    # # Number of levels
+    # if(DebugMode.) print("Number of levels")
+    # NumLevels <- TargetLevels[, .N]
+    #
+    # # MultiClass Convert Target to Numeric Factor
+    # if(DebugMode.) print("MultiClass Convert Target to Numeric Factor")
+    # dataTrain <- merge(dataTrain, TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
+    # dataTrain[, paste0(TargetColumnName.) := NewLevels]
+    # dataTrain[, NewLevels := NULL]
+    # # Merging causes data to sort differently
+    # if(!is.null(dataTest)) {
+    #   dataTest <- merge(dataTest, TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
+    #   dataTest[, paste0(TargetColumnName.) := NewLevels]
+    #   dataTest[, NewLevels := NULL]
+    #   if(!is.null(TestData.)) {
+    #     TestData. <- merge(TestData., TargetLevels, by.x = eval(TargetColumnName.), by.y = 'OriginalLevels', all = FALSE)
+    #     TestData.[, paste0(TargetColumnName.) := NewLevels]
+    #     TestData.[, NewLevels := NULL]
+    #   }
+    # }
 
     # MultiClass Subset Target Variables ----
     if(DebugMode.) print("MultiClass Subset Target Variables")

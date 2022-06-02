@@ -1371,7 +1371,14 @@ ML_CatBoost <- function(id='CatBoostML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_NumGPUs'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_TrainOnFull')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_ModelID'))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_ModelID'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Grid Tuning Parameters
           shiny::column(
@@ -1389,7 +1396,14 @@ ML_CatBoost <- function(id='CatBoostML',
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_MaxRunsWithoutNewWinner')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_MaxRunMinutes')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_BaselineComparison')))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_BaselineComparison'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ))),
 
         # Parameters
         RemixAutoML:::BlankRow(AppWidth),
@@ -1422,7 +1436,14 @@ ML_CatBoost <- function(id='CatBoostML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_feature_border_type')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_subsample')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_score_function')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_min_data_in_leaf'))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_min_data_in_leaf'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Data Parameters
           shiny::column(
@@ -1447,7 +1468,12 @@ ML_CatBoost <- function(id='CatBoostML',
                 shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_IDcols'))),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_TransformNumericColumns')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_Methods'))))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('CatBoost_Methods'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Evaluation Parameters
           shiny::column(
@@ -1463,7 +1489,14 @@ ML_CatBoost <- function(id='CatBoostML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_ClassWeights1'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_EvalMetric')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_MetricPeriods')))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_MetricPeriods'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ))),
 
         # Add space at bottom of box
         RemixAutoML:::BlankRow(AppWidth),
@@ -1545,7 +1578,14 @@ ML_XGBoost <- function(id='XGBoostML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_NumGPUs'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_TrainOnFull')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_ModelID'))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_ModelID'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Grid Tuning Parameters
           shiny::column(
@@ -1563,7 +1603,14 @@ ML_XGBoost <- function(id='XGBoostML',
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_MaxRunsWithoutNewWinner')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_MaxRunMinutes')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_BaselineComparison')))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_BaselineComparison'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ))),
 
         # Parameters
         RemixAutoML:::BlankRow(AppWidth),
@@ -1584,7 +1631,14 @@ ML_XGBoost <- function(id='XGBoostML',
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_eta')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_subsample')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_colsample_bytree'))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_colsample_bytree'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Data Parameters
           shiny::column(
@@ -1609,7 +1663,12 @@ ML_XGBoost <- function(id='XGBoostML',
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_EncodingMethod'))),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TransformNumericColumns')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_Methods'))))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_Methods'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Evaluation Parameters
           shiny::column(
@@ -1621,7 +1680,14 @@ ML_XGBoost <- function(id='XGBoostML',
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_LossFunction')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_EvalMetric')))))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_EvalMetric'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ))),
 
         # Add space at bottom of box
         RemixAutoML:::BlankRow(AppWidth),
@@ -1707,7 +1773,14 @@ ML_LightGBM <- function(id='LightGBMML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_NumGPUs'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_TrainOnFull')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_ModelID'))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_ModelID'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Grid Tuning Parameters
           shiny::column(
@@ -1724,7 +1797,14 @@ ML_LightGBM <- function(id='LightGBMML',
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_MaxRunsWithoutNewWinner')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_MaxRunMinutes')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_BaselineComparison')))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_BaselineComparison'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ))),
 
         # Parameters
         RemixAutoML:::BlankRow(AppWidth),
@@ -1745,7 +1825,14 @@ ML_LightGBM <- function(id='LightGBMML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_L2_Leaf_Reg'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_model_size_reg')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_langevin'))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_langevin'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Data Parameters
           shiny::column(
@@ -1767,7 +1854,12 @@ ML_LightGBM <- function(id='LightGBMML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_IDcols'))),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_TransformNumericColumns')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_Methods'))))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_Methods'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              )),
 
           # Evaluation Parameters
           shiny::column(
@@ -1783,7 +1875,14 @@ ML_LightGBM <- function(id='LightGBMML',
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_ClassWeights1'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_EvalMetric')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_MetricPeriods')))))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_MetricPeriods'))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ))),
 
         # Add space at bottom of box
         RemixAutoML:::BlankRow(AppWidth),
@@ -1827,7 +1926,7 @@ BuildModelsButton <- function(id = 'MLBuildButton',
     RemixAutoML:::BlankRow(AppWidth),
     shiny::fluidRow(
       shiny::column(
-        width = 3L,
+        width = 4L,
         shinyjs::useShinyjs(),
         align = 'center',
         shinyWidgets::actionBttn(

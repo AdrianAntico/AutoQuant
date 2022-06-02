@@ -544,7 +544,7 @@ server <- function(input, output, session) {
   print('Server Side Begins')
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  #    Setup Elements                    ----
+  # :: Setup Elements                    ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Initialize data reactive. Gets overwritten after first data load or when user updates data selected
@@ -629,7 +629,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  #    Inputs Load Data                  ----
+  # :: Inputs Load Data                  ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   print('LoadDataPage Initialization')
@@ -640,10 +640,7 @@ server <- function(input, output, session) {
 
       # Local .csv or .txt
       output$TabularData <- shiny::renderUI({
-        shiny::fileInput(
-          inputId = 'TabularData',
-          label = NULL,
-          accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
+        shiny::fileInput(inputId = 'TabularData', label = NULL, accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
       })
 
       # Local .Rdata or .rds
@@ -698,7 +695,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  #    Initialize Shiny Inputs on Start  ----
+  # :: Initialize Shiny Inputs on Start  ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(InitalizeInputs, {
     print('App Initialization')
@@ -833,6 +830,7 @@ server <- function(input, output, session) {
     # Sweet Alert
     #if(Debug)
     print("Data was loaded")
+    Sys.sleep(1L)
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = "success", btn_colors = "green", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
   })
 
@@ -1274,7 +1272,7 @@ server <- function(input, output, session) {
     # Target Type
     output$CatBoost_TargetType <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = CatBoost, InputName = 'CatBoost_TargetType', ArgName = 'SelectedDefault', Default = 'Regression', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'CatBoost_TargetType', Label = 'Select Supervised Learning Type', Choices = c('Regression','Binary Classification','MultiClass'), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'CatBoost_TargetType', Label = 'Select Supervised Learning Type', Choices = c('Regression','Binary Classification','MultiClass'), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1, Debug = Debug, CloseAfterSelect = FALSE)
     })
 
     # Create reactive
@@ -1287,7 +1285,7 @@ server <- function(input, output, session) {
 
     # Cross Validation Runs
     output$CatBoost_Runs <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_Runs', Label = 'Cross Validation Runs', Choices = c(seq_len(30L)), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1L)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_Runs', Label = 'Cross Validation Runs', Choices = c(seq_len(30L)), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1L, CloseAfterSelect = FALSE)
     })
   })
 
@@ -1301,7 +1299,7 @@ server <- function(input, output, session) {
     # Pass In Grid
     output$CatBoost_PassInGrid <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MetaData, InputName = 'CatBoost_PassInGrid', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_PassInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Previous Grid Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_PassInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Previous Grid Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1311,7 +1309,7 @@ server <- function(input, output, session) {
     # Task Type
     output$CatBoost_task_type <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MetaData, InputName = 'CatBoost_task_type', ArgName = 'SelectedDefault', Default = 'CPU', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_task_type', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'GPU or CPU'), Choices = c('GPU','CPU'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_task_type', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'GPU or CPU'), Choices = c('GPU','CPU'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1321,7 +1319,7 @@ server <- function(input, output, session) {
     # Number of GPUs
     output$CatBoost_NumGPUs <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MetaData, InputName = 'CatBoost_NumGPUs', ArgName = 'SelectedDefault', Default = 1L, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_NumGPUs', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of GPUs'), Choices = seq_len(10L), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_NumGPUs', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of GPUs'), Choices = seq_len(10L), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1331,7 +1329,7 @@ server <- function(input, output, session) {
     # Train on Full Data
     output$CatBoost_TrainOnFull <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MetaData, InputName = 'CatBoost_TrainOnFull', ArgName = 'SelectedDefault', Default = FALSE, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_TrainOnFull', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train on Full Data'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_TrainOnFull', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train on Full Data'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1373,7 +1371,7 @@ server <- function(input, output, session) {
 
     # Data
     output$CatBoost_data <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_data', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Training Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_data', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Training Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL, CloseAfterSelect = FALSE)
     })
 
     # Reactive
@@ -1383,7 +1381,7 @@ server <- function(input, output, session) {
     output$CatBoost_ValidationData <- shiny::renderUI({
       print('CatBoost Data Parameters 2')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_ValidationData', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1394,7 +1392,7 @@ server <- function(input, output, session) {
     output$CatBoost_TestData <- shiny::renderUI({
       print('CatBoost Data Parameters 3')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_TestData', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1405,7 +1403,7 @@ server <- function(input, output, session) {
     output$CatBoost_TargetColumnName <- shiny::renderUI({
       print('CatBoost Data Parameters 4')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_TargetColumnName', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_TargetColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Target'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_TargetColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Target'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1416,7 +1414,7 @@ server <- function(input, output, session) {
     output$CatBoost_FeatureColNames <- shiny::renderUI({
       print('CatBoost Data Parameters 5')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_FeatureColNames', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1427,7 +1425,7 @@ server <- function(input, output, session) {
     output$CatBoost_PrimaryDateColumn <- shiny::renderUI({
       print('Adrian Antico 6')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_PrimaryDateColumn', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_PrimaryDateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Date'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_PrimaryDateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Date'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1438,7 +1436,7 @@ server <- function(input, output, session) {
     output$CatBoost_EncodeMethod <- shiny::renderUI({
       print('Adrian Antico 6')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_EncodeMethod', ArgName = 'SelectedDefault', Default = 'credibility', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_EncodeMethod', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Character Encoding'), Choices = c('credibility','binary','m_estimator','woe','target_encoding','poly_encode','backward_difference','helmert'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_EncodeMethod', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Character Encoding'), Choices = c('credibility','binary','m_estimator','woe','target_encoding','poly_encode','backward_difference','helmert'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1450,7 +1448,7 @@ server <- function(input, output, session) {
     output$CatBoost_WeightsColumnName <- shiny::renderUI({
       print('CatBoost Data Parameters 7')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_WeightsColumnName', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_WeightsColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Weights Column'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_WeightsColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Weights Column'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1463,7 +1461,7 @@ server <- function(input, output, session) {
       gg <- c(input$CatBoost_TargetColumnName, input$CatBoost_FeatureColNames, input$CatBoost_PrimaryDateColumn, input$CatBoost_WeightsColumnName)
       gg <- gg[!is.na(gg)]; hh <- tryCatch({names(ML_dt())}, error = function(x) NULL); choices <- tryCatch({hh[!hh %in% gg]}, error = function(x) NULL)
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_IDcols', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1474,7 +1472,7 @@ server <- function(input, output, session) {
     output$CatBoost_TransformNumericColumns <- shiny::renderUI({
       print('CatBoost Data Parameters 10')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_TransformNumericColumns', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_TransformNumericColumns', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Columns'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_TransformNumericColumns', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Columns'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1485,7 +1483,7 @@ server <- function(input, output, session) {
     output$CatBoost_Methods <- shiny::renderUI({
       print('CatBoost Data Parameters 11')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_Methods', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Methods'), Choices = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Methods'), Choices = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1503,7 +1501,7 @@ server <- function(input, output, session) {
     # Grid Tune
     output$CatBoost_GridTune <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_GridTuningParameters, InputName = 'CatBoost_GridTune', ArgName = 'SelectedDefault', Default = FALSE, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_GridTune', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Grid Tune'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_GridTune', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Grid Tune'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1514,7 +1512,7 @@ server <- function(input, output, session) {
     output$CatBoost_grid_eval_metric <- shiny::renderUI({
       out <- RemixAutoML:::CatBoostGridEvalMetricsOptions(TT())
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_GridTuningParameters, InputName = 'CatBoost_grid_eval_metric', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_grid_eval_metric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_grid_eval_metric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1524,7 +1522,7 @@ server <- function(input, output, session) {
     # Max Models
     output$CatBoost_MaxModelsInGrid <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_GridTuningParameters, InputName = 'CatBoost_MaxModelsInGrid', ArgName = 'SelectedDefault', Default = 25, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_MaxModelsInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Models'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_MaxModelsInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Models'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1534,7 +1532,7 @@ server <- function(input, output, session) {
     # Runs without a New Winner
     output$CatBoost_MaxRunsWithoutNewWinner <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_GridTuningParameters, InputName = 'CatBoost_MaxRunsWithoutNewWinner', ArgName = 'SelectedDefault', Default = 10, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_MaxRunsWithoutNewWinner', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Runs Without Winner'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_MaxRunsWithoutNewWinner', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Runs Without Winner'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1544,7 +1542,7 @@ server <- function(input, output, session) {
     # Max Runtime in Minutes
     output$CatBoost_MaxRunMinutes <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_GridTuningParameters, InputName = 'CatBoost_MaxRunMinutes', ArgName = 'SelectedDefault', Default = 30, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_MaxRunMinutes', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Run Time (mins)'), Choices = c(seq(30,60*24*7,30)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_MaxRunMinutes', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Run Time (mins)'), Choices = c(seq(30,60*24*7,30)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1554,7 +1552,7 @@ server <- function(input, output, session) {
     # Baseline Comparison
     output$CatBoost_BaselineComparison <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_GridTuningParameters, InputName = 'CatBoost_BaselineComparison', ArgName = 'SelectedDefault', Default = 'default', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_BaselineComparison', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = c('default','best'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_BaselineComparison', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = c('default','best'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1572,7 +1570,7 @@ server <- function(input, output, session) {
     # Trees
     output$CatBoost_Trees <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_Trees', ArgName = 'SelectedDefault', Default = 1000, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_Trees', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Trees'), Choices = c(5:50, seq(75,475,25), seq(500,9500,500), seq(10000, 25000, 1000)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_Trees', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Trees'), Choices = c(5:50, seq(75,475,25), seq(500,9500,500), seq(10000, 25000, 1000)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1582,7 +1580,7 @@ server <- function(input, output, session) {
     # Depth
     output$CatBoost_Depth <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_Depth', ArgName = 'SelectedDefault', Default = 8, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_Depth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Tree Depth'), Choices = 4:20, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_Depth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Tree Depth'), Choices = 4:20, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1592,7 +1590,7 @@ server <- function(input, output, session) {
     # Learning Rate
     output$CatBoost_LearningRate <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_LearningRate', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_LearningRate', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Learning Rate'), Choices = seq(0.01,0.50,0.002), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_LearningRate', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Learning Rate'), Choices = seq(0.01,0.50,0.002), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1602,7 +1600,7 @@ server <- function(input, output, session) {
     # L2 Regularization
     output$CatBoost_L2_Leaf_Reg <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_L2_Leaf_Reg', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_L2_Leaf_Reg', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'L2 Leaf Regularize'), Choices = 0:50, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_L2_Leaf_Reg', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'L2 Leaf Regularize'), Choices = 0:50, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1612,7 +1610,7 @@ server <- function(input, output, session) {
     # Model Size Regularization
     output$CatBoost_model_size_reg <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_model_size_reg', ArgName = 'SelectedDefault', Default = 0.50, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_model_size_reg', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Model Size Regularize'), Choices = seq(0.05,5,0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_model_size_reg', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Model Size Regularize'), Choices = seq(0.05,5,0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1622,7 +1620,7 @@ server <- function(input, output, session) {
     # langevin
     output$CatBoost_langevin <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_langevin', ArgName = 'SelectedDefault', Default = FALSE, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_langevin', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Langevin Boosting'), Choices = c(FALSE,TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_langevin', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Langevin Boosting'), Choices = c(FALSE,TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1632,7 +1630,7 @@ server <- function(input, output, session) {
     # Diffusion Temperature
     output$CatBoost_diffusion_temperature <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_diffusion_temperature', ArgName = 'SelectedDefault', Default = 10000, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_diffusion_temperature', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Diffusion Temp'), Choices = c(5000,7500,10000,12500,15000), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_diffusion_temperature', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Diffusion Temp'), Choices = c(5000,7500,10000,12500,15000), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1642,7 +1640,7 @@ server <- function(input, output, session) {
     # Random Strength
     output$CatBoost_RandomStrength <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_RandomStrength', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_RandomStrength', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Random Strength'), Choices = seq(0.50, 1, 0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_RandomStrength', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Random Strength'), Choices = seq(0.50, 1, 0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1652,7 +1650,7 @@ server <- function(input, output, session) {
     # Border Count
     output$CatBoost_BorderCount <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_BorderCount', ArgName = 'SelectedDefault', Default = 256, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_BorderCount', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Border Count'), Choices = seq(32,256,32), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_BorderCount', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Border Count'), Choices = seq(32,256,32), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1662,7 +1660,7 @@ server <- function(input, output, session) {
     # Random Subspace Method
     output$CatBoost_RSM <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_RSM', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_RSM', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Random Subspace'), Choices = seq(0.01,1,0.01), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_RSM', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Random Subspace'), Choices = seq(0.01,1,0.01), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1672,7 +1670,7 @@ server <- function(input, output, session) {
     # Bootstrap Type
     output$CatBoost_BootStrapType <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_BootStrapType', ArgName = 'SelectedDefault', Default = 'Bayesian', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_BootStrapType', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Bootstrap Type'), Choices = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_BootStrapType', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Bootstrap Type'), Choices = c('Bayesian', 'Bernoulli', 'Poisson', 'MVS', 'No'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1682,7 +1680,7 @@ server <- function(input, output, session) {
     # Grow Policy
     output$CatBoost_GrowPolicy <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_GrowPolicy', ArgName = 'SelectedDefault', Default = 'SymmetricTree', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_GrowPolicy', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Border Count'), Choices = c('SymmetricTree', 'Depthwise', 'Lossguide'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_GrowPolicy', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Border Count'), Choices = c('SymmetricTree', 'Depthwise', 'Lossguide'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1692,7 +1690,7 @@ server <- function(input, output, session) {
     # Feature Border Type
     output$CatBoost_feature_border_type <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_feature_border_type', ArgName = 'SelectedDefault', Default = 'GreedyLogSum', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_feature_border_type', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Border Count'), Choices = c('GreedyLogSum', 'Median', 'Uniform', 'UniformAndQuantiles', 'MaxLogSum', 'MinEntropy'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_feature_border_type', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Border Count'), Choices = c('GreedyLogSum', 'Median', 'Uniform', 'UniformAndQuantiles', 'MaxLogSum', 'MinEntropy'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1702,7 +1700,7 @@ server <- function(input, output, session) {
     # Subsample
     output$CatBoost_subsample <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_subsample', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_subsample', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Bagging Rate'), Choices = seq(0.50,1,0.01), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_subsample', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Bagging Rate'), Choices = seq(0.50,1,0.01), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1712,7 +1710,7 @@ server <- function(input, output, session) {
     # Score Function
     output$CatBoost_score_function <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_score_function', ArgName = 'SelectedDefault', Default = 'Cosine', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_score_function', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Score Function'), Choices = c('Cosine', 'L2', 'NewtonL2', 'NewtomCosine'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_score_function', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Score Function'), Choices = c('Cosine', 'L2', 'NewtonL2', 'NewtomCosine'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1722,7 +1720,7 @@ server <- function(input, output, session) {
     # Min data in leaf
     output$CatBoost_min_data_in_leaf <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_min_data_in_leaf', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_min_data_in_leaf', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Min Data Leaf'), Choices = 1:20, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_min_data_in_leaf', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Min Data Leaf'), Choices = 1:20, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1743,7 +1741,7 @@ server <- function(input, output, session) {
       print(out)
       print(TT())
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_EvalParameters, InputName = 'CatBoost_LossFunction', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_LossFunction', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Loss Function'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_LossFunction', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Loss Function'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1756,7 +1754,7 @@ server <- function(input, output, session) {
       print(out)
       print(TT())
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_EvalParameters, InputName = 'CatBoost_EvalMetric', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_EvalMetric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_EvalMetric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1786,7 +1784,7 @@ server <- function(input, output, session) {
     # Metric Periods
     output$CatBoost_MetricPeriods <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_EvalParameters, InputName = 'CatBoost_MetricPeriods', ArgName = 'SelectedDefault', Default = 10, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_MetricPeriods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Trees between Evals'), Choices = c(1,seq(5,500,5)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_MetricPeriods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Trees between Evals'), Choices = c(1,seq(5,500,5)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1811,13 +1809,13 @@ server <- function(input, output, session) {
 
     # Cross Validation Runs
     output$XGBoost_Runs <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_Runs', Label = 'Cross Validation Runs', Choices = c(seq_len(30L)), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1L)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_Runs', Label = 'Cross Validation Runs', Choices = c(seq_len(30L)), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1L, CloseAfterSelect = FALSE)
     })
 
     # Target Type
     output$XGBoost_TargetType <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGBoost, InputName = 'XGBoost_TargetType', ArgName = 'SelectedDefault', Default = 'Regression', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID = 'XGBoost_TargetType', Label = 'Select Supervised Learning Type', Choices = c('Regression','Binary Classification','MultiClass'), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'XGBoost_TargetType', Label = 'Select Supervised Learning Type', Choices = c('Regression','Binary Classification','MultiClass'), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
     })
 
     # Create reactive
@@ -1839,7 +1837,7 @@ server <- function(input, output, session) {
     # Number of cpu threads
     output$XGBoost_NThreads <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_NThreads', ArgName = 'SelectedDefault', Default = max(1L, parallel::detectCores() - 2L), Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_NThreads', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'CPU Threads'), Choices = c(-1,1:128), Multiple = TRUE, MaxVars = 1, SelectedDefault = max(1L, parallel::detectCores() - 2L))
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_NThreads', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'CPU Threads'), Choices = c(-1,1:128), Multiple = TRUE, MaxVars = 1, SelectedDefault = max(1L, parallel::detectCores() - 2L), CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1849,7 +1847,7 @@ server <- function(input, output, session) {
     # Number of GPUs
     output$XGBoost_NumGPUs <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_NumGPUs', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_NumGPUs', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of GPUs'), Choices = c(1:12), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_NumGPUs', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of GPUs'), Choices = c(1:12), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1859,7 +1857,7 @@ server <- function(input, output, session) {
     # Train on Full Data
     output$XGBoost_TrainOnFull <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_TrainOnFull', ArgName = 'SelectedDefault', Default = FALSE, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_TrainOnFull', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train on Full Data'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TrainOnFull', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train on Full Data'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1901,7 +1899,7 @@ server <- function(input, output, session) {
 
     # Data
     output$XGBoost_data <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_data', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Training Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_data', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Training Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL, CloseAfterSelect = FALSE)
     })
 
     # Reactive
@@ -1911,7 +1909,7 @@ server <- function(input, output, session) {
     output$XGBoost_ValidationData <- shiny::renderUI({
       print('XGBoost Data Parameters 2')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_ValidationData', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1922,7 +1920,7 @@ server <- function(input, output, session) {
     output$XGBoost_TestData <- shiny::renderUI({
       print('XGBoost Data Parameters 3')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_TestData', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1933,7 +1931,7 @@ server <- function(input, output, session) {
     output$XGBoost_TargetColumnName <- shiny::renderUI({
       print('XGBoost Data Parameters 4')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_TargetColumnName', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_TargetColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Target'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TargetColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Target'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1944,7 +1942,7 @@ server <- function(input, output, session) {
     output$XGBoost_FeatureColNames <- shiny::renderUI({
       print('XGBoost Data Parameters 5')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_FeatureColNames', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1955,7 +1953,7 @@ server <- function(input, output, session) {
     output$XGBoost_PrimaryDateColumn <- shiny::renderUI({
       print('Adrian Antico 6')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_PrimaryDateColumn', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_PrimaryDateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Date'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_PrimaryDateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Date'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1966,7 +1964,7 @@ server <- function(input, output, session) {
     output$XGBoost_EncodeMethod <- shiny::renderUI({
       print('Adrian Antico 6')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_EncodeMethod', ArgName = 'SelectedDefault', Default = 'credibility', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_EncodeMethod', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Character Encoding'), Choices = c('credibility','binary','m_estimator','woe','target_encoding','poly_encode','backward_difference','helmert'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_EncodeMethod', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Character Encoding'), Choices = c('credibility','binary','m_estimator','woe','target_encoding','poly_encode','backward_difference','helmert'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1978,7 +1976,7 @@ server <- function(input, output, session) {
     output$XGBoost_WeightsColumnName <- shiny::renderUI({
       print('XGBoost Data Parameters 7')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_WeightsColumnName', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_WeightsColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Weights Column'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_WeightsColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Weights Column'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -1991,7 +1989,7 @@ server <- function(input, output, session) {
       gg <- c(input$XGBoost_TargetColumnName, input$XGBoost_FeatureColNames, input$XGBoost_PrimaryDateColumn, input$XGBoost_WeightsColumnName)
       gg <- gg[!is.na(gg)]; hh <- tryCatch({names(XGB_dt())}, error = function(x) NULL); choices <- tryCatch({hh[!hh %in% gg]}, error = function(x) NULL)
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_IDcols', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2002,7 +2000,7 @@ server <- function(input, output, session) {
     output$XGBoost_TransformNumericColumns <- shiny::renderUI({
       print('XGBoost Data Parameters 10')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_TransformNumericColumns', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_TransformNumericColumns', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Columns'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TransformNumericColumns', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Columns'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2013,7 +2011,7 @@ server <- function(input, output, session) {
     output$XGBoost_Methods <- shiny::renderUI({
       print('XGBoost Data Parameters 11')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_Methods', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Methods'), Choices = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Methods'), Choices = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2031,7 +2029,7 @@ server <- function(input, output, session) {
     # Pass In Grid
     output$XGBoost_PassInGrid <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MetaData, InputName = 'XGBoost_PassInGrid', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_PassInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Previous Grid Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_PassInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Previous Grid Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2041,7 +2039,7 @@ server <- function(input, output, session) {
     # Grid Tune
     output$XGBoost_GridTune <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_GridTune', ArgName = 'SelectedDefault', Default = FALSE, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_GridTune', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Grid Tune'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_GridTune', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Grid Tune'), Choices = c(FALSE, TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2052,7 +2050,7 @@ server <- function(input, output, session) {
     output$XGBoost_grid_eval_metric <- shiny::renderUI({
       out <- RemixAutoML:::CatBoostGridEvalMetricsOptions(TTx())
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_grid_eval_metric', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_grid_eval_metric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_grid_eval_metric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2062,7 +2060,7 @@ server <- function(input, output, session) {
     # Max Models
     output$XGBoost_MaxModelsInGrid <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_MaxModelsInGrid', ArgName = 'SelectedDefault', Default = 25, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxModelsInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Models'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxModelsInGrid', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Models'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2072,7 +2070,7 @@ server <- function(input, output, session) {
     # Runs without a New Winner
     output$XGBoost_MaxRunsWithoutNewWinner <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_MaxRunsWithoutNewWinner', ArgName = 'SelectedDefault', Default = 10, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxRunsWithoutNewWinner', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Runs Without Winner'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxRunsWithoutNewWinner', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Runs Without Winner'), Choices = c(seq(5,20,5),seq(25,2500,25)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2082,7 +2080,7 @@ server <- function(input, output, session) {
     # Max Runtime in Minutes
     output$XGBoost_MaxRunMinutes <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_MaxRunMinutes', ArgName = 'SelectedDefault', Default = 30, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxRunMinutes', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Run Time (mins)'), Choices = c(seq(30,60*24*7,30)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_MaxRunMinutes', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Run Time (mins)'), Choices = c(seq(30,60*24*7,30)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2092,7 +2090,7 @@ server <- function(input, output, session) {
     # Baseline Comparison
     output$XGBoost_BaselineComparison <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_GridTuningParameters, InputName = 'XGBoost_BaselineComparison', ArgName = 'SelectedDefault', Default = 'default', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_BaselineComparison', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = c('default','best'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_BaselineComparison', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = c('default','best'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2110,7 +2108,7 @@ server <- function(input, output, session) {
     # Trees
     output$XGBoost_Trees <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_Trees', ArgName = 'SelectedDefault', Default = 1000, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_Trees', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Trees'), Choices = c(5:50, seq(75,475,25), seq(500,9500,500), seq(10000, 25000, 1000)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_Trees', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Trees'), Choices = c(5:50, seq(75,475,25), seq(500,9500,500), seq(10000, 25000, 1000)), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2120,7 +2118,7 @@ server <- function(input, output, session) {
     # Depth
     output$XGBoost_max_depth <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_max_depth', ArgName = 'SelectedDefault', Default = 8, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_max_depth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Tree Depth'), Choices = 4:20, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_max_depth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Tree Depth'), Choices = 4:20, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2130,7 +2128,7 @@ server <- function(input, output, session) {
     # Learning Rate
     output$XGBoost_eta <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_eta', ArgName = 'SelectedDefault', Default = 0.10, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_eta', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Learning Rate'), Choices = seq(0.01,0.50,0.002), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_eta', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Learning Rate'), Choices = seq(0.01,0.50,0.002), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2140,7 +2138,7 @@ server <- function(input, output, session) {
     # min_child_weight
     output$XGBoost_min_child_weight <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_min_child_weight', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_min_child_weight', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Min Child Weight'), Choices = 0:50, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_min_child_weight', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Min Child Weight'), Choices = 0:50, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2150,7 +2148,7 @@ server <- function(input, output, session) {
     # subsample
     output$XGBoost_subsample <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_subsample', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_subsample', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Subsample'), Choices = seq(0.05,1,0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_subsample', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Subsample'), Choices = seq(0.05,1,0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2160,7 +2158,7 @@ server <- function(input, output, session) {
     # colsample by tree
     output$XGBoost_colsample_bytree <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_MLParameters, InputName = 'XGBoost_colsample_bytree', ArgName = 'SelectedDefault', Default = 1, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_colsample_bytree', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Colsample Rate'), Choices = seq(0.05,1,0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_colsample_bytree', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Colsample Rate'), Choices = seq(0.05,1,0.05), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2181,7 +2179,7 @@ server <- function(input, output, session) {
       print(out)
       print(TTx())
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_EvalParameters, InputName = 'XGBoost_LossFunction', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_LossFunction', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Loss Function'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_LossFunction', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Loss Function'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2194,7 +2192,7 @@ server <- function(input, output, session) {
       print(out)
       print(TTx())
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_EvalParameters, InputName = 'XGBoost_EvalMetric', ArgName = 'SelectedDefault', Default = out$Default, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_EvalMetric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_EvalMetric', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Evaluation Metric'), Choices = out$Choices, Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2283,7 +2281,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Obs Event Ok Buttons in Modals    ----
+  # :: Inputs Ok Buttons in Modals       ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Plot 1
@@ -2371,7 +2369,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Obs Event Modals                  ----
+  # :: Inputs Modals                     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2734,28 +2732,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$CalibrationLine_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal4(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationLine_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal4(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationLine_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal4(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$CalibrationLine_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'CalibrationPlot', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
+    RemixAutoML:::StandardPlotsModal4(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2798,28 +2796,28 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$PartialDependenceLine_MenuButton1, {
     output$Plot1 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot1', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown1[['Plot1']][['SelectedDefault']][[length(PlotDropDown1[['Plot1']][['SelectedDefault']]) + 1L]] <- input$Plot1;PlotDropDown1 <<- PlotDropDown1
-    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 1L)
+    RemixAutoML:::StandardPlotsModal4(id = 'SPM1', PlotNumber = 1L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceLine_MenuButton2, {
     output$Plot2 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown2[['Plot2']][['SelectedDefault']][[length(PlotDropDown2[['Plot2']][['SelectedDefault']]) + 1L]] <- input$Plot2; PlotDropDown2 <<- PlotDropDown2
-    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 2L)
+    RemixAutoML:::StandardPlotsModal4(id = 'SPM1', PlotNumber = 2L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceLine_MenuButton3, {
     output$Plot3 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot3', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown3[['Plot3']][['SelectedDefault']][[length(PlotDropDown3[['Plot3']][['SelectedDefault']]) + 1L]] <- input$Plot3; PlotDropDown3 <<- PlotDropDown3
-    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 3L)
+    RemixAutoML:::StandardPlotsModal4(id = 'SPM1', PlotNumber = 3L)
   })
 
   # Show modal when button is clicked.
   shiny::observeEvent(input$PartialDependenceLine_MenuButton4, {
     output$Plot4 <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'Plot4', Label = tags$span(style=paste0('color: ', AppTextColor, ';'), 'Plot Selection'), Choices = c(AvailablePlots), SelectedDefault = 'PartialDependenceLine', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)})
     PlotDropDown4[['Plot4']][['SelectedDefault']][[length(PlotDropDown4[['Plot4']][['SelectedDefault']]) + 1L]] <- input$Plot4;PlotDropDown4 <<- PlotDropDown4
-    RemixAutoML:::StandardPlotsModal1(id = 'SPM1', PlotNumber = 4L)
+    RemixAutoML:::StandardPlotsModal4(id = 'SPM1', PlotNumber = 4L)
   })
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -3115,7 +3113,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  #   Inputs PlotDropDowns               ----
+  # :: Inputs PlotDropDowns              ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Plot 1 DropDown
@@ -5738,36 +5736,36 @@ server <- function(input, output, session) {
           data.table::set(ML_ExperimentTable, i = iter, j = 'Algorithm', value = 'CatBoost')
           data.table::set(ML_ExperimentTable, i = iter, j = 'GridTune', value = CatBoostArgsList[['GridTune']])
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_r-sq', value = if(CatBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'R2', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_r-sq', value = if(CatBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_RMSE', value = if(CatBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'RMSE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_RMSE', value = if(CatBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'RMSE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAE', value = if(CatBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAE', value = if(CatBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAPE', value = if(CatBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAPE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAPE', value = if(CatBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAPE', MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_r-sq', value = if(CatBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'R2', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_r-sq', value = if(CatBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_RMSE', value = if(CatBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'RMSE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_RMSE', value = if(CatBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'RMSE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAE', value = if(CatBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAE', value = if(CatBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAPE', value = if(CatBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAPE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAPE', value = if(CatBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAPE', MetricValue], 4L) else NA_real_)
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy', value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Accuracy] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy', value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Accuracy] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MCC',      value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, MCC] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MCC',      value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, MCC] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility',  value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Utility] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',  value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy', value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Accuracy], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy', value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Accuracy], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MCC',      value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, MCC], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MCC',      value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, MCC], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility',  value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Utility], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',  value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh', value = if(CatBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold], 4L) else NA_real_)
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MicroAUC', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MicroAUC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_LogLoss', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'LogLoss'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_LogLoss', value = if(CatBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'LogLoss'][1L, MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(CatBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(CatBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy', value = if(CatBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(CatBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC', value = if(CatBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MicroAUC', value = if(CatBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MicroAUC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_LogLoss', value = if(CatBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'LogLoss'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_LogLoss', value = if(CatBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'LogLoss'][1L, MetricValue], 4L) else NA_real_)
 
           # Save output
           print(' ::  BuildModels 11  :: ')
@@ -5796,7 +5794,7 @@ server <- function(input, output, session) {
     })
 
     # Send Sweet Alert
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    #shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
   })
 
   # ----
@@ -5985,40 +5983,40 @@ server <- function(input, output, session) {
 
           print(' ::  BuildModels 11 :: ')
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_r-sq', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'R2', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_r-sq', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_RMSE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'RMSE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_RMSE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'RMSE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAPE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAPE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAPE', value = if(XGBoost_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAPE', MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_r-sq', value = if(XGBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'R2', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_r-sq', value = if(XGBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_RMSE', value = if(XGBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'RMSE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_RMSE', value = if(XGBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'RMSE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAE', value = if(XGBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAE', value = if(XGBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAPE', value = if(XGBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAPE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAPE', value = if(XGBoost_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAPE', MetricValue], 4L) else NA_real_)
 
           print(' ::  BuildModels 12 :: ')
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Accuracy] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Accuracy] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MCC',      value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, MCC] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MCC',      value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, MCC] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility',  value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Utility] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',  value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy', value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Accuracy], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy', value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Accuracy], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MCC',      value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, MCC], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MCC',      value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, MCC], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility',  value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Utility], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',  value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh', value = if(XGBoost_TargetType == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold], 4L) else NA_real_)
 
           print(' ::  BuildModels 13 :: ')
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MicroAUC', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MicroAUC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_LogLoss', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'LogLoss'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_LogLoss', value = if(XGBoost_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'LogLoss'][1L, MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(XGBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(XGBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy', value = if(XGBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(XGBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC', value = if(XGBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MicroAUC', value = if(XGBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MicroAUC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_LogLoss', value = if(XGBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'LogLoss'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_LogLoss', value = if(XGBoost_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'LogLoss'][1L, MetricValue], 4L) else NA_real_)
 
           # Save output
           DataList <<- DataList
@@ -6045,7 +6043,7 @@ server <- function(input, output, session) {
       }
 
       # Finished
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      #shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     })
   })
 
@@ -6188,36 +6186,36 @@ server <- function(input, output, session) {
           data.table::set(ML_ExperimentTable, i = iter, j = 'Algorithm', value = 'LightGBM')
           data.table::set(ML_ExperimentTable, i = iter, j = 'GridTune', value = LightGBMArgsList[['GridTune']])
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_r-sq', value = if(LightGBM_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'R2', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_r-sq', value = if(LightGBM_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_RMSE', value = if(LightGBM_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'RMSE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_RMSE', value = if(LightGBM_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'RMSE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAE', value = if(LightGBM_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAE', value = if(LightGBM_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAPE', value = if(LightGBM_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAPE', MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAPE', value = if(LightGBM_TargetType == 'Regression') ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAPE', MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_r-sq', value = if(LightGBM_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'R2', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_r-sq', value = if(LightGBM_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_RMSE', value = if(LightGBM_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'RMSE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_RMSE', value = if(LightGBM_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'RMSE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAE', value = if(LightGBM_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAE', value = if(LightGBM_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAPE', value = if(LightGBM_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAPE', MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAPE', value = if(LightGBM_TargetType == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAPE', MetricValue], 4L) else NA_real_)
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Accuracy] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Accuracy] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MCC',      value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, MCC] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MCC',      value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, MCC] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility',  value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Utility] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility_Thresh', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Threshold] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',  value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh', value = if(LightGBM_TargetType == 'Classification') ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy', value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Accuracy], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy', value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Accuracy], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MCC',      value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, MCC], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh', value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MCC',      value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, MCC], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility',  value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Utility], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility_Thresh', value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Threshold], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',  value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh', value = if(LightGBM_TargetType == 'Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold], 4L) else NA_real_)
 
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MicroAUC', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MicroAUC'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_LogLoss', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TestData[Metric == 'LogLoss'][1L, MetricValue] else NA_real_)
-          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_LogLoss', value = if(LightGBM_TargetType == 'MultiClass') ModelOutputList$MultinomialMetrics$TrainData[Metric == 'LogLoss'][1L, MetricValue] else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC', value = if(LightGBM_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC', value = if(LightGBM_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy', value = if(LightGBM_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(LightGBM_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC', value = if(LightGBM_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MicroAUC', value = if(LightGBM_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MicroAUC'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Test_LogLoss', value = if(LightGBM_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'LogLoss'][1L, MetricValue], 4L) else NA_real_)
+          data.table::set(ML_ExperimentTable, i = iter, j = 'Train_LogLoss', value = if(LightGBM_TargetType == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'LogLoss'][1L, MetricValue], 4L) else NA_real_)
 
           # Save output
           DataList <<- DataList

@@ -467,6 +467,13 @@ MultiClassMetrics <- function(ModelClass = "catboost",
                               model_path. = model_path,
                               metadata_path. = metadata_path) {
 
+  # Convert Target Variable back to Categorical
+  if(is.numeric(ValidationData.[[TargetColumnName.]])) {
+    data.table::setkeyv(ValidationData., TargetColumnName.)
+    data.table::setkeyv(TargetLevels., 'NewLevels')
+    ValidationData.[TargetLevels., OriginalLevels := i.OriginalLevels][, eval(TargetColumnName.) := OriginalLevels][, OriginalLevels := NULL]
+  }
+
   # MultiClass Metrics Accuracy
   MetricAcc <- ValidationData.[, mean(data.table::fifelse(as.character(get(TargetColumnName.)) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
 
@@ -506,7 +513,6 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   ConfusionMatrix <- table(ValidationData.$Predict, ValidationData.[[eval(TargetColumnName.)]])
   c <- sum(diag(ConfusionMatrix))
   s <- sum(ConfusionMatrix)
-  # i = as.character(TargetLevels.[['OriginalLevels']])[[1L]]
 
   # pk * tk
   sumPkTk <- c()

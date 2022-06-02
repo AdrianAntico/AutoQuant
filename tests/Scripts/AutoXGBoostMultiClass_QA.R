@@ -22,9 +22,9 @@ XGBoost_QA_Results_MultiClass[, Train_Logloss := 0.0]
 # 3:  TRUE    FALSE Failure         3
 
 # AutoXGBoostMultiClass
-# run = 5
 # run = 2
-# run = 4
+# run = 5
+# run = 1
 for(run in seq_len(XGBoost_QA_Results_MultiClass[,.N])) {
 
   # Define values
@@ -141,7 +141,7 @@ for(run in seq_len(XGBoost_QA_Results_MultiClass[,.N])) {
   RemixAutoML:::Post_Append_Helper(XGBoost_QA_Results_MultiClass,'AutoXGBoostMultiClass_QA')
 }
 
-# Testing ----
+# # Testing ----
 # XGBoost_QA_Results_MultiClass <- data.table::CJ(
 #   TOF = c(TRUE,FALSE),
 #   GridTune = c(TRUE,FALSE),
@@ -171,7 +171,7 @@ for(run in seq_len(XGBoost_QA_Results_MultiClass[,.N])) {
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
 #
-# Testing
+# # Testing
 # XGBoost_QA_Results_MultiClass <- data.table::CJ(
 #   TOF = c(TRUE,FALSE),
 #   GridTune = c(TRUE,FALSE),
