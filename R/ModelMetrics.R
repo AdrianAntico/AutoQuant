@@ -240,6 +240,9 @@ ClassificationMetrics <- function(TestData,
     data.table::set(ThresholdOutput, i = counter, j = "PPV",         value = PPV)
     data.table::set(ThresholdOutput, i = counter, j = "ThreatScore", value = ThreatScore)
   }
+
+  # Remove NA's
+  ThresholdOutput <- ThresholdOutput[, RowSum := rowSums(x = as.matrix(ThresholdOutput))][!is.na(RowSum)][, RowSum := NULL]
   return(ThresholdOutput)
 }
 

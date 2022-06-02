@@ -702,7 +702,7 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(InitalizeInputs, {
     print('App Initialization')
-    #RemixAutoML:::InitalizeInputs(InitalizeInputs)
+    RemixAutoML:::InitalizeInputs(InitalizeInputs)
     InitalizeInputs <<- FALSE
   })
 
@@ -1271,9 +1271,6 @@ server <- function(input, output, session) {
     if(!exists('CatBoost')) CatBoost <- list(Debug = Debug)
     print('CatBoostArgsList Target Type')
 
-    # Table Output
-    output$ML_ExperimentTable <- DT::renderDataTable({RemixAutoML::DataTable(ML_ExperimentTable)})
-
     # Target Type
     output$CatBoost_TargetType <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = CatBoost, InputName = 'CatBoost_TargetType', ArgName = 'SelectedDefault', Default = 'Regression', Debug = Debug)
@@ -1812,12 +1809,9 @@ server <- function(input, output, session) {
     if(!exists('XGBoost')) XGBoost <- list(Debug = Debug)
     print('XGBoost Target Type')
 
-    # Table Output
-    output$ML_ExperimentTable <- DT::renderDataTable({RemixAutoML::DataTable(ML_ExperimentTable)})
-
     # Cross Validation Runs
     output$XGBoost_Runs <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_Runs', Label = 'Cross Validation Runs', Choices = c(seq_len(30L)), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1L)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_Runs', Label = 'Cross Validation Runs', Choices = c(seq_len(30L)), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1L)
     })
 
     # Target Type
@@ -5870,7 +5864,7 @@ server <- function(input, output, session) {
           XGBoostArgsList[['NumOfParDepPlots']] <- 1L
 
           # XGBoost MetaData Parameters
-          if(run == input$CatBoost_Runs) {
+          if(run == input$XGBoost_Runs) {
             XGBoostArgsList[['OutputSelection']] <- c('Importances','EvalMetrics','EvalPlots','Score_TrainData')
           } else {
             XGBoostArgsList[['OutputSelection']] <- c('EvalMetrics','Score_TrainData','Importances')
@@ -6114,7 +6108,7 @@ server <- function(input, output, session) {
           shiny::showNotification('LightGBM Building has Begun!')
 
           # LightGBM MetaData Parameters
-          if(run == input$CatBoost_Runs) {
+          if(run == input$LightGBM_Runs) {
             LightGBMArgsList[['OutputSelection']] <- c('Importances','EvalMetrics','EvalPlots','Score_TrainData')
           } else {
             LightGBMArgsList[['OutputSelection']] <- c('EvalMetrics','Score_TrainData','Importances')
