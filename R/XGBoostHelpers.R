@@ -151,11 +151,28 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       TestData. <- dataSets$TestData
     }
 
+    # Dummify dataTrain Categorical Features ----
+    if(DebugMode.) print("Dummify dataTrain Categorical Features")
+    if(length(CatFeatures) > 0L) {
+      x <- names(data.table::copy(data.))
+      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+      data. <- Output$TrainData; Output$TrainData <- NULL
+      ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
+      TestData. <- Output$TestData; Output$TestData. <- NULL
+      FactorLevelsList <- Output$MetaData; rm(Output)
+      y <- setdiff(names(data.), x)
+      if(length(y) == 0L) y <- NULL
+      FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% CatFeatures]
+      FeatureColNames. <- c(FeatureColNames., y)
+    } else {
+      FactorLevelsList <- NULL
+    }
+
     # Classification data. Subset Columns Needed
     if(DebugMode.) print("Classification data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
-        TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+        TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
       } else {
         TrainMerge <- NULL
       }
@@ -181,14 +198,6 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     } else {
       data.table::setnames(Names, 'V1', 'ColNames')
     }
-
-    # Dummify dataTrain Categorical Features ----
-    if(DebugMode.) print("Dummify dataTrain Categorical Features")
-    Output <- RemixAutoML:::EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
-    dataTrain <- Output$TrainData; Output$TrainData <- NULL
-    dataTest <- Output$ValidationData; Output$ValidationData <- NULL
-    TestData. <- Output$TestData; Output$TestData. <- NULL
-    FactorLevelsList <- Output$MetaData; rm(Output)
 
     # Subset TargetColumnName. Variables ----
     if(DebugMode.) print("Subset TargetColumnName. Variables")
@@ -319,11 +328,25 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       }
     }
 
+    # Dummify dataTrain Categorical Features ----
+    if(DebugMode.) print("Dummify dataTrain Categorical Features")
+    x <- names(data.table::copy(data.))
+    Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+    data. <- Output$TrainData; Output$TrainData <- NULL
+    ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
+    TestData. <- Output$TestData; Output$TestData. <- NULL
+    FactorLevelsList <- Output$MetaData; rm(Output)
+
+    y <- setdiff(names(data.), x)
+    if(length(y) == 0L) y <- NULL
+    FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% CatFeatures]
+    FeatureColNames. <- c(FeatureColNames., y)
+
     # Regression data. Subset Columns Needed
     if(DebugMode.) print("Regression data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
-        TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+        TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
       } else {
         TrainMerge <- NULL
       }
@@ -348,18 +371,6 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       data.table::setnames(Names, 'FeatureColNames.', 'ColNames')
     } else {
       data.table::setnames(Names, 'V1', 'ColNames')
-    }
-
-    # Dummify dataTrain Categorical Features ----
-    if(DebugMode.) print("Dummify dataTrain Categorical Features")
-    if(!is.null(CatFeatures)) {
-      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
-      dataTrain <- Output$TrainData; Output$TrainData <- NULL
-      dataTest <- Output$ValidationData; Output$ValidationData <- NULL
-      TestData. <- Output$TestData; Output$TestData. <- NULL
-      FactorLevelsList <- Output$MetaData; rm(Output)
-    } else {
-      FactorLevelsList <- NULL
     }
 
     # Regression Subset Target Variables
@@ -404,12 +415,28 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       TestData. <- dataSets$TestData
     }
 
-    # Regression data. Subset Columns Needed
+    # Dummify dataTrain Categorical Features ----
+    if(DebugMode.) print("Dummify dataTrain Categorical Features")
+    if(length(CatFeatures) > 0L) {
+      x <- names(data.table::copy(data.))
+      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+      data. <- Output$TrainData; Output$TrainData <- NULL
+      ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
+      TestData. <- Output$TestData; Output$TestData. <- NULL
+      FactorLevelsList <- Output$MetaData; rm(Output)
+      y <- setdiff(names(data.), x)
+      if(length(y) == 0L) y <- NULL
+      FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% CatFeatures]
+      FeatureColNames. <- c(FeatureColNames., y)
+    } else {
+      FactorLevelsList <- NULL
+    }
+
+    # combine data and Subset Columns Needed
     if(DebugMode.) print("Regression data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
-        TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
-        data.table::setorderv(x = TrainMerge, cols = TargetColumnName., order = 1, na.last = TRUE)
+        TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
       } else {
         TrainMerge <- NULL
       }
@@ -436,13 +463,13 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       data.table::setnames(Names, 'V1', 'ColNames')
     }
 
-    # Dummify dataTrain Categorical Features ----
-    if(DebugMode.) print("Dummify dataTrain Categorical Features")
-    Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
-    dataTrain <- Output$TrainData; Output$TrainData <- NULL
-    dataTest <- Output$ValidationData; Output$ValidationData <- NULL
-    TestData. <- Output$TestData; Output$TestData. <- NULL
-    FactorLevelsList <- Output$MetaData; rm(Output)
+    # # Dummify dataTrain Categorical Features ----
+    # if(DebugMode.) print("Dummify dataTrain Categorical Features")
+    # Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=dataTrain, ValidationData=dataTest, TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=FALSE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+    # dataTrain <- Output$TrainData; Output$TrainData <- NULL
+    # dataTest <- Output$ValidationData; Output$ValidationData <- NULL
+    # TestData. <- Output$TestData; Output$TestData. <- NULL
+    # FactorLevelsList <- Output$MetaData; rm(Output)
 
     # MultiClass Obtain Unique Target Levels
     if(DebugMode.) print("MultiClass Obtain Unique Target Levels")

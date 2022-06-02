@@ -3,8 +3,7 @@ XGBoost_QA_Results_Classifier <- data.table::CJ(
   TOF = c(TRUE,FALSE),
   GridTune = c(TRUE,FALSE),
   Success = "Failure",
-  PartitionInFunction = c(TRUE,FALSE)
-)
+  PartitionInFunction = c(TRUE,FALSE))
 
 # Remove impossible combinations
 XGBoost_QA_Results_Classifier <- XGBoost_QA_Results_Classifier[!(TOF & GridTune)]
@@ -132,15 +131,6 @@ for(run in seq_len(XGBoost_QA_Results_Classifier[,.N])) {
   Sys.sleep(5)
   RemixAutoML:::Post_Append_Helper(XGBoost_QA_Results_Classifier,'AutoXGBoostClassifier_QA')
 }
-
-# Remove all else
-rm(list = ls()[!ls() %in% c(
-  "XGBoost_QA_Results_MultiClass",
-  "XGBoost_QA_Results_Regression",
-  "XGBoost_QA_Results_Classifier",
-  "CatBoost_QA_Results_MultiClass",
-  "CatBoost_QA_Results_Regression",
-  "CatBoost_QA_Results_Classifier")])
 
 # Defaults ----
 # library(RemixAutoML)
