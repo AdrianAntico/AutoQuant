@@ -48,10 +48,24 @@ y
 
 
 
+x <- data.table::fread(file.choose())
+y<- data.table::data.table(A = 1:10)
+temp <- function(x, y, h = 'a') {
+  if(h == 'a') {
+    print(x)
+    if(!missing(y)) print(y)
+  }
+}
+temp(x)
+
+gg <- call('temp', x)
+gg
+
+data <- data.table::fread('C:/Users/Bizon/Documents/GitHub/BenchmarkData1.csv')
 
 
-
-
-
-
-
+data <- data.table::data.table(A = 1:10, B = 1:10)
+sdcols <- c('A','B')
+lsdcols <- length(sdcols)
+data[, list(sum(.SD), sum(.SD) / lsdcols), .SDcols = sdcols, by = .I]
+data[, list(sum(.SD)^2, mean(.SD)), .SDcols = sdcols, by = .I]

@@ -15,6 +15,7 @@
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
 #' @param PrimaryDateColumn Supply a date or datetime column for catboost to utilize time as its basis for handling categorical features, instead of random shuffling
 #' @param WeightsColumnName Supply a column name for your weights column. Leave NULL otherwise
+#' @param CostMatrixWeights = c(1,0,0,1)
 #' @param IDcols A vector of column names or column numbers to keep in your data but not include in the modeling.
 #' @param ReturnFactorLevels Set to TRUE to have the factor levels returned with the other model objects
 #' @param MaxModelsInGrid Number of models to test from grid options (243 total possible options)
@@ -148,6 +149,7 @@
 #'   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'   PrimaryDateColumn = NULL,
 #'   WeightsColumnName = NULL,
+#'   CostMatrixWeights = c(1,0,0,1),
 #'   IDcols = c("IDcol_1","IDcol_2"),
 #'
 #'   # Grid parameters

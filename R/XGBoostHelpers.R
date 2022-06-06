@@ -172,7 +172,11 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(DebugMode.) print("Classification data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
-        TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+        if(length(CatFeatures) != 0L) {
+          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+        } else {
+          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+        }
       } else {
         TrainMerge <- NULL
       }
@@ -330,23 +334,29 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
 
     # Dummify dataTrain Categorical Features ----
     if(DebugMode.) print("Dummify dataTrain Categorical Features")
-    x <- names(data.table::copy(data.))
-    Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
-    data. <- Output$TrainData; Output$TrainData <- NULL
-    ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
-    TestData. <- Output$TestData; Output$TestData. <- NULL
-    FactorLevelsList <- Output$MetaData; rm(Output)
+    if(length(CatFeatures) != 0L) {
+      x <- names(data.table::copy(data.))
+      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+      data. <- Output$TrainData; Output$TrainData <- NULL
+      ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
+      TestData. <- Output$TestData; Output$TestData. <- NULL
+      FactorLevelsList <- Output$MetaData; rm(Output)
 
-    y <- setdiff(names(data.), x)
-    if(length(y) == 0L) y <- NULL
-    FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% CatFeatures]
-    FeatureColNames. <- c(FeatureColNames., y)
+      y <- setdiff(names(data.), x)
+      if(length(y) == 0L) y <- NULL
+      FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% CatFeatures]
+      FeatureColNames. <- c(FeatureColNames., y)
+    }
 
     # Regression data. Subset Columns Needed
     if(DebugMode.) print("Regression data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
-        TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+        if(length(CatFeatures) != 0L) {
+          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+        } else {
+          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+        }
       } else {
         TrainMerge <- NULL
       }
@@ -471,7 +481,11 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(DebugMode.) print("Regression data. Subset Columns Needed")
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
-        TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+        if(length(CatFeatures) != 0L) {
+          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+        } else {
+          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+        }
       } else {
         TrainMerge <- NULL
       }

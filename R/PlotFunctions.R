@@ -2478,9 +2478,11 @@ AppModelInsights <- function(dt = NULL,
     if('Predict' %in% names(dt)) {
       pred <- 'Predict'
       cm <- dt[, .N, by = c('Predict', eval(TargetVar))]
-    } else {
+    } else if('p1' %in% names(dt)) {
       pred <- 'p1'
       cm <- dt[, .N, by = c('p1', eval(TargetVar))]
+    } else {
+      return(NULL)
     }
     fig <- plotly::plot_ly(
       cm,
@@ -2504,12 +2506,16 @@ AppModelInsights <- function(dt = NULL,
   if(any(PlotType %chin% 'PartialDependenceLine') && !is.null(PDPVar)) {
 
     # MultiClass Mgt
+    nam <- names(dt)
     if(Debug) print(TargetLevel)
-    if(class(dt[[TargetVar]]) %in% c('factor', 'character') && TargetLevel %in% names(dt)) {
-      dt[, p1 := get(TargetLevel)]
-      dt[, paste0('Temp_', TargetLevel) := data.table::fifelse(get(TargetVar) == eval(TargetLevel), 1, 0)]
-      TargetVar <- paste0('Temp_', TargetLevel)
-      PredictVar <- 'p1'
+    if('Predict' %in% nam) {
+      if(class(dt[['Predict']])[1L] %in% c('character','factor')) {
+        dt[, paste0('Temp_', TargetLevel) := data.table::fifelse(get(TargetVar) == eval(TargetLevel), 1.0, 0.0)]
+        TargetVar <- paste0('Temp_', TargetLevel)
+        PredictVar <- TargetLevel
+      } else {
+        PredictVar <- 'Predict'
+      }
     }
 
     # PDP Creation
@@ -2518,6 +2524,9 @@ AppModelInsights <- function(dt = NULL,
       GraphType = 'calibration', PercentileBucket = 1 / Buckets, FactLevels = 10,
       Function = function(x) mean(x, na.rm = TRUE))
     p1 <- p1 + ggplot2::labs(subtitle = NULL)
+    if('Temp_' %in% substr(x = TargetVar, start = 1L, stop = 5L)) {
+      TargetVar <- gsub(pattern = 'Temp_', replacement = '', x = TargetVar)
+    }
     p1 <- p1 + ggplot2::ylab(TargetVar)
     p1$layers[[6L]] <- NULL
     p1$layers[[5L]] <- NULL

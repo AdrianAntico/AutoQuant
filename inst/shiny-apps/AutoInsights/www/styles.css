@@ -1,3 +1,7 @@
+
+<button type="button" class="swal2-confirm swal2-styled" style="display: inline-block; background-color: chartreuse; border-left-color: rgb(0, 128, 0); border-right-color: rgb(0, 128, 0);" aria-label="">success</button>
+
+
 /* Get a fancy font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
 
@@ -12,10 +16,74 @@ body, h1, h2, h3, h4, h5, h6 {
   font-family: 'Segoe UI', sans-serif;
 }
 
+/* Top Box inside Plot Selection Dropdowns */
+.box.box-solid.box-warning {
+  background-image: linear-gradient(to top, #e3e3e3, #000000);
+  border: 3px solid #bbd6fa;
+}
+
+/* PlotDropDown Bottom Box */
+.box {
+	position: relative;
+	border-radius: 3px;
+	background: linear-gradient(to top, #e3e3e3, #000000);
+	border-top: 3px solid #d2d6de;
+	margin-bottom: 20px;
+	width: 100%;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1)
+}
+
 /* Box Text Color */
 .shiny-input-container {
   color: #1b1b1c;
 }
+
+/* BACKGROUND COLOR */
+.skin-blue .wrapper,
+.skin-blue .main-sidebar,
+.skin-blue .left-side {
+	background-image: linear-gradient(to top, #ece6ff, #e9e2ff, #e6deff, #e3daff, #e0d6ff)
+}
+
+/* Header width */
+.main-header .navbar {
+	-webkit-transition: margin-left .3s ease-in-out;
+	-o-transition: margin-left .3s ease-in-out;
+	transition: margin-left .3s ease-in-out;
+	margin-bottom: 0;
+	margin-left: 205px;
+	border: none;
+	min-height: 50px;
+	border-radius: 0
+}
+
+/* Sidebar width and body width */
+.content-wrapper,
+.main-footer {
+	-webkit-transition: -webkit-transform .3s ease-in-out, margin .3s ease-in-out;
+	-moz-transition: -moz-transform .3s ease-in-out, margin .3s ease-in-out;
+	-o-transition: -o-transform .3s ease-in-out, margin .3s ease-in-out;
+	transition: transform .3s ease-in-out, margin .3s ease-in-out;
+	margin-left: 205px;
+	z-index: 820
+}
+
+/* THIS IS WHERE YOU CHANGE THE LENGTH OF THE COLOR THAT GOES OVER THE PAGE LABELS ON SIDEBAR */
+/* 240px seems to be the extra long default */
+.main-sidebar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding-top: 50px;
+	min-height: 100%;
+	width: 205px;
+	z-index: 810;
+	-webkit-transition: -webkit-transform .3s ease-in-out, width .3s ease-in-out;
+	-moz-transition: -moz-transform .3s ease-in-out, width .3s ease-in-out;
+	-o-transition: -o-transform .3s ease-in-out, width .3s ease-in-out;
+	transition: transform .3s ease-in-out, width .3s ease-in-out
+}
+
 
 /* lime border, gray interior, blue arrow middle */
 .btn-custom {
@@ -23,9 +91,93 @@ body, h1, h2, h3, h4, h5, h6 {
   border: 3px solid #00ff0d;
 }
 
+/* Tab Colors */
+a {
+	background-color: #3dc8df;
+}
+
+@keyframes TransitioningBackground {
+  0% {
+    background-position: 1% 0%;
+  }
+  50% {
+    background-position: 99% 100%;
+  }
+  100% {
+    background-position: 1% 0%;
+  }
+}
+
+.swal2-popup {
+  display: none;
+  position: relative;
+  box-sizing: border-box;
+  flex-direction: column;
+  justify-content: center;
+  width: 32em;
+  max-width: 100%;
+  padding: 1.25em;
+  border: none;
+  border-radius: .3125em;
+  background: #97ff00;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.swal2-styled.swal2-confirm {
+  border: 0;
+    border-right-color: currentcolor;
+    border-left-color: currentcolor;
+  border-radius: .25em;
+  background: initial;
+    background-color: initial;
+  background-color: #155de8;
+  color: #fff;
+  font-size: 1.0625em;
+}
+
+.sw-dropdown-content {
+  display: none;
+  /*position: absolute;*/
+  filter: progid:DXImageTransform.Microsoft.Shadow(color=#c0c0c0, Direction=NaN, Strength=15);
+  -moz-border-radius: 10px;
+  /*-webkit-border-radius: 10px;*/
+  background: none repeat scroll 0% 0% #09aee1;
+  -moz-box-shadow: 0px 0px 15px 0px #c0c0c0;
+  -webkit-box-shadow: 0px 0px 15px 0px #c0c0c0;
+  -o-box-shadow: 0px 0px 15px 0px #c0c0c0;
+  box-shadow: 0px 0px 1000px 50px #00e7ff;
+  z-index: 5;
+}
+
+
+/* Coloring for the active tab on side bar */
+.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+  background-color: #3dc8df;
+}
+
+/* Succeess button color shiny alert */
+.swal2-confirm .swal2-styled {
+  background-color: chartreuse;
+}
+
+/* Text color in Tab Panels */
+a {
+	color: black
+}
+
+/* Text in boxes and upside down triangle inside dropdown buttons */
+body {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	line-height: 1.42857;
+	color: #0088a7;
+	background-color: #fff
+}
+
 /* MAIN HEADER COLOR OF ENTIRE APP */
 .skin-blue .main-header .navbar {
-	background-color: #b299ff;
+	background-color: #420370;       /* #420370 is a tad darker than indigo */
 }
 
 /* DROPDOWN BOX BACKGROUND COLOR */
@@ -37,10 +189,10 @@ body, h1, h2, h3, h4, h5, h6 {
 
 /* BORDER OF DROPDOWN BOX */
 .sw-dropdown-in {
-  background-image: linear-gradient(to top, #f3faff, #edf2f6);
-  border: #4a44fc;
+  background-image: linear-gradient(to top, #08002d, #7400ff);
+  border: royalblue;
   border-style: solid;
-  color: #4a44fc;
+  color: snow;
 }
 
 .btn-default {
@@ -49,10 +201,6 @@ body, h1, h2, h3, h4, h5, h6 {
   border-style: solid;
   color: #4a44fc;
 }
-
-/*color: #333;
-	background-color: #fff;
-	border-color: #ccc  */
 
 .btn .btn-default .shiny-download-link .shiny-bound-output {
   background-image: linear-gradient(to top, #6265fc, #5053fa, #3a3dfc);
@@ -63,14 +211,8 @@ body, h1, h2, h3, h4, h5, h6 {
 
 /* THIS IS THE COLOR OF THE BOXES */
 .box.box-solid.box-danger {
-  background-image: linear-gradient(to top, #f7f7f7, #dfe3ee, #d0dcf4);
-  border: 3px solid #bbd6fa;
-}
-
-/* dark blue */
-.box.box-solid.box-warning {
-  background-image: linear-gradient(to top, #ffffff, #fafdff);
-  border: 3px solid #bbd6fa;
+  background-image: linear-gradient(to top, #d5a8ff, #dcc6ff, #eadaff, #e0d3f9, #e2cbff, #d5b2ff);
+  border: 2px solid #00d8e3
 }
 
 .box.box-solid.box-warning>.box-header {
@@ -106,48 +248,23 @@ body, h1, h2, h3, h4, h5, h6 {
 
 
 
-/* THIS IS WHERE YOU CHANGE THE LENGTH OF THE COLOR THAT GOES OVER THE PAGE LABELS ON SIDEBAR */
-/* 205px seems to be the extra long default */
-.main-sidebar {
-	position: absolute;
-	top: 0;
-	left: 0;
-	padding-top: 50px;
-	min-height: 100%;
-	width: 205px;
-	z-index: 810;
-	-webkit-transition: -webkit-transform .3s ease-in-out, width .3s ease-in-out;
-	-moz-transition: -moz-transform .3s ease-in-out, width .3s ease-in-out;
-	-o-transition: -o-transform .3s ease-in-out, width .3s ease-in-out;
-	transition: transform .3s ease-in-out, width .3s ease-in-out
-}
+
 
 /* Action Button Formatting */
 .bttn-gradient.bttn-royal {
   background-image: linear-gradient(to top, #aa73e7, #8766eb, #5d67d1)
 }
 
-/* SIDE PANEL BACKGROUND COLOR */
-.skin-blue .wrapper,
-.skin-blue .main-sidebar,
-.skin-blue .left-side {
-	background-image: linear-gradient(to top, #ece6ff, #e9e2ff, #e6deff, #e3daff, #e0d6ff)
-}
+
 
 /* Highlighting over SideBar Menu Options */
 .skin-blue .main-sidebar .sidebar .sidebar-menu a{
-  background-color: #cbbbfc;
-  color: #000000;
-}
-
-/* Coloring for the active tab on side bar */
-.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
-  background-color: #00b6f2;
+  color: black;
 }
 
 /* Hover Color over Sidebar Menu Items  */
 .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
-  background-color: #beff5c;
+  background-color: white;
 }
 
 
@@ -199,13 +316,14 @@ body, h1, h2, h3, h4, h5, h6 {
 }
 
 .skin-blue .main-header .logo {
-	background-color: #0d042b;
-	color: #fff;
-	border-bottom: 0 solid rgba(0, 0, 0, 0)
+	background-color: #420370;
+	color: chartreuse;
+	border-bottom: 2px solid rgba(0, 0, 0, 0);
+	border-top: 2px solid rgba(0, 0, 0, 0)
 }
 
 .skin-blue .main-header .logo:hover {
-	background-color: #363e4c
+	background-color: #420370
 }
 
 .skin-blue .main-header li.user-header {
@@ -331,77 +449,6 @@ body, h1, h2, h3, h4, h5, h6 {
 }
 
 
-/* Old Stuff */
-/*--AutoTS Forecast button--*/
-/* border-color: #00aa9d; */
-body > div > div > section > div:nth-child(4) > div > div > button {
-     background-image: linear-gradient(to top, #d83f91, #d0409b, #c743a5, #bb47af, #ae4bb8);
-     border-color: #0000C6;
-     background-color: #0000C6;
-}
-
-body > div > div > section > div:nth-child(odd) > div > div > button:hover{
-    transition: all 2s ease;
-    transform: translateX(10px);
-    cursor: pointer;
-    box-shadow: -6px -9px 2px -2px #a5a5a5;
-}
-
-body > div > div > section > div:nth-child(even) > div > div > button:hover{
-    transition: all 2s ease;
-    transform: translateX(-10px);
-    cursor: pointer;
-    box-shadow: 8px 8px 2px -2px #a5a5a5;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*!
- *   AdminLTE v2.4.8
- *   Author: Almsaeed Studio
- *	 Website: Almsaeed Studio <https://adminlte.io>
- *   License: Open source - MIT
- *           Please visit http://opensource.org/licenses/MIT for more information
- */
-
-
-/*!
- * Bootstrap v3.4.1 (https://getbootstrap.com/)
- * Copyright 2011-2019 Twitter, Inc.
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
- */
-
-
-/*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
-
 html {
 	font-family: sans-serif;
 	-ms-text-size-adjust: 100%;
@@ -446,9 +493,7 @@ template {
 	display: none
 }
 
-a {
-	background-color: transparent
-}
+
 
 a:active,
 a:hover {
@@ -713,13 +758,7 @@ html {
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0)
 }
 
-body {
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-	font-size: 14px;
-	line-height: 1.42857;
-	color: #333;
-	background-color: #fff
-}
+
 
 input,
 button,
@@ -728,11 +767,6 @@ textarea {
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit
-}
-
-a {
-	color: #337ab7;
-	text-decoration: none
 }
 
 a:hover,
@@ -811,7 +845,7 @@ hr {
 }
 
 [role="button"] {
-	cursor: pointer
+	cursor: nwse-resize
 }
 
 h1,
@@ -4227,7 +4261,7 @@ tbody.collapse.in {
 }
 
 .nav-tabs {
-	border-bottom: 1px solid #ddd
+	border-bottom: 1px solid #ddd;
 }
 
 .nav-tabs>li {
@@ -4249,11 +4283,9 @@ tbody.collapse.in {
 .nav-tabs>li.active>a,
 .nav-tabs>li.active>a:hover,
 .nav-tabs>li.active>a:focus {
-	color: #555;
-	cursor: default;
-	background-color: #fff;
-	border: 1px solid #ddd;
-	border-bottom-color: transparent
+	color: white;
+	background-color: #7600d8;
+	border: 1px solid #68ff00;
 }
 
 .nav-pills>li {
@@ -6463,7 +6495,7 @@ button.mailbox-attachment-close {
 
 .modal-content {
 	position: relative;
-	background-color: #fff;
+	background-color: #dcfffa;
 	background-clip: padding-box;
 	border: 1px solid #999;
 	border: 1px solid rgba(0, 0, 0, 0.2);
@@ -7434,7 +7466,7 @@ body {
 
 body {
 	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	font-weight: 400;
+	font-weight: 600;
 	overflow-x: hidden;
 	overflow-y: auto
 }
@@ -7458,15 +7490,7 @@ body {
 	background-color: #f9fafc
 }
 
-.content-wrapper,
-.main-footer {
-	-webkit-transition: -webkit-transform .3s ease-in-out, margin .3s ease-in-out;
-	-moz-transition: -moz-transform .3s ease-in-out, margin .3s ease-in-out;
-	-o-transition: -o-transform .3s ease-in-out, margin .3s ease-in-out;
-	transition: transform .3s ease-in-out, margin .3s ease-in-out;
-	margin-left: 205px;
-	z-index: 820
-}
+
 
 .layout-top-nav .content-wrapper,
 .layout-top-nav .main-footer {
@@ -7499,7 +7523,7 @@ body {
 
 .content-wrapper {
 	min-height: 100%;
-	background-color: #fff;
+	background-color: revert;
 	z-index: 800
 }
 
@@ -7589,9 +7613,7 @@ h6,
 	font-family: 'Source Sans Pro', sans-serif
 }
 
-a {
-	color: #337ab7
-}
+
 
 a:hover,
 a:active,
@@ -7618,16 +7640,7 @@ a:focus {
 	z-index: 1030
 }
 
-.main-header .navbar {
-	-webkit-transition: margin-left .3s ease-in-out;
-	-o-transition: margin-left .3s ease-in-out;
-	transition: margin-left .3s ease-in-out;
-	margin-bottom: 0;
-	margin-left: 205px;
-	border: none;
-	min-height: 50px;
-	border-radius: 0
-}
+
 
 .layout-top-nav .main-header .navbar {
 	margin-left: 0
@@ -7901,6 +7914,7 @@ a:focus {
 
 .sidebar {
 	padding-bottom: 10px
+	background-color: #9e9cd7
 }
 
 .sidebar-form input:focus {
@@ -9132,15 +9146,7 @@ a:focus {
 	}
 }
 
-.box {
-	position: relative;
-	border-radius: 3px;
-	background: #D8DEE9;
-	border-top: 3px solid #d2d6de;
-	margin-bottom: 20px;
-	width: 100%;
-	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1)
-}
+
 
 .box.box-primary {
 	border-top-color: #434C5E

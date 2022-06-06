@@ -103,7 +103,7 @@ LoadDataInputs <- function(id = 'ExternalData',
                            DropdownRight = FALSE,
                            DropDownAnimate = TRUE,
                            DropDownStatus = 'custom',
-                           H3Color = 'blue')  {
+                           H3Color = 'snow')  {
   ns <- shiny::NS(id)
   shiny::tagList(
     RemixAutoML:::BlankRow(AppWidth),
@@ -283,7 +283,7 @@ LoadDataButton <- function(id = 'DataButton',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 ShinySaveData <- function(id = 'SaveData_CSV_UI',
@@ -296,7 +296,7 @@ ShinySaveData <- function(id = 'SaveData_CSV_UI',
                           DropDownRight=FALSE,
                           Animate=TRUE,
                           Status='custom',
-                          H3Color = 'blue') {
+                          H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -367,7 +367,7 @@ ShinySaveData <- function(id = 'SaveData_CSV_UI',
                 shiny::column(width = 1L, align = 'center'),
                 shiny::column(width = 4L, align = 'center', shiny::uiOutput('SaveData_SelectData')),
                 shiny::column(width = 2L, align = 'center'),
-                shiny::column(width = 4L, align = 'center', tags$h4(tags$span(style=paste0('color: blue;'),'Press to Save')),
+                shiny::column(width = 4L, align = 'center', tags$h4(tags$span(style=paste0('color: snow;'),'Press to Save')),
                               shiny::downloadButton(outputId = "SaveData_CSV", label = 'Save Data'))),
 
               # Add space so area underneath selected item remains inside the dropdown
@@ -416,7 +416,7 @@ ShinySaveData <- function(id = 'SaveData_CSV_UI',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 FE_DateVariables <- function(id='CalendarVariables',
@@ -429,7 +429,7 @@ FE_DateVariables <- function(id='CalendarVariables',
                              DropDownRight=FALSE,
                              Animate=TRUE,
                              Status='custom',
-                             H3Color = 'blue') {
+                             H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -549,7 +549,7 @@ FE_DateVariables <- function(id='CalendarVariables',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 FE_NumericVariables <- function(id='NumericVariables',
@@ -562,7 +562,7 @@ FE_NumericVariables <- function(id='NumericVariables',
                                 DropDownRight=FALSE,
                                 Animate=TRUE,
                                 Status='custom',
-                                H3Color = 'blue') {
+                                H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -723,7 +723,7 @@ FE_NumericVariables <- function(id='NumericVariables',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 FE_CategoricalVariables <- function(id='CategoricalVariables',
@@ -736,7 +736,7 @@ FE_CategoricalVariables <- function(id='CategoricalVariables',
                                     DropDownRight=TRUE,
                                     Animate=TRUE,
                                     Status='custom',
-                                    H3Color = 'blue') {
+                                    H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -856,7 +856,7 @@ FE_CategoricalVariables <- function(id='CategoricalVariables',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 FE_WindowingVariables <- function(id='WindowingVariables',
@@ -869,7 +869,7 @@ FE_WindowingVariables <- function(id='WindowingVariables',
                                   DropDownRight=FALSE,
                                   Animate=TRUE,
                                   Status='custom',
-                                  H3Color = 'blue') {
+                                  H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -1062,7 +1062,7 @@ FE_WindowingVariables <- function(id='WindowingVariables',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 FE_DataWrangling <- function(id='GeneralFeatureEngineering',
@@ -1075,7 +1075,7 @@ FE_DataWrangling <- function(id='GeneralFeatureEngineering',
                              DropDownRight=FALSE,
                              Animate=TRUE,
                              Status='custom',
-                             H3Color = 'blue') {
+                             H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
 
@@ -1189,7 +1189,7 @@ FE_DataWrangling <- function(id='GeneralFeatureEngineering',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 FE_DataSets <- function(id='DataSets',
@@ -1202,7 +1202,7 @@ FE_DataSets <- function(id='DataSets',
                         DropDownRight=FALSE,
                         Animate=TRUE,
                         Status='custom',
-                        H3Color = 'blue') {
+                        H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -1305,6 +1305,144 @@ FE_DataSets <- function(id='DataSets',
       )))
 }
 
+#' @title FE_ModelBased
+#'
+#' @description Calendar Variables Dropdown
+#'
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param id = 'DataSets'
+#' @param AppWidth = AppWidth
+#' @param LogoWidth = LogoWidth
+#' @param ButtonWidth = 3L
+#' @param Style = 'gradient',
+#' @param Color = 'royal',
+#' @param Align = 'center'
+#' @param DropDownRight = FALSE
+#' @param Animate = TRUE
+#' @param Status = 'custom'
+#' @param H3Color = 'snow'
+#'
+#' @noRd
+FE_ModelBased <- function(id='DataSets',
+                          AppWidth=parent.frame()$AppWidth,
+                          LogoWidth=parent.frame()$LogoWidth,
+                          ButtonWidth=3L,
+                          Style = 'gradient',
+                          Color = 'royal',
+                          Align='left',
+                          DropDownRight=FALSE,
+                          Animate=TRUE,
+                          Status='custom',
+                          H3Color = 'snow') {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::column(
+      width = ButtonWidth,
+      align=Align,
+
+      # Dropdown Button
+      tags$h4(tags$b('Model Based')),
+      shinyWidgets::dropdown(
+        right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+        RemixAutoML:::BlankRow(AppWidth),
+
+        # Dropdowns on same row: otherwise they get put on diff rows
+        shiny::fluidRow(
+
+          # Model Data Prep
+          shiny::column(
+            width = 3L,
+            tags$h4(tags$b('H2O Word2Vec')),
+            shinyWidgets::dropdown(
+              inputId = 'H2O_Word2VecInputs', right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0(''))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(6L, align = 'center', shiny::uiOutput(''))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('H2O_Word2Vec_TrainData')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('H2O_Word2Vec_ValidationData')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('H2O_Word2Vec_TestData'))),
+              shiny::fluidRow(
+                shiny::column(4L, align = 'center', shiny::uiOutput('H2O_Word2Vec_BuildType')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('H2O_Word2Vec_stringCol')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('H2O_Word2Vec_KeepStringCol'))),
+              shiny::fluidRow(
+                shiny::column(3L, align = 'center', shiny::uiOutput('H2O_Word2Vec_vects')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('H2O_Word2Vec_MinWords')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('H2O_Word2Vec_WindowSize')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('H2O_Word2Vec_Epochs'))),
+
+              # Blank space
+              RemixAutoML:::BlankRow(AppWidth),
+
+              # Build Button
+              shiny::fluidRow(
+                shiny::column(
+                  width = 3L,
+                  align = 'center',
+                  shinyWidgets::actionBttn(
+                    inputId = 'FeatureEngineeringButton_H2O_Word2Vec',
+                    label = 'Run',
+                    icon = shiny::icon('chevron-right', lib='font-awesome'),
+                    style = Style,
+                    color = Color))))),
+
+          # H2O Clustering
+          shiny::column(
+            width = 3L,
+            tags$h4(tags$b('')),
+            shinyWidgets::dropdown(
+              right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'AutoDataPartitionInputs',
+              tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0(''))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(6L, align = 'center', shiny::uiOutput(''))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('')),
+                shiny::column(4L, align = 'center', shiny::uiOutput(''))),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('')),
+                shiny::column(4L, align = 'center', shiny::uiOutput(''))),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('')),
+                shiny::column(4L, align = 'center', shiny::uiOutput(''))),
+
+              # Blank space
+              RemixAutoML:::BlankRow(AppWidth),
+
+              # Build Button
+              shiny::fluidRow(
+                shiny::column(
+                  width = 3L,
+                  align = 'center',
+                  shinyWidgets::actionBttn(
+                    inputId = '',
+                    label = 'Run',
+                    icon = shiny::icon('chevron-right', lib='font-awesome'),
+                    style = Style,
+                    color = Color)))))),
+
+        # Add space at bottom of box
+        RemixAutoML:::BlankRow(AppWidth)
+
+      )))
+}
+
+
+
 #' @title ML_CatBoost
 #'
 #' @description Catboost args
@@ -1322,7 +1460,7 @@ FE_DataSets <- function(id='DataSets',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 ML_CatBoost <- function(id='CatBoostML',
@@ -1335,7 +1473,7 @@ ML_CatBoost <- function(id='CatBoostML',
                         DropDownRight=FALSE,
                         Animate=TRUE,
                         Status='custom',
-                        H3Color = 'blue') {
+                        H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -1367,6 +1505,7 @@ ML_CatBoost <- function(id='CatBoostML',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('CatBoost Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
+                shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_NThreads')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_task_type')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('CatBoost_NumGPUs'))),
               shiny::fluidRow(
@@ -1529,7 +1668,7 @@ ML_CatBoost <- function(id='CatBoostML',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 ML_XGBoost <- function(id='XGBoostML',
@@ -1542,7 +1681,7 @@ ML_XGBoost <- function(id='XGBoostML',
                         DropDownRight=FALSE,
                         Animate=TRUE,
                         Status='custom',
-                        H3Color = 'blue') {
+                        H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -1575,6 +1714,7 @@ ML_XGBoost <- function(id='XGBoostML',
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_NThreads')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_TreeMethod')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_NumGPUs'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('XGBoost_TrainOnFull')),
@@ -1658,9 +1798,9 @@ ML_XGBoost <- function(id='XGBoostML',
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_FeatureColNames')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_PrimaryDateColumn'))),
               shiny::fluidRow(
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_EncodeMethod')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_WeightsColumnName')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_IDcols')),
-                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_EncodingMethod'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_IDcols'))),
               shiny::fluidRow(
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_TransformNumericColumns')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('XGBoost_Methods'))),
@@ -1724,7 +1864,7 @@ ML_XGBoost <- function(id='XGBoostML',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = 'snow'
 #'
 #' @noRd
 ML_LightGBM <- function(id='LightGBMML',
@@ -1734,10 +1874,10 @@ ML_LightGBM <- function(id='LightGBMML',
                         Style = 'gradient',
                         Color = 'royal',
                         Align='left',
-                        DropDownRight=FALSE,
+                        DropDownRight=TRUE,
                         Animate=TRUE,
                         Status='custom',
-                        H3Color = 'blue') {
+                        H3Color = 'snow') {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::column(
@@ -1747,7 +1887,7 @@ ML_LightGBM <- function(id='LightGBMML',
       # Dropdown Button
       tags$h4(tags$b('LightGBM')),
       shinyWidgets::dropdown(
-        right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LightGBM',
+        right = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LightGBM',
         tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
         shiny::fluidRow(
           width=AppWidth,
@@ -1765,11 +1905,12 @@ ML_LightGBM <- function(id='LightGBMML',
             width = 4L,
             tags$h4(tags$b('Meta Data Parameters')),
             shinyWidgets::dropdown(
-              right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_MetaData',
+              right = FALSE, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_MetaData',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('LightGBM Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_task_type')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_NThreads')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_device_type')),
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_NumGPUs'))),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_TrainOnFull')),
@@ -1787,7 +1928,7 @@ ML_LightGBM <- function(id='LightGBMML',
             width = 4L,
             tags$h4(tags$b('Grid Tuning Parameters')),
             shinyWidgets::dropdown(
-              right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_GridTuningParameters',
+              right = TRUE, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_GridTuningParameters',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('LightGBM Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
@@ -1815,17 +1956,22 @@ ML_LightGBM <- function(id='LightGBMML',
             width = 4L,
             tags$h4(tags$b('ML Parameters')),
             shinyWidgets::dropdown(
-              right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_MLParameters',
+              right = FALSE, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_MLParameters',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('LightGBM Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_Trees')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_Depth')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_LearningRate')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_L2_Leaf_Reg'))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_max_depth')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_eta')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_lambda_l2'))),
               shiny::fluidRow(
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_model_size_reg')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_langevin'))),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_num_leaves')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_min_data_in_leaf')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_bagging_fraction')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_lambda_l1'))),
+              shiny::fluidRow(
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_feature_fraction')),
+                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_feature_fraction_bynode'))),
 
               RemixAutoML:::BlankRow(AppWidth),
               RemixAutoML:::BlankRow(AppWidth),
@@ -1839,21 +1985,23 @@ ML_LightGBM <- function(id='LightGBMML',
             width = 4L,
             tags$h4(tags$b('Data Parameters')),
             shinyWidgets::dropdown(
-              right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_DataParameters',
+              right = TRUE, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_DataParameters',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('LightGBM Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_TrainDataSelection')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_ValidationDataSelection')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_TestDataSelection')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_TargetColumnName'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_data')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_ValidationData')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_TestData'))),
               shiny::fluidRow(
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_FeatureColNames')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_PrimaryDateColumn')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_WeightsColumnName')),
-                shiny::column(3L, align = 'center', shiny::uiOutput('LightGBM_IDcols'))),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_TargetColumnName')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_FeatureColNames')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_PrimaryDateColumn'))),
               shiny::fluidRow(
-                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_TransformNumericColumns')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_EncodeMethod')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_WeightsColumnName')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_IDcols'))),
+              shiny::fluidRow(
+                shiny::column(6L, align = 'center', shiny::uiOutput('LightGBM_TransformNumericColumns')),
                 shiny::column(4L, align = 'center', shiny::uiOutput('LightGBM_Methods'))),
 
               RemixAutoML:::BlankRow(AppWidth),
@@ -1866,7 +2014,7 @@ ML_LightGBM <- function(id='LightGBMML',
             width = 4L,
             tags$h4(tags$b('Evaluation Parameters')),
             shinyWidgets::dropdown(
-              right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_EvalParameters',
+              right = TRUE, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'LGBM_EvalParameters',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('LightGBM Parameters'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
@@ -1954,7 +2102,7 @@ BuildModelsButton <- function(id = 'MLBuildButton',
 #' @param DropDownRight = FALSE
 #' @param Animate = TRUE
 #' @param Status = 'custom'
-#' @param H3Color = 'blue'
+#' @param H3Color = '#0088a7'
 #'
 #' @noRd
 PlotDropDownContents <- function(id,
@@ -1966,7 +2114,7 @@ PlotDropDownContents <- function(id,
                                  DropDownRight=FALSE,
                                  Animate=TRUE,
                                  Status='custom',
-                                 H3Color = 'blue') {
+                                 H3Color = '#0088a7') {
 
   Height <- "85px"
   if(PlotNumber > 2) DropDownRight <- TRUE
@@ -2013,7 +2161,7 @@ PlotDropDownContents <- function(id,
             # Basic Plots
             shiny::fluidRow(
               shinydashboard::box(
-                title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+                title = NULL, solidHeader = TRUE, collapsible = FALSE, status = NULL, width = AppWidth,
                 RemixAutoML:::BlankRow(AppWidth),
 
                 # Distributions
@@ -2111,27 +2259,27 @@ PlotDropDownContents <- function(id,
             # Model Eval Plots
             shiny::fluidRow(
               shinydashboard::box(
-                title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+                title = NULL, solidHeader = TRUE, collapsible = FALSE, status = NULL, width = AppWidth,
                 RemixAutoML:::BlankRow(AppWidth),
 
                 # Model Evaluation Plots
                 shiny::fluidRow(
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Residuals Histogram'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Residuals Histogram'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0('ResidualsHistogram_MenuButton', PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/ResidualsHistogram.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0('ResidualsHistogram_MenuButton', PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Calibration Line'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Calibration Line'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0('CalibrationLine_MenuButton', PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/PartialDependenceLine.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0('CalibrationLine_MenuButton', PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Calibration Box'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Calibration Box'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0('CalibrationBox_MenuButton', PlotNumber),
                       type = "button", class = "btn btn-default action-button",
@@ -2143,21 +2291,21 @@ PlotDropDownContents <- function(id,
                 # Partial Dependence Plots
                 shiny::fluidRow(
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Actual v Predicted'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Actual v Predicted'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0("ResidualsScatterPlot_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Scatter.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0("ResidualsScatterPlot_MenuButton", PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Partial Dependence Line'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Partial Dependence Line'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0('PartialDependenceLine_MenuButton', PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/PartialDependenceLine.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0('PartialDependenceLine_MenuButton', PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Partial Dependence Box'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Partial Dependence Box'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0("PartialDependenceBox_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
@@ -2169,21 +2317,21 @@ PlotDropDownContents <- function(id,
                 # Var Imp
                 shiny::fluidRow(
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Variable Importance'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Variable Importance'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0("VariableImportance_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/VariableImportance.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0("VariableImportance_MenuButton", PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Shapely Importance'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Shapely Importance'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0("ShapelyImportance_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/VariableImportance.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0("ShapelyImportance_MenuButton", PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Confusion Matrix'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Confusion Matrix'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0("ConfusionMatrix_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
@@ -2195,21 +2343,21 @@ PlotDropDownContents <- function(id,
                 # Model Evaluation Classifier Plots
                 shiny::fluidRow(
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'ROC Plot'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'ROC Plot'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0("ROCPlot_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/ROC.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0("ROCPlot_MenuButton", PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Lift Plot'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Lift Plot'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0("LiftPlot_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Lift.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0("LiftPlot_MenuButton", PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #660000;'), 'Gains Plot'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Gains Plot'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0("GainsPlot_MenuButton", PlotNumber),
                       type = "button", class = "btn btn-default action-button",
@@ -2240,14 +2388,14 @@ PlotDropDownContents <- function(id,
                 # Model Evaluation Plots
                 shiny::fluidRow(
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #0a7506;'), 'Candlestick Plot'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Candlestick Plot'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0('CandlestickPlot_MenuButton', PlotNumber),
                       type = "button", class = "btn btn-default action-button",
                       tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Candlestick.PNG?raw=true", height = Height),
                       `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL))),
                   shiny::column(
-                    tags$h4(tags$b(tags$span(style=paste0('color: #0a7506;'), 'OHCL Plot'))), width = 4L, align = 'center',
+                    tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'OHCL Plot'))), width = 4L, align = 'center',
                     tags$button(
                       id = paste0('OHLCPlot_MenuButton', PlotNumber),
                       type = "button", class = "btn btn-default action-button",
@@ -2970,7 +3118,7 @@ InitalizeInputs <- function(id) {
           RemixAutoML::SelectizeInput(InputID = paste0('ZVar', i), Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Z-Variable'), Choices = NULL, Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL, CloseAfterSelect = TRUE)
         })
         output[[paste0('GroupVars', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID=paste0('GroupVars', i), Label=tags$span(style='color: blue;', 'Select Group Variables'), Choices= NULL, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
+          RemixAutoML::SelectizeInput(InputID=paste0('GroupVars', i), Label=tags$span(style='color: snow;', 'Select Group Variables'), Choices= NULL, SelectedDefault=NULL, Multiple=TRUE, MaxVars = 3, CloseAfterSelect = FALSE)
         })
         for(j in seq_len(3L)) {
           output[[paste0('Levels_', i, '_', j)]] <- shiny::renderUI({
@@ -2979,11 +3127,11 @@ InitalizeInputs <- function(id) {
         }
         for(j in seq_len(1L)) {
           output[[paste0('FacetVar_', i, '_', j)]] <- shiny::renderUI({
-            RemixAutoML::SelectizeInput(InputID=paste0('FacetVar_', i, '_', j), Label = tags$span(style='color: blue;', 'Facet Variables'), Choices = NULL, Multiple = FALSE)
+            RemixAutoML::SelectizeInput(InputID=paste0('FacetVar_', i, '_', j), Label = tags$span(style='color: snow;', 'Facet Variables'), Choices = NULL, Multiple = FALSE)
           })
         }
         output[[paste0('SizeVar', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('SizeVar', i), Label = tags$span(style='color: blue;', 'Size Variable'), Choices = NULL, Multiple = FALSE)
+          RemixAutoML::SelectizeInput(InputID = paste0('SizeVar', i), Label = tags$span(style='color: snow;', 'Size Variable'), Choices = NULL, Multiple = FALSE)
         })
         for(j in seq_len(4L)) {
           output[[paste0('FilterVariable_', i, '_', j)]] <- shiny::renderUI({
@@ -2992,7 +3140,7 @@ InitalizeInputs <- function(id) {
         }
         for(j in seq_len(4L)) {
           output[[paste0('FilterLogic_', i, '_', j)]] <- shiny::renderUI({
-            shiny::selectInput(inputId=paste0('FilterLogic_', i, '_', j), selected=NULL, label=tags$span(style='color: blue;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
+            shiny::selectInput(inputId=paste0('FilterLogic_', i, '_', j), selected=NULL, label=tags$span(style='color: snow;', 'Logical Operation'), choices=c('<','>','<=','>=','%in%','%like%','%between%','not %between%'), multiple=FALSE)
           })
         }
         for(j in seq_len(4L)) {
@@ -3006,19 +3154,19 @@ InitalizeInputs <- function(id) {
           RemixAutoML::SelectizeInput(InputID = paste0('Plot', i), Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Plot Type Selection'), Choices = NULL, Multiple = FALSE, SelectedDefault = NULL, CloseAfterSelect = TRUE)
         })
         output[[paste0('BarPlotAgg', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('BarPlotAgg', i), Label = tags$span(style='color: blue;', 'Bar Plot Agg Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
+          RemixAutoML::SelectizeInput(InputID = paste0('BarPlotAgg', i), Label = tags$span(style='color: snow;', 'Bar Plot Agg Method'), Choices = c('mean','median','sd'), SelectedDefault = 'mean', Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
         })
         output[[paste0('TargetLevel', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('TargetLevel', i), Label = tags$span(style='color: blue;', 'Target Level'), Choices = vals, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = NULL)
+          RemixAutoML::SelectizeInput(InputID = paste0('TargetLevel', i), Label = tags$span(style='color: snow;', 'Target Level'), Choices = vals, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = FALSE, SelectedDefault = NULL)
         })
         output[[paste0('YLimMin', i)]] <- shiny::renderUI({
-          RemixAutoML:::TextInput(InputID = paste0('YLimMin', i), Label = tags$span(style='color: blue;', 'Y Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+          RemixAutoML:::TextInput(InputID = paste0('YLimMin', i), Label = tags$span(style='color: snow;', 'Y Min Limit 1'), Value = NULL, Placeholder = 'Insert a number')
         })
         output[[paste0('YLimMax', i)]] <- shiny::renderUI({
-          RemixAutoML:::TextInput(InputID = paste0('YLimMax', i), Label = tags$span(style='color: blue;', 'Y Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
+          RemixAutoML:::TextInput(InputID = paste0('YLimMax', i), Label = tags$span(style='color: snow;', 'Y Max Limit 1'), Value = NULL, Placeholder = 'Insert a number')
         })
         output[[paste0('NumberGroupsDisplay', i)]] <- shiny::renderUI({
-          RemixAutoML:::NumericInput(InputID = 'NumberGroupsDisplay1', Label = tags$span(style='color: blue;', 'Dispay N Levels'), Step = 1L, Value = 5L, Min = 1L, Max = 100L)
+          RemixAutoML:::NumericInput(InputID = 'NumberGroupsDisplay1', Label = tags$span(style='color: snow;', 'Dispay N Levels'), Step = 1L, Value = 5L, Min = 1L, Max = 100L)
         })
         output[[paste0('ShapAggMethod', i)]] <- shiny::renderUI({
           RemixAutoML::SelectizeInput(InputID=paste0('ShapAggMethod', i), Label=tags$span(style=paste0('color: ',AppTextColor,';'),'Shap Agg Method 1'), Choices=c('mean','absmean','meanabs','sd','median','absmedian','medianabs'), SelectedDefault='meanabs', Multiple=FALSE, CloseAfterSelect = TRUE)
@@ -3033,55 +3181,55 @@ InitalizeInputs <- function(id) {
           RemixAutoML:::NumericInput(InputID=paste0('NumberBins', i), Label=tags$span(style=paste0('color: ',AppTextColor,';'),'# of Bins for Histogram 1'), Min=1, Max=1000, Step=5, Value=30)
         })
         output[[paste0('YTicks', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('YTicks', i), Label = tags$span(style='color: blue;', 'Y-Axis 1 Ticks'), Choices = NULL, SelectedDefault = 'Default', Multiple = TRUE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('YTicks', i), Label = tags$span(style='color: snow;', 'Y-Axis 1 Ticks'), Choices = NULL, SelectedDefault = 'Default', Multiple = TRUE, CloseAfterSelect = TRUE)
         })
         output[[paste0('XTicks', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('XTicks', i), Label = tags$span(style='color: blue;', 'X-Axis 1 Ticks'), Choices = NULL, SelectedDefault = 'Default', Multiple = TRUE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('XTicks', i), Label = tags$span(style='color: snow;', 'X-Axis 1 Ticks'), Choices = NULL, SelectedDefault = 'Default', Multiple = TRUE, CloseAfterSelect = TRUE)
         })
         output[[paste0('AngleY', i)]] <- shiny::renderUI({
-          RemixAutoML:::NumericInput(InputID = paste0('AngleY', i), Label = tags$span(style='color: blue;', 'Y-axis text angle'), Step = 5, Min = 0, Max = 360, Value = 0)
+          RemixAutoML:::NumericInput(InputID = paste0('AngleY', i), Label = tags$span(style='color: snow;', 'Y-axis text angle'), Step = 5, Min = 0, Max = 360, Value = 0)
         })
         output[[paste0('AngleX', i)]] <- shiny::renderUI({
-          RemixAutoML:::NumericInput(InputID = paste0('AngleX', i), Label = tags$span(style='color: blue;', 'X-axis text angle'), Step = 5, Min = 0, Max = 360, Value = 90)
+          RemixAutoML:::NumericInput(InputID = paste0('AngleX', i), Label = tags$span(style='color: snow;', 'X-axis text angle'), Step = 5, Min = 0, Max = 360, Value = 90)
         })
         output[[paste0('TextSize', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('TextSize', i), Label = tags$span(style='color: blue;', 'Text Size'),Choices = c(as.character(seq(1,100,1))), SelectedDefault = '14', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('TextSize', i), Label = tags$span(style='color: snow;', 'Text Size'),Choices = c(as.character(seq(1,100,1))), SelectedDefault = '14', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('OutlierSize', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('OutlierSize', i), Label = tags$span(style='color: blue;', 'Outlier Size'), Choices = c(seq(0.01,2,0.01)), SelectedDefault = 0.01, Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('OutlierSize', i), Label = tags$span(style='color: snow;', 'Outlier Size'), Choices = c(seq(0.01,2,0.01)), SelectedDefault = 0.01, Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('LegendPosition')]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('LegendPosition'), Label = tags$span(style='color: blue;', 'Legend Position'), Choices = c('bottom','left','right','top','none'), SelectedDefault = 'bottom', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('LegendPosition'), Label = tags$span(style='color: snow;', 'Legend Position'), Choices = c('bottom','left','right','top','none'), SelectedDefault = 'bottom', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('LegendBorderSize', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('LegendBorderSize', i), Label = tags$span(style='color: blue;', 'Legend Border Size'), Choices = c(as.character(seq(0.01,2,0.01))), SelectedDefault = as.character(0.01), Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('LegendBorderSize', i), Label = tags$span(style='color: snow;', 'Legend Border Size'), Choices = c(as.character(seq(0.01,2,0.01))), SelectedDefault = as.character(0.01), Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('LegendLineType', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('LegendLineType', i), Label = tags$span(style='color: blue;', 'Legend Border Type'), Choices = c('solid','blank','dashed','dotdash','dotted','longlash','twodash'), SelectedDefault = 'solid', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('LegendLineType', i), Label = tags$span(style='color: snow;', 'Legend Border Type'), Choices = c('solid','blank','dashed','dotdash','dotted','longlash','twodash'), SelectedDefault = 'solid', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('TextColor', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('TextColor', i), Label = tags$span(style='color: blue;', 'Text Color'), Choices = grDevices::colors(), SelectedDefault = 'darkblue', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('TextColor', i), Label = tags$span(style='color: snow;', 'Text Color'), Choices = grDevices::colors(), SelectedDefault = 'snow', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('ChartColor', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('ChartColor', i), Label = tags$span(style='color: blue;', 'Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('ChartColor', i), Label = tags$span(style='color: snow;', 'Chart Color'), Choices = grDevices::colors(), SelectedDefault = 'aliceblue', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('GridColor', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('GridColor', i), Label = tags$span(style='color: blue;', 'Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('GridColor', i), Label = tags$span(style='color: snow;', 'Grid Lines Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue1', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('BackGroundColor', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('BackGroundColor', i), Label = tags$span(style='color: blue;', 'Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('BackGroundColor', i), Label = tags$span(style='color: snow;', 'Background Color'), Choices = grDevices::colors(), SelectedDefault = 'gray95', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('BorderColor')]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('BorderColor'), Label = tags$span(style='color: blue;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('BorderColor'), Label = tags$span(style='color: snow;', 'Border Color'), Choices = grDevices::colors(), SelectedDefault = 'lightsteelblue4', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('OutlierColor', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('OutlierColor', i), Label = tags$span(style='color: blue;', 'Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('OutlierColor', i), Label = tags$span(style='color: snow;', 'Outlier Color'), Choices = grDevices::colors(), SelectedDefault = 'snow', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('FillColor', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('FillColor', i), Label = tags$span(style='color: blue;', 'BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('FillColor', i), Label = tags$span(style='color: snow;', 'BoxPlot Fill Color'), Choices = grDevices::colors(), SelectedDefault = 'gray70', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
         output[[paste0('SubTitleColor', i)]] <- shiny::renderUI({
-          RemixAutoML::SelectizeInput(InputID = paste0('SubTitleColor', i), Label = tags$span(style='color: blue;', 'Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'blue', Multiple = FALSE, CloseAfterSelect = TRUE)
+          RemixAutoML::SelectizeInput(InputID = paste0('SubTitleColor', i), Label = tags$span(style='color: snow;', 'Subtitle Color'), Choices = grDevices::colors(), SelectedDefault = 'snow', Multiple = FALSE, CloseAfterSelect = TRUE)
         })
 
       } # end for loop
@@ -3394,12 +3542,12 @@ InitalizeInputs <- function(id) {
 
       # Define plot output type: if any FacetVars are not null then use ggplot2, othwerwise plotly ----
       output$PlotEngine <- shiny::renderUI({
-        shiny::checkboxGroupInput(inputId = "PlotEngine", label = tags$span(style='color: blue;', 'Plot Engine'),choices = list("plotly" = 1, "ggplot2" = 2), selected = 1)
+        shiny::checkboxGroupInput(inputId = "PlotEngine", label = tags$span(style='color: snow;', 'Plot Engine'),choices = list("plotly" = 1, "ggplot2" = 2), selected = 1)
       })
 
       # Auto SCaling of Plot Grid: doubles the size in the event of more than 1 plot ----
       # output$AutoGridHorizontal <-  shiny::renderUI({
-      #   shiny::checkboxGroupInput(inputId = "AutoGridHorizontal", label = tags$span(style='color: blue;', 'Auto Grid Scale'),choices = list("On" = 1, "Off" = 2), selected = 1)
+      #   shiny::checkboxGroupInput(inputId = "AutoGridHorizontal", label = tags$span(style='color: snow;', 'Auto Grid Scale'),choices = list("On" = 1, "Off" = 2), selected = 1)
       # })
 
       # Dragula for PlotType ----
@@ -3434,15 +3582,15 @@ InitalizeInputs <- function(id) {
 
       # Global Setting ----
       output$PlotWidth <- shiny::renderUI({
-        RemixAutoML:::NumericInput(InputID = "PlotWidth", Label=tags$span(style='color: blue;', 'Plot Width'), Step = 50, Min = 500, Max = 3500, Value = 1600)
+        RemixAutoML:::NumericInput(InputID = "PlotWidth", Label=tags$span(style='color: snow;', 'Plot Width'), Step = 50, Min = 500, Max = 3500, Value = 1600)
       })
       output$PlotHeight <- shiny::renderUI({
-        RemixAutoML:::NumericInput(InputID = "PlotHeight", Label=tags$span(style='color: blue;', 'Plot Height'), Step = 25, Min = 300, Max = 3500, Value = 500)
+        RemixAutoML:::NumericInput(InputID = "PlotHeight", Label=tags$span(style='color: snow;', 'Plot Height'), Step = 25, Min = 300, Max = 3500, Value = 500)
       })
 
       # Other values ----
       output$SampleSize <- shiny::renderUI({
-        RemixAutoML:::NumericInput(InputID = 'SampleSize', Label = tags$span(style='color: blue;', 'Sample size for plotting'), Step = 50000, Min = 0, Max = 1000000, Value = 100000)
+        RemixAutoML:::NumericInput(InputID = 'SampleSize', Label = tags$span(style='color: snow;', 'Sample size for plotting'), Step = 50000, Min = 0, Max = 1000000, Value = 100000)
       })
 
       # Turn off usage ----

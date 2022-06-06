@@ -116,6 +116,8 @@ AutoLightGBMClassifier(
 
 \item{WeightsColumnName}{Supply a column name for your weights column. Leave NULL otherwise}
 
+\item{CostMatrixWeights}{= c(1,0,0,1)}
+
 \item{EncodingMethod}{Choose from 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{OutputSelection}{You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")}
@@ -335,6 +337,7 @@ TestModel <- RemixAutoML::AutoLightGBMClassifier(
   FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
   PrimaryDateColumn = NULL,
   WeightsColumnName = NULL,
+  CostMatrixWeights = c(1,0,0,1),
   IDcols = c("IDcol_1","IDcol_2"),
 
   # Grid parameters
