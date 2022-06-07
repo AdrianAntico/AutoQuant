@@ -432,97 +432,71 @@ Word2Vec_H2O <- function(TrainData. = NULL,
                          RunMode = "train",
                          SkipCols = NULL) {
 
+  # Set path if not provided
+  if(length(ArgsList$model_path) == 0L) ArgsList$model_path <- getwd()
+  if(length(ArgsList$Threads) == 0L) ArgsList$Threads <- parallel::detectCores()-2L
+  if(length(ArgsList$MaxMemory) == 0L) ArgsList$MaxMemory <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
+
   # Run mode
   if(tolower(RunMode) == "train") {
 
-    # Remove stale model if it exists
-    if(file.exists(file.path(ArgsList$MetaData$Models_Path, paste0(ArgsList$MetaData$ProjectID, "_Word2Vec")))) {
-      file.remove(file.path(ArgsList$MetaData$Models_Path, paste0(ArgsList$MetaData$ProjectID, "_Word2Vec")))
-    }
-
     # MetaData
     Start <- Sys.time()
-    tempnames <- names(TrainData)
+    tempnames <- names(TrainData.)
 
     # Run AutoWord2VecModeler
     TrainData. <- RemixAutoML::AutoWord2VecModeler(
       data = TrainData.,
-      BuildType = ArgsList$FE_Args$H2O_Word2Vec$BuildType,
-      stringCol = ArgsList$Data$TextVariables,
-      KeepStringCol = FALSE,
-      ModelID = paste0(ArgsList$MetaData$ProjectID, "_Word2Vec"),
-      model_path = ArgsList$MetaData$Models_Path,
-      vects = ArgsList$FE_Args$H2O_Word2Vec$NumberVectors,
-      MinWords = ArgsList$FE_Args$H2O_Word2Vec$MinWords,
-      WindowSize = ArgsList$FE_Args$H2O_Word2Vec$Window,
-      Epochs = ArgsList$FE_Args$H2O_Word2Vec$Iterations,
+      BuildType = ArgsList$BuildType,
+      stringCol = ArgsList$stringCol,
+      KeepStringCol = TRUE,
+      ModelID = ArgsList$ModelID,
+      model_path = ArgsList$model_path,
+      vects = ArgsList$vects,
+      MinWords = ArgsList$MinWords,
+      WindowSize = ArgsList$WindowSize,
+      Epochs = ArgsList$Epochs,
       SaveModel = "standard",
-      Threads = max(1L, parallel::detectCores()-2L),
-      MaxMemory = ArgsList$FE_Args$General$H2O_Memory)
-
-    # Args tracking
-    ArgsList$FE_H2OWord2Vec$BuildType <- ArgsList$FE_Args$H2O_Word2Vec$BuildType
-    ArgsList$FE_H2OWord2Vec$stringCol <- ArgsList$Data$TextVariables
-    ArgsList$FE_H2OWord2Vec$KeepStringCol <- FALSE
-    ArgsList$FE_H2OWord2Vec$ModelID <- paste0(ArgsList$MetaData$ProjectID, "_Word2Vec")
-    ArgsList$FE_H2OWord2Vec$model_path <- ArgsList$MetaData$Models_Path
-    ArgsList$FE_H2OWord2Vec$vects <- ArgsList$FE_Args$H2O_Word2Vec$NumberVectors
-    ArgsList$FE_H2OWord2Vec$WindowSize <- ArgsList$FE_Args$H2O_Word2Vec$Window
-    ArgsList$FE_H2OWord2Vec$Epochs <- ArgsList$FE_Args$H2O_Word2Vec$Iterations
-    ArgsList$FE_H2OWord2Vec$Threads <- max(1L, parallel::detectCores()-2L)
-    ArgsList$FE_H2OWord2Vec$MaxMemory <- ArgsList$FE_Args$General$H2O_Memory
-
-    # Update IDVariables
-    if(!ArgsList$FE_H2OWord2Vec$KeepStringCol) {
-      ArgsList$Data$TextVariables <- NULL
-    }
+      Threads = ArgsList$Threads,
+      MaxMemory = ArgsList$MaxMemory)
 
     # Run time tracking
     End <- Sys.time()
     ArgsList$RunTime$H2OWord2Vec_Training <- difftime(End, Start, units = "mins")
 
     # New column tracking
-    ArgsList$FE_Columns$H2OWord2Vec <- setdiff(names(data.table::copy(TrainData.)), tempnames)
+    ArgsList$H2OWord2Vec <- setdiff(names(data.table::copy(TrainData.)), tempnames)
 
     # Score new data
     if(!is.null(ValidationData.)) {
       ValidationData. <- RemixAutoML::AutoWord2VecScoring(
         data = ValidationData.,
-        BuildType = ArgsList$FE_H2OWord2Vec$BuildType,
-        stringCol = ArgsList$FE_H2OWord2Vec$stringCol,
-        KeepStringCol = ArgsList$FE_H2OWord2Vec$KeepStringCol,
-        ModelID = ArgsList$FE_H2OWord2Vec$ModelID,
+        BuildType = ArgsList$BuildType,
+        stringCol = ArgsList$stringCol,
+        KeepStringCol = TRUE,
+        ModelID = ArgsList$ModelID,
         ModelObject = NULL,
-        model_path = ArgsList$FE_H2OWord2Vec$model_path,
+        model_path = ArgsList$model_path,
         H2OStartUp = TRUE,
         H2OShutdown = TRUE,
-        Threads = ArgsList$FE_H2OWord2Vec$Threads,
-        MaxMemory = ArgsList$FE_H2OWord2Vec$MaxMemory)
-
-      # Args tracking
-      ArgsList$FE_H2OWord2VecScoring$BuildType <- ArgsList$FE_H2OWord2Vec$BuildType
-      ArgsList$FE_H2OWord2VecScoring$stringCol <- ArgsList$FE_H2OWord2Vec$stringCol
-      ArgsList$FE_H2OWord2VecScoring$KeepStringCol <- ArgsList$FE_H2OWord2Vec$KeepStringCol
-      ArgsList$FE_H2OWord2VecScoring$ModelID <- ArgsList$FE_H2OWord2Vec$ModelID
-      ArgsList$FE_H2OWord2VecScoring$model_path <- ArgsList$FE_H2OWord2Vec$model_path
-      ArgsList$FE_H2OWord2VecScoring$Threads <- ArgsList$FE_H2OWord2Vec$Threads
-      ArgsList$FE_H2OWord2VecScoring$MaxMemory <- ArgsList$FE_H2OWord2Vec$MaxMemory
+        Threads = ArgsList$Threads,
+        MaxMemory = ArgsList$MaxMemory)
     }
 
     # Score new data
     if(!is.null(ValidationData.)) {
       TestData. <- RemixAutoML::AutoWord2VecScoring(
         data = TestData.,
-        BuildType = ArgsList$FE_H2OWord2VecScoring$BuildType,
-        stringCol = ArgsList$FE_H2OWord2VecScoring$stringCol,
-        KeepStringCol = ArgsList$FE_H2OWord2VecScoring$KeepStringCol,
-        ModelID = ArgsList$FE_H2OWord2VecScoring$ModelID,
+        BuildType = ArgsList$BuildType,
+        stringCol = ArgsList$stringCol,
+        KeepStringCol = ArgsList$KeepStringCol,
+        ModelID = ArgsList$ModelID,
         ModelObject = NULL,
-        model_path = ArgsList$FE_H2OWord2VecScoring$model_path,
+        model_path = ArgsList$model_path,
         H2OStartUp = TRUE,
         H2OShutdown = TRUE,
-        Threads = ArgsList$FE_H2OWord2VecScoring$Threads,
-        MaxMemory = ArgsList$FE_H2OWord2VecScoring$MaxMemory)
+        Threads = ArgsList$Threads,
+        MaxMemory = ArgsList$MaxMemory)
     }
 
     # Return
@@ -565,175 +539,139 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 #' @author Adrian Antico
 #' @family Feature Engineering - Model Based
 #'
+#' @param RunMode 'train' will run in train mode. Supply any other character to run scoring mode. Must supply a character
 #' @param ArgsList ArgsList_FEE
 #' @param TrainData. data
 #' @param ValidationData. data
 #' @param TestData. data
 #' @param ScoringData. data
-#' @param AnomalyDetection. TRUE
-#' @param DimensionReduction. TRUE
-#' @param AD_PerFeature FALSE
-#' @param RemoveBaseFeatures FALSE
-#' @param NodeShrinkRate. (sqrt(5) - 1) / 2
-#' @param Epochs. 20
-#' @param L2. 0.10
-#' @param ElasticAveraging. TRUE
-#' @param ElasticAveragingMovingRate. 0.90
-#' @param ElasticAveragingRegularization. 0.001
+#' @param Pause 0L Sys.sleep(Pause)
 #'
 #' @noRd
-AutoEncoder_H2O <- function(ArgsList=ArgsList_FEE,
+AutoEncoder_H2O <- function(RunMode = 'train',
+                            ArgsList = NULL,
                             TrainData. = NULL,
                             ValidationData. = NULL,
                             TestData. = NULL,
-                            ScoringData. = NULL) {
+                            ScoringData. = NULL,
+                            Pause = 0L) {
 
   # Give h2o some sleep time
-  if(any(ArgsList$Services %chin% "H2OWord2Vec")) Sys.sleep(10L)
+  if(Pause > 0L) Sys.sleep(Pause)
+  if(length(ArgsList$ModelID) == 0L) {
+    ArgsList$ModelID <- 'temp1'
+  }
+  if(length(ArgsList$model_path) == 0L) {
+    ArgsList$model_path <- getwd()
+  }
 
   # Run Mode
   if(tolower(RunMode) == "train") {
-
-    # Remove old model files
-    if(file.exists(file.path(ArgsList$MetaData$Models_Path, paste0(ArgsList$MetaData$ProjectID, "_AutoEncoder")))) {
-      file.remove(file.path(ArgsList$MetaData$Models_Path, paste0(ArgsList$MetaData$ProjectID, "_AutoEncoder")))
-    }
 
     # Metadata
     Start <- Sys.time()
     tempnames <- names(data.table::copy(TrainData.))
     ColsUsed <- names(TrainData.)
-    ColsUsed <- ColsUsedp[!ColsUsed %chin% c(ArgsList$Data$TargetVariables, ArgsList$Data$PrimaryDateVariables, ArgsList$Data$IDVariables)]
+    ColsUsed <- ColsUsed[!ColsUsed %chin% c(ArgsList$TargetVariables, ArgsList$PrimaryDateVariables, ArgsList$IDVariables)]
+    ArgsList$Features <- ColsUsed
 
     # Run function
     TrainData. <- RemixAutoML::H2OAutoencoder(
 
       # Select the service
-      AnomalyDetection = ArgsList$FE_Args$H2O_Autoencoder$AnomalyDetection,
-      DimensionReduction = ArgsList$FE_Args$H2O_Autoencoder$DimensionReduction,
+      AnomalyDetection = ArgsList$AnomalyDetection,
+      DimensionReduction = ArgsList$DimensionReduction,
 
       # Data related args
       data = TrainData.,
-      Features = ColsUsed,
-      per_feature = ArgsList$FE_Args$H2O_Autoencoder$AD_PerFeature,
-      RemoveFeatures = ArgsList$FE_Args$H2O_Autoencoder$RemoveBaseFeatures,
-      ModelID = paste0(ArgsList$MetaData$ProjectID, "_AutoEncoder"),
-      model_path = ArgsList$MetaData$Models_Path,
+      Features = ArgsList$Features,
+      per_feature = ArgsList$per_feature,
+      RemoveFeatures = ArgsList$RemoveFeatures,
+      ModelID = ArgsList$ModelID,
+      model_path = ArgsList$Models_Path,
 
       # H2O Environment
-      NThreads = max(1L, parallel::detectCores()-2L),
-      MaxMem = ArgsList$FE_Args$General$H2O_Memory,
+      NThreads = ArgsList$NThreads,
+      MaxMem = ArgsList$MaxMem,
       H2OStart = TRUE,
       H2OShutdown = TRUE,
 
       # H2O ML Args
-      LayerStructure = NULL,
-      NodeShrinkRate = ArgsList$FE_Args$H2O_Autoencoder$NodeShrinkRate,
-      ReturnLayer = 4L,
+      LayerStructure = ArgsList$LayerStructure,
+      NodeShrinkRate = ArgsList$NodeShrinkRate,
+      ReturnLayer = ArgsList$ReturnLayer,
       Activation = "Tanh",
-      Epochs = ArgsList$FE_Args$H2O_Autoencoder$Epochs,
-      L2 = ArgsList$FE_Args$H2O_Autoencoder$L2,
-      ElasticAveraging = ArgsList$FE_Args$H2O_Autoencoder$ElasticAveraging,
-      ElasticAveragingMovingRate = ArgsList$FE_Args$H2O_Autoencoder$ElasticAveragingMovingRate,
-      ElasticAveragingRegularization = ArgsList$FE_Args$H2O_Autoencoder$ElasticAveragingRegularization)
-
-    # Args tracking
-    ArgsList$FE_H2OAutoEncoder$AnomalyDetection <- ArgsList$FE_Args$H2O_Autoencoder$AnomalyDetection
-    ArgsList$FE_H2OAutoEncoder$DimensionReduction <- ArgsList$FE_Args$H2O_Autoencoder$DimensionReduction
-    ArgsList$FE_H2OAutoEncoder$Features <- ColsUsed
-    ArgsList$FE_H2OAutoEncoder$per_feature <- ArgsList$FE_Args$H2O_Autoencoder$AD_PerFeature
-    ArgsList$FE_H2OAutoEncoder$RemoveFeatures <- ArgsList$FE_Args$H2O_Autoencoder$RemoveBaseFeatures
-    ArgsList$FE_H2OAutoEncoder$ModelID <- paste0(ArgsList$MetaData$ProjectID, "_AutoEncoder")
-    ArgsList$FE_H2OAutoEncoder$model_path <- ArgsList$MetaData$Models_Path
-    ArgsList$FE_H2OAutoEncoder$NThreads <- max(1L, parallel::detectCores()-2L)
-    ArgsList$FE_H2OAutoEncoder$MaxMem <- ArgsList$FE_Args$General$H2O_Memory
-    ArgsList$FE_H2OAutoEncoder$H2OStart <- TRUE
-    ArgsList$FE_H2OAutoEncoder$H2OShutdown <- TRUE
-    ArgsList$FE_H2OAutoEncoder$NodeShrinkRate <- ArgsList$FE_Args$H2O_Autoencoder$NodeShrinkRate
-    ArgsList$FE_H2OAutoEncoder$Epochs <- ArgsList$FE_Args$H2O_Autoencoder$Epochs
-    ArgsList$FE_H2OAutoEncoder$L2 <- ArgsList$FE_Args$H2O_Autoencoder$L2
-    ArgsList$FE_H2OAutoEncoder$ElasticAveraging <- ArgsList$FE_Args$H2O_Autoencoder$ElasticAveraging
-    ArgsList$FE_H2OAutoEncoder$ElasticAveragingMovingRate <- ArgsList$FE_Args$H2O_Autoencoder$ElasticAveragingMovingRate
-    ArgsList$FE_H2OAutoEncoder$ElasticAveragingRegularization <- ArgsList$FE_Args$H2O_Autoencoder$ElasticAveragingRegularization
+      Epochs = ArgsList$Epochs,
+      L2 = ArgsList$L2,
+      ElasticAveraging = ArgsList$ElasticAveraging,
+      ElasticAveragingMovingRate = ArgsList$ElasticAveragingMovingRate,
+      ElasticAveragingRegularization = ArgsList$ElasticAveragingRegularization)
 
     # New columns tracking
-    ArgsList$FE_Columns$H2OAutoEncoder <- setdiff(names(data.table::copy(TrainData.), tempnames))
+    ArgsList$NewColumns <- setdiff(names(data.table::copy(TrainData.), tempnames))
 
     # Run time tracking
     End <- Sys.time()
-    ArgsList$RunTime$H2OAutoEncoder_Training <- difftime(End, Start, units = "mins")
+    ArgsList$RunTime_Training <- difftime(End, Start, units = "mins")
 
     # Score validation data
     if(!is.null(ValidationData.)) {
 
       # Pause
-      Sys.sleep(10L)
+      Sys.sleep(8L)
 
       # Score model
       ValidationData. <- RemixAutoML::H2OAutoencoderScoring(
 
         # Select the service
-        AnomalyDetection = ArgsList$FE_H2OAutoEncoder$AnomalyDetection,
-        DimensionReduction = ArgsList$FE_H2OAutoEncoder$DimensionReduction,
+        AnomalyDetection = ArgsList$AnomalyDetection,
+        DimensionReduction = ArgsList$DimensionReduction,
 
         # Data related args
         data = ValidationData.,
-        Features = ArgsList$FE_H2OAutoEncoder$Features,
-        per_feature = ArgsList$FE_H2OAutoEncoder$per_feature,
-        RemoveFeatures = ArgsList$FE_H2OAutoEncoder$RemoveFeatures,
+        Features = ArgsList$Features,
+        per_feature = ArgsList$per_feature,
+        RemoveFeatures = ArgsList$RemoveFeatures,
         ModelObject = NULL,
-        ModelID = ArgsList$FE_H2OAutoEncoder$ModelID,
-        model_path = ArgsList$FE_H2OAutoEncoder$model_path,
+        ModelID = ArgsList$ModelID,
+        model_path = ArgsList$model_path,
 
         # H2O args
-        NThreads = ArgsList$FE_H2OAutoEncoder$NThreads,
-        MaxMem = ArgsList$FE_H2OAutoEncoder$MaxMem,
-        H2OStart = ArgsList$FE_H2OAutoEncoder$H2OStart,
-        H2OShutdown = ArgsList$FE_H2OAutoEncoder$H2OShutdown,
-        ReturnLayer = 4L)
-
-      # Args tracking
-      ArgsList$FE_H2OAutoEncoderScoring$AnomalyDetection <- ArgsList$FE_H2OAutoEncoder$AnomalyDetection
-      ArgsList$FE_H2OAutoEncoderScoring$DimensionReduction <- ArgsList$FE_H2OAutoEncoder$DimensionReduction
-      ArgsList$FE_H2OAutoEncoderScoring$Features <- ArgsList$FE_H2OAutoEncoder$Features
-      ArgsList$FE_H2OAutoEncoderScoring$per_feature <- ArgsList$FE_H2OAutoEncoder$per_feature
-      ArgsList$FE_H2OAutoEncoderScoring$RemoveFeatures <- ArgsList$FE_H2OAutoEncoder$RemoveFeatures
-      ArgsList$FE_H2OAutoEncoderScoring$ModelID <- ArgsList$FE_H2OAutoEncoder$ModelID
-      ArgsList$FE_H2OAutoEncoderScoring$model_path <- ArgsList$FE_H2OAutoEncoder$model_path
-      ArgsList$FE_H2OAutoEncoderScoring$NThreads <- ArgsList$FE_H2OAutoEncoder$NThreads
-      ArgsList$FE_H2OAutoEncoderScoring$MaxMem <- ArgsList$FE_H2OAutoEncoder$MaxMem
-      ArgsList$FE_H2OAutoEncoderScoring$H2OStart <- ArgsList$FE_H2OAutoEncoder$H2OStart
-      ArgsList$FE_H2OAutoEncoderScoring$H2OShutdown <- ArgsList$FE_H2OAutoEncoder$H2OShutdown
+        NThreads = ArgsList$NThreads,
+        MaxMem = ArgsList$MaxMem,
+        H2OStart = TRUE,
+        H2OShutdown = TRUE,
+        ReturnLayer = ArgsList$ReturnLayer)
     }
 
     # Score Test Data
     if(!is.null(TestData.)) {
 
       # Pause
-      Sys.sleep(10L)
+      Sys.sleep(8L)
 
       # Score model
       TestData. <- RemixAutoML::H2OAutoencoderScoring(
 
         # Select the service
-        AnomalyDetection = ArgsList$FE_H2OAutoEncoderScoring$AnomalyDetection,
-        DimensionReduction = ArgsList$FE_H2OAutoEncoderScoring$DimensionReduction,
+        AnomalyDetection = ArgsList$AnomalyDetection,
+        DimensionReduction = ArgsList$DimensionReduction,
 
         # Data related args
         data = TestData.,
-        Features = ArgsList$FE_H2OAutoEncoderScoring$Features,
-        per_feature = ArgsList$FE_H2OAutoEncoderScoring$per_feature,
-        RemoveFeatures = ArgsList$FE_H2OAutoEncoderScoring$RemoveFeatures,
+        Features = ArgsList$Features,
+        per_feature = ArgsList$per_feature,
+        RemoveFeatures = ArgsList$RemoveFeatures,
         ModelObject = NULL,
-        ModelID = ArgsList$FE_H2OAutoEncoderScoring$ModelID,
-        model_path = ArgsList$FE_H2OAutoEncoderScoring$model_path,
+        ModelID = ArgsList$ModelID,
+        model_path = ArgsList$model_path,
 
         # H2O args
-        NThreads = ArgsList$FE_H2OAutoEncoderScoring$NThreads,
-        MaxMem = ArgsList$FE_H2OAutoEncoderScoring$MaxMem,
-        H2OStart = ArgsList$FE_H2OAutoEncoderScoring$H2OStart,
-        H2OShutdown = ArgsList$FE_H2OAutoEncoderScoring$H2OShutdown,
-        ReturnLayer = 4L)
+        NThreads = ArgsList$NThreads,
+        MaxMem = ArgsList$MaxMem,
+        H2OStart = TRUE,
+        H2OShutdown = TRUE,
+        ReturnLayer = ArgsList$ReturnLayer)
     }
 
   } else {
@@ -742,23 +680,23 @@ AutoEncoder_H2O <- function(ArgsList=ArgsList_FEE,
     ScoringData. <- RemixAutoML::H2OAutoencoderScoring(
 
       # Select the service
-      AnomalyDetection = ArgsList$FE_H2OAutoEncoderScoring$AnomalyDetection,
-      DimensionReduction = ArgsList$FE_H2OAutoEncoderScoring$DimensionReduction,
+      AnomalyDetection = ArgsList$AnomalyDetection,
+      DimensionReduction = ArgsList$DimensionReduction,
 
       # Data related args
       data = ScoringData.,
-      Features = ArgsList$FE_H2OAutoEncoderScoring$Features,
-      per_feature = ArgsList$FE_H2OAutoEncoderScoring$per_feature,
-      RemoveFeatures = ArgsList$FE_H2OAutoEncoderScoring$RemoveFeatures,
+      Features = ArgsList$Features,
+      per_feature = ArgsList$per_feature,
+      RemoveFeatures = ArgsList$RemoveFeatures,
       ModelObject = NULL,
-      ModelID = ArgsList$FE_H2OAutoEncoderScoring$ModelID,
-      model_path = ArgsList$FE_H2OAutoEncoderScoring$model_path,
+      ModelID = ArgsList$ModelID,
+      model_path = ArgsList$model_path,
 
       # H2O args
-      NThreads = ArgsList$FE_H2OAutoEncoderScoring$NThreads,
-      MaxMem = ArgsList$FE_H2OAutoEncoderScoring$MaxMem,
-      H2OStart = ArgsList$FE_H2OAutoEncoderScoring$H2OStart,
-      H2OShutdown = ArgsList$FE_H2OAutoEncoderScoring$H2OShutdown,
+      NThreads = ArgsList$NThreads,
+      MaxMem = ArgsList$MaxMem,
+      H2OStart = TRUE,
+      H2OShutdown = TRUE,
       ReturnLayer = 4L)
 
     # Run time tracking

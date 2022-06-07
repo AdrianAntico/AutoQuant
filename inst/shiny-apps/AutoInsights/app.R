@@ -1,4 +1,5 @@
 options(shiny.maxRequestSize = 250000*1024^2)
+#library(shinymeta)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
@@ -253,59 +254,62 @@ ui <- shinydashboard::dashboardPage(
 
       # Code Print Page
       RemixAutoML:::BlankRow(AppWidth),
-      shinydashboard::menuItem(text = 'Print Code', tabName = 'Print Code', icon = shiny::icon('code'))),
+      shinydashboard::menuItem(text = 'Print Code', tabName = 'Print Code', icon = shiny::icon('code')))#,
+
+
 
     # Financial Plots
-    RemixAutoML:::BlankRow(AppWidth),
-    RemixAutoML:::BlankRow(AppWidth),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+    # RemixAutoML:::BlankRow(AppWidth),
+    # RemixAutoML:::BlankRow(AppWidth),
+    # shiny::fluidRow(
+    #   shinydashboard::box(
+    #     title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
+    #
+    #     # Model Evaluation Plots
+    #     shiny::fluidRow(
+    #       shiny::column(
+    #         tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Visualization'))), width = 3L, align = 'center',
+    #         tags$button(
+    #           id = paste0('CackPlot_ton'),
+    #           type = "button", class = "btn btn-default action-button",
+    #           tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Candlestick.PNG?raw=true", height = "85px"),
+    #           `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL)))),
+    #
+    #
+    #     RemixAutoML:::BlankRow(AppWidth),
+    #
+    #     # Model Evaluation Plots
+    #     shiny::fluidRow(
+    #       shiny::column(
+    #         tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Data Mgt'))), width = 3L, align = 'center',
+    #         tags$button(
+    #           id = paste0('CackPlot_ton'),
+    #           type = "button", class = "btn btn-default action-button",
+    #           tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/DataStorage.PNG?raw=true", height = "85px"),
+    #           `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL)))),
+    #
+    #     RemixAutoML:::BlankRow(AppWidth),
+    #     # shinydashboard::box(
+    #     #   title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
+    #     #   shiny::fluidRow(
+    #     #     shiny::column(1L, shiny::HTML("<a href= 'https://github.com/AdrianAntico/RemixAutoML' target='_blank '> RemixAutoML GitHub</a>")))
+    #     #   # shiny::markdown(
+    #     #   #   "
+    #     #   #   [![Github](https://img.shields.io/badge/-Github-000?style=flat&logo=Github&logoColor=white)](https://github.com/AdrianAntico/RemixAutoML)
+    #     #   #   "
+    #     #   # )
+    #     # ),
+    #     shiny::fluidRow(
+    #       shiny::column(
+    #         tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Global Settings'))), width = 3L, align = 'center',
+    #         tags$button(
+    #           id = paste0('CackPlot_ton'),
+    #           type = "button", class = "btn btn-default action-button",
+    #           tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/0V8A6189.jpg?raw=true", height = "85px"),
+    #           `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL))))))
 
-        # Model Evaluation Plots
-        shiny::fluidRow(
-          shiny::column(
-            tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Visualization'))), width = 4L, align = 'center',
-            tags$button(
-              id = paste0('CackPlot_ton'),
-              type = "button", class = "btn btn-default action-button",
-              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Candlestick.PNG?raw=true", height = "85px"),
-              `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL)))))),
+    ), # end SideBar
 
-    RemixAutoML:::BlankRow(AppWidth),
-    RemixAutoML:::BlankRow(AppWidth),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
-
-        # Model Evaluation Plots
-        shiny::fluidRow(
-          shiny::column(
-            tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Data Mgt'))), width = 4L, align = 'center',
-            tags$button(
-              id = paste0('CackPlot_ton'),
-              type = "button", class = "btn btn-default action-button",
-              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/DataStorage.PNG?raw=true", height = "85px"),
-              `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL)))))),
-
-
-    RemixAutoML:::BlankRow(AppWidth),
-    RemixAutoML:::BlankRow(AppWidth),
-    shiny::fluidRow(
-      shinydashboard::box(
-        title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
-
-        # Model Evaluation Plots
-        shiny::fluidRow(
-          shiny::column(
-            tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Feature Engineering'))), width = 4L, align = 'center',
-            tags$button(
-              id = paste0('CackPlot_ton'),
-              type = "button", class = "btn btn-default action-button",
-              tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/FeatureEngineeringMenu.PNG?raw=true", height = "85px"),
-              `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL))))))
-
-    ),
 
 
 
@@ -361,17 +365,17 @@ ui <- shinydashboard::dashboardPage(
           RemixAutoML:::BlankRow(AppWidth),
           shiny::fluidRow(
             width=AppWidth,
-            RemixAutoML:::FE_WindowingVariables(  id = 'WindowingVariables',   AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_CategoricalVariables(id = 'CategoricalVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_DateVariables(       id = 'CalendarVariables',    AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE, Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_NumericVariables(    id = 'NumericVariables',     AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE, Animate=TRUE, Status='custom', H3Color = 'blue')),
+            RemixAutoML:::FE_WindowingVariables(  id = 'WindowingVariables',   AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = H3Color),
+            RemixAutoML:::FE_CategoricalVariables(id = 'CategoricalVariables', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = H3Color),
+            RemixAutoML:::FE_DateVariables(       id = 'CalendarVariables',    AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE, Animate=TRUE, Status='custom', H3Color = H3Color),
+            RemixAutoML:::FE_NumericVariables(    id = 'NumericVariables',     AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE, Animate=TRUE, Status='custom', H3Color = H3Color)),
           RemixAutoML:::BlankRow(AppWidth),
           shiny::fluidRow(
             width=AppWidth,
-            RemixAutoML:::ShinySaveData(      id = 'SaveData_CSV_UI',           AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_DataSets(        id = 'DataSets',                  AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_DataWrangling(   id = 'GeneralFeatureEngineering', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE,  Animate=TRUE, Status='custom', H3Color = 'blue'),
-            RemixAutoML:::FE_ModelBased(      id=  'DataSets',                  AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE, Animate=TRUE, Status='custom', H3Color = 'blue')),
+            RemixAutoML:::ShinySaveData(      id = 'SaveData_CSV_UI',           AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = H3Color),
+            RemixAutoML:::FE_DataSets(        id = 'DataSets',                  AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=FALSE, Animate=TRUE, Status='custom', H3Color = H3Color),
+            RemixAutoML:::FE_DataWrangling(   id = 'GeneralFeatureEngineering', AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE,  Animate=TRUE, Status='custom', H3Color = H3Color),
+            RemixAutoML:::FE_ModelBased(      id = 'ModelBasedFE',              AppWidth=AppWidth, LogoWidth=LogoWidth, ButtonWidth=3L, Align='center', DropDownRight=TRUE,  Animate=TRUE, Status='custom', H3Color = H3Color)),
           RemixAutoML:::BlankRow(AppWidth),
           RemixAutoML:::BlankRow(AppWidth)), # End of box
 
@@ -906,7 +910,7 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # input$DeleteVariablesParams is a shinyWidgets::dropdown inputId
-  shiny::observeEvent(input$DeleteVariablesInputs, {
+  shiny::observeEvent(input$DeleteVariables_Inputs, {
     print('Delete Variables Inputs Dropdown')
     output$DeleteVariables_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='DeleteVariables_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -918,7 +922,7 @@ server <- function(input, output, session) {
   })
 
   # input$ConcatColumnsParams is a shinyWidgets::dropdown inputId
-  shiny::observeEvent(input$ConcatColumnsInputs, {
+  shiny::observeEvent(input$ConcatColumns_Inputs, {
     print('Concat Columns Inputs Dropdown')
     output$ConcatColumns_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='ConcatColumns_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -930,7 +934,7 @@ server <- function(input, output, session) {
   })
 
   # input$CalendarVariablesInputs is a shinyWidgets::dropdown InputId
-  shiny::observeEvent(input$CalendarVariablesInputs, {
+  shiny::observeEvent(input$CalendarVariables_Inputs, {
     print('Calendar Variables Inputs Dropdown')
     output$CalendarVariables_SelectData <- shiny::renderUI({
       print(names(DataList))
@@ -946,7 +950,7 @@ server <- function(input, output, session) {
   })
 
   # input$HolidayVariablesInputs is a shinyWidgets::dropdown InputId
-  shiny::observeEvent(input$HolidayVariablesInputs, {
+  shiny::observeEvent(input$HolidayVariables_Inputs, {
     print('Holiday Variables Inputs Dropdown')
     output$HolidayVariables_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='HolidayVariables_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -965,7 +969,7 @@ server <- function(input, output, session) {
   })
 
   # input$PercRankInputs is a shinyWidgets::dropdown InputId
-  shiny::observeEvent(input$PercRankInputs, {
+  shiny::observeEvent(input$PercRank_Inputs, {
     print('PercRank Inputs Dropdown')
     output$PercentRank_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='PercentRank_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -984,7 +988,7 @@ server <- function(input, output, session) {
   })
 
   # input$AutoInteractionInputs is a shinyWidgets::dropdown InputId
-  shiny::observeEvent(input$AutoInteractionInputs, {
+  shiny::observeEvent(input$AutoInteraction_Inputs, {
     print('Auto Interaction Inputs Dropdown')
     output$AutoInteraction_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoInteraction_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -1006,7 +1010,7 @@ server <- function(input, output, session) {
   })
 
   # input$ is a shinyWidgets::dropdown InputId
-  shiny::observeEvent(input$TransformationInputs, {
+  shiny::observeEvent(input$Transformation_Inputs, {
     print('Transformation Inputs Dropdown')
     output$AutoTransformationCreate_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoTransformationCreate_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -1022,7 +1026,7 @@ server <- function(input, output, session) {
   })
 
   # input$ is a shinyWidgets::dropdown InputId
-  shiny::observeEvent(input$PartialDummiesInputs, {
+  shiny::observeEvent(input$PartialDummies_Inputs, {
     print('Partial Dummies Inputs Dropdown')
     output$DummifyDT_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='DummifyDT_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -1041,7 +1045,7 @@ server <- function(input, output, session) {
   })
 
   # CategoricalEncoding
-  shiny::observeEvent(input$CategoricalEncodingInputs, {
+  shiny::observeEvent(input$CategoricalEncoding_Inputs, {
     print('Categorical Encoding Inputs Dropdown')
     output$CategoricalEncoding_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L], CloseAfterSelect = FALSE)
@@ -1061,7 +1065,7 @@ server <- function(input, output, session) {
   })
 
   # input$ is a shinyWidgets::dropdown InputId
-  shiny::observeEvent(input$AutoLagRollModeInputs, {
+  shiny::observeEvent(input$AutoLagRollMode_Inputs, {
     print('AutoLagRollMode Inputs Dropdown')
     output$AutoLagRollMode_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -1089,7 +1093,7 @@ server <- function(input, output, session) {
   })
 
   # AutoLagRollStats
-  shiny::observeEvent(input$AutoLagRollStatsInputs, {
+  shiny::observeEvent(input$AutoLagRollStats_Inputs, {
     print('AutoLagRollStats Inputs Dropdown')
     output$AutoLagRollStats_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -1135,7 +1139,7 @@ server <- function(input, output, session) {
   })
 
   # AutoDiffLagN
-  shiny::observeEvent(input$AutoDiffInputs, {
+  shiny::observeEvent(input$AutoDiff_Inputs, {
     print('AutoDiff Inputs Dropdown')
     output$AutoDiffLagN_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -1145,18 +1149,15 @@ server <- function(input, output, session) {
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DateVariable', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(dt()), Multiple = TRUE, MaxVars = 1)
     })
     output$AutoDiffLagN_GroupVariables <- shiny::renderUI({
-      #nam <- RemixAutoML:::CEPP(x = unique(c(names(dt())[which(unlist(lapply(dt(), is.character)))], names(dt())[which(unlist(lapply(dt(), is.factor)))])), Default = NULL)
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_GroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By-Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 100)
     })
     output$AutoDiffLagN_DiffVariables <- shiny::renderUI({
-      #nam <- RemixAutoML:::CEPP(x = names(dt())[which(unlist(lapply(dt(), is.numeric)))], Default = NULL)
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DiffVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Numeric Diff Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 100)
     })
     output$AutoDiffLagN_DiffDateVariables <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DiffDateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Diff Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 1)
     })
     output$AutoDiffLagN_DiffGroupVariables <- shiny::renderUI({
-      #nam <- RemixAutoML:::CEPP(x = unique(c(names(dt())[which(unlist(lapply(dt(), is.character)))], names(dt())[which(unlist(lapply(dt(), is.factor)))])), Default = NULL)
       RemixAutoML:::SelectizeInput(InputID='AutoDiffLagN_DiffGroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Diff Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 100)
     })
     output$AutoDiffLagN_NLag1 <- shiny::renderUI({
@@ -1168,7 +1169,7 @@ server <- function(input, output, session) {
   })
 
   # ModelDataPrep
-  shiny::observeEvent(input$ModelDataPrepInputs, {
+  shiny::observeEvent(input$ModelDataPrep_Inputs, {
     print('Data Prep Inputs Dropdown')
     output$ModelDataPrep_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='ModelDataPrep_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -1207,7 +1208,7 @@ server <- function(input, output, session) {
   })
 
   # AutoDataPartition
-  shiny::observeEvent(input$AutoDataPartitionInputs, {
+  shiny::observeEvent(input$AutoDataPartition_Inputs, {
     print('Partition Data Inputs Dropdown')
     output$AutoDataPartition_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoDataPartition_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -1236,39 +1237,110 @@ server <- function(input, output, session) {
     })
   })
 
-  # H2O_Word2Vec
-  shiny::observeEvent(input$H2O_Word2VecInputs, {
+  # Word2Vec_H2O
+  shiny::observeEvent(input$Word2Vec_H2O_Inputs, {
     print('H2O Word2Vec Inputs Dropdown')
-    output$H2O_Word2Vec_TrainData <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_TrainData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
+    output$Word2Vec_H2O_TrainData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_TrainData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
     })
-    output$H2O_Word2Vec_ValidationData <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+    output$Word2Vec_H2O_ValidationData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
     })
-    output$H2O_Word2Vec_TestData <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+    output$Word2Vec_H2O_TestData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
     })
-    dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$H2O_Word2Vec_TrainData]]}, error = function(x) DataList[[1L]]))})
-    output$H2O_Word2Vec_stringCol <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_stringCol', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Text Columns'), Choices = c(names(dt())), Multiple = TRUE, MaxVars = 10, SelectedDefault = NULL)
+    dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Word2Vec_H2O_TrainData]]}, error = function(x) DataList[[1L]]))})
+    output$Word2Vec_H2O_stringCol <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_stringCol', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Text Columns'), Choices = c(names(dt())), Multiple = TRUE, MaxVars = 10, SelectedDefault = NULL)
     })
-    output$H2O_Word2Vec_BuildType <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_BuildType', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Build Type'), Choices = c('individual','combined'), Multiple = TRUE, MaxVars = 1, SelectedDefault = 'combined')
+    output$Word2Vec_H2O_BuildType <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_BuildType', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Build Type'), Choices = c('individual','combined'), Multiple = TRUE, MaxVars = 1, SelectedDefault = 'combined')
     })
-    output$H2O_Word2Vec_KeepStringCol <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_KeepStringCol', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Keep Text Columns'), Choices = c(TRUE,FALSE), Multiple = TRUE, MaxVars = 1, SelectedDefault = TRUE)
+    output$Word2Vec_H2O_KeepStringCol <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_KeepStringCol', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Keep Text Columns'), Choices = c(TRUE,FALSE), Multiple = TRUE, MaxVars = 1, SelectedDefault = TRUE)
     })
-    output$H2O_Word2Vec_vects <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_vects', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Vectors'), Choices = seq(5L,1000L,5L), Multiple = TRUE, MaxVars = 1, SelectedDefault = 30L)
+    output$Word2Vec_H2O_vects <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_vects', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Vectors'), Choices = seq(5L,1000L,5L), Multiple = TRUE, MaxVars = 1, SelectedDefault = 30L)
     })
-    output$H2O_Word2Vec_MinWords <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_MinWords', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Min Word Count'), Choices = seq(1L,200L,1L), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1L)
+    output$Word2Vec_H2O_MinWords <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_MinWords', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Min Word Count'), Choices = seq(1L,200L,1L), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1L)
     })
-    output$H2O_Word2Vec_WindowSize <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_WindowSize', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Size'), Choices = seq(1L,100L,1L), Multiple = TRUE, MaxVars = 1, SelectedDefault = 5L)
+    output$Word2Vec_H2O_WindowSize <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_WindowSize', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Size'), Choices = seq(1L,100L,1L), Multiple = TRUE, MaxVars = 1, SelectedDefault = 5L)
     })
-    output$H2O_Word2Vec_Epochs <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='H2O_Word2Vec_Epochs', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Epochs'), Choices = seq(10L,1000L,10L), Multiple = TRUE, MaxVars = 1, SelectedDefault = 5L)
+    output$Word2Vec_H2O_Epochs <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_Epochs', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Epochs'), Choices = seq(10L,1000L,10L), Multiple = TRUE, MaxVars = 1, SelectedDefault = 5L)
+    })
+  })
+
+  # AutoEncoder_H2O
+  shiny::observeEvent(input$AutoEncoder_H2O_Inputs, {
+
+    print('testing 0')
+    output$AutoEncoder_H2O_TrainData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='AutoEncoder_H2O_TrainData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
+    })
+    output$AutoEncoder_H2O_ValidationData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='AutoEncoder_H2O_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+    })
+    output$AutoEncoder_H2O_TestData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='AutoEncoder_H2O_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+    })
+
+    print('testing 1')
+
+    dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$AutoEncoder_H2O_TrainData]]}, error = function(x) DataList[[1L]]))})
+
+    print('testing 2')
+    output$AutoEncoder_H2O_AnomalyDetection <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_AnomalyDetection', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Anomaly Detection'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 3')
+    output$AutoEncoder_H2O_DimensionReduction <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_DimensionReduction', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Dimension Reduction'), Choices = c(FALSE,TRUE), SelectedDefault = TRUE, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 4')
+    output$AutoEncoder_H2O_Features <- shiny::renderUI({
+      RemixAutoML:::PickerInput(InputID = 'AutoEncoder_H2O_Features', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Features'), Choices = c(names(dt())), SelectedDefault = c(names(dt())), Multiple = TRUE, Debug = Debug)
+    })
+    print('testing 5')
+    output$AutoEncoder_H2O_per_feature <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_per_feature', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Anom Per-Feature'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 6')
+    output$AutoEncoder_H2O_RemoveFeatures <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_RemoveFeatures', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Remove Base Cols'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 7')
+    # input$AutoEncoder_H2O_ModelID <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = , Label = 'ModelID', Choices = c(), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)})
+    output$AutoEncoder_H2O_Models_Path <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_Models_Path', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Save Model'), Choices = c(getwd()), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    # input$AutoEncoder_H2O_NThreads <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_NThreads', Label = 'Number Threads', Choices = seq_len(512L), SelectedDefault = parallel::detectCores()-2L, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)})
+    # input$AutoEncoder_H2O_MaxMem <- shiny::renderUI({RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_MaxMem', Label = '', Choices = c(), SelectedDefault = selected_default, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)})
+    output$AutoEncoder_H2O_LayerStructure <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_LayerStructure', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Layer Count'), Choices = seq_len(10L), SelectedDefault = 2L, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$AutoEncoder_H2O_NodeShrinkRate <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_NodeShrinkRate', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Shrink Base'), Choices = c(sqrt(5)/2-0.5,0.50,0.25), SelectedDefault = sqrt(5)/2-0.5, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$AutoEncoder_H2O_ReturnLayer <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_ReturnLayer', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Layer Returned'), Choices = seq_len(10L), SelectedDefault = 2L, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$AutoEncoder_H2O_Epochs <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_Epochs', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Epochs'), Choices = c(10,50,100,250,1000,2500,5000), SelectedDefault = 10, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$AutoEncoder_H2O_L2 <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_L2', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'L2 Regularization'), Choices = seq(0.01,0.99,0.01), SelectedDefault = 0.1, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$AutoEncoder_H2O_ElasticAveraging <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_ElasticAveraging', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'ElasticAveraging'), Choices = c(TRUE,FALSE), SelectedDefault = TRUE, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$AutoEncoder_H2O_ElasticAveragingMovingRate <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_ElasticAveragingMovingRate', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Elastic Avg Rate'), Choices = c(seq(0.1,0.99,0.1)), SelectedDefault = 0.90, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$AutoEncoder_H2O_ElasticAveragingRegularization <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_ElasticAveragingRegularization', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Elastic Avg L2'), Choices = c(seq(0.001,0.05,0.001)), SelectedDefault = 0.001, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
     })
   })
 
@@ -1523,7 +1595,7 @@ server <- function(input, output, session) {
     output$CatBoost_FeatureColNames <- shiny::renderUI({
       print('CatBoost Data Parameters 5')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_FeatureColNames', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(ML_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::PickerInput(InputID='CatBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(ML_dt()), Multiple = TRUE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -1569,7 +1641,7 @@ server <- function(input, output, session) {
       gg <- c(input$CatBoost_TargetColumnName, input$CatBoost_FeatureColNames, input$CatBoost_PrimaryDateColumn, input$CatBoost_WeightsColumnName)
       gg <- gg[!is.na(gg)]; hh <- tryCatch({names(ML_dt())}, error = function(x) NULL); choices <- tryCatch({hh[!hh %in% gg]}, error = function(x) NULL)
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_DataParameters, InputName = 'CatBoost_IDcols', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::PickerInput(InputID='CatBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -1818,7 +1890,7 @@ server <- function(input, output, session) {
     # Score Function
     output$CatBoost_score_function <- shiny::renderUI({
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = Cat_MLParameters, InputName = 'CatBoost_score_function', ArgName = 'SelectedDefault', Default = 'Cosine', Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='CatBoost_score_function', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Score Function'), Choices = c('Cosine', 'L2', 'NewtonL2', 'NewtomCosine'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::SelectizeInput(InputID='CatBoost_score_function', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Score Function'), Choices = c('Cosine', 'L2', 'NewtonL2', 'NewtonCosine'), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2049,7 +2121,7 @@ server <- function(input, output, session) {
     output$XGBoost_TargetColumnName <- shiny::renderUI({
       print('XGBoost Data Parameters 4')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_TargetColumnName', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_TargetColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Target'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TargetColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Target'), Choices = shiny::req(names(XGB_dt())), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2060,7 +2132,7 @@ server <- function(input, output, session) {
     output$XGBoost_FeatureColNames <- shiny::renderUI({
       print('XGBoost Data Parameters 5')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_FeatureColNames', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::PickerInput(InputID='XGBoost_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = shiny::req(names(XGB_dt())), Multiple = TRUE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2071,7 +2143,7 @@ server <- function(input, output, session) {
     output$XGBoost_PrimaryDateColumn <- shiny::renderUI({
       print('Adrian Antico 6')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_PrimaryDateColumn', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_PrimaryDateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Date'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_PrimaryDateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Date'), Choices = shiny::req(names(XGB_dt())), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2104,7 +2176,7 @@ server <- function(input, output, session) {
     output$XGBoost_WeightsColumnName <- shiny::renderUI({
       print('XGBoost Data Parameters 7')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_WeightsColumnName', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_WeightsColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Weights Column'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_WeightsColumnName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Weights Column'), Choices = shiny::req(names(XGB_dt())), Multiple = TRUE, MaxVars = 1, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2115,9 +2187,9 @@ server <- function(input, output, session) {
     output$XGBoost_IDcols <- shiny::renderUI({
       print('XGBoost Data Parameters 8')
       gg <- c(input$XGBoost_TargetColumnName, input$XGBoost_FeatureColNames, input$XGBoost_PrimaryDateColumn, input$XGBoost_WeightsColumnName)
-      gg <- gg[!is.na(gg)]; hh <- tryCatch({names(XGB_dt())}, error = function(x) NULL); choices <- tryCatch({hh[!hh %in% gg]}, error = function(x) NULL)
-      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_IDcols', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      gg <- gg[!is.na(gg)]; hh <- tryCatch({shiny::req(names(XGB_dt()))}, error = function(x) NULL); choices <- tryCatch({hh[!hh %in% gg]}, error = function(x) NULL)
+      selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_IDcols', ArgName = 'SelectedDefault', Default = choices, Debug = Debug)
+      RemixAutoML:::PickerInput(InputID='XGBoost_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2128,7 +2200,7 @@ server <- function(input, output, session) {
     output$XGBoost_TransformNumericColumns <- shiny::renderUI({
       print('XGBoost Data Parameters 10')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = XGB_DataParameters, InputName = 'XGBoost_TransformNumericColumns', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='XGBoost_TransformNumericColumns', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Columns'), Choices = names(XGB_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::SelectizeInput(InputID='XGBoost_TransformNumericColumns', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Transform Columns'), Choices = shiny::req(names(XGB_dt())), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
     })
 
     # Args Storage
@@ -2508,7 +2580,7 @@ server <- function(input, output, session) {
     output$LightGBM_FeatureColNames <- shiny::renderUI({
       print('LightGBM Data Parameters 5')
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = LGBM_DataParameters, InputName = 'LightGBM_FeatureColNames', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='LightGBM_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(LGBM_dt()), Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::PickerInput(InputID='LightGBM_FeatureColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Features'), Choices = names(LGBM_dt()), Multiple = TRUE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -2565,7 +2637,7 @@ server <- function(input, output, session) {
       gg <- c(input$LightGBM_TargetColumnName, input$LightGBM_FeatureColNames, input$LightGBM_PrimaryDateColumn, input$LightGBM_WeightsColumnName)
       gg <- gg[!is.na(gg)]; hh <- tryCatch({names(LGBM_dt())}, error = function(x) NULL); choices <- tryCatch({hh[!hh %in% gg]}, error = function(x) NULL)
       selected_default <- RemixAutoML:::IntraSessionDefaults(List = LGBM_DataParameters, InputName = 'LightGBM_IDcols', ArgName = 'SelectedDefault', Default = NULL, Debug = Debug)
-      RemixAutoML:::SelectizeInput(InputID='LightGBM_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, MaxVars = 100, SelectedDefault = selected_default, CloseAfterSelect = FALSE)
+      RemixAutoML:::PickerInput(InputID='LightGBM_IDcols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'ID Columns'), Choices = choices, Multiple = TRUE, SelectedDefault = selected_default)
     })
 
     # Args Storage
@@ -5845,7 +5917,7 @@ server <- function(input, output, session) {
       DataList[[CurrentData]] <<- x
       DataList <<- DataList
       output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(dt[seq_len(min(.N, NNN))])
+        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
       })
       shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
@@ -6202,68 +6274,162 @@ server <- function(input, output, session) {
       PartitionType = AutoDataPartition_PartitionType,
       StratifyColumnNames = AutoDataPartition_StratifyColumnNames,
       TimeColumnName = AutoDataPartition_TimeColumnName)
-    DataList[['TrainData']] <- DataSets[['TrainData']]
-    DataList[['ValidationData']] <- DataSets[['ValidationData']]
-    DataList[['TestData']] <- DataSets[['TestData']]
+    DataList[[paste0(input$AutoDataPartition_SelectData, '_TrainData')]] <- DataSets[['TrainData']]
+    DataList[[paste0(input$AutoDataPartition_SelectData, '_ValidationData')]] <- DataSets[['ValidationData']]
+    DataList[[paste0(input$AutoDataPartition_SelectData, '_TestData')]] <- DataSets[['TestData']]
     DataList <<- DataList
+    rm(DataSets)
     output$FE_DisplayData <- DT::renderDataTable({
       RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
     })
     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
   })
 
-  # H2O_Word2Vec()
-  shiny::observeEvent(input$FeatureEngineeringButton_H2O_Word2Vec, {
-    print('FE H2O Word2Vec')
+  # Word2Vec_H2O()
+  shiny::observeEvent(input$FeatureEngineeringButton_Word2Vec_H2O, {
+    print('FE Word2Vec H2O')
 
     # Initialize List
-    if(!exists('FE_ArgsList')) FE_ArgsList <- list()
+    if(!exists('ArgsList')) ArgsList <- list()
+
+    print('FE Word2Vec H2O 1')
 
     # Data
-    x <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_TrainData']]}, error=function(x) NULL), Type = 'numeric', Default = Data[[1L]], Debug = Debug)
-    H2O_Word2Vec_TrainData <- DataList[[eval(x)]]
-    y <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_ValidationData']]}, error=function(x) NULL), Type = 'numeric', Default = Data[[1L]], Debug = Debug)
-    if(length(y) > 0L) H2O_Word2Vec_ValidationData <- DataList[[eval(y)]] else H2O_Word2Vec_ValidationData <- NULL
-    z <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_TestData']]}, error=function(x) NULL), Type = 'numeric', Default = Data[[1L]], Debug = Debug)
-    if(length(z) > 0L) H2O_Word2Vec_TestData <- DataList[[eval(z)]] else H2O_Word2Vec_TestData <- NULL
+    ArgsList$stringCol <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_stringCol']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    print(input[['H2O_Word2Vec_TrainData']])
+    x <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_TrainData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    TrainData <- DataList[[eval(x)]]
+    y <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_ValidationData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    if(length(y) > 0L) ValidationData <- DataList[[eval(y)]] else ValidationData <- NULL
+    z <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_TestData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    if(length(z) > 0L) TestData <- DataList[[eval(z)]] else TestData <- NULL
+    print('FE Word2Vec H2O 2')
 
-    # Args
-    FE_ArgsList$FE_Args$H2O_Word2Vec$BuildType <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_BuildType']]}, error=function(x) NULL), Type = 'character', Default = 'combined', Debug = Debug)
-    FE_ArgsList$FE_Args$H2O_Word2Vec$stringCol <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_stringCol']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    FE_ArgsList$FE_Args$H2O_Word2Vec$KeepStringCol <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_KeepStringCol']]}, error=function(x) NULL), Type = 'logical', Default = TRUE, Debug = Debug)
-    FE_ArgsList$FE_Args$H2O_Word2Vec$vects <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_vects']]}, error=function(x) NULL), Type = 'numeric', Default = 30, Debug = Debug)
-    FE_ArgsList$FE_Args$H2O_Word2Vec$H2O_Word2Vec_MinWords <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_MinWords']]}, error=function(x) NULL), Type = 'numeric', Default = 1, Debug = Debug)
-    FE_ArgsList$FE_Args$H2O_Word2Vec$WindowSize <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_WindowSize']]}, error=function(x) NULL), Type = 'numeric', Default = 5, Debug = Debug)
-    FE_ArgsList$FE_Args$H2O_Word2Vec$Epochs <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['H2O_Word2Vec_Epochs']]}, error=function(x) NULL), Type = 'numeric', Default = 25, Debug = Debug)
+    # Build
+    if(length(ArgsList$stringCol) > 0L && length(TrainData) > 0L) {
 
-    # Args tracking
-    FE_ArgsList$FE_Args$H2O_Word2Vec$ModelID <- 'temp'
-    FE_ArgsList$FE_Args$H2O_Word2Vec$model_path <- NULL
-    FE_ArgsList$FE_Args$H2O_Word2Vec$Threads <- max(1L, parallel::detectCores()-2L)
-    FE_ArgsList$FE_Args$H2O_Word2Vec$MaxMemory <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
+      # Args
+      ArgsList$BuildType <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_BuildType']]}, error=function(x) NULL), Type = 'character', Default = 'combined', Debug = Debug)
+      ArgsList$KeepStringCol <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_KeepStringCol']]}, error=function(x) NULL), Type = 'logical', Default = TRUE, Debug = Debug)
+      ArgsList$vects <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_vects']]}, error=function(x) NULL), Type = 'numeric', Default = 30, Debug = Debug)
+      ArgsList$H2O_Word2Vec_MinWords <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_MinWords']]}, error=function(x) NULL), Type = 'numeric', Default = 1, Debug = Debug)
+      ArgsList$WindowSize <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_WindowSize']]}, error=function(x) NULL), Type = 'numeric', Default = 5, Debug = Debug)
+      ArgsList$Epochs <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_Epochs']]}, error=function(x) NULL), Type = 'numeric', Default = 25, Debug = Debug)
 
-    # Run function
-    DataSets <- RemixAutoML:::Word2Vec_H2O(
-      TrainData. = H2O_Word2Vec_TrainData,
-      ValidationData. = H2O_Word2Vec_ValidationData,
-      TestData. = H2O_Word2Vec_TestData,
-      ScoringData. = NULL,
-      ArgsList = FE_ArgsList,
-      RunMode = "train",
-      SkipCols = NULL)
-    FE_ArgsList <- DataSets$ArgsList
-    DataList[[x]] <- DataSets$TrainData
-    if(length(DataSets$ValidationData) > 0L) DataList[[y]] <- DataSets$ValidationData
-    if(length(DataSets$TestData) > 0L) DataList[[z]] <- DataSets$TestData
+      # Args tracking
+      ArgsList$ModelID <- 'temp'
+      ArgsList$model_path <- NULL
+      ArgsList$Threads <- max(1L, parallel::detectCores()-2L)
+      ArgsList$MaxMemory <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
 
-    # Finalize
-    DataList <<- DataList
-    output$FE_DisplayData <- DT::renderDataTable({RemixAutoML::DataTable(DataList[['TrainData']][seq_len(min(.N, NNN))])})
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      # Run function
+      print('FE Word2Vec H2O 3')
+      DataSets <- RemixAutoML:::Word2Vec_H2O(
+        TrainData. = TrainData,
+        ValidationData. = ValidationData,
+        TestData. = TestData,
+        ScoringData. = NULL,
+        ArgsList = ArgsList,
+        RunMode = "train",
+        SkipCols = NULL)
+
+      # Remove
+      rm(TrainData, ValidationData, TestData)
+
+      # Collect Output
+      print('FE Word2Vec H2O 4')
+      ArgsList <- DataSets$ArgsList
+      DataList[[x]] <- DataSets$TrainData
+      if(length(DataSets$ValidationData) > 0L) DataList[[y]] <- DataSets$ValidationData
+      if(length(DataSets$TestData) > 0L) DataList[[z]] <- DataSets$TestData
+
+      # Finalize
+      DataList <<- DataList
+      output$FE_DisplayData <- DT::renderDataTable({RemixAutoML::DataTable(DataList[[x]][seq_len(min(.N, NNN))])})
+
+    } else {
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Text Columns is NULL or TrainData is NULL. Check to see if those inputs were filled out.', type = NULL, btn_labels = 'warning', btn_colors = 'darkred', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    }
+  })
+
+  # AutoEncoder_H2O()
+  shiny::observeEvent(input$FeatureEngineeringButton_AutoEncoder_H2O, {
+    print('FE AutoEncoder H2O')
+
+    # Initialize List
+    if(!exists('ArgsList')) ArgsList <- list()
+
+    # Data
+    ArgsList$Features <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_Features}, error = function(x) NULL), Type = 'character', Default = NULL)
+    print(input[['AutoEncoder_H2O_TrainData']])
+    x <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoEncoder_H2O_TrainData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    TrainData <- DataList[[eval(x)]]
+    y <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoEncoder_H2O_ValidationData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    if(length(y) > 0L) {
+      print('Adrian is the best!!')
+      print(y)
+      ValidationData <- DataList[[eval(y)]]
+    } else {
+      ValidationData <- NULL
+    }
+    z <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoEncoder_H2O_TestData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    if(length(z) > 0L) TestData <- DataList[[eval(z)]] else TestData <- NULL
+    if(length(ArgsList$Features) > 0L && length(TrainData) > 0L) {
+
+      print('FE AutoEncoder H2O 2')
+
+      # Non Data Args
+      ArgsList$AnomalyDetection <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_AnomalyDetection}, error = function(x) NULL), Type = 'logical', Default = NULL)
+      ArgsList$DimensionReduction <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_DimensionReduction}, error = function(x) NULL), Type = 'logical', Default = NULL)
+      ArgsList$per_feature <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_per_feature}, error = function(x) NULL), Type = 'logical', Default = NULL)
+      ArgsList$RemoveFeatures <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_RemoveFeatures}, error = function(x) NULL), Type = 'logical', Default = NULL)
+      ArgsList$LayerStructure <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_LayerStructure}, error = function(x) NULL), Type = 'numeric', Default = NULL)
+      ArgsList$NodeShrinkRate <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_NodeShrinkRate}, error = function(x) NULL), Type = 'numeric', Default = NULL)
+      ArgsList$ReturnLayer <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_ReturnLayer}, error = function(x) NULL), Type = 'numeric', Default = NULL)
+      ArgsList$Epochs <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_Epochs}, error = function(x) NULL), Type = 'numeric', Default = NULL)
+      ArgsList$L2 <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_L2}, error = function(x) NULL), Type = 'numeric', Default = NULL)
+      ArgsList$ElasticAveraging <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_ElasticAveraging}, error = function(x) NULL), Type = 'logical', Default = NULL)
+      ArgsList$ElasticAveragingMovingRate <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_ElasticAveragingMovingRate}, error = function(x) NULL), Type = 'numeric', Default = NULL)
+      ArgsList$ElasticAveragingRegularization <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_ElasticAveragingRegularization}, error = function(x) NULL), Type = 'numeric', Default = NULL)
+
+      # Args tracking
+      ArgsList$ModelID <- 'temp'
+      ArgsList$Models_Path <- getwd()
+      ArgsList$NThreads <- max(1L, parallel::detectCores()-2L)
+      ArgsList$MaxMem <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
+
+      # Run function
+      print('FE AutoEncoder H2O 3')
+      DataSets <- RemixAutoML:::AutoEncoder_H2O(
+        RunMode = 'train',
+        ArgsList = ArgsList,
+        TrainData. = TrainData,
+        ValidationData. = ValidationData,
+        TestData. = TestData,
+        ScoringData. = NULL,
+        Pause = 0L)
+
+      # Remove
+      rm(TrainData, ValidationData, TestData)
+
+      # Collect Output
+      print('FE AutoEncoder H2O 4')
+      ArgsList <- DataSets$ArgsList
+      DataList[[x]] <- DataSets$TrainData
+      if(length(DataSets$ValidationData) > 0L) DataList[[y]] <- DataSets$ValidationData
+      if(length(DataSets$TestData) > 0L) DataList[[z]] <- DataSets$TestData
+
+      # Finalize
+      DataList <<- DataList
+      output$FE_DisplayData <- DT::renderDataTable({RemixAutoML::DataTable(DataList[[x]][seq_len(min(.N, NNN))])})
+
+    } else {
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Text Columns is NULL or TrainData is NULL. Check to see if those inputs were filled out.', type = NULL, btn_labels = 'warning', btn_colors = 'darkred', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    }
   })
 
   # TODO:
-  # Text Variables, Dim Reduction, Clustering, Anomaly Detection
+  # Dim Reduction, Clustering, Anomaly Detection
 
   # ----
 
@@ -7216,7 +7382,7 @@ server <- function(input, output, session) {
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$PrintCodeButton, {
     if(Debug) {print('Print Code UI Begin'); print(paste0('Check if CodeCollection exists: exists = ', exists('CodeCollection')))}
-    if(exists('CodeCollection')) {
+    if(length(CodeCollection) > 0L) {
       output$PrintCode <- shiny::renderPrint({
         shiny::HTML(paste0(unlist(CodeCollection), sep = '<br/>'))
       })
