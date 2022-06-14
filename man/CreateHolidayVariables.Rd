@@ -11,7 +11,9 @@ CreateHolidayVariables(
   HolidayGroups = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
     "OtherEcclesticalFeasts"),
   Holidays = NULL,
-  Print = FALSE
+  Print = FALSE,
+  CachePath = NULL,
+  Debug = FALSE
 )
 }
 \arguments{
@@ -26,6 +28,10 @@ CreateHolidayVariables(
 \item{Holidays}{Pick holidays}
 
 \item{Print}{Set to TRUE to print iteration number to console}
+
+\item{CachePath}{= NULL}
+
+\item{Debug}{= FALSE}
 }
 \value{
 Returns your data.table with the added holiday indicator variable

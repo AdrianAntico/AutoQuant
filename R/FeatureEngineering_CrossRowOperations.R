@@ -28,6 +28,7 @@ Mode <- function(x) {
 #' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
 #' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
+#' @param Debug = FALSE
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
 #' \dontrun{
@@ -108,10 +109,13 @@ AutoLagRollMode <- function(data,
                             SortDateName = NULL,
                             WindowingLag = 0,
                             Type = c("Lag"),
-                            SimpleImpute = TRUE) {
+                            SimpleImpute = TRUE,
+                            Debug = FALSE) {
 
   # Number of Targets
   tarNum <- length(Targets)
+
+  if(Debug) print('AutoLagRollMode 1')
 
   # Argument Checks ----
   if(is.null(Lags) && WindowingLag == 1) Lags <- 1
@@ -124,23 +128,46 @@ AutoLagRollMode <- function(data,
   if(!(tolower(Type) %chin% c("lag", "lead"))) stop("Type needs to be either Lag or Lead")
   if(!is.logical(SimpleImpute)) stop("SimpleImpute needs to be TRUE or FALSE")
 
+  if(Debug) print('AutoLagRollMode 2')
+
   # Ensure enough columns are allocated beforehand----
   if(!is.null(GroupingVars)) {
+    if(Debug) print('AutoLagRollMode 3.a')
     if(ncol(data) + (length(Lags) + length(ModePeriods)) * tarNum * length(GroupingVars) > data.table::truelength(data)) {
       data.table::alloc.col(DT = data, n = ncol(data) + (length(Lags) + length(ModePeriods)) * tarNum * length(GroupingVars))
     }
   } else {
+    if(Debug) print('AutoLagRollMode 3.b')
     if(ncol(data) + (length(Lags) + length(ModePeriods)) * tarNum > data.table::truelength(data)) {
       data.table::alloc.col(DT = data, n = ncol(data) + (length(Lags) + length(ModePeriods)) * tarNum)
     }
   }
 
+  if(Debug) print('AutoLagRollMode 4')
+
   # Names
   ColumnNames <- names(data.table::copy(data))
 
+  if(Debug) print('AutoLagRollMode 5')
+
+  # Ensure Targets are Factors
+  class_switch <- c()
+  for(fac in Targets) {
+    if(class(data[[eval(fac)]])[1L] %in% c('character')) {
+      class_switch <- c(class_switch, fac)
+      data.table::set(data, j = eval(fac), value = as.factor(data[[eval(fac)]]))
+    }
+  }
+
   # Begin feature engineering ----
   if(!is.null(GroupingVars)) {
+
+    if(Debug) print('AutoLagRollMode 6')
+
+    # i = 1L
     for(i in seq_along(GroupingVars)) {
+
+      if(Debug) print('AutoLagRollMode 7')
 
       # Sort data ----
       if(tolower(Type) == "lag") {
@@ -151,56 +178,79 @@ AutoLagRollMode <- function(data,
         data.table::setorderv(data, colVar, order = -1L)
       }
 
+      if(Debug) print('AutoLagRollMode 8')
+
       # Lags ----
       LAG_Names <- c()
       for(t in Targets) LAG_Names <- c(LAG_Names, paste0(GroupingVars[i], "_LAG_", Lags, "_", t))
       data[, paste0(LAG_Names) := data.table::shift(.SD, n = Lags, type = "lag"), by = c(GroupingVars[i]), .SDcols = Targets]
 
+      if(Debug) print('AutoLagRollMode 9')
+
       # Define targets ----
-      if(WindowingLag != 0L) {
+      if(WindowingLag > 0L) {
         Targets <- c(paste0(GroupingVars[i], "_LAG_", WindowingLag, "_", Targets))
       }
 
+      if(Debug) print('AutoLagRollMode 10')
+
       # Mode ----
       if(!all(ModePeriods %in% c(0,1))) {
+
+        if(Debug) print('AutoLagRollMode 11')
+
         tempperiods <- ModePeriods[ModePeriods > 1L]
         Mode_Names <- c()
-        g <- unique(c(names(data)[which(sapply(data, is.factor))], names(data)[which(sapply(data, is.character))]))
-        if(!identical(character(0), g)) {
-          cats <- g[which(g %chin% Targets)]
-          counter <- 1L
-          temp_targets <- c()
-          for(gg in cats) {
-            data[is.na(get(gg)), eval(gg) := "0"]
-            temp_targets <- c(temp_targets, paste0("TEMP_", gg))
-            data[, paste0("TEMP_", gg) := unclass(get(gg))]
-            counter <- counter + 1L
-          }
-        } else {
-          temp_targets <- Targets
+        if(Debug) print('AutoLagRollMode 12.a')
+        counter <- 1L
+        temp_targets <- c()
+        print(data)
+        for(gg in Targets) {
+          data[is.na(get(gg)), eval(gg) := "0"]
+          temp_targets <- c(temp_targets, paste0("TEMP_", gg))
+          if(Debug) print(str(data))
+          data[, paste0("TEMP_", gg) := unclass(get(gg))]
+          if(Debug) print(str(data))
+          counter <- counter + 1L
         }
+
+        if(Debug) print('AutoLagRollMode 13')
+
         for(t in Targets) for(j in seq_along(tempperiods)) Mode_Names <- c(Mode_Names, paste0(GroupingVars[i], "Mode_", tempperiods[j], "_", t))
+
+        if(Debug) {
+          print(data)
+          print(temp_targets)
+        }
+
         data[, paste0(Mode_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = Mode), by = c(GroupingVars[i]), .SDcols = c(temp_targets)]
 
+        if(Debug) print('AutoLagRollMode 14')
+
         # Convert back to catgegorical ----
-        if(!identical(character(0), g)) {
-          for(t in seq_along(Targets)) {
-            for(j in seq_along(tempperiods)) {
-              temp <- data[, .N, by = c(Targets[t], temp_targets[t])][, N := NULL]
-              data.table::setkeyv(temp, paste0("TEMP_", Targets[t]))
-              data[, paste0("remove_", GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]) := get(paste0(GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]))]
-              data[, paste0(GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]) := NULL]
-              data.table::setkeyv(data, paste0("remove_", GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]))
-              data[temp, paste0(GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]) := as.character(get(paste0("i.", Targets[t])))]
-              data[, paste0("remove_", GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]) := NULL]
-            }
+        if(Debug) print('AutoLagRollMode 15')
+        for(t in seq_along(Targets)) {
+          if(Debug) print('AutoLagRollMode 16')
+          for(j in seq_along(tempperiods)) {
+            if(Debug) print('AutoLagRollMode 17')
+            temp <- data[, .N, by = c(Targets[t], temp_targets[t])][, N := NULL]
+            data.table::setkeyv(temp, paste0("TEMP_", Targets[t]))
+            data[, paste0("remove_", GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]) := get(paste0(GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]))]
+            data[, paste0(GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]) := NULL]
+            data.table::setkeyv(data, paste0("remove_", GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]))
+            data[temp, paste0(GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]) := as.character(get(paste0("i.", Targets[t])))]
+            data[, paste0("remove_", GroupingVars[i], "Mode_", tempperiods[j], "_", Targets[t]) := NULL]
           }
         }
+
+        if(Debug) print('AutoLagRollMode 18')
 
         # Remove TEMP_ columns
         data.table::set(data, j = c(names(data)[names(data) %like% "TEMP_"]), value = NULL)
       }
     }
+
+    if(Debug) print('AutoLagRollMode 19')
 
     # Impute missing values ----
     UpdateColumnNames <- setdiff(names(data), ColumnNames)
@@ -216,10 +266,19 @@ AutoLagRollMode <- function(data,
       }
     }
 
+    if(Debug) print('AutoLagRollMode 20')
+
+    # Convert changed types back to original types
+    if(length(class_switch) > 0L) {
+      for(fac in class_switch) data.table::set(data, j = eval(fac), value = as.character(data[[eval(fac)]]))
+    }
+
     # Done!! ----
     return(data)
 
   } else {
+
+    if(Debug) print('AutoLagRollMode 6.b')
 
     # Non grouping case
     if(tolower(Type) == "lag") {
@@ -230,12 +289,18 @@ AutoLagRollMode <- function(data,
       data.table::setorderv(data, colVar, order = -1L)
     }
 
+    if(Debug) print('AutoLagRollMode 7.b')
+
     # Lags ----
     LAG_Names <- c()
     for(t in Targets) LAG_Names <- c(LAG_Names, paste0("LAG_", Lags, "_", t))
 
+    if(Debug) print('AutoLagRollMode 8.b')
+
     # Build features ----
     data[, paste0(LAG_Names) := data.table::shift(.SD, n = Lags, type = "lag"), .SDcols = c(Targets)]
+
+    if(Debug) print('AutoLagRollMode 9.b')
 
     # Define targets ----
     if(WindowingLag != 0L) {
@@ -244,31 +309,51 @@ AutoLagRollMode <- function(data,
       Targets <- Targets
     }
 
+    if(Debug) print('AutoLagRollMode 10.b')
+
     # Mode ----
     if(!all(ModePeriods %in% c(0,1))) {
+
+      if(Debug) print('AutoLagRollMode 11.b')
+
       tempperiods <- ModePeriods[ModePeriods > 1L]
       Mode_Names <- c()
       g <- names(data)[which(sapply(data, is.factor))]
       if(!identical(integer(0), g)) {
+
+        if(Debug) print('AutoLagRollMode 12.b')
+
         cats <- g[which(g %chin% Targets)]
         counter <- 1L
         temp_targets <- c()
         for(gg in cats) {
+
+          if(Debug) print('AutoLagRollMode 13.b')
+
           data[is.na(get(gg)), eval(gg) := "0"]
           temp_targets <- c(temp_targets, paste0("TEMP_", gg))
           data[, paste0("TEMP_", gg) := unclass(get(gg))]
           counter <- counter + 1L
         }
       } else {
+        if(Debug) print('AutoLagRollMode 11.bb')
         temp_targets <- Targets
       }
+
+      if(Debug) print('AutoLagRollMode 14.b')
+
       for(t in Targets) for(j in seq_along(tempperiods)) Mode_Names <- c(Mode_Names, paste0("Mode_", tempperiods[j], "_", t))
       data[, paste0(Mode_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = Mode), .SDcols = c(temp_targets)]
 
+      if(Debug) print('AutoLagRollMode 15.b')
+
       # Convert back to catgegorical
       if(!identical(integer(0), g)) {
+        if(Debug) print('AutoLagRollMode 16.b')
         for(t in seq_along(Targets)) {
+          if(Debug) print('AutoLagRollMode 17.b')
           for(j in seq_along(tempperiods)) {
+            if(Debug) print('AutoLagRollMode 18.b')
             temp <- data[, .N, by = c(Targets[t], temp_targets[t])][, N := NULL]
             data.table::setkeyv(temp, paste0("TEMP_", Targets[t]))
             data[, paste0("remove_", "Mode_", tempperiods[j], "_", Targets[t]) := get(paste0("Mode_", tempperiods[j], "_", Targets[t]))]
@@ -280,9 +365,13 @@ AutoLagRollMode <- function(data,
         }
       }
 
+      if(Debug) print('AutoLagRollMode 19.b')
+
       # Remove TEMP_ columns
       data.table::set(data, j = c(names(data)[names(data) %like% "TEMP_"]), value = NULL)
     }
+
+    if(Debug) print('AutoLagRollMode 20.b')
 
     # Impute missing values ----
     UpdateColumnNames <- setdiff(names(data), ColumnNames)
@@ -296,6 +385,13 @@ AutoLagRollMode <- function(data,
           data.table::set(data, which(is.na(data[[j]])), j, -1)
         }
       }
+    }
+
+    if(Debug) print('AutoLagRollMode 21.b')
+
+    # Convert changed types back to original types
+    if(length(class_switch) > 0L) {
+      for(fac in class_switch) data.table::set(data, j = eval(fac), value = as.character(data[[eval(fac)]]))
     }
 
     # Done!! ----

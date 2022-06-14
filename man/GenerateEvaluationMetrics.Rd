@@ -34,6 +34,7 @@ GenerateEvaluationMetrics calculates evaluation metrics for out of sample foreca
 \seealso{
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
+\code{\link{DataTable2}()},
 \code{\link{DataTable}()},
 \code{\link{DateInput}()},
 \code{\link{NumericInput}()},

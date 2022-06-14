@@ -229,6 +229,7 @@ DummifyDT <- function(data,
 #' @param ReturnFactorLevelList TRUE by default. Returns a list of the factor variable and transformations needed for regenerating them in a scoring environment. Alternatively, if you save them to file, they can be called for use in a scoring environment.
 #' @param SupplyFactorLevelList The FactorCompenents list that gets returned. Supply this to recreate features in scoring environment
 #' @param KeepOriginalFactors Defaults to TRUE. Set to FALSE to remove the original factor columns
+#' @param Debug = FALSE
 #'
 #' @examples
 #' \dontrun{
@@ -269,7 +270,8 @@ DummifyDT <- function(data,
 #'   Scoring = FALSE,
 #'   ReturnFactorLevelList = FALSE,
 #'   SupplyFactorLevelList = NULL,
-#'   KeepOriginalFactors = FALSE)
+#'   KeepOriginalFactors = FALSE,
+#'   Debug = FALSE)
 #'
 #' # View results
 #' print(data)
@@ -286,7 +288,8 @@ DummifyDT <- function(data,
 #'   ImputeValueScoring = 222,
 #'   ReturnFactorLevelList = FALSE,
 #'   SupplyFactorLevelList = NULL,
-#'   KeepOriginalFactors = FALSE)
+#'   KeepOriginalFactors = FALSE,
+#'   Debug = FALSE)
 #' }
 #'
 #' @export
@@ -300,7 +303,10 @@ CategoricalEncoding <- function(data = NULL,
                                 ImputeValueScoring = NULL,
                                 ReturnFactorLevelList = TRUE,
                                 SupplyFactorLevelList = NULL,
-                                KeepOriginalFactors = TRUE) {
+                                KeepOriginalFactors = TRUE,
+                                Debug = FALSE) {
+
+  if(Debug) print('CategoricalEncoding 1')
 
   # Args Check
   if(length(Method) > 1L) stop("You can only run one Method per function call.")
@@ -574,15 +580,22 @@ CategoricalEncoding <- function(data = NULL,
 
   # credibility; a.k.a James Stein ----
   if(tolower(Method) == "credibility") {
+    if(Debug) print('CategoricalEncoding Credibility 1')
     if(!Scoring) ComponentList <- list()
     for(GroupValue in GroupVariables) {
+
+      if(Debug) print(paste0('CategoricalEncoding Credibility 2 iteration: ', GroupValue))
 
       # Setkey to join easily
       data.table::setkeyv(x = data, cols = eval(GroupValue))
 
+      if(Debug) print('CategoricalEncoding Credibility 3')
+
       # Encode
       if(!Scoring) {
+        if(Debug) print('CategoricalEncoding Credibility 4.a')
         if(tolower(ML_Type) == "multiclass") {
+          if(Debug) print('CategoricalEncoding Credibility 4.c')
           GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
           GroupMean[, GrandSum := sum(N)]
           GroupMean[, TargetSum := sum(N), by = eval(TargetVariable)]
@@ -597,47 +610,69 @@ CategoricalEncoding <- function(data = NULL,
           data.table::setnames(x = GroupMean, names(GroupMean), c(eval(GroupValue), paste0(GroupValue, "_Credibility_TargetLevel_", names(GroupMean)[-1L])))
           data.table::setkeyv(GroupMean, cols = eval(GroupValue))
         } else {
+          if(Debug) print('CategoricalEncoding Credibility 4.b')
           GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
           if(tolower(ML_Type) %chin% c("classification","classifier")) {
+            if(Debug) print('CategoricalEncoding Credibility 5.b')
             GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), N = .N, Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N), keyby = eval(GroupValue)]
+            if(Debug) print('CategoricalEncoding Credibility 5.c')
             PopVar <- (GrandMean * (1 - GrandMean)) / data[, .N]
+            if(Debug) print('CategoricalEncoding Credibility 5.d')
             GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
+            if(Debug) print('CategoricalEncoding Credibility 5.e')
             GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
+            if(Debug) print('CategoricalEncoding Credibility 5.f')
             GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
           } else if(tolower(ML_Type) == "regression") {
+            if(Debug) print('CategoricalEncoding Credibility 6.a')
             GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), Var_Group = var(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
+            if(Debug) print('CategoricalEncoding Credibility 6.b')
             PopVar <- data[, var(get(TargetVariable), na.rm = TRUE)]
+            if(Debug) print('CategoricalEncoding Credibility 6.c')
             GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
+            if(Debug) print('CategoricalEncoding Credibility 6.d')
             GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
+            if(Debug) print('CategoricalEncoding Credibility 6.e')
             GroupMean[, ":=" (Mean = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
           }
         }
+        if(Debug) print('CategoricalEncoding Credibility 6')
         if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
+        if(Debug) print('CategoricalEncoding Credibility 7.a')
         GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Credibility.csv")))
         data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
+        if(Debug) print('CategoricalEncoding Credibility 7.b')
         GroupMean <- SupplyFactorLevelList[[eval(GroupValue)]]
         data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
+      if(Debug) print('CategoricalEncoding Credibility 8')
       if(tolower(ML_Type) == "multiclass") {
+        if(Debug) print('CategoricalEncoding Credibility 9.c')
         data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := mget(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       } else {
+        if(Debug) print('CategoricalEncoding Credibility 9.a')
         data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       }
+      if(Debug) print('CategoricalEncoding Credibility 10')
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(Debug) print('CategoricalEncoding Credibility 11')
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
       if(Scoring && !is.null(ImputeValueScoring)) {
+        if(Debug) print('CategoricalEncoding Credibility 12')
         data.table::set(data, i = which(is.na(data[[paste0(GroupValue, "_Credibility")]])), j = paste0(GroupValue, "_Credibility"), value = ImputeValueScoring)
       }
     }
 
     # Return
     if(!Scoring && ReturnFactorLevelList) {
+      if(Debug) print('CategoricalEncoding Credibility 13.a')
       return(list(data = data, FactorCompenents = ComponentList))
     } else {
+      if(Debug) print('CategoricalEncoding Credibility 13.b')
       return(data)
     }
   }
@@ -645,9 +680,13 @@ CategoricalEncoding <- function(data = NULL,
   # M Estimator ----
   if(tolower(Method) == "m_estimator") {
 
+    if(Debug) print('CategoricalEncoding m-estimator 1')
+
     # Loop through GroupVariables
     if(!Scoring) ComponentList <- list()
     for(GroupValue in GroupVariables) {
+
+      if(Debug) print('CategoricalEncoding m-estimator 2')
 
       # Setkey to join easily
       data.table::setkeyv(x = data, cols = eval(GroupValue))
@@ -655,50 +694,79 @@ CategoricalEncoding <- function(data = NULL,
       # Encode
       if(!Scoring) {
 
+        if(Debug) print('CategoricalEncoding m-estimator 3')
+
         # Encode
         if(tolower(ML_Type) == "multiclass") {
+          if(Debug) print('CategoricalEncoding m-estimator 4.a')
           GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
+          if(Debug) print('CategoricalEncoding m-estimator 4.b')
           GroupMean[, GrandSum := sum(N)]
+          if(Debug) print('CategoricalEncoding m-estimator 4.c')
           GroupMean[, TargetSum := sum(N), by = eval(TargetVariable)]
+          if(Debug) print('CategoricalEncoding m-estimator 4.d')
           GroupMean[, TargetMean := TargetSum / GrandSum]
+          if(Debug) print('CategoricalEncoding m-estimator 4.e')
           GroupMean[, TargetGroupMean := N / TargetSum]
+          if(Debug) print('CategoricalEncoding m-estimator 4.f')
           GroupMean[, paste0(GroupValue, "_Mest") := (TargetGroupMean + TargetMean) / N]
+          if(Debug) print('CategoricalEncoding m-estimator 4.g')
           GroupMean[, (setdiff(names(GroupMean), c(paste0(GroupValue, "_Mest"), TargetVariable, GroupValue))) := NULL]
+          if(Debug) print('CategoricalEncoding m-estimator 4.h')
           GroupMean <- data.table::dcast.data.table(data = GroupMean, formula = get(GroupValue) ~ get(TargetVariable), fun.aggregate = sum, value.var = paste0(GroupValue, "_Mest"), fill = 0)
+          if(Debug) print('CategoricalEncoding m-estimator 4.i')
           data.table::setnames(x = GroupMean, names(GroupMean), c(eval(GroupValue), paste0(GroupValue, "_Mest_TargetLevel_", names(GroupMean)[-1L])))
+          if(Debug) print('CategoricalEncoding m-estimator 4.j')
           data.table::setkeyv(GroupMean, cols = eval(GroupValue))
         } else {
+          if(Debug) print('CategoricalEncoding m-estimator 4.b')
           GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
+          if(Debug) print('CategoricalEncoding m-estimator 4.c')
           GroupMean <- data[, list(Mean = sum(get(TargetVariable), na.rm = TRUE), N = .N), keyby = eval(GroupValue)]
+          if(Debug) print('CategoricalEncoding m-estimator 4.d')
           GroupMean[, paste0(GroupValue, "_Mest") := (Mean + GrandMean) / N]
+          if(Debug) print('CategoricalEncoding m-estimator 4.e')
           GroupMean[, ":=" (Mean = NULL, N = NULL)]
         }
+        if(Debug) print('CategoricalEncoding m-estimator 5')
         if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Mest.csv")))
       } else if(Scoring && is.null(SupplyFactorLevelList)) {
+        if(Debug) print('CategoricalEncoding m-estimator 4.c')
         GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Mest.csv")))
+        if(Debug) print('CategoricalEncoding m-estimator 4.d')
         data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       } else if(Scoring && !is.null(SupplyFactorLevelList)) {
+        if(Debug) print('CategoricalEncoding m-estimator 4.e')
         GroupMean <- SupplyFactorLevelList[[paste0(GroupValue)]]
+        if(Debug) print('CategoricalEncoding m-estimator 4.f')
         data.table::setkeyv(GroupMean, cols = eval(GroupValue))
       }
 
       # Merge back to data
       if(tolower(ML_Type) == "mutliclass") {
+        if(Debug) print('CategoricalEncoding m-estimator 6')
         data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := mget(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       } else {
+        if(Debug) print('CategoricalEncoding m-estimator 7')
         data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
       }
+      if(Debug) print('CategoricalEncoding m-estimator 8')
       if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+      if(Debug) print('CategoricalEncoding m-estimator 9')
       if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
+      if(Debug) print('CategoricalEncoding m-estimator 10')
       if(Scoring && !is.null(ImputeValueScoring)) {
+        if(Debug) print('CategoricalEncoding m-estimator 11')
         data.table::set(data, i = which(is.na(data[[paste0(GroupValue, "_Mest")]])), j = paste0(GroupValue, "_Mest"), value = ImputeValueScoring)
       }
     }
 
     # Return
     if(!Scoring && ReturnFactorLevelList) {
+      if(Debug) print('CategoricalEncoding m-estimator 12')
       return(list(data = data, FactorCompenents = ComponentList))
     } else {
+      if(Debug) print('CategoricalEncoding m-estimator 13')
       return(data)
     }
   }
@@ -814,6 +882,7 @@ DummyVariables <- function(data,
 #' @param MetaDataPath Supply a directory path or NULL
 #' @param MetaDataList Supply a metadata list or NULL
 #' @param ImputeMissingValue Supply a value or leave NULL to handle elsewhere
+#' @param Debug = FALSE
 #'
 #' @noRd
 EncodeCharacterVariables <- function(RunMode = 'train',
@@ -828,7 +897,8 @@ EncodeCharacterVariables <- function(RunMode = 'train',
                                      ReturnMetaData = FALSE,
                                      MetaDataPath = NULL,
                                      MetaDataList = NULL,
-                                     ImputeMissingValue = 0) {
+                                     ImputeMissingValue = 0,
+                                     Debug = FALSE) {
 
   # Change of variable
   if(RunMode != 'train') Score <- TRUE else Score <- FALSE

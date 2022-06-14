@@ -724,7 +724,14 @@ ViolinPlot <- function(data = NULL,
                        Debug = FALSE) {
 
   # Cap number of records
-  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+  if(Debug) {
+    print(paste0('BOX PLOT HERE: ,', data[,.N], ' > ', SampleSize, ' == ', data[,.N] > SampleSize))
+    print(paste0('BOX PLOT HERE: data[,.N] == ', data[,.N]))
+    print(paste0('BOX PLOT HERE: SampleSize == ', SampleSize))
+  }
+  c1 <- as.numeric(data[,.N])
+  c2 <- as.numeric(SampleSize)
+  if(!is.null(SampleSize)) if(c1 > c2) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
   # Used multiple times
   X_and_Y <- length(XVar) != 0 && length(YVar) != 0
@@ -965,7 +972,14 @@ BoxPlot <- function(data = NULL,
                     Debug = FALSE) {
 
   # Cap number of records
-  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+  if(Debug) {
+    print(paste0('BOX PLOT HERE: ,', data[,.N], ' > ', SampleSize, ' == ', data[,.N] > SampleSize))
+    print(paste0('BOX PLOT HERE: data[,.N] == ', data[,.N]))
+    print(paste0('BOX PLOT HERE: SampleSize == ', SampleSize))
+  }
+  c1 <- as.numeric(data[,.N])
+  c2 <- as.numeric(SampleSize)
+  if(!is.null(SampleSize)) if(c1 > c2) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
   # Used multiple times
   X_and_Y <- length(XVar) != 0 && length(YVar) != 0
@@ -1208,8 +1222,15 @@ BarPlot <- function(data = NULL,
                     LegendLineType = 'solid',
                     Debug = FALSE) {
 
-  # Check for data.table class
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  # Cap number of records
+  if(Debug) {
+    print(paste0('BOX PLOT HERE: ,', data[,.N], ' > ', SampleSize, ' == ', data[,.N] > SampleSize))
+    print(paste0('BOX PLOT HERE: data[,.N] == ', data[,.N]))
+    print(paste0('BOX PLOT HERE: SampleSize == ', SampleSize))
+  }
+  c1 <- as.numeric(data[,.N])
+  c2 <- as.numeric(SampleSize)
+  if(!is.null(SampleSize)) if(c1 > c2) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
   # Used multiple times
   check1 <- length(XVar) != 0 && length(YVar) != 0
@@ -1636,7 +1657,14 @@ HistPlot <- function(data = NULL,
                      Debug = FALSE) {
 
   # Cap number of records
-  if(!is.null(SampleSize)) if(data[,.N] > SampleSize) data <- data[order(runif(.N))][seq_len(SampleSize)]
+  if(Debug) {
+    print(paste0('BOX PLOT HERE: ,', data[,.N], ' > ', SampleSize, ' == ', data[,.N] > SampleSize))
+    print(paste0('BOX PLOT HERE: data[,.N] == ', data[,.N]))
+    print(paste0('BOX PLOT HERE: SampleSize == ', SampleSize))
+  }
+  c1 <- as.numeric(data[,.N])
+  c2 <- as.numeric(SampleSize)
+  if(!is.null(SampleSize)) if(c1 > c2) data <- data[order(runif(.N))][seq_len(SampleSize)]
 
   # Define Plotting Variable
   if(Debug) print('YTicks Update')
@@ -3359,7 +3387,7 @@ AutoWordFreq <- function(data,
 #'
 #' @param p1 ggplot2 object
 #'
-#' @export
+#' @keywords internal
 PlotlyConversion <- function(p1) {
   if(class(p1)[[1L]] != 'plotly') {
     if(!is.null(p1$plot_env$ForecastLineColor) || any(p1$layers[[1]]$mapping %like% 'PredictionColName')) {
@@ -3400,7 +3428,7 @@ BlankPlot <- function() {
 #' @param TopN The number of variables to plot
 #' @param Debug = FALSE
 #'
-#' @export
+#' @keywords internal
 AddFacet <- function(p, fv1=NULL, fv2=NULL, Exclude = 'None', Debug = FALSE) {
   if(length(fv1) != 0 && fv1 != Exclude && length(fv2) != 0 && fv2 != Exclude) {
     if(Debug) print('FacetVar1 and FacetVar2')

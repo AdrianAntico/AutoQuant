@@ -61,6 +61,7 @@ PreparePlotData automatically builds a picker input with tryCatch's and ProjectL
 \seealso{
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
+\code{\link{DataTable2}()},
 \code{\link{DataTable}()},
 \code{\link{DateInput}()},
 \code{\link{GenerateEvaluationMetrics}()},

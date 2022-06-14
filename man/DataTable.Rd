@@ -4,10 +4,12 @@
 \alias{DataTable}
 \title{DataTable}
 \usage{
-DataTable(data)
+DataTable(data, FixedCols = 2)
 }
 \arguments{
 \item{data}{source data.table}
+
+\item{FixedCols}{Number of columns from the left to Freeze, like freeze panes in Excel. Default is 2}
 }
 \description{
 Fully loaded DT::datatable() with args prefilled
@@ -53,6 +55,7 @@ output$Table <- shiny::renderUI({RemixAutoML::DataTable(data)})
 \seealso{
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
+\code{\link{DataTable2}()},
 \code{\link{DateInput}()},
 \code{\link{GenerateEvaluationMetrics}()},
 \code{\link{NumericInput}()},

@@ -532,6 +532,463 @@ Word2Vec_H2O <- function(TrainData. = NULL,
   return(list(ScoringData = ScoringData., ArgsList = ArgsList))
 }
 
+#' @title H2OAutoencoder
+#'
+#' @description H2OAutoencoder for anomaly detection and or dimensionality reduction
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#'
+#' @param AnomalyDetection Set to TRUE to run anomaly detection
+#' @param DimensionReduction Set to TRUE to run dimension reduction
+#' @param data The data.table with the columns you wish to have analyzed
+#' @param Features NULL Column numbers or column names
+#' @param RemoveFeatures Set to TRUE if you want the features you specify in the Features argument to be removed from the data returned
+#' @param NThreads max(1L, parallel::detectCores()-2L)
+#' @param MaxMem "28G"
+#' @param LayerStructure If NULL, layers and sizes will be created for you, using NodeShrinkRate and 7 layers will be created.
+#' @param NodeShrinkRate = (sqrt(5) - 1) / 2,
+#' @param H2OStart TRUE to start H2O inside the function
+#' @param H2OShutdown Setting to TRUE will shutdown H2O when it done being used internally.
+#' @param ModelID "TestModel"
+#' @param model_path If NULL no model will be saved. If a valid path is supplied the model will be saved there
+#' @param ReturnLayer Which layer of the NNet to return. Choose from 1-7 with 4 being the layer with the least amount of nodes
+#' @param per_feature Set to TRUE to have per feature anomaly detection generated. Otherwise and overall value will be generated
+#' @param Activation Choose from "Tanh", "TanhWithDropout", "Rectifier", "RectifierWithDropout","Maxout", "MaxoutWithDropout"
+#' @param Epochs Quantile value to find the cutoff value for classifying outliers
+#' @param L2 Specify the amount of memory to allocate to H2O. E.g. "28G"
+#' @param ElasticAveraging Specify the number of threads (E.g. cores * 2)
+#' @param ElasticAveragingMovingRate Specify the number of decision trees to build
+#' @param ElasticAveragingRegularization Specify the row sample rate per tree
+#' @examples
+#' \dontrun{
+#' ############################
+#' # Training
+#' ############################
+#'
+#' # Create simulated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 1000L,
+#'   ID = 2L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   AddComment = FALSE,
+#'   ZIP = 2L,
+#'   TimeSeries = FALSE,
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run algo
+#' Output <- RemixAutoML::H2OAutoencoder(
+#'
+#'   # Select the service
+#'   AnomalyDetection = TRUE,
+#'   DimensionReduction = TRUE,
+#'
+#'   # Data related args
+#'   data = data,
+#'   Features = names(data)[2L:(ncol(data)-1L)],
+#'   per_feature = FALSE,
+#'   RemoveFeatures = FALSE,
+#'   ModelID = "TestModel",
+#'   model_path = getwd(),
+#'
+#'   # H2O Environment
+#'   NThreads = max(1L, parallel::detectCores()-2L),
+#'   MaxMem = "28G",
+#'   H2OStart = TRUE,
+#'   H2OShutdown = TRUE,
+#'
+#'   # H2O ML Args
+#'   LayerStructure = NULL,
+#'   NodeShrinkRate = (sqrt(5) - 1) / 2,
+#'   ReturnLayer = 4L,
+#'   Activation = "Tanh",
+#'   Epochs = 5L,
+#'   L2 = 0.10,
+#'   ElasticAveraging = TRUE,
+#'   ElasticAveragingMovingRate = 0.90,
+#'   ElasticAveragingRegularization = 0.001)
+#'
+#' # Inspect output
+#' data <- Output$Data
+#' Model <- Output$Model
+#'
+#' # If ValidationData is not null
+#' ValidationData <- Output$ValidationData
+#'
+#' ############################
+#' # Scoring
+#' ############################
+#'
+#' # Create simulated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 1000L,
+#'   ID = 2L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   AddComment = FALSE,
+#'   ZIP = 2L,
+#'   TimeSeries = FALSE,
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run algo
+#' data <- RemixAutoML::H2OAutoencoderScoring(
+#'
+#'   # Select the service
+#'   AnomalyDetection = TRUE,
+#'   DimensionReduction = TRUE,
+#'
+#'   # Data related args
+#'   data = data,
+#'   Features = names(data)[2L:ncol(data)],
+#'   RemoveFeatures = TRUE,
+#'   per_feature = FALSE,
+#'   ModelObject = NULL,
+#'   ModelID = "TestModel",
+#'   model_path = getwd(),
+#'
+#'   # H2O args
+#'   NThreads = max(1L, parallel::detectCores()-2L),
+#'   MaxMem = "28G",
+#'   H2OStart = TRUE,
+#'   H2OShutdown = TRUE,
+#'   ReturnLayer = 4L)
+#' }
+#' @return A data.table
+#' @export
+H2OAutoencoder <- function(AnomalyDetection = FALSE,
+                           DimensionReduction = TRUE,
+                           data,
+                           Features = NULL,
+                           RemoveFeatures = FALSE,
+                           NThreads = max(1L, parallel::detectCores()-2L),
+                           MaxMem = "28G",
+                           H2OStart = TRUE,
+                           H2OShutdown = TRUE,
+                           ModelID = "TestModel",
+                           model_path = NULL,
+                           LayerStructure  = NULL,
+                           NodeShrinkRate = (sqrt(5) - 1) / 2,
+                           ReturnLayer = 4L,
+                           per_feature = TRUE,
+                           Activation = "Tanh",
+                           Epochs = 5L,
+                           L2 = 0.10,
+                           ElasticAveraging = TRUE,
+                           ElasticAveragingMovingRate = 0.90,
+                           ElasticAveragingRegularization = 0.001) {
+
+  print('AE 1')
+
+  # Ensure data.table ----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
+  print('AE 2')
+
+  # Return because of mispecified arguments----
+  if(!AnomalyDetection && !DimensionReduction) stop("Why are you running this function if you do not want anomaly detection nor dimension reduction?")
+
+  print('AE 3')
+
+  # Constants ----
+  F_Length <- length(Features)
+  if(is.numeric(Features) || is.integer(Features)) Features <- names(data)[Features]
+
+  print('AE 4')
+
+  # Ensure categoricals are set as factors ----
+  temp <- data[, .SD, .SDcols = c(Features)]
+  data[, (Features) := NULL]
+  temp <- ModelDataPrep(data=temp, Impute=FALSE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=FALSE, DateToChar=FALSE, RemoveDates=TRUE, MissFactor="0", MissNum=-1, IgnoreCols=NULL)
+
+  print('AE 5')
+
+  # Initialize H2O----
+  if(H2OStart) LocalHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  print('AE 6')
+  H2O_Data <- h2o::as.h2o(temp)
+  print('AE 7')
+
+  # Layer selection - Eventually put in an arg for Type for some alternative pre-set LayerStructure----
+  if(is.null(LayerStructure)) LayerStructure <- c(F_Length, ceiling(F_Length * NodeShrinkRate), ceiling(F_Length * NodeShrinkRate ^ 2), ceiling(F_Length * NodeShrinkRate ^ 3), ceiling(F_Length * NodeShrinkRate ^ 2), ceiling(F_Length * NodeShrinkRate), F_Length)
+
+  print('AE 8')
+
+  # Update Features ----
+  Features <- Features[Features %chin% names(H2O_Data)]
+
+  print('AE 9')
+
+  # Build Model ----
+  Model <- h2o::h2o.deeplearning(
+    autoencoder = TRUE,
+    model_id = ModelID,
+    training_frame = H2O_Data,
+    x = Features,
+    l2 = L2,
+    epochs = Epochs,
+    hidden = LayerStructure,
+    activation = Activation,
+    elastic_averaging = ElasticAveraging,
+    elastic_averaging_moving_rate = ElasticAveragingMovingRate,
+    elastic_averaging_regularization = ElasticAveragingRegularization)
+
+  print('AE 10')
+
+  # Save Model
+  if(!is.null(model_path)) SaveModel <- h2o::h2o.saveModel(object = Model, path = model_path, force = TRUE)
+
+  print('AE 11')
+
+  # Create and Merge features----
+  if(AnomalyDetection && DimensionReduction) {
+    print('AE 12.1')
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)),
+      data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
+  } else if(!AnomalyDetection && DimensionReduction) {
+    print('AE 12.2')
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.deepfeatures(object = Model, data = H2O_Data, layer = ReturnLayer)))
+  } else if(AnomalyDetection && !DimensionReduction) {
+    print('AE 12.3')
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.anomaly(object = Model, data = H2O_Data, per_feature = per_feature)))
+  }
+
+  # Remove H2O Objects ----
+  print('AE 13')
+  h2o::h2o.rm(Model, H2O_Data)
+
+  # Shutdown h2o ----
+  print('AE 14')
+  if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
+
+  # Remove features ----
+  print('AE 15')
+  if(RemoveFeatures) data.table::set(Data, j = Features, value = NULL)
+
+  # Return output ----
+  print('AE 16')
+  return(Data)
+}
+
+#' @title H2OAutoencoderScoring
+#'
+#' @description H2OAutoencoderScoring for anomaly detection and or dimensionality reduction
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#'
+#' @param AnomalyDetection Set to TRUE to run anomaly detection
+#' @param DimensionReduction Set to TRUE to run dimension reduction
+#' @param data The data.table with the columns you wish to have analyzed
+#' @param Features NULL Column numbers or column names
+#' @param RemoveFeatures Set to TRUE if you want the features you specify in the Features argument to be removed from the data returned
+#' @param ModelObject If NULL then the model will be loaded from file. Otherwise, it will use what is supplied
+#' @param NThreads max(1L, parallel::detectCores()-2L)
+#' @param MaxMem "28G"
+#' @param H2OStart TRUE to start H2O inside the function
+#' @param H2OShutdown Setting to TRUE will shutdown H2O when it done being used internally.
+#' @param ModelID "TestModel"
+#' @param model_path If NULL no model will be saved. If a valid path is supplied the model will be saved there
+#' @param ReturnLayer Which layer of the NNet to return. Choose from 1-7 with 4 being the layer with the least amount of nodes
+#' @param per_feature Set to TRUE to have per feature anomaly detection generated. Otherwise and overall value will be generated
+#' @examples
+#' \dontrun{
+#' ############################
+#' # Training
+#' ############################
+#'
+#' # Create simulated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 1000L,
+#'   ID = 2L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   AddComment = FALSE,
+#'   ZIP = 2L,
+#'   TimeSeries = FALSE,
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run algo
+#' data <- RemixAutoML::H2OAutoencoder(
+#'
+#'   # Select the service
+#'   AnomalyDetection = TRUE,
+#'   DimensionReduction = TRUE,
+#'
+#'   # Data related args
+#'   data = data,
+#'   ValidationData = NULL,
+#'   Features = names(data)[2L:(ncol(data)-1L)],
+#'   per_feature = FALSE,
+#'   RemoveFeatures = TRUE,
+#'   ModelID = "TestModel",
+#'   model_path = getwd(),
+#'
+#'   # H2O Environment
+#'   NThreads = max(1L, parallel::detectCores()-2L),
+#'   MaxMem = "28G",
+#'   H2OStart = TRUE,
+#'   H2OShutdown = TRUE,
+#'
+#'   # H2O ML Args
+#'   LayerStructure = NULL,
+#'   ReturnLayer = 4L,
+#'   Activation = "Tanh",
+#'   Epochs = 5L,
+#'   L2 = 0.10,
+#'   ElasticAveraging = TRUE,
+#'   ElasticAveragingMovingRate = 0.90,
+#'   ElasticAveragingRegularization = 0.001)
+#'
+#' ############################
+#' # Scoring
+#' ############################
+#'
+#' # Create simulated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 1000L,
+#'   ID = 2L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   AddComment = FALSE,
+#'   ZIP = 2L,
+#'   TimeSeries = FALSE,
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run algo
+#' data <- RemixAutoML::H2OAutoencoderScoring(
+#'
+#'   # Select the service
+#'   AnomalyDetection = TRUE,
+#'   DimensionReduction = TRUE,
+#'
+#'   # Data related args
+#'   data = data,
+#'   Features = names(data)[2L:ncol(data)],
+#'   RemoveFeatures = TRUE,
+#'   per_feature = FALSE,
+#'   ModelObject = NULL,
+#'   ModelID = "TestModel",
+#'   model_path = getwd(),
+#'
+#'   # H2O args
+#'   NThreads = max(1L, parallel::detectCores()-2L),
+#'   MaxMem = "28G",
+#'   H2OStart = TRUE,
+#'   H2OShutdown = TRUE,
+#'   ReturnLayer = 4L)
+#' }
+#' @return A data.table
+#' @export
+H2OAutoencoderScoring <- function(data,
+                                  Features = NULL,
+                                  RemoveFeatures = FALSE,
+                                  ModelObject = NULL,
+                                  AnomalyDetection = TRUE,
+                                  DimensionReduction = TRUE,
+                                  ReturnLayer = 4L,
+                                  per_feature = TRUE,
+                                  NThreads = max(1L, parallel::detectCores()-2L),
+                                  MaxMem = "28G",
+                                  H2OStart = TRUE,
+                                  H2OShutdown = TRUE,
+                                  ModelID = "TestModel",
+                                  model_path = NULL) {
+
+  print('AES 1')
+
+  # Ensure data.table ----
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+
+  # Return because of mispecified arguments ----
+  if(!AnomalyDetection && !DimensionReduction) stop("At least one of AnomalyDetection or DimensionReduction must be set to TRUE")
+
+  print('AES 2')
+
+  # Constants ----
+  if(is.numeric(Features) || is.integer(Features)) Features <- names(data)[Features]
+
+  print('AES 3')
+
+  # Ensure categoricals are set as factors ----
+  temp <- data[, .SD, .SDcols = c(Features)]
+  data[, (Features) := NULL]
+  temp <- ModelDataPrep(data=temp, Impute=FALSE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=FALSE, DateToChar=FALSE, RemoveDates=TRUE, MissFactor="0", MissNum=-1, IgnoreCols=NULL)
+
+  print('AES 4')
+
+  # Initialize H2O ----
+  if(H2OStart) h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  print('AES 5')
+  H2O_Data <- h2o::as.h2o(temp)
+  print('AES 6')
+  if(is.null(ModelObject)) ModelObject <- h2o::h2o.loadModel(path = file.path(model_path, ModelID))
+  print('AES 7')
+
+  # Create and Merge features ----
+  if(AnomalyDetection && DimensionReduction) {
+    print('AES 8.1')
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.deepfeatures(object = ModelObject, data = H2O_Data, layer = ReturnLayer)),
+      data.table::as.data.table(h2o::h2o.anomaly(object = ModelObject, data = H2O_Data, per_feature = per_feature)))
+  } else if(!AnomalyDetection && DimensionReduction) {
+    print('AES 8.2')
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.deepfeatures(object = ModelObject, data = H2O_Data, layer = ReturnLayer)))
+  } else if(AnomalyDetection && !DimensionReduction) {
+    print('AES 8.3')
+    Data <- cbind(
+      data,
+      temp,
+      data.table::as.data.table(h2o::h2o.anomaly(object = ModelObject, data = H2O_Data, per_feature = per_feature)))
+  }
+
+  print('AES 9')
+
+  # Remove H2O Objects ----
+  h2o::h2o.rm(ModelObject, H2O_Data)
+
+  print('AES 10')
+
+  # Shutdown h2o ----
+  if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
+
+  print('AES 11')
+
+  # Remove features ----
+  if(RemoveFeatures) data.table::set(Data, j = Features, value = NULL)
+
+  print('AES 12')
+
+  # Return output ----
+  return(Data)
+}
+
 #' @title AutoEncoder_H2O
 #'
 #' @description Utilize an H2O autoencoder to provide dimensionality reduction and anomaly detection
@@ -556,6 +1013,8 @@ AutoEncoder_H2O <- function(RunMode = 'train',
                             ScoringData. = NULL,
                             Pause = 0L) {
 
+  print('AE ::: 1')
+
   # Give h2o some sleep time
   if(Pause > 0L) Sys.sleep(Pause)
   if(length(ArgsList$ModelID) == 0L) {
@@ -568,12 +1027,11 @@ AutoEncoder_H2O <- function(RunMode = 'train',
   # Run Mode
   if(tolower(RunMode) == "train") {
 
+    print('AE ::: 2')
+
     # Metadata
     Start <- Sys.time()
     tempnames <- names(data.table::copy(TrainData.))
-    ColsUsed <- names(TrainData.)
-    ColsUsed <- ColsUsed[!ColsUsed %chin% c(ArgsList$TargetVariables, ArgsList$PrimaryDateVariables, ArgsList$IDVariables)]
-    ArgsList$Features <- ColsUsed
 
     # Run function
     TrainData. <- RemixAutoML::H2OAutoencoder(
@@ -607,15 +1065,23 @@ AutoEncoder_H2O <- function(RunMode = 'train',
       ElasticAveragingMovingRate = ArgsList$ElasticAveragingMovingRate,
       ElasticAveragingRegularization = ArgsList$ElasticAveragingRegularization)
 
+    print('AE ::: 3')
+
     # New columns tracking
-    ArgsList$NewColumns <- setdiff(names(data.table::copy(TrainData.), tempnames))
+    ArgsList$NewColumns <- setdiff(names(data.table::copy(TrainData.)), tempnames)
+
+    print('AE ::: 4')
 
     # Run time tracking
     End <- Sys.time()
     ArgsList$RunTime_Training <- difftime(End, Start, units = "mins")
 
+    print('AE ::: 5')
+
     # Score validation data
     if(!is.null(ValidationData.)) {
+
+      print('AE ::: 6')
 
       # Pause
       Sys.sleep(8L)
@@ -647,6 +1113,8 @@ AutoEncoder_H2O <- function(RunMode = 'train',
     # Score Test Data
     if(!is.null(TestData.)) {
 
+      print('AE ::: 7')
+
       # Pause
       Sys.sleep(8L)
 
@@ -676,6 +1144,8 @@ AutoEncoder_H2O <- function(RunMode = 'train',
 
   } else {
 
+    print('AE ::: 10')
+
     # Score model
     ScoringData. <- RemixAutoML::H2OAutoencoderScoring(
 
@@ -704,8 +1174,376 @@ AutoEncoder_H2O <- function(RunMode = 'train',
     ArgsList$RunTime$H2OAutoEncoder_Scoring <- difftime(End, Start, units = "mins")
   }
 
+  print('AE ::: 8')
+
   # Return
   return(list(TrainData = TrainData., ValidationData = ValidationData., TestData = TestData., ScoringData = ScoringData., ArgsList = ArgsList))
+}
+
+#' @title H2OIsolationForest
+#'
+#' @description H2OIsolationForestScoring for dimensionality reduction and / or anomaly detection
+#'
+#' @author Adrian Antico
+#' @family Unsupervised Learning
+#'
+#' @param data The data.table with the columns you wish to have analyzed
+#' @param Features A character vector with the column names to utilize in the isolation forest
+#' @param IDcols A character vector with the column names to not utilize in the isolation forest but have returned with the data output. Otherwise those columns will be removed
+#' @param ModelID Name for model that gets saved to file if SavePath is supplied and valid
+#' @param SavePath Path directory to store saved model
+#' @param Threshold Quantile value to find the cutoff value for classifying outliers
+#' @param MaxMem Specify the amount of memory to allocate to H2O. E.g. "28G"
+#' @param NThreads Specify the number of threads (E.g. cores * 2)
+#' @param NTrees Specify the number of decision trees to build
+#' @param MaxDepth Max tree depth
+#' @param MinRows Minimum number of rows allowed per leaf
+#' @param RowSampleRate Number of rows to sample per tree
+#' @param ColSampleRate Sample rate for each split
+#' @param ColSampleRatePerLevel Sample rate for each level
+#' @param ColSampleRatePerTree Sample rate per tree
+#' @param CategoricalEncoding Choose from "AUTO", "Enum", "OneHotInternal", "OneHotExplicit", "Binary", "Eigen", "LabelEncoder", "SortByResponse", "EnumLimited"
+#' @param Debug Debugging
+#' @examples
+#' \dontrun{
+#' # Create simulated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 50000,
+#'   ID = 2L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   ZIP = 0L,
+#'   TimeSeries = FALSE,
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run algo
+#' data <- RemixAutoML::H2OIsolationForest(
+#'   data,
+#'   Features = names(data)[2L:ncol(data)],
+#'   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
+#'   ModelID = "Adrian",
+#'   SavePath = getwd(),
+#'   Threshold = 0.95,
+#'   MaxMem = "28G",
+#'   NThreads = -1,
+#'   NTrees = 100,
+#'   MaxDepth = 8,
+#'   MinRows = 1,
+#'   RowSampleRate = (sqrt(5)-1)/2,
+#'   ColSampleRate = 1,
+#'   ColSampleRatePerLevel = 1,
+#'   ColSampleRatePerTree = 1,
+#'   CategoricalEncoding = c("AUTO"),
+#'   Debug = TRUE)
+#'
+#' # Remove output from data and then score
+#' data[, eval(names(data)[17:ncol(data)]) := NULL]
+#'
+#' # Run algo
+#' Outliers <- RemixAutoML::H2OIsolationForestScoring(
+#'   data,
+#'   Features = names(data)[2:ncol(data)],
+#'   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
+#'   H2OStart = TRUE,
+#'   H2OShutdown = TRUE,
+#'   ModelID = "TestModel",
+#'   SavePath = getwd(),
+#'   Threshold = 0.95,
+#'   MaxMem = "28G",
+#'   NThreads = -1,
+#'   Debug = FALSE)
+#' }
+#' @return Source data.table with predictions. Note that any columns not listed in Features nor IDcols will not be returned with data. If you want columns returned but not modeled, supply them as IDcols
+#' @export
+H2OIsolationForest <- function(data,
+                               Features = NULL,
+                               IDcols = NULL,
+                               ModelID = "TestModel",
+                               SavePath = NULL,
+                               Threshold = 0.975,
+                               MaxMem = "28G",
+                               NThreads = -1,
+                               NTrees = 100,
+                               MaxDepth = 8,
+                               MinRows = 1,
+                               RowSampleRate = (sqrt(5)-1)/2,
+                               ColSampleRate = 1,
+                               ColSampleRatePerLevel = 1,
+                               ColSampleRatePerTree = 1,
+                               CategoricalEncoding = c("AUTO"),
+                               Debug = FALSE) {
+
+  # Arg checks ----
+  if(!is.null(SavePath) && !dir.exists(SavePath)) stop("SavePath is not a valid directory")
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(IDcols) && !is.character(IDcols)) stop("IDcols needs to be a character scalar or vector")
+  if(!is.null(ModelID) && !is.character(ModelID)) stop("ModelID needs to be a character scalar or vector")
+  if(!is.null(Features) && !is.character(ModelID)) stop("Features needs to be a character scalar or vector")
+  if(!is.null(SavePath) && !is.character(SavePath)) stop("SavePath needs to be a character scalar or vector")
+  if(!is.null(SavePath) && is.character(SavePath) && !dir.exists(SavePath)) warning("SavePath directory did not exist but one was made")
+
+  # Get date col names if exist ----
+  ID <- IDcols
+  for(i in seq_len(length(names(data)))) {
+    if(any(class(data[[i]]) %in% c("Date","POSIXct","IDate","IDateTime"))) {
+      Features <- Features[!Features %in% names(data)[i]]
+      ID <- c(ID, names(data)[i])
+    }
+    if(names(data)[i] %chin% ID) {
+      Features <- Features[!Features %in% names(data)[i]]
+    }
+  }
+
+  # Unique ----
+  Features <- unique(Features)
+  ID <- unique(ID)
+
+  # Subset ID ----
+  if(!is.null(ID) && (length(ID) + length(Features) == length(names(data)))) {
+    IDcolData <- data[, .SD, .SDcols = c(ID)]
+    data[, (ID) := NULL]
+  } else if(!is.null(ID) && (length(ID) + length(Features) != length(names(data)))) {
+    ID <- c(ID, setdiff(names(data), c(Features, ID)))
+    IDcolData <- data[, .SD, .SDcols = c(ID)]
+    data[, (ID) := NULL]
+  }
+
+  # Ensure Characters are Converted to Factors ----
+  data <- ModelDataPrep(
+    data = data,
+    Impute = TRUE,
+    CharToFactor = TRUE,
+    FactorToChar = FALSE,
+    IntToNumeric = TRUE,
+    LogicalToBinary = TRUE,
+    DateToChar = FALSE,
+    IDateConversion = FALSE,
+    RemoveDates = FALSE,
+    MissFactor = "0",
+    MissNum = -1,
+    IgnoreCols = NULL)
+
+  # Debug
+  if(Debug) print(str(data))
+  if(Debug) print(str(IDcolData))
+  if(Debug) print(Features)
+
+  # Initialize H2O ----
+  localH2O <- h2o::h2o.init(max_mem_size = MaxMem, nthreads = NThreads, enable_assertions = FALSE)
+
+  # Convert data to H2O Frame ----
+  Data <- h2o::as.h2o(data)
+
+  # Build Isolation Forest ----
+  IsolationForest <- h2o::h2o.isolationForest(
+    training_frame = Data,
+    x = Features,
+    model_id = ModelID,
+    ntrees = NTrees,
+    sample_rate = RowSampleRate,
+    max_depth = MaxDepth,
+    min_rows = MinRows,
+    stopping_rounds = 0,
+    stopping_metric = "AUTO",
+    col_sample_rate_change_per_level = ColSampleRatePerLevel,
+    col_sample_rate_per_tree = ColSampleRatePerTree,
+    categorical_encoding = CategoricalEncoding)
+
+  # Generate Outliers data.table ----
+  OutliersRaw <- data.table::as.data.table(h2o::h2o.predict(object = IsolationForest, newdata = Data))
+
+  # Save model ----
+  if(!is.null(SavePath)) SaveModel <- h2o::h2o.saveModel(object = IsolationForest, path = SavePath, force = TRUE)
+
+  # Shutdown H2O ----
+  h2o::h2o.shutdown(prompt = FALSE)
+
+  # Add column for outlier indicator ----
+  data.table::setnames(OutliersRaw, c("predict", "mean_length"), c("PredictIsoForest", "MeanLength"))
+  Cutoff <- quantile(OutliersRaw[["PredictIsoForest"]], probs = Threshold)[[1L]]
+  OutliersRaw[, PredictedOutlier := data.table::fifelse(PredictIsoForest > eval(Cutoff), 1, 0)]
+  OutliersRaw[, Rank := data.table::frank(PredictIsoForest) / .N]
+  data.table::setcolorder(OutliersRaw, c(4L, 3L, 1L, 2L))
+
+  # Merge back with source data ----
+  data <- cbind(data, OutliersRaw)
+
+  # Merge data back with IDcolData ----
+  if(exists("IDcolData")) data <- cbind(IDcolData, data)
+
+  # Return data ----
+  return(data)
+}
+
+#' @title H2OIsolationForestScoring
+#'
+#' @description H2OIsolationForestScoring for dimensionality reduction and / or anomaly detection scoring on new data
+#'
+#' @author Adrian Antico
+#' @family Unsupervised Learning
+#'
+#' @param data The data.table with the columns you wish to have analyzed
+#' @param Features A character vector with the column names to utilize in the isolation forest
+#' @param IDcols A character vector with the column names to not utilize in the isolation forest but have returned with the data output. Otherwise those columns will be removed
+#' @param H2OStart TRUE to have H2O started inside function
+#' @param H2OShutdown TRUE to shutdown H2O inside function
+#' @param ModelID Name for model that gets saved to file if SavePath is supplied and valid
+#' @param SavePath Path directory to store saved model
+#' @param Threshold Quantile value to find the cutoff value for classifying outliers
+#' @param MaxMem Specify the amount of memory to allocate to H2O. E.g. "28G"
+#' @param NThreads Specify the number of threads (E.g. cores * 2)
+#' @param Debug Debugging
+#' @examples
+#' \dontrun{
+#' # Create simulated data
+#' data <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.70,
+#'   N = 50000,
+#'   ID = 2L,
+#'   FactorCount = 2L,
+#'   AddDate = TRUE,
+#'   ZIP = 0L,
+#'   TimeSeries = FALSE,
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Run algo
+#' data <- RemixAutoML::H2OIsolationForest(
+#'   data,
+#'   Features = names(data)[2L:ncol(data)],
+#'   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
+#'   ModelID = "Adrian",
+#'   SavePath = getwd(),
+#'   Threshold = 0.95,
+#'   MaxMem = "28G",
+#'   NThreads = -1,
+#'   NTrees = 100,
+#'   SampleRate = (sqrt(5)-1)/2,
+#'   MaxDepth = 8,
+#'   MinRows = 1,
+#'   ColSampleRate = 1,
+#'   ColSampleRatePerLevel = 1,
+#'   ColSampleRatePerTree = 1,
+#'   CategoricalEncoding = c("AUTO"),
+#'   Debug = TRUE)
+#'
+#' # Remove output from data and then score
+#' data[, eval(names(data)[17:ncol(data)]) := NULL]
+#'
+#' # Run algo
+#' Outliers <- RemixAutoML::H2OIsolationForestScoring(
+#'   data,
+#'   Features = names(data)[2:ncol(data)],
+#'   IDcols = c("Adrian", "IDcol_1", "IDcol_2"),
+#'   H2OStart = TRUE,
+#'   H2OShutdown = TRUE,
+#'   ModelID = "TestModel",
+#'   SavePath = getwd(),
+#'   Threshold = 0.95,
+#'   MaxMem = "28G",
+#'   NThreads = -1,
+#'   Debug = FALSE)
+#' }
+#' @return Source data.table with predictions. Note that any columns not listed in Features nor IDcols will not be returned with data. If you want columns returned but not modeled, supply them as IDcols
+#' @export
+H2OIsolationForestScoring <- function(data,
+                                      Features = NULL,
+                                      IDcols = NULL,
+                                      H2OStart = TRUE,
+                                      H2OShutdown = TRUE,
+                                      ModelID = "TestModel",
+                                      SavePath = NULL,
+                                      Threshold = 0.975,
+                                      MaxMem = "28G",
+                                      NThreads = -1,
+                                      Debug = FALSE) {
+
+  # Arg checks ----
+  if(!is.null(SavePath) && !dir.exists(SavePath)) stop("SavePath is not a valid directory")
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(!is.null(IDcols) && !is.character(IDcols)) stop("IDcols needs to be a character scalar or vector")
+  if(!is.null(ModelID) && !is.character(ModelID)) stop("ModelID needs to be a character scalar or vector")
+  if(!is.null(Features) && !is.character(ModelID)) stop("Features needs to be a character scalar or vector")
+  if(!is.null(SavePath) && !is.character(SavePath)) stop("SavePath needs to be a character scalar or vector")
+  if(!is.null(SavePath) && is.character(SavePath) && !dir.exists(SavePath)) warning("SavePath directory did not exist but one was made")
+
+  # Get date col names if exist ----
+  ID <- IDcols
+  for(i in seq_len(length(names(data)))) {
+    if(any(class(data[[i]]) %in% c("Date","POSIXct","IDate","IDateTime"))) {
+      Features <- Features[!Features %in% names(data)[i]]
+      ID <- c(ID, names(data)[i])
+    }
+    if(names(data)[i] %chin% ID) {
+      Features <- Features[!Features %in% names(data)[i]]
+    }
+  }
+
+  # Unique ----
+  Features <- unique(Features)
+  ID <- unique(ID)
+
+  # Subset ID ----
+  if(!is.null(ID) && (length(ID) + length(Features) == length(names(data)))) {
+    IDcolData <- data[, .SD, .SDcols = c(ID)]
+    data[, (ID) := NULL]
+  } else if(!is.null(ID) && (length(ID) + length(Features) != length(names(data)))) {
+    ID <- c(ID, setdiff(names(data), c(Features, ID)))
+    IDcolData <- data[, .SD, .SDcols = c(ID)]
+    data[, (ID) := NULL]
+  }
+
+  # Ensure Characters are Converted to Factors ----
+  data <- ModelDataPrep(
+    data = data,
+    Impute = TRUE,
+    CharToFactor = TRUE,
+    FactorToChar = FALSE,
+    IntToNumeric = TRUE,
+    LogicalToBinary = TRUE,
+    DateToChar = FALSE,
+    IDateConversion = FALSE,
+    RemoveDates = FALSE,
+    MissFactor = "0",
+    MissNum = -1,
+    IgnoreCols = NULL)
+
+  # Debug
+  if(Debug) print(str(data))
+  if(Debug) print(str(IDcolData))
+  if(Debug) print(Features)
+
+  # Prepare H2O ----
+  if(H2OStart) localH2O <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
+  H2O_Data <- h2o::as.h2o(data)
+  ModelObject <- h2o::h2o.loadModel(path = file.path(SavePath, ModelID))
+
+  # Generate Outliers data.table ----
+  OutliersRaw <- data.table::as.data.table(h2o::h2o.predict(object = ModelObject, newdata = H2O_Data))
+  rm(H2O_Data, ModelObject)
+
+  # Shutdown h2o----
+  if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
+
+  # Add column for outlier indicator ----
+  data.table::setnames(OutliersRaw, c("predict", "mean_length"), c("PredictIsoForest", "MeanLength"))
+  Cutoff <- quantile(OutliersRaw[["PredictIsoForest"]], probs = Threshold)[[1L]]
+  OutliersRaw[, PredictedOutlier := data.table::fifelse(PredictIsoForest > eval(Cutoff), 1, 0)]
+  OutliersRaw[, Rank := data.table::frank(PredictIsoForest) / .N]
+  data.table::setcolorder(OutliersRaw, c(4L, 3L, 1L, 2L))
+
+  # Merge back with source data ----
+  data <- cbind(data, OutliersRaw)
+
+  # Merge data back with IDcolData ----
+  if(exists("IDcolData")) data <- cbind(IDcolData, data)
+
+  # Return data ----
+  return(data)
 }
 
 #' @title IsolationForest_H2O

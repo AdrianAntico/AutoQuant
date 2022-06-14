@@ -13,7 +13,8 @@ AutoLagRollMode(
   SortDateName = NULL,
   WindowingLag = 0,
   Type = c("Lag"),
-  SimpleImpute = TRUE
+  SimpleImpute = TRUE,
+  Debug = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ AutoLagRollMode(
 \item{Type}{List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values}
 
 \item{SimpleImpute}{Set to TRUE for factor level imputation of "0" and numeric imputation of -1}
+
+\item{Debug}{= FALSE}
 }
 \value{
 data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats

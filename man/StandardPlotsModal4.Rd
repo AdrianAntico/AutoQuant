@@ -19,6 +19,7 @@ Plot Variables Modals
 \seealso{
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
+\code{\link{DataTable2}()},
 \code{\link{DataTable}()},
 \code{\link{DateInput}()},
 \code{\link{GenerateEvaluationMetrics}()},
@@ -38,3 +39,4 @@ Other Shiny:
 Adrian Antico
 }
 \concept{Shiny}
+\keyword{internal}

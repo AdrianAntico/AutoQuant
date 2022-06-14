@@ -15,7 +15,8 @@ CategoricalEncoding(
   ImputeValueScoring = NULL,
   ReturnFactorLevelList = TRUE,
   SupplyFactorLevelList = NULL,
-  KeepOriginalFactors = TRUE
+  KeepOriginalFactors = TRUE,
+  Debug = FALSE
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ CategoricalEncoding(
 \item{SupplyFactorLevelList}{The FactorCompenents list that gets returned. Supply this to recreate features in scoring environment}
 
 \item{KeepOriginalFactors}{Defaults to TRUE. Set to FALSE to remove the original factor columns}
+
+\item{Debug}{= FALSE}
 
 \item{TargetVariabl}{Target column name}
 }
@@ -83,7 +86,8 @@ data <- RemixAutoML::CategoricalEncoding(
   Scoring = FALSE,
   ReturnFactorLevelList = FALSE,
   SupplyFactorLevelList = NULL,
-  KeepOriginalFactors = FALSE)
+  KeepOriginalFactors = FALSE,
+  Debug = FALSE)
 
 # View results
 print(data)
@@ -100,7 +104,8 @@ test <- RemixAutoML::CategoricalEncoding(
   ImputeValueScoring = 222,
   ReturnFactorLevelList = FALSE,
   SupplyFactorLevelList = NULL,
-  KeepOriginalFactors = FALSE)
+  KeepOriginalFactors = FALSE,
+  Debug = FALSE)
 }
 
 }

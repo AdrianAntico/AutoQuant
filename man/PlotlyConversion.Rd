@@ -32,3 +32,4 @@ Other Graphics:
 Adrian Antico
 }
 \concept{Graphics}
+\keyword{internal}

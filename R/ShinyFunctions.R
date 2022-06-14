@@ -18,647 +18,6 @@
 #   })
 # }
 
-#' @noRd
-.underscore_removal <- function(x) {
-  for(i in 7L:ncol(x)) {
-    nam <- names(x)[i]
-    if(grep(pattern = '_', x = nam)) {
-      data.table::setnames(x, old = nam, gsub(pattern = '_', replacement = ' ', x = nam))
-    }
-  }
-  return(x)
-}
-
-#' @title ChoicesByType
-#'
-#' @param data data.table
-#'
-#' @return a list of columns names by data type
-#'
-#' @keywords internal
-ChoicesByType <- function(data) {
-  categorical_cols <- RemixAutoML:::CEPP(names(data)[c(unique(which(unlist(lapply(data, is.character))), which(unlist(lapply(data, is.factor)))))])
-  date_cols <- RemixAutoML:::CEPP(names(data)[c(unique(which(unlist(lapply(data, lubridate::is.Date))), which(unlist(lapply(data, lubridate::is.POSIXct)))))])
-  numeric_cols <- RemixAutoML:::CEPP(names(data)[which(unlist(lapply(data, is.numeric)))])
-  logical_cols <- RemixAutoML:::CEPP(names(data)[which(unlist(lapply(data, is.logical)))])
-  return(list(
-    Date = if(length(date_cols) > 0L) date_cols else NULL,
-    Categorical = if(length(categorical_cols) > 0L) categorical_cols else NULL,
-    Numeric = if(length(numeric_cols) > 0L) numeric_cols else NULL,
-    Logical = if(length(logical_cols) > 0L) logical_cols else NULL))
-}
-
-#' @title IntraSessionDefaults
-#'
-#' @param List named list of args where the args can be many
-#' @param InputName 'Plot1_SelectData' in input$Plot1_SelectData
-#' @param ArgName 'SelectedDefault' in List[[InputName]][[Default]]
-#' @param Default default value to assign
-#' @param Debug Logical
-#'
-#' @keywords internal
-IntraSessionDefaults <- function(List = NULL,
-                                 InputName = 'Plot1_SelectData',
-                                 ArgName = 'SelectedDefault',
-                                 Default = names(DataList)[[1L]],
-                                 Debug = Debug) {
-
-  # Check args
-  if(Debug) print(paste0('IntraSessionDefaults: check args for :: ', InputName))
-  if(length(List) == 0L) stop(paste0('IntraSessionDefaults: ', InputName, ': length(List) == 0'))
-  if(length(InputName) == 0L) stop(paste0('IntraSessionDefaults: ', InputName, ': length(InputName) == 0'))
-  if(length(ArgName) == 0L) stop(paste0('IntraSessionDefaults: ', InputName, ': length(ArgName) == 0'))
-
-  # Select last item from history or use Default
-  if(length(List[[InputName]][[ArgName]]) == 0L) {
-    if(Debug) print('IntraSessionDefaults: length(List[[InputName]][[ArgName]]) == 0L')
-    selected_default <- Default
-  } else {
-    if(Debug) print('IntraSessionDefaults: length(List[[InputName]][[ArgName]]) != 0L')
-    selected_default <- List[[InputName]][[ArgName]][[length(List[[InputName]][[ArgName]])]]
-  }
-
-  # Return Default Value
-  return(selected_default)
-}
-
-#' @title Shiny.ML.Trainer
-#'
-#' @param input shiny input
-#' @param output shiny output
-#' @param DataList DataList stores data in app
-#' @param ArgsList CatBoostArgsList, XGBoostArgsList
-#' @param TT TargetType
-#' @param ML_ExperimentTable Collection table
-#' @param run Cross Validation Iteration Number in app
-#' @param n Total Cross Validation Iterations in app
-#' @param Debug Debug from app
-#' @param Algo 'CatBoost', 'XGBoost', 'LightGBM'
-#'
-#' @return a list of columns names by data type
-#'
-#' @keywords internal
-Shiny.ML.Trainer <- function(input,
-                             output,
-                             DataList,
-                             ArgsList,
-                             TT,
-                             ML_ExperimentTable,
-                             run,
-                             n,
-                             Debug,
-                             Algo = 'CatBoost') {
-  # Model Pre Checks
-  temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_data')]]}, error=function(x) NULL), Type='character', Default=NULL)
-  if(length(temp) != 0) ArgsList[['data']] <- DataList[[temp]] else ArgsList[['data']] <- NULL
-  ArgsList[['TargetColumnName']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_TargetColumnName')]]}, error=function(x) NULL), Type='character', Default=NULL)
-  ArgsList[['FeatureColNames']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_FeatureColNames')]]}, error=function(x) NULL), Type='character', Default=NULL)
-  print("class(ArgsList[['data']])[[1L]] %in% 'data.table' && length(ArgsList[['TargetColumnName']]) != 0L && length(ArgsList[['FeatureColNames']]) != 0L")
-
-  # If run < n, combine data so that
-  #   data is randomized and partitioned in the
-  #   Auto__() function for Cross Validation Purposes
-  RunReady <- FALSE
-  if(class(ArgsList[['data']])[[1L]] %in% 'data.table' && length(ArgsList[['TargetColumnName']]) != 0L && length(ArgsList[['FeatureColNames']]) != 0L) {
-    RunReady <- TRUE
-    if(n > 1L) {
-      if(class(ArgsList[['ValidationData']])[[1L]] %in% 'data.table') {
-        ArgsList[['data']] <- data.table::rbindlist(list(ArgsList[['data']], ArgsList[['ValidationData']]), use.names = TRUE, fill = TRUE)
-        ArgsList[['ValidationData']] <- NULL
-      }
-      if(class(ArgsList[['TestData']])[[1L]] %in% 'data.table') {
-        ArgsList[['data']] <- data.table::rbindlist(list(ArgsList[['data']], ArgsList[['TestData']]), use.names = TRUE, fill = TRUE)
-        ArgsList[['TestData']] <- NULL
-      }
-    }
-  }
-  print(' ::  BuildModels 1  :: ')
-
-  # CatBoost ML Build
-  if(!RunReady) {
-
-    return(NULL)
-
-  } else {
-
-    # Starting logic: 100 rows - 100 rows = 0 row, need 1 row
-    iter <- ML_ExperimentTable[, .N] - ML_ExperimentTable[ProjectID == 'zzz', .N] + 1L
-
-    # Target Type
-    if(TT == 'Regression' && class(ArgsList[['data']][[ArgsList[['TargetColumnName']]]])[1L] %in% c('character','factor')) {
-      TT <- 'MultiClass'
-    } else if(TT == 'MultiClass' && class(ArgsList[['data']][[ArgsList[['TargetColumnName']]]])[1L] %in% c('numeric','integer')) {
-      TT <- 'Regression'
-    } else if(TT == 'Binary Classification' && class(ArgsList[['data']][[ArgsList[['TargetColumnName']]]])[1L] %in% c('character','factor')) {
-      TT <- 'MultiClass'
-    }
-    print(paste0('TT = ', TT))
-
-    # Notification of starting
-    shiny::showNotification(paste0(Algo, 'Building has Begun!'))
-
-    # CatBoost MetaData Parameters
-    if(run == n) {
-      ArgsList[['OutputSelection']] <- c('Importances','EvalMetrics','EvalPlots','Score_TrainData')
-    } else {
-      ArgsList[['OutputSelection']] <- c('EvalMetrics','Score_TrainData','Importances')
-    }
-    ArgsList[['TrainOnFull']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_TrainOnFull')]]}, error=function(x) NULL), Type='logical', Default=FALSE)
-    ArgsList[['ModelID']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_ModelID')]]}, error=function(x) NULL), Type='character', Default='Model_1')
-    ArgsList[['DebugMode']] <- Debug
-    ArgsList[['model_path']] <- getwd()
-    ArgsList[['metadata_path']] <- getwd()
-    ArgsList[['SaveModelObjects']] <- FALSE
-    if(TT != 'MultiClass') ArgsList[['SaveInfoToPDF']] <- FALSE
-    ArgsList[['ReturnModelObjects']] <- TRUE
-    ArgsList[['NumOfParDepPlots']] <- 1
-
-    print(' ::  BuildModels 2  :: ')
-
-    # Data Parameters
-
-    # Data
-    temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_ValidationData')]]}, error=function(x) NULL), Type='character', Default=NULL)
-    if(Debug) {print("RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_ValidationData')]]}, error=function(x) NULL), Type='character', Default=NULL)"); print(temp)}
-    if(length(temp) != 0) ArgsList[['ValidationData']] <- DataList[[temp]] else ArgsList[['ValidationData']] <- NULL
-    temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_TestData')]]}, error=function(x) NULL), Type='character', Default=NULL)
-    if(Debug) {print("RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_TestData')]]}, error=function(x) NULL), Type='character', Default=NULL)"); print(temp)}
-    if(length(temp) != 0) ArgsList[['TestData']] <- DataList[[temp]] else ArgsList[['TestData']] <- NULL
-
-    print(' ::  BuildModels 3  :: ')
-
-    # Data Args
-    ArgsList[['WeightsColumnName']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_WeightsColumnName')]]}, error=function(x) NULL), Type='character', Default=NULL)
-    ArgsList[['IDcols']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_IDcols')]]}, error=function(x) NULL), Type='character', Default=NULL)
-    if(TT == 'Regression') {
-      ArgsList[['TransformNumericColumns']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_TransformNumericColumns')]]}, error=function(x) NULL), Type='character', Default=NULL)
-      ArgsList[['Methods']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_Methods')]]}, error=function(x) NULL), Type='character', Default=NULL)
-    }
-
-    print(' ::  BuildModels 5  :: ')
-
-    # Grid Tuning Parameters
-    ArgsList[['PassInGrid']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_PassInGrid')]]}, error=function(x) NULL), Type='character', Default=NULL)
-    ArgsList[['GridTune']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_GridTune')]]}, error=function(x) NULL), Type='logical', Default=FALSE)
-    ArgsList[['MaxModelsInGrid']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_MaxModelsInGrid')]]}, error=function(x) NULL), Type='numeric', Default=30)
-    ArgsList[['MaxRunsWithoutNewWinner']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_MaxRunsWithoutNewWinner')]]}, error=function(x) NULL), Type='numeric', Default=15)
-    ArgsList[['MaxRunMinutes']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_MaxRunMinutes')]]}, error=function(x) NULL), Type='numeric', Default=30)
-    ArgsList[['BaselineComparison']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_BaselineComparison')]]}, error=function(x) NULL), Type='character', Default='default')
-
-    # Build Model
-    if(Algo == 'CatBoost') {
-
-      ArgsList[['PrimaryDateColumn']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_PrimaryDateColumn')]]}, error=function(x) NULL), Type='character', Default=NULL)
-      ArgsList[['EncodeMethod']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0(Algo, '_EncodeMethod')]]}, error=function(x) NULL), Type='character', Default='credibility')
-
-      print(' ::  BuildModels 6  :: ')
-
-      # CatBoost ML Args
-      ArgsList <- RemixAutoML:::Shiny.ML.CatBoost_Params(ArgsList,input,Debug,TT)
-
-      # Build model
-      if(TT == 'Regression') {
-        ModelOutputList <<- do.call(what = RemixAutoML::AutoCatBoostRegression, args = ArgsList)
-      } else if(TT == 'Binary Classification') {
-        ModelOutputList <<- do.call(RemixAutoML::AutoCatBoostClassifier, ArgsList)
-      } else if(TT == 'MultiClass') {
-        ModelOutputList <<- do.call(RemixAutoML::AutoCatBoostMultiClass, ArgsList)
-      }
-
-      # Store in DataList
-      print(' ::  BuildModels 10 :: ')
-      KeyName <- paste0(TT, "_", ArgsList[['ModelID']])
-      Output <- RemixAutoML:::Shiny.ML.ModelDataObjects(ModelOutputList, TT = 'catboost')
-      DataList[[paste0('CatBoost_', ArgsList[['ModelID']], '_ScoringData')]] <- Output$ScoringDataCombined
-      DataList[[paste0('CatBoost_', ArgsList[['ModelID']], '_Test_VI_Data')]] <- Output$VI_Train
-      DataList[[paste0('CatBoost_', ArgsList[['ModelID']], '_Train_VI_Data')]] <- Output$VI_Validation
-      DataList[[paste0('CatBoost_', ArgsList[['ModelID']], '_Validation_VI_Data')]] <- Output$VI_Test
-      DataList[[paste0('CatBoost_', ArgsList[['ModelID']], '_All_II_Data')]] <- Output$II_Train
-      rm(Output); gc()
-
-    } else if(Algo == 'XGBoost') {
-
-      print(' ::  BuildModels 6  :: ')
-
-      # XGBoost ML Args
-      temp <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_TreeMethod']]}, error=function(x) NULL), Type='character', Default = 'hist')
-      if(temp == 'GPU') ArgsList[['TreeMethod']] <- 'gpu_hist' else ArgsList[['TreeMethod']] <- 'hist'
-      ArgsList[['NThreads']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_NThreads']]}, error=function(x) NULL), Type='numeric', Default=-1)
-      ArgsList[['EncodingMethod']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EncodeMethod']]}, error=function(x) NULL), Type='character', Default='credibility')
-      ArgsList[['Verbose']] <- 0L
-      ArgsList <- RemixAutoML:::Shiny.ML.XGBoost_Params(ArgsList,input,Debug,TT)
-
-      # Build model
-      print(' ::  BuildModels 8 :: ')
-      if(TT == 'Regression') {
-        print(' ::  BuildModels 8.1 :: ')
-        ArgsList[['PrimaryDateColumn']] <- RemixAutoML:::ReturnParam(xx=input[['XGBoost_PrimaryDateColumn']], Type='character', Default=NULL)
-        ArgsList[['SaveInfoToPDF']] <- FALSE
-        ModelOutputList <<- do.call(RemixAutoML::AutoXGBoostRegression, ArgsList)
-      } else if(TT == 'Binary Classification') {
-        print(' ::  BuildModels 8.2 :: ')
-        ArgsList[['CostMatrixWeights']] <- c(0,1,1,0)
-        ArgsList[['SaveInfoToPDF']] <- FALSE
-        ModelOutputList <<- do.call(RemixAutoML::AutoXGBoostClassifier, ArgsList)
-      } else if(TT == 'MultiClass') {
-        print(' ::  BuildModels 8.3 :: ')
-        ModelOutputList <<- do.call(RemixAutoML::AutoXGBoostMultiClass, ArgsList)
-      }
-
-      # Store in DataList
-      print(' ::  BuildModels 10 :: ')
-      KeyName <- paste0(TT, "_", ArgsList[['ModelID']])
-      Output <- RemixAutoML:::Shiny.ML.ModelDataObjects(ModelOutputList, TT = 'xgboost')
-      DataList[[paste0('XGBoost_', ArgsList[['ModelID']], '_ScoringData')]] <- Output$ScoringDataCombined
-      DataList[[paste0('XGBoost_', ArgsList[['ModelID']], '_Test_VI_Data')]] <- Output$VI_Train
-      rm(Output); gc()
-
-    } else if(Algo == 'LightGBM') {
-
-      print(' ::  BuildModels 6  :: ')
-
-      # LightGBM ML Args
-      ArgsList <- RemixAutoML:::Shiny.ML.LightGBM_Params(ArgsList,input,Debug,TT)
-
-      # Build model
-      print(' ::  BuildModels 8 :: ')
-      if(TT == 'Regression') {
-        print(' ::  BuildModels 8.1 :: ')
-        ModelOutputList <<- do.call(RemixAutoML::AutoLightGBMRegression, ArgsList)
-      } else if(TT == 'Binary Classification') {
-        print(' ::  BuildModels 8.2 :: ')
-        ArgsList[['SaveInfoToPDF']] <- FALSE
-        cw0 <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_ClassWeights0']]}, error=function(x) NULL), Type='numeric', Default=1)
-        cw1 <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_ClassWeights1']]}, error=function(x) NULL), Type='numeric', Default=1)
-        ArgsList[['CostMatrixWeights']] <- c(0,1,1,0)
-        ModelOutputList <<- do.call(RemixAutoML::AutoLightGBMClassifier, ArgsList)
-      } else if(TT == 'MultiClass') {
-        print(' ::  BuildModels 8.3 :: ')
-        ModelOutputList <<- do.call(RemixAutoML::AutoLightGBMMultiClass, ArgsList)
-      }
-
-      # Store in DataList
-      print(' ::  BuildModels 10 :: ')
-      KeyName <- paste0(TT, "_", ArgsList[['ModelID']])
-      Output <- RemixAutoML:::Shiny.ML.ModelDataObjects(ModelOutputList, TT = 'lightgbm')
-      DataList[[paste0('LightGBM_', ArgsList[['ModelID']], '_ScoringData')]] <- Output$ScoringDataCombined
-      DataList[[paste0('LightGBM_', ArgsList[['ModelID']], '_Test_VI_Data')]] <- Output$VI_Train
-      rm(Output); gc()
-    }
-
-    # Update ML_ExperimentTable
-    data.table::set(ML_ExperimentTable, i = iter, j = 'ProjectID', value = 'AA')
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Date', value = Sys.time())
-    data.table::set(ML_ExperimentTable, i = iter, j = 'ModelID', value = ModelOutputList$ArgsList$ModelID)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'TargetType', value = if(TT == 'Binary Classification') 'Classification' else TT)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Algorithm', value = Algo)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'GridTune', value = ArgsList[['GridTune']])
-
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_r-sq',  value = if(TT == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'R2', MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_r-sq', value = if(TT == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_RMSE',  value = if(TT == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'RMSE', MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_RMSE', value = if(TT == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'RMSE', MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAE',   value = if(TT == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAE', MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAE',  value = if(TT == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAE', MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MAPE',  value = if(TT == 'Regression') round(ModelOutputList$EvaluationMetrics$TestData[Metric == 'MAPE', MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MAPE', value = if(TT == 'Regression') round(ModelOutputList$EvaluationMetrics$TrainData[Metric == 'MAPE', MetricValue], 4L) else NA_real_)
-
-    for(i in 1:10) print(names(ModelOutputList))
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy',         value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Accuracy], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh',  value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Accuracy)][1L, Threshold], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy',        value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Accuracy], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Accuracy)][1L, Threshold], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MCC',              value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, MCC], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Accuracy_Thresh',  value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-MCC)][1L, Threshold], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MCC',             value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, MCC], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Accuracy_Thresh', value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-MCC)][1L, Threshold], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility',          value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Utility], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_Utility_Thresh',   value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TestData[order(-Utility)][1L, Threshold], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility',         value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Utility], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_Utility_Thresh',  value = if(TT == 'Binary Classification') round(ModelOutputList$EvaluationMetrics$TrainData[order(-Utility)][1L, Threshold], 4L) else NA_real_)
-
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_MCC',       value = if(TT == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'MCC'][1L, MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_MCC',      value = if(TT == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MCC'][1L, MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MultiClass_Accuracy',  value = if(TT == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'Accuracy'][1L, MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MultiClass_Accuracy', value = if(TT == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'Accuracy'][1L, MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_MicroAUC',             value = if(TT == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'MicroAUC'][1L, MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_MicroAUC',            value = if(TT == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'MicroAUC'][1L, MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Test_LogLoss',              value = if(TT == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TestData[Metric == 'LogLoss'][1L, MetricValue], 4L) else NA_real_)
-    data.table::set(ML_ExperimentTable, i = iter, j = 'Train_LogLoss',             value = if(TT == 'MultiClass') round(ModelOutputList$MultinomialMetrics$TrainData[Metric == 'LogLoss'][1L, MetricValue], 4L) else NA_real_)
-  }
-
-  # Return output
-  return(list(
-    ML_ExperimentTable = ML_ExperimentTable,
-    DataList = DataList,
-    ArgsList = ArgsList
-  ))
-}
-
-#' @title Shiny.ML.CatBoost_Params
-#'
-#' @param l ArgsList created inside server.R
-#' @param input input from shiny app
-#' @param Debug Debug. TRUE or FALSE
-#' @param TT E.g. CatBoost_TargetType. Can be 'Regression', 'Binary Classification', or 'MultiClass'. Case sensitive
-#'
-#' @keywords internal
-Shiny.ML.CatBoost_Params <- function(l,input,Debug,TT) {
-
-  # CatBoost ML Algo Specific
-  l[['task_type']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_task_type']]}, error=function(x) NULL), Type='character', Default='CPU')
-  l[['NumGPUs']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_NumGPUs']]}, error=function(x) NULL), Type='numeric', Default=1)
-
-  # CatBoost ML Parameters
-  l[['Trees']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_Trees']]}, error=function(x) NULL), Type='numeric', Default=1000)
-  l[['Depth']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_Depth']]}, error=function(x) NULL), Type='numeric', Default=8)
-  l[['LearningRate']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_LearningRate']]}, error=function(x) NULL), Type='numeric', Default=NULL)
-  l[['L2_Leaf_Reg']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_L2_Leaf_Reg']]}, error=function(x) NULL), Type='numeric', Default=NULL)
-  l[['model_size_reg']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_model_size_reg']]}, error=function(x) NULL), Type='numeric', Default=0.50)
-  l[['langevin']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_langevin']]}, error=function(x) NULL), Type='logical', Default=FALSE)
-  l[['diffusion_temperature']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_diffusion_temperature']]}, error=function(x) NULL), Type='numeric', Default=10000)
-  l[['RandomStrength']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_RandomStrength']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['BorderCount']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_BorderCount']]}, error=function(x) NULL), Type='numeric', Default=256)
-  l[['RSM']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_RSM']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['BootStrapType']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_BootStrapType']]}, error=function(x) NULL), Type='character', Default='Bayesian')
-  l[['GrowPolicy']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_GrowPolicy']]}, error=function(x) NULL), Type='character', Default='SymmetricTree')
-  l[['feature_border_type']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_feature_border_type']]}, error=function(x) NULL), Type='character', Default='GreedyLogSum')
-  l[['subsample']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_subsample']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['score_function']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_score_function']]}, error=function(x) NULL), Type='character', Default='Cosine')
-  l[['min_data_in_leaf']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_min_data_in_leaf']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['sampling_unit']] <- 'Object'
-
-  print(' ::  BuildModels 7  :: ')
-
-  print(TT)
-  if(TT == 'Regression') {
-    print(' ::  BuildModels 8.1 :: ')
-    l[['loss_function']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='RMSE')
-    l[['loss_function_value']] <- 1.5
-    l[['eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='RMSE')
-    l[['eval_metric_value']] <- 1.5
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='mse')
-    l[['MetricPeriods']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_MetricPeriods']]}, error=function(x) NULL), Type='numeric', Default=10)
-  } else if(TT == 'Binary Classification') {
-    print(' ::  BuildModels 8.2 :: ')
-    l[['LossFunction']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='Logloss')
-    l[['EvalMetric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='AUC')
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='MCC')
-    cw0 <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_ClassWeights0']]}, error=function(x) NULL), Type='numeric', Default=1)
-    cw1 <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_ClassWeights1']]}, error=function(x) NULL), Type='numeric', Default=1)
-    l[['ClassWeights']] <- c(cw0, cw1)
-    l[['MetricPeriods']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_MetricPeriods']]}, error=function(x) NULL), Type='numeric', Default=10)
-  } else if(TT == 'MultiClass') {
-    print(' ::  BuildModels 8.3 :: ')
-    l[['loss_function']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='MultiClassOneVsAll')
-    l[['eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='MultiClassOneVsAll')
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='microauc')
-    l[['MetricPeriods']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['CatBoost_MetricPeriods']]}, error=function(x) NULL), Type='numeric', Default=10)
-  }
-  return(l)
-}
-
-#' @title Shiny.ML.XGBoost_Params
-#'
-#' @param l ArgsList created inside server.R
-#' @param input input from shiny app
-#' @param Debug Debug. TRUE or FALSE
-#' @param TT E.g. XGBoost_TargetType. Can be 'Regression', 'Binary Classification', or 'MultiClass'. Case sensitive
-#'
-#' @keywords internal
-Shiny.ML.XGBoost_Params <- function(l,input,Debug,TT) {
-
-  # XGBoost ML Parameters
-  l[['Trees']]            <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_Trees']]}, error=function(x) NULL), Type='numeric', Default=1000)
-  l[['max_depth']]        <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_max_depth']]}, error=function(x) NULL), Type='numeric', Default=8)
-  l[['eta']]              <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_eta']]}, error=function(x) NULL), Type='numeric', Default=NULL)
-  l[['min_child_weight']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_min_child_weight']]}, error=function(x) NULL), Type='numeric', Default=NULL)
-  l[['subsample']]        <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_subsample']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['colsample_bytree']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_colsample_bytree']]}, error=function(x) NULL), Type='numeric', Default=1)
-
-  if(Debug) print(' ::  BuildModels 7 :: ')
-  if(Debug) print(TT)
-
-  # XGBoost Eval Parameters
-  if(TT == 'Regression') {
-    print(' ::  BuildModels 7.1 :: ')
-    l[['LossFunction']]     <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='reg:squarederror')
-    l[['eval_metric']]      <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='rmse')
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='r2')
-  } else if(TT == 'Binary Classification') {
-    print(' ::  BuildModels 7.2 :: ')
-    l[['LossFunction']]     <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='binary:logistic')
-    l[['eval_metric']]      <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='auc')
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='MCC')
-  } else {
-    print(' ::  BuildModels 7.3 :: ')
-    if(Debug) print(tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL))
-    if(Debug) print(RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='multi:softprob'))
-    l[['LossFunction']]     <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_LossFunction']]}, error=function(x) NULL), Type='character', Default='multi:softprob')
-    l[['eval_metric']]      <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_EvalMetric']]}, error=function(x) NULL), Type='character', Default='mlogloss')
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['XGBoost_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='microauc')
-  }
-  return(l)
-}
-
-#' @title Shiny.ML.LightGBM_Params
-#'
-#' @param l ArgsList created inside server.R
-#' @param input input from shiny app
-#' @param Debug Debug. TRUE or FALSE
-#' @param TT E.g. XGBoost_TargetType. Can be 'Regression', 'Binary Classification', or 'MultiClass'. Case sensitive
-#'
-#' @keywords internal
-Shiny.ML.LightGBM_Params <- function(l,input,Debug,TT) {
-
-  print(' ::  BuildModels 7  :: ')
-
-  # LightGBM ML Parameters
-  l[['Trees']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_Trees']]}, error=function(x) NULL), Type='numeric', Default=1000)
-  l[['max_depth']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_max_depth']]}, error=function(x) NULL), Type='numeric', Default=8)
-  l[['eta']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_eta']]}, error=function(x) NULL), Type='numeric', Default=NULL)
-  l[['min_data_in_leaf']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_min_data_in_leaf']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['num_leaves']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_num_leaves']]}, error=function(x) NULL), Type='numeric', Default=31)
-  l[['bagging_fraction']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_bagging_fraction']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['feature_fraction']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_feature_fraction']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['feature_fraction_bynode']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_feature_fraction_bynode']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['lambda_l1']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_lambda_l1']]}, error=function(x) NULL), Type='numeric', Default=1)
-  l[['lambda_l2']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_lambda_l2']]}, error=function(x) NULL), Type='numeric', Default=1)
-
-  # LightGBM Eval Parameters
-  if(TT == 'Regression') {
-    print(' ::  BuildModels 8.1  :: ')
-    l[['objective']] <- 'regression'
-    l[['metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_metric']]}, error=function(x) NULL), Type='character', Default='rmse')
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='mse')
-  } else if(TT == 'Binary Classification') {
-    print(' ::  BuildModels 8.2  :: ')
-    l[['objective']] <- 'binary'
-    l[['metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_metric']]}, error=function(x) NULL), Type='character', Default='binary_logloss')
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='MCC')
-  } else if(TT == 'MultiClass') {
-    print(' ::  BuildModels 8.3  :: ')
-    l[['objective']] <- 'multiclass'
-    l[['metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_metric']]}, error=function(x) NULL), Type='character', Default='multiclass')
-    l[['grid_eval_metric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['LightGBM_grid_eval_metric']]}, error=function(x) NULL), Type='character', Default='Accuracy')
-  }
-  return(l)
-}
-
-#' @title Shiny.ML.CatBoost.GridEvalMetricsOptions
-#'
-#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
-#'
-#' @keywords internal
-Shiny.ML.CatBoost.GridEvalMetricsOptions <- function(TT) {
-  if(TT == 'Regression') {
-    choices <- c('mae','mape','rmse','r2')
-    default <- 'rmse'
-  } else if(TT == 'Binary Classification') {
-    choices <- c('Utility','MCC','Acc','F1_Score','F2_Score','F0.5_Score','TPR','TNR','FNR','FPR','FDR','FOR','NPV','PPV','ThreatScore')
-    default <- 'Utility'
-  } else if(TT == 'MultiClass') {
-    choices <- c('accuracy','microauc','logloss')
-    default <- 'microauc'
-  }
-  return(list(Choices = choices, Default = default))
-}
-
-#' @title Shiny.ML.CatBoost.EvalMetricOptions
-#'
-#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
-#'
-#' @keywords internal
-Shiny.ML.CatBoost.EvalMetricOptions <- function(TT) {
-  print(TT)
-  if(TT == 'Regression') {
-    choices <- c('RMSE','MAE','MAPE','R2','Poisson','MedianAbsoluteError','SMAPE','MSLE','NumErrors','FairLoss','Tweedie','Huber','LogLinQuantile','Quantile','Lq','Expectile','MultiRMSE')
-    default <- 'RMSE'
-  } else if(TT == 'Binary Classification') {
-    choices <- c('Logloss','CrossEntropy','Precision','Recall','F1','BalancedAccuracy','BalancedErrorRate','MCC','Accuracy','CtrFactor','AUC','BrierScore','HingeLoss','HammingLoss','ZeroOneLoss','Kappa','WKappa','LogLikelihoodOfPrediction','TotalF1','PairLogit','PairLogitPairwise','PairAccuracy','QueryCrossEntropy','QuerySoftMax','PFound','NDCG','AverageGain','PrecisionAt','RecallAt','MAP')
-    default <- 'MCC'
-  } else if(TT == 'MultiClass') {
-    choices <- c('MultiClass','MultiClassOneVsAll','AUC','TotalF1','MCC','Accuracy','HingeLoss','HammingLoss','ZeroOneLoss','Kappa','WKappa')
-    default <- 'MultiClassOneVsAll'
-  }
-  return(list(Choices = choices, Default = default))
-}
-
-#' @title Shiny.ML.XGBoost.EvalMetricOptions
-#'
-#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
-#'
-#' @keywords internal
-Shiny.ML.XGBoost.EvalMetricOptions <- function(TT) {
-  print(TT)
-  if(TT == 'Regression') {
-    choices <- c('rmse','mae','mape')
-    default <- 'r2'
-  } else if(TT == 'Binary Classification') {
-    choices <- c('logloss','error','aucpr','auc')
-    default <- 'logloss'
-  } else if(TT == 'MultiClass') {
-    choices <- c('merror','mlogloss')
-    default <- 'mlogloss'
-  }
-  return(list(Choices = choices, Default = default))
-}
-
-#' @title Shiny.ML.CatBoost.LossFunctionOptions
-#'
-#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
-#'
-#' @keywords internal
-Shiny.ML.CatBoost.LossFunctionOptions <- function(TT) {
-  print(TT)
-  if(TT == 'Regression') {
-    choices <- c('MAPE','MAE','RMSE','Poisson','Tweedie','Huber','LogLinQuantile','Quantile','Lq','Expectile','MultiRMSE')
-    default <- 'RMSE'
-  } else if(TT == 'Binary Classification') {
-    choices <- c('Logloss','CrossEntropy','Lq','PairLogit','PairLogitPairwise','YetiRank','YetiRankPairwise','QueryCrossEntropy','QuerySoftMax')
-    default <- 'Logloss'
-  } else if(TT == 'MultiClass') {
-    choices <- c('MultiClass','MultiClassOneVsAll')
-    default <- 'MultiClassOneVsAll'
-  }
-  return(list(Choices = choices, Default = default))
-}
-
-#' @title Shiny.ML.XGBoost.LossFunctionOptions
-#'
-#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
-#'
-#' @keywords internal
-Shiny.ML.XGBoost.LossFunctionOptions <- function(TT) {
-  print(TT)
-  if(TT == 'Regression') {
-    choices <- c('reg:squaredlogerror', 'reg:pseudohubererror', 'count:poisson', 'survival:cox', 'survival:aft', 'aft_loss_distribution', 'reg:gamma', 'reg:tweedie')
-    default <- 'reg:squaredlogerror'
-  } else if(TT == 'Binary Classification') {
-    choices <- c('reg:logistic', 'binary:logistic')
-    default <- 'reg:logistic'
-  } else if(TT == 'MultiClass') {
-    choices <- c('multi:softprob')
-    default <- 'multi:softprob'
-  }
-  return(list(Choices = choices, Default = default))
-}
-
-#' @title LightGBMLossFunctionOptions
-#'
-#' @param TT Target Type: 'regression', 'classification', 'multiclass', all lower case
-#'
-#' @keywords internal
-Shiny.ML.LightGBM.LossFunctionOptions <- function(TT) {
-  print(TT)
-  if(TT == 'Regression') {
-    choices <- c('rmse', 'l1', 'l2', 'quantile', 'mape', 'huber', 'fair', 'poisson', 'gamma', 'gamma_deviance', 'tweedie', 'ndcg')
-    default <- 'rmse'
-  } else if(TT == 'Binary Classification') {
-    choices <- c('binary_logloss', 'average_precision', 'auc', 'map', 'binary_error', 'auc_mu')
-    default <- 'binary_logloss'
-  } else if(TT == 'MultiClass') {
-    choices <- c('multiclass', 'multiclassova')
-    default <- 'multiclass'
-  }
-  return(list(Choices = choices, Default = default))
-}
-
-#' @title Shiny.ML.ModelDataObjects
-#'
-#' @param ModelOutput Output from RemixAutoML:: supervised learning functions
-#'
-#' @keywords internal
-Shiny.ML.ModelDataObjects <- function(ModelOutput, TT = 'catboost') {
-  if(!is.null(ModelOutput$TrainData) && !is.null(ModelOutput$TestData)) {
-    temp1 <- data.table::rbindlist(list(
-      'TRAIN' = ModelOutput$TrainData,
-      'TEST' = ModelOutput$TestData
-    ), use.names = TRUE, fill = TRUE, idcol = 'DataSet')
-  } else if(is.null(ModelOutput$TrainData) && !is.null(ModelOutput$TestData)) {
-    temp1 <- ModelOutput$TestData
-  } else if(!is.null(ModelOutput$TrainData) && is.null(ModelOutput$TestData)) {
-    temp1 <- ModelOutput$TrainData
-  }
-  if(tolower(TT) == 'catboost') {
-    return(
-      list(
-        ScoringDataCombined = temp1,
-        VI_Train = ModelOutput$VariableImportance$Train_Importance,
-        VI_Validation = ModelOutput$VariableImportance$Validation_Importance,
-        VI_Test = ModelOutput$VariableImportance$Test_Importance,
-        II_Train = ModelOutput$InteractionImportance$Train_Interaction))
-  } else if(tolower(TT) %in% c('xgboost','lightgbm')) {
-    return(
-      list(
-        ScoringDataCombined = temp1,
-        VI_Train = ModelOutput$VariableImportance,
-        VI_Validation = NULL,
-        VI_Test = NULL,
-        II_Train = NULL))
-  }
-}
-
 #' @param X Vector
 #' @param FUN E.g. FUN = CustomFunction. Function with elements of X as the single input argument
 #' @param depth Header depth, #, ##, ###, etc. corresponds to 1, 2, 3, etc.
@@ -721,6 +80,7 @@ RmdApply <- function(X,
 #' @family Shiny
 #'
 #' @param data source data.table
+#' @param FixedCols Number of columns from the left to Freeze, like freeze panes in Excel. Default is 2
 #'
 #' @examples
 #' \dontrun{
@@ -760,7 +120,7 @@ RmdApply <- function(X,
 #' }
 #'
 #' @export
-DataTable <- function(data) {
+DataTable <- function(data, FixedCols = 2) {
   DT::datatable(
     data,
     filter = 'bottom',
@@ -771,7 +131,7 @@ DataTable <- function(data) {
       select = list(style = 'os', items = 'row'),
       dom = 'Brtip', #Bfrtip
       #dom = 'ltipr',
-      fixedColumns = list(leftColumns = 2),
+      fixedColumns = list(leftColumns = FixedCols),
       buttons = c('copy','pdf'), # Only usable in Rmarkdown 'selectRows', 'selectColumns', 'selectCells', 'selectAll', 'selectNone'),
       colReorder = TRUE,
       autoWidth = TRUE,
@@ -786,117 +146,78 @@ DataTable <- function(data) {
       pageLength = 10))
 }
 
-
-#' @noRd
-ExpandText <- function(x) {
-  return(paste0("'",paste0(x, collapse = "','"),"'"))
-}
-
-#' @title InitializePlotObjects
+#' @title DataTable2
 #'
-#' @param TotalPlots data.table
+#' @description Fully loaded DT::datatable() with args prefilled
 #'
-#' @noRd
-InitializePlotObjects <- function(TotalPlots) {
-
-  # Define total number of possible plots
-  TotalPlots <- 4L
-
-  # Initalize PlotObjectLists
-  for(po in seq_len(TotalPlots)) {
-    if(po < 10L) {
-      assign(x = paste0('PlotObjectList_0', po), value = list())
-    } else {
-      assign(x = paste0('PlotObjectList_', po), value = list())
-    }
-  }
-
-  x <- list()
-  for(num in seq_len(TotalPlots)) {
-
-    # Fill out all slots ahead of time and update value blow when encountered, otherwise pass through what's in there
-    PlotMetaData <- list(
-
-      # MetaData:
-      #  PlotID -> connect plot metadata to fixed plot button to drag and drop
-      #  DataSource -> enable multiple data sets to be loaded
-      #  PlotType -> reactive so that options below can adjust accordingly
-      #  UpdateMethod -> not sure if needed but idea is to ensure that no action is taken that isn't needed, such as filtering
-      #               -> Modify value of this as list gets updated via user selection
-      'DataSource' = NULL,             # (listed for reference)
-      'PlotType' = NULL,               # (listed for reference)
-      'UpdateMethod' = 'All',
-
-      # Data Usage:
-      #   Sample Size -> would like to add sampling options or even allow for bootstrapping
-      'SampleSize' = 100000L,
-      'NumberGroupsDisplay' = 5L,
-
-      # Plot extras
-      'ShapAgg' = 'meanabs',
-      'GamFitScatter' = FALSE,
-      'NumberBins' = 30L,
-      'Percentile_Buckets' = 20L,
-
-      # Variables Selection (listed for reference)
-      'YVars' = NULL,
-      'YTicks' = NULL,
-      'XVars' = NULL,
-      'XTicks' = NULL,
-      'CorVariables' = NULL,
-      'PDP_Variable' = NULL,
-      'ScoreVar' = NULL,
-      'SizeVars' = NULL,
-      'FacetVar1' = NULL,
-      'FacetVar2' = NULL,
-      'GroupVars' = NULL,
-      'Levels1' = NULL,
-      'Levels2' = NULL,
-      'Levels3' = NULL,
-
-      # Filter Variables, logic, and values (listed for reference)
-      'FilterVar1' = NULL,
-      'FilterVar2' = NULL,
-      'FilterVar3' = NULL,
-      'FilterVar4' = NULL,
-      'FilterLogic1' = NULL,
-      'FilterLogic2' = NULL,
-      'FilterLogic3' = NULL,
-      'FilterLogic4' = NULL,
-      'FilterValue_1_1' = NULL,
-      'FilterValue_1_2' = NULL,
-      'FilterValue_1_3' = NULL,
-      'FilterValue_1_4' = NULL,
-      'FilterValue_2_1' = NULL,
-      'FilterValue_2_2' = NULL,
-      'FilterValue_2_3' = NULL,
-      'FilterValue_2_4' = NULL,
-
-      # Separate Button to Update These Inside DropDown Box
-      'PlotWidth' = '950px',
-      'PlotHeight' = '550px',
-      'AngleY' = 0,
-      'AngleX' = 90,
-      'TextSize' = 15,
-      'OutlierSize' = 0.01,
-      'LegendPosition' = 'right',
-      'LegendBorderSize' = 0.01,
-      'LegendLineType' = 'solid',
-      'TextColor' = 'darkblue',
-      'ChartColor' = 'lightsteelblue1',
-      'GridColor' = 'white',
-      'BackGroundColor' = 'gray95',
-      'BorderColor' = 'darkblue',
-      'OutlierColor' = 'red',
-      'FillColor' = 'gray25',
-      'SubTitleColor' = 'darkblue')
-
-    # Fill in master list
-    for(meta in names(PlotMetaData)) {
-      x[[paste0('Plot_', num)]][[meta]] <- PlotMetaData[[meta]]
-    }
-  }
-  return(x)
+#' @author Adrian Antico
+#' @family Shiny
+#'
+#' @param data source data.table
+#' @param FixedCols = 2L
+#'
+#' @examples
+#' \dontrun{
+#' # Rmarkdown example of DataTable2 inside a <details> </Details> section
+#'
+#' ```{r Get Dependencies For DT::datatable(), echo=FALSE,include = FALSE}
+#' # You need this code to conduct the magic dependences attaching...
+#' DT::datatable(matrix())
+#' ```
+#'
+#' ```{js Nest All DT::datatable() inside a details drop down, echo=FALSE}
+#' setTimeout(function() {
+#'   var codes = document.querySelectorAll('.dataTables_wrapper');
+#'   var code, i, d, s, p;
+#'   for (i = 0; i < codes.length; i++) {
+#'     code = codes[i];
+#'     p = code.parentNode;
+#'     d = document.createElement('details');
+#'     s = document.createElement('summary');
+#'     s.innerText = 'Details';
+#'     // <details><summary>Details</summary></details>
+#'       d.appendChild(s);
+#'     // move the code into <details>
+#'       p.replaceChild(d, code);
+#'     d.appendChild(code);
+#'   }
+#' });
+#' ```
+#'
+#' ```{r Example, echo = FALSE}
+#' RemixAutoML::DataTable2(data)
+#' ````
+#'
+#' # Shiny Usage
+#' output$Table <- shiny::renderUI({RemixAutoML::DataTable2(data)})
+#'
+#' }
+#'
+#' @export
+DataTable2 <- function(data, FixedCols = 2L) {
+  DT::datatable(
+    data,
+    filter = 'bottom',
+    editable = TRUE,
+    rownames = FALSE,
+    extensions = c('Buttons','ColReorder','FixedColumns'), # Only usable in Rmarkdown  'Select'),
+    options = list(
+      select = list(style = 'os', items = 'row'),
+      dom = 'Brtip', #Bfrtip
+      #dom = 'ltipr',
+      fixedColumns = list(leftColumns = 0L),
+      buttons = c('copy','pdf', 'selectRows', 'selectColumns', 'selectCells', 'selectAll', 'selectNone'),
+      colReorder = TRUE,
+      autoWidth = TRUE,
+      selection = list(mode = 'multiple', target = 'row+column'), # 'row', 'column'
+      style = 'bootstrap', # 'auto', 'default', 'bootstrap', or 'bootstrap4'
+      columnDefs = list(list(className = 'dt-center', targets = 0:(ncol(data)-1L))),
+      targets = "_all",
+      scrollX = TRUE,
+      fillContainer = TRUE,
+      autoHideNavigation = TRUE,
+      lengthMenu = c(5, 30, 50),
+      pageLength = 10))
 }
 
 #' @title PlotLimits
@@ -2074,12 +1395,12 @@ DateInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                       Format = "yyyy-mm-dd") {
   return(if(exists("ProjectList")) {
     if(!is.null(ProjectList[[InputID]])) {
-      dateInput(inputId = InputID, label = Label, value = ProjectList[[InputID]], min = Min, max = Max, format = Format)
+      shiny::dateInput(inputId = InputID, label = Label, value = ProjectList[[InputID]], min = Min, max = Max, format = Format)
     } else {
-      dateInput(inputId = InputID, label = Label, value = Sys.Date(), min = Min, max = Max, format = Format)
+      shiny::dateInput(inputId = InputID, label = Label, value = Sys.Date(), min = Min, max = Max, format = Format)
     }
   } else {
-    dateInput(inputId = InputID, label = Label, value = Sys.Date(), min = Min, max = Max, format = Format)
+    shiny::dateInput(inputId = InputID, label = Label, value = Sys.Date(), min = Min, max = Max, format = Format)
   })
 }
 
@@ -2113,12 +1434,12 @@ TextInput <- function(InputID = "TS_CARMA_HolidayMovingAverages",
                       Placeholder = "NULL") {
   return(if(exists("ProjectList")) {
     if(!is.null(ProjectList[[InputID]])) {
-      textInput(inputId = InputID, label = Label, value = ProjectList[[InputID]], width = Width, placeholder = Placeholder)
+      shiny::textInput(inputId = InputID, label = Label, value = ProjectList[[InputID]], width = Width, placeholder = Placeholder)
     } else {
-      textInput(inputId = InputID, label = Label, value = Value, width = Width, placeholder = Placeholder)
+      shiny::textInput(inputId = InputID, label = Label, value = Value, width = Width, placeholder = Placeholder)
     }
   } else {
-    textInput(inputId = InputID, label = Label, value = Value, width = Width, placeholder = Placeholder)
+    shiny::textInput(inputId = InputID, label = Label, value = Value, width = Width, placeholder = Placeholder)
   })
 }
 
@@ -2532,6 +1853,7 @@ GenerateEvaluationMetrics <- function(EvalData = NULL,
 #'
 #' @param containerId Passthrough
 #' @param expr Code
+#' @noRd
 withConsoleRedirect <- function(containerId, expr) {
   # Change type="output" to type="message" to catch stderr
   # (messages, warnings, and errors) instead of stdout.
@@ -2656,29 +1978,57 @@ TimeSeriesMelt <- function(data,
   return(data)
 }
 
-
-# # Scatterplot / copula plot marginals
-# output$Marginals1 <- shiny::renderUI({
-#   RemixAutoML:::SelectizeInput(InputID = 'Marginals1', Label = tags$span(style='color: blue;', 'Marginals 1'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-# })
-# output$Marginals2 <- shiny::renderUI({
-#   RemixAutoML:::SelectizeInput(InputID = 'Marginals2', Label = tags$span(style='color: blue;', 'Marginals 2'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-# })
-# output$Marginals3 <- shiny::renderUI({
-#   RemixAutoML:::SelectizeInput(InputID = 'Marginals3', Label = tags$span(style='color: blue;', 'Marginals 3'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-# })
-# output$Marginals4 <- shiny::renderUI({
-#   RemixAutoML:::SelectizeInput(InputID = 'Marginals4', Label = tags$span(style='color: blue;', 'Marginals 4'), Choices = c(FALSE,TRUE), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-# })
-# output$MarginalType1 <- shiny::renderUI({
-#   RemixAutoML:::SelectizeInput(InputID = 'MarginalType1', Label = tags$span(style='color: blue;', 'Marginal Type 1'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-# })
-# output$MarginalType2 <- shiny::renderUI({
-#   RemixAutoML:::SelectizeInput(InputID = 'MarginalType2', Label = tags$span(style='color: blue;', 'Marginal Type 2'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-# })
-# output$MarginalType3 <- shiny::renderUI({
-#   RemixAutoML:::SelectizeInput(InputID = 'MarginalType3', Label = tags$span(style='color: blue;', 'Marginal Type 3'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-# })
-# output$MarginalType4 <- shiny::renderUI({
-#   RemixAutoML:::SelectizeInput(InputID = 'MarginalType4', Label = tags$span(style='color: blue;', 'Marginal Type 4'), Choices = c('density','histogram'), SelectedDefault = FALSE, Multiple = FALSE, MaxVars = 1, CloseAfterSelect = TRUE, Debug = Debug)
-# })
+#' @title Get
+#'
+#' @param x code being collected
+#' @param y collection list to append to
+#' @param Debug passthrough
+#'
+#' @examples
+#' \dontrun{
+#' microbenchmark::microbenchmark(
+#'   times = 100,
+#'   Get('data1', max_env_pos = 10L),
+#'   Get('data1', max_env_pos = 9),
+#'   Get('data1', max_env_pos = 8),
+#'   Get('data1', max_env_pos = 7),
+#'   Get('data1', max_env_pos = 6),
+#'   Get('data1', max_env_pos = 5),
+#'   Get('data1', max_env_pos = 4),
+#'   Get('data1', max_env_pos = 3),
+#'   Get('data1', max_env_pos = 2),
+#'   Get('data1', max_env_pos = 1))
+#'
+#' # Output
+#' # Unit: microseconds
+#' # expr     min       lq      mean   median       uq       max neval
+#' # Get("data1", max_env_pos = 10L) 486.301 501.1010 748.82397 527.5510 727.6010 13876.300   100
+#' # Get("data1", max_env_pos = 9) 446.901 458.0010 544.01307 481.7510 582.3510  1000.300   100
+#' # Get("data1", max_env_pos = 8) 393.501 410.6510 501.97888 431.5010 552.6010  1033.002   100
+#' # Get("data1", max_env_pos = 7) 338.802 351.0015 421.11700 367.7010 451.5505   881.001   100
+#' # Get("data1", max_env_pos = 6) 288.201 296.4505 359.87810 303.2010 372.8010   827.301   100
+#' # Get("data1", max_env_pos = 5) 236.001 244.0010 299.16408 253.4510 316.3505   567.500   100
+#' # Get("data1", max_env_pos = 4) 184.101 191.4015 247.81099 203.1010 291.0510   586.801   100
+#' # Get("data1", max_env_pos = 3) 134.201 138.8020 172.01197 144.1505 182.9505   364.900   100
+#' # Get("data1", max_env_pos = 2)  82.201  85.6010 103.08305  88.3510 112.5510   220.701   100
+#' # Get("data1", max_env_pos = 1)  30.500  32.3505  42.08696  34.4010  46.3005   134.602   100
+#' }
+#'
+#' @keywords internal
+Get <- function(CharRef, max_env_pos = 10L) {
+  counter <- 1L
+  repeat {
+    print(counter)
+    if(counter <= max_env_pos) {
+      x <- tryCatch({get(CharRef, pos = counter)}, error = function(x) NULL)
+      if(length(x) == 0L) {
+        counter <- counter + 1L
+      } else {
+        return(x)
+      }
+    } else {
+      break
+    }
+  }
+  return(NULL)
+}

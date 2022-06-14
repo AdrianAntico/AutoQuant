@@ -1,15 +1,18 @@
+options(scipen = 999)
 options(shiny.maxRequestSize = 250000*1024^2)
+options(future.globals.maxSize=1e9)
 #library(shinymeta)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 # Environment Setup                    ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-StartEnv <- as.list(environment())
+#StartEnv <- as.list(environment())
 library(RemixAutoML)
 library(data.table)
 library(shiny)
-data.table::setDTthreads(threads = max(1L, parallel::detectCores()-1L))
-options(scipen = 999)
+#library(promises)
+library(future)
+#future::plan(multisession)
 
 # Input Initialization at specific page clicks for the first time
 FE_Validate <- TRUE
@@ -107,6 +110,8 @@ H4Color <- shiny::getShinyOption('H4Color')
 H3Color <- shiny::getShinyOption('H3Color')
 AppTextColor <- shiny::getShinyOption('AppTextColor')
 Debug <- shiny::getShinyOption('Debug')
+CacheDir <- shiny::getShinyOption('CacheDir')
+CacheName <- shiny::getShinyOption('CacheName')
 
 # Data lists
 DataList <- list()
@@ -187,18 +192,12 @@ ui <- shinydashboard::dashboardPage(
 
   # App Header
   shinydashboard::dashboardHeader(
+    # disable = T
     htmltools::tags$li(class = "dropdown",
                       htmltools::tags$style(".main-header {max-height: 55px}"),
     #                    htmltools::tags$style(".main-header .logo {height: 57px;}"),
                       htmltools::tags$style(".sidebar-toggle {height: 20px; padding-top: 1px !important;}"),
                       htmltools::tags$style(".navbar {min-height:55px !important}"))
-    # titleWidth = 190,
-    # title = htmltools::HTML(
-    #   "
-    #   <div style = 'vertical-align:middle'>
-    #   <img src='NewPackageLogo.png' align = 'center' height = '57px' width = '175px'></img>
-    #   </div>
-    #   ")),
   ),
 
   # ----
@@ -254,64 +253,11 @@ ui <- shinydashboard::dashboardPage(
 
       # Code Print Page
       RemixAutoML:::BlankRow(AppWidth),
-      shinydashboard::menuItem(text = 'Print Code', tabName = 'Print Code', icon = shiny::icon('code')))#,
+      shinydashboard::menuItem(text = 'Print Code', tabName = 'Print Code', icon = shiny::icon('code'))
 
+    ) # end sideBarMenu
 
-
-    # Financial Plots
-    # RemixAutoML:::BlankRow(AppWidth),
-    # RemixAutoML:::BlankRow(AppWidth),
-    # shiny::fluidRow(
-    #   shinydashboard::box(
-    #     title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
-    #
-    #     # Model Evaluation Plots
-    #     shiny::fluidRow(
-    #       shiny::column(
-    #         tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Visualization'))), width = 3L, align = 'center',
-    #         tags$button(
-    #           id = paste0('CackPlot_ton'),
-    #           type = "button", class = "btn btn-default action-button",
-    #           tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/Candlestick.PNG?raw=true", height = "85px"),
-    #           `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL)))),
-    #
-    #
-    #     RemixAutoML:::BlankRow(AppWidth),
-    #
-    #     # Model Evaluation Plots
-    #     shiny::fluidRow(
-    #       shiny::column(
-    #         tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Data Mgt'))), width = 3L, align = 'center',
-    #         tags$button(
-    #           id = paste0('CackPlot_ton'),
-    #           type = "button", class = "btn btn-default action-button",
-    #           tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/DataStorage.PNG?raw=true", height = "85px"),
-    #           `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL)))),
-    #
-    #     RemixAutoML:::BlankRow(AppWidth),
-    #     # shinydashboard::box(
-    #     #   title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'warning', width = AppWidth,
-    #     #   shiny::fluidRow(
-    #     #     shiny::column(1L, shiny::HTML("<a href= 'https://github.com/AdrianAntico/RemixAutoML' target='_blank '> RemixAutoML GitHub</a>")))
-    #     #   # shiny::markdown(
-    #     #   #   "
-    #     #   #   [![Github](https://img.shields.io/badge/-Github-000?style=flat&logo=Github&logoColor=white)](https://github.com/AdrianAntico/RemixAutoML)
-    #     #   #   "
-    #     #   # )
-    #     # ),
-    #     shiny::fluidRow(
-    #       shiny::column(
-    #         tags$h4(tags$b(tags$span(style=paste0('color: snow;'), 'Global Settings'))), width = 3L, align = 'center',
-    #         tags$button(
-    #           id = paste0('CackPlot_ton'),
-    #           type = "button", class = "btn btn-default action-button",
-    #           tags$img(src = "https://github.com/AdrianAntico/RemixAutoML/blob/master/Images/0V8A6189.jpg?raw=true", height = "85px"),
-    #           `data-val` = shiny::restoreInput(id = paste0('CandlestickPlot_MenuButton', PlotNumber), default = NULL))))))
-
-    ), # end SideBar
-
-
-
+  ), # end SideBar
 
   # ----
 
@@ -321,6 +267,9 @@ ui <- shinydashboard::dashboardPage(
   # DashboardBody                        ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shinydashboard::dashboardBody(
+
+    # Copy capability for code print
+    rclipboard::rclipboardSetup(),
 
     # Style Sheet Reference
     tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
@@ -347,7 +296,8 @@ ui <- shinydashboard::dashboardPage(
         title = 'Import Data',
         icon = shiny::icon('database'),
         RemixAutoML:::LoadDataInputs(id = 'ExternalData', AppWidth=AppWidth, LogoWidth=LogoWidth, SolidHeader=TRUE, BoxTitle=NULL, BoxStatus='danger', DropdownRight=FALSE, DropDownAnimate=TRUE, DropDownStatus='custom'),
-        RemixAutoML:::LoadDataButton(id = 'DataButton', AppWidth = AppWidth)),
+        RemixAutoML:::LoadDataButton(id = 'DataButton', AppWidth = AppWidth),
+        RemixAutoML:::BlankRow(AppWidth)),
 
       # ----
 
@@ -387,7 +337,9 @@ ui <- shinydashboard::dashboardPage(
             width = AppWidth,
             shinycssloaders::withSpinner(
               DT::dataTableOutput('FE_DisplayData')))),
-          RemixAutoML:::BlankRow(AppWidth)), # End of tabItem
+          RemixAutoML:::BlankRow(AppWidth),
+
+        shiny::textOutput(outputId = 'did_it_work', container = pre)), # End of tabItem
 
       # ----
 
@@ -588,13 +540,52 @@ ui <- shinydashboard::dashboardPage(
 
         # Print Code!
         shiny::fluidRow(shiny::column(width = 3L, shinyjs::useShinyjs(), shinyWidgets::actionBttn(inputId='PrintCodeButton', label='Print Code', icon=shiny::icon('chevron-right', lib = 'font-awesome'), style='gradient', color=eval(CreatePlotButtonColor)))),
-
-        # Print Code
         RemixAutoML:::BlankRow(AppWidth),
-        # Box
+
+        # Code Print
         shinydashboard::box(
-          title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = AppWidth,
-          shiny::fluidRow(shiny::column(width = AppWidth, shiny::htmlOutput('PrintCode')))))
+          title = NULL, solidHeader = TRUE, collapsible = FALSE, status = 'danger', width = 12L,
+          shiny::fluidRow(
+            shiny::column(
+              width = 4L,
+              RemixAutoML:::SelectizeInput(
+                InputID = 'CodeType',
+                Label = 'Select Code Type',
+                Choices = c('All','Data Mgt','Data Wrangling','Feature Engineering','Machine Learning','Plotting'),
+                SelectedDefault = 'All',
+                Multiple = TRUE,
+                MaxVars = 15,
+                CloseAfterSelect = FALSE)),
+            shiny::column(
+              width = 4L,
+              RemixAutoML:::PickerInput(
+                InputID = 'CodeLanguage',
+                Label = 'Select Language',
+                Choices = c('R','Python','Julia'),
+                SelectedDefault = 'R',
+                Multiple = TRUE,
+                SelectedText = 'R')),
+            shiny::column(
+              width = 4L,
+              RemixAutoML:::SelectizeInput(
+                InputID = 'ScriptType',
+                Label = 'Select Script Type',
+                Choices = c('Script','Command Line','Dockerfile'),
+                SelectedDefault = 'Script',
+                Multiple = TRUE,
+                MaxVars = 15,
+                CloseAfterSelect = FALSE))),
+          shiny::fluidRow(
+            shiny::column(
+              width = 2L,
+              shiny::uiOutput("clip"))),
+          RemixAutoML:::BlankRow(W = AppWidth),
+          shiny::fluidRow(
+            shiny::column(
+              width = 12L,
+              shiny::textOutput('PrintCode', container = pre))))
+
+        ) # Close tab panel
       ) # Close tab items
     ) # Close dashboard body
   ) # finishes up UI
@@ -696,10 +687,18 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs Load Data                  ----
+  # :: Inputs :: Session Save Load       ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   print('Import Data Page Initialization')
+
+  # output$LoadSession_Name <- shiny::renderUI({
+  #   RemixAutoML:::SelectizeInput(InputID = 'LoadSession_Name', Label = tags$span(tags$b(style=paste0('color: ', AppTextColor, ';'),'Select a session')), Choices = list.files(path = CacheDir, pattern = '.rds'), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE)
+  # })
+  # output$SaveSession_Name <- shiny::renderUI({
+  #   RemixAutoML:::TextInput(InputID = 'SaveSession_Name', Label = tags$span(tags$b(style=paste0('color: ', AppTextColor, ';'),'Saving: Name your session')), Value = NULL, Placeholder = 'Give your session a name')
+  # })
+  # https://cran.r-project.org/web/packages/keys/keys.pdf
 
   # Prepare Data Loaders
   shiny::observeEvent(input$tabs, {
@@ -762,7 +761,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Initialize Shiny Inputs on Start  ----
+  # :: Inputs :: Initialize on Start     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(InitalizeInputs, {
     print('App Initialization')
@@ -775,138 +774,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Obs Event azure blob storage data ----
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  shiny::observeEvent(input$LoadAzure, {
-
-    # File Type .csv
-    FileName <<- tryCatch({input[['AzureBlobStorageTabular']]}, error = function(x) NULL)
-    if(Debug) print(FileName)
-    if(length(FileName) != 0 && FileName != "Load" && FileName != "") {
-      data
-      AzureStor::download_blob(container = cont, src = input[['AzureBlobStorageTabular']], dest = file.path('/inputdata', input[['AzureBlobStorageTabular']]), overwrite=TRUE)
-    }
-
-    # File Type .Rdata
-    inFile2 <- tryCatch({input[['AzureBlobStorageRdata']]}, error = function(x) NULL)
-    if(!is.null(inFile2)) print(inFile2)
-    if(length(inFile2) != 0 && inFile2 != "") {
-      if(Debug) {print('data check 3')}
-      AzureStor::download_blob(container = cont, src = input[['AzureBlobStorageRdata']], dest = file.path('/inputdata', input[['AzureBlobStorageRdata']]), overwrite=TRUE)
-    }
-  })
-
-  # ----
-
-  # ----
-
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Obs Event Load data               ----
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  shiny::observeEvent(input$LoadDataButton, {
-
-    # Notify user that data is being loaded
-    shiny::showNotification('Data loading has begun')
-
-    # Local data loading
-    CodeCollection <- list()
-    x <- tryCatch({input[['TabularData']]}, error = function(x) NULL)
-    print('TabularData')
-    print(x)
-    if(length(x) != 0) {
-      filename <<- basename(input[['TabularData']][['name']])
-      DataList[[filename]] <<- RemixAutoML:::ReactiveLoadCSV(Infile = input[['TabularData']], ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
-      DataList <<- DataList
-      CurrentData <<- filename
-    }
-
-    # Load ModelOutputList
-    x <- tryCatch({input[['ModelObjectLoad']]}, error = function(x) NULL)
-    print('ModelObjectLoad')
-    print(x)
-    if(length(x) != 0L) {
-      filename <<- basename(x[['datapath']])
-      ModelOutputList <<- readRDS(x[['datapath']])
-      if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
-        DataList[[filename]] <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
-        DataList <<- DataList
-        CurrentData <<- filename
-      } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
-        DataList[[filename]] <<- ModelOutputList$TestData
-        DataList <<- DataList
-        CurrentData <<- filename
-      } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
-        DataList[[filename]] <<- ModelOutputList$TrainData
-        DataList <<- DataList
-        CurrentData <<- filename
-      }
-    }
-
-    # Azure .csv
-    x <- tryCatch({input[['AzureBlobStorageTabular']]}, error = function(x) NULL)
-    print('AzureBlobStorageTabular')
-    print(x)
-    if(length(x) != 0L) {
-      filename <<- basename(input$AzureBlobStorageTabular)
-      DataList[[filename]] <<- RemixAutoML:::ReactiveLoadCSV(Infile = file.path('/inputdata', input[['AzureBlobStorageTabular']]), ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
-      DataList <<- DataList
-      CurrentData <<- filename
-    }
-
-    # Load ModelOutputList
-    x <- tryCatch({input[['AzureBlobStorageRdata']]}, error = function(x) NULL)
-    print('AzureBlobStorageRdata')
-    if(length(x) != 0L) {
-      filename <- basename(x)
-      ModelOutputList <<- readRDS(file.path('/inputdata', x))
-      if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
-        DataList[[filename]] <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
-        DataList <<- DataList
-        CurrentData <<- filename
-      } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
-        DataList[[filename]] <<- ModelOutputList$TestData
-        DataList <<- DataList
-        CurrentData <<- filename
-      } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
-        DataList[[filename]] <<- ModelOutputList$TrainData
-        DataList <<- DataList
-        CurrentData <<- filename
-      }
-    }
-
-    # Local PostGRE Data
-    LocalPostGRE_TableName <- tryCatch({input[['LocalPostGRE']]}, error = function(x) NULL)
-    LocalPostGRE_DBName <- tryCatch({input[['LocalPostGRE_Database']]}, error = function(x) NULL)
-    if(length(LocalPostGRE_DBName) != 0L && length(LocalPostGRE_TableName) != 0L) {
-      query <- paste0("SELECT * FROM ", shQuote(LocalPostGRE_TableName), " ;")
-      DataList[[LocalPostGRE_TableName]] <- RemixAutoML::PostGRE_Query(
-        Query = query,
-        Host = LocalPostGRE_Host,
-        CloseConnection = TRUE,
-        DBName = LocalPostGRE_DBName,
-        User = LocalPostGRE_User,
-        Port = LocalPostGRE_Port,
-        Password = LocalPostGRE_Password)$data
-      DataList <<- DataList
-      CurrentData <<- LocalPostGRE_TableName
-    }
-
-    # Initialize
-    CodeCollection <<- CodeCollection
-
-    # Sweet Alert
-    #if(Debug)
-    print("Data was loaded")
-    Sys.sleep(1L)
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = "success", btn_colors = NULL, html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-  })
-
-  # ----
-
-  # ----
-
-  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs Feature Engineering        ----
+  # :: Inputs :: Feature Engineering     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # input$DeleteVariablesParams is a shinyWidgets::dropdown inputId
@@ -923,7 +791,6 @@ server <- function(input, output, session) {
 
   # input$ConcatColumnsParams is a shinyWidgets::dropdown inputId
   shiny::observeEvent(input$ConcatColumns_Inputs, {
-    print('Concat Columns Inputs Dropdown')
     output$ConcatColumns_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='ConcatColumns_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
     })
@@ -942,10 +809,10 @@ server <- function(input, output, session) {
     })
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$CalendarVariables_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$CalendarVariables_DateVariables <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='CalendarVariables_DateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Columns'), Choices = c(names(dt())), Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::PickerInput(InputID='CalendarVariables_DateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Columns'), Choices = c(names(dt())), Multiple = TRUE)
     })
     output$CalendarVariables_TimeUnits <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='CalendarVariables_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Calendar Variables'), Choices = c('second','minute','hour','wday','mday','yday','week','isoweek','wom','month','quarter','year'), Multiple = TRUE, MaxVars = 15)
+      RemixAutoML:::PickerInput(InputID='CalendarVariables_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Calendar Variables'), Choices = c('second','minute','hour','wday','mday','yday','week','isoweek','wom','month','quarter','year'), Multiple = TRUE)
     })
   })
 
@@ -968,7 +835,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # input$PercRankInputs is a shinyWidgets::dropdown InputId
+  # PercRank Inputs
   shiny::observeEvent(input$PercRank_Inputs, {
     print('PercRank Inputs Dropdown')
     output$PercentRank_SelectData <- shiny::renderUI({
@@ -977,7 +844,7 @@ server <- function(input, output, session) {
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$PercentRank_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$PercentRank_ColNames <- shiny::renderUI({
       nam <- RemixAutoML:::CEPP(x = names(dt())[which(unlist(lapply(dt(), is.numeric)))], Default = NULL)
-      RemixAutoML:::SelectizeInput(InputID='PercentRank_ColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='PercentRank_ColNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Columns'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
     })
     output$PercentRank_GroupVars <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='PercentRank_GroupVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By-Variables'), Choices = c(names(dt())), Multiple = TRUE, MaxVars = 100)
@@ -987,7 +854,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # input$AutoInteractionInputs is a shinyWidgets::dropdown InputId
+  # AutoInteraction Inputs
   shiny::observeEvent(input$AutoInteraction_Inputs, {
     print('Auto Interaction Inputs Dropdown')
     output$AutoInteraction_SelectData <- shiny::renderUI({
@@ -996,7 +863,7 @@ server <- function(input, output, session) {
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$AutoInteraction_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$AutoInteraction_NumericVars <- shiny::renderUI({
       nam <- RemixAutoML:::CEPP(x = names(dt())[which(unlist(lapply(dt(), is.numeric)))], Default = NULL)
-      RemixAutoML:::SelectizeInput(InputID='AutoInteraction_NumericVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoInteraction_NumericVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Columns'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
     })
     output$AutoInteraction_InteractionDepth <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoInteraction_InteractionDepth', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Interaction Depth'), Choices = c(1:10), Multiple = TRUE, MaxVars = 1, SelectedDefault = 2)
@@ -1009,7 +876,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # input$ is a shinyWidgets::dropdown InputId
+  # Transformation Inputs
   shiny::observeEvent(input$Transformation_Inputs, {
     print('Transformation Inputs Dropdown')
     output$AutoTransformationCreate_SelectData <- shiny::renderUI({
@@ -1018,14 +885,14 @@ server <- function(input, output, session) {
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$AutoTransformationCreate_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$AutoTransformationCreate_ColumnNames <- shiny::renderUI({
       nam <- RemixAutoML:::CEPP(x = names(dt())[which(unlist(lapply(dt(), is.numeric)))], Default = NULL)
-      RemixAutoML:::SelectizeInput(InputID='AutoTransformationCreate_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoTransformationCreate_ColumnNames', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Columns'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
     })
     output$AutoTransformationCreate_Methods <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoTransformationCreate_Methods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Trans Method'), Choices = c('Asinh','Log','LogPlus1','Sqrt','Asin','Logit','BoxCox','YeoJohnson'), Multiple = TRUE, MaxVars = 10)
     })
   })
 
-  # input$ is a shinyWidgets::dropdown InputId
+  # DummifyDT Inputs
   shiny::observeEvent(input$PartialDummies_Inputs, {
     print('Partial Dummies Inputs Dropdown')
     output$DummifyDT_SelectData <- shiny::renderUI({
@@ -1034,37 +901,43 @@ server <- function(input, output, session) {
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$DummifyDT_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$DummifyDT_Cols <- shiny::renderUI({
       nam <- RemixAutoML:::CEPP(x = unique(c(names(dt())[which(unlist(lapply(dt(), is.character)))], names(dt())[which(unlist(lapply(dt(), is.factor)))])), Default = NULL)
-      RemixAutoML:::SelectizeInput(InputID='DummifyDT_Cols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Variable Names'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='DummifyDT_Cols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Columns'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
     })
     output$DummifyDT_TopN <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='DummifyDT_TopN', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'TopN'), Choices = 1:100, Multiple = FALSE, MaxVars = 100)
     })
     output$DummifyDT_KeepBaseCols <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='DummifyDT_KeepBaseCols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Keep Base Cols'), Choices = c(TRUE, FALSE), Multiple = TRUE, MaxVars = 1)
+      RemixAutoML:::SelectizeInput(InputID='DummifyDT_KeepBaseCols', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Keep Base Cols'), Choices = c(TRUE, FALSE), SelectedDefault = TRUE, Multiple = TRUE, MaxVars = 1, Debug = Debug)
     })
   })
 
-  # CategoricalEncoding
+  # Categorical Encoding Inputs
   shiny::observeEvent(input$CategoricalEncoding_Inputs, {
     print('Categorical Encoding Inputs Dropdown')
-    output$CategoricalEncoding_SelectData <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L], CloseAfterSelect = FALSE)
+    output$CategoricalEncoding_TrainData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_TrainData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L], CloseAfterSelect = FALSE)
     })
-    dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$CategoricalEncoding_SelectData]]}, error = function(x) DataList[[1L]]))})
+    dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$CategoricalEncoding_TrainData]]}, error = function(x) DataList[[1L]]))})
+    output$CategoricalEncoding_ValidationData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL, CloseAfterSelect = FALSE)
+    })
+    output$CategoricalEncoding_TestData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL, CloseAfterSelect = FALSE)
+    })
     output$CategoricalEncoding_GroupVariables <- shiny::renderUI({
       nam <- names(dt())
       RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_GroupVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Group Variables'), Choices = nam, Multiple = TRUE, MaxVars = 100, CloseAfterSelect = FALSE)
     })
     output$CategoricalEncoding_TargetVariable <- shiny::renderUI({
       nam <- names(dt())
-      RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_TargetVariable', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Name'), Choices = nam, Multiple = TRUE, MaxVars = 100, CloseAfterSelect = FALSE)
+      RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_TargetVariable', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Columns'), Choices = nam, Multiple = TRUE, MaxVars = 100, CloseAfterSelect = FALSE)
     })
     output$CategoricalEncoding_Method <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='CategoricalEncoding_Method', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Encoding Method'), Choices = c('credibility','target_encoding','m_estimator','woe','poly_encode','backward_difference','helmert'), Multiple = TRUE, MaxVars = 1)
     })
   })
 
-  # input$ is a shinyWidgets::dropdown InputId
+  # Auto Lag Roll Mode Inputs
   shiny::observeEvent(input$AutoLagRollMode_Inputs, {
     print('AutoLagRollMode Inputs Dropdown')
     output$AutoLagRollMode_SelectData <- shiny::renderUI({
@@ -1072,27 +945,27 @@ server <- function(input, output, session) {
     })
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$AutoLagRollMode_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$AutoLagRollMode_Lags <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_Lags', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lags'), Choices = 1:250, Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_Lags', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lags'), Choices = 1:250, SelectedDefault = 1, Multiple = TRUE, MaxVars = 1000L)
     })
     output$AutoLagRollMode_ModePeriods <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_ModePeriods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Sizes'), Choices = 1:250, Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_ModePeriods', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Sizes'), Choices = 2:250, SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1000L)
     })
     output$AutoLagRollMode_Targets <- shiny::renderUI({
       nam <- RemixAutoML:::CEPP(x = unique(c(names(dt())[which(unlist(lapply(dt(), is.character)))], names(dt())[which(unlist(lapply(dt(), is.factor)))])), Default = NULL)
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_Targets', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Variables'), Choices = nam, Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_Targets', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Target Variables'), Choices = nam, SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1000)
     })
     output$AutoLagRollMode_GroupingVars <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_GroupingVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By-Variables'), Choices = names(dt()), Multiple = TRUE, MaxVars = 100)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_GroupingVars', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'By-Variables'), Choices = names(dt()), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 100)
     })
     output$AutoLagRollMode_SortDateName <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_SortDateName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(dt()), Multiple = TRUE, MaxVars = 1)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_SortDateName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(dt()), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1)
     })
     output$AutoLagRollMode_WindowingLag <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_WindowingLag', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Lag'), Choices = c(FALSE,TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = TRUE)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollMode_WindowingLag', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Window Lag'), Choices = c(0,1), Multiple = TRUE, MaxVars = 1, SelectedDefault = 1)
     })
   })
 
-  # AutoLagRollStats
+  # Auto Lag Roll Stats Inputs
   shiny::observeEvent(input$AutoLagRollStats_Inputs, {
     print('AutoLagRollStats Inputs Dropdown')
     output$AutoLagRollStats_SelectData <- shiny::renderUI({
@@ -1110,35 +983,35 @@ server <- function(input, output, session) {
       RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_DateColumn', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Variable'), Choices = names(dt()), Multiple = TRUE, MaxVars = 1)
     })
     output$AutoLagRollStats_TimeUnits <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Time Aggregation'), Choices = c('raw','hour','day','week','month','quarter','year'), Multiple = TRUE, MaxVars = 100000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Time Aggregation'), Choices = c('raw','hour','day','week','month','quarter','year'), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 100000)
     })
     output$AutoLagRollStats_RollOnLag1 <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_RollOnLag1', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Roll On Lag'), Choices = c(FALSE,TRUE), Multiple = TRUE, MaxVars = 1, SelectedDefault = TRUE)
     })
     output$AutoLagRollStats_Lags <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Lags', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lags'), Choices = c(1:250), Multiple = TRUE, MaxVars = 1000, SelectedDefault = 1)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Lags', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Lags'), Choices = 1:250, Multiple = TRUE, MaxVars = 1000, SelectedDefault = 1)
     })
     output$AutoLagRollStats_MA_RollWindows <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_MA_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Mean'), Choices = c(2:250), Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_MA_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Mean'), Choices = 2:250, Multiple = TRUE, MaxVars = 1000)
     })
     output$AutoLagRollStats_SD_RollWindows <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_SD_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling StDev'), Choices = c(3:250), Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_SD_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling StDev'), Choices = 3:250, Multiple = TRUE, MaxVars = 1000)
     })
     output$AutoLagRollStats_Skew_RollWindows <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Skew_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Skew'), Choices = c(4:250), Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Skew_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Skew'), Choices = 4:250, Multiple = TRUE, MaxVars = 1000)
     })
     output$AutoLagRollStats_Kurt_RollWindows <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Kurt_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Kurt'), Choices = c(5:250), Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Kurt_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Kurt'), Choices = 5:250, Multiple = TRUE, MaxVars = 1000)
     })
     output$AutoLagRollStats_Quantile_RollWindows <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Quantile_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Percentile'), Choices = c(5:250), Multiple = TRUE, MaxVars = 1000)
+      RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Quantile_RollWindows', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Rolling Percentile'), Choices = 5:250, Multiple = TRUE, MaxVars = 1000)
     })
     output$AutoLagRollStats_Quantiles_Selected <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='AutoLagRollStats_Quantiles_Selected', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Select Percentiles'), Choices = c('q5','q10','q15','q20','q25','q30','q35','q40','q45','q50','q55','q60','q65','q70','q75','q80','q85','q90','q95'), Multiple = TRUE, MaxVars = 100)
     })
   })
 
-  # AutoDiffLagN
+  # Auto Diff Lag N Inputs
   shiny::observeEvent(input$AutoDiff_Inputs, {
     print('AutoDiff Inputs Dropdown')
     output$AutoDiffLagN_SelectData <- shiny::renderUI({
@@ -1168,7 +1041,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # ModelDataPrep
+  # Model Data Prep Inputs
   shiny::observeEvent(input$ModelDataPrep_Inputs, {
     print('Data Prep Inputs Dropdown')
     output$ModelDataPrep_SelectData <- shiny::renderUI({
@@ -1207,7 +1080,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # AutoDataPartition
+  # Auto Data Partition Inputs
   shiny::observeEvent(input$AutoDataPartition_Inputs, {
     print('Partition Data Inputs Dropdown')
     output$AutoDataPartition_SelectData <- shiny::renderUI({
@@ -1237,7 +1110,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # Word2Vec_H2O
+  # Word2Vec H2O Inputs
   shiny::observeEvent(input$Word2Vec_H2O_Inputs, {
     print('H2O Word2Vec Inputs Dropdown')
     output$Word2Vec_H2O_TrainData <- shiny::renderUI({
@@ -1251,7 +1124,7 @@ server <- function(input, output, session) {
     })
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Word2Vec_H2O_TrainData]]}, error = function(x) DataList[[1L]]))})
     output$Word2Vec_H2O_stringCol <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_stringCol', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Text Columns'), Choices = c(names(dt())), Multiple = TRUE, MaxVars = 10, SelectedDefault = NULL)
+      RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_stringCol', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Text Variables'), Choices = c(names(dt())), Multiple = TRUE, MaxVars = 10, SelectedDefault = NULL)
     })
     output$Word2Vec_H2O_BuildType <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='Word2Vec_H2O_BuildType', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Build Type'), Choices = c('individual','combined'), Multiple = TRUE, MaxVars = 1, SelectedDefault = 'combined')
@@ -1273,7 +1146,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # AutoEncoder_H2O
+  # AutoEncoder H2O Inputs
   shiny::observeEvent(input$AutoEncoder_H2O_Inputs, {
 
     print('testing 0')
@@ -1322,7 +1195,7 @@ server <- function(input, output, session) {
       RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_LayerStructure', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Layer Count'), Choices = seq_len(10L), SelectedDefault = 2L, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
     })
     output$AutoEncoder_H2O_NodeShrinkRate <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_NodeShrinkRate', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Shrink Base'), Choices = c(sqrt(5)/2-0.5,0.50,0.25), SelectedDefault = sqrt(5)/2-0.5, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_NodeShrinkRate', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Shrink Base'), Choices = c(seq(0.01,0.95,0.01)), SelectedDefault = 0.62, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
     })
     output$AutoEncoder_H2O_ReturnLayer <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID = 'AutoEncoder_H2O_ReturnLayer', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Layer Returned'), Choices = seq_len(10L), SelectedDefault = 2L, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
@@ -1344,7 +1217,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # Save Data
+  # Save Data Inputs
   shiny::observeEvent(input$SaveDataInputs, {
     print('Save Data Inputs Dropdown')
     output$SaveData_SelectData <- shiny::renderUI({
@@ -1371,7 +1244,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # PostGRE Save Data
+  # PostGRE Save Data Inputs
   shiny::observeEvent(input$PostGRE_Push, {
 
     # Data Name
@@ -1409,7 +1282,6 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$tabs, {
     if(input$tabs == 'Feature Engineering') {
       FE_Validate_Counter <<- FE_Validate_Counter + 1L
-      if(Debug) {print(FE_Validate_Counter); print(CurrentData); print(names(DataList)); print(' :: R#2184 error ::'); print(FE_Validate)}
       data <- tryCatch({DataList[[CurrentData]]}, error = function(x) NULL)
       if(FE_Validate_Counter <= 3L) {
         output$FE_DisplayData <- DT::renderDataTable({
@@ -1430,7 +1302,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs CatBoost ML                ----
+  # :: Inputs :: CatBoost ML             ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # CatBoost DropDown
@@ -1977,7 +1849,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs XGBoost ML                 ----
+  # :: Inputs :: XGBoost ML              ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # XGBoost DropDown
@@ -2425,7 +2297,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs LightGBM ML                ----
+  # :: Inputs :: LightGBM ML             ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # LightGBM DropDown
@@ -2968,7 +2840,7 @@ server <- function(input, output, session) {
 
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs Plotting                   ----
+  # :: Inputs :: Plotting                ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Dragula, globals
@@ -3043,7 +2915,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs Ok Buttons in Modals       ----
+  # :: Inputs :: Ok Buttons in Modals    ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Plot 1
@@ -3131,7 +3003,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs Modals                     ----
+  # :: Inputs :: Modals                  ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -3875,7 +3747,7 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Inputs PlotDropDowns              ----
+  # :: Inputs :: PlotDropDowns           ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Plot 1 DropDown
@@ -5905,540 +5777,362 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Obs Event Feature Engineering     ----
+  # :: Obs Event :: azure blob data      ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  shiny::observeEvent(input$LoadAzure, {
+
+    # File Type .csv
+    FileName <<- tryCatch({input[['AzureBlobStorageTabular']]}, error = function(x) NULL)
+    if(Debug) print(FileName)
+    if(length(FileName) != 0 && FileName != "Load" && FileName != "") {
+      data
+      AzureStor::download_blob(container = cont, src = input[['AzureBlobStorageTabular']], dest = file.path('/inputdata', input[['AzureBlobStorageTabular']]), overwrite=TRUE)
+    }
+
+    # File Type .Rdata
+    inFile2 <- tryCatch({input[['AzureBlobStorageRdata']]}, error = function(x) NULL)
+    if(!is.null(inFile2)) print(inFile2)
+    if(length(inFile2) != 0 && inFile2 != "") {
+      if(Debug) {print('data check 3')}
+      AzureStor::download_blob(container = cont, src = input[['AzureBlobStorageRdata']], dest = file.path('/inputdata', input[['AzureBlobStorageRdata']]), overwrite=TRUE)
+    }
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # :: Obs Event :: Session Load Save    ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+
+  # Load Session
+  # shiny::observeEvent(input$LoadSession, {
+  #   Name <- RemixAutoML:::ReturnParam(xx = tryCatch({input$LoadSession_Name}, error = function(x) NULL), VarName = 'LoadSession_Name', Type = 'character', Default = NULL, Debug = Debug)
+  #   if(length(CacheDir) > 0L && length(Name) > 0L) {
+  #     x <- readRDS(file = file.path(CacheDir, Name))
+  #     print(names(x))
+  #     unlist(x)
+  #     print(DataList)
+  #     x <- DataList
+  #     DataList <- list()
+  #     for(i in x) {
+  #       DataList[[i]] <- RemixAutoML:::ReactiveLoadCSV(Infile = file.path(CacheDir, paste0(i, '.csv')))
+  #     }
+  #     DataList <<- DataList
+  #   }
+  #   shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = "success", btn_colors = NULL, html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+  # })
+  #
+  # # Save Session
+  # shiny::observeEvent(input$SaveSession, {
+  #   print('shiny::observeEvent :: input$SaveSession')
+  #   if(length(CacheDir) > 0L) {
+  #     print('shiny::observeEvent :: input$SaveSession 1')
+  #     SessionState <- c(as.list(environment()))
+  #     print('shiny::observeEvent :: input$SaveSession 2')
+  #     SessionState$DataList <- names(SessionState$DataList)
+  #     print('shiny::observeEvent :: input$SaveSession 3')
+  #     print(sort(names(SessionState)))
+  #     print('shiny::observeEvent :: input$SaveSession 4')
+  #     StateName <- RemixAutoML:::ReturnParam(xx = tryCatch({input$StateName}, error = function(x) NULL), VarName = 'StateName', Type = 'character', Default = paste0('Remix_',Sys.Date()), Debug = Debug)
+  #     print('shiny::observeEvent :: input$SaveSession 5')
+  #     print('shiny::observeEvent :: input$SaveSession 6.a')
+  #     saveRDS(object = SessionState, file = file.path(CacheDir, paste0(StateName, '.rds')))
+  #     shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = "success", btn_colors = NULL, html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+  #   }
+  # })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # :: Obs Event :: Load data            ----
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  shiny::observeEvent(input$LoadDataButton, {
+
+    # Code Collection
+    if(!exists('DataMgtCode')) DataMgtCode <- list()
+    if(!exists('DataWranglingCode')) DataWranglingCode <- list()
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    if(!exists('MachineLearningCode')) MachineLearningCode <- list()
+    if(!exists('PlotterCode')) PlotterCode <- list()
+
+    # Notify user that data is being loaded
+    shiny::showNotification('Data loading has begun')
+
+    # Local data loading
+    x <- tryCatch({input[['TabularData']]}, error = function(x) NULL)
+    print('TabularData')
+    print(x)
+    if(length(x) != 0) {
+      filename <<- basename(input[['TabularData']][['name']])
+      DataList[[filename]] <<- RemixAutoML:::ReactiveLoadCSV(Infile = input[['TabularData']], ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
+      DataList <<- DataList
+      CurrentData <<- filename
+    }
+
+    # Load ModelOutputList
+    x <- tryCatch({input[['ModelObjectLoad']]}, error = function(x) NULL)
+    print('ModelObjectLoad')
+    print(x)
+    if(length(x) != 0L) {
+      filename <<- basename(x[['datapath']])
+      ModelOutputList <<- readRDS(x[['datapath']])
+      if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
+        DataList[[filename]] <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
+        DataList <<- DataList
+        CurrentData <<- filename
+      } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
+        DataList[[filename]] <<- ModelOutputList$TestData
+        DataList <<- DataList
+        CurrentData <<- filename
+      } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
+        DataList[[filename]] <<- ModelOutputList$TrainData
+        DataList <<- DataList
+        CurrentData <<- filename
+      }
+    }
+
+    # Azure .csv
+    x <- tryCatch({input[['AzureBlobStorageTabular']]}, error = function(x) NULL)
+    print('AzureBlobStorageTabular')
+    print(x)
+    if(length(x) != 0L) {
+      filename <<- basename(input$AzureBlobStorageTabular)
+      DataList[[filename]] <<- RemixAutoML:::ReactiveLoadCSV(Infile = file.path('/inputdata', input[['AzureBlobStorageTabular']]), ProjectList = NULL, DateUpdateName = NULL, RemoveObjects = NULL, Debug = Debug)
+      DataList <<- DataList
+      CurrentData <<- filename
+    }
+
+    # Load ModelOutputList
+    x <- tryCatch({input[['AzureBlobStorageRdata']]}, error = function(x) NULL)
+    print('AzureBlobStorageRdata')
+    if(length(x) != 0L) {
+      filename <- basename(x)
+      ModelOutputList <<- readRDS(file.path('/inputdata', x))
+      if(!is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
+        DataList[[filename]] <<- data.table::rbindlist(list(ModelOutputList$TrainData, ModelOutputList$TestData), use.names = TRUE, fill = TRUE)
+        DataList <<- DataList
+        CurrentData <<- filename
+      } else if(is.null(ModelOutputList$TrainData) && !is.null(ModelOutputList$TestData)) {
+        DataList[[filename]] <<- ModelOutputList$TestData
+        DataList <<- DataList
+        CurrentData <<- filename
+      } else if(!is.null(ModelOutputList$TrainData) && is.null(ModelOutputList$TestData)) {
+        DataList[[filename]] <<- ModelOutputList$TrainData
+        DataList <<- DataList
+        CurrentData <<- filename
+      }
+    }
+
+    # Local PostGRE Data
+    LocalPostGRE_TableName <- tryCatch({input[['LocalPostGRE']]}, error = function(x) NULL)
+    LocalPostGRE_DBName <- tryCatch({input[['LocalPostGRE_Database']]}, error = function(x) NULL)
+    if(length(LocalPostGRE_DBName) != 0L && length(LocalPostGRE_TableName) != 0L) {
+      query <- paste0("SELECT * FROM ", shQuote(LocalPostGRE_TableName), " ;")
+      DataList[[LocalPostGRE_TableName]] <- RemixAutoML::PostGRE_Query(
+        Query = query,
+        Host = LocalPostGRE_Host,
+        CloseConnection = TRUE,
+        DBName = LocalPostGRE_DBName,
+        User = LocalPostGRE_User,
+        Port = LocalPostGRE_Port,
+        Password = LocalPostGRE_Password)$data
+      DataList <<- DataList
+      CurrentData <<- LocalPostGRE_TableName
+    }
+
+    # Initialize
+    PlotterCode <<- PlotterCode
+    DataMgtCode <<- DataMgtCode
+    DataWranglingCode <<- DataWranglingCode
+    FeatureEngineeringCode <<- FeatureEngineeringCode
+    MachineLearningCode <<- MachineLearningCode
+
+
+    # Sweet Alert
+    #if(Debug)
+    print("Data was loaded")
+    Sys.sleep(1L)
+    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = "success", btn_colors = NULL, html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+  })
+
+  # ----
+
+  # ----
+
+  # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+  # :: Obs Event :: Feature Engineering  ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
   # Delete Columns
   shiny::observeEvent(input$FeatureEngineeringButton_DeleteFeatures, {
-    x <- DataList[[shiny::req(input$DeleteVariables_SelectData)]]
-    Cols <- RemixAutoML:::ReturnParam(xx = tryCatch({input$DeleteVariables}, error = function(x) NULL), Type = 'character', Default = NULL, VarName = NULL, Debug = Debug)
-    if(length(Cols) != 0) {
-      data.table::set(x, j = eval(Cols), value = NULL)
-      DataList[[CurrentData]] <<- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    }
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    if(Debug) print('FeatureEngineeringButton_DeleteFeatures')
+    if(Debug) print('input$FeatureEngineeringButton_DeleteFeatures')
+    if(length(CacheDir) > 0L && !file.exists(RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))) data.table::fwrite(x = DataList[[shiny::req(input$DeleteVariables_SelectData)]], file = RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))
+    f1 <- future::future({
+      input;output;session;DataList;FeatureEngineeringCode;CacheDir;CacheName;Debug
+      Output <- RemixAutoML:::Shiny.DW.DeleteColumns(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug);Output
+    })
+    Output <- future::value(f1)
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
+    DataList <- Output$DataList; DataList <<- DataList
   })
 
   # Concat Columns
   shiny::observeEvent(input$FeatureEngineeringButton_ConcatColumns, {
-    Cols <- RemixAutoML:::ReturnParam(xx = tryCatch({input$ConcatColumns}, error = function(x) NULL), Type = 'character', Default = NULL, VarName = NULL, Debug = Debug)
-    if(length(Cols) != 0) {
-      x <- DataList[[eval(input$DeleteFeatures_SelectData)]]
-      x[, paste0(Cols, collapse = '_') := do.call(paste, c(.SD, sep = ' ')), .SDcols = c(Cols)]
-      DataList[[eval(input$DeleteFeatures_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    }
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    if(Debug) print('FeatureEngineeringButton_ConcatColumns')
+    if(length(CacheDir) > 0L && !file.exists(RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))) data.table::fwrite(x = DataList[[shiny::req(input$ConcatColumns_SelectData)]], file = RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))
+    f2 <- future::future({
+      input;output;session;DataList;FeatureEngineeringCode;CacheDir;CacheName;Debug
+      Output <- RemixAutoML:::Shiny.DW.ConcatenateColumns(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug);Output
+    })
+    Output <- future::value(f2)
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
+    DataList <- Output$DataList; DataList <<- DataList
   })
 
   # CalendarVariables()
   shiny::observeEvent(input$FeatureEngineeringButton_CalendarVariables, {
-    print('FE Calendar Variables')
-    CalendarVar_DateVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CalendarVariables_DateVariables']]}, error=function(x) NULL), VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
-    if(length(CalendarVar_DateVariables) != 0) {
-      CalendarVar_TimeUnits <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CalendarVariables_TimeUnits']]}, error=function(x) NULL), VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$CalendarVariables_SelectData)]]
-      x <- RemixAutoML::CreateCalendarVariables(
-        data = x,
-        DateCols = CalendarVar_DateVariables,
-        AsFactor = FALSE,
-        TimeUnits = CalendarVar_TimeUnits)
-      DataList[[eval(input$CalendarVariables_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    if(Debug) print('FeatureEngineeringButton_CalendarVariables')
+    if(length(CacheDir) > 0L && !file.exists(RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))) data.table::fwrite(x = DataList[[shiny::req(input$CalendarVariables_SelectData)]], file = RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))
+    f3 <- future::future({
+      input;output;session;DataList;FeatureEngineeringCode;CacheDir;CacheName;Debug
+      Output <- RemixAutoML:::Shiny.FE.Date.Calendar(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug);Output
+    })
+    Output <- future::value(f3)
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
+    DataList <- Output$DataList; DataList <<- DataList
   })
 
   # HolidayVariables()
   shiny::observeEvent(input$FeatureEngineeringButton_HolidayVariables, {
-    print('FE Holiday Variables')
-    HolidayVar_DateVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['HolidayVariables_DateVariables']]}, error=function(x) NULL), VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
-    if(length(HolidayVar_DateVariables) != 0) {
-      HolidayVar_HolidayGroups <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['HolidayVariables_HolidayGroups']]}, error=function(x) NULL), VarName = NULL, Type = 'character', Default = NULL, Debug = Debug)
-      HolidayVar_LookbackDays <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['HolidayVariables_LookbackDays']]}, error=function(x) NULL), VarName = NULL, Type = 'numeric', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$HolidayVariables_SelectData)]]
-      x <- RemixAutoML::CreateHolidayVariables(
-        x,
-        DateCols = HolidayVar_DateVariables,
-        LookbackDays = HolidayVar_LookbackDays,
-        HolidayGroups = HolidayVar_HolidayGroups,
-        Holidays = NULL,
-        Print = FALSE)
-      DataList[[eval(input$HolidayVariables_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    if(Debug) print('FeatureEngineeringButton_HolidayVariables')
+    if(length(CacheDir) > 0L && !file.exists(RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))) data.table::fwrite(x = DataList[[shiny::req(input$HolidayVariables_SelectData)]], file = RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))
+    f4 <- future::future({
+      input;output;session;DataList;FeatureEngineeringCode;CacheDir;CacheName;Debug
+      Output <- RemixAutoML:::Shiny.FE.Date.Holiday(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug);Output
+    })
+    Output <- future::value(f4)
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
+    DataList <- Output$DataList; DataList <<- DataList
   })
 
   # PercentRank()
   shiny::observeEvent(input$FeatureEngineeringButton_PercRank, {
-    print('FE Percent Rank')
-    PercentRank_ColNames <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['PercentRank_ColNames']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(PercentRank_ColNames) != 0 && all(PercentRank_ColNames %in% names(DataList[[eval(input$PercRank_SelectData)]]))) {
-      PercentRank_GroupVars <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['PercentRank_GroupVars']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      PercentRank_Granularity <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['PercentRank_Granularity']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$PercRank_SelectData)]]
-      x <- RemixAutoML::PercRank(data = x, ColNames = PercentRank_ColNames, GroupVars = PercentRank_GroupVars, Granularity = PercentRank_Granularity)
-      DataList[[eval(input$PercRank_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.Numeric.PercentRank(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # AutoInteraction()
   shiny::observeEvent(input$FeatureEngineeringButton_Interaction, {
-    print('FE Interaction')
-    AutoInteraction_NumericVars <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoInteraction_NumericVars']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(AutoInteraction_NumericVars) != 0) {
-      AutoInteraction_InteractionDepth <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoInteraction_InteractionDepth']]}, error=function(x) NULL), Type = 'numeric', Default = 2, Debug = Debug)
-      AutoInteraction_Scale <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoInteraction_Scale']]}, error=function(x) NULL), Type = 'logical', Default = TRUE, Debug = Debug)
-      AutoInteraction_Center <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoInteraction_Center']]}, error=function(x) NULL), Type = 'logical', Default = TRUE, Debug = Debug)
-      x <- DataList[[eval(input$Interaction_SelectData)]]
-      x <- RemixAutoML::AutoInteraction(
-        data = x,
-        NumericVars = AutoInteraction_NumericVars,
-        InteractionDepth = AutoInteraction_InteractionDepth,
-        Center = AutoInteraction_Center,
-        Scale = AutoInteraction_Scale,
-        SkipCols = NULL,
-        Scoring = FALSE,
-        File = NULL)
-      DataList[[eval(input$Interaction_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.Numeric.Interactions(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # AutoTransformationCreate()
   shiny::observeEvent(input$FeatureEngineeringButton_Transformations, {
-    print('FE Transformations')
-    AutoTransformationCreate_ColumnNames <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoTransformationCreate_ColumnNames']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(AutoTransformationCreate_ColumnNames) != 0) {
-      AutoTransformationCreate_Methods <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoTransformationCreate_Methods']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$AutoTransformationCreate_SelectData)]]
-      x <- RemixAutoML::AutoTransformationCreate(
-        data = x,
-        ColumnNames = AutoTransformationCreate_ColumnNames,
-        Methods = AutoTransformationCreate_Methods,
-        Path = NULL,
-        TransID = "ModelID",
-        SaveOutput = FALSE)$Data
-      DataList[[eval(input$AutoTransformationCreate_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.Numeric.Transformations(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # DummifyDT()
   shiny::observeEvent(input$FeatureEngineeringButton_PartialDummies, {
-    print('FE Partial Dummies')
-    DummifyDT_Cols <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['DummifyDT_Cols']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(DummifyDT_Cols) != 0) {
-      DummifyDT_TopN <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['DummifyDT_TopN']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      DummifyDT_KeepBaseCols <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['DummifyDT_KeepBaseCols']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$PartialDummies_SelectData)]]
-      x <- RemixAutoML::DummifyDT(
-        data = x,
-        cols = DummifyDT_Cols,
-        TopN = DummifyDT_TopN,
-        KeepFactorCols = as.logical(DummifyDT_KeepBaseCols),
-        OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE, GroupVar=FALSE)
-      DataList[[eval(input$PartialDummies_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.Categorical.Dummify(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # CategoricalEncoding()
   shiny::observeEvent(input$FeatureEngineeringButton_CategoricalEncoding, {
-    print('FE Categorical Encoding')
-    CategoricalEncoding_GroupVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CategoricalEncoding_GroupVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(CategoricalEncoding_GroupVariables) != 0) {
-      CategoricalEncoding_TargetVariable <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CategoricalEncoding_TargetVariable']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      CategoricalEncoding_Method <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['CategoricalEncoding_Method']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$CategoricalEncoding_SelectData)]]
-      x <- RemixAutoML::CategoricalEncoding(
-        data = x,
-        ML_Type = "classification",
-        GroupVariables = CategoricalEncoding_GroupVariables,
-        TargetVariable = CategoricalEncoding_TargetVariable,
-        Method = CategoricalEncoding_Method,
-        SavePath=NULL, Scoring=FALSE, ImputeValueScoring=NULL, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=NULL, KeepOriginalFactors=TRUE)$data
-      DataList[[eval(input$CategoricalEncoding_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    Output <- RemixAutoML:::Shiny.FE.CrossRow.CategoricalEncoding(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # AutoLagRollMode()
   shiny::observeEvent(input$FeatureEngineeringButton_AutoLagRollMode, {
-    print('FE Auto Lag Roll Mode')
-    AutoLagRollMode_Targets <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_Targets']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(AutoLagRollMode_Targets) != 0) {
-      AutoLagRollMode_Lags <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_Lags', Type = 'numeric']]}, error=function(x) NULL), Default = NULL, Debug = Debug)
-      AutoLagRollMode_ModePeriods <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_ModePeriods']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      AutoLagRollMode_GroupingVars <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_GroupingVars']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      AutoLagRollMode_SortDateName <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_SortDateName']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      AutoLagRollMode_WindowingLag <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollMode_WindowingLag']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$AutoLagRollMode_SelectData)]]
-      x <- RemixAutoML::AutoLagRollMode(
-        data = x,
-        Lags = AutoLagRollMode_Lags,
-        ModePeriods = AutoLagRollMode_ModePeriods,
-        Targets = AutoLagRollMode_Targets,
-        GroupingVars = AutoLagRollMode_GroupingVars,
-        SortDateName = AutoLagRollMode_SortDateName,
-        WindowingLag = AutoLagRollMode_WindowingLag,
-        Type = c("Lag"),
-        SimpleImpute = TRUE)
-      DataList[[eval(input$AutoLagRollMode_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.CrossRow.RollingMode(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # AutoLagRollStats()
   shiny::observeEvent(input$FeatureEngineeringButton_AutoLagRollStats, {
-    print('FE Auto Lag Roll Stats')
-    AutoLagRollStats_Targets <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_Targets']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    AutoLagRollStats_DateColumn <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_DateColumn']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    AutoLagRollStats_TimeUnits <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_TimeUnits']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    print(AutoLagRollStats_Targets)
-    print(AutoLagRollStats_DateColumn)
-    print(AutoLagRollStats_TimeUnits)
-    if(length(AutoLagRollStats_Targets) != 0 &&
-       length(AutoLagRollStats_DateColumn) != 0 &&
-       length(AutoLagRollStats_TimeUnits) != 0) {
-      x <- DataList[[eval(input$AutoLagRollStats_SelectData)]]
-      AutoLagRollStats_GroupVars <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_GroupVars']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      if(length(AutoLagRollStats_GroupVars) > 1) {
-        x[, paste0(AutoLagRollStats_GroupVars, collapse = '_') := do.call(paste, c(.SD, sep = ' ')), .SDcols = c(AutoLagRollStats_GroupVars)]
-        AutoLagRollStats_GroupVars <- paste0(AutoLagRollStats_GroupVars, collapse = '_')
-      }
-      AutoLagRollStats_Lags <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_Lags']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      AutoLagRollStats_RollOnLag1 <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_RollOnLag1']]}, error=function(x) NULL), Type = 'logical', Default = NULL, Debug = Debug)
-      AutoLagRollStats_MA_RollWindows <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_MA_RollWindows']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      AutoLagRollStats_SD_RollWindows <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_SD_RollWindows']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      AutoLagRollStats_Skew_RollWindows <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_Skew_RollWindows']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      AutoLagRollStats_Kurt_RollWindows <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_Kurt_RollWindows']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      AutoLagRollStats_Quantile_RollWindows <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_Quantile_RollWindows']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      AutoLagRollStats_Quantiles_Selected <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoLagRollStats_Quantiles_Selected']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-      x <- RemixAutoML::AutoLagRollStats(
-        data                 = x,
-        Targets              = AutoLagRollStats_Targets,
-        HierarchyGroups      = NULL,
-        IndependentGroups    = AutoLagRollStats_GroupVars,
-        DateColumn           = AutoLagRollStats_DateColumn,
-        TimeUnit             = AutoLagRollStats_TimeUnits,
-        TimeUnitAgg          = AutoLagRollStats_TimeUnits,
-        TimeGroups           = AutoLagRollStats_TimeUnits,
-        TimeBetween          = NULL,
-        RollOnLag1           = AutoLagRollStats_RollOnLag1,
-        Type                 = "Lag",
-        SimpleImpute         = TRUE,
-        Lags                 = AutoLagRollStats_Lags,
-        MA_RollWindows       = AutoLagRollStats_MA_RollWindows,
-        SD_RollWindows       = AutoLagRollStats_SD_RollWindows,
-        Skew_RollWindows     = AutoLagRollStats_Skew_RollWindows,
-        Kurt_RollWindows     = AutoLagRollStats_Kurt_RollWindows,
-        Quantile_RollWindows = AutoLagRollStats_Quantile_RollWindows,
-        Quantiles_Selected   = AutoLagRollStats_Quantiles_Selected,
-        Debug = Debug)
-      if(length(AutoLagRollStats_GroupVars) > 1) {
-        data.table::set(x, j = paste0(AutoLagRollStats_GroupVars, collapse = '_'), value = NULL)
-      }
-      DataList[[eval(input$AutoLagRollStats_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.CrossRow.RollingStats(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # AutoDiffLagN()
   shiny::observeEvent(input$FeatureEngineeringButton_AutoDiff, {
-    print('FE Auto Diff')
-    AutoDiffLagN_DateVariable <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_DateVariable']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    AutoDiffLagN_NLag1 <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_NLag1']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-    AutoDiffLagN_NLag2 <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_NLag2']]}, error=function(x) NULL), Type = 'numeric', Default = NULL, Debug = Debug)
-    if(length(AutoDiffLagN_DateVariable) != 0 &&
-       length(AutoDiffLagN_NLag1) != 0 &&
-       length(AutoDiffLagN_NLag2) != 0) {
-      AutoDiffLagN_GroupVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_GroupVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      AutoDiffLagN_DiffVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_DiffVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      AutoDiffLagN_DiffDateVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_DiffDateVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      AutoDiffLagN_DiffGroupVariables <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDiffLagN_DiffGroupVariables']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-      x <- DataList[[eval(input$AutoDiffLagN_SelectData)]]
-      x <- RemixAutoML::AutoDiffLagN(
-        data = x,
-        DateVariable = AutoDiffLagN_DateVariable,
-        GroupVariables = AutoDiffLagN_GroupVariables,
-        DiffVariables = AutoDiffLagN_DiffVariables,
-        DiffDateVariables = AutoDiffLagN_DiffDateVariables,
-        DiffGroupVariables = AutoDiffLagN_DiffGroupVariables,
-        NLag1 = AutoDiffLagN_NLag1,
-        NLag2 = AutoDiffLagN_NLag2,
-        Sort = FALSE,
-        RemoveNA = TRUE)
-      DataList[[eval(input$AutoDiffLagN_SelectData)]] <- x
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-      })
-    }
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.CrossRow.Differencing(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # ModelDataPrep()
   shiny::observeEvent(input$FeatureEngineeringButton_ModelDataPrep, {
-    print('FE Type Conversion')
-    ModelDataPrep_IgnoreCols <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_IgnoreCols']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    ModelDataPrep_CharToFactor <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_CharToFactor']]}, error=function(x) NULL), Type = 'logical', Default = FALSE, Debug = Debug)
-    ModelDataPrep_FactorToChar <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_FactorToChar']]}, error=function(x) NULL), Type = 'logical', Default = FALSE, Debug = Debug)
-    ModelDataPrep_DateToChar <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_DateToChar']]}, error=function(x) NULL), Type = 'logical', Default = FALSE, Debug = Debug)
-    ModelDataPrep_IDateConversion <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_IDateConversion']]}, error=function(x) NULL), Type = 'logical', Default = FALSE, Debug = Debug)
-    ModelDataPrep_RemoveDates <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_RemoveDates']]}, error=function(x) NULL), Type = 'logical', Default = FALSE, Debug = Debug)
-    ModelDataPrep_IntToNumeric <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_IntToNumeric']]}, error=function(x) NULL), Type = 'logical', Default = FALSE, Debug = Debug)
-    ModelDataPrep_LogicalToBinary <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_LogicalToBinary']]}, error=function(x) NULL), Type = 'logical', Default = FALSE, Debug = Debug)
-    ModelDataPrep_MissFactor <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_MissFactor']]}, error=function(x) NULL), Type = 'character', Default = FALSE, Debug = Debug)
-    ModelDataPrep_MissNum <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['ModelDataPrep_MissNum']]}, error=function(x) NULL), Type = 'numeric', Default = FALSE, Debug = Debug)
-    x <- DataList[[eval(input$ModelDataPrep_SelectData)]]
-    x <- RemixAutoML::ModelDataPrep(
-      x,
-      Impute          = FALSE,
-      CharToFactor    = ModelDataPrep_CharToFactor,
-      FactorToChar    = ModelDataPrep_FactorToChar,
-      IntToNumeric    = ModelDataPrep_IntToNumeric,
-      LogicalToBinary = ModelDataPrep_LogicalToBinary,
-      DateToChar      = ModelDataPrep_DateToChar,
-      IDateConversion = ModelDataPrep_IDateConversion,
-      RemoveDates     = ModelDataPrep_RemoveDates,
-      MissFactor      = ModelDataPrep_MissFactor,
-      MissNum         = ModelDataPrep_MissNum,
-      IgnoreCols      = ModelDataPrep_IgnoreCols)
-    DataList[[eval(input$ModelDataPrep_SelectData)]] <- x
-    DataList <<- DataList
-    output$FE_DisplayData <- DT::renderDataTable({
-      RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-    })
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.ModelDataPrep(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # AutoDataPartition()
   shiny::observeEvent(input$FeatureEngineeringButton_AutoDataPartition, {
-    print('FE Data Partition')
-    AutoDataPartition_NumDataSets <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_NumDataSets']]}, error=function(x) NULL), Type = 'numeric', Default = 3L, Debug = Debug)
-    AutoDataPartition_Ratios_Train <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_Ratios_Train']]}, error=function(x) NULL), Type = 'numeric', Default = c(0.70), Debug = Debug)
-    AutoDataPartition_Ratios_Validation <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_Ratios_Validation']]}, error=function(x) NULL), Type = 'numeric', Default = c(0.20), Debug = Debug)
-    AutoDataPartition_Ratios_Test <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_Ratios_Test']]}, error=function(x) NULL), Type = 'numeric', Default = c(0.10), Debug = Debug)
-    AutoDataPartition_PartitionType <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_PartitionType']]}, error=function(x) NULL), Type = 'character', Default = "random", Debug = Debug)
-    AutoDataPartition_StratifyColumnNames <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_StratifyColumnNames']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    AutoDataPartition_TimeColumnName <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_TimeColumnName']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    x <- DataList[[eval(input$AutoDataPartition_SelectData)]]
-    DataSets <- RemixAutoML::AutoDataPartition(
-      x,
-      NumDataSets = AutoDataPartition_NumDataSets,
-      Ratios = c(AutoDataPartition_Ratios_Train, AutoDataPartition_Ratios_Validation, AutoDataPartition_Ratios_Test),
-      PartitionType = AutoDataPartition_PartitionType,
-      StratifyColumnNames = AutoDataPartition_StratifyColumnNames,
-      TimeColumnName = AutoDataPartition_TimeColumnName)
-    DataList[[paste0(input$AutoDataPartition_SelectData, '_TrainData')]] <- DataSets[['TrainData']]
-    DataList[[paste0(input$AutoDataPartition_SelectData, '_ValidationData')]] <- DataSets[['ValidationData']]
-    DataList[[paste0(input$AutoDataPartition_SelectData, '_TestData')]] <- DataSets[['TestData']]
-    DataList <<- DataList
-    rm(DataSets)
-    output$FE_DisplayData <- DT::renderDataTable({
-      RemixAutoML::DataTable(x[seq_len(min(.N, NNN))])
-    })
-    shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.PartitionData(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # Word2Vec_H2O()
   shiny::observeEvent(input$FeatureEngineeringButton_Word2Vec_H2O, {
-    print('FE Word2Vec H2O')
-
-    # Initialize List
-    if(!exists('ArgsList')) ArgsList <- list()
-
-    print('FE Word2Vec H2O 1')
-
-    # Data
-    ArgsList$stringCol <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_stringCol']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    print(input[['H2O_Word2Vec_TrainData']])
-    x <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_TrainData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    TrainData <- DataList[[eval(x)]]
-    y <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_ValidationData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(y) > 0L) ValidationData <- DataList[[eval(y)]] else ValidationData <- NULL
-    z <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_TestData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(z) > 0L) TestData <- DataList[[eval(z)]] else TestData <- NULL
-    print('FE Word2Vec H2O 2')
-
-    # Build
-    if(length(ArgsList$stringCol) > 0L && length(TrainData) > 0L) {
-
-      # Args
-      ArgsList$BuildType <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_BuildType']]}, error=function(x) NULL), Type = 'character', Default = 'combined', Debug = Debug)
-      ArgsList$KeepStringCol <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_KeepStringCol']]}, error=function(x) NULL), Type = 'logical', Default = TRUE, Debug = Debug)
-      ArgsList$vects <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_vects']]}, error=function(x) NULL), Type = 'numeric', Default = 30, Debug = Debug)
-      ArgsList$H2O_Word2Vec_MinWords <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_MinWords']]}, error=function(x) NULL), Type = 'numeric', Default = 1, Debug = Debug)
-      ArgsList$WindowSize <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_WindowSize']]}, error=function(x) NULL), Type = 'numeric', Default = 5, Debug = Debug)
-      ArgsList$Epochs <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_Epochs']]}, error=function(x) NULL), Type = 'numeric', Default = 25, Debug = Debug)
-
-      # Args tracking
-      ArgsList$ModelID <- 'temp'
-      ArgsList$model_path <- NULL
-      ArgsList$Threads <- max(1L, parallel::detectCores()-2L)
-      ArgsList$MaxMemory <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
-
-      # Run function
-      print('FE Word2Vec H2O 3')
-      DataSets <- RemixAutoML:::Word2Vec_H2O(
-        TrainData. = TrainData,
-        ValidationData. = ValidationData,
-        TestData. = TestData,
-        ScoringData. = NULL,
-        ArgsList = ArgsList,
-        RunMode = "train",
-        SkipCols = NULL)
-
-      # Remove
-      rm(TrainData, ValidationData, TestData)
-
-      # Collect Output
-      print('FE Word2Vec H2O 4')
-      ArgsList <- DataSets$ArgsList
-      DataList[[x]] <- DataSets$TrainData
-      if(length(DataSets$ValidationData) > 0L) DataList[[y]] <- DataSets$ValidationData
-      if(length(DataSets$TestData) > 0L) DataList[[z]] <- DataSets$TestData
-
-      # Finalize
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({RemixAutoML::DataTable(DataList[[x]][seq_len(min(.N, NNN))])})
-
-    } else {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Text Columns is NULL or TrainData is NULL. Check to see if those inputs were filled out.', type = NULL, btn_labels = 'warning', btn_colors = 'darkred', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    }
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.Word2Vec.H2O(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # AutoEncoder_H2O()
   shiny::observeEvent(input$FeatureEngineeringButton_AutoEncoder_H2O, {
-    print('FE AutoEncoder H2O')
-
-    # Initialize List
-    if(!exists('ArgsList')) ArgsList <- list()
-
-    # Data
-    ArgsList$Features <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_Features}, error = function(x) NULL), Type = 'character', Default = NULL)
-    print(input[['AutoEncoder_H2O_TrainData']])
-    x <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoEncoder_H2O_TrainData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    TrainData <- DataList[[eval(x)]]
-    y <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoEncoder_H2O_ValidationData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(y) > 0L) {
-      print('Adrian is the best!!')
-      print(y)
-      ValidationData <- DataList[[eval(y)]]
-    } else {
-      ValidationData <- NULL
-    }
-    z <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoEncoder_H2O_TestData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
-    if(length(z) > 0L) TestData <- DataList[[eval(z)]] else TestData <- NULL
-    if(length(ArgsList$Features) > 0L && length(TrainData) > 0L) {
-
-      print('FE AutoEncoder H2O 2')
-
-      # Non Data Args
-      ArgsList$AnomalyDetection <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_AnomalyDetection}, error = function(x) NULL), Type = 'logical', Default = NULL)
-      ArgsList$DimensionReduction <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_DimensionReduction}, error = function(x) NULL), Type = 'logical', Default = NULL)
-      ArgsList$per_feature <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_per_feature}, error = function(x) NULL), Type = 'logical', Default = NULL)
-      ArgsList$RemoveFeatures <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_RemoveFeatures}, error = function(x) NULL), Type = 'logical', Default = NULL)
-      ArgsList$LayerStructure <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_LayerStructure}, error = function(x) NULL), Type = 'numeric', Default = NULL)
-      ArgsList$NodeShrinkRate <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_NodeShrinkRate}, error = function(x) NULL), Type = 'numeric', Default = NULL)
-      ArgsList$ReturnLayer <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_ReturnLayer}, error = function(x) NULL), Type = 'numeric', Default = NULL)
-      ArgsList$Epochs <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_Epochs}, error = function(x) NULL), Type = 'numeric', Default = NULL)
-      ArgsList$L2 <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_L2}, error = function(x) NULL), Type = 'numeric', Default = NULL)
-      ArgsList$ElasticAveraging <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_ElasticAveraging}, error = function(x) NULL), Type = 'logical', Default = NULL)
-      ArgsList$ElasticAveragingMovingRate <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_ElasticAveragingMovingRate}, error = function(x) NULL), Type = 'numeric', Default = NULL)
-      ArgsList$ElasticAveragingRegularization <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoEncoder_H2O_ElasticAveragingRegularization}, error = function(x) NULL), Type = 'numeric', Default = NULL)
-
-      # Args tracking
-      ArgsList$ModelID <- 'temp'
-      ArgsList$Models_Path <- getwd()
-      ArgsList$NThreads <- max(1L, parallel::detectCores()-2L)
-      ArgsList$MaxMem <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
-
-      # Run function
-      print('FE AutoEncoder H2O 3')
-      DataSets <- RemixAutoML:::AutoEncoder_H2O(
-        RunMode = 'train',
-        ArgsList = ArgsList,
-        TrainData. = TrainData,
-        ValidationData. = ValidationData,
-        TestData. = TestData,
-        ScoringData. = NULL,
-        Pause = 0L)
-
-      # Remove
-      rm(TrainData, ValidationData, TestData)
-
-      # Collect Output
-      print('FE AutoEncoder H2O 4')
-      ArgsList <- DataSets$ArgsList
-      DataList[[x]] <- DataSets$TrainData
-      if(length(DataSets$ValidationData) > 0L) DataList[[y]] <- DataSets$ValidationData
-      if(length(DataSets$TestData) > 0L) DataList[[z]] <- DataSets$TestData
-
-      # Finalize
-      DataList <<- DataList
-      output$FE_DisplayData <- DT::renderDataTable({RemixAutoML::DataTable(DataList[[x]][seq_len(min(.N, NNN))])})
-
-    } else {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Text Columns is NULL or TrainData is NULL. Check to see if those inputs were filled out.', type = NULL, btn_labels = 'warning', btn_colors = 'darkred', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    }
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.DimReduction.AutoEncoder.H2O(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
   # TODO:
-  # Dim Reduction, Clustering, Anomaly Detection
+  # Clustering
 
   # ----
 
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Obs Event ML                      ----
+  # :: Obs Event :: ML                   ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$BuildModels_CatBoost, {
+
+    # Code Collection
+    if(!exists('MachineLearningCode')) MachineLearningCode <- list()
 
     # Loop through Cross Validation Runs: 1 for regular training
     #  multiple runs will simple just randomize the train, validation, and test data sets and iterate
@@ -6461,7 +6155,7 @@ server <- function(input, output, session) {
         })
 
         # Table Output
-        output$ML_ExperimentTable <- DT::renderDataTable({RemixAutoML::DataTable(RemixAutoML:::.underscore_removal(ML_ExperimentTable))})
+        output$ML_ExperimentTable <- DT::renderDataTable({RemixAutoML::DataTable(RemixAutoML:::Shiny.Utils.underscore_removal(ML_ExperimentTable))})
 
         # Increment the progress bar, and update the detail text.
         if(n > run) {
@@ -6473,6 +6167,9 @@ server <- function(input, output, session) {
     })
   })
   shiny::observeEvent(input$BuildModels_XGBoost,  {
+
+    # Code Collection
+    if(!exists('MachineLearningCode')) MachineLearningCode <- list()
 
     # Loop through Cross Validation Runs: 1 for regular training
     #  multiple runs will simple just randomize the train, validation, and test data sets and iterate
@@ -6495,7 +6192,7 @@ server <- function(input, output, session) {
         })
 
         # Table Output
-        output$ML_ExperimentTable <- DT::renderDataTable({RemixAutoML::DataTable(RemixAutoML:::.underscore_removal(ML_ExperimentTable))})
+        output$ML_ExperimentTable <- DT::renderDataTable({RemixAutoML::DataTable(RemixAutoML:::Shiny.Utils.underscore_removal(ML_ExperimentTable))})
 
         # Increment the progress bar, and update the detail text.
         if(n > run) {
@@ -6507,6 +6204,9 @@ server <- function(input, output, session) {
     })
   })
   shiny::observeEvent(input$BuildModels_LightGBM, {
+
+    # Code Collection
+    if(!exists('MachineLearningCode')) MachineLearningCode <- list()
 
     # Loop through Cross Validation Runs: 1 for regular training
     #  multiple runs will simple just randomize the train, validation, and test data sets and iterate
@@ -6529,7 +6229,7 @@ server <- function(input, output, session) {
         })
 
         # Table Output
-        output$ML_ExperimentTable <- DT::renderDataTable({RemixAutoML::DataTable(RemixAutoML:::.underscore_removal(ML_ExperimentTable))})
+        output$ML_ExperimentTable <- DT::renderDataTable({RemixAutoML::DataTable(RemixAutoML:::Shiny.Utils.underscore_removal(ML_ExperimentTable))})
 
         # Increment the progress bar, and update the detail text.
         if(n > run) {
@@ -6546,15 +6246,16 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Obs Event Plotting                ----
+  # :: Obs Event :: Plotting             ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$TrendPlotExecute, {
 
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     # Determine Which Plots to Build       ----
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
+    # Code Collection Lists
     PlotCollectionList <- list()
-    CodeCollection <- list()
+    if(!exists('PlotterCode')) PlotterCode <- list()
 
     # Identify which plots to build
     NumPlots <- c()
@@ -6608,20 +6309,22 @@ server <- function(input, output, session) {
 
     # Global Settings
     PlotObjectHome[['GlobalSettings']][['PlotEngine']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['PlotEngine']]}, error=function(x) NULL), Type='character', Default='plotly')
-    PlotObjectHome[['GlobalSettings']][['PlotWidth']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['PlotWidth']]}, error=function(x) NULL), Type='numeric', Default=1550L)
+    PlotObjectHome[['GlobalSettings']][['PlotWidth']]  <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['PlotWidth']]},  error=function(x) NULL), Type='numeric', Default=1550L)
     PlotObjectHome[['GlobalSettings']][['PlotHeight']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['PlotHeight']]}, error=function(x) NULL), Type='numeric', Default=500L)
 
     # Initialize PlotObjectHome List
     for(run in PlotRefs) {
+
       PlotObjectHome[[paste0('Plot_', run)]][['Symbols']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('Symbols', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['StockMetric']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('StockMetric', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['StockTimeAgg']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('StockTimeAgg', run)]]}, error=function(x) NULL), Type='character', Default='days')
       PlotObjectHome[[paste0('Plot_', run)]][['StockDateRange']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('StockDateRange', run)]]}, error=function(x) NULL), Type='date', Default=c('2022-01-01', as.character(Sys.Date())))
-      PlotObjectHome[[paste0('Plot_', run)]][['DataSource']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('DataSource', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
+
       PlotObjectHome[[paste0('Plot_', run)]][['PlotType']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('Plot', run)]]}, error=function(x) NULL), Type='character', Default=NULL, Debug = TRUE)
       PlotObjectHome[[paste0('Plot_', run)]][['UpdateMethod']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('UpdateMethod', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['SampleSize']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('SampleSize', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['NumberGroupsDisplay']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('NumberGroupsDisplay', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
+
       PlotObjectHome[[paste0('Plot_', run)]][['YVar']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('YVar', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['YTicks']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('YTicks', run)]]}, error=function(x) NULL), Type='character', Default='Default')
       PlotObjectHome[[paste0('Plot_', run)]][['XVar']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('XVar', run)]]}, error=function(x) NULL), Type='character', Default=NULL)
@@ -6650,6 +6353,7 @@ server <- function(input, output, session) {
       PlotObjectHome[[paste0('Plot_', run)]][['FilterValue_2_2']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('FilterValue_',run, '_3_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterValue_2_3']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('FilterValue_',run, '_4_1')]]}, error=function(x) NULL), Type='character', Default=NULL)
       PlotObjectHome[[paste0('Plot_', run)]][['FilterValue_2_4']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('FilterValue_',run, '_4_2')]]}, error=function(x) NULL), Type='character', Default=NULL)
+
       PlotObjectHome[[paste0('Plot_', run)]][['AngleY']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('AngleY', run)]]}, error=function(x) NULL), Type='numeric', Default=0L)
       PlotObjectHome[[paste0('Plot_', run)]][['AngleX']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('AngleX', run)]]}, error=function(x) NULL), Type='numeric', Default=90L)
       PlotObjectHome[[paste0('Plot_', run)]][['TextSize']] <- RemixAutoML:::ReturnParam(xx=tryCatch({input[[paste0('TextSize', run)]]}, error=function(x) NULL), Type='numeric', Default=15L)
@@ -6685,14 +6389,10 @@ server <- function(input, output, session) {
     # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
     for(run in PlotRefs) {
 
-      # Code ID
-      CodeCollection[[run]] <- run
-
       # Define NamedValue Objects for variables
       if(1 == 1) {
 
         # Variables as objects
-        DataSource <- PlotObjectHome[[paste0('Plot_', run)]][['DataSource']]
         PlotType <- PlotObjectHome[[paste0('Plot_', run)]][['PlotType']]
         UpdateMethod <- PlotObjectHome[[paste0('Plot_', run)]][['UpdateMethod']]
 
@@ -6774,23 +6474,25 @@ server <- function(input, output, session) {
       # Define data
       if(!PlotType %chin% c('CandlestickPlot','OHLCPlot')) {
         data1 <- DataList[[input[[paste0('Plot', run, '_SelectData')]]]]
+        PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(y = PlotterCode, x = paste0(
+          "\n",
+          "# Plotting: ", PlotType,"\n",
+          "data1 <- DataList[[", RemixAutoML:::CEP(input[[paste0('Plot', run, '_SelectData')]]), "]]\n"))
+        PlotterCode <<- PlotterCode
       } else {
         data1 <- NULL
       }
 
       # For PDP's
-      print('ScoreVar')
+      if(Debug) print('ScoreVar')
+      ScoreVar <- NULL
       if(length(data1) > 0L) {
-        print(names(data1))
+        if(Debug) print(names(data1))
         if('p1' %in% names(data1)) {
           ScoreVar <- 'p1'
         } else if('Predict' %in% names(data1)) {
           ScoreVar <- 'Predict'
-        } else {
-          ScoreVar <- NULL
         }
-      } else {
-        ScoreVar <- NULL
       }
 
       # PLOT LOGIC CHECK THEN BUILD PLOT:
@@ -6962,7 +6664,7 @@ server <- function(input, output, session) {
                 FilterValue    = get(paste0('FilterValue_',i,'_1')),
                 FilterValue2   = get(paste0('FilterValue_',i,'_2')),
                 Debug          = Debug)
-              CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML:::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(get(paste0('FilterLogic',i))),", FilterVariable=", RemixAutoML:::CEP(get(paste0('FilterVar',i))),", FilterValue=", RemixAutoML:::CEP(get(paste0('FilterValue_',i,'_1'))),", FilterValue2=", RemixAutoML:::CEP(get(paste0('FilterValue_',i,'_2'))),"))")
+              PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(PlotterCode, paste0("data1 <- RemixAutoML:::FilterLogicData(data1, FilterLogic=", RemixAutoML:::CEP(get(paste0('FilterLogic',i))),", FilterVariable=", RemixAutoML:::CEP(get(paste0('FilterVar',i))),", FilterValue=", RemixAutoML:::CEP(get(paste0('FilterValue_',i,'_1'))),", FilterValue2=", RemixAutoML:::CEP(get(paste0('FilterValue_',i,'_2'))),"))\n"))
             }
           }
 
@@ -6975,8 +6677,9 @@ server <- function(input, output, session) {
               data = data1, Aggregate = 'mean', TargetVariable = YVar, DateVariable = XVar,
               GroupVariables = GroupVars,
               G1Levels = Levels1, G2Levels = Levels2, G3Levels = Levels3)
-            CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0("data1 <- RemixAutoML:::PreparePlotData(SubsetOnly = ", FALSE,", data=data1, Aggregate='mean', TargetVariable=", RemixAutoML:::CEP(YVar),", DateVariable=", RemixAutoML:::CEP(XVar), ", GroupVariables=", RemixAutoML:::CEP(GroupVars),", G1Levels=", RemixAutoML:::CEP(Levels1),", G2Levels=", RemixAutoML:::CEP(Levels2),", G3Levels=", RemixAutoML:::CEP(Levels3),")")
-            print('PreparePlotData() Start   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+            PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(PlotterCode, paste0("data1 <- RemixAutoML:::PreparePlotData(SubsetOnly = ", FALSE,", data=data1, Aggregate='mean', TargetVariable=", RemixAutoML:::CEP(YVar),", DateVariable=", RemixAutoML:::CEP(XVar), ", GroupVariables=", RemixAutoML:::CEP(GroupVars),", G1Levels=", RemixAutoML:::CEP(Levels1),", G2Levels=", RemixAutoML:::CEP(Levels2),", G3Levels=", RemixAutoML:::CEP(Levels3),")"))
+            PlotterCode <<- PlotterCode
+            print('PreparePlotData() Start ^')
             print(data1)
 
           } else {
@@ -6992,7 +6695,8 @@ server <- function(input, output, session) {
               if(length(unique(c(XVar))) != 0) {
                 Keep <- unique(c(YVar, XVar, ZVar, ScoreVar,TargetLevel)); if(Debug) {print(Keep); print(names(data1))}
                 data1 <- data1[, .SD, .SDcols = c(Keep)]; if(Debug) print('Subset Columns Here predone')
-                CodeCollection[[run]][[length(CodeCollection)+1L]] <- paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]"); if(Debug) print('Subset Columns Here done')
+                PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(PlotterCode, paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]\n")); if(Debug) print('Subset Columns Here done')
+                PlotterCode <<- PlotterCode
               }
 
             ### Standard Plots Subsetting
@@ -7001,18 +6705,24 @@ server <- function(input, output, session) {
                 Keep <- unique(c(YVar, XVar, ZVar, GroupVars, FacetVar1, TargetLevel))
                 if(PlotType %in% 'VariableImportance') Keep <- unique(keep, 'Variable','Importance')
                 data1 <- data1[, .SD, .SDcols = c(Keep)]; if(Debug) print('Subset Columns Here predone')
-                CodeCollection[[run]][[length(CodeCollection)+1L]] <- paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]"); if(Debug) print('Subset Columns Here done')
+                PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(PlotterCode, paste0("data1 <- data1[, .SD, .SDcols = c(",RemixAutoML:::ExpandText(Keep),")]\n")); if(Debug) print('Subset Columns Here done')
+                PlotterCode <<- PlotterCode
               }
             }
           }
         }
 
         # Sample from data
-        if(length(SampleSize) > 0 && is.numeric(SampleSize) && SampleSize > 0 && SampleSize < 1 && !PlotType %in% c('CandlestickPlot','OHLCPlot')) {
+        if(length(SampleSize) > 0 && is.numeric(SampleSize) && !PlotType %in% c('CandlestickPlot','OHLCPlot')) {
           print(SampleSize)
           N <- data1[, .N]
           if(N > SampleSize) {
-            data1 <- data1[order(runif(.N))][seq_len(min(.N, SampleSize))]
+            print('Sample Size HERE')
+            data1 <- data1[order(runif(.N))][seq_len(min(.N, eval(SampleSize)))]
+            PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(
+              PlotterCode,
+              paste0("data1 <- data1[order(runif(.N))][seq_len(min(.N, ", RemixAutoML:::CEP(eval(SampleSize)), "))]"))
+            PlotterCode <<- PlotterCode
           }
         }
 
@@ -7106,35 +6816,36 @@ server <- function(input, output, session) {
 
           # Code Collection
           if(Debug) print('Debug Code Collection Start')
-          CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0(
-            "RemixAutoML:::AutoPlotter(\ndt = data1, PlotType = ", RemixAutoML:::CEP(PlotType),
-            ", YVar=", RemixAutoML:::CEP(YVar),
-            ", XVar=", RemixAutoML:::CEP(XVar),
-            ", ZVar=", RemixAutoML:::CEP(ZVar),
-            ", Bins=", RemixAutoML:::CEP(NumberBins),
-            ", ColorVariables=", RemixAutoML:::CEP(GroupVars[[1L]]),
-            ", FacetVar1=", RemixAutoML:::CEP(FacetVar1),
-            ", YTicks=", RemixAutoML:::CEP(YTicks),
-            ", XTicks=", RemixAutoML:::CEP(XTicks),
-            ", OutlierSize=", RemixAutoML:::CEP(OutlierSize),
-            ", OutlierColor=", RemixAutoML:::CEP(OutlierColor),
-            ", FillColor=", RemixAutoML:::CEP(FillColor),
-            ", BarPlotAggMethod= ", RemixAutoML:::CEP(BarPlotAgg),
-            ", GamFitScatter=", RemixAutoML:::CEP(GamFitScatter),
-            ", TextSize=", RemixAutoML:::CEP(TextSize),
-            ", TextColor=", RemixAutoML:::CEP(TextColor),
-            ", AngleX=", RemixAutoML:::CEP(AngleX),
-            ", AngleY=", RemixAutoML:::CEP(AngleY),
-            ", ChartColor=", RemixAutoML:::CEP(ChartColor),
-            ", BorderColor=", RemixAutoML:::CEP(BorderColor),
-            ", GridColor=", RemixAutoML:::CEP(GridColor),
-            ", BackGroundColor=", RemixAutoML:::CEP(BackGroundColor), ")")
-          CodeCollection <<- CodeCollection
-          if(Debug) print(unlist(CodeCollection))
+          PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(PlotterCode, paste0(
+            "RemixAutoML:::AutoPlotter(", "\n  ",
+            "dt = data1", ",\n  ",
+            "PlotType = ", RemixAutoML:::CEP(PlotType), ",\n  ",
+            "YVar=", RemixAutoML:::CEP(YVar), ",\n  ",
+            "XVar=", RemixAutoML:::CEP(XVar), ",\n  ",
+            "ZVar=", RemixAutoML:::CEP(ZVar), ",\n  ",
+            "Bins=", RemixAutoML:::CEP(NumberBins), ",\n  ",
+            "ColorVariables=", RemixAutoML:::CEP(GroupVars[[1L]]), ",\n  ",
+            "FacetVar1=", RemixAutoML:::CEP(FacetVar1), ",\n  ",
+            "YTicks=", RemixAutoML:::CEP(YTicks), ",\n  ",
+            "XTicks=", RemixAutoML:::CEP(XTicks), ",\n  ",
+            "OutlierSize=", RemixAutoML:::CEP(OutlierSize), ",\n  ",
+            "OutlierColor=", RemixAutoML:::CEP(OutlierColor), ",\n  ",
+            "FillColor=", RemixAutoML:::CEP(FillColor), ",\n  ",
+            "BarPlotAggMethod= ", RemixAutoML:::CEP(BarPlotAgg), ",\n  ",
+            "GamFitScatter=", RemixAutoML:::CEP(GamFitScatter), ",\n  ",
+            "TextSize=", RemixAutoML:::CEP(TextSize), ",\n  ",
+            "TextColor=", RemixAutoML:::CEP(TextColor), ",\n  ",
+            "AngleX=", RemixAutoML:::CEP(AngleX), ",\n  ",
+            "AngleY=", RemixAutoML:::CEP(AngleY), ",\n  ",
+            "ChartColor=", RemixAutoML:::CEP(ChartColor), ",\n  ",
+            "BorderColor=", RemixAutoML:::CEP(BorderColor), ",\n  ",
+            "GridColor=", RemixAutoML:::CEP(GridColor), ",\n  ",
+            "BackGroundColor=", RemixAutoML:::CEP(BackGroundColor), ")\n"))
+          PlotterCode <<- PlotterCode
 
         } else if(PlotType %in% c('CandlestickPlot','OHLCPlot')) {
 
-          print(StockDateRange)
+          if(Debug) print(StockDateRange)
 
           # Prepare Plot Data
           FinanceDataList[[Symbols]] <- RemixAutoML::StockData(
@@ -7152,7 +6863,7 @@ server <- function(input, output, session) {
           PlotCollectionList[[paste0('p', run)]] <- RemixAutoML::StockPlot(FinanceDataList[[Symbols]], Type = PlotType)
 
           # Code Collection
-          CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0(
+          PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(PlotterCode, paste0(
             "RemixAutoML::StockPlot(Type =", RemixAutoML:::CEP(PlotType),
             ", Metric = ", RemixAutoML:::CEP(StockMetric),
             ", TimeAgg = ", RemixAutoML:::CEP(StockTimeAgg),
@@ -7160,7 +6871,8 @@ server <- function(input, output, session) {
             ", Company =", RemixAutoML:::CEP(StockSymbolsData[ticker == eval(Symbols)][['name']][[1L]]),
             ", StartDate  = ", StockDateRange[1L],
             ", EndDate  = ", StockDateRange[2L],
-            ", APIKey =", RemixAutoML:::CEP(paste0('************', substr(APIKey, start = nchar(APIKey)-2L, stop = nchar(APIKey)))), ")")
+            ", APIKey =", RemixAutoML:::CEP(paste0('************', substr(APIKey, start = nchar(APIKey)-2L, stop = nchar(APIKey)))), ")\n"))
+          PlotterCode <<- PlotterCode
 
         } else {
 
@@ -7211,7 +6923,7 @@ server <- function(input, output, session) {
           }
 
           # Code Collection
-          CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0(
+          PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(PlotterCode, paste0(
             "RemixAutoML:::AppModelInsights(dt=data1, PlotType=", RemixAutoML:::CEP(PlotType),
             ", TargetVar=", RemixAutoML:::CEP(YVar),
             ", PredictVar=", RemixAutoML:::CEP(ScoreVar),
@@ -7219,9 +6931,10 @@ server <- function(input, output, session) {
             ", FacetVar1 = ", if(PlotType %in% 'S__hapleyVarImp') RemixAutoML:::CEP(FacetVar1) else "NULL",
             ", FacetVar2 = ", if(PlotType %in% 'S__hapleyVarImp') RemixAutoML:::CEP(FacetVar2) else "NULL",
             ", GamFit=", RemixAutoML:::CEPP(GamFitScatter),
-            ", Buckets=", RemixAutoML:::CEP(Percentile_Buckets), ")")
+            ", Buckets=", RemixAutoML:::CEP(Percentile_Buckets), ")\n"))
+          PlotterCode <<- PlotterCode
 
-          # Code Collection
+          # Chart Theme
           if(length(names(PlotCollectionList)) > 0L) {
 
             # Update ChartTheme
@@ -7237,28 +6950,29 @@ server <- function(input, output, session) {
                 LegendLineType = if(PlotType %in% c('ShapelyImportance','VariableImportance','GainsPlot')) NULL else LegendLineType)
 
               # Code Collection
-              CodeCollection[[run]][[length(CodeCollection[[run]])+1L]] <- paste0(
-                "RemixAutoML::ChartTheme(Size=", RemixAutoML:::CEP(TextSize),
-                ", AngleX=", RemixAutoML:::CEP(AngleX),
-                ", AngleY=", RemixAutoML:::CEP(AngleY),
-                ", ChartColor=", RemixAutoML:::CEP(ChartColor),
-                ", BorderColor=", RemixAutoML:::CEP(BorderColor),
-                ", TextColor=", RemixAutoML:::CEP(TextColor),
-                ", GridColor=", RemixAutoML:::CEP(GridColor),
-                ", BackGroundColor=", RemixAutoML:::CEP(BackGroundColor),
-                ", SubTitleColor=", RemixAutoML:::CEP(SubTitleColor),
-                ", LegendPosition=", RemixAutoML:::CEP(if(PlotType %in% c('ShapelyImportance','VariableImportance','GainsPlot')) 'none' else LegendPosition),
-                ", LegendBorderSize=", RemixAutoML:::CEP(if(PlotType %in% c('ShapelyImportance','VariableImportance','GainsPlot')) NULL else as.numeric(LegendBorderSize)),
-                ", LegendLineType=", RemixAutoML:::CEP(if(PlotType %in% c('ShapelyImportance','VariableImportance','GainsPlot')) NULL else LegendBorderSize), ")")
+              PlotterCode <- RemixAutoML:::Shiny.CodePrint.Collect(PlotterCode, paste0(
+                "RemixAutoML::ChartTheme(", '\n  ',
+                "Size = ", RemixAutoML:::CEP(TextSize), ',\n  ',
+                "AngleX = ", RemixAutoML:::CEP(AngleX), ',\n  ',
+                "AngleY = ", RemixAutoML:::CEP(AngleY), ',\n  ',
+                "ChartColor = ", RemixAutoML:::CEP(ChartColor), ',\n  ',
+                "BorderColor = ", RemixAutoML:::CEP(BorderColor), ',\n  ',
+                "TextColor = ", RemixAutoML:::CEP(TextColor), ',\n  ',
+                "GridColor = ", RemixAutoML:::CEP(GridColor), ',\n  ',
+                "BackGroundColor = ", RemixAutoML:::CEP(BackGroundColor), ',\n  ',
+                "SubTitleColor = ", RemixAutoML:::CEP(SubTitleColor), ',\n  ',
+                "LegendPosition = ", RemixAutoML:::CEP(if(PlotType %in% c('ShapelyImportance','VariableImportance','GainsPlot')) 'none' else LegendPosition), ',\n  ',
+                "LegendBorderSize = ", RemixAutoML:::CEP(if(PlotType %in% c('ShapelyImportance','VariableImportance','GainsPlot')) NULL else as.numeric(LegendBorderSize)), ',\n  ',
+                "LegendLineType = ", RemixAutoML:::CEP(if(PlotType %in% c('ShapelyImportance','VariableImportance','GainsPlot')) NULL else LegendBorderSize), ")\n"))
+              PlotterCode <<- PlotterCode
             }
           }
-          CodeCollection <<- CodeCollection
         }
 
         # Store globally
         data1 <<- data1
         PlotCollectionList <<- PlotCollectionList
-        CodeCollection <<- CodeCollection
+        PlotterCode <<- PlotterCode
 
         # ----
 
@@ -7378,17 +7092,35 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  # :: Obs Event Print Code to UI        ----
+  # :: Obs Event :: Print Code to UI     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   shiny::observeEvent(input$PrintCodeButton, {
-    if(Debug) {print('Print Code UI Begin'); print(paste0('Check if CodeCollection exists: exists = ', exists('CodeCollection')))}
-    if(length(CodeCollection) > 0L) {
+    if(Debug) print(' :: Print Code Begins Here :: ')
+
+    # Combine lists and turn into a data.table
+    # Two columns in code: 'TimeStamp' and 'Code'
+
+    # CodeListNames = c('DataMgtCode','DataWranglingCode','FeatureEngineeringCode','MachineLearningCode','PlotterCode'))
+    MasterSet <- RemixAutoML:::Shiny.CodePrint.OrganizeCode(DM = DataMgtCode, DW = DataWranglingCode, FE = FeatureEngineeringCode, ML = MachineLearningCode, PL = PlotterCode)
+    print(MasterSet)
+
+    # Send to ui
+    if(length(MasterSet) > 0L) {
       output$PrintCode <- shiny::renderPrint({
-        shiny::HTML(paste0(unlist(CodeCollection), sep = '<br/>'))
+        for(i in seq_len(MasterSet[,.N])) cat(MasterSet[['Code']][[eval(i)]])
       })
     } else {
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'No Code Collected, Yet', type = NULL, btn_labels = "warning", btn_colors = "yellow", html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = 'No Code Collected, Yet', type = NULL, btn_labels = "warning", btn_colors = NULL, html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
     }
+  })
+
+  # Copy Code
+  output$clip <- shiny::renderUI({
+    rclipboard::rclipButton(
+      inputId = "clip",
+      label = "Copy Code",
+      clipText = input$PrintCode,
+      icon = icon("clipboard"))
   })
 
   # ----
@@ -7396,9 +7128,13 @@ server <- function(input, output, session) {
   # ----
 
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-  #    Close app after closing browser   ----
+  # :: Close app after closing browser   ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
   session$onSessionEnded(function() {
+    #future::plan(sequential)
+    if(length(CacheDir) > 0L && file.exists(RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))) {
+      file.remove(file = RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv'))
+    }
     shiny::stopApp()
   })
 }
@@ -7410,7 +7146,7 @@ server <- function(input, output, session) {
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 #    Run App                           ----
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
-shiny::shinyApp(ui = ui, server = server)
+shiny::shinyApp(ui = ui, server = server, enableBookmarking = "url")
 
 # ----
 
@@ -7477,6 +7213,20 @@ shiny::shinyApp(ui = ui, server = server)
 # })
 # output$LegendLineType4 <- shiny::renderUI({
 #   RemixAutoML:::SelectizeInput(InputID = 'LegendLineType4', Label = tags$span(style='color: blue;', 'Legend Border Type'), Choices = c('solid','blank','dashed','dotdash','dotted','longlash','twodash'), SelectedDefault = 'solid', Multiple = FALSE)
+# })
+
+# Workaround for execution within RStudio version < 1.2
+#if (interactive()){
+# shiny::observeEvent(input$clipbtn, {
+#   clipr::write_clip(input$PrintCode)
+# })
+
+# output$PrintCodeTable <- DT::renderDataTable({RemixAutoML::DataTable(MasterSet)})
+# output$PrintCode <- shiny::renderPrint({
+#   shiny::HTML(paste0(unlist(MasterSet$Code), sep = '<br/>'))
+# })
+# output$PrintCodeTable <- DT::renderDataTable({
+#   RemixAutoML:::DataTable(MasterSet, FixedCols = 0L)
 # })
 
 # ----

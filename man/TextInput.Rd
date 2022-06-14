@@ -41,6 +41,7 @@ output$TS_Date <- renderUI({
 \seealso{
 Other Shiny: 
 \code{\link{BoxPlotModals}()},
+\code{\link{DataTable2}()},
 \code{\link{DataTable}()},
 \code{\link{DateInput}()},
 \code{\link{GenerateEvaluationMetrics}()},

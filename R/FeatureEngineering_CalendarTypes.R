@@ -9,6 +9,8 @@
 #' @param DateCols Supply either column names or column numbers of your date columns you want to use for creating calendar variables
 #' @param AsFactor Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned
 #' @param TimeUnits Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "wom" (week of month), "month", "quarter", "year"
+#' @param CachePath Path to data in a local directory. .csv only for now
+#' @param Debug = FALSE
 #' @examples
 #' \dontrun{
 #' # Create fake data with a Date column----
@@ -63,31 +65,48 @@
 CreateCalendarVariables <- function(data,
                                     DateCols = NULL,
                                     AsFactor = FALSE,
-                                    TimeUnits = "wday") {
+                                    TimeUnits = "wday",
+                                    CachePath = NULL,
+                                    Debug = FALSE) {
 
-  # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L))
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(Debug) print('CreateHolidayVariables 1')
 
-  # Check args----
+  # Load data from file if CachePath is not NULL
+  if(length(CachePath) > 0L) {
+    if(Debug) print('CreateHolidayVariables 1.1')
+    data <- RemixAutoML:::ReactiveLoadCSV(Infile = CachePath, Debug = Debug)
+    if(Debug) print('CreateHolidayVariables 1.2')
+    for(i in DateCols) if(class(data[[i]])[1L] %in% c('character')) {
+      if(Debug) print('CreateHolidayVariables 1.3')
+      data.table::set(data, j = eval(i), value = as.Date(data[[i]], format = "%m/%d/%y"))
+    }
+  }
+
+  # Debug
+  if(Debug) print('CreateHolidayVariables 2')
+
+  # Check args
   if(!is.logical(AsFactor)) {
-    print("AsFactor needs to be TRUE or FALSE")
+    if(Debug) print("AsFactor needs to be TRUE or FALSE")
     return(data)
   }
   if(!(any(tolower(TimeUnits) %chin% c("second","minute","hour","wday","mday","yday","week","isoweek","wom","month","quarter","year")))) {
-    print("TimeUnits needs to be one of 'second', 'minute', 'hour', 'wday','mday', 'yday','week','wom','month', 'quarter', 'year'")
+    if(Debug) print("TimeUnits needs to be one of 'second', 'minute', 'hour', 'wday','mday', 'yday','week','wom','month', 'quarter', 'year'")
     return(data)
   }
 
-  # Turn DateCols into character names if not already----
+  # Turn DateCols into character names if not already
   for(i in DateCols) if(!is.character(DateCols[i])) DateCols[i] <- names(data)[DateCols[i]]
 
-  # Revise TimeUnits Based on Data----
+  # Revise TimeUnits Based on Data
   x <- 0L
   TimeList <- list()
   Cols <- c()
-  for(i in seq_len(length(DateCols))) {
-    if(any(TimeUnits %chin% c("second", "minute", "hour"))) {
+  for(i in seq_along(DateCols)) {
+    if(!any(TimeUnits %chin% c("second","minute","hour"))) {
+      TimeList[[i]] <- TimeUnits
+      Cols[i] <- length(TimeList[[i]])
+    } else {
       if(min(data.table::as.ITime(data[[eval(DateCols[i])]])) - max(data.table::as.ITime(data[[eval(DateCols[i])]])) == 0L) {
         TimeList[[i]] <- TimeUnits[!(tolower(TimeUnits) %chin% c("second", "minute", "hour"))]
         Cols[i] <- length(TimeList[[i]])
@@ -95,40 +114,39 @@ CreateCalendarVariables <- function(data,
         TimeList[[i]] <- TimeUnits
         Cols[i] <- length(TimeList[[i]])
       }
-    } else {
-      TimeList[[i]] <- TimeUnits
-      Cols[i] <- length(TimeList[[i]])
     }
   }
 
-  # Number of supplied columns----
-  NumCols <- ncol(data.table::copy(data))
-
-  # Allocate data.table cols----
+  # Allocate data.table cols
   data.table::alloc.col(DT = data, ncol(data) + sum(Cols))
 
-  # Create DateCols to data.table IDateTime types----
-  for(i in seq_len(length(DateCols))) {
-    if(length(TimeList) != 0L) {
-      if(any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) data.table::set(data, j = paste0("TIME_", eval(DateCols[i])), value = data.table::as.ITime(data[[eval(DateCols[i])]]))
-      if(any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","wom","month","quarter","year"))) data.table::set(data, j = paste0("DATE_", eval(DateCols[i])), value = data.table::as.IDate(data[[eval(DateCols[i])]]))
+  # Create DateCols to data.table IDateTime types
+  for(i in seq_along(DateCols)) {
+    if(length(TimeList) > 0L) {
+      if(any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
+        data.table::set(data, j = paste0("TIME_", eval(DateCols[i])), value = data.table::as.ITime(data[[eval(DateCols[i])]]))
+      } else if(any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","wom","month","quarter","year"))) {
+        data.table::set(data, j = paste0("DATE_", eval(DateCols[i])), value = data.table::as.IDate(data[[eval(DateCols[i])]]))
+      }
     }
   }
 
-  # Build Features----
-  for(i in seq_len(length(DateCols))) {
+  # Build Features ----
+  # i = 1L
+  for(i in seq_along(DateCols)) {
 
-    # Define DateCols----
+    # Define DateCols ----
     DateColRef <- DateCols[i]
 
-    # Get unique date values in table and then merge back to source data at the end one time----
+    # Get unique date values in table and then merge back to source data at the end one time ----
     if(any(tolower(TimeList[[i]]) %chin% c("second", "minute", "hour"))) {
       DataCompute <- unique(data[, .SD, .SDcols = c(paste0("TIME_", DateColRef), paste0("DATE_", DateColRef))])
     } else {
       DataCompute <- unique(data[, .SD, .SDcols = c(paste0("DATE_", DateColRef))])
     }
 
-    # Build calendar variables----
+    # Build calendar variables ----
+    # j = TimeList[[i]][1L]
     for(j in TimeList[[i]]) {
       if(tolower(j) == "second") {
         if(AsFactor) {
@@ -150,55 +168,55 @@ CreateCalendarVariables <- function(data,
         }
       } else if(tolower(j) == "wday") {
         if(AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::wday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::wday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::wday(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "mday") {
-        if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+        if(AsFactor) {
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         }
       } else if(tolower(j) == "yday") {
-        if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::yday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+        if(AsFactor) {
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::yday(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::yday(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "week") {
-        if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::week(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+        if(AsFactor) {
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::week(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::week(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "isoweek") {
-        if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+        if(AsFactor) {
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::isoweek(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "month") {
-        if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::month(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+        if(AsFactor) {
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::month(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::month(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
       } else if(tolower(j) == "wom") {
         if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::fifelse(ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7) == 5, 4, ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7))))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::fifelse(ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7) == 5, 4, ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7))))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::fifelse(ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7) == 5, 4, ceiling(data.table::mday(DataCompute[[eval(paste0("DATE_", DateColRef))]])/7)))
         }
       } else if(tolower(j) == "quarter") {
-        if (AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::quarter(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+        if(AsFactor) {
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::quarter(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.integer(data.table::quarter(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         }
       } else if(tolower(j) == "year") {
         if(AsFactor) {
-          data.table::set(DataCompute, j = paste0(DateColRef, "_", TimeList[[i]][j]), value = as.factor(data.table::year(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
+          data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = as.factor(data.table::year(DataCompute[[eval(paste0("DATE_", DateColRef))]])))
         } else {
           data.table::set(DataCompute, j = paste0(DateColRef, "_", j), value = data.table::year(DataCompute[[eval(paste0("DATE_", DateColRef))]]))
         }
@@ -217,8 +235,15 @@ CreateCalendarVariables <- function(data,
     if(any(tolower(TimeList[[i]]) %chin% c("wday","mday","yday","week","isoweek","wom","month","quarter","year"))) data.table::set(data, j = paste0("DATE_", DateColRef), value = NULL)
   }
 
-  # Return data----
-  return(data)
+  # Return data ----
+  if(length(CachePath) > 0L) {
+    data.table::fwrite(x = data, file = CachePath)
+    if(Debug) print('Returned here 1')
+    return("Remix")
+  } else {
+    if(Debug) print('Returned here 2')
+    return(data)
+  }
 }
 
 #' @title CreateHolidayVariables
@@ -234,6 +259,8 @@ CreateCalendarVariables <- function(data,
 #' @param HolidayGroups Pick groups
 #' @param Holidays Pick holidays
 #' @param Print Set to TRUE to print iteration number to console
+#' @param CachePath = NULL
+#' @param Debug = FALSE
 #' @import timeDate
 #' @examples
 #' \dontrun{
@@ -280,33 +307,61 @@ CreateHolidayVariables <- function(data,
                                    LookbackDays = NULL,
                                    HolidayGroups = c('USPublicHolidays','EasterGroup','ChristmasGroup','OtherEcclesticalFeasts'),
                                    Holidays = NULL,
-                                   Print = FALSE) {
+                                   Print = FALSE,
+                                   CachePath = NULL,
+                                   Debug = FALSE) {
+
+  if(Debug) print('CreateHolidayVariables 1')
+
+  if(length(CachePath) > 0L) {
+    if(Debug) {print('CreateHolidayVariables 1.1'); print(CachePath)}
+    data <- RemixAutoML:::ReactiveLoadCSV(Infile = CachePath, Debug = Debug)
+    if(Debug) print(data)
+    if(Debug) print(class(data))
+    if(Debug) print('CreateHolidayVariables 1.2')
+    for(i in DateCols) if(class(data[[i]])[1L] %in% c('character')) {
+      if(Debug) print('CreateHolidayVariables 1.3')
+      data.table::set(data, j = eval(i), value = as.Date(data[[i]], format = "%m/%d/%y"))
+    }
+  }
 
   # Turn on full speed ahead----
-  data.table::setDTthreads(threads = max(1L, parallel::detectCores()-2L))
-
-  # Convert to data.table----
-  if(!data.table::is.data.table(data)) data.table::setDT(data)
+  if(Debug) print('CreateHolidayVariables 2')
 
   # Convert to date or posix
   for(dat in DateCols) {
+    if(Debug) print('CreateHolidayVariables 4')
     if(any(class(data[[dat]]) %chin% c("IDate"))) {
+      if(Debug) print('CreateHolidayVariables 5.A')
       data[, eval(dat) := as.Date(get(dat))]
     } else if(any(class(data[[dat]]) %chin% c("IDateTime"))) {
+      if(Debug) print('CreateHolidayVariables 5.B')
       data[, eval(dat) := as.POSIXct(get(dat))]
     }
   }
 
+  if(Debug) print('CreateHolidayVariables 6')
+
   # Require namespace----
   requireNamespace("timeDate", quietly = TRUE)
+
+  if(Debug) print('CreateHolidayVariables 7')
 
   # Function for expanding dates, vectorize----
   HolidayCountsInRange <- function(Start, End, Values) return(as.integer(length(which(x = Values %in% seq(as.Date(Start), as.Date(End), by = "days")))))
 
+  if(Debug) print('CreateHolidayVariables 8')
+
   # Store individual holidays if HolidayGroups is specified----
   Holidays <- c()
   if(!is.null(HolidayGroups)) {
+
+    if(Debug) print('CreateHolidayVariables 9')
+
     for(counter in seq_len(length(HolidayGroups))) {
+
+      if(Debug) print(paste0('CreateHolidayVariables 10: iteration - ', counter))
+
       if(tolower(HolidayGroups[counter]) == "eastergroup") {
         Holidays <- c(Holidays,"Septuagesima","Quinquagesima","PalmSunday","GoodFriday","EasterSunday","Easter","EasterMonday","RogationSunday",
                       "Ascension","Pentecost","PentecostMonday","TrinitySunday","CorpusChristi","AshWednesday")
@@ -327,51 +382,93 @@ CreateHolidayVariables <- function(data,
     }
   }
 
-  # Turn DateCols into character names if not already----
+  # Turn DateCols into character names if not already ----
+  if(Debug) print('CreateHolidayVariables 11')
   for(i in DateCols) if(!is.character(DateCols[i])) DateCols[i] <- names(data)[DateCols[i]]
 
-  # Allocate data.table cols----
+  # Allocate data.table cols ----
+  if(Debug) print('CreateHolidayVariables 12')
   data.table::alloc.col(DT = data, ncol(data) + 1L)
 
-  # Create Temp Date Columns----
+  # Create Temp Date Columns ----
+  if(Debug) print('CreateHolidayVariables 13')
   MinDate <- data[, min(get(DateCols[1L]), na.rm = TRUE)]
 
-  # Run holiday function to get unique dates----
+  # Run holiday function to get unique dates ----
+  if(Debug) print('CreateHolidayVariables 14')
   library(timeDate)
 
   # Define Holidays
-  HolidayVals <- sort(unique(as.Date(timeDate::holiday(year = unique(lubridate::year(data[[eval(DateCols)]])), Holiday = Holidays))))
+  if(Debug) {
+    print('CreateHolidayVariables 15')
+    print(DateCols)
+    print(head(data))
+    print(class(data[[eval(DateCols)]]))
+  }
+  yrs <- unique(data.table::year(data[[eval(DateCols[1L])]]))
+  if(length(DateCols) > 1L) {
+    for(i in DateCols[-1L]) {
+      yrs <- unique(c(yrs, data.table::year(data[[eval(DateCols[i])]])))
+    }
+  }
+  HolidayVals <- sort(unique(as.Date(timeDate::holiday(year = yrs, Holiday = Holidays))))
 
-  # Compute----
+  # Compute ----
+  if(Debug) print('CreateHolidayVariables 16')
   for(i in seq_along(DateCols)) {
+
+    if(Debug) print(paste0('CreateHolidayVariables 17: iteration - ', i))
+
     if(!is.null(LookbackDays)) {
+      if(Debug) print(paste0('CreateHolidayVariables 18: iteration - ', i))
       x <- LookbackDays
     } else {
-      x <- data[, quantile(x = (data[[eval(DateCols[i])]] - data[[(paste0("Lag1_",eval(DateCols[i])))]]), probs = 0.99)]
+      if(Debug) print(paste0('CreateHolidayVariables 18: iteration - ', i))
+      x <- 1
     }
-    data[, eval(paste0("Lag1_", DateCols[i])) := get(DateCols[i]) - lubridate::days(x)]
-    data.table::setkeyv(x = data, cols = c(DateCols[i], paste0("Lag1_", eval(DateCols[i]))))
+    if(Debug) print('CreateHolidayVariables 19')
+    LagCol <- paste0("Lag1_", DateCols[i])
+    data[, eval(LagCol) := get(DateCols[i]) - lubridate::days(x)]
+    if(Debug) print('CreateHolidayVariables 20')
+    data.table::setkeyv(x = data, cols = c(DateCols[i], LagCol))
+    if(Debug) print('CreateHolidayVariables 21')
     data.table::set(data, i = which(data[[eval(DateCols[i])]] == MinDate), j = eval(paste0("Lag1_",DateCols[i])), value = MinDate - x)
-    temp <- unique(data[, .SD, .SDcols = c(DateCols[i], paste0("Lag1_", eval(DateCols[i])))])
+    if(Debug) print('CreateHolidayVariables 22')
+    temp <- unique(data[, .SD, .SDcols = c(DateCols[i], LagCol)])
+    if(Debug) print('CreateHolidayVariables 23')
     temp[, HolidayCounts := 0L]
+    if(Debug) print('CreateHolidayVariables 24')
     NumRows <- seq_len(temp[,.N])
+    if(Debug) print('CreateHolidayVariables 25')
     if(Print) {
       for(Rows in NumRows) {
         print(Rows)
-        data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[i])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
+        data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[eval(LagCol)]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
       }
     } else {
       for(Rows in NumRows) {
-        data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[paste0("Lag1_", DateCols[i])]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
+        data.table::set(x = temp, i = Rows, j = "HolidayCounts", value = sum(HolidayCountsInRange(Start = temp[[eval(LagCol)]][[Rows]], End = temp[[eval(DateCols)]][[Rows]], Values = HolidayVals)))
       }
     }
-    data[temp, on = c(eval(DateCols[i]), paste0("Lag1_", DateCols[i])), HolidayCounts := i.HolidayCounts]
+    if(Debug) print('CreateHolidayVariables 26')
+    data[temp, on = c(eval(DateCols[i]), eval(LagCol)), HolidayCounts := i.HolidayCounts]
+    if(Debug) print('CreateHolidayVariables 27')
     if(length(DateCols) > 1L) data.table::setnames(data, "HolidayCounts", paste0(DateCols[i], "_HolidayCounts"))
-    data.table::set(data, j = eval(paste0("Lag1_", DateCols[i])), value = NULL)
+    if(Debug) print('CreateHolidayVariables 28')
+    data.table::set(data, j = eval(eval(LagCol)), value = NULL)
   }
 
-  # Return data----
-  return(data)
+  if(Debug) print('CreateHolidayVariables 29')
+
+  # Return data ----
+  if(length(CachePath) > 0L) {
+    data.table::fwrite(x = data, file = CachePath)
+    if(Debug) print('Returned here 1')
+    return("Remix")
+  } else {
+    if(Debug) print('Returned here 2')
+    return(data)
+  }
 }
 
 #' @title CalendarVariables

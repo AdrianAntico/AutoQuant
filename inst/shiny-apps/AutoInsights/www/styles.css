@@ -16,6 +16,23 @@ body, h1, h2, h3, h4, h5, h6 {
   font-family: 'Segoe UI', sans-serif;
 }
 
+//* Code Print Outputbox: Added overflow: scroll */
+.shiny-text-output .shiny-bound-output .form-group .shiny-input-container {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.42857;
+  color: #333;
+  word-break: break-all;
+  word-wrap: break-word;
+  background-color: linear-gradient(to top, #f9ffff, #d7ffff);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: scroll;
+  height: 629px;
+}
+
 /* Top Box inside Plot Selection Dropdowns */
 .box.box-solid.box-warning {
   background-image: linear-gradient(to top, #e3e3e3, #000000);
@@ -36,6 +53,11 @@ body, h1, h2, h3, h4, h5, h6 {
 /* Box Text Color */
 .shiny-input-container {
   color: #1b1b1c;
+}
+
+.shiny-notification {
+  color: #333;
+  background-color: cyan;
 }
 
 /* BACKGROUND COLOR */
@@ -1318,19 +1340,6 @@ kbd kbd {
 	box-shadow: none
 }
 
-pre {
-	display: block;
-	padding: 9.5px;
-	margin: 0 0 10px;
-	font-size: 13px;
-	line-height: 1.42857;
-	color: #333;
-	word-break: break-all;
-	word-wrap: break-word;
-	background-color: #f5f5f5;
-	border: 1px solid #ccc;
-	border-radius: 4px
-}
 
 pre code {
 	padding: 0;

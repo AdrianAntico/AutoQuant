@@ -16,6 +16,8 @@
 #' @param UpdatePlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param ResetPlotButtonColor Choose from 'default', 'primary', 'warning', 'danger', 'success', 'royal'
 #' @param H3Color Header colors 'darkblue'
+#' @param CacheDir Path to store data
+#' @param CacheName for in session data. Additional data sets will be named with a 1, 2, ... attached directly after the end of CacheName. E.g. data, data1, data2, ..., data10, data100
 #' @param H4Color Text below headers but not the input cells; 'blue2'
 #' @param AppTextColor 'white'
 #' @param Browser FALSE
@@ -46,7 +48,9 @@
 #' #   UpdatePlotButtonColor = 'default',
 #' #   ResetPlotButtonColor = 'default',
 #' #   H3Color = 'darkblue',
-#' #   H5Color = 'blue2',
+#' #   CacheDir = getwd().
+#' #   CacheName = 'data.csv',
+#' #   H4Color = 'blue2',
 #' #   AppTextColor = 'white',
 #' #   Docker = FALSE,
 #' #   Browser = FALSE,
@@ -67,6 +71,8 @@
 #' # UpdatePlotButtonColor = 'default'
 #' # ResetPlotButtonColor = 'default'
 #' # H3Color = 'darkblue'
+#' # CacheDir = getwd()
+#' # CacheName = 'data.csv'
 #' # H4Color = 'blue2'
 #' # AppTextColor = 'white'
 #' # Docker = FALSE
@@ -90,6 +96,8 @@ AppsPlotting <- function(AzureCredsFile = NULL,
                          ResetPlotButtonColor = 'default',
                          H3Color = 'darkblue',
                          H4Color = 'darkblue',
+                         CacheDir = NULL,
+                         CacheName = 'data.csv',
                          AppTextColor = 'blue',
                          Browser = FALSE,
                          Docker = FALSE,
@@ -118,6 +126,8 @@ AppsPlotting <- function(AzureCredsFile = NULL,
     CreatePlotButtonColor = CreatePlotButtonColor,
     UpdatePlotButtonColor = UpdatePlotButtonColor,
     ResetPlotButtonColor = ResetPlotButtonColor,
+    CacheDir = CacheDir,
+    CacheName = CacheName,
     H3Color = H3Color,
     H4Color = H4Color,
     AppTextColor = AppTextColor,

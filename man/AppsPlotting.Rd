@@ -19,6 +19,8 @@ AppsPlotting(
   ResetPlotButtonColor = "default",
   H3Color = "darkblue",
   H4Color = "darkblue",
+  CacheDir = NULL,
+  CacheName = "data.csv",
   AppTextColor = "blue",
   Browser = FALSE,
   Docker = FALSE,
@@ -53,6 +55,10 @@ AppsPlotting(
 \item{H3Color}{Header colors 'darkblue'}
 
 \item{H4Color}{Text below headers but not the input cells; 'blue2'}
+
+\item{CacheDir}{Path to store data}
+
+\item{CacheName}{for in session data. Additional data sets will be named with a 1, 2, ... attached directly after the end of CacheName. E.g. data, data1, data2, ..., data10, data100}
 
 \item{AppTextColor}{'white'}
 
@@ -93,7 +99,9 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 #   UpdatePlotButtonColor = 'default',
 #   ResetPlotButtonColor = 'default',
 #   H3Color = 'darkblue',
-#   H5Color = 'blue2',
+#   CacheDir = getwd().
+#   CacheName = 'data.csv',
+#   H4Color = 'blue2',
 #   AppTextColor = 'white',
 #   Docker = FALSE,
 #   Browser = FALSE,
@@ -114,6 +122,8 @@ Simple shiny app for viewing time series plots with box plots or line plots. You
 # UpdatePlotButtonColor = 'default'
 # ResetPlotButtonColor = 'default'
 # H3Color = 'darkblue'
+# CacheDir = getwd()
+# CacheName = 'data.csv'
 # H4Color = 'blue2'
 # AppTextColor = 'white'
 # Docker = FALSE

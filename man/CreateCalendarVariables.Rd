@@ -8,7 +8,9 @@ CreateCalendarVariables(
   data,
   DateCols = NULL,
   AsFactor = FALSE,
-  TimeUnits = "wday"
+  TimeUnits = "wday",
+  CachePath = NULL,
+  Debug = FALSE
 )
 }
 \arguments{
@@ -19,6 +21,10 @@ CreateCalendarVariables(
 \item{AsFactor}{Set to TRUE if you want factor type columns returned; otherwise integer type columns will be returned}
 
 \item{TimeUnits}{Supply a character vector of time units for creating calendar variables. Options include: "second", "minute", "hour", "wday", "mday", "yday", "week", "isoweek", "wom" (week of month), "month", "quarter", "year"}
+
+\item{CachePath}{Path to data in a local directory. .csv only for now}
+
+\item{Debug}{= FALSE}
 }
 \value{
 Returns your data.table with the added calendar variables at the end

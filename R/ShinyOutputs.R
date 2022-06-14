@@ -9,7 +9,7 @@
 #' @param PlotNumber 1
 #' @param AppWidth = 12L
 #'
-#' @export
+#' @keywords internal
 StandardPlotsModal1 <- function(id, PlotNumber, AppWidth=12L) {
   shiny::moduleServer(
     id = id,
@@ -59,7 +59,7 @@ StandardPlotsModal1 <- function(id, PlotNumber, AppWidth=12L) {
 #' @param PlotNumber 1
 #' @param AppWidth = 12L
 #'
-#' @export
+#' @keywords internal
 StandardPlotsModal2 <- function(id, PlotNumber, AppWidth=12L) {
   shiny::moduleServer(
     id = id,
@@ -116,7 +116,7 @@ StandardPlotsModal2 <- function(id, PlotNumber, AppWidth=12L) {
 #' @param PlotNumber 1
 #' @param AppWidth = 12L
 #'
-#' @export
+#' @keywords internal
 StandardPlotsModal3 <- function(id, PlotNumber, AppWidth=12L) {
   shiny::moduleServer(
     id = id,
@@ -174,7 +174,7 @@ StandardPlotsModal3 <- function(id, PlotNumber, AppWidth=12L) {
 #' @param PlotNumber 1
 #' @param AppWidth = 12L
 #'
-#' @export
+#' @keywords internal
 StandardPlotsModal4 <- function(id, PlotNumber, AppWidth=12L) {
   shiny::moduleServer(
     id = id,
@@ -226,7 +226,7 @@ StandardPlotsModal4 <- function(id, PlotNumber, AppWidth=12L) {
 #' @param PlotNumber 1
 #' @param AppWidth = 12L
 #'
-#' @export
+#' @keywords internal
 BoxPlotModals <- function(id, NumberPlots, AppWidth=12L) {
   shiny::moduleServer(
     id = id,

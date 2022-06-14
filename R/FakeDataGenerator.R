@@ -19,19 +19,81 @@
 #' @param MultiClass Set to TRUE to build MultiClass data
 #' @examples
 #' \dontrun{
+#' # Create dummy data to test regression, classification, and multiclass models.
+#' #   I don't care too much about actual relationships but I can test out on the
+#' #   regression problem since those variables will be correlated. The binary and
+#' #   multiclass won't however since they were created separately.
+#'
+#' # Regression
 #' data <- RemixAutoML::FakeDataGenerator(
-#'    Correlation = 0.70,
-#'    N = 1000L,
-#'    ID = 2L,
-#'    FactorCount = 2L,
-#'    AddDate = TRUE,
-#'    AddWeightsColumn = FALSE,
-#'    AddComment = FALSE,
-#'    ZIP = 2L,
-#'    TimeSeries = FALSE,
-#'    ChainLadderData = FALSE,
-#'    Classification = FALSE,
-#'    MultiClass = FALSE)
+#'   Correlation = 0.77,
+#'   N = 1000000L,
+#'   ID = 4L,
+#'   FactorCount = 5L,
+#'   AddDate = TRUE,
+#'   AddComment = TRUE,
+#'   AddWeightsColumn = TRUE,
+#'   ZIP = 0L,
+#'   TimeSeries = FALSE,
+#'   TimeSeriesTimeAgg = "day",
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = FALSE)
+#'
+#' # Classification
+#' data2 <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.77,
+#'   N = 1000000L,
+#'   ID = 4L,
+#'   FactorCount = 5L,
+#'   AddDate = TRUE,
+#'   AddComment = TRUE,
+#'   AddWeightsColumn = TRUE,
+#'   ZIP = 0L,
+#'   TimeSeries = FALSE,
+#'   TimeSeriesTimeAgg = "day",
+#'   ChainLadderData = FALSE,
+#'   Classification = TRUE,
+#'   MultiClass = FALSE)
+#'
+#' # MultiClass
+#' data3 <- RemixAutoML::FakeDataGenerator(
+#'   Correlation = 0.77,
+#'   N = 1000000L,
+#'   ID = 4L,
+#'   FactorCount = 5L,
+#'   AddDate = TRUE,
+#'   AddComment = TRUE,
+#'   AddWeightsColumn = TRUE,
+#'   ZIP = 0L,
+#'   TimeSeries = FALSE,
+#'   TimeSeriesTimeAgg = "day",
+#'   ChainLadderData = FALSE,
+#'   Classification = FALSE,
+#'   MultiClass = TRUE)
+#'
+#' data.table::setnames(data, 'Adrian', 'RegressionTarget')
+#' data.table::setnames(data2, 'Adrian', 'BinaryTarget')
+#' data.table::setnames(data3, 'Adrian', 'MultiClassTarget')
+#'
+#' data <- cbind(data, data2$BinaryTarget, data3$MultiClassTarget)
+#' data.table::setnames(data, c('V2','V3'), c('BinaryTarget','MultiClassTarget'))
+#' data.table::setcolorder(data, c(1, c(ncol(data)-1,ncol(data),2:(ncol(data)-2))))
+#'
+#' # Load to warehouse
+#' RemixAutoML::PostGRE_RemoveCreateAppend(
+#'   data = data,
+#'   Append = TRUE,
+#'   TableName = "App_QA_BigData",
+#'   CloseConnection = TRUE,
+#'   CreateSchema = NULL,
+#'   Host = "localhost",
+#'   DBName = "RemixAutoML",
+#'   User = "postgres",
+#'   Port = 5432,
+#'   Password = "",
+#'   Temporary = FALSE,
+#'   Connection = NULL)
 #' }
 #' @export
 FakeDataGenerator <- function(Correlation = 0.70,
