@@ -1331,7 +1331,7 @@ server <- function(input, output, session) {
   })
 
   # Kmeans H2O Inputs
-  shiny::observeEvent(input$IsolationForest_H2O_Inputs, {
+  shiny::observeEvent(input$Kmeans_H2O_Inputs, {
 
     print('testing 0')
     output$Kmeans_H2O_TrainData <- shiny::renderUI({
@@ -1350,11 +1350,11 @@ server <- function(input, output, session) {
 
     print('testing 2')
     output$Kmeans_H2O_MaxClusters <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'Kmeans_H2O_MaxClusters', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Anom Detection Threshold'), Choices = 1:100, SelectedDefault = 10, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'Kmeans_H2O_MaxClusters', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Number of Clusters'), Choices = 1:100, SelectedDefault = 10, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
     })
     print('testing 3')
     output$Kmeans_H2O_ClusterMetric <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID = 'Kmeans_H2O_ClusterMetric', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Trees'), Choices = c('totss','betweenss','withinss'), SelectedDefault = 'totss', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+      RemixAutoML:::SelectizeInput(InputID = 'Kmeans_H2O_ClusterMetric', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Clustering Loss Metric'), Choices = c('totss','betweenss','withinss'), SelectedDefault = 'totss', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
     })
     print('testing 4')
     output$Kmeans_H2O_Features <- shiny::renderUI({

@@ -2096,7 +2096,7 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
   print('FE Kmeans H2O')
 
   # Features
-  Features <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_Features}, error = function(x) NULL), Type = 'character', Default = NULL)
+  Features <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Kmeans_H2O_Features']]}, error = function(x) NULL), Type = 'character', Default = NULL)
 
   # Data
   if(Debug) print(input[['Kmeans_H2O_TrainData']])
@@ -2109,7 +2109,11 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
   temp_test <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Kmeans_H2O_TestData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
 
   # Create code
-  if(Debug) print('FE Kmeans H2O 3')
+  if(Debug) {
+    print('FE Kmeans H2O 3')
+    print(temp_train)
+    print(Features)
+  }
   CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
     "\n",
     "# FE Kmeans H2O: Data\n",
@@ -2119,22 +2123,30 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
     "temp_test <- ", RemixAutoML:::CEP(temp_test),"\n"
   ))
 
+  if(Debug) print('FE Kmeans H2O 4')
+
   # Build
   if(length(Features) > 0L && length(temp_train) > 0L) {
+
+    if(Debug) print('FE Kmeans H2O 5')
 
     # AutoEncoder_H2O
     shiny::withProgress(message = 'Kmeans H2O has begun..', value = 0, {
 
-      if(Debug) print('FE Kmeans H2O 2')
-      IDcols <- setdiff(names(DataList[[temp_train]]), Features)
-      MaxClusters <- RemixAutoML:::ReturnParam(xx = tryCatch({input$Kmeans_H2O_MaxClusters}, error = function(x) NULL), Type = 'numeric', Default = 50)
-      ClusterMetric <- RemixAutoML:::ReturnParam(xx = tryCatch({input$Kmeans_H2O_ClusterMetric}, error = function(x) NULL), Type = 'numeric', Default = 0.95)
+      if(Debug) print('FE Kmeans H2O 6')
+
+      MaxClusters <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Kmeans_H2O_MaxClusters']]}, error = function(x) NULL), Type = 'numeric', Default = 50)
+      ClusterMetric <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Kmeans_H2O_ClusterMetric']]}, error = function(x) NULL), Type = 'character', Default = 0.95)
+
+      if(Debug) print('FE Kmeans H2O 7')
 
       # Args tracking
       ModelID <- 'temp'
       SavePath <- getwd()
       NThreads <- max(1L, parallel::detectCores()-2L)
       MaxMem <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
+
+      if(Debug) print('FE Kmeans H2O 8')
 
       # Create code
       if(Debug) print('FE Kmeans H2O 3')
@@ -2144,7 +2156,6 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
       CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
         "\n",
         "# Kmeans H2O Args\n",
-        "IDcols <- ", RemixAutoML:::CEP(IDcols),"\n",
         "ModelID <- ", RemixAutoML:::CEP(ModelID),"\n",
         "NThreads <- ", RemixAutoML:::CEP(NThreads), "\n",
         "MaxClusters <- ", RemixAutoML:::CEP(MaxClusters), "\n",
@@ -2154,10 +2165,12 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
       ))
 
       # Run function
-      if(Debug) print('FE Kmeans H2O 3')
+      if(Debug) print('FE Kmeans H2O 9')
       DataList[[temp_train]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_train]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
       if(length(temp_validate) > 0L) DataList[[temp_validate]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_validate]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
       if(length(temp_test) > 0L) DataList[[temp_test]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_test]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
+
+      if(Debug) print('FE Kmeans H2O 10')
 
       # Code
       CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
@@ -2177,6 +2190,8 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
         "MissNum = -1,\n  ",
         "IgnoreCols=NULL)\n"
       ))
+
+      if(Debug) print('FE Kmeans H2O 11')
 
       # Code
       CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
@@ -2199,6 +2214,8 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
         "}\n"
       ))
 
+      if(Debug) print('FE Kmeans H2O 12')
+
       # Code
       CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
         "\n",
@@ -2220,14 +2237,13 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
         "}\n"
       ))
 
-      if(Debug) print('Kmeans ::: 1')
+      if(Debug) print('Kmeans ::: 13')
 
       # Run function
       DataList[[temp_train]] <- RemixAutoML::AutoClustering(
         data = DataList[[temp_train]],
         FeatureColumns = Features,
         ModelID = 'temp_kmeans',
-        IDcols = IDcols,
         SavePath = SavePath,
         NThreads = max(1L, parallel::detectCores()-2L),
         MaxMem = MaxMem,
@@ -2244,7 +2260,6 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
         "DataList[[temp_train]] <- RemixAutoML::AutoClustering(\n    ",
         "data = DataList[[temp_train]],\n    ",
         "FeatureColumns = Features,\n    ",
-        "IDcols = IDcols,\n    ",
         "ModelID = 'temp_kmeans',\n    ",
         "SavePath = SavePath,\n    ",
         "NThreads = NThreads,\n    ",
@@ -2255,13 +2270,17 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
         "}\n"
       ))
 
+      if(Debug) print('FE Kmeans H2O 14')
+
       # Updates
       shiny::incProgress(1/3, detail = 'Train Data is complete. Validation Data is next up')
 
-      if(Debug) print('Kmeans ::: 2')
+      if(Debug) print('FE Kmeans H2O 15')
 
       # Score validation data
       if(length(temp_validate) > 0L && length(DataList[[temp_validate]]) > 0L) {
+
+        if(Debug) print('FE Kmeans H2O 16')
 
         # Pause
         Sys.sleep(10L)
@@ -2275,6 +2294,8 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
           NThreads = NThreads,
           MaxMemory = MaxMem,
           DimReduction = FALSE)
+
+        if(Debug) print('FE Kmeans H2O 17')
 
         # Code
         CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
@@ -2297,8 +2318,12 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
         shiny::incProgress(1/3, detail = 'Train Data is complete. Validation Data is next up')
       }
 
+      if(Debug) print('FE Kmeans H2O 18')
+
       # Score Test Data
       if(length(temp_test) > 0L && length(DataList[[temp_test]]) > 0L) {
+
+        if(Debug) print('FE Kmeans H2O 19')
 
         # Pause
         Sys.sleep(10L)
@@ -2312,6 +2337,8 @@ Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeLis
           NThreads = NThreads,
           MaxMemory = MaxMem,
           DimReduction = FALSE)
+
+        if(Debug) print('FE Kmeans H2O 20')
 
         # Code
         CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
