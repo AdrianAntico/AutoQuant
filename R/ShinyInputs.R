@@ -838,7 +838,7 @@ FE_CategoricalVariables <- function(id='CategoricalVariables',
             width = 6L,
             tags$h4(tags$b('Character Encoding')),
             shinyWidgets::dropdown(
-              right = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'CategoricalEncoding_Inputs',
+              right = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'CategoricalEncoding_Inputs',
               tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Categorical Encoding'))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
@@ -1391,7 +1391,7 @@ FE_ModelBased <- function(id='DataSets',
       tags$h4(tags$b('Model Based')),
       shinyWidgets::dropdown(
         right = DropDownRight, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
-        tags$h3(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+        tags$h3(tags$span(tags$b(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs')))),
         RemixAutoML:::BlankRow(AppWidth),
 
         # Dropdowns on same row: otherwise they get put on diff rows
@@ -1403,7 +1403,7 @@ FE_ModelBased <- function(id='DataSets',
             tags$h4(tags$b('Word2Vec-H2O')),
             shinyWidgets::dropdown(
               inputId = 'Word2Vec_H2O_Inputs', right = DropDownRight, up = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
-              tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+              tags$h4(tags$span(tags$b(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs')))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 width=AppWidth,
@@ -1441,15 +1441,12 @@ FE_ModelBased <- function(id='DataSets',
               )), # end column for dropdown
 
           # H2O AutoEncoder
-          #AutoEncoder_H2O_Models_Path
-          #AutoEncoder_H2O_NThreads
-          #AutoEncoder_H2O_MaxMem
           shiny::column(
             width = 3L,
             tags$h4(tags$b('AutoEncoder-H2O')),
             shinyWidgets::dropdown(
-              right = DropDownRight, up = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'AutoEncoder_H2O_Inputs',
-              tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+              inputId = 'AutoEncoder_H2O_Inputs', right = DropDownRight, up = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              tags$h4(tags$span(tags$b(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs')))),
               RemixAutoML:::BlankRow(AppWidth),
               shiny::fluidRow(
                 width=AppWidth,
@@ -1502,52 +1499,94 @@ FE_ModelBased <- function(id='DataSets',
 
               )),
 
+          # H2O IsolationForest
+          shiny::column(
+            width = 3L,
+            tags$h4(tags$b('IsolationForest-H2O')),
+            shinyWidgets::dropdown(
+              inputId = 'IsolationForest_H2O_Inputs', right = DropDownRight, up = FALSE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              tags$h4(tags$span(tags$b(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs')))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_TrainData')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_ValidationData')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_TestData'))),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_Features')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_NTrees')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_Threshold'))),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_MaxDepth')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_MinRows')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_RowSampleRate'))),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_ColSampleRate')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_ColSampleRatePerTree')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('IsolationForest_H2O_ColSampleRatePerLevel'))),
+
+
+              # Blank space
+              RemixAutoML:::BlankRow(AppWidth),
+
+              # Build Button
+              shiny::fluidRow(
+                shiny::column(
+                  width = 3L,
+                  align = 'center',
+                  shinyWidgets::actionBttn(
+                    inputId = 'FeatureEngineeringButton_IsolationForest_H2O',
+                    label = 'Run',
+                    icon = shiny::icon('chevron-right', lib='font-awesome'),
+                    style = Style,
+                    color = Color))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+            )),
 
           # H2O Clustering
-          # shiny::column(
-          #   width = 3L,
-          #   tags$h4(tags$b('')),
-          #   shinyWidgets::dropdown(
-          #     right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth, inputId = 'AutoDataPartitionInputs',
-          #     tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0(''))),
-          #     RemixAutoML:::BlankRow(AppWidth),
-          #     shiny::fluidRow(
-          #       width=AppWidth,
-          #       shiny::column(6L, align = 'center', shiny::uiOutput(''))),
-          #     RemixAutoML:::BlankRow(AppWidth),
-          #     shiny::fluidRow(
-          #       width=AppWidth,
-          #       shiny::column(4L, align = 'center', shiny::uiOutput('')),
-          #       shiny::column(4L, align = 'center', shiny::uiOutput('')),
-          #       shiny::column(4L, align = 'center', shiny::uiOutput(''))),
-          #     shiny::fluidRow(
-          #       width=AppWidth,
-          #       shiny::column(4L, align = 'center', shiny::uiOutput('')),
-          #       shiny::column(4L, align = 'center', shiny::uiOutput(''))),
-          #     shiny::fluidRow(
-          #       width=AppWidth,
-          #       shiny::column(4L, align = 'center', shiny::uiOutput('')),
-          #       shiny::column(4L, align = 'center', shiny::uiOutput(''))),
-          #
-          #     # Blank space
-          #     RemixAutoML:::BlankRow(AppWidth),
-          #
-          #     # Build Button
-          #     shiny::fluidRow(
-          #       shiny::column(
-          #         width = 3L,
-          #         align = 'center',
-          #         shinyWidgets::actionBttn(
-          #           inputId = '',
-          #           label = 'Run',
-          #           icon = shiny::icon('chevron-right', lib='font-awesome'),
-          #           style = Style,
-          #           color = Color))),
-          #
-          #     RemixAutoML:::BlankRow(AppWidth),
-          #     RemixAutoML:::BlankRow(AppWidth)
-          #
-          #     ))
+          shiny::column(
+            width = 3L,
+            tags$h4(tags$b('Clustering-H2O')),
+            shinyWidgets::dropdown(
+              inputId = 'Kmeans_H2O_Inputs', right = DropDownRight, up = TRUE, animate = Animate, circle = FALSE, tooltip = FALSE, status = Status, width = LogoWidth,
+              tags$h4(tags$span(style=paste0('color: ', H3Color, ';'), paste0('Select Inputs'))),
+              RemixAutoML:::BlankRow(AppWidth),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('Kmeans_H2O_TrainData')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('Kmeans_H2O_ValidationData')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('Kmeans_H2O_TestData'))),
+              shiny::fluidRow(
+                width=AppWidth,
+                shiny::column(4L, align = 'center', shiny::uiOutput('Kmeans_H2O_Features')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('Kmeans_H2O_ClusterMetric')),
+                shiny::column(4L, align = 'center', shiny::uiOutput('Kmeans_H2O_MaxClusters'))),
+
+              # Blank space
+              RemixAutoML:::BlankRow(AppWidth),
+
+              # Build Button
+              shiny::fluidRow(
+                shiny::column(
+                  width = 3L,
+                  align = 'center',
+                  shinyWidgets::actionBttn(
+                    inputId = 'FeatureEngineeringButton_Kmeans_H2O',
+                    label = 'Run',
+                    icon = shiny::icon('chevron-right', lib='font-awesome'),
+                    style = Style,
+                    color = Color))),
+
+              RemixAutoML:::BlankRow(AppWidth),
+              RemixAutoML:::BlankRow(AppWidth)
+
+              ))
           ),
 
 
@@ -1557,7 +1596,6 @@ FE_ModelBased <- function(id='DataSets',
 
       )))
 }
-
 
 #' @title ML_CatBoost
 #'

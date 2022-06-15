@@ -194,10 +194,10 @@ ui <- shinydashboard::dashboardPage(
   shinydashboard::dashboardHeader(
     # disable = T
     htmltools::tags$li(class = "dropdown",
-                      htmltools::tags$style(".main-header {max-height: 55px}"),
-    #                    htmltools::tags$style(".main-header .logo {height: 57px;}"),
-                      htmltools::tags$style(".sidebar-toggle {height: 20px; padding-top: 1px !important;}"),
-                      htmltools::tags$style(".navbar {min-height:55px !important}"))
+                       htmltools::tags$style(".main-header {max-height: 55px}"),
+                       #                    htmltools::tags$style(".main-header .logo {height: 57px;}"),
+                       htmltools::tags$style(".sidebar-toggle {height: 20px; padding-top: 1px !important;}"),
+                       htmltools::tags$style(".navbar {min-height:55px !important}"))
   ),
 
   # ----
@@ -337,7 +337,7 @@ ui <- shinydashboard::dashboardPage(
             width = AppWidth,
             shinycssloaders::withSpinner(
               DT::dataTableOutput('FE_DisplayData')))),
-          RemixAutoML:::BlankRow(AppWidth),
+        RemixAutoML:::BlankRow(AppWidth),
 
         shiny::textOutput(outputId = 'did_it_work', container = pre)), # End of tabItem
 
@@ -558,13 +558,12 @@ ui <- shinydashboard::dashboardPage(
                 CloseAfterSelect = FALSE)),
             shiny::column(
               width = 4L,
-              RemixAutoML:::PickerInput(
+              RemixAutoML:::SelectizeInput(
                 InputID = 'CodeLanguage',
                 Label = 'Select Language',
                 Choices = c('R','Python','Julia'),
                 SelectedDefault = 'R',
-                Multiple = TRUE,
-                SelectedText = 'R')),
+                Multiple = TRUE)),
             shiny::column(
               width = 4L,
               RemixAutoML:::SelectizeInput(
@@ -585,10 +584,10 @@ ui <- shinydashboard::dashboardPage(
               width = 12L,
               shiny::textOutput('PrintCode', container = pre))))
 
-        ) # Close tab panel
-      ) # Close tab items
-    ) # Close dashboard body
-  ) # finishes up UI
+      ) # Close tab panel
+    ) # Close tab items
+  ) # Close dashboard body
+) # finishes up UI
 
 # ----
 
@@ -777,7 +776,68 @@ server <- function(input, output, session) {
   # :: Inputs :: Feature Engineering     ----
   # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ----
 
-  # input$DeleteVariablesParams is a shinyWidgets::dropdown inputId
+  # Save Data Inputs
+  shiny::observeEvent(input$SaveDataInputs, {
+    print('Save Data Inputs Dropdown')
+    output$SaveData_SelectData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='SaveData_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
+    })
+    output$SaveData_SelectDataPostGRE <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='SaveData_SelectDataPostGRE', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
+    })
+    save_data <- shiny::reactive({shiny::req(tryCatch({DataList[[input$SaveData_SelectData]]}, error = function(x) DataList[[1L]]))})
+    output$SaveData_CSV <- shiny::downloadHandler(
+      filename = function() {
+        paste("data-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        data.table::fwrite(x = shiny::isolate(save_data()), file = file.path(file))
+      })
+
+    # Get data
+    output$SaveData_DataBaseName <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='SaveData_DataBaseName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'PostGRE Database Name'), Choices = c(LocalPostGRE_DBNames), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1L, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$SaveData_TableName <- shiny::renderUI({
+      RemixAutoML:::TextInput(InputID='SaveData_TableName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'PostGRE Table Name'), Value = paste0('TEMP_', substr(x = as.character(round(runif(1),5)), start = 3, nchar(as.character(round(runif(1),5))))), Placeholder = NULL)
+    })
+  })
+
+  # PostGRE Save Data Inputs
+  shiny::observeEvent(input$PostGRE_Push, {
+
+    # Data Name
+    TableName <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['SaveData_TableName']]}, error=function(x) NULL), Type='character', Default=NULL)
+
+    # Database Name
+    DataBaseName <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['SaveData_DataBaseName']]}, error=function(x) NULL), Type='character', Default=NULL)
+
+    # Data
+    postgre_data <- tryCatch({shiny::req(DataList[[input[['SaveData_SelectDataPostGRE']]]])}, error = function(x) NULL)
+
+    # Push to PostGRE
+    if(length(TableName) != 0L && length(DataBaseName) != 0L && data.table::is.data.table(postgre_data)) {
+      RemixAutoML::PostGRE_RemoveCreateAppend(
+        data = postgre_data,
+        DBName = DataBaseName,
+        TableName = TableName,
+        Host = LocalPostGRE_Host,
+        User = LocalPostGRE_User,
+        Port = LocalPostGRE_Port,
+        Password = LocalPostGRE_Password,
+        CloseConnection = TRUE,
+        CreateSchema = NULL,
+        Temporary = FALSE,
+        Connection = NULL,
+        Append = TRUE)
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    } else {
+      print('length(TableName) == 0L or length(DataBaseName) == 0L or postgre_data is not a data.table')
+      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'data not sent', btn_colors = 'red', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
+    }
+  })
+
+  # DeleteVariables Inputs
   shiny::observeEvent(input$DeleteVariables_Inputs, {
     print('Delete Variables Inputs Dropdown')
     output$DeleteVariables_SelectData <- shiny::renderUI({
@@ -789,7 +849,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # input$ConcatColumnsParams is a shinyWidgets::dropdown inputId
+  # ConcatColumns Inputs
   shiny::observeEvent(input$ConcatColumns_Inputs, {
     output$ConcatColumns_SelectData <- shiny::renderUI({
       RemixAutoML:::SelectizeInput(InputID='ConcatColumns_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
@@ -800,7 +860,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # input$CalendarVariablesInputs is a shinyWidgets::dropdown InputId
+  # CalendarVariables Inputs
   shiny::observeEvent(input$CalendarVariables_Inputs, {
     print('Calendar Variables Inputs Dropdown')
     output$CalendarVariables_SelectData <- shiny::renderUI({
@@ -809,14 +869,14 @@ server <- function(input, output, session) {
     })
     dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$CalendarVariables_SelectData]]}, error = function(x) DataList[[1L]]))})
     output$CalendarVariables_DateVariables <- shiny::renderUI({
-      RemixAutoML:::PickerInput(InputID='CalendarVariables_DateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Columns'), Choices = c(names(dt())), Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID='CalendarVariables_DateVariables', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Date Columns'), Choices = names(dt()), SelectedDefault = NULL, Multiple = TRUE)
     })
     output$CalendarVariables_TimeUnits <- shiny::renderUI({
-      RemixAutoML:::PickerInput(InputID='CalendarVariables_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Calendar Variables'), Choices = c('second','minute','hour','wday','mday','yday','week','isoweek','wom','month','quarter','year'), Multiple = TRUE)
+      RemixAutoML:::SelectizeInput(InputID='CalendarVariables_TimeUnits', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Calendar Variables'), Choices = c('second','minute','hour','wday','mday','yday','week','isoweek','wom','month','quarter','year'), SelectedDefault = NULL, Multiple = TRUE)
     })
   })
 
-  # input$HolidayVariablesInputs is a shinyWidgets::dropdown InputId
+  # HolidayVariables Inputs
   shiny::observeEvent(input$HolidayVariables_Inputs, {
     print('Holiday Variables Inputs Dropdown')
     output$HolidayVariables_SelectData <- shiny::renderUI({
@@ -1217,65 +1277,89 @@ server <- function(input, output, session) {
     })
   })
 
-  # Save Data Inputs
-  shiny::observeEvent(input$SaveDataInputs, {
-    print('Save Data Inputs Dropdown')
-    output$SaveData_SelectData <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='SaveData_SelectData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
-    })
-    output$SaveData_SelectDataPostGRE <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='SaveData_SelectDataPostGRE', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Choose data set'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
-    })
-    save_data <- shiny::reactive({shiny::req(tryCatch({DataList[[input$SaveData_SelectData]]}, error = function(x) DataList[[1L]]))})
-    output$SaveData_CSV <- shiny::downloadHandler(
-      filename = function() {
-        paste("data-", Sys.Date(), ".csv", sep="")
-      },
-      content = function(file) {
-        data.table::fwrite(x = shiny::isolate(save_data()), file = file.path(file))
-      })
+  # IsolationForest H2O Inputs
+  shiny::observeEvent(input$IsolationForest_H2O_Inputs, {
 
-    # Get data
-    output$SaveData_DataBaseName <- shiny::renderUI({
-      RemixAutoML:::SelectizeInput(InputID='SaveData_DataBaseName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'PostGRE Database Name'), Choices = c(LocalPostGRE_DBNames), SelectedDefault = NULL, Multiple = TRUE, MaxVars = 1L, CloseAfterSelect = FALSE, Debug = Debug)
+    print('testing 0')
+    output$IsolationForest_H2O_TrainData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='IsolationForest_H2O_TrainData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
     })
-    output$SaveData_TableName <- shiny::renderUI({
-      RemixAutoML:::TextInput(InputID='SaveData_TableName', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'PostGRE Table Name'), Value = paste0('TEMP_', substr(x = as.character(round(runif(1),5)), start = 3, nchar(as.character(round(runif(1),5))))), Placeholder = NULL)
+    output$IsolationForest_H2O_ValidationData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='IsolationForest_H2O_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+    })
+    output$IsolationForest_H2O_TestData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='IsolationForest_H2O_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+    })
+
+    print('testing 1')
+
+    dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$IsolationForest_H2O_TrainData]]}, error = function(x) DataList[[1L]]))})
+
+    print('testing 2')
+    output$IsolationForest_H2O_Threshold <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'IsolationForest_H2O_Threshold', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Anom Detection Threshold'), Choices = seq(0.01,0.99,0.01), SelectedDefault = 0.95, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 3')
+    output$IsolationForest_H2O_NTrees <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'IsolationForest_H2O_NTrees', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Trees'), Choices = c(5:50, seq(75,475,25), seq(500,9500,500), seq(10000, 25000, 1000)), SelectedDefault = 50, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 4')
+    output$IsolationForest_H2O_Features <- shiny::renderUI({
+      RemixAutoML:::PickerInput(InputID = 'IsolationForest_H2O_Features', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Features'), Choices = c(names(dt())), SelectedDefault = c(names(dt())), Multiple = TRUE, Debug = Debug)
+    })
+    print('testing 5')
+    output$IsolationForest_H2O_MaxDepth <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'IsolationForest_H2O_MaxDepth', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Max Depth'), Choices = 2:20, SelectedDefault = 20, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 6')
+    output$IsolationForest_H2O_MinRows <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'IsolationForest_H2O_MinRows', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Minimum Rows'), Choices = c(1:10, seq(20,1000,20)), SelectedDefault = 1, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 7')
+    output$IsolationForest_H2O_RowSampleRate <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'IsolationForest_H2O_RowSampleRate', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Row Sample Rate'), Choices = seq(0.01,1,0.01), SelectedDefault = 1, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$IsolationForest_H2O_ColSampleRate <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'IsolationForest_H2O_ColSampleRate', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Col Sample Rate'), Choices = seq(0.01,1,0.01), SelectedDefault = 1, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$IsolationForest_H2O_ColSampleRatePerLevel <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'IsolationForest_H2O_ColSampleRatePerLevel', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Col Sample Rate per Level'), Choices = seq(0.01,1,0.01), SelectedDefault = 1, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    output$IsolationForest_H2O_ColSampleRatePerTree <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'IsolationForest_H2O_ColSampleRatePerTree', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Col Sample Rate per Tree'), Choices = seq(0.01,1,0.01), SelectedDefault = 1, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
     })
   })
 
-  # PostGRE Save Data Inputs
-  shiny::observeEvent(input$PostGRE_Push, {
+  # Kmeans H2O Inputs
+  shiny::observeEvent(input$IsolationForest_H2O_Inputs, {
 
-    # Data Name
-    TableName <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['SaveData_TableName']]}, error=function(x) NULL), Type='character', Default=NULL)
+    print('testing 0')
+    output$Kmeans_H2O_TrainData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Kmeans_H2O_TrainData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Train Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = names(DataList)[1L])
+    })
+    output$Kmeans_H2O_ValidationData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Kmeans_H2O_ValidationData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Validation Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+    })
+    output$Kmeans_H2O_TestData <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID='Kmeans_H2O_TestData', Label=tags$span(style=paste0('color: ', AppTextColor, ';'),'Test Data'), Choices = names(DataList), Multiple = TRUE, MaxVars = 1, SelectedDefault = NULL)
+    })
 
-    # Database Name
-    DataBaseName <- RemixAutoML:::ReturnParam(xx=tryCatch({input[['SaveData_DataBaseName']]}, error=function(x) NULL), Type='character', Default=NULL)
+    print('testing 1')
 
-    # Data
-    postgre_data <- tryCatch({shiny::req(DataList[[input[['SaveData_SelectDataPostGRE']]]])}, error = function(x) NULL)
+    dt <- shiny::reactive({shiny::req(tryCatch({DataList[[input$Kmeans_H2O_TrainData]]}, error = function(x) DataList[[1L]]))})
 
-    # Push to PostGRE
-    if(length(TableName) != 0L && length(DataBaseName) != 0L && data.table::is.data.table(postgre_data)) {
-      RemixAutoML::PostGRE_RemoveCreateAppend(
-        data = postgre_data,
-        DBName = DataBaseName,
-        TableName = TableName,
-        Host = LocalPostGRE_Host,
-        User = LocalPostGRE_User,
-        Port = LocalPostGRE_Port,
-        Password = LocalPostGRE_Password,
-        CloseConnection = TRUE,
-        CreateSchema = NULL,
-        Temporary = FALSE,
-        Connection = NULL,
-        Append = TRUE)
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'success', btn_colors = 'green', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    } else {
-      print('length(TableName) == 0L or length(DataBaseName) == 0L or postgre_data is not a data.table')
-      shinyWidgets::sendSweetAlert(session, title = NULL, text = NULL, type = NULL, btn_labels = 'data not sent', btn_colors = 'red', html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
-    }
+    print('testing 2')
+    output$Kmeans_H2O_MaxClusters <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'Kmeans_H2O_MaxClusters', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Anom Detection Threshold'), Choices = 1:100, SelectedDefault = 10, Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 3')
+    output$Kmeans_H2O_ClusterMetric <- shiny::renderUI({
+      RemixAutoML:::SelectizeInput(InputID = 'Kmeans_H2O_ClusterMetric', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Number of Trees'), Choices = c('totss','betweenss','withinss'), SelectedDefault = 'totss', Multiple = TRUE, MaxVars = 1, CloseAfterSelect = FALSE, Debug = Debug)
+    })
+    print('testing 4')
+    output$Kmeans_H2O_Features <- shiny::renderUI({
+      RemixAutoML:::PickerInput(InputID = 'Kmeans_H2O_Features', Label = tags$span(style=paste0('color: ', AppTextColor, ';'),'Features'), Choices = names(dt()), SelectedDefault = names(dt()), Multiple = TRUE, Debug = Debug)
+    })
   })
 
   # Initialize DataTable output
@@ -2845,7 +2929,7 @@ server <- function(input, output, session) {
 
   # Dragula, globals
   shiny::observeEvent(input$tabs, {
-   if(input$tabs == 'Create Plots') {
+    if(input$tabs == 'Create Plots') {
       output$PlotEngine <- shiny::renderUI({
         shiny::checkboxGroupInput(inputId = "PlotEngine", label = tags$span(style='color: blue;', 'Plot Engine'),choices = list("plotly" = 1, "ggplot2" = 2), selected = 1)
       })
@@ -6119,6 +6203,22 @@ server <- function(input, output, session) {
     FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
   })
 
+  # IsolationForest_H2O()
+  shiny::observeEvent(input$FeatureEngineeringButton_IsolationForest_H2O, {
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.AnomalyDetection.IsolationForest.H2O(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
+  })
+
+  # Kmeans_H2O()
+  shiny::observeEvent(input$FeatureEngineeringButton_Kmeans_H2O, {
+    if(!exists('FeatureEngineeringCode')) FeatureEngineeringCode <- list()
+    Output <- RemixAutoML:::Shiny.FE.Clustering.Kmeans.H2O(input,output,session,DataList,FeatureEngineeringCode,CacheDir=CacheDir,CacheName=CacheName,Debug=Debug)
+    DataList <- Output$DataList; DataList <<- DataList
+    FeatureEngineeringCode <- Output$CodeList; FeatureEngineeringCode <<- FeatureEngineeringCode
+  })
+
   # TODO:
   # Clustering
 
@@ -6699,7 +6799,7 @@ server <- function(input, output, session) {
                 PlotterCode <<- PlotterCode
               }
 
-            ### Standard Plots Subsetting
+              ### Standard Plots Subsetting
             } else if(!PlotType %in% 'ShapelyImportance') {
               if(length(unique(c(YVar, XVar, ZVar, GroupVars, FacetVar1, TargetLevel))) != 0) {
                 Keep <- unique(c(YVar, XVar, ZVar, GroupVars, FacetVar1, TargetLevel))

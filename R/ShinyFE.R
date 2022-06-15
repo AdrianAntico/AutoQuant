@@ -739,9 +739,9 @@ Shiny.FE.CrossRow.RollingStats <- function(input,output,session,DataList,CodeLis
       "}\n",
       "DataList[[temp]] <- RemixAutoML::AutoLagRollStats(\n  ",
       "data <- DataList[[temp]],\n  ",
-      "Targets <- ",RemixAutoML:::ExpandText(AutoLagRollStats_Targets), ",\n  ",
-      "HierarchyGroups <- NULL,\n  ",
-      "IndependentGroups <- AutoLagRollStats_GroupVars,\n  ",
+      "Targets = ",RemixAutoML:::ExpandText(AutoLagRollStats_Targets), ",\n  ",
+      "HierarchyGroups = NULL,\n  ",
+      "IndependentGroups = AutoLagRollStats_GroupVars,\n  ",
       "DateColumn = ", RemixAutoML:::CEP(AutoLagRollStats_DateColumn), ",\n  ",
       "TimeUnit = ", RemixAutoML:::ExpandText(AutoLagRollStats_TimeUnits), ",\n  ",
       "TimeUnitAgg = ", RemixAutoML:::ExpandText(AutoLagRollStats_TimeUnits), ",\n  ",
@@ -951,16 +951,25 @@ Shiny.FE.ModelDataPrep <- function(input,output,session,DataList,CodeList,CacheD
 #'
 #' @keywords internal
 Shiny.FE.PartitionData <- function(input,output,session,DataList,CodeList,CacheDir=NULL,CacheName='data',Debug=FALSE) {
-  print('FE Data Partition')
+  if(Debug) print('FE Data Partition')
   shiny::withProgress(message = 'Data Partitioning has begun..', value = 0, {
+    if(Debug) print('FE Data Partition 1')
     AutoDataPartition_NumDataSets <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_NumDataSets']]}, error=function(x) NULL), Type = 'numeric', Default = 3L, Debug = Debug)
+    if(Debug) print('FE Data Partition 2')
     AutoDataPartition_Ratios_Train <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_Ratios_Train']]}, error=function(x) NULL), Type = 'numeric', Default = c(0.70), Debug = Debug)
+    if(Debug) print('FE Data Partition 3')
     AutoDataPartition_Ratios_Validation <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_Ratios_Validation']]}, error=function(x) NULL), Type = 'numeric', Default = c(0.20), Debug = Debug)
+    if(Debug) print('FE Data Partition 4')
     AutoDataPartition_Ratios_Test <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_Ratios_Test']]}, error=function(x) NULL), Type = 'numeric', Default = c(0.10), Debug = Debug)
+    if(Debug) print('FE Data Partition 5')
     AutoDataPartition_PartitionType <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_PartitionType']]}, error=function(x) NULL), Type = 'character', Default = "random", Debug = Debug)
+    if(Debug) print('FE Data Partition 6')
     AutoDataPartition_StratifyColumnNames <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_StratifyColumnNames']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    if(Debug) print('FE Data Partition 7')
     AutoDataPartition_TimeColumnName <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['AutoDataPartition_TimeColumnName']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    if(Debug) print('FE Data Partition 8')
     temp <- RemixAutoML:::ReturnParam(xx = tryCatch({input$AutoDataPartition_SelectData}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+    if(Debug) print(temp)
     x <- DataList[[temp]]
     if(Debug) print(AutoDataPartition_Ratios_Train)
     if(Debug) print(AutoDataPartition_Ratios_Validation)
@@ -985,12 +994,11 @@ Shiny.FE.PartitionData <- function(input,output,session,DataList,CodeList,CacheD
         RemixAutoML::DataTable(x[seq_len(min(.N, 1000L))])
       })
 
-
       # Create code
       if(Debug) print('FE Auto Diff Lag N 1')
       CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
         "\n",
-        "# Model Data Prep\n",
+        "# Data Partition\n",
         "temp <- ", RemixAutoML:::CEP(temp),"\n",
         "DataSets <- RemixAutoML::AutoDataPartition(\n  ",
         "DataList[[temp]],\n  ",
@@ -1007,7 +1015,7 @@ Shiny.FE.PartitionData <- function(input,output,session,DataList,CodeList,CacheD
 
       # Return
       if(Debug) {
-        print('FE Auto Diff Lag N 2')
+        print('FE Data Partition 2')
         print(names(DataList))
         print(CodeList)
       }
@@ -1079,7 +1087,8 @@ Shiny.FE.Word2Vec.H2O <- function(input,output,session,DataList,CodeList,CacheDi
       vects <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_vects']]}, error=function(x) NULL), Type = 'numeric', Default = 30, Debug = Debug)
       H2O_Word2Vec_MinWords <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_MinWords']]}, error=function(x) NULL), Type = 'numeric', Default = 1, Debug = Debug)
       WindowSize <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_WindowSize']]}, error=function(x) NULL), Type = 'numeric', Default = 5, Debug = Debug)
-      Epochs <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_Epochs']]}, error=function(x) NULL), Type = 'numeric', Default = 25, Debug = Debug)
+      Epochs <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_Epochs']]}, error=function(x) NULL), Type = 'numeric', Default = 10, Debug = Debug)
+      MinWords <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Word2Vec_H2O_MinWords']]}, error=function(x) NULL), Type = 'numeric', Default = 2, Debug = Debug)
 
       # Args tracking
       ModelID <- 'temp'
@@ -1101,6 +1110,7 @@ Shiny.FE.Word2Vec.H2O <- function(input,output,session,DataList,CodeList,CacheDi
         "H2O_Word2Vec_MinWords <- ", RemixAutoML:::CEP(H2O_Word2Vec_MinWords),"\n",
         "WindowSize <- ", RemixAutoML:::CEP(WindowSize), "\n",
         "Epochs <- ", RemixAutoML:::CEP(Epochs),
+        "MinWords <- ", RemixAutoML:::CEP(MinWords),
         "ModelID <- ", RemixAutoML:::CEP(ModelID),
         "model_path <- ", RemixAutoML:::CEP(model_path),
         "Threads <- ", RemixAutoML:::CEP(Threads),
@@ -1171,14 +1181,14 @@ Shiny.FE.Word2Vec.H2O <- function(input,output,session,DataList,CodeList,CacheDi
 
       # Run time tracking
       End <- Sys.time()
-      RunTime$H2OWord2Vec_Training <- difftime(End, Start, units = "mins")
+      H2OWord2Vec_Training <- difftime(End, Start, units = "mins")
 
       # Code
       CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
         "\n",
         "# Word2Vec H2O Generate\n",
         "End <- Sys.time()\n",
-        "RunTime$H2OWord2Vec_Training <- difftime(End, Start, units = 'mins')\n"
+        "H2OWord2Vec_Training <- difftime(End, Start, units = 'mins')\n"
       ))
 
       # Score validation data
@@ -1264,7 +1274,7 @@ Shiny.FE.Word2Vec.H2O <- function(input,output,session,DataList,CodeList,CacheDi
       ))
 
       # Finalize
-      output$FE_DisplayData <- DT::renderDataTable({RemixAutoML::DataTable(DataList[[temp_train]][seq_len(min(.N, 1000))])})
+      output$FE_DisplayData <- DT::renderDataTable({RemixAutoML::DataTable(DataList[[temp_train]][seq_len(min(.N, 1000L))])})
 
       # Return
       if(Debug) {
@@ -1300,6 +1310,7 @@ Shiny.FE.Word2Vec.H2O <- function(input,output,session,DataList,CodeList,CacheDi
 #'
 #' @keywords internal
 Shiny.FE.DimReduction.AutoEncoder.H2O <- function(input,output,session,DataList,CodeList,CacheDir=NULL,CacheName='data',Debug=FALSE) {
+
   print('FE AutoEncoder H2O')
 
   # Initialize List
@@ -1384,16 +1395,16 @@ Shiny.FE.DimReduction.AutoEncoder.H2O <- function(input,output,session,DataList,
         "per_feature <- ", RemixAutoML:::CEP(per_feature), "\n",
         "RemoveFeatures <- ", RemixAutoML:::CEP(RemoveFeatures),"\n",
         "LayerStructure <- ", RemixAutoML:::CEP(LayerStructure), "\n",
-        "NodeShrinkRate <- ", RemixAutoML:::CEP(NodeShrinkRate),
-        "ReturnLayer <- ", RemixAutoML:::CEP(ReturnLayer),
-        "Epochs <- ", RemixAutoML:::CEP(Epochs),
-        "L2 <- ", RemixAutoML:::CEP(L2),
-        "ElasticAveraging <- ", RemixAutoML:::CEP(ElasticAveraging),
-        "ElasticAveragingMovingRate <- ", RemixAutoML:::CEP(ElasticAveragingMovingRate),
-        "ElasticAveragingRegularization <- ", RemixAutoML:::CEP(ElasticAveragingRegularization),
-        "ModelID <- ", RemixAutoML:::CEP(ModelID),
-        "Models_Path <- ", RemixAutoML:::CEP(Models_Path),
-        "NThreads <- ", RemixAutoML:::CEP(NThreads),
+        "NodeShrinkRate <- ", RemixAutoML:::CEP(NodeShrinkRate), "\n",
+        "ReturnLayer <- ", RemixAutoML:::CEP(ReturnLayer), "\n",
+        "Epochs <- ", RemixAutoML:::CEP(Epochs), "\n",
+        "L2 <- ", RemixAutoML:::CEP(L2), "\n",
+        "ElasticAveraging <- ", RemixAutoML:::CEP(ElasticAveraging), "\n",
+        "ElasticAveragingMovingRate <- ", RemixAutoML:::CEP(ElasticAveragingMovingRate), "\n",
+        "ElasticAveragingRegularization <- ", RemixAutoML:::CEP(ElasticAveragingRegularization), "\n",
+        "ModelID <- ", RemixAutoML:::CEP(ModelID), "\n",
+        "Models_Path <- ", RemixAutoML:::CEP(Models_Path), "\n",
+        "NThreads <- ", RemixAutoML:::CEP(NThreads), "\n",
         "gc()\n",
         "MaxMem <- paste0(as.character(floor(as.numeric(system(", shQuote(paste0(zz,zzz,zzzz)), "intern=TRUE)) / 1000000)),'G')}\n"
       ))
@@ -1415,7 +1426,7 @@ Shiny.FE.DimReduction.AutoEncoder.H2O <- function(input,output,session,DataList,
         "FactorToChar = FALSE,\n  ",
         "IntToNumeric = TRUE,\n  ",
         "LogicalToBinary = TRUE,\n  ",
-        "DateToChar = TRUE,\n  ",
+        "DateToChar = FALSE,\n  ",
         "IDateConversion = FALSE,\n  ",
         "RemoveDates = FALSE,\n  ",
         "MissFactor = 'missing',\n  ",
@@ -1435,7 +1446,7 @@ Shiny.FE.DimReduction.AutoEncoder.H2O <- function(input,output,session,DataList,
         "FactorToChar = FALSE,\n    ",
         "IntToNumeric = TRUE,\n    ",
         "LogicalToBinary = TRUE,\n    ",
-        "DateToChar = TRUE,\n  ",
+        "DateToChar = FALSE,\n    ",
         "IDateConversion = FALSE,\n    ",
         "RemoveDates = FALSE,\n    ",
         "MissFactor = 'missing',\n    ",
@@ -1456,7 +1467,7 @@ Shiny.FE.DimReduction.AutoEncoder.H2O <- function(input,output,session,DataList,
         "FactorToChar = FALSE,\n    ",
         "IntToNumeric = TRUE,\n    ",
         "LogicalToBinary = TRUE,\n    ",
-        "DateToChar = TRUE,\n  ",
+        "DateToChar = FALSE,\n    ",
         "IDateConversion = FALSE,\n    ",
         "RemoveDates = FALSE,\n    ",
         "MissFactor = 'missing',\n    ",
@@ -1753,3 +1764,585 @@ Shiny.FE.DimReduction.AutoEncoder.H2O <- function(input,output,session,DataList,
     shinyWidgets::sendSweetAlert(session, title = NULL, text = 'Text Columns is NULL or TrainData is NULL. Check to see if those inputs were filled out.', type = NULL, btn_labels = 'warning', btn_colors = NULL, html = FALSE, closeOnClickOutside = TRUE, showCloseButton = TRUE, width = "40%")
   }
 }
+
+#' @title Shiny.FE.AnomalyDetection.IsolationForest.H2O
+#'
+#' @description Utilize an H2O isolation forest to provide anomaly detection
+#'
+#' @param input shiny input
+#' @param output shiny output
+#' @param session shiny session
+#' @param DataList DataList contains the data sets in session
+#' @param CodeList From app
+#' @param CacheDir From app
+#' @param CacheName 'data' from app. Function will strip any '.csv' from CacheName if it exists and then place one there manually.
+#' @param Debug Debug from app
+#'
+#' @keywords internal
+Shiny.FE.AnomalyDetection.IsolationForest.H2O <- function(input,output,session,DataList,CodeList,CacheDir=NULL,CacheName='data',Debug=FALSE) {
+
+  print('FE IsolationForest H2O')
+
+  # Initialize List
+  if(!exists('ArgsList')) ArgsList <- list()
+
+  # Features
+  Features <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_Features}, error = function(x) NULL), Type = 'character', Default = NULL)
+
+  # Data
+  if(Debug) print(input[['IsolationForest_H2O_TrainData']])
+  temp_train <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['IsolationForest_H2O_TrainData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+
+  # ValidationData
+  temp_validate <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['IsolationForest_H2O_ValidationData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+
+  # TestData
+  temp_test <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['IsolationForest_H2O_TestData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+
+
+  # Create code
+  if(Debug) print('FE IsolationForest H2O 3')
+  CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+    "\n",
+    "# FE IsolationForest H2O: Data\n",
+    "Features <- ", RemixAutoML:::ExpandText(Features),"\n",
+    "temp_train <- ", RemixAutoML:::CEP(temp_train),"\n",
+    "temp_validate <- ", RemixAutoML:::CEP(temp_validate),"\n",
+    "temp_test <- ", RemixAutoML:::CEP(temp_test),"\n"
+  ))
+
+  # Build
+  if(length(Features) > 0L && length(temp_train) > 0L) {
+
+    # AutoEncoder_H2O
+    shiny::withProgress(message = 'IsolationForest H2O has begun..', value = 0, {
+
+      if(Debug) print('FE IsolationForest H2O 2')
+      IDcols <- setdiff(names(DataList[[temp_train]]), Features)
+      Threshold <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_Threshold}, error = function(x) NULL), Type = 'numeric', Default = 0.95)
+      NTrees <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_NTrees}, error = function(x) NULL), Type = 'numeric', Default = 50)
+      MaxDepth <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_MaxDepth}, error = function(x) NULL), Type = 'numeric', Default = 20)
+      MinRows <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_MinRows}, error = function(x) NULL), Type = 'numeric', Default = 1)
+      RowSampleRate <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_RowSampleRate}, error = function(x) NULL), Type = 'numeric', Default = 1)
+      ColSampleRate <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_ColSampleRate}, error = function(x) NULL), Type = 'numeric', Default = 1)
+      ColSampleRatePerLevel <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_ColSampleRatePerLevel}, error = function(x) NULL), Type = 'numeric', Default = 1)
+      ColSampleRatePerTree <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_ColSampleRatePerTree}, error = function(x) NULL), Type = 'numeric', Default = 1)
+      CategoricalEncoding <- 'AUTO'
+
+      # Args tracking
+      ModelID <- 'temp'
+      SavePath <- getwd()
+      NThreads <- max(1L, parallel::detectCores()-2L)
+      MaxMem <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
+
+      # Create code
+      if(Debug) print('FE IsolationForest H2O 3')
+      zz <- "awk "
+      zzz <- "'/MemFree/ {print $2}' "
+      zzzz <- "/proc/meminfo"
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# IsolationForest H2O Args\n",
+        "IDcols <- ", RemixAutoML:::CEP(IDcols),"\n",
+        "ModelID <- ", RemixAutoML:::CEP(ModelID),"\n",
+        "Threshold <- ", RemixAutoML:::CEP(Threshold), "\n",
+        "NTrees <- ", RemixAutoML:::CEP(NTrees),"\n",
+        "MaxDepth <- ", RemixAutoML:::CEP(MaxDepth), "\n",
+        "MinRows <- ", RemixAutoML:::CEP(MinRows), "\n",
+        "RowSampleRate <- ", RemixAutoML:::CEP(RowSampleRate), "\n",
+        "ColSampleRate <- ", RemixAutoML:::CEP(ColSampleRate), "\n",
+        "ColSampleRatePerLevel <- ", RemixAutoML:::CEP(ColSampleRatePerLevel), "\n",
+        "ColSampleRatePerTree <- ", RemixAutoML:::CEP(ColSampleRatePerTree), "\n",
+        "CategoricalEncoding <- ", RemixAutoML:::CEP(CategoricalEncoding), "\n",
+        "NThreads <- ", RemixAutoML:::CEP(NThreads), "\n",
+        "gc()\n",
+        "MaxMem <- paste0(as.character(floor(as.numeric(system(", shQuote(paste0(zz,zzz,zzzz)), "intern=TRUE)) / 1000000)),'G')}\n"
+      ))
+
+      # Run function
+      if(Debug) print('FE IsolationForest H2O 3')
+      DataList[[temp_train]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_train]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
+      if(length(temp_validate) > 0L) DataList[[temp_validate]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_validate]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
+      if(length(temp_test) > 0L) DataList[[temp_test]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_test]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
+
+      # Code
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# DataList[[temp_train]]: Convert character columns to factors\n",
+        "DataList[[temp_train]] <- RemixAutoML::ModelDataPrep(\n  ",
+        "data = DataList[[temp_train]],\n  ",
+        "Impute = TRUE,\n  ",
+        "CharToFactor = TRUE,\n  ",
+        "FactorToChar = FALSE,\n  ",
+        "IntToNumeric = TRUE,\n  ",
+        "LogicalToBinary = TRUE,\n  ",
+        "DateToChar = FALSE,\n  ",
+        "IDateConversion = FALSE,\n  ",
+        "RemoveDates = FALSE,\n  ",
+        "MissFactor = 'missing',\n  ",
+        "MissNum = -1,\n  ",
+        "IgnoreCols=NULL)\n"
+      ))
+
+      # Code
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# DataList[[temp_validate]]: Convert character columns to factors\n",
+        "if(length(temp_validate) > 0L && length(DataList[[temp_validate]]) > 0L) {\n  ",
+        "DataList[[temp_validate]] <- RemixAutoML::ModelDataPrep(\n    ",
+        "data = DataList[[temp_validate]],\n    ",
+        "Impute = TRUE,\n    ",
+        "CharToFactor = TRUE,\n    ",
+        "FactorToChar = FALSE,\n    ",
+        "IntToNumeric = TRUE,\n    ",
+        "LogicalToBinary = TRUE,\n    ",
+        "DateToChar = FALSE,\n    ",
+        "IDateConversion = FALSE,\n    ",
+        "RemoveDates = FALSE,\n    ",
+        "MissFactor = 'missing',\n    ",
+        "MissNum = -1,\n    ",
+        "IgnoreCols=NULL)\n  ",
+        "}\n"
+      ))
+
+      # Code
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# DataList[[temp_test]]: Convert character columns to factors\n",
+        "if(length(temp_test) > 0L && length(DataList[[temp_test]]) > 0L) {\n  ",
+        "DataList[[temp_test]] <- RemixAutoML::ModelDataPrep(\n    ",
+        "data = DataList[[temp_test]],\n    ",
+        "Impute = TRUE,\n    ",
+        "CharToFactor = TRUE,\n    ",
+        "FactorToChar = FALSE,\n    ",
+        "IntToNumeric = TRUE,\n    ",
+        "LogicalToBinary = TRUE,\n    ",
+        "DateToChar = FALSE,\n    ",
+        "IDateConversion = FALSE,\n    ",
+        "RemoveDates = FALSE,\n    ",
+        "MissFactor = 'missing',\n    ",
+        "MissNum = -1,\n    ",
+        "IgnoreCols=NULL)\n  ",
+        "}\n"
+      ))
+
+      if(Debug) print('AE ::: 1')
+
+      # Run function
+      DataList[[temp_train]] <- RemixAutoML::H2OIsolationForest(
+        data = DataList[[temp_train]],
+        Features = Features,
+        IDcols = IDcols,
+        ModelID = ModelID,
+        SavePath = SavePath,
+        NThreads = NThreads,
+        MaxMem = MaxMem,
+        Threshold = Threshold,
+        NTrees = NTrees,
+        MaxDepth = MaxDepth,
+        MinRows = MinRows,
+        RowSampleRate = RowSampleRate,
+        ColSampleRate = ColSampleRate,
+        ColSampleRatePerLevel = ColSampleRatePerLevel,
+        ColSampleRatePerTree = ColSampleRatePerTree,
+        CategoricalEncoding = CategoricalEncoding,
+        Debug = Debug)
+
+      # Code
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# DataList[[temp_train]]: Convert character columns to factors\n",
+        "if(length(DataList[[temp_train]]) > 0L) {\n  ",
+        "DataList[[temp_train]] <- RemixAutoML::H2OIsolationForest(\n    ",
+        "data = DataList[[temp_train]],\n    ",
+        "Features = Features,\n    ",
+        "IDcols = IDcols,\n    ",
+        "ModelID = ModelID,\n    ",
+        "SavePath = SavePath,\n    ",
+        "NThreads = NThreads,\n    ",
+        "MaxMem = MaxMem,\n    ",
+        "Threshold = Threshold,\n    ",
+        "NTrees = NTrees,\n    ",
+        "MaxDepth = MaxDepth',\n    ",
+        "MinRows = MinRows',\n    ",
+        "RowSampleRate = RowSampleRate',\n    ",
+        "ColSampleRate = ColSampleRate',\n    ",
+        "ColSampleRatePerLevel = ColSampleRatePerLevel',\n    ",
+        "ColSampleRatePerTree = ColSampleRatePerTree',\n    ",
+        "CategoricalEncoding = CategoricalEncoding',\n    ",
+        "Debug = Debug)\n",
+        "}\n"
+      ))
+
+      # Updates
+      shiny::incProgress(1/3, detail = 'Train Data is complete. Validation Data is next up')
+
+      if(Debug) print('AE ::: 2')
+
+      # Score validation data
+      if(length(temp_validate) > 0L && length(DataList[[temp_validate]]) > 0L) {
+
+        # Pause
+        Sys.sleep(10L)
+
+        # Score model
+        DataList[[temp_validate]] <- RemixAutoML::H2OIsolationForestScoring(
+          data = DataList[[temp_validate]],
+          Features = Features,
+          IDcols = IDcols,
+          H2OStart = TRUE,
+          H2OShutdown = TRUE,
+          ModelID = ModelID,
+          SavePath = SavePath,
+          Threshold = Threshold,
+          MaxMem = MaxMem,
+          NThreads = NThreads,
+          Debug = Debug)
+
+        # Code
+        CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+          "\n",
+          "# Score test data\n",
+          "if(length(temp_validate) > 0L && length(DataList[[temp_validate]]) > 0L) {\n  ",
+          "DataList[[temp_validate]] <- RemixAutoML::H2OIsolationForestScoring(\n    ",
+          "data = DataList[[temp_validate]],\n    ",
+          "Features = Features,\n    ",
+          "IDcols = IDcols,\n    ",
+          "H2OStart = TRUE,\n    ",
+          "H2OShutdown = TRUE,\n    ",
+          "ModelID = ModelID,\n    ",
+          "ModelObject = NULL,\n    ",
+          "model_path = SavePath,\n    ",
+          "NThreads = NThreads,\n    ",
+          "MaxMem = MaxMem)\n",
+          "}\n"
+        ))
+
+        # Updates
+        shiny::incProgress(1/3, detail = 'Train Data is complete. Validation Data is next up')
+      }
+
+      # Score Test Data
+      if(length(temp_test) > 0L && length(DataList[[temp_test]]) > 0L) {
+
+        # Pause
+        Sys.sleep(10L)
+
+        # Score model
+        DataList[[temp_test]] <- RemixAutoML::H2OIsolationForestScoring(
+          data = DataList[[temp_test]],
+          Features = Features,
+          IDcols = IDcols,
+          H2OStart = TRUE,
+          H2OShutdown = TRUE,
+          ModelID = ModelID,
+          SavePath = SavePath,
+          Threshold = Threshold,
+          MaxMem = MaxMem,
+          NThreads = NThreads,
+          Debug = Debug)
+
+        # Code
+        CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+          "\n",
+          "# Score test data\n",
+          "if(length(temp_test) > 0L && length(DataList[[temp_test]]) > 0L) {\n  ",
+          "DataList[[temp_test]] <- RemixAutoML::H2OIsolationForestScoring(\n    ",
+          "data = DataList[[temp_test]],\n    ",
+          "Features = Features,\n    ",
+          "IDcols = IDcols,\n    ",
+          "H2OStart = TRUE,\n    ",
+          "H2OShutdown = TRUE,\n    ",
+          "ModelID = ModelID,\n    ",
+          "ModelObject = NULL,\n    ",
+          "model_path = model_path,\n    ",
+          "NThreads = NThreads,\n    ",
+          "MaxMem = MaxMem)\n",
+          "}\n"
+        ))
+      }
+    })
+
+    # Return
+    if(Debug) {
+      print('FE IsolationForest H2O 6')
+      print(names(DataList))
+      print(CodeList)
+    }
+
+    return(list(
+      DataList = DataList,
+      CodeList = CodeList
+    ))
+  }
+}
+
+#' @title Shiny.FE.AnomalyDetection.IsolationForest.H2O
+#'
+#' @description Utilize an H2O isolation forest to provide anomaly detection
+#'
+#' @param input shiny input
+#' @param output shiny output
+#' @param session shiny session
+#' @param DataList DataList contains the data sets in session
+#' @param CodeList From app
+#' @param CacheDir From app
+#' @param CacheName 'data' from app. Function will strip any '.csv' from CacheName if it exists and then place one there manually.
+#' @param Debug Debug from app
+#'
+#' @keywords internal
+Shiny.FE.Clustering.Kmeans.H2O <- function(input,output,session,DataList,CodeList,CacheDir=NULL,CacheName='data',Debug=FALSE) {
+
+  print('FE Kmeans H2O')
+
+  # Features
+  Features <- RemixAutoML:::ReturnParam(xx = tryCatch({input$IsolationForest_H2O_Features}, error = function(x) NULL), Type = 'character', Default = NULL)
+
+  # Data
+  if(Debug) print(input[['Kmeans_H2O_TrainData']])
+  temp_train <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Kmeans_H2O_TrainData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+
+  # ValidationData
+  temp_validate <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Kmeans_H2O_ValidationData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+
+  # TestData
+  temp_test <- RemixAutoML:::ReturnParam(xx = tryCatch({input[['Kmeans_H2O_TestData']]}, error=function(x) NULL), Type = 'character', Default = NULL, Debug = Debug)
+
+  # Create code
+  if(Debug) print('FE Kmeans H2O 3')
+  CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+    "\n",
+    "# FE Kmeans H2O: Data\n",
+    "Features <- ", RemixAutoML:::ExpandText(Features),"\n",
+    "temp_train <- ", RemixAutoML:::CEP(temp_train),"\n",
+    "temp_validate <- ", RemixAutoML:::CEP(temp_validate),"\n",
+    "temp_test <- ", RemixAutoML:::CEP(temp_test),"\n"
+  ))
+
+  # Build
+  if(length(Features) > 0L && length(temp_train) > 0L) {
+
+    # AutoEncoder_H2O
+    shiny::withProgress(message = 'Kmeans H2O has begun..', value = 0, {
+
+      if(Debug) print('FE Kmeans H2O 2')
+      IDcols <- setdiff(names(DataList[[temp_train]]), Features)
+      MaxClusters <- RemixAutoML:::ReturnParam(xx = tryCatch({input$Kmeans_H2O_MaxClusters}, error = function(x) NULL), Type = 'numeric', Default = 50)
+      ClusterMetric <- RemixAutoML:::ReturnParam(xx = tryCatch({input$Kmeans_H2O_ClusterMetric}, error = function(x) NULL), Type = 'numeric', Default = 0.95)
+
+      # Args tracking
+      ModelID <- 'temp'
+      SavePath <- getwd()
+      NThreads <- max(1L, parallel::detectCores()-2L)
+      MaxMem <- {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")}
+
+      # Create code
+      if(Debug) print('FE Kmeans H2O 3')
+      zz <- "awk "
+      zzz <- "'/MemFree/ {print $2}' "
+      zzzz <- "/proc/meminfo"
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# Kmeans H2O Args\n",
+        "IDcols <- ", RemixAutoML:::CEP(IDcols),"\n",
+        "ModelID <- ", RemixAutoML:::CEP(ModelID),"\n",
+        "NThreads <- ", RemixAutoML:::CEP(NThreads), "\n",
+        "MaxClusters <- ", RemixAutoML:::CEP(MaxClusters), "\n",
+        "ClusterMetric <- ", RemixAutoML:::CEP(ClusterMetric), "\n",
+        "gc()\n",
+        "MaxMem <- paste0(as.character(floor(as.numeric(system(", shQuote(paste0(zz,zzz,zzzz)), "intern=TRUE)) / 1000000)),'G')}\n"
+      ))
+
+      # Run function
+      if(Debug) print('FE Kmeans H2O 3')
+      DataList[[temp_train]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_train]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
+      if(length(temp_validate) > 0L) DataList[[temp_validate]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_validate]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
+      if(length(temp_test) > 0L) DataList[[temp_test]] <- RemixAutoML::ModelDataPrep(data=DataList[[temp_test]], Impute=TRUE, CharToFactor=TRUE, FactorToChar=FALSE, IntToNumeric=TRUE, LogicalToBinary=TRUE, DateToChar=TRUE, IDateConversion=FALSE, RemoveDates=FALSE, MissFactor='missing', MissNum=-1, IgnoreCols=NULL)
+
+      # Code
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# DataList[[temp_train]]: Convert character columns to factors\n",
+        "DataList[[temp_train]] <- RemixAutoML::ModelDataPrep(\n  ",
+        "data = DataList[[temp_train]],\n  ",
+        "Impute = TRUE,\n  ",
+        "CharToFactor = TRUE,\n  ",
+        "FactorToChar = FALSE,\n  ",
+        "IntToNumeric = TRUE,\n  ",
+        "LogicalToBinary = TRUE,\n  ",
+        "DateToChar = FALSE,\n  ",
+        "IDateConversion = FALSE,\n  ",
+        "RemoveDates = FALSE,\n  ",
+        "MissFactor = 'missing',\n  ",
+        "MissNum = -1,\n  ",
+        "IgnoreCols=NULL)\n"
+      ))
+
+      # Code
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# DataList[[temp_validate]]: Convert character columns to factors\n",
+        "if(length(temp_validate) > 0L && length(DataList[[temp_validate]]) > 0L) {\n  ",
+        "DataList[[temp_validate]] <- RemixAutoML::ModelDataPrep(\n    ",
+        "data = DataList[[temp_validate]],\n    ",
+        "Impute = TRUE,\n    ",
+        "CharToFactor = TRUE,\n    ",
+        "FactorToChar = FALSE,\n    ",
+        "IntToNumeric = TRUE,\n    ",
+        "LogicalToBinary = TRUE,\n    ",
+        "DateToChar = FALSE,\n    ",
+        "IDateConversion = FALSE,\n    ",
+        "RemoveDates = FALSE,\n    ",
+        "MissFactor = 'missing',\n    ",
+        "MissNum = -1,\n    ",
+        "IgnoreCols=NULL)\n  ",
+        "}\n"
+      ))
+
+      # Code
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# DataList[[temp_test]]: Convert character columns to factors\n",
+        "if(length(temp_test) > 0L && length(DataList[[temp_test]]) > 0L) {\n  ",
+        "DataList[[temp_test]] <- RemixAutoML::ModelDataPrep(\n    ",
+        "data = DataList[[temp_test]],\n    ",
+        "Impute = TRUE,\n    ",
+        "CharToFactor = TRUE,\n    ",
+        "FactorToChar = FALSE,\n    ",
+        "IntToNumeric = TRUE,\n    ",
+        "LogicalToBinary = TRUE,\n    ",
+        "DateToChar = FALSE,\n    ",
+        "IDateConversion = FALSE,\n    ",
+        "RemoveDates = FALSE,\n    ",
+        "MissFactor = 'missing',\n    ",
+        "MissNum = -1,\n    ",
+        "IgnoreCols=NULL)\n  ",
+        "}\n"
+      ))
+
+      if(Debug) print('Kmeans ::: 1')
+
+      # Run function
+      DataList[[temp_train]] <- RemixAutoML::AutoClustering(
+        data = DataList[[temp_train]],
+        FeatureColumns = Features,
+        ModelID = 'temp_kmeans',
+        IDcols = IDcols,
+        SavePath = SavePath,
+        NThreads = max(1L, parallel::detectCores()-2L),
+        MaxMem = MaxMem,
+        MaxClusters = MaxClusters,
+        ClusterMetric = ClusterMetric,
+        RunDimReduction = FALSE, ShrinkRate = NULL, Epochs = NULL, L2_Reg = NULL,
+        ElasticAveraging = NULL, ElasticAveragingMovingRate = NULL, ElasticAveragingRegularization = NULL)
+
+      # Code
+      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+        "\n",
+        "# DataList[[temp_train]]: Convert character columns to factors\n",
+        "if(length(DataList[[temp_train]]) > 0L) {\n  ",
+        "DataList[[temp_train]] <- RemixAutoML::AutoClustering(\n    ",
+        "data = DataList[[temp_train]],\n    ",
+        "FeatureColumns = Features,\n    ",
+        "IDcols = IDcols,\n    ",
+        "ModelID = 'temp_kmeans',\n    ",
+        "SavePath = SavePath,\n    ",
+        "NThreads = NThreads,\n    ",
+        "MaxMem = MaxMem,\n    ",
+        "MaxClusters = MaxClusters,\n    ",
+        "ClusterMetric = ClusterMetric,\n    ",
+        "RunDimReduction = FALSE)\n",
+        "}\n"
+      ))
+
+      # Updates
+      shiny::incProgress(1/3, detail = 'Train Data is complete. Validation Data is next up')
+
+      if(Debug) print('Kmeans ::: 2')
+
+      # Score validation data
+      if(length(temp_validate) > 0L && length(DataList[[temp_validate]]) > 0L) {
+
+        # Pause
+        Sys.sleep(10L)
+
+        # Score model
+        DataList[[temp_validate]] <- RemixAutoML::AutoClusteringScoring(
+          data = DataList[[temp_validate]],
+          FeatureColumns = Features,
+          ModelID = ModelID,
+          SavePath = SavePath,
+          NThreads = NThreads,
+          MaxMemory = MaxMem,
+          DimReduction = FALSE)
+
+        # Code
+        CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+          "\n",
+          "# Score test data\n",
+          "if(length(temp_validate) > 0L && length(DataList[[temp_validate]]) > 0L) {\n  ",
+          "DataList[[temp_validate]] <- RemixAutoML::H2OIsolationForestScoring(\n    ",
+          "data = DataList[[temp_validate]],\n    ",
+          "FeatureColumns = Features,\n    ",
+          "IDcols = IDcols,\n    ",
+          "ModelID = 'temp_kmeans',\n    ",
+          "ModelObject = NULL,\n    ",
+          "SavePath = SavePath,\n    ",
+          "NThreads = NThreads,\n    ",
+          "MaxMemory = MaxMem)\n",
+          "}\n"
+        ))
+
+        # Updates
+        shiny::incProgress(1/3, detail = 'Train Data is complete. Validation Data is next up')
+      }
+
+      # Score Test Data
+      if(length(temp_test) > 0L && length(DataList[[temp_test]]) > 0L) {
+
+        # Pause
+        Sys.sleep(10L)
+
+        # Score model
+        DataList[[temp_test]] <- RemixAutoML::AutoClusteringScoring(
+          data = DataList[[temp_test]],
+          FeatureColumns = Features,
+          ModelID = ModelID,
+          SavePath = SavePath,
+          NThreads = NThreads,
+          MaxMemory = MaxMem,
+          DimReduction = FALSE)
+
+        # Code
+        CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+          "\n",
+          "# Score test data\n",
+          "if(length(temp_test) > 0L && length(DataList[[temp_test]]) > 0L) {\n  ",
+          "DataList[[temp_test]] <- RemixAutoML::H2OIsolationForestScoring(\n    ",
+          "data = DataList[[temp_test]],\n    ",
+          "FeatureColumns = Features,\n    ",
+          "IDcols = IDcols,\n    ",
+          "ModelID = 'temp_kmeans',\n    ",
+          "ModelObject = NULL,\n    ",
+          "SavePath = SavePath,\n    ",
+          "NThreads = NThreads,\n    ",
+          "MaxMemory = MaxMem)\n",
+          "}\n"
+        ))
+      }
+    })
+
+    # Return
+    if(Debug) {
+      print('FE Kmeans H2O 6')
+      print(names(DataList))
+      print(CodeList)
+    }
+
+    return(list(
+      DataList = DataList,
+      CodeList = CodeList
+    ))
+  }
+}
+

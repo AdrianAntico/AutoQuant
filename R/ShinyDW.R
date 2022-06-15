@@ -26,65 +26,65 @@ Shiny.Utils.CachePath <- function(CacheName, CacheDir, Ext = '.csv') {
 #' @keywords internal
 Shiny.DW.DeleteColumns <- function(input,output,session,DataList,CodeList,CacheDir=NULL,CacheName='data',Debug=FALSE) {
 
-    # Pull in values
-    if(Debug) print('Shiny.DW.DeleteColumns')
-    temp <- RemixAutoML:::ReturnParam(xx = tryCatch({input$DeleteVariables_SelectData}, error = function(x) NULL), VarName = 'DeleteVariables_SelectData', Type = 'character', Default = NULL, Debug = Debug)
-    Cols <- RemixAutoML:::ReturnParam(xx = tryCatch({input$DeleteVariables}, error = function(x) NULL), VarName = 'DeleteVariables', Type = 'character', Default = NULL, Debug = Debug)
+  # Pull in values
+  if(Debug) print('Shiny.DW.DeleteColumns')
+  temp <- RemixAutoML:::ReturnParam(xx = tryCatch({input$DeleteVariables_SelectData}, error = function(x) NULL), VarName = 'DeleteVariables_SelectData', Type = 'character', Default = NULL, Debug = Debug)
+  Cols <- RemixAutoML:::ReturnParam(xx = tryCatch({input$DeleteVariables}, error = function(x) NULL), VarName = 'DeleteVariables', Type = 'character', Default = NULL, Debug = Debug)
 
-    # Dispatch
-    if(Debug) {print(temp);print(Cols)}
-    if(length(Cols) > 0 && length(temp) > 0L) {
+  # Dispatch
+  if(Debug) {print(temp);print(Cols)}
+  if(length(Cols) > 0 && length(temp) > 0L) {
 
-      # Caching: non-function version
-      if(length(CacheDir) == 0L) {
-        if(Debug) print('Shiny.DW.DeleteColumns 1a')
-        x <- DataList[[temp]]
-        path <- NULL
-      } else {
-        if(Debug) print('Shiny.DW.DeleteColumns 1b')
-        path <- RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv')
-        if(Debug) {print(path);print(length(path))}
-        x <- RemixAutoML:::ReactiveLoadCSV(Infile = path, Debug = Debug)
-      }
-
-      # Run code
-      if(Debug) print('Shiny.DW.DeleteColumns 2')
-      data.table::set(x, j = c(eval(Cols)), value = NULL)
-      DataList[[temp]] <- x
-
-      # Caching: non-function version
-      if(Debug) print('Shiny.DW.DeleteColumns 3')
-      if(length(path) > 0L) data.table::fwrite(x, file = path)
-
-      # Display
-      if(Debug) print('Shiny.DW.DeleteColumns 4')
-      output$FE_DisplayData <- DT::renderDataTable({
-        RemixAutoML::DataTable(DataList[[temp]][seq_len(min(.N, 1000L))])
-      })
-
-      # Code
-      if(Debug) print('Shiny.DW.DeleteColumns 5')
-      CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
-        "\n",
-        "# Delete Columns\n",
-        "temp <- ", RemixAutoML:::CEP(temp), "\n",
-        "Cols <- c(", RemixAutoML:::ExpandText(Cols), ")\n",
-        "data.table::set(DataList[[temp]], j = c(Cols), value = NULL)\n"))
-
-      # Return
-      if(Debug) {
-        print('Shiny.DW.DeleteColumns 6')
-        print(names(DataList))
-        print(CodeList)
-      }
-
-      return(list(
-        DataList = DataList,
-        CodeList = CodeList
-      ))
+    # Caching: non-function version
+    if(length(CacheDir) == 0L) {
+      if(Debug) print('Shiny.DW.DeleteColumns 1a')
+      x <- DataList[[temp]]
+      path <- NULL
     } else {
-      print(' :( FAILED ): ')
+      if(Debug) print('Shiny.DW.DeleteColumns 1b')
+      path <- RemixAutoML:::Shiny.Utils.CachePath(CacheName, CacheDir, Ext = '.csv')
+      if(Debug) {print(path);print(length(path))}
+      x <- RemixAutoML:::ReactiveLoadCSV(Infile = path, Debug = Debug)
     }
+
+    # Run code
+    if(Debug) print('Shiny.DW.DeleteColumns 2')
+    data.table::set(x, j = c(eval(Cols)), value = NULL)
+    DataList[[temp]] <- x
+
+    # Caching: non-function version
+    if(Debug) print('Shiny.DW.DeleteColumns 3')
+    if(length(path) > 0L) data.table::fwrite(x, file = path)
+
+    # Display
+    if(Debug) print('Shiny.DW.DeleteColumns 4')
+    output$FE_DisplayData <- DT::renderDataTable({
+      RemixAutoML::DataTable(DataList[[temp]][seq_len(min(.N, 1000L))])
+    })
+
+    # Code
+    if(Debug) print('Shiny.DW.DeleteColumns 5')
+    CodeList <- RemixAutoML:::Shiny.CodePrint.Collect(y = CodeList, x = paste0(
+      "\n",
+      "# Delete Columns\n",
+      "temp <- ", RemixAutoML:::CEP(temp), "\n",
+      "Cols <- c(", RemixAutoML:::ExpandText(Cols), ")\n",
+      "data.table::set(DataList[[temp]], j = c(Cols), value = NULL)\n"))
+
+    # Return
+    if(Debug) {
+      print('Shiny.DW.DeleteColumns 6')
+      print(names(DataList))
+      print(CodeList)
+    }
+
+    return(list(
+      DataList = DataList,
+      CodeList = CodeList
+    ))
+  } else {
+    print(' :( FAILED ): ')
+  }
 }
 
 #' @title Shiny.DW.ConcatenateColumns
