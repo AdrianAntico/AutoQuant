@@ -5,7 +5,7 @@
 \title{AutoH2oDRFRegression}
 \usage{
 AutoH2oDRFRegression(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -16,7 +16,7 @@ AutoH2oDRFRegression(
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
-  NThreads = max(1, parallel::detectCores() - 2),
+  NThreads = max(1L, parallel::detectCores() - 2L),
   H2OShutdown = TRUE,
   H2OStartUp = TRUE,
   DebugMode = FALSE,
@@ -51,7 +51,7 @@ AutoH2oDRFRegression(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from "EvalMetrics", "PDFs", "Score_TrainData", "h2o.explain"}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -129,9 +129,9 @@ AutoH2oDRFRegression(
 
 \item{NBinsTopLevel}{Default 1024}
 
-\item{HistogramType}{Default "AUTO". Select from AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"}
+\item{HistogramType}{Default "AUTO". Select from "AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"}
 
-\item{CategoricalEncoding}{Default "AUTO"}
+\item{CategoricalEncoding}{Default "AUTO". Other options include "Enum", "OneHotInternal", "OneHotExplicit", "Binary", "Eigen", "LabelEncoder", "SortByResponse", "EnumLimite"}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
@@ -166,7 +166,7 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
     NumOfParDepPlots = 3,
 
     # Metadata arguments
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = c("EvalMetrics","Score_TrainData"),
     model_path = normalizePath("./"),
     metadata_path = NULL,
     ModelID = "FirstModel",

@@ -5,7 +5,7 @@
 \title{AutoH2oDRFClassifier}
 \usage{
 AutoH2oDRFClassifier(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -50,7 +50,7 @@ AutoH2oDRFClassifier(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from "EvalMetrics", "PDFs", "Score_TrainData", "h2o.explain"}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -161,7 +161,7 @@ TestModel <- RemixAutoML::AutoH2oDRFClassifier(
   CostMatrixWeights = c(1,0,0,1),
 
   # Metadata args
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics","Score_TrainData"),
   model_path = normalizePath("./"),
   metadata_path = NULL,
   ModelID = "FirstModel",

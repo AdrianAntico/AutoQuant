@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from "EvalMetrics", "PDFs", "Score_TrainData", "h2o.explain"
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -43,8 +43,8 @@
 #' @param NBins Default 20
 #' @param NBinsCats Default 1024
 #' @param NBinsTopLevel Default 1024
-#' @param HistogramType Default "AUTO". Select from AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"
-#' @param CategoricalEncoding Default "AUTO"
+#' @param HistogramType Default "AUTO". Select from "AUTO", "UniformAdaptive", "Random", "QuantilesGlobal", "RoundRobin"
+#' @param CategoricalEncoding Default "AUTO". Other options include "Enum", "OneHotInternal", "OneHotExplicit", "Binary", "Eigen", "LabelEncoder", "SortByResponse", "EnumLimite"
 #' @param DebugMode Set to TRUE to print steps to screen
 #' @examples
 #' \dontrun{
@@ -73,7 +73,7 @@
 #'     NumOfParDepPlots = 3,
 #'
 #'     # Metadata arguments
-#'     OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'     OutputSelection = c("EvalMetrics","Score_TrainData"),
 #'     model_path = normalizePath("./"),
 #'     metadata_path = NULL,
 #'     ModelID = "FirstModel",
@@ -118,7 +118,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export
-AutoH2oDRFRegression <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+AutoH2oDRFRegression <- function(OutputSelection = c("EvalMetrics","Score_TrainData"),
                                  data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
@@ -127,7 +127,7 @@ AutoH2oDRFRegression <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
                                  FeatureColNames = NULL,
                                  WeightsColumn = NULL,
                                  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-                                 NThreads = max(1, parallel::detectCores()-2),
+                                 NThreads = max(1L, parallel::detectCores() - 2L),
                                  H2OShutdown = TRUE,
                                  H2OStartUp = TRUE,
                                  DebugMode = FALSE,
@@ -316,13 +316,13 @@ AutoH2oDRFRegression <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
   # H2O Explain TrainData ----
   if(DebugMode) print("H2O Explain TrainData ----")
   ExplainList <- list()
-  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+  if(!TrainOnFull && 'h2o.explain' %in% OutputSelection) {
     ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
   }
 
   # H2O Explain ValidationData ----
   if(DebugMode) print("H2O Explain ValidationData ----")
-  if(!TrainOnFull) {
+  if(!TrainOnFull && 'h2o.explain' %in% OutputSelection) {
     ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
