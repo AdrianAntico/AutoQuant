@@ -28,6 +28,7 @@
 #' @param grid_color = "white"
 #' @param background_color = "gray95"
 #' @param legend_position = "bottom
+#' @param Debug = FALSE
 #'
 #' @examples
 #' \dontrun{
@@ -57,7 +58,8 @@
 #'   text_color = "darkblue",
 #'   grid_color = "white",
 #'   background_color = "gray95",
-#'   legend_position = "bottom")
+#'   legend_position = "bottom",
+#'   Debug = FALSE)
 #' }
 #' @export
 ScatterCopula <- function(data = NULL,
@@ -81,7 +83,8 @@ ScatterCopula <- function(data = NULL,
                           text_color = "darkblue",
                           grid_color = "white",
                           background_color = "gray95",
-                          legend_position = "bottom") {
+                          legend_position = "bottom",
+                          Debug = FALSE) {
 
   # Cap number of records
   if(Debug) {

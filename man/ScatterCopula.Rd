@@ -26,7 +26,8 @@ ScatterCopula(
   text_color = "darkblue",
   grid_color = "white",
   background_color = "gray95",
-  legend_position = "bottom"
+  legend_position = "bottom",
+  Debug = FALSE
 )
 }
 \arguments{
@@ -73,6 +74,8 @@ ScatterCopula(
 \item{background_color}{= "gray95"}
 
 \item{legend_position}{= "bottom}
+
+\item{Debug}{= FALSE}
 }
 \description{
 Dual plot. One on original scale and one using empirical copula data
@@ -105,7 +108,8 @@ RemixAutoML::ScatterCopula(
   text_color = "darkblue",
   grid_color = "white",
   background_color = "gray95",
-  legend_position = "bottom")
+  legend_position = "bottom",
+  Debug = FALSE)
 }
 }
 \seealso{
