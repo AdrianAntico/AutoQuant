@@ -356,6 +356,7 @@ AutoH2oGAMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
       #H2OExplain = if(exists("ExplainList") && !is.null(ExplainList)) ExplainList else NULL,
       EvaluationMetrics = if(exists("EvalMetricsList") && !is.null(EvalMetricsList)) EvalMetricsList else NULL,
       VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+      ArgsList = ArgsList))
   }
 }

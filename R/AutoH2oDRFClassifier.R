@@ -360,6 +360,7 @@ AutoH2oDRFClassifier <- function(OutputSelection = c("EvalMetrics","Score_TrainD
       EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
       EvaluationMetrics2 = if(exists("EvalMetrics2List")) EvalMetrics2List else NULL,
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
-      ColNames = if(exists("Names")) Names else NULL))
+      ColNames = if(exists("Names")) Names else NULL,
+      ArgsList = ArgsList))
   }
 }
