@@ -4,14 +4,16 @@
 \alias{AutoNLS}
 \title{AutoNLS}
 \usage{
-AutoNLS(data, y, x, monotonic = TRUE)
+AutoNLS(data, y, x, n_ahead = 10, monotonic = TRUE)
 }
 \arguments{
 \item{data}{Data is the data table you are building the modeling on}
 
 \item{y}{Y is the target variable name in quotes}
 
-\item{x}{X is the independent variable name in quotes}
+\item{x}{X a running index. If time, use 1, 2, 3, ...}
+
+\item{n_ahead}{= 10, for time only}
 
 \item{monotonic}{This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression}
 }

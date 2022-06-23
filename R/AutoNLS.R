@@ -7,7 +7,8 @@
 #'
 #' @param data Data is the data table you are building the modeling on
 #' @param y Y is the target variable name in quotes
-#' @param x X is the independent variable name in quotes
+#' @param x X a running index. If time, use 1, 2, 3, ...
+#' @param n_ahead = 10, for time only
 #' @param monotonic This is a TRUE/FALSE indicator - choose TRUE if you want monotonic regression over polynomial regression
 #' @examples
 #' \dontrun{
@@ -69,13 +70,13 @@
 AutoNLS <- function(data,
                     y,
                     x,
+                    n_ahead = 10,
                     monotonic = TRUE) {
 
-  # data.table optimize----
-  if(parallel::detectCores() > 10) data.table::setDTthreads(threads = max(1L, parallel::detectCores() - 2L)) else data.table::setDTthreads(threads = max(1L, parallel::detectCores()))
-
   # Begin ----
-  DATA <- data
+  DATA <- data.table::copy(data)
+  n_ahead_1 <- max(data[[x]]) + 1
+  pred <- data.table::data.table(Variable = seq(n_ahead_1,n_ahead,1))
   nls_collection <- data.table::data.table(
     ModelName = c("Poly","Asymp","AsympOff","AsympOrig","Biexp","FourParmLog","Gompertz","Logistic","Michal_Menton","Weilbull"),
     MeanAbsError = rep(999, 10))
@@ -109,7 +110,9 @@ AutoNLS <- function(data,
   tryCatch({
     model1 <- stats::nls(Target ~ SSasymp(Variable, Asym, R0, lrc), data = DATA)
     preds1 <- stats::fitted(model1, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model1, pred)))
     preds1[preds1 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val <- mean(abs(zz - preds1))
     data.table::set(nls_collection, 2L, 2L, value = val)
   }, error = function(x) return("skip"))
@@ -118,7 +121,9 @@ AutoNLS <- function(data,
   tryCatch({
     model2 <- stats::nls(Target ~ SSasympOff(Variable, Asym, lrc, c0), data = DATA)
     preds2 <- stats::fitted(model2, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model2, pred)))
     preds2[preds2 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val2 <- mean(abs(zz - preds2))
     data.table::set(nls_collection, 3L, 2L, value = val2)
   }, error = function(x) return("skip"))
@@ -127,7 +132,9 @@ AutoNLS <- function(data,
   tryCatch({
     model3 <- stats::nls(Target ~ SSasympOrig(Variable, Asym, lrc), data = DATA)
     preds3 <- stats::fitted(model3, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model3, pred)))
     preds3[preds3 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val3 <- mean(abs(zz - preds3))
     data.table::set(nls_collection, 4L, 2L, value = val3)
   }, error = function(x) return("skip"))
@@ -136,7 +143,9 @@ AutoNLS <- function(data,
   tryCatch({
     model4 <- stats::nls(Target ~ SSbiexp(Variable, A1, lrc1, A2, lrc2), data = DATA)
     preds4 <- stats::fitted(model4, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model4, pred)))
     preds4[preds4 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val4 <- mean(abs(zz - preds4))
     data.table::set(nls_collection, 5L, 2L, value = val4)
   }, error = function(x) return("skip"))
@@ -145,7 +154,9 @@ AutoNLS <- function(data,
   tryCatch({
     model5 <- stats::nls(Target ~ SSfpl(Variable, A, B, xmid, scal), data = DATA)
     preds5 <- stats::fitted(model5, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model5, pred)))
     preds5[preds5 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val5 <- mean(abs(zz - preds5))
     data.table::set(nls_collection, 6L, 2L, value = val5)
   }, error = function(x) return("skip"))
@@ -154,7 +165,9 @@ AutoNLS <- function(data,
   tryCatch({
     model6 <- stats::nls(Target ~ SSgompertz(Variable, Asym, b2, b3), data = DATA)
     preds6 <- stats::fitted(model6, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model6, pred)))
     preds6[preds6 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val6 <- mean(abs(zz - preds6))
     data.table::set(nls_collection, 7L, 2L, value = val6)
   }, error = function(x) return("skip"))
@@ -163,7 +176,9 @@ AutoNLS <- function(data,
   tryCatch({
     model7 <- stats::nls(Target ~ SSlogis(Variable, Asym, xmid, scal), data = DATA)
     preds7 <- stats::fitted(model7, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model7, pred)))
     preds7[preds7 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val7 <- mean(abs(zz - preds7))
     data.table::set(nls_collection, 8L, 2L, value = val7)
   }, error = function(x) return("skip"))
@@ -172,7 +187,9 @@ AutoNLS <- function(data,
   tryCatch({
     model8 <- stats::nls(Target ~ SSmicmen(Variable, Vm, K), data = DATA)
     preds8 <- stats::fitted(model8, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model8, pred)))
     preds8[preds8 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val8 <- mean(abs(zz - preds8))
     data.table::set(nls_collection, 9L, 2L, value = val8)
   }, error = function(x) return("skip"))
@@ -181,7 +198,9 @@ AutoNLS <- function(data,
   tryCatch({
     model9 <- stats::nls(Target ~ SSweibull(Variable, Asym, Drop, lrc, pwr), data = DATA)
     preds9 <- stats::fitted(model9, DATA)
+    fc <- cbind(pred,data.table::data.table(Target = predict(object = model9, pred)))
     preds9[preds9 < 0] <- 0
+    fc <- data.table::rbindlist(list(DATA, fc), use.names = TRUE)
     val9 <- mean(abs(zz - preds9))
     data.table::set(nls_collection, 10L, 2L, value = val9)
   }, error = function(x) return("skip"))
@@ -199,6 +218,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model9,
         EvaluationMetrics = temp))
@@ -208,6 +228,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model1,
         EvaluationMetrics = temp))
@@ -217,6 +238,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model2,
         EvaluationMetrics = temp))
@@ -226,6 +248,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model3,
         EvaluationMetrics = temp))
@@ -235,6 +258,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model4,
         EvaluationMetrics = temp))
@@ -244,6 +268,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model5,
         EvaluationMetrics = temp))
@@ -253,6 +278,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model6,
         EvaluationMetrics = temp))
@@ -262,6 +288,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model7,
         EvaluationMetrics = temp))
@@ -271,6 +298,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = model8,
         EvaluationMetrics = temp))
@@ -285,6 +313,7 @@ AutoNLS <- function(data,
     return(
       list(
         PredictionData = DATA,
+        FC = fc,
         ModelName = name,
         ModelObject = baseline,
         EvaluationMetrics = temp))
