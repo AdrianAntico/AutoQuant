@@ -467,9 +467,9 @@ AutoLightGBMMultiClass <- function(data = NULL,
   # Generate EvaluationMetrics ----
   if(DebugMode) print("Running MultiClassMetrics()")
   MultinomialMetrics <- list()
-  MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Test", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+  MultinomialMetrics[["TestData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Test", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Debug = DebugMode)
   if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Train", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path)
+    MultinomialMetrics[["TrainData"]] <- MultiClassMetrics(ModelClass="xgboost", DataType = "Train", SaveModelObjects.=SaveModelObjects, ValidationData.=ValidationData, PredictData.=predict, TrainOnFull.=TrainOnFull, TargetColumnName.=TargetColumnName, TargetLevels.=TargetLevels, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, Debug = DebugMode)
   }
 
   # Generate EvaluationMetrics ----

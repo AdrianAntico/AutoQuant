@@ -29,7 +29,7 @@ for(run in 1L:3L) {
 
   # Model
   TestModel <- tryCatch({RemixAutoML::AutoH2oDRFMultiClass(
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = c("EvalMetrics","Score_TrainData"),
     data = data1,
     TrainOnFull = TOF,
     ValidationData = NULL,
@@ -199,7 +199,7 @@ for(run in 4L:6L) {
 
   # Model
   TestModel <- tryCatch({RemixAutoML::AutoH2oGAMMultiClass(
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = c("EvalMetrics","Score_TrainData"),
     data = data1,
     TrainOnFull = TOF,
     ValidationData = NULL,
@@ -344,7 +344,7 @@ for(run in 7L:9L) {
 
   # Model
   TestModel <- tryCatch({RemixAutoML::AutoH2oGBMMultiClass(
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = c("EvalMetrics","Score_TrainData"),
     data = data1,
     TrainOnFull = TOF,
     ValidationData = NULL,
@@ -421,7 +421,7 @@ for(run in 10L:12L) {
 
     # Compute management
     MaxMem = "28g",
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = c("EvalMetrics","Score_TrainData"),
     NThreads = max(1, parallel::detectCores()-2),
     H2OShutdown = TRUE,
     H2OStartUp = TRUE,
@@ -499,7 +499,7 @@ for(run in 13L:14L) {
 
   # Model
   TestModel <- tryCatch({RemixAutoML::AutoH2oMLMultiClass(
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = c("EvalMetrics","Score_TrainData"),
     data = data1,
     TrainOnFull = TOF,
     ValidationData = NULL,

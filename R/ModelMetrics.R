@@ -453,6 +453,7 @@ RegressionMetrics <- function(SaveModelObjects. = SaveModelObjects,
 #' @param ModelID. = ModelID
 #' @param model_path. = model_path
 #' @param metadata_path. = metadata_path
+#' @param Debug = FALSE
 #'
 #' @noRd
 MultiClassMetrics <- function(ModelClass = "catboost",
@@ -465,9 +466,11 @@ MultiClassMetrics <- function(ModelClass = "catboost",
                               TargetLevels. = TargetLevels,
                               ModelID. = ModelID,
                               model_path. = model_path,
-                              metadata_path. = metadata_path) {
+                              metadata_path. = metadata_path,
+                              Debug = FALSE) {
 
   # Convert Target Variable back to Categorical
+  if(Debug) print("# Convert Target Variable back to Categorical")
   if(is.numeric(ValidationData.[[TargetColumnName.]])) {
     data.table::setkeyv(ValidationData., TargetColumnName.)
     data.table::setkeyv(TargetLevels., 'NewLevels')
@@ -475,9 +478,11 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   }
 
   # MultiClass Metrics Accuracy
+  if(Debug) print("# MultiClass Metrics Accuracy")
   MetricAcc <- ValidationData.[, mean(data.table::fifelse(as.character(get(TargetColumnName.)) == as.character(Predict), 1.0, 0.0), na.rm = TRUE)]
 
   # MultiClass Metrics MicroAUC Setup
+  if(Debug) print("# MultiClass Metrics MicroAUC Setup")
   Response <- ValidationData.[[eval(TargetColumnName.)]]
   if(ModelClass == "catboost") {
     Predictor <- as.matrix(ValidationData.[, .SD, .SDcols = unique(as.character(TargetLevels.[['OriginalLevels']]))])
@@ -488,59 +493,76 @@ MultiClassMetrics <- function(ModelClass = "catboost",
   }
 
   # Generate metric
+  if(Debug) print("# Generate metric")
   MetricAUC <- round(as.numeric(noquote(stringr::str_extract(pROC::multiclass.roc(response = Response, predictor = Predictor)$auc, "\\d+\\.*\\d*"))), 4L)
 
   # Logloss
+  if(Debug) print("# Logloss")
   if(!data.table::is.data.table(TargetLevels.)) N <- length(TargetLevels.) else N <- TargetLevels.[, .N]
   temp <- ValidationData.[, .SD, .SDcols = c(TargetColumnName., "Predict")]
   temp <- DummifyDT(data=temp, cols=eval(TargetColumnName.), KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
   if(ModelClass == "xgboost") {
+    if(Debug) print("# ModelClass == xgboost")
     logloss <- MLmetrics::LogLoss(
       y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(as.character(TargetLevels.[["OriginalLevels"]]))]),
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
   } else if(ModelClass == "catboost") {
+    if(Debug) print("# ModelClass == catboost")
     temp <- DummifyDT(data=temp, cols='Predict', KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=NULL, ImportFactorLevels=FALSE, FactorLevelsList=NULL, ClustScore=FALSE, ReturnFactorLevels=FALSE)
     logloss <- MLmetrics::LogLoss(
       y_pred = as.matrix(ValidationData.[, .SD, .SDcols = unique(as.character(TargetLevels.[['OriginalLevels']]))]),
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[seq_len(N)])]))
   } else if(ModelClass == "h2o") {
+    if(Debug) print("# ModelClass == h2o")
     logloss <- MLmetrics::LogLoss(
       y_pred = as.matrix(ValidationData.[, .SD, .SDcols = c(unique(names(ValidationData.)[(ncol(ValidationData.) + 1 - length(TargetLevels.)):(ncol(ValidationData.))]))]),
       y_true = as.matrix(temp[, .SD, .SDcols = c(names(temp)[c(2L:(1L+N))])]))
   }
 
   # MCC for MultiClass
+  if(Debug) print("# MCC for MultiClass")
   ConfusionMatrix <- table(ValidationData.$Predict, ValidationData.[[eval(TargetColumnName.)]])
   c <- sum(diag(ConfusionMatrix))
   s <- sum(ConfusionMatrix)
 
-  # pk * tk
-  sumPkTk <- c()
-  for(i in as.character(TargetLevels.[['OriginalLevels']])) {
-    pk <- ValidationData.[Predict == eval(i), .N]
-    tk <- ValidationData.[get(TargetColumnName.) == eval(i), .N]
-    sumPkTk <- c(sumPkTk, pk * tk)
-  }
+  # MCC
+  if(ModelClass != 'h2o') {
 
-  # (s^2 - sum(pk^2))
-  sumPk2 <- c()
-  for(i in as.character(TargetLevels.[['OriginalLevels']])) {
-    pk <- ValidationData.[Predict == eval(i), .N]
-    sumPk2 <- c(sumPk2, pk * pk)
-  }
+    # pk * tk
+    if(Debug) print("# pk * tk")
+    sumPkTk <- c()
+    for(i in as.character(TargetLevels.[['OriginalLevels']])) {
+      pk <- ValidationData.[Predict == eval(i), .N]
+      tk <- ValidationData.[get(TargetColumnName.) == eval(i), .N]
+      sumPkTk <- c(sumPkTk, pk * tk)
+    }
 
-  # (s^2 - sum(tk^2))
-  sumTk2 <- c()
-  for(i in as.character(TargetLevels.[['OriginalLevels']])) {
-    tk <- ValidationData.[get(TargetColumnName.) == eval(i), .N]
-    sumTk2 <- c(sumTk2, tk * tk)
-  }
+    # (s^2 - sum(pk^2))
+    if(Debug) print("# (s^2 - sum(pk^2))")
+    sumPk2 <- c()
+    for(i in as.character(TargetLevels.[['OriginalLevels']])) {
+      pk <- ValidationData.[Predict == eval(i), .N]
+      sumPk2 <- c(sumPk2, pk * pk)
+    }
 
-  # Result
-  denom <- sqrt((s^2 - sum(sumPk2))) * sqrt((s^2 - sum(sumTk2)))
-  MCC <- (c / denom * s  - sum(sumPkTk) / denom)
+    # (s^2 - sum(tk^2))
+    if(Debug) print("# (s^2 - sum(tk^2))")
+    sumTk2 <- c()
+    for(i in as.character(TargetLevels.[['OriginalLevels']])) {
+      tk <- ValidationData.[get(TargetColumnName.) == eval(i), .N]
+      sumTk2 <- c(sumTk2, tk * tk)
+    }
+
+    # Result
+    if(Debug) print("# Result")
+    denom <- sqrt((s^2 - sum(sumPk2))) * sqrt((s^2 - sum(sumTk2)))
+    MCC <- (c / denom * s  - sum(sumPkTk) / denom)
+  } else {
+    MCC <- NA_real_
+  }
 
   # MultiClass Evaluation Metrics
+  if(Debug) print("# MultiClass Evaluation Metrics")
   EvaluationMetrics <- data.table::data.table(Metric = c("MCC","MicroAUC","Accuracy","LogLoss"), MetricValue = c(MCC, MetricAUC, MetricAcc, logloss))
   if(SaveModelObjects.) {
     if(!is.null(metadata_path.)) {
@@ -551,5 +573,6 @@ MultiClassMetrics <- function(ModelClass = "catboost",
       if(tolower(DataType) == "test") data.table::fwrite(EvaluationMetrics, file = file.path(model_path., paste0(ModelID., "_Test_EvaluationMetrics.csv")))
     }
   }
+  if(Debug) print("# Return")
   return(EvaluationMetrics)
 }
