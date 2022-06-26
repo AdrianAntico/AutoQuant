@@ -5,10 +5,10 @@
 \title{AutoH2oGBMRegression}
 \usage{
 AutoH2oGBMRegression(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
-  ValidationData,
+  ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = NULL,
   FeatureColNames = NULL,
@@ -56,7 +56,7 @@ AutoH2oGBMRegression(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData", "h2o.explain")}
 
 \item{data}{This is your data set for training and testing your model}
 

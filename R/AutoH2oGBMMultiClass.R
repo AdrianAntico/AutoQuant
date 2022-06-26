@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Multiclass Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData", "h2o.explain")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -107,7 +107,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
-AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics","Score_TrainData"),
                                  data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
@@ -313,13 +313,13 @@ AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
   # H2O Explain TrainData ----
   if(DebugMode) print("H2O Explain TrainData ----")
   ExplainList <- list()
-  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull && 'h2o.explain' %in% OutputSelection) {
     ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
   }
 
   # H2O Explain ValidationData ----
   if(DebugMode) print("H2O Explain ValidationData ----")
-  if(!TrainOnFull) {
+  if(!TrainOnFull && 'h2o.explain' %in% OutputSelection) {
     ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
@@ -378,6 +378,7 @@ AutoH2oGBMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
       H2OExplain = if(exists("ExplainList") && !is.null(ExplainList)) ExplainList else NULL,
       EvaluationMetrics = if(exists("EvalMetricsList") && !is.null(EvalMetricsList)) EvalMetricsList else NULL,
       VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
-      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL))
+      ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,
+      ArgsList = ArgsList))
   }
 }

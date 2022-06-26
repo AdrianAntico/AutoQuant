@@ -5,7 +5,7 @@
 \title{AutoH2oGBMMultiClass}
 \usage{
 AutoH2oGBMMultiClass(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -52,7 +52,7 @@ AutoH2oGBMMultiClass(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData", "h2o.explain")}
 
 \item{data}{This is your data set for training and testing your model}
 

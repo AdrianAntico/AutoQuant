@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData", "h2o.explain")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -119,7 +119,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
-AutoH2oGBMClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+AutoH2oGBMClassifier <- function(OutputSelection = c("EvalMetrics","Score_TrainData"),
                                  data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
@@ -326,13 +326,13 @@ AutoH2oGBMClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
   # H2O Explain TrainData ----
   if(DebugMode) print("H2O Explain TrainData ----")
   ExplainList <- list()
-  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull && 'h2o.explain' %in% OutputSelection) {
     ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
   }
 
   # H2O Explain ValidationData ----
   if(DebugMode) print("H2O Explain ValidationData ----")
-  if(!TrainOnFull) {
+  if(!TrainOnFull && 'h2o.explain' %in% OutputSelection) {
     ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 
@@ -384,6 +384,7 @@ AutoH2oGBMClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
       EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
       EvaluationMetrics2 = if(exists("EvalMetrics2List")) EvalMetrics2List else NULL,
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,
-      ColNames = if(exists("Names")) Names else NULL))
+      ColNames = if(exists("Names")) Names else NULL,
+      ArgsList = ArgsList))
   }
 }
