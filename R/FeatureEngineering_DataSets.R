@@ -547,8 +547,6 @@ TimeSeriesFill <- function(data = data,
 #' @param GroupVariables Supply the column names of your group variables. E.g. "Group" or c("Group1","Group2")
 #' @param RollDirection 'backward' or 'forward'
 #' @param TimeUnit Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"
-#' @param FillType Choose from maxmax - Fill from the absolute min date to the absolute max date, minmax - Fill from the max date of the min set to the absolute max date, maxmin - Fill from the absolute min date to the min of the max dates, or minmin - Fill from the max date of the min dates to the min date of the max dates
-#' @param MaxMissingPercent The maximum amount of missing values an individual series can have to remain and be imputed. Otherwise, they are discarded.
 #' @param SimpleImpute Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"
 #' @examples
 #' \dontrun{
@@ -565,211 +563,39 @@ TimeSeriesFill <- function(data = data,
 #'   GroupVariables = c("Store","Dept"),
 #'   RollDirection = 'backward',
 #'   TimeUnit = "weeks",
-#'   FillType = "maxmax",
 #'   SimpleImpute = FALSE)
 #' }
 #' @return Returns a data table with missing time series records filled (currently just zeros)
 #' @export
-TimeSeriesFillRoll <- function(data = data,
-                               DateColumnName = "Date",
+TimeSeriesFillRoll <- function(data = NULL,
+                               DateColumnName = NULL,
                                RollVars = NULL,
                                NonRollVars = NULL,
-                               GroupVariables = c("Store","Dept"),
+                               GroupVariables = NULL,
                                RollDirection = 'backward',
-                               TimeUnit = "weeks",
-                               FillType = c("maxmax","minmax","maxmin","minmin"),
-                               MaxMissingPercent = 0.05,
+                               TimeUnit = "days",
                                SimpleImpute = FALSE) {
 
-  # Grab args
-  if(length(FillType) > 1) FillType <- FillType[1]
+  # Fill data then merge originals and then spread originals
+  FillData <- data[, list(date = seq(min(get(DateColumnName)), max(get(DateColumnName)), TimeUnit)), by = c(GroupVariables)]
+  data.table::setnames(FillData, 'date', DateColumnName)
 
-  # Set up list
-  CJList <- list()
+  # Merge non-rolling vars back
+  if(length(NonRollVars) > 0L) FillData <- merge(FillData, data[, .SD, .SDcols = c(GroupVariables,DateColumnName,NonRollVars)], by = c(DateColumnName, GroupVariables), all.x = TRUE)
 
-  # Fill from the absolute min date to the absolute max date
-  if(FillType == "maxmax") {
-
-    # Date variables
-    MinDate <- data[, min(get(DateColumnName))]
-    MaxDate <- data[, max(get(DateColumnName))]
-    if(any(TimeUnit %chin% c("1min","5min","10min","15min","30min","45min"))) {
-      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = 60 * as.numeric(gsub("([0-9]+).*$", "\\1", TimeUnit)))
+  # Merge rolling vars back
+  if(length(RollVars) > 0L) {
+    data.table::setkeyv(FillData, cols = c(GroupVariables,DateColumnName))
+    data.table::setkeyv(data, cols = c(GroupVariables,DateColumnName))
+    if(tolower(RollDirection) %in% c('backward','backwards','bwd')) {
+      FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = -Inf]
     } else {
-      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
+      FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = Inf]
     }
-
-    # Group variables
-    if(!is.null(GroupVariables)) {
-      for(group in GroupVariables) {
-        CJList[[eval(group)]] <- unique(data[[eval(group)]])
-      }
-    }
-
-    # Cross join and then merge back original features
-    FillData <- do.call(data.table::CJ, CJList)
-
-    # Merge
-    if(length(NonRollVars) > 0L) {
-      FillData <- merge(FillData, data[, .SD, .SDcols = c(GroupVariables,DateColumnName,NonRollVars)], by = c(DateColumnName, GroupVariables), all.x = TRUE)
-    }
-
-    # Merge
-    if(length(RollVars) > 0L) {
-      data.table::setkeyv(FillData, cols = c(GroupVariables,DateColumnName))
-      data.table::setkeyv(data, cols = c(GroupVariables,DateColumnName))
-      if(tolower(RollDirection) %in% c('backward','backwards','bwd')) {
-        FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = -Inf]
-      } else {
-        FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = Inf]
-      }
-    }
-
-  }
-
-  # Fill from the max date of the min set to the absolute max date
-  if(FillType == "minmax") {
-
-    # Date variables
-    MinDate <- data[, min(get(DateColumnName)), by = c(eval(GroupVariables))][, max(V1)]
-    MaxDate <- data[, max(get(DateColumnName))]
-    if(any(TimeUnit %chin% c("1min","5min","10min","15min","30min","45min"))) {
-      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = 60 * as.numeric(gsub("([0-9]+).*$", "\\1", TimeUnit)))
-    } else {
-      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
-    }
-
-    # Group variable
-    if(!is.null(GroupVariables)) {
-      for(group in GroupVariables) {
-        CJList[[eval(group)]] <- unique(data[[eval(group)]])
-      }
-    }
-
-    # Cross join and then merge back original features
-    FillData <- do.call(data.table::CJ, CJList)
-
-    # Merge
-    if(length(NonRollVars) > 0L) {
-      FillData <- merge(FillData, data[, .SD, .SDcols = c(GroupVariables,DateColumnName,NonRollVars)], by = c(DateColumnName, GroupVariables), all.x = TRUE)
-    }
-
-    # Merge
-    if(length(RollVars) > 0L) {
-      data.table::setkeyv(FillData, cols = c(GroupVariables,DateColumnName))
-      data.table::setkeyv(data, cols = c(GroupVariables,DateColumnName))
-      if(tolower(RollDirection) %in% c('backward','backwards','bwd')) {
-        FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = -Inf]
-      } else {
-        FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = Inf]
-      }
-    }
-
-  }
-
-  # Fill from the absolute min date to the min of the max dates
-  if(FillType == "maxmin") {
-
-    # Date variable
-    MinDate <- data[, min(get(DateColumnName))]
-    MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
-    if(any(TimeUnit %chin% c("1min","5min","10min","15min","30min","45min"))) {
-      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = 60 * as.numeric(gsub("([0-9]+).*$", "\\1", TimeUnit)))
-    } else {
-      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
-    }
-
-    # Group variables
-    if(!is.null(GroupVariables)) {
-      for(group in GroupVariables) {
-        CJList[[eval(group)]] <- unique(data[[eval(group)]])
-      }
-    }
-
-    # Cross join and then merge back original features
-    FillData <- do.call(data.table::CJ, CJList)
-
-    # Merge
-    if(length(NonRollVars) > 0L) {
-      FillData <- merge(FillData, data[, .SD, .SDcols = c(GroupVariables,DateColumnName,NonRollVars)], by = c(DateColumnName, GroupVariables), all.x = TRUE)
-    }
-
-    # Merge
-    if(length(RollVars) > 0L) {
-      data.table::setkeyv(FillData, cols = c(GroupVariables,DateColumnName))
-      data.table::setkeyv(data, cols = c(GroupVariables,DateColumnName))
-      if(tolower(RollDirection) %in% c('backward','backwards','bwd')) {
-        FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = -Inf]
-      } else {
-        FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = Inf]
-      }
-    }
-
-  }
-
-  # Fill from the max date of the min dates to the min date of the max dates
-  if(FillType == "minmin") {
-
-    # Date variables
-    MinDate <- data[, min(get(DateColumnName))]
-    MaxDate <- data[, max(get(DateColumnName)), by = c(eval(GroupVariables))][, min(V1)]
-    if(any(TimeUnit %chin% c("1min","5min","10min","15min","30min","45min"))) {
-      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = 60 * as.numeric(gsub("([0-9]+).*$", "\\1", TimeUnit)))
-    } else {
-      CJList[[eval(DateColumnName)]] <- seq(from = MinDate, to = MaxDate, by = TimeUnit)
-    }
-
-    # Group variables
-    if(!is.null(GroupVariables)) {
-      for(group in GroupVariables) {
-        CJList[[eval(group)]] <- unique(data[[eval(group)]])
-      }
-    }
-
-    # Cross join and then merge back original features
-    FillData <- do.call(data.table::CJ, CJList)
-
-    # Merge
-    if(length(NonRollVars) > 0L) {
-      FillData <- merge(FillData, data[, .SD, .SDcols = c(GroupVariables,DateColumnName,NonRollVars)], by = c(DateColumnName, GroupVariables), all.x = TRUE)
-    }
-
-    # Merge
-    if(length(RollVars) > 0L) {
-      data.table::setkeyv(FillData, cols = c(GroupVariables,DateColumnName))
-      data.table::setkeyv(data, cols = c(GroupVariables,DateColumnName))
-      if(tolower(RollDirection) %in% c('backward','backwards','bwd')) {
-        FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = -Inf]
-      } else {
-        FillData <- data[, .SD, .SDcols = c(GroupVariables,DateColumnName,RollVars)][FillData, roll = Inf]
-      }
-    }
-
-  }
-
-  # Remove combinations that never existed
-  if(!is.null(GroupVariables)) {
-    temp <- unique(data[, mget(GroupVariables)])
-    FillData <- merge(FillData, temp, by = GroupVariables, all = FALSE)
-    FillData[, Check := sum(!is.na(get(names(FillData)[!names(FillData) %chin% c(eval(GroupVariables),eval(DateColumnName))][1L]))), by = eval(GroupVariables)]
-    CompareVal <- FillData[, quantile(Check, 0.95)[[1L]]]
-    FillData <- FillData[Check > (1 - eval(MaxMissingPercent)) * eval(CompareVal)][, Check := NULL]
   }
 
   # Impute
-  if(SimpleImpute) {
-    FillData <- RemixAutoML::ModelDataPrep(
-      FillData,
-      Impute = TRUE,
-      CharToFactor = FALSE,
-      FactorToChar = FALSE,
-      IntToNumeric = FALSE,
-      DateToChar = FALSE,
-      RemoveDates = FALSE,
-      MissFactor = "0",
-      MissNum = -1,
-      IgnoreCols = NULL)
-  }
+  if(SimpleImpute) FillData <- RemixAutoML::ModelDataPrep(FillData, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = 0, IgnoreCols = NULL)
 
   # Return data
   return(FillData)
