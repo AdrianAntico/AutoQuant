@@ -222,7 +222,7 @@ DummifyDT <- function(data,
 #' @param ML_Type Only use with Method "credibility'. Select from 'classification' or 'regression'.
 #' @param GroupVariables Columns to encode
 #' @param TargetVariabl Target column name
-#' @param Method Method to utilize. Choose from 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
+#' @param Method Method to utilize. Choose from 'credibility', 'target_encoding', 'woe', 'm_estimator', 'poly_encode', 'backward_difference', 'helmert'. Default is 'credibility' which is more specifically, Bulhmann Credibility
 #' @param SavePath Path to save artifacts for recreating in scoring environments
 #' @param Scoring Set to TRUE for scoring mode.
 #' @param ImputeValueScoring If levels cannot be matched on scoring data you can supply a value to impute the NA's. Otherwise, leave NULL and manage them outside the function
@@ -578,7 +578,8 @@ CategoricalEncoding <- function(data = NULL,
     }
   }
 
-  # credibility; a.k.a James Stein ----
+  # Buhlmann credibility ----
+  # GroupValue = GroupVariables[1]
   if(tolower(Method) == "credibility") {
     if(Debug) print('CategoricalEncoding Credibility 1')
     if(!Scoring) ComponentList <- list()
@@ -603,37 +604,48 @@ CategoricalEncoding <- function(data = NULL,
           GroupMean[, TargetGroupMean := N / TargetSum]
           GroupMean[, TargetVariance := TargetMean * (1 - TargetMean) / TargetSum]
           GroupMean[, TargetGroupVariance := TargetGroupMean * (1 - TargetGroupMean) / N]
-          GroupMean[, Adj_Var_Group := TargetGroupVariance / (TargetGroupVariance + TargetVariance)]
-          GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * TargetGroupMean + Adj_Var_Group * TargetMean]
+          GroupMean[, Z := TargetGroupVariance / (TargetGroupVariance + TargetVariance)]
+          GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Z) * TargetGroupMean + Z * TargetMean]
           GroupMean[, (setdiff(names(GroupMean), c(paste0(GroupValue, "_Credibility"), TargetVariable, GroupValue))) := NULL]
           GroupMean <- data.table::dcast.data.table(data = GroupMean, formula = get(GroupValue) ~ get(TargetVariable), fun.aggregate = sum, value.var = paste0(GroupValue, "_Credibility"), fill = 0)
           data.table::setnames(x = GroupMean, names(GroupMean), c(eval(GroupValue), paste0(GroupValue, "_Credibility_TargetLevel_", names(GroupMean)[-1L])))
           data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+
         } else {
+
           if(Debug) print('CategoricalEncoding Credibility 4.b')
           GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
           if(tolower(ML_Type) %chin% c("classification","classifier")) {
             if(Debug) print('CategoricalEncoding Credibility 5.b')
-            GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), N = .N, Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N), keyby = eval(GroupValue)]
+            GroupMean <- data[, list(
+              Mean = mean(get(TargetVariable), na.rm = TRUE),
+              N = .N,
+              Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N),
+              keyby = eval(GroupValue)]
             if(Debug) print('CategoricalEncoding Credibility 5.c')
             PopVar <- (GrandMean * (1 - GrandMean)) / data[, .N]
             if(Debug) print('CategoricalEncoding Credibility 5.d')
-            GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
+            GroupMean[, Z := PopVar / (Var_Group + PopVar)]
             if(Debug) print('CategoricalEncoding Credibility 5.e')
-            GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
+            GroupMean[, paste0(GroupValue, "_Credibility") := Z * Mean + (1 - Z) * GrandMean]
             if(Debug) print('CategoricalEncoding Credibility 5.f')
-            GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
+            GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Z = NULL)]
           } else if(tolower(ML_Type) == "regression") {
             if(Debug) print('CategoricalEncoding Credibility 6.a')
-            GroupMean <- data[, list(Mean = mean(get(TargetVariable), na.rm = TRUE), Var_Group = var(get(TargetVariable), na.rm = TRUE)), keyby = eval(GroupValue)]
+            N <- data[, .N, by = GroupValue][1L,ncol(data)][[1L]]
+            GroupMean <- data[, list(
+              Mean =      mean(get(TargetVariable), na.rm = TRUE),
+              EPV = var(get(TargetVariable), na.rm = TRUE)),
+              keyby = eval(GroupValue)][, EPV := mean(EPV)]
             if(Debug) print('CategoricalEncoding Credibility 6.b')
-            PopVar <- data[, var(get(TargetVariable), na.rm = TRUE)]
+            GroupMean[, VHM := sum((Mean - eval(GrandMean)) ^ 2)/(.N-1) - EPV / N]
             if(Debug) print('CategoricalEncoding Credibility 6.c')
-            GroupMean[, Adj_Var_Group := Var_Group / (Var_Group + PopVar)]
+            K <- GroupMean[1L, EPV] / GroupMean[1L, VHM]
+            GroupMean[, Z := N / (N + K)]
             if(Debug) print('CategoricalEncoding Credibility 6.d')
-            GroupMean[, paste0(GroupValue, "_Credibility") := (1 - Adj_Var_Group) * Mean + Adj_Var_Group * GrandMean]
+            GroupMean[, paste0(GroupValue, "_Credibility") := Z * Mean + (1 - Z) * GrandMean]
             if(Debug) print('CategoricalEncoding Credibility 6.e')
-            GroupMean[, ":=" (Mean = NULL, Var_Group = NULL, Adj_Var_Group = NULL)]
+            GroupMean[, ":=" (Mean = NULL, EPV = NULL, VHM = NULL, Z = NULL)]
           }
         }
         if(Debug) print('CategoricalEncoding Credibility 6')

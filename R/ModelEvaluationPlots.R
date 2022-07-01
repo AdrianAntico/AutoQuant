@@ -108,9 +108,9 @@ ScatterCopula <- function(data = NULL,
 
   # Regular scatter plot ----
   if(is.null(GroupVariable)) {
-    original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = x_var, y = y_var)))
+    original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes(x = get(x_var), y = get(y_var))))
   } else {
-    original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes_string(x = x_var, y = y_var, colour = GroupVariable[[1L]])))
+    original_scale_plot <- eval(ggplot2::ggplot(data = temp, ggplot2::aes(x = get(x_var), y = get(y_var), colour = get(GroupVariable[[1L]]))))
   }
   if(!is.null(SizeVar1)) {
     original_scale_plot <- original_scale_plot + ggplot2::geom_point(ggplot2::aes_string(size = eval(SizeVar1)))
@@ -213,6 +213,10 @@ ScatterCopula <- function(data = NULL,
         groupFill = FALSE)
     }
   }
+
+  # Udpate name
+  if(length(x_var) > 0) original_scale_plot <- original_scale_plot + ggplot2::xlab(eval(x_var))
+  if(length(y_var) > 0) original_scale_plot <- original_scale_plot + ggplot2::ylab(eval(y_var))
 
   # Return
   return(list(ScatterPlot = original_scale_plot, CopulaPlot = copula_plot))

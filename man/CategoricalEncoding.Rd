@@ -26,7 +26,7 @@ CategoricalEncoding(
 
 \item{GroupVariables}{Columns to encode}
 
-\item{Method}{Method to utilize. Choose from 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
+\item{Method}{Method to utilize. Choose from 'credibility', 'target_encoding', 'woe', 'm_estimator', 'poly_encode', 'backward_difference', 'helmert'. Default is 'credibility' which is more specifically, Bulhmann Credibility}
 
 \item{SavePath}{Path to save artifacts for recreating in scoring environments}
 
