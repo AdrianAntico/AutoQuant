@@ -292,7 +292,7 @@ AutoXGBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots'
   }
 
   # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
+  if(DebugMode) print("PDF")
   if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
     CatBoostPDF(ModelClass = "xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=PlotList, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }

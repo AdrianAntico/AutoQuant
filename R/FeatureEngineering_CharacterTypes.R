@@ -579,10 +579,11 @@ CategoricalEncoding <- function(data = NULL,
   }
 
   # Buhlmann credibility ----
-  # GroupValue = GroupVariables[1]
+  # GroupValue = GroupVariables[2]
   if(tolower(Method) == "credibility") {
     if(Debug) print('CategoricalEncoding Credibility 1')
     if(!Scoring) ComponentList <- list()
+    # GroupValue = GroupVariables[3]
     for(GroupValue in GroupVariables) {
 
       if(Debug) print(paste0('CategoricalEncoding Credibility 2 iteration: ', GroupValue))
@@ -941,7 +942,7 @@ EncodeCharacterVariables <- function(RunMode = 'train',
     temp <- temp$data
   } else if(EncodeMethod %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
     if(RunMode == 'train') temp_train <- temp[ID_Factorizer == "TRAIN"] else temp_train <- temp
-    temp1 <- CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+    temp1 <- CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables, Debug = Debug)
     MetaData <- temp1$FactorCompenents
     if(RunMode == 'train') temp_train <- temp1$data else temp_train <- temp1
 

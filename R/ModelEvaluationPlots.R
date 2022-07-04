@@ -86,12 +86,6 @@ ScatterCopula <- function(data = NULL,
                           legend_position = "bottom",
                           Debug = FALSE) {
 
-  # Cap number of records
-  if(Debug) {
-    print(paste0('ScatterCopula PLOT HERE: ,', data[,.N], ' > ', SampleCount, ' == ', data[,.N] > SampleCount))
-    print(paste0('ScatterCopula PLOT HERE: data[,.N] == ', data[,.N]))
-    print(paste0('ScatterCopula PLOT HERE: SampleCount == ', SampleCount))
-  }
   c1 <- as.numeric(data[,.N])
   c2 <- as.numeric(SampleCount)
   if(!is.null(SampleCount)) if(c1 > c2) temp <- data[order(runif(.N))][seq_len(SampleCount)] else temp <- data
@@ -688,11 +682,6 @@ ROCPlot <- function(data = ValidationData,
                     metapath = metadata_path,
                     modelpath = model_path) {
 
-  if(Debug) {
-    print(paste0('ScatterCopula PLOT HERE: ,', data[,.N], ' > ', 100000, ' == ', data[,.N] > 100000))
-    print(paste0('ScatterCopula PLOT HERE: data[,.N] == ', data[,.N]))
-    print(paste0('ScatterCopula PLOT HERE: 100000 == ', 100000))
-  }
   c1 <- as.numeric(data[,.N])
   c2 <- as.numeric(100000)
   if(!is.null(100000)) if(c1 > c2) temp <- data[order(runif(.N))][seq_len(100000)] else temp <- data
@@ -811,11 +800,6 @@ CumGainsChart <- function(data = NULL,
                           metapath = NULL,
                           modelpath = NULL) {
 
-  if(Debug) {
-    print(paste0('ScatterCopula PLOT HERE: ,', data[,.N], ' > ', 100000, ' == ', data[,.N] > 100000))
-    print(paste0('ScatterCopula PLOT HERE: data[,.N] == ', data[,.N]))
-    print(paste0('ScatterCopula PLOT HERE: 100000 == ', 100000))
-  }
   c1 <- as.numeric(data[,.N])
   c2 <- as.numeric(100000)
   if(!is.null(100000)) if(c1 > c2) temp <- data[order(runif(.N))][seq_len(100000)] else temp <- data

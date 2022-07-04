@@ -16,6 +16,8 @@ data <- RemixAutoML::FakeDataGenerator(
   Classification = FALSE,
   MultiClass = FALSE)
 
+data <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/kompsai/inst/Research/Total_Inference.csv"))
+
 # run = 2
 for(run in 1L:3L) {
 
@@ -44,7 +46,7 @@ for(run in 1L:3L) {
     NumOfParDepPlots = 3,
 
     # Metadata arguments:
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = c("EvalMetrics","Score_TrainData"),
     model_path = normalizePath("./"),
     metadata_path = NULL,
     ModelID = "FirstModel",
@@ -57,8 +59,8 @@ for(run in 1L:3L) {
     TrainOnFull = TOF,
     ValidationData = NULL,
     TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+    TargetColumnName = 'CHILLED_Units_PerDay', #"Adrian",
+    FeatureColNames = names(data)[c(2,3,39:ncol(data))], #names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
     WeightsColumn = NULL,
     TransformNumericColumns = NULL,
     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),

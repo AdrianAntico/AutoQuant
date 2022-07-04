@@ -54,19 +54,6 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
     Classification = FALSE,
     MultiClass = FALSE)
 
-  # Add Diff data
-  data <- RemixAutoML::AutoDiffLagN(
-    data = data,
-    DateVariable = "DateTime",
-    GroupVariables = c("Factor_1", "Factor_2"),
-    DiffVariables = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian","DateTime","Factor_1","Factor_2")],
-    DiffDateVariables = NULL,
-    DiffGroupVariables = NULL,
-    NLag1 = 0,
-    NLag2 = 1,
-    Sort = TRUE,
-    RemoveNA = TRUE)
-
   # Partition Data
   if(!tof && !PartitionInFunction) {
     Sets <- RemixAutoML::AutoDataPartition(
@@ -114,7 +101,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
     WeightsColumnName = "Weights",
     IDcols = c("IDcol_1","IDcol_2","DateTime"),
     TransformNumericColumns = trans,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+    Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 
     # Model evaluation
     eval_metric = "rmse",
@@ -146,16 +133,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
   RemixAutoML:::Post_Append_Helper(XGBoost_QA_Results_Regression,'AutoXGBoostRegression_QA')
 }
 
-# Remove all else
-# rm(list = ls()[!ls() %in% c(
-#   "XGBoost_QA_Results_MultiClass",
-#   "XGBoost_QA_Results_Regression",
-#   "XGBoost_QA_Results_Classifier",
-#   "CatBoost_QA_Results_MultiClass",
-#   "CatBoost_QA_Results_Regression",
-#   "CatBoost_QA_Results_Classifier")])
-#
-# # Main Function Defaults ----
+# Main Function Defaults ----
 # library(RemixAutoML)
 # library(data.table)
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
@@ -166,7 +144,22 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
 #
-# run = 6
+# run = 1
+#
+# # Testing
+# XGBoost_QA_Results_Regression <- data.table::CJ(
+#   TOF = c(TRUE,FALSE),
+#   Transformation = c(TRUE,FALSE),
+#   GridTune = c(TRUE,FALSE),
+#   Success = "Failure",
+#   PartitionInFunction = c(TRUE,FALSE)
+# )
+#
+# # Remove impossible combinations
+# XGBoost_QA_Results_Regression <- XGBoost_QA_Results_Regression[!(TOF & GridTune)]
+# XGBoost_QA_Results_Regression <- XGBoost_QA_Results_Regression[!(PartitionInFunction & TOF)]
+# XGBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
+#
 #
 # # Define values
 # if(XGBoost_QA_Results_Regression[run, Transformation]) {
@@ -175,6 +168,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 #   trans <- NULL
 # }
 # tof <- XGBoost_QA_Results_Regression[run, TOF]
+# PartitionInFunction <- XGBoost_QA_Results_Regression[run, PartitionInFunction]
 # gridtune <- XGBoost_QA_Results_Regression[run, GridTune]
 # Tar <- "Adrian"
 #
@@ -183,27 +177,15 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 #   Correlation = 0.85,
 #   N = 25000L,
 #   ID = 2L,
+#   FactorCount = 3,
 #   AddWeightsColumn = TRUE,
 #   ZIP = 0L,
 #   AddDate = TRUE,
 #   Classification = FALSE,
 #   MultiClass = FALSE)
 #
-# # Add Diff data
-# data <- RemixAutoML::AutoDiffLagN(
-#   data = data,
-#   DateVariable = "DateTime",
-#   GroupVariables = c("Factor_1", "Factor_2"),
-#   DiffVariables = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian","DateTime","Factor_1","Factor_2")],
-#   DiffDateVariables = NULL,
-#   DiffGroupVariables = NULL,
-#   NLag1 = 0,
-#   NLag2 = 1,
-#   Sort = TRUE,
-#   RemoveNA = TRUE)
-#
 # # Partition Data
-# if(!tof) {
+# if(!tof && !PartitionInFunction) {
 #   Sets <- RemixAutoML::AutoDataPartition(
 #     data = data,
 #     NumDataSets = 3,
@@ -266,6 +248,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 
 # Data Prep ----
 # ModelType="regression"
+# Algo = 'xgboost'
 # data.=data
 # ValidationData.=ValidationData
 # TestData.=TestData
@@ -281,6 +264,37 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 # SaveModelObjects.=SaveModelObjects
 # ReturnFactorLevels.=ReturnFactorLevels
 # EncodingMethod.=EncodingMethod
+# DebugMode. = FALSE
+#
+# # Encode character variables
+# RunMode='train'
+# ModelType=ModelType
+# TrainData=data.
+# ValidationData=ValidationData.
+# TestData=TestData.
+# TargetVariableName=TargetColumnName.
+# CategoricalVariableNames=CatFeatures
+# EncodeMethod=EncodingMethod.
+# KeepCategoricalVariables=TRUE
+# ReturnMetaData=TRUE
+# MetaDataPath=model_path.
+# MetaDataList=NULL
+# ImputeMissingValue=0
+# Debug = DebugMode.
+#
+# # Categorical Encoding
+# data=temp_train
+# ML_Type=ModelType
+# GroupVariables=CategoricalVariableNames
+# TargetVariable=TargetVariableName
+# Method=EncodeMethod
+# SavePath=MetaDataPath
+# Scoring=Score
+# ImputeValueScoring=ImputeMissingValue
+# ReturnFactorLevelList=TRUE
+# SupplyFactorLevelList=MetaDataList
+# KeepOriginalFactors=KeepCategoricalVariables
+# Debug = Debug
 
 # Train Validation Data ----
 # model.=model

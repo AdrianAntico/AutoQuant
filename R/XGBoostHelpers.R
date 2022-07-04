@@ -336,7 +336,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(DebugMode.) print("Dummify dataTrain Categorical Features")
     if(length(CatFeatures) != 0L) {
       x <- names(data.table::copy(data.))
-      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0)
+      Output <- EncodeCharacterVariables(RunMode='train', ModelType=ModelType, TrainData=data., ValidationData=ValidationData., TestData=TestData., TargetVariableName=TargetColumnName., CategoricalVariableNames=CatFeatures, EncodeMethod=EncodingMethod., KeepCategoricalVariables=TRUE, ReturnMetaData=TRUE, MetaDataPath=model_path., MetaDataList=NULL, ImputeMissingValue=0, Debug = DebugMode.)
       data. <- Output$TrainData; Output$TrainData <- NULL
       ValidationData. <- Output$ValidationData; Output$ValidationData <- NULL
       TestData. <- Output$TestData; Output$TestData. <- NULL

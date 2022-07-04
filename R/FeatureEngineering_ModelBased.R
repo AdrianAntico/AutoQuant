@@ -712,6 +712,8 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
   # Initialize H2O----
   if(H2OStart) LocalHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
   print('AE 6')
+  print(names(temp))
+  print(str(temp))
   H2O_Data <- h2o::as.h2o(temp)
   print('AE 7')
 
