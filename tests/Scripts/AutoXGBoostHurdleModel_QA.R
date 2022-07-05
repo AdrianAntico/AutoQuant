@@ -22,7 +22,7 @@ Path <- "C:/Users/Bizon/GitHub"
 # 5: FALSE          FALSE Failure                TRUE         5
 # 6: FALSE          FALSE Failure               FALSE         6
 
-# run = 5
+# run = 3
 # run = 6
 for(run in seq_len(XGBoost_QA[,.N])) {
 
@@ -147,7 +147,23 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
-
+#
+# # Test data.table
+# XGBoost_QA <- data.table::CJ(
+#   TOF = c(TRUE,FALSE),
+#   Classification = c(TRUE,FALSE),
+#   Success = "Failure",
+#   ScoreSuccess = "Failure",
+#   PartitionInFunction = c(TRUE,FALSE),
+#   sorted = FALSE)
+#
+# # Remove impossible combinations
+# XGBoost_QA <- XGBoost_QA[!(PartitionInFunction & TOF)]
+# XGBoost_QA[, RunNumber := seq_len(.N)]
+#
+# # Path File
+# Path <- "C:/Users/Bizon/GitHub"
+#
 # Scoring Hurdle ----
 # TTrainData[, c("Target_Buckets", "Adrian") := NULL]
 # TestData = TTrainData
@@ -156,7 +172,7 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 # ModelList = TestModel$ModelList
 # ArgsList = TestModel$ArgsList
 # Threshold = NULL
-
+#
 # Scoring Classification / Multiclass Scoring ----
 # ScoringData = TestData
 # FeatureColumnNames = FeatureNames
@@ -182,7 +198,7 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 # MDP_RemoveDates = FALSE
 # MDP_MissFactor = "0"
 # MDP_MissNum = -1
-
+#
 # Scoring Regression Scoring ----
 # ScoringData = TestData
 # FeatureColumnNames = FeatureNames
@@ -210,7 +226,7 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 # MDP_MissNum = -1
 
 # # Define values ----
-#
+
 # run = 5
 #
 # tof <- XGBoost_QA[run, TOF]
@@ -243,8 +259,8 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 #   VValidationData <- NULL
 #   TTestData <- NULL
 # }
-
-# hurdle ----
+#
+# # hurdle ----
 # NThreads = parallel::detectCores()
 # PrimaryDateColumn = "DateTime"
 # ModelID = 'ModelTest'
@@ -273,6 +289,7 @@ for(run in seq_len(XGBoost_QA[,.N])) {
 # BaselineComparison = 'default'
 # MaxModelsInGrid = 1L
 # MaxRunsWithoutNewWinner = 20L
+# grid_eval_metric = "accuracy"
 # MaxRunMinutes = 60L*60L
 # TreeMethod = "hist"
 # Trees = list("classifier" = 50, "regression" = 50)

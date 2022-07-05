@@ -93,7 +93,8 @@ AutoXGBoostScoring <- function(TargetType = NULL,
   if(!is.numeric(MDP_MissNum)) stop("MDP_MissNum should be a numeric or integer value")
 
   # IDcols conversion ----
-  if(is.numeric(IDcols) || is.integer(IDcols)) IDcols <- names(data)[IDcols]
+  if(is.numeric(IDcols)) IDcols <- names(data)[IDcols]
+  if('ID_Factorizer' %in% names(ScoringData)) data.table::set(ScoringData, j = 'ID_Factorizer', value = NULL)
 
   # Apply Transform Numeric Variables----
   if(TransformNumeric) {
@@ -131,7 +132,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     } else {
       CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
       CatFeatures <- names(ScoringData)[CatFeatures]
-      CatFeatures <- CatFeatures[!CatFeatures %in% IDcols]
+      if(length(IDcols) > 0L) CatFeatures <- CatFeatures[!CatFeatures %in% IDcols]
       if(!identical(CatFeatures, character(0)) && !is.null(CatFeatures)) {
         ScoringData <- DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
       }
@@ -142,6 +143,7 @@ AutoXGBoostScoring <- function(TargetType = NULL,
     } else {
       CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
       CatFeatures <- names(ScoringData)[CatFeatures]
+      if(length(IDcols) > 0L) CatFeatures <- CatFeatures[!CatFeatures %in% IDcols]
       if(!identical(CatFeatures, character(0)) && !is.null(CatFeatures)) {
         ScoringData <- CategoricalEncoding(data=ScoringData, ML_Type=TargetType, GroupVariables=CatFeatures, TargetVariable=NULL, Method=EncodingMethod, SavePath=ModelPath, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
       }

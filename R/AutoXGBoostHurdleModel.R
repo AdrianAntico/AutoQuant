@@ -724,6 +724,7 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
 
   # Begin regression model building----
   if(DebugMode) print('Begin regression model building----')
+  # bucket = looper[1]
   for(bucket in looper) {
 
     # Define data sets ----

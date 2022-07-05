@@ -173,9 +173,9 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
         if(length(CatFeatures) != 0L) {
-          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]), use.names = TRUE, fill = TRUE)
         } else {
-          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), use.names = TRUE, fill = TRUE)
         }
       } else {
         TrainMerge <- NULL
@@ -353,9 +353,9 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
         if(length(CatFeatures) != 0L) {
-          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]), use.names = TRUE, fill = TRUE)
         } else {
-          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), use.names = TRUE, fill = TRUE)
         }
       } else {
         TrainMerge <- NULL
@@ -445,9 +445,9 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     # MultiClass Obtain Unique Target Levels
     if(DebugMode.) print("MultiClass Obtain Unique Target Levels")
     if(!is.null(ValidationData.) && !is.null(TestData.)) {
-      temp <- data.table::rbindlist(list(data., ValidationData., TestData.))
+      temp <- data.table::rbindlist(list(data., ValidationData., TestData.), use.names = TRUE, fill = TRUE)
     } else if(!is.null(ValidationData.)) {
-      temp <- data.table::rbindlist(list(data., ValidationData.))
+      temp <- data.table::rbindlist(list(data., ValidationData.), use.names = TRUE, fill = TRUE)
     } else {
       temp <- data.
     }
@@ -482,9 +482,9 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(!is.null(ValidationData.)) {
       if(ncol(data.) == ncol(ValidationData.)) {
         if(length(CatFeatures) != 0L) {
-          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]))
+          TrainMerge <- data.table::rbindlist(list(data.[, .SD, .SDcols = c(names(data.)[!names(data.) %in% y])],ValidationData.[, .SD, .SDcols = c(names(ValidationData.)[!names(ValidationData.) %in% y])]), use.names = TRUE, fill = TRUE)
         } else {
-          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.))
+          TrainMerge <- data.table::rbindlist(list(data.,ValidationData.), use.names = TRUE, fill = TRUE)
         }
       } else {
         TrainMerge <- NULL
@@ -941,7 +941,7 @@ XGBoostValidationData <- function(model.=model,
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
         ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
         Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
-        ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test))
+        ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test), use.names = TRUE, fill = TRUE)
         rm(Shap_test)
       } else {
         ShapValues <- NULL
@@ -988,7 +988,7 @@ XGBoostValidationData <- function(model.=model,
       if(!any(class(model.) %chin% c('lgb.Booster', 'R6'))) {
         ShapValues <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(data.), model = model., features = names(data.))$shap_contrib)
         Shap_test <- data.table::as.data.table(xgboost:::xgb.shap.data(as.matrix(dataTest.), model = model., features = names(dataTest.))$shap_contrib)
-        ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test))
+        ShapValues <- data.table::rbindlist(list(ShapValues, Shap_test), use.names = TRUE, fill = TRUE)
         rm(Shap_test)
       } else {
         ShapValues <- NULL
@@ -1015,7 +1015,7 @@ XGBoostValidationData <- function(model.=model,
             ColumnName = c('Predict'),
             MethodName = TransformationResults.[ColumnName == eval(TargetColumnName.), MethodName],
             Lambda = TransformationResults.[ColumnName == eval(TargetColumnName.), Lambda],
-            NormalizedStatistics = 0L)))
+            NormalizedStatistics = 0L)), use.names = TRUE, fill = TRUE)
         if(length(unique(TransformationResults.[['ColumnName']])) != nrow(TransformationResults.)) {
           temp <- TransformationResults.[, .N, by = 'ColumnName'][N != 1L][[1L]]
           if(!is.null(ValidationData)) temp1 <- which(names(ValidationData) == temp)[1L]
@@ -1045,7 +1045,7 @@ XGBoostValidationData <- function(model.=model,
       } else {
 
         # Prepare transformation object
-        TransformationResults. <- data.table::rbindlist(list(TransformationResults., TransformationResults.))
+        TransformationResults. <- data.table::rbindlist(list(TransformationResults., TransformationResults.), use.names = TRUE, fill = TRUE)
         for(z in seq_along(TargetColumnName.)) TransformationResults.[length(TargetColumnName.) + z, ColumnName := paste0('Predict.V',z)]
 
         # Back transform

@@ -65,9 +65,9 @@ for(run in seq_len(LightGBM_QA_Results_Classifier[,.N])) {
       PartitionType = "random",
       StratifyColumnNames = "Adrian",
       TimeColumnName = NULL)
-    TTrainData <- Sets$TrainData
-    VValidationData <- Sets$ValidationData
-    TTestData <- Sets$TestData
+    TTrainData <- data.table::copy(Sets$TrainData)
+    VValidationData <- data.table::copy(Sets$ValidationData)
+    TTestData <- data.table::copy(Sets$TestData)
     rm(Sets)
   } else {
     TTrainData <- data.table::copy(data)
@@ -213,12 +213,11 @@ for(run in seq_len(LightGBM_QA_Results_Classifier[,.N])) {
     Start <- Sys.time()
 
     ModelID = "Test_Model_1"
-    colnames <- TestModel$ColNames
     Preds <- tryCatch({RemixAutoML::AutoLightGBMScoring(
       TargetType = "classification",
       ScoringData = if(!tof && !PartitionInFunction) TTestData else TTrainData,
       ReturnShapValues = FALSE,
-      FeatureColumnNames = colnames[[1L]],
+      FeatureColumnNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
       IDcols = c("IDcol_1","IDcol_2","DateTime"),
       EncodingMethod = "credibility",
       FactorLevelsList = TestModel$FactorLevelsList,

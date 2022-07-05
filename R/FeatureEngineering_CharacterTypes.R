@@ -583,7 +583,7 @@ CategoricalEncoding <- function(data = NULL,
   if(tolower(Method) == "credibility") {
     if(Debug) print('CategoricalEncoding Credibility 1')
     if(!Scoring) ComponentList <- list()
-    # GroupValue = GroupVariables[3]
+    # GroupValue = GroupVariables[1]
     for(GroupValue in GroupVariables) {
 
       if(Debug) print(paste0('CategoricalEncoding Credibility 2 iteration: ', GroupValue))
@@ -922,11 +922,11 @@ EncodeCharacterVariables <- function(RunMode = 'train',
       data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
       data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
       data.table::set(TestData, j = "ID_Factorizer", value = "TEST")
-      temp <- data.table::rbindlist(list(TrainData, ValidationData, TestData))
+      temp <- data.table::rbindlist(list(TrainData, ValidationData, TestData), use.names = TRUE, fill = TRUE)
     } else if(!is.null(ValidationData)) {
       data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
       data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
-      temp <- data.table::rbindlist(list(TrainData, ValidationData))
+      temp <- data.table::rbindlist(list(TrainData, ValidationData), use.names = TRUE, fill = TRUE)
     } else {
       data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
       temp <- TrainData
@@ -963,13 +963,13 @@ EncodeCharacterVariables <- function(RunMode = 'train',
     if(!is.null(ValidationData) && !is.null(TestData)) {
       temp_validate <- temp[ID_Factorizer == "VALIDATE"]
       temp_test <- temp[ID_Factorizer == "TEST"]
-      temp_other <- data.table::rbindlist(list(temp_validate, temp_test))
+      temp_other <- data.table::rbindlist(list(temp_validate, temp_test), use.names = TRUE, fill = TRUE)
       temp2 <- CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
-      temp <- data.table::rbindlist(list(temp2,temp_train))
+      temp <- data.table::rbindlist(list(temp2,temp_train), use.names = TRUE, fill = TRUE)
     } else if(!is.null(ValidationData)) {
       temp_validate <- temp[ID_Factorizer == "VALIDATE"]
       temp2 <- CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
-      temp <- data.table::rbindlist(list(temp2,temp_train))
+      temp <- data.table::rbindlist(list(temp2,temp_train), use.names = TRUE, fill = TRUE)
     } else {
       temp <- temp_train
     }
