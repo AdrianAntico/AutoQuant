@@ -938,12 +938,12 @@ EncodeCharacterVariables <- function(RunMode = 'train',
   # Encode
   if(EncodeMethod == "binary") {
     temp <- DummifyDT(data=temp, cols=CategoricalVariableNames, KeepFactorCols=KeepCategoricalVariables, OneHot=FALSE, SaveFactorLevels=if(!is.null(MetaDataPath)) TRUE else FALSE, ReturnFactorLevels=ReturnMetaData, SavePath=MetaDataPath, ImportFactorLevels=FALSE, FactorLevelsList=MetaDataList)
-    MetaData <- temp$FactorLevelsList
+    MetaDataList <- temp$FactorLevelsList
     temp <- temp$data
   } else if(EncodeMethod %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
     if(RunMode == 'train') temp_train <- temp[ID_Factorizer == "TRAIN"] else temp_train <- temp
     temp1 <- CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables, Debug = Debug)
-    MetaData <- temp1$FactorCompenents
+    MetaDataList <- temp1$FactorCompenents
     if(RunMode == 'train') temp_train <- temp1$data else temp_train <- temp1
 
     # Args for debugging
@@ -964,18 +964,18 @@ EncodeCharacterVariables <- function(RunMode = 'train',
       temp_validate <- temp[ID_Factorizer == "VALIDATE"]
       temp_test <- temp[ID_Factorizer == "TEST"]
       temp_other <- data.table::rbindlist(list(temp_validate, temp_test), use.names = TRUE, fill = TRUE)
-      temp2 <- CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+      temp2 <- CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=TRUE, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
       temp <- data.table::rbindlist(list(temp2,temp_train), use.names = TRUE, fill = TRUE)
     } else if(!is.null(ValidationData)) {
       temp_validate <- temp[ID_Factorizer == "VALIDATE"]
-      temp2 <- CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
+      temp2 <- CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=TRUE, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
       temp <- data.table::rbindlist(list(temp2,temp_train), use.names = TRUE, fill = TRUE)
     } else {
       temp <- temp_train
     }
   } else {
     temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
-    MetaData <- temp$FactorCompenents
+    MetaDataList <- temp$FactorCompenents
     temp <- temp$data
   }
 
@@ -994,14 +994,14 @@ EncodeCharacterVariables <- function(RunMode = 'train',
   }
 
   # Attach Encoding Method to list
-  MetaData$EncodingMethod <- EncodeMethod
+  MetaDataList$EncodingMethod <- EncodeMethod
 
   # Return
   return(list(
     TrainData = TrainData,
     ValidationData = ValidationData,
     TestData = TestData,
-    MetaData = if(exists("MetaData")) MetaData else NULL))
+    MetaData = if(exists("MetaDataList")) MetaDataList else NULL))
 }
 
 #' @param RunMode Passthrough
