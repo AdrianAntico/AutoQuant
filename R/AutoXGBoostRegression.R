@@ -217,12 +217,8 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
   # Build model ----
   if(DebugMode) print("Build model ----")
   if(!is.null(WeightsVector)) {
-    print('Adrian Wants to see the Arg Values')
-    print(base_params)
     model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose, weight = WeightsVector)
   } else {
-    print('Adrian Wants to see the Arg Values')
-    print(base_params)
     model <- xgboost::xgb.train(params = base_params, data = datatrain, watchlist = EvalSets, nrounds = NTrees, Verbose = Verbose)
   }
 
