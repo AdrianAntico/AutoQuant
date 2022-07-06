@@ -96,33 +96,33 @@ for(Level in LETTERS) {
     MultiClass = FALSE)
   datatemp[, Factor1 := eval(Level)]
   if(Count == 1L) {
-    data <- data.table::copy(datatemp)
+    data1 <- data.table::copy(datatemp)
   } else {
-    data <- data.table::rbindlist(
-      list(data, data.table::copy(datatemp)))
+    data1 <- data.table::rbindlist(
+      list(data1, data.table::copy(datatemp)))
   }
   Count <- Count + 1L
 }
 
 # Create ID columns to know which records to score
-data[, ID := .N:1L, by = "Factor1"]
-data.table::set(data, i = which(data[["ID"]] == 2L), j = "ID", value = 1L)
+data1[, ID := .N:1L, by = "Factor1"]
+data.table::set(data1, i = which(data1[["ID"]] == 2L), j = "ID", value = 1L)
 
 # Score records
-data <- RemixAutoML::AutoLagRollStatsScoring(
+data1 <- RemixAutoML::AutoLagRollStatsScoring(
 
   # Data
-  data                 = data,
+  data                 = data1,
   RowNumsID            = "ID",
   RowNumsKeep          = 1,
   DateColumn           = "DateTime",
   Targets              = "Adrian",
-  HierarchyGroups      = c("Store","Dept"),
-  IndependentGroups    = NULL,
+  HierarchyGroups      = NULL,
+  IndependentGroups    = c("Factor1"),
 
   # Services
   TimeBetween          = NULL,
-  TimeGroups           = c("days", "weeks", "months"),
+  TimeGroups           = c("days","weeks","months","quarters"),
   TimeUnit             = "day",
   TimeUnitAgg          = "day",
   RollOnLag1           = TRUE,
@@ -130,25 +130,13 @@ data <- RemixAutoML::AutoLagRollStatsScoring(
   SimpleImpute         = TRUE,
 
   # Calculated Columns
-  Lags                  = list("days" = c(seq(1,5,1)),
-                               "weeks" = c(seq(1,3,1)),
-                               "months" = c(seq(1,2,1))),
-  MA_RollWindows        = list("days" = c(seq(1,5,1)),
-                               "weeks" = c(seq(1,3,1)),
-                               "months" = c(seq(1,2,1))),
-  SD_RollWindows        = list("days" = c(seq(1,5,1)),
-                               "weeks" = c(seq(1,3,1)),
-                               "months" = c(seq(1,2,1))),
-  Skew_RollWindows      = list("days" = c(seq(1,5,1)),
-                               "weeks" = c(seq(1,3,1)),
-                               "months" = c(seq(1,2,1))),
-  Kurt_RollWindows      = list("days" = c(seq(1,5,1)),
-                               "weeks" = c(seq(1,3,1)),
-                               "months" = c(seq(1,2,1))),
-  Quantile_RollWindows  = list("days" = c(seq(1,5,1)),
-                               "weeks" = c(seq(1,3,1)),
-                               "months" = c(seq(1,2,1))),
-  Quantiles_Selected    = c("q5","q10","q95"),
+  Lags                 = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  MA_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  SD_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Skew_RollWindows     = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Kurt_RollWindows     = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Quantile_RollWindows = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Quantiles_Selected   = c('q5','q50'),
   Debug                 = FALSE)
 }
 }

@@ -678,38 +678,25 @@ AutoDiffLagN <- function(data,
 #'
 #' # Add scoring records
 #' data <- RemixAutoML::AutoLagRollStats(
-#'
-#'   # Data
 #'   data                 = data,
 #'   DateColumn           = "DateTime",
 #'   Targets              = "Adrian",
 #'   HierarchyGroups      = NULL,
 #'   IndependentGroups    = c("Factor1"),
 #'   TimeUnitAgg          = "days",
-#'   TimeGroups           = c("days", "weeks",
-#'                            "months", "quarters"),
+#'   TimeGroups           = c("days","weeks","months","quarters"),
 #'   TimeBetween          = NULL,
 #'   TimeUnit             = "days",
-#'
-#'   # Services
 #'   RollOnLag1           = TRUE,
 #'   Type                 = "Lag",
 #'   SimpleImpute         = TRUE,
-#'
-#'   # Calculated Columns
-#'   Lags                 = list("days" = c(seq(1,5,1)),
-#'                               "weeks" = c(seq(1,3,1)),
-#'                               "months" = c(seq(1,2,1)),
-#'                               "quarters" = c(seq(1,2,1))),
-#'   MA_RollWindows       = list("days" = c(seq(1,5,1)),
-#'                               "weeks" = c(seq(1,3,1)),
-#'                               "months" = c(seq(1,2,1)),
-#'                               "quarters" = c(seq(1,2,1))),
-#'   SD_RollWindows       = NULL,
-#'   Skew_RollWindows     = NULL,
-#'   Kurt_RollWindows     = NULL,
-#'   Quantile_RollWindows = NULL,
-#'   Quantiles_Selected   = NULL,
+#'   Lags                 = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   MA_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   SD_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Skew_RollWindows     = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Kurt_RollWindows     = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Quantile_RollWindows = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Quantiles_Selected   = c('q5','q50'),
 #'   Debug                = FALSE)
 #' }
 #' @export
@@ -1137,33 +1124,33 @@ AutoLagRollStats <- function(data,
 #'     MultiClass = FALSE)
 #'   datatemp[, Factor1 := eval(Level)]
 #'   if(Count == 1L) {
-#'     data <- data.table::copy(datatemp)
+#'     data1 <- data.table::copy(datatemp)
 #'   } else {
-#'     data <- data.table::rbindlist(
-#'       list(data, data.table::copy(datatemp)))
+#'     data1 <- data.table::rbindlist(
+#'       list(data1, data.table::copy(datatemp)))
 #'   }
 #'   Count <- Count + 1L
 #' }
 #'
 #' # Create ID columns to know which records to score
-#' data[, ID := .N:1L, by = "Factor1"]
-#' data.table::set(data, i = which(data[["ID"]] == 2L), j = "ID", value = 1L)
+#' data1[, ID := .N:1L, by = "Factor1"]
+#' data.table::set(data1, i = which(data1[["ID"]] == 2L), j = "ID", value = 1L)
 #'
 #' # Score records
-#' data <- RemixAutoML::AutoLagRollStatsScoring(
+#' data1 <- RemixAutoML::AutoLagRollStatsScoring(
 #'
 #'   # Data
-#'   data                 = data,
+#'   data                 = data1,
 #'   RowNumsID            = "ID",
 #'   RowNumsKeep          = 1,
 #'   DateColumn           = "DateTime",
 #'   Targets              = "Adrian",
-#'   HierarchyGroups      = c("Store","Dept"),
-#'   IndependentGroups    = NULL,
+#'   HierarchyGroups      = NULL,
+#'   IndependentGroups    = c("Factor1"),
 #'
 #'   # Services
 #'   TimeBetween          = NULL,
-#'   TimeGroups           = c("days", "weeks", "months"),
+#'   TimeGroups           = c("days","weeks","months","quarters"),
 #'   TimeUnit             = "day",
 #'   TimeUnitAgg          = "day",
 #'   RollOnLag1           = TRUE,
@@ -1171,25 +1158,13 @@ AutoLagRollStats <- function(data,
 #'   SimpleImpute         = TRUE,
 #'
 #'   # Calculated Columns
-#'   Lags                  = list("days" = c(seq(1,5,1)),
-#'                                "weeks" = c(seq(1,3,1)),
-#'                                "months" = c(seq(1,2,1))),
-#'   MA_RollWindows        = list("days" = c(seq(1,5,1)),
-#'                                "weeks" = c(seq(1,3,1)),
-#'                                "months" = c(seq(1,2,1))),
-#'   SD_RollWindows        = list("days" = c(seq(1,5,1)),
-#'                                "weeks" = c(seq(1,3,1)),
-#'                                "months" = c(seq(1,2,1))),
-#'   Skew_RollWindows      = list("days" = c(seq(1,5,1)),
-#'                                "weeks" = c(seq(1,3,1)),
-#'                                "months" = c(seq(1,2,1))),
-#'   Kurt_RollWindows      = list("days" = c(seq(1,5,1)),
-#'                                "weeks" = c(seq(1,3,1)),
-#'                                "months" = c(seq(1,2,1))),
-#'   Quantile_RollWindows  = list("days" = c(seq(1,5,1)),
-#'                                "weeks" = c(seq(1,3,1)),
-#'                                "months" = c(seq(1,2,1))),
-#'   Quantiles_Selected    = c("q5","q10","q95"),
+#'   Lags                 = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   MA_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   SD_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Skew_RollWindows     = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Kurt_RollWindows     = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Quantile_RollWindows = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+#'   Quantiles_Selected   = c('q5','q50'),
 #'   Debug                 = FALSE)
 #' }
 #' @export
@@ -1215,6 +1190,8 @@ AutoLagRollStatsScoring <- function(data,
                                     Quantile_RollWindows = NULL,
                                     Quantiles_Selected   = NULL,
                                     Debug                = FALSE) {
+
+  Nam <- names(data.table::copy(data))
 
   # Define args ----
   RollFunctions <- c()
@@ -1509,7 +1486,6 @@ AutoLagRollStatsScoring <- function(data,
       }
     }
     if("TEMPDATE" %chin% names(KeepData)) data.table::set(KeepData, j = "TEMPDATE", value = NULL)
-    return(KeepData)
   }
 
   # Debugging----
@@ -1610,6 +1586,17 @@ AutoLagRollStatsScoring <- function(data,
 
   # Return data----
   if("TEMPDATE" %chin% names(KeepData)) data.table::setnames(KeepData, "TEMPDATE", DateColumn)
+
+  # Reorder columns
+  Nam1 <- names(KeepData)
+  Nam <- Nam[Nam %in% Nam1]
+  KeepData <- KeepData[, .SD, .SDcols = c(Nam, setdiff(Nam1,Nam))]
+  if(Debug) {
+    print(Nam)
+    print(Nam1)
+    print(names(KeepData))
+    print(c(Nam, setdiff(Nam1,Nam)))
+  }
   return(KeepData)
 }
 
@@ -1750,7 +1737,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% "mean") && !all(periods %in% c(0L, 1L))) {
         periods <- periods[periods > 1L]
         MA_Names <- c()
-        for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0(timeAggss, "_", groupingVars[i],"Mean","_", periods[j],"_", t))
+        for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0("Mean_", periods[j],"_", t))
         data[, paste0(MA_Names) := data.table::frollmean(
           x = .SD, n = periods, fill = NA, algo = "fast", align = "right", na.rm = TRUE, hasNA = TRUE, adaptive = FALSE),
           by = c(groupingVars[i]), .SDcols = c(Targets)]
@@ -1760,7 +1747,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% c("sd")) && !all(SDperiods %in% c(0L,1L))) {
         tempperiods <- SDperiods[SDperiods > 1L]
         SD_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0(timeAggss, "_", groupingVars[i], "SD_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0("SD_", tempperiods[j], "_", t))
         data[, paste0(SD_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = sd, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
       }
 
@@ -1768,7 +1755,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% c("skew")) && !all(Skewperiods %in% c(0L,1L,2L))) {
         tempperiods <- Skewperiods[Skewperiods > 2L]
         Skew_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0(timeAggss, "_", groupingVars[i], "Skew_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0("Skew_", tempperiods[j], "_", t))
         data[, paste0(Skew_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::skewness, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = Targets]
       }
 
@@ -1776,7 +1763,7 @@ DT_GDL_Feature_Engineering <- function(data,
       if(any(tolower(statsFUNs) %chin% c("kurt")) && !all(Kurtperiods %in% c(0L,1L,2L,3L,4L))) {
         tempperiods <- Kurtperiods[Kurtperiods > 3L]
         Kurt_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0(timeAggss, "_", groupingVars[i], "Kurt_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0("Kurt_", tempperiods[j], "_", t))
         data[, paste0(Kurt_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::kurtosis, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
       }
 
@@ -1786,7 +1773,7 @@ DT_GDL_Feature_Engineering <- function(data,
         for(z in c(seq(5L,95L,5L))) {
           if(any(paste0("q",z) %chin% statsFUNs)) {
             Names <- c()
-            for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0(timeAggss, "_", groupingVars[i], "Q_", z, "_", tempperiods[j], "_", t))
+            for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0("Q_", z, "_", tempperiods[j], "_", t))
             data[, paste0(Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = quantile, probs = z/100, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
           }
         }
@@ -1835,7 +1822,7 @@ DT_GDL_Feature_Engineering <- function(data,
     if(any(tolower(statsFUNs) %chin% "mean") && !all(periods %in% c(0L, 1L))) {
       periods <- periods[periods > 1L]
       MA_Names <- c()
-      for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0(timeAggss, "_", "Mean_", periods[j], "_", t))
+      for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0("Mean_", periods[j], "_", t))
       data[, paste0(MA_Names) := data.table::frollmean(x = .SD, n = periods, fill = NA, algo = "fast", align = "right", na.rm = TRUE, hasNA = TRUE, adaptive = FALSE), .SDcols = c(Targets)]
     }
 
@@ -1843,7 +1830,7 @@ DT_GDL_Feature_Engineering <- function(data,
     if(any(tolower(statsFUNs) %chin% c("sd")) && !all(SDperiods %in% c(0L,1L))) {
       tempperiods <- SDperiods[SDperiods > 1L]
       SD_Names <- c()
-      for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0(timeAggss, "_", "SD_", tempperiods[j], "_", t))
+      for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0("SD_", tempperiods[j], "_", t))
       data[, paste0(SD_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = sd, na.rm = TRUE), .SDcols = c(Targets)]
     }
 
@@ -1851,7 +1838,7 @@ DT_GDL_Feature_Engineering <- function(data,
     if(any(tolower(statsFUNs) %chin% c("skew")) && !all(Skewperiods %in% c(0L,1L,2L))) {
       tempperiods <- Skewperiods[Skewperiods > 2L]
       Skew_Names <- c()
-      for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0(timeAggss, "_", "Skew_", tempperiods[j], "_", t))
+      for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0("Skew_", tempperiods[j], "_", t))
       data[, paste0(Skew_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::skewness, na.rm = TRUE), .SDcols = c(Targets)]
     }
 
@@ -1859,7 +1846,7 @@ DT_GDL_Feature_Engineering <- function(data,
     if(any(tolower(statsFUNs) %chin% c("kurt")) && !all(Kurtperiods %in% c(0L,1L,2L,3L))) {
       tempperiods <- Kurtperiods[Kurtperiods > 3L]
       Kurt_Names <- c()
-      for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0(timeAggss, "_", "Kurt_", tempperiods[j], "_", t))
+      for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0("Kurt_", tempperiods[j], "_", t))
       data[, paste0(Kurt_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::kurtosis, na.rm = TRUE), .SDcols = c(Targets)]
     }
 
@@ -1869,7 +1856,7 @@ DT_GDL_Feature_Engineering <- function(data,
       for(z in c(seq(5L,95L,5L))) {
         if(any(paste0("q",z) %chin% statsFUNs)) {
           Names <- c()
-          for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0(timeAggss, "_", "Q_", z, "_", tempperiods[j], "_", t))
+          for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0("Q_", z, "_", tempperiods[j], "_", t))
           data[, paste0(Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = quantile, probs = z/100, na.rm = TRUE), .SDcols = c(Targets)]
         }
       }
@@ -2103,8 +2090,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for(t in TargetS) {
           TargetN <- TargetN + 1L
           for(j in periods) {
-            data1[, paste0(timeAggss, "_", groupingVars[i], "Mean_", j, "_", t) := fBasics::rowAvgs(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-            PeriodKeep <-  c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"Mean_",j,"_",t))
+            data1[, paste0("Mean_", j, "_", t) := fBasics::rowAvgs(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+            PeriodKeep <-  c(PeriodKeep, paste0("Mean_",j,"_",t))
           }
         }
       }
@@ -2116,8 +2103,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for(t in TargetS) {
           TargetN <- TargetN + 1L
           for(j in tempperiods) {
-            data1[, paste0(timeAggss, "_", groupingVars[i],"SD_",j,"_",t) := fBasics::rowSds(.SD), .SDcols = c(LagColss[[TargetN]][seq_len(j)])]
-            PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"SD_",j,"_",t))
+            data1[, paste0("SD_",j,"_",t) := fBasics::rowSds(.SD), .SDcols = c(LagColss[[TargetN]][seq_len(j)])]
+            PeriodKeep <- c(PeriodKeep, paste0("SD_",j,"_",t))
           }
         }
       }
@@ -2129,8 +2116,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for(t in TargetS) {
           TargetN <- TargetN + 1L
           for(j in tempperiods) {
-            data1[, paste0(timeAggss, "_", groupingVars[i],"Skew_",j,"_",t) := fBasics::rowSkewness(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-            PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"Skew_",j,"_",t))
+            data1[, paste0("Skew_",j,"_",t) := fBasics::rowSkewness(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+            PeriodKeep <- c(PeriodKeep, paste0("Skew_",j,"_",t))
           }
         }
       }
@@ -2142,8 +2129,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
         for(t in TargetS) {
           TargetN <- TargetN + 1L
           for(j in tempperiods) {
-            data1[, paste0(timeAggss, "_", groupingVars[i],"Kurt_",j,"_",t) := fBasics::rowKurtosis(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-            PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"Kurt_",j,"_",t))
+            data1[, paste0("Kurt_",j,"_",t) := fBasics::rowKurtosis(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+            PeriodKeep <- c(PeriodKeep, paste0("Kurt_",j,"_",t))
           }
         }
       }
@@ -2157,8 +2144,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
             for(t in TargetS) {
               TargetN <- TargetN + 1L
               for(j in tempperiods) {
-                data1[, paste0(timeAggss, "_", groupingVars[i],"Q_",z,"_",j,"_",t) := fBasics::rowKurtosis(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-                PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", groupingVars[i],"Q_", z, "_", j, "_", t))
+                data1[, paste0("Q_",z,"_",j,"_",t) := fBasics::rowKurtosis(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+                PeriodKeep <- c(PeriodKeep, paste0("Q_", z, "_", j, "_", t))
               }
             }
           }
@@ -2259,8 +2246,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       for(t in TargetS) {
         TargetN <- TargetN + 1L
         for(j in periods) {
-          data[, paste0(timeAggss, "_", "Mean_", j, "_", t) := fBasics::rowAvgs(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-          PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Mean_", j, "_", t))
+          data[, paste0("Mean_", j, "_", t) := fBasics::rowAvgs(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+          PeriodKeep <- c(PeriodKeep, paste0("Mean_", j, "_", t))
         }
       }
     }
@@ -2272,8 +2259,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       for(t in TargetS) {
         TargetN <- TargetN + 1L
         for(j in tempperiods) {
-          data[, paste0(timeAggss, "_", "SD_", j, "_", t) := fBasics::rowSds(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-          PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "SD_", j, "_", t))
+          data[, paste0("SD_", j, "_", t) := fBasics::rowSds(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+          PeriodKeep <- c(PeriodKeep, paste0("SD_", j, "_", t))
         }
       }
     }
@@ -2285,8 +2272,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       for(t in TargetS) {
         TargetN <- TargetN + 1L
         for(j in tempperiods) {
-          data[, paste0(timeAggss, "_", "Skew_", j, "_", t) := fBasics::rowSkewness(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-          PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Skew_", j, "_", t))
+          data[, paste0("Skew_", j, "_", t) := fBasics::rowSkewness(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+          PeriodKeep <- c(PeriodKeep, paste0("Skew_", j, "_", t))
         }
       }
     }
@@ -2298,8 +2285,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       for(t in TargetS) {
         TargetN <- TargetN + 1L
         for(j in tempperiods) {
-          data[, paste0(timeAggss, "_", "Kurt_", j, "_", t) := fBasics::rowKurtosis(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-          PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Kurt_", j, "_", t))
+          data[, paste0("Kurt_", j, "_", t) := fBasics::rowKurtosis(.SD), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+          PeriodKeep <- c(PeriodKeep, paste0("Kurt_", j, "_", t))
         }
       }
     }
@@ -2313,8 +2300,8 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
           for(t in TargetS) {
             TargetN <- TargetN + 1L
             for(j in tempperiods) {
-              data[, eval(paste0(timeAggss, "_", "Q_",z,"_",j,"_",t)) := rowQuantiles(x = .SD, prob = z/100), .SDcols = LagColss[[TargetN]][seq_len(j)]]
-              PeriodKeep <- c(PeriodKeep, paste0(timeAggss, "_", "Q_",z,"_",j,"_",t))
+              data[, eval(paste0("Q_",z,"_",j,"_",t)) := rowQuantiles(x = .SD, prob = z/100), .SDcols = LagColss[[TargetN]][seq_len(j)]]
+              PeriodKeep <- c(PeriodKeep, paste0("Q_",z,"_",j,"_",t))
             }
           }
         }
@@ -2525,7 +2512,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
       if(any(tolower(statsFUNs) %chin% "mean") && !all(periods %in% c(0L, 1L))) {
         periods <- periods[periods > 1L]
         MA_Names <- c()
-        for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0(timeAggss, "_", groupingVars[i],"Mean","_", periods[j],"_", t))
+        for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0("Mean","_", periods[j],"_", t))
         data1[, paste0(MA_Names) := data.table::frollmean(
           x = .SD, n = periods, fill = NA, algo = "fast", align = "right", na.rm = TRUE, hasNA = TRUE, adaptive = FALSE),
           by = c(groupingVars[i]), .SDcols = c(Targets)]
@@ -2535,7 +2522,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
       if(any(tolower(statsFUNs) %chin% c("sd")) && !all(SDperiods %in% c(0L,1L))) {
         tempperiods <- SDperiods[SDperiods > 1L]
         SD_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0(timeAggss, "_", groupingVars[i], "SD_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0("SD_", tempperiods[j], "_", t))
         data1[, paste0(SD_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = sd, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
       }
 
@@ -2543,7 +2530,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
       if(any(tolower(statsFUNs) %chin% c("skew")) && !all(Skewperiods %in% c(0L,1L,2L))) {
         tempperiods <- Skewperiods[Skewperiods > 2L]
         Skew_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0(timeAggss, "_", groupingVars[i], "Skew_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0("Skew_", tempperiods[j], "_", t))
         data1[, paste0(Skew_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::skewness, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = Targets]
       }
 
@@ -2551,7 +2538,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
       if(any(tolower(statsFUNs) %chin% c("kurt")) && !all(Kurtperiods %in% c(0L,1L,2L,3L,4L))) {
         tempperiods <- Kurtperiods[Kurtperiods > 3L]
         Kurt_Names <- c()
-        for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0(timeAggss, "_", groupingVars[i], "Kurt_", tempperiods[j], "_", t))
+        for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0("Kurt_", tempperiods[j], "_", t))
         data1[, paste0(Kurt_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::kurtosis, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
       }
 
@@ -2561,7 +2548,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
         for(z in c(seq(5L,95L,5L))) {
           if(any(paste0("q",z) %chin% statsFUNs)) {
             Names <- c()
-            for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0(timeAggss, "_", groupingVars[i], "Q_", z, "_", tempperiods[j], "_", t))
+            for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0("Q_", z, "_", tempperiods[j], "_", t))
             data1[, paste0(Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = quantile, probs = z/100, na.rm = TRUE), by = c(groupingVars[i]), .SDcols = c(Targets)]
           }
         }
@@ -2646,7 +2633,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
     if(any(tolower(statsFUNs) %chin% "mean") & !all(periods %in% c(0L, 1L))) {
       periods <- periods[periods > 1L]
       MA_Names <- c()
-      for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0(timeAggss, "_", "Mean_", periods[j], "_", t))
+      for(t in Targets) for(j in seq_along(periods)) MA_Names <- c(MA_Names, paste0("Mean_", periods[j], "_", t))
       data[, paste0(MA_Names) := data.table::frollmean(x = .SD, n = periods, fill = NA, algo = "fast", align = "right", na.rm = TRUE, hasNA = TRUE, adaptive = FALSE), .SDcols = c(Targets)]
     }
 
@@ -2654,7 +2641,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
     if(any(tolower(statsFUNs) %chin% c("sd")) & !all(SDperiods %in% c(0L,1L))) {
       tempperiods <- SDperiods[SDperiods > 1L]
       SD_Names <- c()
-      for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0(timeAggss, "_", "SD_", tempperiods[j], "_", t))
+      for(t in Targets) for(j in seq_along(tempperiods)) SD_Names <- c(SD_Names, paste0("SD_", tempperiods[j], "_", t))
       data[get(AscRowByGroup) %in% RecordsKeep, paste0(SD_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = sd, na.rm = TRUE), .SDcols = c(Targets)]
     }
 
@@ -2662,7 +2649,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
     if(any(tolower(statsFUNs) %chin% c("skew")) & !all(Skewperiods %in% c(0L,1L,2L))) {
       tempperiods <- Skewperiods[Skewperiods > 2L]
       Skew_Names <- c()
-      for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0(timeAggss, "_", "Skew_", tempperiods[j], "_", t))
+      for(t in Targets) for(j in seq_along(tempperiods)) Skew_Names <- c(Skew_Names, paste0("Skew_", tempperiods[j], "_", t))
       data[get(AscRowByGroup) %in% RecordsKeep, paste0(Skew_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::skewness, na.rm = TRUE), .SDcols = c(Targets)]
     }
 
@@ -2670,7 +2657,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
     if(any(tolower(statsFUNs) %chin% c("kurt")) & !all(Kurtperiods %in% c(0L,1L,2L,3L))) {
       tempperiods <- Kurtperiods[Kurtperiods > 3L]
       Kurt_Names <- c()
-      for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0(timeAggss, "_", "Kurt_", tempperiods[j], "_", t))
+      for(t in Targets) for(j in seq_along(tempperiods)) Kurt_Names <- c(Kurt_Names, paste0("Kurt_", tempperiods[j], "_", t))
       data[get(AscRowByGroup) %in% RecordsKeep, paste0(Kurt_Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = e1071::kurtosis, na.rm = TRUE), .SDcols = c(Targets)]
     }
 
@@ -2680,7 +2667,7 @@ Partial_DT_GDL_Feature_Engineering2 <- function(data,
       for(z in c(seq(5L,95L,5L))) {
         if(any(paste0("q",z) %chin% statsFUNs)) {
           Names <- c()
-          for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0(timeAggss, "_", "Q_", z, "_", tempperiods[j], "_", t))
+          for(t in Targets) for(j in seq_along(tempperiods)) Names <- c(Names, paste0("Q_", z, "_", tempperiods[j], "_", t))
           data[get(AscRowByGroup) %in% RecordsKeep, paste0(Names) := data.table::frollapply(x = .SD, n = tempperiods, FUN = quantile, probs = z/100, na.rm = TRUE), .SDcols = c(Targets)]
         }
       }

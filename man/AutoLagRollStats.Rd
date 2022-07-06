@@ -100,38 +100,25 @@ for(Level in LETTERS) {
 
 # Add scoring records
 data <- RemixAutoML::AutoLagRollStats(
-
-  # Data
   data                 = data,
   DateColumn           = "DateTime",
   Targets              = "Adrian",
   HierarchyGroups      = NULL,
   IndependentGroups    = c("Factor1"),
   TimeUnitAgg          = "days",
-  TimeGroups           = c("days", "weeks",
-                           "months", "quarters"),
+  TimeGroups           = c("days","weeks","months","quarters"),
   TimeBetween          = NULL,
   TimeUnit             = "days",
-
-  # Services
   RollOnLag1           = TRUE,
   Type                 = "Lag",
   SimpleImpute         = TRUE,
-
-  # Calculated Columns
-  Lags                 = list("days" = c(seq(1,5,1)),
-                              "weeks" = c(seq(1,3,1)),
-                              "months" = c(seq(1,2,1)),
-                              "quarters" = c(seq(1,2,1))),
-  MA_RollWindows       = list("days" = c(seq(1,5,1)),
-                              "weeks" = c(seq(1,3,1)),
-                              "months" = c(seq(1,2,1)),
-                              "quarters" = c(seq(1,2,1))),
-  SD_RollWindows       = NULL,
-  Skew_RollWindows     = NULL,
-  Kurt_RollWindows     = NULL,
-  Quantile_RollWindows = NULL,
-  Quantiles_Selected   = NULL,
+  Lags                 = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  MA_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  SD_RollWindows       = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Skew_RollWindows     = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Kurt_RollWindows     = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Quantile_RollWindows = list("days" = c(seq(1,5,1)), "weeks" = c(seq(1,3,1)), "months" = c(seq(1,2,1)), "quarters" = c(seq(1,2,1))),
+  Quantiles_Selected   = c('q5','q50'),
   Debug                = FALSE)
 }
 }
