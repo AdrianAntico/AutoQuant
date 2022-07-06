@@ -24,6 +24,7 @@ AutoLagRollStats(
   Kurt_RollWindows = NULL,
   Quantile_RollWindows = NULL,
   Quantiles_Selected = NULL,
+  ShortName = TRUE,
   Debug = FALSE
 )
 }
@@ -65,6 +66,8 @@ AutoLagRollStats(
 \item{Quantile_RollWindows}{A numeric vector of Quantile rolling statistics window sizes you want to utilize in the calculations.}
 
 \item{Quantiles_Selected}{Select from the following c("q5", "q10", "q15", "q20", "q25", "q30", "q35", "q40", "q45", "q50", "q55", "q60"," q65", "q70", "q75", "q80", "q85", "q90", "q95")}
+
+\item{ShortName}{Default TRUE. If FALSE, Group Variable names will be added to the rolling stat and lag names. If you plan on have multiple versions of lags and rollings stats by different group variables then set this to FALSE.}
 
 \item{Debug}{Set to TRUE to get a print of which steps are running}
 }

@@ -650,6 +650,7 @@ AutoDiffLagN <- function(data,
 #' @param RollOnLag1 Set to FALSE to build rolling stats off of target columns directly or set to TRUE to build the rolling stats off of the lag-1 target
 #' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
+#' @param ShortName Default TRUE. If FALSE, Group Variable names will be added to the rolling stat and lag names. If you plan on have multiple versions of lags and rollings stats by different group variables then set this to FALSE.
 #' @param Debug Set to TRUE to get a print of which steps are running
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
@@ -719,6 +720,7 @@ AutoLagRollStats <- function(data,
                              Kurt_RollWindows     = NULL,
                              Quantile_RollWindows = NULL,
                              Quantiles_Selected   = NULL,
+                             ShortName            = TRUE,
                              Debug                = FALSE) {
 
   # Define args ----
@@ -845,6 +847,7 @@ AutoLagRollStats <- function(data,
           timeDiffTarget  = NULL,
           timeAgg         = timeaggs,
           WindowingLag    = RollOnLag1,
+          ShortName       = ShortName,
           Type            = Type,
           SimpleImpute    = SimpleImpute)
 
@@ -866,6 +869,7 @@ AutoLagRollStats <- function(data,
           timeDiffTarget  = NULL,
           timeAgg         = timeaggs,
           WindowingLag    = RollOnLag1,
+          ShortName       = ShortName,
           Type            = Type,
           SimpleImpute    = SimpleImpute), DateColumn)
       }
@@ -931,6 +935,7 @@ AutoLagRollStats <- function(data,
             timeDiffTarget  = NULL,
             timeAgg         = timeaggs,
             WindowingLag    = RollOnLag1,
+            ShortName       = ShortName,
             Type            = Type,
             SimpleImpute    = SimpleImpute), c(Fact, DateColumn))
 
@@ -952,6 +957,7 @@ AutoLagRollStats <- function(data,
             timeDiffTarget  = NULL,
             timeAgg         = timeaggs,
             WindowingLag    = RollOnLag1,
+            ShortName       = ShortName,
             Type            = Type,
             SimpleImpute    = SimpleImpute)
         }
@@ -1011,6 +1017,7 @@ AutoLagRollStats <- function(data,
             sortDateName    = DateColumn,
             timeDiffTarget  = NULL,
             timeAgg         = timeaggs,
+            ShortName       = ShortName,
             WindowingLag    = RollOnLag1,
             Type            = Type,
             SimpleImpute    = SimpleImpute), c(Fact, DateColumn))
@@ -1037,6 +1044,7 @@ AutoLagRollStats <- function(data,
             timeAgg         = timeaggs,
             WindowingLag    = RollOnLag1,
             Type            = Type,
+            ShortName       = ShortName,
             SimpleImpute    = SimpleImpute)
 
           # lags            = if(is.list(Lags))                 Lags[[timeaggs]]                 else Lags
@@ -1106,6 +1114,7 @@ AutoLagRollStats <- function(data,
 #' @param RollOnLag1 Set to FALSE to build rolling stats off of target columns directly or set to TRUE to build the rolling stats off of the lag-1 target
 #' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
+#' @param ShortName Default TRUE. If FALSE, Group Variable names will be added to the rolling stat and lag names. If you plan on have multiple versions of lags and rollings stats by different group variables then set this to FALSE.
 #' @param Debug Set to TRUE to get a print out of which step you are on
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
@@ -1189,6 +1198,7 @@ AutoLagRollStatsScoring <- function(data,
                                     Kurt_RollWindows     = NULL,
                                     Quantile_RollWindows = NULL,
                                     Quantiles_Selected   = NULL,
+                                    ShortName            = TRUE,
                                     Debug                = FALSE) {
 
   Nam <- names(data.table::copy(data))
@@ -1433,6 +1443,7 @@ AutoLagRollStatsScoring <- function(data,
             SimpleImpute    = SimpleImpute,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
+            ShortName       = ShortName,
             AscRowRemove    = TRUE)
 
         } else {
@@ -1455,6 +1466,7 @@ AutoLagRollStatsScoring <- function(data,
             WindowingLag    = RollOnLag1,
             Type            = Type,
             Timer           = FALSE,
+            ShortName       = ShortName,
             SimpleImpute    = SimpleImpute,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
@@ -1543,6 +1555,7 @@ AutoLagRollStatsScoring <- function(data,
             SimpleImpute    = SimpleImpute,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
+            ShortName       = ShortName,
             AscRowRemove    = TRUE), c(Fact, "TEMPDATE"))
 
         } else {
@@ -1568,6 +1581,7 @@ AutoLagRollStatsScoring <- function(data,
             SimpleImpute    = SimpleImpute,
             AscRowByGroup   = RowNumsID,
             RecordsKeep     = RowNumsKeep,
+            ShortName       = ShortName,
             AscRowRemove    = TRUE)
         }
 
@@ -1622,6 +1636,7 @@ AutoLagRollStatsScoring <- function(data,
 #' @param timeAgg List the time aggregation level for the time between events features, such as "hour", "day", "week", "month", "quarter", or "year"
 #' @param WindowingLag Set to 0 to build rolling stats off of target columns directly or set to 1 to build the rolling stats off of the lag-1 target
 #' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
+#' @param ShortName Default TRUE. If FALSE, Group Variable names will be added to the rolling stat and lag names. If you plan on have multiple versions of lags and rollings stats by different group variables then set this to FALSE.
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
 #' @return data.table of original data plus created lags, rolling stats, and time between event lags and rolling stats
 #' @examples
@@ -1670,6 +1685,7 @@ DT_GDL_Feature_Engineering <- function(data,
                                        timeDiffTarget  = NULL,
                                        timeAgg         = c("days"),
                                        WindowingLag    = 0,
+                                       ShortName       = TRUE,
                                        Type            = c("Lag"),
                                        SimpleImpute    = TRUE) {
 
@@ -1725,12 +1741,22 @@ DT_GDL_Feature_Engineering <- function(data,
 
       # Lags ----
       LAG_Names <- c()
-      for(t in Targets) LAG_Names <- c(LAG_Names, paste0(timeAggss, "_", groupingVars[i], "_LAG_", lags, "_", t))
+      for(t in Targets) {
+        if(ShortName) {
+          LAG_Names <- c(LAG_Names, paste0(timeAggss, "_LAG_", lags, "_", t))
+        } else {
+          LAG_Names <- c(LAG_Names, paste0(timeAggss, "_", groupingVars[i], "_LAG_", lags, "_", t))
+        }
+      }
       data[, paste0(LAG_Names) := data.table::shift(.SD, n = lags, type = "lag"), by = c(groupingVars[i]), .SDcols = c(Targets)]
 
       # Define targets----
       if(WindowingLag != 0L) {
-        Targets <- paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", Targets)
+        if(ShortName) {
+          Targets <- paste0(timeAggss, "_LAG_", WindowingLag, "_", Targets)
+        } else {
+          Targets <- paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", Targets)
+        }
       }
 
       # MA stats ----
@@ -1902,6 +1928,7 @@ DT_GDL_Feature_Engineering <- function(data,
 #' @param Type List either "Lag" if you want features built on historical values or "Lead" if you want features built on future values
 #' @param Timer Set to TRUE if you percentage complete tracker printout
 #' @param SimpleImpute Set to TRUE for factor level imputation of "0" and numeric imputation of -1
+#' @param ShortName Default TRUE. If FALSE, Group Variable names will be added to the rolling stat and lag names. If you plan on have multiple versions of lags and rollings stats by different group variables then set this to FALSE.
 #' @param AscRowByGroup Required to have a column with a Row Number by group (if grouping) with the smallest numbers being the records for scoring (typically the most current in time).
 #' @param RecordsKeep List the row number of AscRowByGroup and those data points will be returned
 #' @param AscRowRemove Set to TRUE to remove the AscRowByGroup column upon returning data.
@@ -1959,6 +1986,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
                                                Timer           = TRUE,
                                                SimpleImpute    = TRUE,
                                                AscRowByGroup   = "temp",
+                                               ShortName       = TRUE,
                                                RecordsKeep     = 1,
                                                AscRowRemove    = TRUE) {
 
@@ -2056,8 +2084,18 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
       LagColss <- list()
       for(t in TargetS) {
         for(l in seq_len(MaxCols)) {
-          LagCols <- c(LagCols, paste0(timeAggss, "_", groupingVars[i], "_LAG_", l, "_", t))
-          if(l %in% lags) LagKeep <- c(LagKeep, paste0(timeAggss, "_", groupingVars[i], "_LAG_", l, "_", t))
+          if(ShortName) {
+            LagCols <- c(LagCols, paste0(timeAggss, "_LAG_", l, "_", t))
+          } else {
+            LagCols <- c(LagCols, paste0(timeAggss, "_", groupingVars[i], "_LAG_", l, "_", t))
+          }
+          if(l %in% lags) {
+            if(ShortName) {
+              LagKeep <- c(LagKeep, paste0(timeAggss, "_LAG_", l, "_", t))
+            } else {
+              LagKeep <- c(LagKeep, paste0(timeAggss, "_", groupingVars[i], "_LAG_", l, "_", t))
+            }
+          }
         }
         LagColss[[t]] <- LagCols
         LagKeeps[[t]] <- LagKeep
@@ -2070,7 +2108,11 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
 
       # Define targets----
       if(WindowingLag != 0) {
-        TargetS <- c(paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", TargetS))
+        if(ShortName) {
+          TargetS <- c(paste0(timeAggss, "_LAG_", WindowingLag, "_", TargetS))
+        } else {
+          TargetS <- c(paste0(timeAggss, "_", groupingVars[i], "_LAG_", WindowingLag, "_", TargetS))
+        }
       } else {
         TargetS <- TargetS
       }
@@ -2230,7 +2272,7 @@ Partial_DT_GDL_Feature_Engineering <- function(data,
     data[, paste0(unlist(LagColss)) := data.table::shift(.SD, n = seq_len(MaxCols), type = "lag"), .SDcols = c(TargetS)]
 
     # Define targets ----
-    if(WindowingLag != 0) TargetS <- c(paste0(timeAggss, "_", "LAG_", WindowingLag, "_", TargetS))
+    if(WindowingLag != 0) TargetS <- c(paste0(timeAggss, "_LAG_", WindowingLag, "_", TargetS))
 
     # Subset data----
     data <- data[get(AscRowByGroup) %in% c(RecordsKeep)]
