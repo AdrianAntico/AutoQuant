@@ -228,6 +228,7 @@ CreateCalendarVariables <- function(data,
       data <- merge(data, DataCompute, by = c(paste0("TIME_", DateColRef), paste0("DATE_", DateColRef)), all = FALSE)
     } else {
       data <- merge(data, DataCompute, by = c(paste0("DATE_", DateColRef)), all = FALSE)
+      data[, paste0("DATE_", DateColRef) := as.Date(get(paste0("DATE_", DateColRef)))]
     }
 
     # Remove ITime columns if they exist and change names of non IDate columns----
