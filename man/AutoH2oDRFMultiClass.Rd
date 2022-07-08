@@ -47,7 +47,7 @@ AutoH2oDRFMultiClass(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from "EvalMetrics", "PDFs", "Score_TrainData", "h2o.explain"}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from "EvalMetrics", "Score_TrainData", "h2o.explain"}
 
 \item{data}{This is your data set for training and testing your model}
 

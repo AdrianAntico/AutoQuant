@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -84,7 +84,7 @@
 #'  NumOfParDepPlots = 3,
 #'
 #'  # Metadata arguments
-#'  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'  OutputSelection = c("EvalMetrics", "Score_TrainData"),
 #'  model_path = NULL,
 #'  metadata_path = NULL,
 #'  ModelID = "FirstModel",
@@ -132,7 +132,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and Transformation metadata
 #' @export
-AutoH2oGAMRegression <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+AutoH2oGAMRegression <- function(OutputSelection = c("EvalMetrics", "Score_TrainData"),
                                  data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
@@ -371,12 +371,6 @@ AutoH2oGAMRegression <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
     } else {
       TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
     }
-  }
-
-  # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "h2o", ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Return Objects ----

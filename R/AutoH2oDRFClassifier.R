@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from "EvalMetrics", "PDFs", "Score_TrainData", "h2o.explain"
+#' @param OutputSelection You can select what type of output you want returned. Choose from "EvalMetrics", "Score_TrainData", "h2o.explain"
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -341,12 +341,6 @@ AutoH2oDRFClassifier <- function(OutputSelection = c("EvalMetrics","Score_TrainD
         data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
       }
     }
-  }
-
-  # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "h2o", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Return Objects ----

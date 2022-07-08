@@ -5,7 +5,7 @@
 \title{AutoH2oGLMMultiClass}
 \usage{
 AutoH2oGLMMultiClass(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -52,7 +52,7 @@ AutoH2oGLMMultiClass(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -158,7 +158,7 @@ data <- RemixAutoML::FakeDataGenerator(
 TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 
   # Compute management
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
   NThreads = max(1, parallel::detectCores()-2),
   H2OShutdown = TRUE,

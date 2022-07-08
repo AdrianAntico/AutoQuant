@@ -217,7 +217,7 @@ for(run in seq_len(LightGBM_QA_Results_Classifier[,.N])) {
       TargetType = "classification",
       ScoringData = if(!tof && !PartitionInFunction) TTestData else TTrainData,
       ReturnShapValues = FALSE,
-      FeatureColumnNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+      FeatureColumnNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1","IDcol_2","DateTime","Adrian","ID_Factorizer")],
       IDcols = c("IDcol_1","IDcol_2","DateTime"),
       EncodingMethod = "credibility",
       FactorLevelsList = TestModel$FactorLevelsList,

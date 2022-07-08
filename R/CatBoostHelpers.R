@@ -198,6 +198,8 @@ CatBoostArgsCheck <- function(ModelType = "regression",
     if(GridTune. && length(BootStrapType.) > 1L) {
       BootStrapType. <- BootStrapType.[!BootStrapType. %chin% "MVS"]
     }
+  } else if(task_type. == 'CPU' && any(BootStrapType. %chin% 'Poisson')) {
+    BootStrapType. <- 'Bayesian'
   }
   if(!is.null(sampling_unit.) && BootStrapType. == "MVS") sampling_unit. <- "Object"
 
@@ -298,7 +300,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
         dataSets <- AutoDataPartition(
           data = data.,
           NumDataSets = 3L,
-          Ratios = c(0.70, 0.20, 0.10),
+          Ratios = c(0.80, 0.10, 0.10),
           PartitionType = "random",
           StratifyColumnNames = eval(TargetColumnName.[1L]),
           TimeColumnName = NULL)
@@ -342,7 +344,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
         dataSets <- AutoDataPartition(
           data = data.,
           NumDataSets = 3L,
-          Ratios = c(0.70, 0.20, 0.10),
+          Ratios = c(0.80, 0.10, 0.10),
           PartitionType = "random",
           StratifyColumnNames = eval(TargetColumnName.[1L]),
           TimeColumnName = NULL)
@@ -363,7 +365,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
       dataSets <- AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
-        Ratios = c(0.70, 0.20, 0.10),
+        Ratios = c(0.80, 0.10, 0.10),
         PartitionType = "random",
         StratifyColumnNames = eval(TargetColumnName.),
         TimeColumnName = NULL)

@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - MultiClass Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param DebugMode Set to TRUE to get a print out of the steps taken throughout the function
 #' @param data This is your data set for training and testing your model
@@ -544,12 +544,6 @@ AutoLightGBMMultiClass <- function(data = NULL,
     } else {
       data.table::fwrite(ExperimentalGrid, file = file.path(model_path, paste0(ModelID, "ExperimentalGrid.csv")))
     }
-  }
-
-  # Running CatBoostPDF() ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "xgboost", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=PlotList, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Return Model Objects ----

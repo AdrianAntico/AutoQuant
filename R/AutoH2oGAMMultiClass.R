@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Multiclass Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -61,7 +61,7 @@
 #'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
-#'   OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'   OutputSelection = c("EvalMetrics", "Score_TrainData"),
 #'   data,
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
@@ -105,7 +105,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
-AutoH2oGAMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+AutoH2oGAMMultiClass <- function(OutputSelection = c("EvalMetrics", "Score_TrainData"),
                                  data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
@@ -296,11 +296,6 @@ AutoH2oGAMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
   if(DebugMode) print("Variable Importance ----")
   VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
 
-  # if(DebugMode) print("H2O Explain ----")
-  # if(!TrainOnFull) {
-  #   Explain <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
-  # }
-
   # H2O Shutdown ----
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
 
@@ -353,7 +348,6 @@ AutoH2oGAMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
       Model = base_model,
       TrainData = if(exists("TrainData")) TrainData else NULL,
       TestData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-      #H2OExplain = if(exists("ExplainList") && !is.null(ExplainList)) ExplainList else NULL,
       EvaluationMetrics = if(exists("EvalMetricsList") && !is.null(EvalMetricsList)) EvalMetricsList else NULL,
       VariableImportance = if(exists("VariableImportance") && !is.null(VariableImportance)) VariableImportance else NULL,
       ColNames = if(exists("Names") && !is.null(Names)) Names else NULL,

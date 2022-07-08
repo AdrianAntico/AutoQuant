@@ -5,7 +5,7 @@
 \title{AutoH2oGAMMultiClass}
 \usage{
 AutoH2oGAMMultiClass(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -49,7 +49,7 @@ AutoH2oGAMMultiClass(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -148,7 +148,7 @@ GamCols <- GamCols[1L:(min(9L,length(GamCols)))]
 
 # Run function
 TestModel <- RemixAutoML::AutoH2oGAMMultiClass(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data,
   TrainOnFull = FALSE,
   ValidationData = NULL,

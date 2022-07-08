@@ -142,7 +142,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       dataSets <- AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
-        Ratios = c(0.85, 0.05, 0.10),
+        Ratios = c(0.80, 0.10, 0.10),
         PartitionType = 'random',
         StratifyColumnNames = TargetColumnName.,
         TimeColumnName = NULL)
@@ -271,7 +271,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
         dataSets <- AutoDataPartition(
           data.,
           NumDataSets = 3L,
-          Ratios = c(0.70, 0.20, 0.10),
+          Ratios = c(0.80, 0.10, 0.10),
           PartitionType = 'random',
           StratifyColumnNames = NULL,
           TimeColumnName = NULL)
@@ -321,7 +321,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
         dataSets <- AutoDataPartition(
           data.,
           NumDataSets = 3L,
-          Ratios = c(0.85, 0.05, 0.10),
+          Ratios = c(0.80, 0.10, 0.10),
           PartitionType = 'random',
           StratifyColumnNames = NULL,
           TimeColumnName = NULL)
@@ -416,7 +416,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       dataSets <- AutoDataPartition(
         data = data.,
         NumDataSets = 3L,
-        Ratios = c(0.85, 0.05, 0.10),
+        Ratios = c(0.80, 0.10, 0.10),
         PartitionType = 'random',
         StratifyColumnNames = TargetColumnName.,
         TimeColumnName = NULL)

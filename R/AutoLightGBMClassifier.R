@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param DebugMode Set to TRUE to get a print out of the steps taken throughout the function
 #' @param data This is your data set for training and testing your model
@@ -505,12 +505,6 @@ AutoLightGBMClassifier <- function(# Data Args
     PlotList[["Test_LiftPlot"]] <- Output$LiftPlot; Output$LiftPlot <- NULL
     PlotList[["Test_ROC_Plot"]] <- Output$ROC_Plot; rm(Output)
     if(!is.null(VariableImportance) && "plotly" %chin% installed.packages()) PlotList[["Train_VariableImportance"]] <- plotly::ggplotly(VI_Plot(Type = "xgboost", VariableImportance)) else if(!is.null(VariableImportance)) PlotList[["Train_VariableImportance"]] <- VI_Plot(Type = "xgboost", VariableImportance)
-  }
-
-  # Save PDF of model information ----
-  if(DebugMode) print("Save PDF of model information ----")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, VariableImportance.=VariableImportance, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # FactorLevelsList ----

@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Multiclass Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -63,7 +63,7 @@
 #' TestModel <- RemixAutoML::AutoH2oGLMMultiClass(
 #'
 #'   # Compute management
-#'   OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'   OutputSelection = c("EvalMetrics", "Score_TrainData"),
 #'   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
 #'   NThreads = max(1, parallel::detectCores()-2),
 #'   H2OShutdown = TRUE,
@@ -116,7 +116,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList
 #' @export
-AutoH2oGLMMultiClass <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+AutoH2oGLMMultiClass <- function(OutputSelection = c("EvalMetrics", "Score_TrainData"),
                                  data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,

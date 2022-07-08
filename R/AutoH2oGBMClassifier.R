@@ -75,7 +75,7 @@
 #'     NumOfParDepPlots = 3,
 #'
 #'     # Metadata arguments
-#'     OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'     OutputSelection = c("EvalMetrics", "Score_TrainData"),
 #'     model_path = normalizePath("./"),
 #'     metadata_path = file.path(normalizePath("./")),
 #'     ModelID = "FirstModel",
@@ -365,12 +365,6 @@ AutoH2oGBMClassifier <- function(OutputSelection = c("EvalMetrics","Score_TrainD
         data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
       }
     }
-  }
-
-  # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "h2o", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Return Objects ----

@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -42,7 +42,7 @@
 #'   MultiClass = FALSE)
 #'
 #' TestModel <- RemixAutoML::AutoH2oMLClassifier(
-#'   OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'   OutputSelection = c("EvalMetrics", "Score_TrainData"),
 #'   data,
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,
@@ -69,7 +69,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
-AutoH2oMLClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+AutoH2oMLClassifier <- function(OutputSelection = c("EvalMetrics", "Score_TrainData"),
                                 data = NULL,
                                 TrainOnFull = FALSE,
                                 ValidationData = NULL,
@@ -236,12 +236,6 @@ AutoH2oMLClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Scor
         data.table::fwrite(EvalMetricsList[['TestData']], file = file.path(model_path, paste0(ModelID, "_Test_EvaluationMetrics.csv")))
       }
     }
-  }
-
-  # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "h2o", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Return Objects ----

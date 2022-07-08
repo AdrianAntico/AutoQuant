@@ -5,7 +5,7 @@
 \title{AutoH2oGLMRegression}
 \usage{
 AutoH2oGLMRegression(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -56,7 +56,7 @@ AutoH2oGLMRegression(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -169,62 +169,62 @@ data <- RemixAutoML::FakeDataGenerator(
 # Run function
 TestModel <- RemixAutoML::AutoH2oGLMRegression(
 
-    # Compute management
-    MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-    NThreads = max(1, parallel::detectCores()-2),
-    H2OShutdown = TRUE,
-    H2OStartUp = TRUE,
-    IfSaveModel = "mojo",
+  # Compute management
+  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+  NThreads = max(1, parallel::detectCores()-2),
+  H2OShutdown = TRUE,
+  H2OStartUp = TRUE,
+  IfSaveModel = "mojo",
 
-    # Model evaluation:
-    eval_metric = "RMSE",
-    NumOfParDepPlots = 3,
+  # Model evaluation:
+  eval_metric = "RMSE",
+  NumOfParDepPlots = 3,
 
-    # Metadata arguments
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
-    model_path = NULL,
-    metadata_path = NULL,
-    ModelID = "FirstModel",
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = FALSE,
-    DebugMode = FALSE,
+  # Metadata arguments
+  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  model_path = NULL,
+  metadata_path = NULL,
+  ModelID = "FirstModel",
+  ReturnModelObjects = TRUE,
+  SaveModelObjects = FALSE,
+  SaveInfoToPDF = FALSE,
+  DebugMode = FALSE,
 
-    # Data arguments:
-    data = data,
-    TrainOnFull = FALSE,
-    ValidationData = NULL,
-    TestData = NULL,
-    TargetColumnName = "Adrian",
-    FeatureColNames = names(data)[!names(data) \%in\%
-      c("IDcol_1", "IDcol_2","Adrian")],
-    RandomColNumbers = NULL,
-    InteractionColNumbers = NULL,
-    WeightsColumn = NULL,
-    TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  # Data arguments:
+  data = data,
+  TrainOnFull = FALSE,
+  ValidationData = NULL,
+  TestData = NULL,
+  TargetColumnName = "Adrian",
+  FeatureColNames = names(data)[!names(data) \%in\%
+    c("IDcol_1", "IDcol_2","Adrian")],
+  RandomColNumbers = NULL,
+  InteractionColNumbers = NULL,
+  WeightsColumn = NULL,
+  TransformNumericColumns = NULL,
+  Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 
-    # Model args
-    GridTune = FALSE,
-    GridStrategy = "Cartesian",
-    StoppingRounds = 10,
-    MaxRunTimeSecs = 3600 * 24 * 7,
-    MaxModelsInGrid = 10,
-    Distribution = "gaussian",
-    Link = "identity",
-    TweedieLinkPower = NULL,
-    TweedieVariancePower = NULL,
-    RandomDistribution = NULL,
-    RandomLink = NULL,
-    Solver = "AUTO",
-    Alpha = 0.5,
-    Lambda = NULL,
-    LambdaSearch = FALSE,
-    NLambdas = -1,
-    Standardize = TRUE,
-    RemoveCollinearColumns = FALSE,
-    InterceptInclude = TRUE,
-    NonNegativeCoefficients = FALSE)
+  # Model args
+  GridTune = FALSE,
+  GridStrategy = "Cartesian",
+  StoppingRounds = 10,
+  MaxRunTimeSecs = 3600 * 24 * 7,
+  MaxModelsInGrid = 10,
+  Distribution = "gaussian",
+  Link = "identity",
+  TweedieLinkPower = NULL,
+  TweedieVariancePower = NULL,
+  RandomDistribution = NULL,
+  RandomLink = NULL,
+  Solver = "AUTO",
+  Alpha = 0.5,
+  Lambda = NULL,
+  LambdaSearch = FALSE,
+  NLambdas = -1,
+  Standardize = TRUE,
+  RemoveCollinearColumns = FALSE,
+  InterceptInclude = TRUE,
+  NonNegativeCoefficients = FALSE)
 }
 }
 \seealso{

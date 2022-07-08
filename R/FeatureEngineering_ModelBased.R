@@ -548,6 +548,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 #' @param MaxMem "28G"
 #' @param LayerStructure If NULL, layers and sizes will be created for you, using NodeShrinkRate and 7 layers will be created.
 #' @param NodeShrinkRate = (sqrt(5) - 1) / 2,
+#' @param ReturnFactorCount Default is NULL. If you supply a number, the final layer will be that number. Otherwise, it will be based on the NodeShrinkRate math.
 #' @param H2OStart TRUE to start H2O inside the function
 #' @param H2OShutdown Setting to TRUE will shutdown H2O when it done being used internally.
 #' @param ModelID "TestModel"
@@ -605,6 +606,7 @@ Word2Vec_H2O <- function(TrainData. = NULL,
 #'   LayerStructure = NULL,
 #'   NodeShrinkRate = (sqrt(5) - 1) / 2,
 #'   ReturnLayer = 4L,
+#'   ReturnFactorCount = NULL,
 #'   Activation = "Tanh",
 #'   Epochs = 5L,
 #'   L2 = 0.10,
@@ -676,6 +678,7 @@ H2OAutoencoder <- function(AnomalyDetection = FALSE,
                            LayerStructure  = NULL,
                            NodeShrinkRate = (sqrt(5) - 1) / 2,
                            ReturnLayer = 4L,
+                           ReturnFactorCount = NULL,
                            per_feature = TRUE,
                            Activation = "Tanh",
                            Epochs = 5L,

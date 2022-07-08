@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData')
+#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')
 #' @param data This is your data set for training and testing your model
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
@@ -357,12 +357,6 @@ AutoCatBoostClassifier <- function(OutputSelection = c('Importances','EvalPlots'
   # Remove extenal files if GridTune is TRUE ----
   if(DebugMode) print('Running CatBoostRemoveFiles()')
   CatBoostRemoveFiles(GridTune. = GridTune, model_path. = model_path)
-
-  # Send output to pdf ----
-  if(DebugMode) print('Running CatBoostPDF()')
-  if('pdfs' %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = 'catboost', ModelType='classification', TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=PlotList, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
-  }
 
   # Final Garbage Collection ----
   if(tolower(task_type) == 'gpu') gc()

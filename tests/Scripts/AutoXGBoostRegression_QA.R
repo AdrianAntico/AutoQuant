@@ -28,8 +28,8 @@ XGBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
 # 10: TRUE           TRUE    FALSE Failure               FALSE
 
 # AutoXGBoostRegression
-# run = 1
-# run = 2
+# run = 9 # train on full fail
+# run = 10 # train on full fail
 # run = 6
 for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 
@@ -133,7 +133,6 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
   # Outcome
   if(!is.null(TestModel)) {
     XGBoost_QA_Results_Regression[run, Success := "Success"]
-    XGBoost_QA_Results_Regression[run, MetricTrain := TestModel$EvaluationMetrics$TrainData[Metric == 'R2', MetricValue]]
     XGBoost_QA_Results_Regression[run, MetricTest := TestModel$EvaluationMetrics$TestData[Metric == 'R2', MetricValue]]
   }
   TestModel <- NULL

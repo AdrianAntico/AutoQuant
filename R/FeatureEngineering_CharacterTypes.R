@@ -991,6 +991,8 @@ EncodeCharacterVariables <- function(RunMode = 'train',
       TestData <- temp[ID_Factorizer == "TEST"]
       data.table::set(TestData, j = "ID_Factorizer", value = NULL)
     }
+  } else {
+    if('ID_Factorizer' %in% names(TrainData)) data.table::set(TrainData, j = 'ID_Factorizer', value = NULL)
   }
 
   # Attach Encoding Method to list

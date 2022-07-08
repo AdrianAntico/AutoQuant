@@ -172,7 +172,7 @@ TestModel <- RemixAutoML::AutoH2oGBMClassifier(
     NumOfParDepPlots = 3,
 
     # Metadata arguments
-    OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+    OutputSelection = c("EvalMetrics", "Score_TrainData"),
     model_path = normalizePath("./"),
     metadata_path = file.path(normalizePath("./")),
     ModelID = "FirstModel",

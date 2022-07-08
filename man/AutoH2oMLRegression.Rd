@@ -5,7 +5,7 @@
 \title{AutoH2oMLRegression}
 \usage{
 AutoH2oMLRegression(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -34,7 +34,7 @@ AutoH2oMLRegression(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -115,7 +115,7 @@ TestModel <- RemixAutoML::AutoH2oMLRegression(
   NumOfParDepPlots = 3,
 
   # Metadata arguments
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",

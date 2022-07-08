@@ -28,7 +28,7 @@ AutoH2oDRFRegression(
   metadata_path = NULL,
   ModelID = "FirstModel",
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+  Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   NumOfParDepPlots = 3,
   eval_metric = "RMSE",
   GridTune = FALSE,
@@ -51,7 +51,7 @@ AutoH2oDRFRegression(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from "EvalMetrics", "PDFs", "Score_TrainData", "h2o.explain"}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from "EvalMetrics", "Score_TrainData", "h2o.explain"}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -181,12 +181,10 @@ TestModel <- RemixAutoML::AutoH2oDRFRegression(
   ValidationData = NULL,
   TestData = NULL,
   TargetColumnName = "Adrian",
-  FeatureColNames = names(data)[!names(data) \%in\%
-    c("IDcol_1", "IDcol_2","Adrian")],
+  FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
   WeightsColumn = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Asin", "Log",
-    "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+  Methods = c("Asinh","Asin","Log","LogPlus1", "Sqrt","Logit"),
 
   # Grid Tuning Args
   GridStrategy = "RandomDiscrete",

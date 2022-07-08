@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Binary Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -81,7 +81,7 @@
 #'   NumOfParDepPlots = 3,
 #'
 #'   # Metadata arguments
-#'   OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'   OutputSelection = c("EvalMetrics", "Score_TrainData"),
 #'   model_path = NULL,
 #'   metadata_path = NULL,
 #'   ModelID = "FirstModel",
@@ -122,7 +122,7 @@
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
 #' @export
-AutoH2oGAMClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+AutoH2oGAMClassifier <- function(OutputSelection = c("EvalMetrics", "Score_TrainData"),
                                  data = NULL,
                                  TrainOnFull = FALSE,
                                  ValidationData = NULL,
@@ -315,19 +315,6 @@ AutoH2oGAMClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
   if(DebugMode) print("Variable Importance ----")
   VariableImportance <- H2OVariableImportance(TrainOnFull.=TrainOnFull, base_model.=base_model, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID)
 
-  # H2O Explain TrainData ----
-  # if(DebugMode) print("H2O Explain TrainData ----")
-  # ExplainList <- list()
-  # if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
-  #   ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
-  # }
-
-  # H2O Explain ValidationData ----
-  # if(DebugMode) print("H2O Explain ValidationData ----")
-  # if(!TrainOnFull) {
-  #   ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
-  # }
-
   # H2O Shutdown ----
   if(DebugMode) print("H2O Shutdown ----")
   if(H2OShutdown) h2o::h2o.shutdown(prompt = FALSE)
@@ -359,12 +346,6 @@ AutoH2oGAMClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
     }
   }
 
-  # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "h2o", ModelType="classification", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
-  }
-
   # Return Objects ----
   if(DebugMode) print("Return Objects ----")
   if(ReturnModelObjects) {
@@ -372,7 +353,6 @@ AutoH2oGAMClassifier <- function(OutputSelection = c("EvalMetrics", "PDFs", "Sco
       Model = base_model,
       TrainData = if(exists("TrainData") && !is.null(TrainData)) TrainData else NULL,
       TestData = if(exists("ValidationData") && !is.null(ValidationData)) ValidationData else NULL,
-      #H2OExplain = if(exists("ExplainList")) ExplainList else NULL,
       EvaluationMetrics = if(exists("EvalMetricsList")) EvalMetricsList else NULL,
       EvaluationMetrics2 = if(exists("EvalMetrics2List")) EvalMetrics2List else NULL,
       VariableImportance = if(exists("VariableImportance")) VariableImportance else NULL,

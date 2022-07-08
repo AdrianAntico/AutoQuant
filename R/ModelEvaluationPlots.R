@@ -742,7 +742,7 @@ VI_Plot <- function(Type = "catboost",
                     ColorLow = "white",
                     TopN = 25) {
 
-  # Catboost
+  # Not H2O
   if(Type != "h2o") {
     VI_Data[, Variable := gsub(pattern = 'Shap_', replacement = "", x = Variable)]
     p1 <- eval(

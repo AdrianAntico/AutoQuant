@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Multiclass Classification
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'PDFs', 'Score_TrainData')
+#' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
@@ -402,12 +402,6 @@ AutoCatBoostMultiClass <- function(OutputSelection = c('Importances', 'EvalPlots
       }
       data.table::set(ValidationData, j = c('p1',paste0('Temp_',tarlevel)), value = NULL)
     }
-  }
-
-  # Send output to pdf ----
-  if(DebugMode) print('Running CatBoostPDF()')
-  if('pdfs' %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = 'catboost', ModelType='classification', TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=PlotList, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=Interaction, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Remove extenal files if GridTune is TRUE ----

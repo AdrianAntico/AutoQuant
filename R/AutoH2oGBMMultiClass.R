@@ -61,7 +61,7 @@
 #'
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGBMMultiClass(
-#'   OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'   OutputSelection = c("EvalMetrics", "Score_TrainData"),
 #'   data,
 #'   TrainOnFull = FALSE,
 #'   ValidationData = NULL,

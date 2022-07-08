@@ -94,7 +94,7 @@
 #'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'     WeightsColumn = NULL,
 #'     TransformNumericColumns = NULL,
-#'     Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
+#'     Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 #'
 #'     # ML grid tuning args
 #'     GridTune = FALSE,
@@ -133,7 +133,7 @@ AutoH2oGBMRegression <- function(OutputSelection = c("EvalMetrics","Score_TrainD
                                  FeatureColNames = NULL,
                                  WeightsColumn = NULL,
                                  TransformNumericColumns = NULL,
-                                 Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                                 Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                                  MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
                                  NThreads = max(1,parallel::detectCores()-2),
                                  model_path = NULL,
@@ -394,12 +394,6 @@ AutoH2oGBMRegression <- function(OutputSelection = c("EvalMetrics","Score_TrainD
     } else {
       TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
     }
-  }
-
-  # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "h2o", ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Return Objects ----

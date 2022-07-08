@@ -5,7 +5,7 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from "EvalMetrics", "PDFs", "Score_TrainData", "h2o.explain"
+#' @param OutputSelection You can select what type of output you want returned. Choose from "EvalMetrics", "Score_TrainData", "h2o.explain"
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
@@ -88,12 +88,10 @@
 #'   ValidationData = NULL,
 #'   TestData = NULL,
 #'   TargetColumnName = "Adrian",
-#'   FeatureColNames = names(data)[!names(data) %in%
-#'     c("IDcol_1", "IDcol_2","Adrian")],
+#'   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
 #'   WeightsColumn = NULL,
 #'   TransformNumericColumns = NULL,
-#'   Methods = c("BoxCox", "Asinh", "Asin", "Log",
-#'     "LogPlus1", "Sqrt", "Logit", "YeoJohnson"),
+#'   Methods = c("Asinh","Asin","Log","LogPlus1", "Sqrt","Logit"),
 #'
 #'   # Grid Tuning Args
 #'   GridStrategy = "RandomDiscrete",
@@ -139,7 +137,7 @@ AutoH2oDRFRegression <- function(OutputSelection = c("EvalMetrics","Score_TrainD
                                  metadata_path = NULL,
                                  ModelID = "FirstModel",
                                  TransformNumericColumns = NULL,
-                                 Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+                                 Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
                                  NumOfParDepPlots = 3,
                                  eval_metric = "RMSE",
                                  GridTune = FALSE,
@@ -347,12 +345,6 @@ AutoH2oDRFRegression <- function(OutputSelection = c("EvalMetrics","Score_TrainD
     } else {
       TransformationResults <- TransformationResults[!(ColumnName %chin% c("Predict", "Target"))]
     }
-  }
-
-  # Send output to pdf ----
-  if(DebugMode) print("Running CatBoostPDF()")
-  if("pdfs" %chin% tolower(OutputSelection) && SaveModelObjects) {
-    CatBoostPDF(ModelClass = "h2o", ModelType="regression", TrainOnFull.=TrainOnFull, SaveInfoToPDF.=SaveInfoToPDF, PlotList.=NULL, VariableImportance.=VariableImportance, EvalMetricsList.=EvalMetricsList, Interaction.=NULL, model_path.=model_path, metadata_path.=metadata_path)
   }
 
   # Return Objects ----

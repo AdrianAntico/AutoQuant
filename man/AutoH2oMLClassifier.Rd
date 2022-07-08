@@ -5,7 +5,7 @@
 \title{AutoH2oMLClassifier}
 \usage{
 AutoH2oMLClassifier(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data = NULL,
   TrainOnFull = FALSE,
   ValidationData = NULL,
@@ -34,7 +34,7 @@ AutoH2oMLClassifier(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "PDFs", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -101,7 +101,7 @@ data <- RemixAutoML::FakeDataGenerator(
   MultiClass = FALSE)
 
 TestModel <- RemixAutoML::AutoH2oMLClassifier(
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   data,
   TrainOnFull = FALSE,
   ValidationData = NULL,

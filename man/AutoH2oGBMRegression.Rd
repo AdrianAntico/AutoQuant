@@ -14,7 +14,7 @@ AutoH2oGBMRegression(
   FeatureColNames = NULL,
   WeightsColumn = NULL,
   TransformNumericColumns = NULL,
-  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+  Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
   MaxMem = {     gc()    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
     intern = TRUE))/1e+06)), "G") },
@@ -196,7 +196,7 @@ TestModel <- RemixAutoML::AutoH2oGBMRegression(
     FeatureColNames = names(data)[!names(data) \%in\% c("IDcol_1", "IDcol_2","Adrian")],
     WeightsColumn = NULL,
     TransformNumericColumns = NULL,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit","YeoJohnson"),
+    Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 
     # ML grid tuning args
     GridTune = FALSE,
