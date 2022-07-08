@@ -33,18 +33,27 @@ XGBoost_QA_Results_Regression[, RunNumber := seq_len(.N)]
 # run = 6
 for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 
-  data <- data.table::fread(file = file.path("C:/Users/Bizon/Documents/GitHub/kompsai/inst/Research/Total_Inference.csv"))
+  # Refresh data
+  data <- RemixAutoML::FakeDataGenerator(
+    Correlation = 0.85,
+    N = 20000L,
+    ID = 2L,
+    AddWeightsColumn = TRUE,
+    ZIP = 0L,
+    AddDate = TRUE,
+    Classification = FALSE,
+    MultiClass = FALSE)
 
   # Define values
   if(XGBoost_QA_Results_Regression[run, Transformation]) {
-    trans <- 'CHILLED_Units_PerDay'
+    trans <- 'Adrian'
   } else {
     trans <- NULL
   }
   tof <- XGBoost_QA_Results_Regression[run, TOF]
   PartitionInFunction <- XGBoost_QA_Results_Regression[run, PartitionInFunction]
   gridtune <- XGBoost_QA_Results_Regression[run, GridTune]
-  Tar <- 'CHILLED_Units_PerDay'
+  Tar <- 'Adrian'
 
   # Refresh data
   # data <- RemixAutoML::FakeDataGenerator(
@@ -65,7 +74,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
       NumDataSets = 3,
       Ratios = c(0.7,0.2,0.1),
       PartitionType = "random",
-      StratifyColumnNames = 'CHILLED_Units_PerDay',
+      StratifyColumnNames = 'Adrian',
       TimeColumnName = NULL)
     TTrainData <- Sets$TrainData
     VValidationData <- Sets$ValidationData
@@ -101,7 +110,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
     ValidationData = VValidationData,
     TestData = TTestData,
     TargetColumnName = Tar,
-    FeatureColNames = names(data)[c(2,3,39:ncol(data))],#names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime",Tar)],
+    FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime",Tar)],
     WeightsColumnName = NULL,
     IDcols = NULL, #names(data)[!names(data) %in% names(data)[c(2,3,39:ncol(data))]],
     TransformNumericColumns = trans,
@@ -172,14 +181,14 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 #
 # # Define values
 # if(XGBoost_QA_Results_Regression[run, Transformation]) {
-#   trans <- 'CHILLED_Units_PerDay'
+#   trans <- 'Adrian'
 # } else {
 #   trans <- NULL
 # }
 # tof <- XGBoost_QA_Results_Regression[run, TOF]
 # PartitionInFunction <- XGBoost_QA_Results_Regression[run, PartitionInFunction]
 # gridtune <- XGBoost_QA_Results_Regression[run, GridTune]
-# Tar <- 'CHILLED_Units_PerDay'
+# Tar <- 'Adrian'
 #
 # # Refresh data
 # # data <- RemixAutoML::FakeDataGenerator(
@@ -200,7 +209,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
 #     NumDataSets = 3,
 #     Ratios = c(0.7,0.2,0.1),
 #     PartitionType = "random",
-#     StratifyColumnNames = 'CHILLED_Units_PerDay',
+#     StratifyColumnNames = 'Adrian',
 #     TimeColumnName = NULL)
 #   TTrainData <- Sets$TrainData
 #   VValidationData <- Sets$ValidationData
