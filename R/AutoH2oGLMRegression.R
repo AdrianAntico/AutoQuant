@@ -183,7 +183,7 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if(length(RandomColNumbers) > 0L && !is.numeric(RandomColNumbers)) {
-    RandomColNumbers <- names(data)[which(names(data) %in% RandomColNumbers)]
+    RandomColNumbers <- which(names(data) %in% RandomColNumbers)
   }
 
   # Grab all official parameters and their evaluated arguments

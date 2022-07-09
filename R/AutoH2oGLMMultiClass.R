@@ -170,7 +170,7 @@ AutoH2oGLMMultiClass <- function(OutputSelection = c("EvalMetrics", "Score_Train
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if(eval_metric == "auc") Decreasing <- FALSE else Decreasing <- TRUE
   if(length(RandomColNumbers) > 0L && !is.numeric(RandomColNumbers)) {
-    RandomColNumbers <- names(data)[which(names(data) %in% RandomColNumbers)]
+    RandomColNumbers <- which(names(data) %in% RandomColNumbers)
   }
 
   # Grab all official parameters and their evaluated arguments

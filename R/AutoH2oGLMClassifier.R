@@ -176,7 +176,7 @@ AutoH2oGLMClassifier <- function(OutputSelection = c("EvalMetrics", "Score_Train
   if(!(tolower(eval_metric) == "auc")) eval_metric <- tolower(eval_metric) else eval_metric <- toupper(eval_metric)
   if(tolower(eval_metric) %chin% c("auc")) Decreasing <- TRUE else Decreasing <- FALSE
   if(length(RandomColNumbers) > 0L && !is.numeric(RandomColNumbers)) {
-    RandomColNumbers <- names(data)[which(names(data) %in% RandomColNumbers)]
+    RandomColNumbers <- which(names(data) %in% RandomColNumbers)
   }
 
   # Grab all official parameters and their evaluated arguments
