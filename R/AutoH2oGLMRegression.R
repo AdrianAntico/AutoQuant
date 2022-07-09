@@ -5,14 +5,14 @@
 #' @author Adrian Antico
 #' @family Automated Supervised Learning - Regression
 #'
-#' @param OutputSelection You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")
+#' @param OutputSelection You can select what type of output you want returned. Choose from "EvalMetrics", "Score_TrainData", "h2o.explain"
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters.
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param RandomColNumbers Random effects column number indicies
+#' @param RandomColNumbers Random effects column number indicies. You can also pass character names of the columns.
 #' @param InteractionColNumbers Column numbers of the features you want to be pairwise interacted
 #' @param WeightsColumn Column name of a weights column
 #' @param TransformNumericColumns Set to NULL to do nothing; otherwise supply the column names of numeric variables you want transformed
@@ -38,7 +38,7 @@
 #' @param DebugMode Set to TRUE to print out steps to screen
 #' @param Distribution "AUTO", "gaussian", "poisson", "gamma", "tweedie", "negativebinomial"
 #' @param Link "family_default", "identity", "log", "inverse", "tweedie"
-#' @param TweedieLinkPower See h2o docs for background
+#' @param TweedieLinkPower 1, 2, 3 for Poisson, Gamma, and Gaussian
 #' @param TweedieVariancePower See h2o docs for background
 #' @param RandomDistribution Random effects family. Defaults NULL, otherwise it will run a hierarchical glm
 #' @param RandomLink Random effects link. Defaults NULL, otherwise it will run a hierarchical glm
@@ -78,7 +78,7 @@
 #'   NumOfParDepPlots = 3,
 #'
 #'   # Metadata arguments
-#'   OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'   OutputSelection = c("EvalMetrics", "Score_TrainData"),
 #'   model_path = NULL,
 #'   metadata_path = NULL,
 #'   ModelID = "FirstModel",
@@ -182,6 +182,9 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   if(NumOfParDepPlots < 0) stop("NumOfParDepPlots needs to be a positive number")
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
+  if(length(RandomColNumbers) > 0L && !is.numeric(RandomColNumbers)) {
+    RandomColNumbers <- names(data)[which(names(data) %in% RandomColNumbers)]
+  }
 
   # Grab all official parameters and their evaluated arguments
   ArgsList <- c(as.list(environment()))
@@ -279,7 +282,7 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
     H2OArgs[["y"]] <- TargetColumnName
     H2OArgs[["interactions"]] <- InteractionColNumbers
     H2OArgs[["weights_column"]] <- WeightsColumn
-    if(!is.null(RandomDistribution) & !is.null(RandomLink)) H2OArgs[["HGLM"]] <- TRUE else H2OArgs[["HGLM"]] <- FALSE
+    if(!is.null(RandomDistribution) && !is.null(RandomLink)) H2OArgs[["HGLM"]] <- TRUE else H2OArgs[["HGLM"]] <- FALSE
     H2OArgs[["training_frame"]] <- datatrain
     H2OArgs[["validation_frame"]] <- datavalidate
     H2OArgs[["family"]] <- Distribution
@@ -335,13 +338,13 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   # H2O Explain TrainData ----
   if(DebugMode) print("H2O Explain TrainData ----")
   ExplainList <- list()
-  if("score_traindata" %chin% tolower(OutputSelection) && !TrainOnFull) {
+  if(all(c("score_traindata","h2o.explain") %chin% tolower(OutputSelection)) && !TrainOnFull) {
     ExplainList[["Train_Explain"]] <- h2o::h2o.explain(base_model, newdata = datatrain)
   }
 
   # H2O Explain ValidationData ----
   if(DebugMode) print("H2O Explain ValidationData ----")
-  if(!TrainOnFull) {
+  if(!TrainOnFull && "h2o.explain" %chin% tolower(OutputSelection)) {
     ExplainList[["Test_Explain"]] <- h2o::h2o.explain(base_model, newdata = if(!is.null(TestData)) datatest else if(!is.null(ValidationData) && !TrainOnFull) datavalidate else datatrain)
   }
 

@@ -112,7 +112,7 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
     TargetColumnName = Tar,
     FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime",Tar)],
     WeightsColumnName = NULL,
-    IDcols = NULL, #names(data)[!names(data) %in% names(data)[c(2,3,39:ncol(data))]],
+    IDcols = NULL,
     TransformNumericColumns = trans,
     Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 

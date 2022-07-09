@@ -153,8 +153,6 @@ RemixAutoML:::BarPlot(
 \seealso{
 Other Graphics: 
 \code{\link{AddFacet}()},
-\code{\link{AppModelInsights}()},
-\code{\link{AutoPlotter}()},
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
 \code{\link{CorrMatrixPlot}()},

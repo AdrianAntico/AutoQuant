@@ -67,7 +67,7 @@ AutoH2oGLMClassifier(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
-\item{RandomColNumbers}{Random effects column number indicies}
+\item{RandomColNumbers}{Random effects column number indicies. You can also pass character names of the columns.}
 
 \item{InteractionColNumbers}{Column numbers of the features you want to be pairwise interacted}
 
@@ -111,6 +111,8 @@ AutoH2oGLMClassifier(
 
 \item{Distribution}{"binomial", "fractionalbinomial", "quasibinomial"}
 
+\item{Link}{identity, logit, log, inverse, tweedie}
+
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "auc"}
 
 \item{CostMatrixWeights}{A vector with 4 elements c(True Positive Cost, False Negative Cost, False Positive Cost, True Negative Cost). Default c(1,0,0,1),}
@@ -136,8 +138,6 @@ AutoH2oGLMClassifier(
 \item{InterceptInclude}{Default TRUE}
 
 \item{NonNegativeCoefficients}{Default FALSE}
-
-\item{link}{identity, logit, log, inverse, tweedie}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList

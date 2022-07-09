@@ -66,7 +66,7 @@ AutoH2oGLMMultiClass(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
-\item{RandomColNumbers}{Random effects column number indicies}
+\item{RandomColNumbers}{Random effects column number indicies. You can also pass character names of the columns.}
 
 \item{InteractionColNumbers}{Column numbers of the features you want to be pairwise interacted}
 
@@ -110,6 +110,8 @@ AutoH2oGLMMultiClass(
 
 \item{Distribution}{"multinomial"}
 
+\item{Link}{"family_default"}
+
 \item{eval_metric}{This is the metric used to identify best grid tuned model. Choose from "logloss"}
 
 \item{RandomDistribution}{Random effects family. Defaults NULL, otherwise it will run a hierarchical glm}
@@ -133,8 +135,6 @@ AutoH2oGLMMultiClass(
 \item{InterceptInclude}{Default TRUE}
 
 \item{NonNegativeCoefficients}{Default FALSE}
-
-\item{link}{"family_default"}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, and GridList

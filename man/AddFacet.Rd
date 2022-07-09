@@ -26,8 +26,6 @@ Add up to two facet variables for plots
 }
 \seealso{
 Other Graphics: 
-\code{\link{AppModelInsights}()},
-\code{\link{AutoPlotter}()},
 \code{\link{BarPlot}()},
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},

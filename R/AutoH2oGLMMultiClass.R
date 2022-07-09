@@ -12,7 +12,7 @@
 #' @param TestData This is your holdout data set. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
 #' @param TargetColumnName Either supply the target column name OR the column number where the target is located (but not mixed types).
 #' @param FeatureColNames Either supply the feature column names OR the column number where the target is located (but not mixed types)
-#' @param RandomColNumbers Random effects column number indicies
+#' @param RandomColNumbers Random effects column number indicies. You can also pass character names of the columns.
 #' @param InteractionColNumbers Column numbers of the features you want to be pairwise interacted
 #' @param WeightsColumn Column name of a weights column
 #' @param eval_metric This is the metric used to identify best grid tuned model. Choose from "logloss"
@@ -35,7 +35,7 @@
 #' @param H2OShutdown Set to TRUE to shutdown H2O inside the function
 #' @param DebugMode Set to TRUE to see a printout of each step
 #' @param Distribution "multinomial"
-#' @param link "family_default"
+#' @param Link "family_default"
 #' @param RandomDistribution Random effects family. Defaults NULL, otherwise it will run a hierarchical glm
 #' @param RandomLink Random effects link. Defaults NULL, otherwise it will run a hierarchical glm
 #' @param Solver Default "AUTO". Options include "IRLSM", "L_BFGS", "COORDINATE_DESCENT_NAIVE", "COORDINATE_DESCENT", "GRADIENT_DESCENT_LH", "GRADIENT_DESCENT_SQERR"
@@ -169,6 +169,9 @@ AutoH2oGLMMultiClass <- function(OutputSelection = c("EvalMetrics", "Score_Train
   if(!(ReturnModelObjects %in% c(TRUE, FALSE))) stop("ReturnModelObjects needs to be TRUE or FALSE")
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if(eval_metric == "auc") Decreasing <- FALSE else Decreasing <- TRUE
+  if(length(RandomColNumbers) > 0L && !is.numeric(RandomColNumbers)) {
+    RandomColNumbers <- names(data)[which(names(data) %in% RandomColNumbers)]
+  }
 
   # Grab all official parameters and their evaluated arguments
   ArgsList <- c(as.list(environment()))

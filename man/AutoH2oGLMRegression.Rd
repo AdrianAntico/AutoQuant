@@ -56,7 +56,7 @@ AutoH2oGLMRegression(
 )
 }
 \arguments{
-\item{OutputSelection}{You can select what type of output you want returned. Choose from c("EvalMetrics", "Score_TrainData")}
+\item{OutputSelection}{You can select what type of output you want returned. Choose from "EvalMetrics", "Score_TrainData", "h2o.explain"}
 
 \item{data}{This is your data set for training and testing your model}
 
@@ -70,7 +70,7 @@ AutoH2oGLMRegression(
 
 \item{FeatureColNames}{Either supply the feature column names OR the column number where the target is located (but not mixed types)}
 
-\item{RandomColNumbers}{Random effects column number indicies}
+\item{RandomColNumbers}{Random effects column number indicies. You can also pass character names of the columns.}
 
 \item{InteractionColNumbers}{Column numbers of the features you want to be pairwise interacted}
 
@@ -120,7 +120,7 @@ AutoH2oGLMRegression(
 
 \item{Link}{"family_default", "identity", "log", "inverse", "tweedie"}
 
-\item{TweedieLinkPower}{See h2o docs for background}
+\item{TweedieLinkPower}{1, 2, 3 for Poisson, Gamma, and Gaussian}
 
 \item{TweedieVariancePower}{See h2o docs for background}
 
@@ -181,7 +181,7 @@ TestModel <- RemixAutoML::AutoH2oGLMRegression(
   NumOfParDepPlots = 3,
 
   # Metadata arguments
-  OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+  OutputSelection = c("EvalMetrics", "Score_TrainData"),
   model_path = NULL,
   metadata_path = NULL,
   ModelID = "FirstModel",

@@ -17,8 +17,6 @@ Create a candlestick plot for stocks. See https://plotly.com/r/figure-labels/
 \seealso{
 Other Graphics: 
 \code{\link{AddFacet}()},
-\code{\link{AppModelInsights}()},
-\code{\link{AutoPlotter}()},
 \code{\link{BarPlot}()},
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},

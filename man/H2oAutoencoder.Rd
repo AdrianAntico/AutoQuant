@@ -19,6 +19,7 @@ H2OAutoencoder(
   LayerStructure = NULL,
   NodeShrinkRate = (sqrt(5) - 1)/2,
   ReturnLayer = 4L,
+  ReturnFactorCount = NULL,
   per_feature = TRUE,
   Activation = "Tanh",
   Epochs = 5L,
@@ -56,6 +57,8 @@ H2OAutoencoder(
 \item{NodeShrinkRate}{= (sqrt(5) - 1) / 2,}
 
 \item{ReturnLayer}{Which layer of the NNet to return. Choose from 1-7 with 4 being the layer with the least amount of nodes}
+
+\item{ReturnFactorCount}{Default is NULL. If you supply a number, the final layer will be that number. Otherwise, it will be based on the NodeShrinkRate math.}
 
 \item{per_feature}{Set to TRUE to have per feature anomaly detection generated. Otherwise and overall value will be generated}
 
@@ -122,6 +125,7 @@ Output <- RemixAutoML::H2OAutoencoder(
   LayerStructure = NULL,
   NodeShrinkRate = (sqrt(5) - 1) / 2,
   ReturnLayer = 4L,
+  ReturnFactorCount = NULL,
   Activation = "Tanh",
   Epochs = 5L,
   L2 = 0.10,
