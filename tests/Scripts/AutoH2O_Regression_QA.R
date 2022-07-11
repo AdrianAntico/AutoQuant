@@ -102,6 +102,30 @@ for(run in 1L:3L) {
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
 #
+# data <- RemixAutoML::FakeDataGenerator(
+#   Correlation = 0.85,
+#   N = 1000,
+#   ID = 2,
+#   ZIP = 0,
+#   AddDate = FALSE,
+#   Classification = FALSE,
+#   MultiClass = FALSE)
+#
+# run = 2
+#
+# # Set training mode
+# if(run %in% c(2,3)) TOF <- FALSE else TOF <- TRUE
+#
+# # grid tune
+# if(run == 3) gridtune <- TRUE else gridtune <- FALSE
+#
+# # Create copy
+# data1 <- data.table::copy(data)
+#
+# feats <- c('CUSTOMER_COD_char','Cooler_Model',"MA4_BusinessMetrics1","MA4_BusinessMetrics2","MA4_BusinessMetrics3","MA4_BusinessMetrics4","MA4_BusinessMetrics5",
+#   "Lag1_BusinessMetrics1","Lag1_BusinessMetrics2","Lag1_BusinessMetrics3","Lag1_BusinessMetrics4","Lag1_BusinessMetrics5",
+#   "Diff1_BusinessMetrics1","Diff1_BusinessMetrics2","Diff1_BusinessMetrics3","Diff1_BusinessMetrics4","Diff1_BusinessMetrics5")
+#
 # MaxMem = "32g"
 # NThreads = max(1L, parallel::detectCores() - 2L)
 # H2OShutdown = TRUE
@@ -121,8 +145,8 @@ for(run in 1L:3L) {
 # TrainOnFull = TOF
 # ValidationData = NULL
 # TestData = NULL
-# TargetColumnName = "Adrian"
-# FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")]
+# TargetColumnName = "CHILLED_Units_PerDay"
+# FeatureColNames = feats
 # WeightsColumn = NULL
 # TransformNumericColumns = NULL
 # Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit")

@@ -184,6 +184,10 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   if(!(SaveModelObjects %in% c(TRUE, FALSE))) stop("SaveModelObjects needs to be TRUE or FALSE")
   if(length(RandomColNumbers) > 0L && !is.numeric(RandomColNumbers)) {
     RandomColNumbers <- which(names(data) %in% RandomColNumbers)
+    if(length(ValidationData) > 0L) {
+      TrainData <- data.table::rbindlist(list(TrainData, ValidationData), use.names = TRUE, fill = TRUE)
+      ValidationData <- NULL
+    }
   }
 
   # Grab all official parameters and their evaluated arguments
@@ -264,6 +268,9 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   # Start Up H2O ----
   if(!GridTune) {
 
+    H2OArgs <- list()
+    if(!is.null(RandomColNumbers)) H2OArgs[["HGLM"]] <- TRUE
+
     # Build Model ----
     if(DebugMode) print("Build Model ----")
 
@@ -271,26 +278,27 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
     if(H2OStartUp) localHost <- h2o::h2o.init(nthreads = NThreads, max_mem_size = MaxMem, enable_assertions = FALSE)
     datatrain <- h2o::as.h2o(dataTrain)
     if(!TrainOnFull) datavalidate <- h2o::as.h2o(dataTest, use_datatable = TRUE) else datavalidate <- NULL
-    if(!is.null(TestData)) datatest <- h2o::as.h2o(TestData, use_datatable = TRUE) else datatest <- NULL
+    if(!is.null(TestData) && !H2OArgs[['HGLM']]) datatest <- h2o::as.h2o(TestData, use_datatable = TRUE) else datatest <- NULL
 
     # Define link ----
     if(!GridTune) if(is.null(Link)) Link <- "identity"
 
     # Define ml args ----
-    H2OArgs <- list()
     H2OArgs[["x"]] <- FeatureColNames
     H2OArgs[["y"]] <- TargetColumnName
     H2OArgs[["interactions"]] <- InteractionColNumbers
     H2OArgs[["weights_column"]] <- WeightsColumn
-    if(!is.null(RandomDistribution) && !is.null(RandomLink)) H2OArgs[["HGLM"]] <- TRUE else H2OArgs[["HGLM"]] <- FALSE
     H2OArgs[["training_frame"]] <- datatrain
-    H2OArgs[["validation_frame"]] <- datavalidate
     H2OArgs[["family"]] <- Distribution
     H2OArgs[["link"]] <- Link
     H2OArgs[["model_id"]] <- ModelID
-    H2OArgs[["rand_family"]] <- RandomDistribution
-    H2OArgs[["rand_link"]] <- RandomLink
-    H2OArgs[["random_columns"]] <- RandomColNumbers
+    if(length(H2OArgs[['HGLM']]) > 0L) {
+      H2OArgs[["rand_family"]] <- RandomDistribution
+      H2OArgs[["rand_link"]] <- RandomLink
+      H2OArgs[["random_columns"]] <- RandomColNumbers
+    } else {
+      H2OArgs[["validation_frame"]] <- datavalidate
+    }
     H2OArgs[["solver"]] <- Solver
     H2OArgs[["alpha"]] <- Alpha
     H2OArgs[["lambda"]] <- Lambda
@@ -328,7 +336,7 @@ AutoH2oGLMRegression <- function(OutputSelection = c("EvalMetrics", "Score_Train
   Predict <- data.table::as.data.table(h2o::h2o.predict(object = base_model, newdata = if(!is.null(TestData)) datatest else if(!TrainOnFull) datavalidate else datatrain))
 
   # Create Validation Data ----
-  Output <- H2OValidationData(Predict.=Predict, TestData.=TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
+  Output <- H2OValidationData(Predict.=Predict, TestData.=if(H2OArgs[['HGLM']]) NULL else TestData, dataTest.=dataTest, dataTrain.=dataTrain, TrainOnFull.=TrainOnFull, SaveModelObjects.=SaveModelObjects, metadata_path.=metadata_path, model_path.=model_path, ModelID.=ModelID, TransformNumericColumns.=NULL, TransformationResults.=NULL, TargetColumnName.=NULL, data.=NULL)
   ValidationData <- Output$ValidationData; rm(Output)
 
   # Variable Importance ----
