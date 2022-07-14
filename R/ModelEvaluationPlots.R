@@ -154,7 +154,7 @@ ScatterCopula <- function(data = NULL,
   }
 
   # Update legend title if GroupVariables is not null
-  #if(length(GroupVariable) > 0L) original_scale_plot <- original_scale_plot + ggplot2::guide_legend(title="Group Vars")
+  if(length(GroupVariable) > 0L) original_scale_plot$labels$colour <- GroupVariable[1L]
 
   # Empirical Copula Scatter ----
   if(is.null(GroupVariable)) {
@@ -212,7 +212,7 @@ ScatterCopula <- function(data = NULL,
   }
 
   # Update legend title if GroupVariables is not null
-  # if(length(GroupVariable) > 0L) copula_plot <- copula_plot + ggplot2::guide_legend(title="Group Vars")
+  if(length(GroupVariable) > 0L) copula_plot$labels$colour <- GroupVariable[1L]
 
   # Udpate name
   if(length(x_var) > 0) original_scale_plot <- original_scale_plot + ggplot2::xlab(eval(x_var))
