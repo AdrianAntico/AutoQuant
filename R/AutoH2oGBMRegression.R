@@ -65,62 +65,62 @@
 #' # Run function
 #' TestModel <- RemixAutoML::AutoH2oGBMRegression(
 #'
-#'     # Compute management
-#'     MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
-#'     NThreads = max(1, parallel::detectCores()-2),
-#'     H2OShutdown = TRUE,
-#'     H2OStartUp = TRUE,
-#'     IfSaveModel = "mojo",
+#'   # Compute management
+#'   MaxMem = {gc();paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo", intern=TRUE)) / 1000000)),"G")},
+#'   NThreads = max(1, parallel::detectCores()-2),
+#'   H2OShutdown = TRUE,
+#'   H2OStartUp = TRUE,
+#'   IfSaveModel = "mojo",
 #'
-#'     # Model evaluation
-#'     NumOfParDepPlots = 3,
+#'   # Model evaluation
+#'   NumOfParDepPlots = 3,
 #'
-#'     # Metadata arguments
-#'     OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
-#'     model_path = normalizePath("./"),
-#'     metadata_path = file.path(normalizePath("./")),
-#'     ModelID = "FirstModel",
-#'     ReturnModelObjects = TRUE,
-#'     SaveModelObjects = FALSE,
-#'     SaveInfoToPDF = FALSE,
-#'     DebugMode = FALSE,
+#'   # Metadata arguments
+#'   OutputSelection = c("EvalMetrics", "PDFs", "Score_TrainData"),
+#'   model_path = normalizePath("./"),
+#'   metadata_path = file.path(normalizePath("./")),
+#'   ModelID = "FirstModel",
+#'   ReturnModelObjects = TRUE,
+#'   SaveModelObjects = FALSE,
+#'   SaveInfoToPDF = FALSE,
+#'   DebugMode = FALSE,
 #'
-#'     # Data arguments
-#'     data = data,
-#'     TrainOnFull = FALSE,
-#'     ValidationData = NULL,
-#'     TestData = NULL,
-#'     TargetColumnName = "Adrian",
-#'     FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
-#'     WeightsColumn = NULL,
-#'     TransformNumericColumns = NULL,
-#'     Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
+#'   # Data arguments
+#'   data = data,
+#'   TrainOnFull = FALSE,
+#'   ValidationData = NULL,
+#'   TestData = NULL,
+#'   TargetColumnName = "Adrian",
+#'   FeatureColNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","Adrian")],
+#'   WeightsColumn = NULL,
+#'   TransformNumericColumns = NULL,
+#'   Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
 #'
-#'     # ML grid tuning args
-#'     GridTune = FALSE,
-#'     GridStrategy = "Cartesian",
-#'     MaxRunTimeSecs = 60*60*24,
-#'     StoppingRounds = 10,
-#'     MaxModelsInGrid = 2,
+#'   # ML grid tuning args
+#'   GridTune = FALSE,
+#'   GridStrategy = "Cartesian",
+#'   MaxRunTimeSecs = 60*60*24,
+#'   StoppingRounds = 10,
+#'   MaxModelsInGrid = 2,
 #'
-#'     # Model args
-#'     Trees = 50,
-#'     LearnRate = 0.10,
-#'     LearnRateAnnealing = 1,
-#'     eval_metric = "RMSE",
-#'     Alpha = NULL,
-#'     Distribution = "poisson",
-#'     MaxDepth = 20,
-#'     SampleRate = 0.632,
-#'     ColSampleRate = 1,
-#'     ColSampleRatePerTree = 1,
-#'     ColSampleRatePerTreeLevel  = 1,
-#'     MinRows = 1,
-#'     NBins = 20,
-#'     NBinsCats = 1024,
-#'     NBinsTopLevel = 1024,
-#'     HistogramType = "AUTO",
-#'     CategoricalEncoding = "AUTO")
+#'   # Model args
+#'   Trees = 50,
+#'   LearnRate = 0.10,
+#'   LearnRateAnnealing = 1,
+#'   eval_metric = "RMSE",
+#'   Alpha = NULL,
+#'   Distribution = "poisson",
+#'   MaxDepth = 20,
+#'   SampleRate = 0.632,
+#'   ColSampleRate = 1,
+#'   ColSampleRatePerTree = 1,
+#'   ColSampleRatePerTreeLevel  = 1,
+#'   MinRows = 1,
+#'   NBins = 20,
+#'   NBinsCats = 1024,
+#'   NBinsTopLevel = 1024,
+#'   HistogramType = "AUTO",
+#'   CategoricalEncoding = "AUTO")
 #' }
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, GridList, and metadata
 #' @export
