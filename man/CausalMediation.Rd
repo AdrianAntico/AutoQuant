@@ -16,8 +16,8 @@ CausalMediation(
   SurvivalEventVariable = NULL,
   UnTreated_ReferenceIndicator = NULL,
   Treated_ReferenceIndicator = NULL,
-  Mediatror_ControlDirectEffectLevel = NULL,
-  Covariate_NaturalDirectIndirect = NULL,
+  Mediator_ControlDirectEffectLevel = NULL,
+  Covariate_NaturalDirectIndirect = 0,
   MediatorTargetType = "linear",
   OutcomeTargetType = "linear",
   TreatmentMediatorInteraction = TRUE,
@@ -34,6 +34,8 @@ CausalMediation(
 
 \item{MediatorVariable}{mvar in underlying model. A character vector of length 1. Mediator variable name.}
 
+\item{Covariates}{For main model}
+
 \item{MM_TreatmentCovariates}{emm_ac_mreg in underlying model. A character vector of length > 0. Effect modifiers names. The covariate vector in treatment-covariate product term in the mediator model.}
 
 \item{OM_TreatmentCovariates}{emm_ac_yreg in underlying model. A character vector of length > 0. Effect modifiers names. The covariate vector in treatment-covariate product term in the outcome model.}
@@ -46,7 +48,7 @@ CausalMediation(
 
 \item{Treated_ReferenceIndicator}{a1 in underlying model. A numeric vector of length 1.}
 
-\item{Mediatror_ControlDirectEffectLevel}{m_cde in underlying model. A numeric vector of length 1. Mediator level at which controlled direct effect is evaluated at.}
+\item{Mediator_ControlDirectEffectLevel}{m_cde in underlying model. A numeric vector of length 1. Mediator level at which controlled direct effect is evaluated at.}
 
 \item{Covariate_NaturalDirectIndirect}{c_cond in underlying model. A numeric vector of the same length as \code{cvar}. Covariate levels at which natural direct and indirect effects are evaluated at.}
 
@@ -70,6 +72,7 @@ CausalMediation utilizes models from regmedint package
 }
 \examples{
 \dontrun{
+library(regmedint) # to load vv2015
 data(vv2015)
 Output <- RemixAutoML::CausalMediation(
   data = vv2015,
@@ -83,7 +86,7 @@ Output <- RemixAutoML::CausalMediation(
   SurvivalEventVariable = "event",        # eventvar char length = 0
   UnTreated_ReferenceIndicator = 0,       # ao num length = 1
   Treated_ReferenceIndicator = 1,         # a1 num length = 1
-  Mediatror_ControlDirectEffectLevel = 1, # m_cde num length = 1
+  Mediator_ControlDirectEffectLevel = 1,  # m_cde num length = 1
   Covariate_NaturalDirectIndirect = 3,    # c_cond; same length as Covariates num length = length(Covariates)
   MediatorTargetType = 'logistic',        # mreg "linear" or "logistic",
   OutcomeTargetType = 'survAFT_weibull',  # yreg "linear", "logistic", "loglinear", "poisson", "negbin", "survCox", "survAFT_exp", or "survAFT_weibull"
@@ -102,7 +105,7 @@ Output <- RemixAutoML::CausalMediation(
 # SurvivalEventVariable = "event"
 # UnTreated_ReferenceIndicator = 0
 # Treated_ReferenceIndicator = 1
-# Mediatror_ControlDirectEffectLevel = 1
+# Mediator_ControlDirectEffectLevel = 1
 # Covariate_NaturalDirectIndirect = 3
 # MediatorTargetType = 'logistic'
 # OutcomeTargetType = 'survAFT_weibull'

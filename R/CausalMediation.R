@@ -9,6 +9,7 @@
 #' @param OutcomeTargetVariable yvar in underlying model. A character vector of length 1. Outcome variable name. It should be the time variable for the survival outcome.
 #' @param TreatmentVariable avar in underlying model. A character vector of length 1. Treatment variable name.
 #' @param MediatorVariable mvar in underlying model. A character vector of length 1. Mediator variable name.
+#' @param Covariates For main model
 #' @param ConfoundingVariables cvar in underlying model. A character vector of length > 0. Covariate names. Use \code{NULL} if there is no covariate. However, this is a highly suspicious situation. Even if \code{avar} is randomized, \code{mvar} is not. Thus, there are usually some confounder(s) to account for the common cause structure (confounding) between \code{mvar} and \code{yvar}.
 #' @param MM_TreatmentCovariates emm_ac_mreg in underlying model. A character vector of length > 0. Effect modifiers names. The covariate vector in treatment-covariate product term in the mediator model.
 #' @param OM_TreatmentCovariates emm_ac_yreg in underlying model. A character vector of length > 0. Effect modifiers names. The covariate vector in treatment-covariate product term in the outcome model.
@@ -26,6 +27,7 @@
 #'
 #' @examples
 #' \dontrun{
+#' library(regmedint) # to load vv2015
 #' data(vv2015)
 #' Output <- RemixAutoML::CausalMediation(
 #'   data = vv2015,
@@ -81,13 +83,34 @@ CausalMediation <- function(data,
                             SurvivalEventVariable = NULL,              # eventvar char length = 0
                             UnTreated_ReferenceIndicator = NULL,       # ao num length = 1
                             Treated_ReferenceIndicator = NULL,         # a1 num length = 1
-                            Mediator_ControlDirectEffectLevel = NULL, # m_cde num length = 1
-                            Covariate_NaturalDirectIndirect = NULL,    # c_cond; same length as Covariates num length = length(Covariates)
+                            Mediator_ControlDirectEffectLevel = NULL,  # m_cde num length = 1
+                            Covariate_NaturalDirectIndirect = 0,       # c_cond; same length as Covariates num length = length(Covariates)
                             MediatorTargetType = 'linear',             # mreg "linear" or "logistic"
                             OutcomeTargetType = 'linear',              # yreg "linear", "logistic", "loglinear", "poisson", "negbin", "survCox", "survAFT_exp", or "survAFT_weibull"
                             TreatmentMediatorInteraction = TRUE,       # interaction = TRUE,
                             CaseControlSourceData = FALSE,             # casecontrol = FALSE,
                             RemoveNA = FALSE) {                        # na_omit = FALSE
+
+  print("Causaul Mediation 1")
+
+  print(data)
+  print(OutcomeTargetVariable)
+  print(TreatmentVariable)
+  print(MediatorVariable)
+  print(Covariates)
+  print(MM_TreatmentCovariates)
+  print(OM_TreatmentCovariates)
+  print(OM_MediatorCovariates)
+  print(SurvivalEventVariable)
+  print(UnTreated_ReferenceIndicator)
+  print(Treated_ReferenceIndicator)
+  print(Mediator_ControlDirectEffectLevel)
+  print(Covariate_NaturalDirectIndirect)
+  print(MediatorTargetType)
+  print(OutcomeTargetType)
+  print(TreatmentMediatorInteraction)
+  print(CaseControlSourceData)
+  print(RemoveNA)
 
   # Model
   Output <- regmedint::regmedint(
@@ -110,12 +133,20 @@ CausalMediation <- function(data,
     casecontrol = CaseControlSourceData,
     na_omit = RemoveNA)
 
+  print("Causaul Mediation 2")
+
   # Summary Output
   SummaryOutput <- summary(Output)
 
+  print("Causaul Mediation 3")
+
   Effects <- data.table::as.data.table(SummaryOutput$summary_myreg, keep.rownames = TRUE)
 
+  print("Causaul Mediation 4")
+
   data.table::setnames(Effects, c('est','rn','se','Z','p'), c('Estimate','Measure','Standard Error','Z-Value','P-Value'))
+
+  print("Causaul Mediation 5")
 
   Effects[, Description := 'a']
   Effects[, Definition := 'a']
