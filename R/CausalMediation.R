@@ -177,13 +177,31 @@ CausalMediation <- function(data,
     data.table::set(Effects, i = 7L, j = 'Definition', value = 'exp(PNDE) * (exp(TNIE) - 1) / (exp(PNDE) * exp(TNIE) - 1)')
   }
 
+  # Significance stars
+  Effects[, Significance := data.table::fcase(
+    `P-Value` < 0.001, '***',
+    `P-Value` < 0.01, '**',
+    `P-Value` < 0.05, '*',
+    default = ''
+  )]
+
   data.table::setcolorder(Effects, c(8L,1L:7L,9L))
-  p1 <- RemixAutoML::BarPlot(data = Effects, XVar = 'Description', YVar = 'Estimate', AggMethod = 'sum', ColorVar = NULL, FillColor = '#66ff10')
+  p1 <- RemixAutoML::BarPlot(data = Effects, XVar = 'Description', YVar = 'Estimate',  AggMethod = 'sum', ColorVar = 'Significance', FillColor = '#66ff10')
+
+  MainEffects <- data.table::as.data.table(x = SummaryOutput$summary_yreg_fit$table, keep.rownames = TRUE)
+  data.table::setnames(x = MainEffects, old = c('rn','z','p'), c('Variable', 'Z-Value', 'P-Value'))
+  MainEffects[, Significance := data.table::fcase(
+    `P-Value` < 0.001, '***',
+    `P-Value` < 0.01, '**',
+    `P-Value` < 0.05, '*',
+    default = ''
+  )]
 
   # Return
   return(list(
     Output = Output,
     SummaryOutput = SummaryOutput,
+    MainEffects = MainEffects,
     Effects = Effects,
     EffectsPlot = p1
   ))
