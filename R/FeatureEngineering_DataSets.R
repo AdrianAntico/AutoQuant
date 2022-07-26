@@ -377,7 +377,7 @@ PartitionData <- function(data = NULL,
 #' @param TimeUnit Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"
 #' @param FillType Choose from maxmax - Fill from the absolute min date to the absolute max date, minmax - Fill from the max date of the min set to the absolute max date, maxmin - Fill from the absolute min date to the min of the max dates, or minmin - Fill from the max date of the min dates to the min date of the max dates
 #' @param MaxMissingPercent The maximum amount of missing values an individual series can have to remain and be imputed. Otherwise, they are discarded.
-#' @param SimpleImpute Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"
+#' @param SimpleImpute Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a 0 and non-numeric cols with a "0"
 #' @examples
 #' \dontrun{
 #'
@@ -525,7 +525,7 @@ TimeSeriesFill <- function(data = data,
       DateToChar = FALSE,
       RemoveDates = FALSE,
       MissFactor = "0",
-      MissNum = -1,
+      MissNum = 0,
       IgnoreCols = NULL)
   }
 
@@ -547,7 +547,7 @@ TimeSeriesFill <- function(data = data,
 #' @param GroupVariables Supply the column names of your group variables. E.g. "Group" or c("Group1","Group2")
 #' @param RollDirection 'backward' or 'forward'
 #' @param TimeUnit Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"
-#' @param SimpleImpute Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"
+#' @param SimpleImpute Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a 0 and non-numeric cols with a "0"
 #' @examples
 #' \dontrun{
 #'
