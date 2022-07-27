@@ -1382,7 +1382,7 @@ This report is for investigating model performance from a variety of perspective
 
 ```{r Model_Evaluation_Metrics, echo=FALSE}
 if(!is.null(Test_EvalMetrics)) {
-  print(RemixAutoML::DataTable(Test_EvalMetrics))
+  print(knitr::kable(Test_EvalMetrics))
 } else {
   print('Test_EvalMetrics is NULL')
 }
@@ -1400,7 +1400,7 @@ if(!is.null(Test_EvalMetrics)) {
 
 ```{r Model_Evaluation_Metrics_Train, echo=FALSE}
 if(!is.null(Train_EvalMetrics)) {
-  print(RemixAutoML::DataTable(Train_EvalMetrics))
+  print(knitr::kable(Train_EvalMetrics))
 } else {
   print('Train_EvalMetrics is NULL')
 }
@@ -1422,7 +1422,7 @@ if(!is.null(Train_EvalMetrics)) {
 ```{r Model_VarImportanceTable, echo=FALSE}
 if(!is.null(All_Importance)) {
   data.table::setorderv(x = All_Importance, cols = names(All_Importance)[2L], order = -1L, na.last = TRUE)
-  print(RemixAutoML::DataTable(All_Importance))
+  print(knitr::kable(All_Importance))
 } else {
   print("No importance was provided")
 }
@@ -1441,7 +1441,7 @@ if(!is.null(All_Importance)) {
 ```{r Model_IntImportanceTable, echo=FALSE}
 if(!is.null(All_Interaction)) {
   data.table::setorderv(x = All_Interaction, cols = names(All_Importance)[3L], order = -1L, na.last = TRUE)
-  print(RemixAutoML::DataTable(All_Interaction))
+  print(knitr::kable(All_Interaction))
 } else {
   print('No interaction importance was provided')
 }
@@ -1747,7 +1747,7 @@ if(!is.null(ArgsList)) {
 
 ```{r Model_MetaData_GridMetrics, echo=FALSE}
 if(!is.null(GridMetrics)) {
-  print(RemixAutoML::DataTable(GridMetrics[order(-MetricValue)]))
+  print(knitr::kable(GridMetrics[order(-MetricValue)]))
 } else {
   print("GridTuning was not conducted")
 }

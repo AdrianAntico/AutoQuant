@@ -1811,7 +1811,7 @@ if(!is.null(ArgsList)) {
 
 ```{r Model_MetaData_GridMetrics, echo=FALSE}
 if(!is.null(GridMetrics)) {
-  print(RemixAutoML::DataTable(GridMetrics[order(-MetricValue)]))
+  print(knitr::kable(GridMetrics[order(-MetricValue)]))
 } else {
   print("GridTuning was not conducted")
 }

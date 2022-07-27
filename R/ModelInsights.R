@@ -83,7 +83,6 @@ Run_ModelInsightsReport <- function(# Meta info
 
     # DataSets
     TestData <- RemixOutput[['TestData']]
-    ValidationData <- RemixOutput[['ValidationData']]
     TrainData <- RemixOutput[['TrainData']]
 
     # Meta info
@@ -245,7 +244,6 @@ Run_ModelInsightsReport <- function(# Meta info
       output_file = file.path(OutputPathName))
   }
 }
-
 
 #' @title ModelInsightsReport
 #'
