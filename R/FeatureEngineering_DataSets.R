@@ -395,11 +395,11 @@ PartitionData <- function(data = NULL,
 #' }
 #' @return Returns a data table with missing time series records filled (currently just zeros)
 #' @export
-TimeSeriesFill <- function(data = data,
-                           DateColumnName = "Date",
-                           GroupVariables = c("Store","Dept"),
-                           TimeUnit = "weeks",
-                           FillType = c("maxmax","minmax","maxmin","minmin"),
+TimeSeriesFill <- function(data = NULL,
+                           DateColumnName = NULL,
+                           GroupVariables = NULL,
+                           TimeUnit = 'days',
+                           FillType = "maxmax",
                            MaxMissingPercent = 0.05,
                            SimpleImpute = FALSE) {
 
@@ -408,6 +408,11 @@ TimeSeriesFill <- function(data = data,
 
   # Set up list
   CJList <- list()
+
+  # Check date type
+  if(class(data[[DateColumnName]])[1L] %in% c('numeric','integer')) {
+    data[, eval(DateColumnName) := as.Date(as.character(get(DateColumnName)), format = "%Y%m%d")]
+  }
 
   # Fill from the absolute min date to the absolute max date
   if(FillType == "maxmax") {
@@ -576,6 +581,16 @@ TimeSeriesFillRoll <- function(data = NULL,
                                TimeUnit = "days",
                                SimpleImpute = FALSE) {
 
+  # Prep
+  data <- ModelDataPrep(
+    data = data, Impute = TRUE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = TRUE, LogicalToBinary = TRUE,
+    DateToChar = FALSE, IDateConversion = TRUE, RemoveDates = FALSE, MissFactor = 'missing', MissNum = 0.0)
+
+  # Check date type
+  if(class(data[[DateColumnName]])[1L] %in% c('numeric','integer')) {
+    data[, eval(DateColumnName) := as.Date(as.character(get(DateColumnName)), format = "%Y%m%d")]
+  }
+
   # Fill data then merge originals and then spread originals
   FillData <- data[, list(date = seq(min(get(DateColumnName)), max(get(DateColumnName)), TimeUnit)), by = c(GroupVariables)]
   data.table::setnames(FillData, 'date', DateColumnName)
@@ -595,7 +610,7 @@ TimeSeriesFillRoll <- function(data = NULL,
   }
 
   # Impute
-  if(SimpleImpute) FillData <- RemixAutoML::ModelDataPrep(FillData, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = 0, IgnoreCols = NULL)
+  if(SimpleImpute) FillData <- ModelDataPrep(FillData, Impute = TRUE, CharToFactor = FALSE, FactorToChar = FALSE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = "0", MissNum = 0, IgnoreCols = NULL)
 
   # Return data
   return(FillData)

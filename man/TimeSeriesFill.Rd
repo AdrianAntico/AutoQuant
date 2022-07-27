@@ -5,11 +5,11 @@
 \title{TimeSeriesFill}
 \usage{
 TimeSeriesFill(
-  data = data,
-  DateColumnName = "Date",
-  GroupVariables = c("Store", "Dept"),
-  TimeUnit = "weeks",
-  FillType = c("maxmax", "minmax", "maxmin", "minmin"),
+  data = NULL,
+  DateColumnName = NULL,
+  GroupVariables = NULL,
+  TimeUnit = "days",
+  FillType = "maxmax",
   MaxMissingPercent = 0.05,
   SimpleImpute = FALSE
 )
@@ -27,7 +27,7 @@ TimeSeriesFill(
 
 \item{MaxMissingPercent}{The maximum amount of missing values an individual series can have to remain and be imputed. Otherwise, they are discarded.}
 
-\item{SimpleImpute}{Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"}
+\item{SimpleImpute}{Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a 0 and non-numeric cols with a "0"}
 }
 \value{
 Returns a data table with missing time series records filled (currently just zeros)

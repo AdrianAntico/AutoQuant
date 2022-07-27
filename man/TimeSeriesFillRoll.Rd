@@ -30,7 +30,7 @@ TimeSeriesFillRoll(
 
 \item{TimeUnit}{Choose from "second", "minute", "hour", "day", "week", "month", "quarter", "year"}
 
-\item{SimpleImpute}{Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a -1 and non-numeric cols with a "0"}
+\item{SimpleImpute}{Set to TRUE or FALSE. With TRUE numeric cols will fill NAs with a 0 and non-numeric cols with a "0"}
 }
 \value{
 Returns a data table with missing time series records filled (currently just zeros)
