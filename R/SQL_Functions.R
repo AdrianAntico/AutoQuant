@@ -1109,9 +1109,9 @@ PostGRE_RemoveTable <- function(TableName = NULL,
   }
 }
 
-#' @title PostGRE_RemoveTable
+#' @title PostGRE_RemoveCreateAppend
 #'
-#' @description PostGRE_RemoveTable will DROP the table specified
+#' @description PostGRE_RemoveCreateAppend will DROP the table specified
 #'
 #' @author Adrian Antico
 #' @family Database
@@ -1247,6 +1247,136 @@ PostGRE_ListTables <- function(DBName = 'RemixAutoML',
   }
 }
 
+#' @title PostGRE_CreateDatabase
+#'
+#' @description PostGRE_CreateDatabase will create a database with a name supplied by user
+#'
+#' @author Adrian Antico
+#' @family Database
+#'
+#' @param DBName See args from related functions
+#' @param Host See args from related functions
+#' @param User See args from related functions
+#' @param Port See args from related functions
+#' @param Password See args from related functions
+#' @param Connection See args from related functions
+#' @param CloseConnection See args from related functions
+#'
+#' @export
+PosteGRE_CreateDatabase <- function(DBName = NULL,
+                                    Connection = NULL,
+                                    CloseConnection = TRUE,
+                                    Host = 'localhost',
+                                    Port = 5432,
+                                    User = 'postgres',
+                                    Password = '') {
+
+  # Connect to db
+  Connection <- DBI::dbConnect(
+    RPostgres::Postgres(),
+    host = Host,
+    dbname = NULL,
+    user = User,
+    port = Port,
+    password = Password)
+
+  # Create database
+  DBI::dbSendQuery(Connection, paste0("CREATE DATABASE ", shQuote(DBName), ";"))
+
+  # Close Connection
+  if(CloseConnection) {
+    suppressWarnings(DBI::dbDisconnect(Connection))
+    return(list(data = x, Conn = NULL))
+  } else {
+    return(list(data = x, Conn = Connection))
+  }
+}
+
+#' @title PosteGRE_ListDatabases
+#'
+#' @description PosteGRE_ListDatabases list of available databases
+#'
+#' @author Adrian Antico
+#' @family Database
+#'
+#' @param Host See args from related functions
+#' @param User See args from related functions
+#' @param Port See args from related functions
+#' @param Password See args from related functions
+#' @param Connection See args from related functions
+#' @param CloseConnection See args from related functions
+#'
+#' @export
+PosteGRE_ListDatabases <- function(Host = 'localhost',
+                                   Port = 5432,
+                                   User = 'postgres',
+                                   Password = '',
+                                   Connection = NULL,
+                                   CloseConnection = TRUE) {
+
+  # Connect to db
+  Connection <- DBI::dbConnect(
+    RPostgres::Postgres(),
+    host = Host,
+    dbname = NULL,
+    user = User,
+    port = Port,
+    password = Password)
+
+  # Create database
+  x <- data.table::setDT(DBI::dbGetQuery(Connection, "SELECT datname FROM pg_database WHERE datistemplate = FALSE"))
+  data.table::setnames(x, 'datname','Available Databases')
+
+  # Close Connection
+  if(CloseConnection) {
+    suppressWarnings(DBI::dbDisconnect(Connection))
+    return(x)
+  } else {
+    return(x)
+  }
+}
+
+#' @title PosteGRE_DropDB
+#'
+#' @description PosteGRE_DropDB Drop selected database if it exists
+#'
+#' @author Adrian Antico
+#' @family Database
+#' @param DBName name of db
+#' @param Host See args from related functions
+#' @param User See args from related functions
+#' @param Port See args from related functions
+#' @param Password See args from related functions
+#' @param Connection See args from related functions
+#' @param CloseConnection See args from related functions
+#'
+#' @export
+PosteGRE_DropDB <- function(DBName = NULL,
+                            Host = 'localhost',
+                            Port = 5432,
+                            User = 'postgres',
+                            Password = '',
+                            Connection = NULL,
+                            CloseConnection = TRUE) {
+
+  # Connect to db
+  Connection <- DBI::dbConnect(
+    RPostgres::Postgres(),
+    host = Host,
+    dbname = NULL,
+    user = User,
+    port = Port,
+    password = Password)
+
+  # Create database
+  x <- DBI::dbSendQuery(conn = Connection, statement = paste0("DROP DATABASE IF EXISTS ", shQuote(DBName)))
+
+  # Close Connection
+  if(CloseConnection) {
+    suppressWarnings(DBI::dbDisconnect(Connection))
+  }
+}
+
 #' @noRd
 Post_Query_Helper <- function(RefTable){
   .RefTable <- RefTable
@@ -1281,10 +1411,6 @@ Post_Append_Helper <- function(data, tableName){
     Password = "Aa1028#@")
 }
 
-
-
-
-
 #
 # RemixAutoML::PostGRE_RemoveCreateAppend(
 #   TableName = 'static_data',
@@ -1295,5 +1421,3 @@ Post_Append_Helper <- function(data, tableName){
 #   User = 'postgres',
 #   Port = 5432,
 #   Password = 'Aa...')
-
-

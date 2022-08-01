@@ -424,7 +424,7 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     IDcols. <- c(IDcols., zz)
     yy <- names(data.table::copy(data.))
     FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% zz]
-    FeatureColNames. <- c(FeatureColNames., setdiff(yy,xx))
+    FeatureColNames. <- c(FeatureColNames., paste0(zz, "_", EncodeMethod.))
     CatFeatures <- NULL
   } else {
     MetaData <- NULL
