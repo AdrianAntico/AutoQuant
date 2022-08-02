@@ -423,8 +423,9 @@ CatBoostDataPrep <- function(OutputSelection.=OutputSelection,
     if(!is.character(CatFeatures)) zz <- names(data.)[CatFeatures] else zz <- CatFeatures
     IDcols. <- c(IDcols., zz)
     yy <- names(data.table::copy(data.))
+    y <- setdiff(names(data.), yy)
     FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% zz]
-    FeatureColNames. <- c(FeatureColNames., paste0(zz, "_", EncodeMethod.))
+    if(tolower(ModelType) != 'multiclass') FeatureColNames. <- c(FeatureColNames., paste0(zz, "_", EncodeMethod.)) else FeatureColNames. <- c(FeatureColNames., y[!y %in% IDcols.])
     CatFeatures <- NULL
   } else {
     MetaData <- NULL

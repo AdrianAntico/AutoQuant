@@ -133,125 +133,128 @@ for(run in seq_len(XGBoost_QA_Results_Classifier[,.N])) {
 }
 
 # Defaults ----
-# library(RemixAutoML)
-# library(data.table)
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
-#
-# run = 3
-#
-# tof <- XGBoost_QA_Results_Classifier[run, TOF]
-# gridtune <- XGBoost_QA_Results_Classifier[run, GridTune]
-# Tar <- "Adrian"
-#
-# # Refresh data
-# data <- RemixAutoML::FakeDataGenerator(
-#   Correlation = 0.85,
-#   N = 25000L,
-#   ID = 2L,
-#   AddWeightsColumn = TRUE,
-#   ZIP = 0L,
-#   AddDate = TRUE,
-#   Classification = TRUE,
-#   MultiClass = FALSE)
-#
-# # Add Diff data
-# data <- RemixAutoML::AutoDiffLagN(
-#   data = data,
-#   DateVariable = "DateTime",
-#   GroupVariables = c("Factor_1", "Factor_2"),
-#   DiffVariables = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian","DateTime","Factor_1","Factor_2")],
-#   DiffDateVariables = NULL,
-#   DiffGroupVariables = NULL,
-#   NLag1 = 0,
-#   NLag2 = 1,
-#   Sort = TRUE,
-#   RemoveNA = TRUE)
-#
-# # Partition Data
-# if(!tof) {
-#   Sets <- RemixAutoML::AutoDataPartition(
-#     data = data,
-#     NumDataSets = 3,
-#     Ratios = c(0.7,0.2,0.1),
-#     PartitionType = "random",
-#     StratifyColumnNames = "Adrian",
-#     TimeColumnName = NULL)
-#   TTrainData <- Sets$TrainData
-#   VValidationData <- Sets$ValidationData
-#   TTestData <- Sets$TestData
-#   rm(Sets)
-# } else {
-#   TTrainData <- data.table::copy(data)
-#   VValidationData <- NULL
-#   TTestData <- NULL
-# }
-#
-# # GPU or CPU
-# OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
-# EncodingMethod = "credibility"
-# TreeMethod = "hist"
-# NThreads = parallel::detectCores()
-# # Metadata arguments
-# model_path = normalizePath("./")
-# metadata_path = NULL
-# ModelID = "Test_Model_1"
-# ReturnFactorLevels = TRUE
-# ReturnModelObjects = TRUE
-# SaveModelObjects = TRUE
-# SaveInfoToPDF = TRUE
-# DebugMode = TRUE
-# # Data argument
-# data = TTrainData
-# TrainOnFull = tof
-# ValidationData = VValidationData
-# TestData = TTestData
-# TargetColumnName = "Adrian"
-# FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")]
-# WeightsColumnName = "Weights"
-# IDcols = c("IDcol_1","IDcol_2")
-# # Model evaluatio
-# LossFunction = 'reg:logistic'
-# eval_metric = "auc"
-# grid_eval_metric = "MCC"
-# CostMatrixWeights = c(1,0,0,1)
-# NumOfParDepPlots = 3L
-# # Grid tuning argument
-# PassInGrid = NULL
-# GridTune = gridtune
-# BaselineComparison = "default"
-# MaxModelsInGrid = 10L
-# MaxRunsWithoutNewWinner = 20L
-# MaxRunMinutes = 24L*60L
-# Verbose = 1L
-# # ML Arg
-# Trees = if(!gridtune) 50L else c(50,51,52,53,54,55)
-# eta = if(!gridtune) 0.05 else c(0.05,0.06,0.07,0.08,0.09)
-# max_depth = if(!gridtune) 4L else c(4,5,6,7,8,9,10)
-# min_child_weight = if(!gridtune) 1.0 else c(1,2,3,4)
-# subsample = if(!gridtune) 0.55 else c(0.50,0.55,0.60,0.65)
-# colsample_bytree = if(!gridtune) 0.55 else c(0.55,0.65,0.7,0.75,0.8)
+library(RemixAutoML)
+library(data.table)
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/XGBoostHelpers.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CharacterTypes.R"))
+
+run = 2
+
+tof <- XGBoost_QA_Results_Classifier[run, TOF]
+gridtune <- XGBoost_QA_Results_Classifier[run, GridTune]
+Tar <- "Adrian"
+
+# Refresh data
+data <- RemixAutoML::FakeDataGenerator(
+  Correlation = 0.85,
+  N = 25000L,
+  ID = 2L,
+  AddWeightsColumn = TRUE,
+  ZIP = 0L,
+  AddDate = TRUE,
+  Classification = TRUE,
+  MultiClass = FALSE)
+
+# Add Diff data
+data <- RemixAutoML::AutoDiffLagN(
+  data = data,
+  DateVariable = "DateTime",
+  GroupVariables = c("Factor_1", "Factor_2"),
+  DiffVariables = names(data)[!names(data) %in% c("IDcol_1","IDcol_2","Adrian","DateTime","Factor_1","Factor_2")],
+  DiffDateVariables = NULL,
+  DiffGroupVariables = NULL,
+  NLag1 = 0,
+  NLag2 = 1,
+  Sort = TRUE,
+  RemoveNA = TRUE)
+
+# Partition Data
+if(!tof) {
+  Sets <- RemixAutoML::AutoDataPartition(
+    data = data,
+    NumDataSets = 3,
+    Ratios = c(0.7,0.2,0.1),
+    PartitionType = "random",
+    StratifyColumnNames = "Adrian",
+    TimeColumnName = NULL)
+  TTrainData <- Sets$TrainData
+  VValidationData <- Sets$ValidationData
+  TTestData <- Sets$TestData
+  rm(Sets)
+} else {
+  TTrainData <- data.table::copy(data)
+  VValidationData <- NULL
+  TTestData <- NULL
+}
+
+# GPU or CPU
+OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData")
+EncodingMethod = "credibility"
+TreeMethod = "hist"
+NThreads = parallel::detectCores()
+# Metadata arguments
+model_path = normalizePath("./")
+metadata_path = NULL
+ModelID = "Test_Model_1"
+ReturnFactorLevels = TRUE
+ReturnModelObjects = TRUE
+SaveModelObjects = TRUE
+SaveInfoToPDF = TRUE
+DebugMode = TRUE
+# Data argument
+data = TTrainData
+TrainOnFull = tof
+ValidationData = VValidationData
+TestData = TTestData
+TargetColumnName = "Adrian"
+FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")]
+WeightsColumnName = "Weights"
+IDcols = c("IDcol_1","IDcol_2")
+# Model evaluatio
+LossFunction = 'reg:logistic'
+eval_metric = "auc"
+grid_eval_metric = "MCC"
+CostMatrixWeights = c(1,0,0,1)
+NumOfParDepPlots = 3L
+# Grid tuning argument
+PassInGrid = NULL
+GridTune = gridtune
+BaselineComparison = "default"
+MaxModelsInGrid = 10L
+MaxRunsWithoutNewWinner = 20L
+MaxRunMinutes = 24L*60L
+Verbose = 1L
+# ML Arg
+Trees = if(!gridtune) 50L else c(50,51,52,53,54,55)
+eta = if(!gridtune) 0.05 else c(0.05,0.06,0.07,0.08,0.09)
+max_depth = if(!gridtune) 4L else c(4,5,6,7,8,9,10)
+min_child_weight = if(!gridtune) 1.0 else c(1,2,3,4)
+subsample = if(!gridtune) 0.55 else c(0.50,0.55,0.60,0.65)
+colsample_bytree = if(!gridtune) 0.55 else c(0.55,0.65,0.7,0.75,0.8)
 
 # Data Prep args ----
-# ModelType="classification"
-# data.=data
-# ValidationData.=ValidationData
-# TestData.=TestData
-# TargetColumnName.=TargetColumnName
-# FeatureColNames.=FeatureColNames
-# IDcols.=IDcols
-# TransformNumericColumns.=NULL
-# Methods.=NULL
-# ModelID.=ModelID
-# model_path.=model_path
-# TrainOnFull.=TrainOnFull
-# SaveModelObjects.=SaveModelObjects
-# ReturnFactorLevels.=ReturnFactorLevels
-# EncodingMethod. = EncodingMethod
-# WeightsColumnName. = WeightsColumnName
+ModelType="classification"
+data.=data
+ValidationData.=ValidationData
+TestData.=TestData
+TargetColumnName.=TargetColumnName
+FeatureColNames.=FeatureColNames
+IDcols.=IDcols
+TransformNumericColumns.=NULL
+Methods.=NULL
+ModelID.=ModelID
+model_path.=model_path
+TrainOnFull.=TrainOnFull
+SaveModelObjects.=SaveModelObjects
+ReturnFactorLevels.=ReturnFactorLevels
+EncodingMethod. = EncodingMethod
+WeightsColumnName. = WeightsColumnName
+DebugMode. = TRUE
+Algo = 'XGBoost'
 
 # Encoding ----
 # RunMode='train'

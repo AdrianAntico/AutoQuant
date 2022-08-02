@@ -163,7 +163,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
       y <- setdiff(names(data.), x)
       if(length(y) == 0L) y <- NULL
       FeatureColNames. <- FeatureColNames.[!FeatureColNames. %in% CatFeatures]
-      FeatureColNames. <- c(FeatureColNames., paste0(CatFeatures, "_", EncodingMethod.))
+      if(tolower(ModelType) != 'multiclass') FeatureColNames. <- c(FeatureColNames., y) else FeatureColNames. <- c(FeatureColNames., y[!y %in% IDcols.])
     } else {
       FactorLevelsList <- NULL
     }
