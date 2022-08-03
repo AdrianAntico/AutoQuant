@@ -849,11 +849,11 @@ SQL_Server_BulkPush <- function(Server = NULL,
 PostGRE_Query <- function(Query = NULL,
                           Connection = NULL,
                           CloseConnection = FALSE,
-                          Host = 'localhost',
-                          DBName = 'Testing',
-                          User = 'postgres',
-                          Port = 5432,
-                          Password = '') {
+                          Host = NULL,
+                          DBName = NULL,
+                          User = NULL,
+                          Port = NULL,
+                          Password = NULL) {
 
   # Connect to db
   if(is.null(Connection)) {
@@ -868,8 +868,7 @@ PostGRE_Query <- function(Query = NULL,
 
   # Pull data from db
   rows <- DBI::dbSendQuery(Connection, Query)
-  if(grepl(pattern = 'select', x = tolower(Query))) x <- DBI::dbFetch(rows)
-  data.table::setDT(x)
+  if(grepl(pattern = 'select', x = tolower(Query))) {x <- DBI::dbFetch(rows); data.table::setDT(x)}
   if(CloseConnection) {
     suppressWarnings(DBI::dbDisconnect(Connection))
     return(list(data = x, Conn = NULL))
@@ -923,11 +922,11 @@ PostGRE_AppendData <- function(data = NULL,
                                Append = FALSE,
                                Connection = NULL,
                                CloseConnection = FALSE,
-                               Host = 'localhost',
-                               DBName = 'Testing',
-                               User = 'postgres',
-                               Port = 5432,
-                               Password = '') {
+                               Host = NULL,
+                               DBName = NULL,
+                               User = NULL,
+                               Port = NULL,
+                               Password = NULL) {
 
   # Connect to db
   if(is.null(Connection)) {
@@ -999,10 +998,10 @@ PostGRE_CreateTable <- function(data = NULL,
                                 Connection = NULL,
                                 CloseConnection = FALSE,
                                 Temporary = FALSE,
-                                Host = 'localhost',
-                                User = 'postgres',
-                                Port = 5432,
-                                Password = '') {
+                                Host = NULL,
+                                User = NULL,
+                                Port = NULL,
+                                Password = NULL) {
 
   # Args check
   if(is.null(data) && is.null(Schema)) stop('data or Schema must not be NULL')
@@ -1082,11 +1081,11 @@ PostGRE_CreateTable <- function(data = NULL,
 PostGRE_RemoveTable <- function(TableName = NULL,
                                 Connection = NULL,
                                 CloseConnection = FALSE,
-                                Host = 'localhost',
-                                DBName = 'Testing',
-                                User = 'postgres',
-                                Port = 5432,
-                                Password = '') {
+                                Host = NULL,
+                                DBName = NULL,
+                                User = NULL,
+                                Port = NULL,
+                                Password = NULL) {
 
   # Connect to db
   Connection <- DBI::dbConnect(
@@ -1130,15 +1129,15 @@ PostGRE_RemoveTable <- function(TableName = NULL,
 #' @param Append See args from related functions
 #'
 #' @export
-PostGRE_RemoveCreateAppend <- function(data = data,
-                                       TableName = '',
+PostGRE_RemoveCreateAppend <- function(data = NULL,
+                                       TableName = NULL,
                                        CloseConnection = TRUE,
                                        CreateSchema = NULL,
-                                       Host = 'localhost',
-                                       DBName = 'RemixAutoML',
-                                       User = 'postgres',
-                                       Port = 5432,
-                                       Password = '',
+                                       Host = NULL,
+                                       DBName = NULL,
+                                       User = NULL,
+                                       Port = NULL,
+                                       Password = NULL,
                                        Temporary = FALSE,
                                        Connection = NULL,
                                        Append = TRUE) {
@@ -1218,13 +1217,13 @@ PostGRE_RemoveCreateAppend <- function(data = data,
 #' @param CloseConnection See args from related functions
 #'
 #' @export
-PostGRE_ListTables <- function(DBName = 'RemixAutoML',
+PostGRE_ListTables <- function(DBName = NULL,
                                Connection = NULL,
                                CloseConnection = TRUE,
-                               Host = 'localhost',
-                               Port = 5432,
-                               User = 'postgres',
-                               Password = '') {
+                               Host = NULL,
+                               Port = NULL,
+                               User = NULL,
+                               Password = NULL) {
 
   # Connect to db
   Connection <- DBI::dbConnect(
@@ -1244,6 +1243,43 @@ PostGRE_ListTables <- function(DBName = 'RemixAutoML',
     return(list(data = x, Conn = NULL))
   } else {
     return(list(data = x, Conn = Connection))
+  }
+}
+
+#' @title PostGRE_GetTableNames
+#'
+#' @description PostGRE_GetTableNames will list all column names from a table
+#'
+#' @author Adrian Antico
+#' @family Database
+#'
+#' @param DBName See args from related functions
+#' @param TableName Name of postgres table
+#' @param Host See args from related functions
+#' @param User See args from related functions
+#' @param Port See args from related functions
+#' @param Password See args from related functions
+#' @param CloseConnection See args from related functions
+#'
+#' @return A character vector of names. Exactly like names R base function for a data.frame
+#'
+#' @export
+PostGRE_GetTableNames <- function(Host = NULL,
+                                  CloseConnection = FALSE,
+                                  DBName = NULL,
+                                  TableName = NULL,
+                                  User = NULL,
+                                  Port = NULL,
+                                  Password = NULL) {
+  if(length(TableName) > 0L) {
+    return(names(RemixAutoML::PostGRE_Query(
+      Query = glue::glue_sql(paste0("SELECT * FROM ", shQuote(TableName), " WHERE 0 = 1;")),
+      Host = Host,
+      CloseConnection = CloseConnection,
+      DBName = DBName,
+      User = User,
+      Port = Port,
+      Password = Password)$data))
   }
 }
 

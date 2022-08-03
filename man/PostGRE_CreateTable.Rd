@@ -12,10 +12,10 @@ PostGRE_CreateTable(
   Connection = NULL,
   CloseConnection = FALSE,
   Temporary = FALSE,
-  Host = "localhost",
-  User = "postgres",
-  Port = 5432,
-  Password = ""
+  Host = NULL,
+  User = NULL,
+  Port = NULL,
+  Password = NULL
 )
 }
 \arguments{
@@ -65,6 +65,7 @@ RemixAutoML::PostGRE_CreateTable(
 Other Database: 
 \code{\link{AutoDataDictionaries}()},
 \code{\link{PostGRE_AppendData}()},
+\code{\link{PostGRE_GetTableNames}()},
 \code{\link{PostGRE_ListTables}()},
 \code{\link{PostGRE_Query}()},
 \code{\link{PostGRE_RemoveCreateAppend}()},

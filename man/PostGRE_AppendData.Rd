@@ -10,11 +10,11 @@ PostGRE_AppendData(
   Append = FALSE,
   Connection = NULL,
   CloseConnection = FALSE,
-  Host = "localhost",
-  DBName = "Testing",
-  User = "postgres",
-  Port = 5432,
-  Password = ""
+  Host = NULL,
+  DBName = NULL,
+  User = NULL,
+  Port = NULL,
+  Password = NULL
 )
 }
 \arguments{
@@ -66,6 +66,7 @@ RemixAutoML::PostGRE_AppendData(
 Other Database: 
 \code{\link{AutoDataDictionaries}()},
 \code{\link{PostGRE_CreateTable}()},
+\code{\link{PostGRE_GetTableNames}()},
 \code{\link{PostGRE_ListTables}()},
 \code{\link{PostGRE_Query}()},
 \code{\link{PostGRE_RemoveCreateAppend}()},

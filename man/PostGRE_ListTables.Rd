@@ -5,13 +5,13 @@
 \title{PostGRE_ListTables}
 \usage{
 PostGRE_ListTables(
-  DBName = "RemixAutoML",
+  DBName = NULL,
   Connection = NULL,
   CloseConnection = TRUE,
-  Host = "localhost",
-  Port = 5432,
-  User = "postgres",
-  Password = ""
+  Host = NULL,
+  Port = NULL,
+  User = NULL,
+  Password = NULL
 )
 }
 \arguments{
@@ -39,6 +39,7 @@ Other Database:
 \code{\link{AutoDataDictionaries}()},
 \code{\link{PostGRE_AppendData}()},
 \code{\link{PostGRE_CreateTable}()},
+\code{\link{PostGRE_GetTableNames}()},
 \code{\link{PostGRE_Query}()},
 \code{\link{PostGRE_RemoveCreateAppend}()},
 \code{\link{PostGRE_RemoveTable}()},
