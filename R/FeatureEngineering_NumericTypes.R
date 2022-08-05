@@ -19,7 +19,7 @@
 #' }
 #'
 #' @export
-Standardize <- function(data, ColNames, GroupVars = NULL, Center = TRUE, Scale = TRUE) {
+Standardize <- function(data, ColNames, GroupVars = NULL, Center = TRUE, Scale = TRUE, ScoreTable = FALSE) {
 
   # Standardize
   if(length(GroupVars) == 0L) {

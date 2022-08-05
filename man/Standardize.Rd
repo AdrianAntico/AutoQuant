@@ -4,7 +4,14 @@
 \alias{Standardize}
 \title{Standardize}
 \usage{
-Standardize(data, ColNames, GroupVars = NULL, Center = TRUE, Scale = TRUE)
+Standardize(
+  data,
+  ColNames,
+  GroupVars = NULL,
+  Center = TRUE,
+  Scale = TRUE,
+  ScoreTable = FALSE
+)
 }
 \arguments{
 \item{data}{Source data.table}
