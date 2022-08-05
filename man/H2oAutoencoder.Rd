@@ -201,6 +201,10 @@ Other Feature Engineering:
 \code{\link{DummifyDT}()},
 \code{\link{H2OAutoencoderScoring}()},
 \code{\link{ModelDataPrep}()},
+\code{\link{PercRankScoring}()},
+\code{\link{PercRank}()},
+\code{\link{StandardizeScoring}()},
+\code{\link{Standardize}()},
 \code{\link{TimeSeriesFillRoll}()},
 \code{\link{TimeSeriesFill}()}
 }

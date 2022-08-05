@@ -1,23 +1,163 @@
+#' @title Standardize
+#'
+#' @description Generate standardized values for multiple variables, by groups if provided, and with a selected granularity
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#'
+#' @param data Source data.table
+#' @param ColNames Character vector of column names
+#' @param GroupVars Character vector of column names to have percent ranks by the group levels
+#' @param Center TRUE
+#' @param Scale TRUE
+#' @param ScoreTable FALSE. Set to TRUE to return a data.table that can be used to apply or backtransform via StandardizeScoring
+#'
+#' @examples
+#' \dontrun{
+#' data <- data.table::fread(file.choose())
+#' x <- Standardize(data = data, ColNames = c('Weekly_Sales', 'XREG3'), GroupVars = c('Region','Store','Dept'), Center = TRUE, Scale = TRUE, ScoreTable = TRUE)
+#' }
+#'
+#' @export
+Standardize <- function(data, ColNames, GroupVars = NULL, Center = TRUE, Scale = TRUE) {
+
+  # Standardize
+  if(length(GroupVars) == 0L) {
+    data[, paste0(ColNames, '_Standardize') := lapply(.SD, FUN = function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)), .SDcols = c(ColNames)]
+  } else {
+    data[, paste0(ColNames, '_Standardize') := lapply(.SD, FUN = function(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)), .SDcols = c(ColNames), by = c(eval(GroupVars))]
+  }
+
+  # ScoreTable creation
+  if(ScoreTable) {
+    x <- data[, lapply(.SD, mean, na.rm = TRUE), .SDcols = c(ColNames), by = c(GroupVars)]
+    data.table::setnames(x = x, old = ColNames, new = paste0(ColNames, "_mean"))
+    y <- data[, lapply(.SD, sd, na.rm = TRUE), .SDcols = c(ColNames), by = c(GroupVars)]
+    data.table::setnames(x = y, old = ColNames, new = paste0(ColNames, "_sd"))
+    xy <- cbind(x,y[, (GroupVars) := NULL])
+  }
+
+  # Return
+  if(!ScoreTable) {
+    return(data)
+  } else {
+    return(list(
+      data = data,
+      ScoreTable = xy
+    ))
+  }
+}
+
+#' @title StandardizeScoring
+#'
+#' @description Generate standardized values for multiple variables, by groups if provided, and with a selected granularity
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#'
+#' @param data Source data.table
+#' @param Apply 'apply' or 'backtransform'
+#' @param ColNames Character vector of column names
+#' @param GroupVars Character vector of column names to have percent ranks by the group levels
+#' @param Center TRUE
+#' @param Scale TRUE
+#'
+#' @examples
+#' \dontrun{
+#' x <- Standardize(data = data, ColNames = c('Weekly_Sales', 'XREG1'), GroupVars = c('Region','Store','Dept'), Center = TRUE, Scale = TRUE)
+#' }
+#'
+#' @export
+StandardizeScoring <- function(data, ScoreTable, Apply = 'apply', GroupVars = NULL) {
+
+  # Facts
+  nam <- names(ScoreTable)[which(!names(ScoreTable) %in% GroupVars)]
+
+  # Apply will apply standardization to new data
+  # Backtransform will undo standardization
+  if(Apply == 'apply') {
+    data.table::setkeyv(x = data, cols = GroupVars)
+    data.table::setkeyv(x = ScoreTable, cols = GroupVars)
+    data[ScoreTable, paste0(nam) := mget(paste0('i.', nam))]
+    nams <- nam[seq_len(length(nam) / 2)]
+    ColNames <- gsub(pattern = "_mean", replacement = "", x = nams)
+    for(i in ColNames) data[, paste0(i, "_Standardize") := (get(i) - get(paste0(i, "_mean"))) / get(paste0(i, "_sd"))]
+    data.table::set(data, j = c(nam), value = NULL)
+  } else {
+    data.table::setkeyv(x = data, cols = GroupVars)
+    data.table::setkeyv(x = ScoreTable, cols = GroupVars)
+    data[ScoreTable, paste0(nam) := mget(paste0('i.', nam))]
+    nams <- nam[seq_len(length(nam) / 2)]
+    ColNames <- gsub(pattern = "_mean", replacement = "", x = nams)
+    for(i in ColNames) data[, eval(i) := get(paste0(i, "_Standardize")) * get(paste0(i, "_sd")) + get(paste0(i, "_mean"))]
+    data.table::set(data, j = c(nam), value = NULL)
+  }
+
+  # Return
+  return(data)
+}
+
 #' @title PercRank
 #'
 #' @description Generate percent ranks for multiple variables, by groups if provided, and with a selected granularity
 #'
 #' @author Adrian Antico
-#' @family Utility
+#' @family Feature Engineering
 #'
 #' @param data Source data.table
 #' @param ColNames Character vector of column names
 #' @param GroupVars Character vector of column names to have percent ranks by the group levels
 #' @param Granularity Provide a value such that data.table::frank(Variable) * (1 / Granularity) / .N * Granularity. Default is 0.001
+#' @param ScoreTable = FALSE. Set to TRUE to get the reference values for applying to new data. Pass to scoring version of this function
+#'
+#' @examples
+#' \dontrun{
+#' data <- data.table::fread(file.choose())
+#' x <- PercRank(data, ColNames = c('Weekly_Sales', 'XREG1'), GroupVars = c('Region','Store','Dept'), Granularity = 0.001, ScoreTable = TRUE)
+#' }
 #'
 #' @export
-PercRank <- function(data, ColNames, GroupVars = NULL, Granularity = 0.001) {
+PercRank <- function(data, ColNames, GroupVars = NULL, Granularity = 0.001, ScoreTable = FALSE) {
   if(length(GroupVars) == 0L) {
     data[, paste0(ColNames, '_PercRank') := lapply(.SD, FUN = function(x) data.table::frank(x) * (1 / Granularity) / .N * Granularity), .SDcols = c(ColNames)]
   } else {
     data[, paste0(ColNames, '_PercRank') := lapply(.SD, FUN = function(x) data.table::frank(x) * (1 / Granularity) / .N * Granularity), .SDcols = c(ColNames), by = c(eval(GroupVars))]
   }
-  data
+  if(!ScoreTable) {
+    return(data)
+  } else {
+    return(list(
+      data = data,
+      ScoreTable = unique(data[, .SD, .SDcols = c(ColNames, paste0(ColNames, '_PercRank'))])
+    ))
+  }
+}
+
+#' @title PercRankScoring
+#'
+#' @description Generate percent ranks for multiple variables, by groups if provided, and with a selected granularity, via list passed from PercRank
+#'
+#' @author Adrian Antico
+#' @family Feature Engineering
+#'
+#' @param data Source data.table
+#' @param GroupVars Character vector of column names to have percent ranks by the group levels
+#' @param ScoreTable list of values returned from PercRank
+#' @param RollDirection "forward" or "backward"
+#'
+#' @export
+PercRankScoring <- function(data, ScoreTable, GroupVars = NULL, RollDirection = 'forward') {
+  # nam <- names(ScoreTable)[1] # nam <- names(ScoreTable)[2]
+  for(nam in names(ScoreTable)) {
+    data.table::setkeyv(data, cols = c(unique(gsub(pattern = "_PercRank", replacement = "", x = nam))))
+    data.table::setkeyv(ScoreTable, cols = nam)
+    if('forward' == tolower(RollDirection)) {
+      data <- ScoreTable[data, roll = Inf]
+    } else {
+      data <- ScoreTable[data, roll = -Inf]
+    }
+  }
+  return(data)
 }
 
 #' @title Interact

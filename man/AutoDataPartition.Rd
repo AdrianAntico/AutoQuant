@@ -78,6 +78,10 @@ Other Feature Engineering:
 \code{\link{H2OAutoencoderScoring}()},
 \code{\link{H2OAutoencoder}()},
 \code{\link{ModelDataPrep}()},
+\code{\link{PercRankScoring}()},
+\code{\link{PercRank}()},
+\code{\link{StandardizeScoring}()},
+\code{\link{Standardize}()},
 \code{\link{TimeSeriesFillRoll}()},
 \code{\link{TimeSeriesFill}()}
 }
