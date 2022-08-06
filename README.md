@@ -98,14 +98,16 @@ The minimal set of packages that need to be installed are below. The full list c
 
 ```r
 
-# Base dependencies
-if(!'arules' %in% installed.packages()) install.packages('arules')
-if(!'bit64' %in% installed.packages()) install.packages('bit64')
-if(!'data.table' %in% installed.packages()) install.packages('data.table')
-if(!'doParallel' %in% installed.packages()) install.packages('doParallel')
-if(!'foreach' %in% installed.packages()) install.packages('foreach')
-if(!'lubridate' %in% installed.packages()) install.packages('lubridate')
-if(!'timeDate' %in% installed.packages()) install.packages('timeDate')
+# Core pacakges
+if(!("data.table" %in% rownames(installed.packages()))) install.packages("data.table"); print("data.table")
+if(!("collapse" %in% rownames(install.packages()))) install.packages("collapse"); print("collapse")
+if(!("arules" %in% rownames(installed.packages()))) install.packages("arules"); print("arules")
+if(!("bit64" %in% rownames(installed.packages()))) install.packages("bit64"); print("bit64")
+if(!("devtools" %in% rownames(installed.packages()))) install.packages("devtools"); print("devtools")
+if(!("doParallel" %in% rownames(installed.packages()))) install.packages("doParallel"); print("doParallel")
+if(!("foreach" %in% rownames(installed.packages()))) install.packages("foreach"); print("foreach")
+if(!("lubridate" %in% rownames(installed.packages()))) install.packages("lubridate"); print("lubridate")
+if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate"); print("timeDate")
 
 # RemixAutoML
 devtools::install_github('AdrianAntico/RemixAutoML', upgrade = FALSE, dependencies = FALSE, force = TRUE)
