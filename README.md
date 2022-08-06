@@ -136,6 +136,7 @@ if(!("timeDate" %in% rownames(installed.packages()))) install.packages("timeDate
 
 # Additional dependencies for specific use cases
 if(!("combinat" %in% rownames(install.packages()))) install.packages("combinat"); print("combinat")
+if(!("DBI" %in% rownames(install.packages()))) install.packages("DBI"); print("DBI")
 if(!("e1071" %in% rownames(installed.packages()))) install.packages("e1071"); print("e1071")
 if(!("fBasics" %in% rownames(installed.packages()))) install.packages("fBasics"); print("fBasics")
 if(!("forecast" %in% rownames(installed.packages()))) install.packages("forecast"); print("forecast")
@@ -145,9 +146,10 @@ if(!("gridExtra" %in% rownames(installed.packages()))) install.packages("gridExt
 if(!("itertools" %in% rownames(installed.packages()))) install.packages("itertools"); print("itertools")
 if(!("MLmetrics" %in% rownames(installed.packages()))) install.packages("MLmetrics"); print("MLmetrics")
 if(!("nortest" %in% rownames(installed.packages()))) install.packages("nortest"); print("nortest")
+if(!("pROC" %in% rownames(installed.packages()))) install.packages("pROC"); print("pROC")
 if(!("RColorBrewer" %in% rownames(installed.packages()))) install.packages("RColorBrewer"); print("RColorBrewer")
 if(!("recommenderlab" %in% rownames(installed.packages()))) install.packages("recommenderlab"); print("recommenderlab")
-if(!("pROC" %in% rownames(installed.packages()))) install.packages("pROC"); print("pROC")
+if(!("RPostgres" %in% rownames(install.packages()))) install.packages("RPostgres"); print("RPostgres")
 if(!("Rfast" %in% rownames(installed.packages()))) install.packages("Rfast"); print("Rfast")
 if(!("scatterplot3d" %in% rownames(installed.packages()))) install.packages("scatterplot3d"); print("scatterplot3d")
 if(!("stringr" %in% rownames(installed.packages()))) install.packages("stringr"); print("stringr")
