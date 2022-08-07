@@ -223,7 +223,6 @@ Run_ModelInsightsReport <- function(# Meta info
   if(tolower(TargetType) == 'regression') {
     rmarkdown::render(
       input = file.path(appDir, 'Regression_ModelInsights.Rmd'),
-      runtime = 'shiny',
       #input = file.path('C:/Users/Bizon/Documents/GitHub/RemixAutoML/inst/r-markdowns/Regression_ModelInsights.Rmd'),
       output_file = file.path(OutputPathName))
   }
