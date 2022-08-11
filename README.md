@@ -158,6 +158,10 @@ if(!("xgboost" %in% rownames(installed.packages()))) install.packages("xgboost")
 if(!("lightgbm" %in% rownames(installed.packages()))) install.packages("lightgbm"); print("lightgbm")
 if(!("regmedint" %in% rownames(installed.packages()))) install.packages("regmedint"); print("regmedint")
 if(!("lme4" %in% rownames(installed.packages()))) install.packages("regmedint"); print("regmedint")
+
+# If using R 4.20 with rtools42. Uninstall rstan and StanHeaders first (if they are installed). Put rtools42 in the C:/ drive; C:/rtools42
+if(!("StanHeaders" %in% rownames(installed.packages()))) install.packages("StanHeaders", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+if(!("rstan" %in% rownames(installed.packages()))) install.packages("rstan", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 if(!("brms" %in% rownames(installed.packages()))) install.packages("brms"); print("brms")
 for(pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
 install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))

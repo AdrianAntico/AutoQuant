@@ -579,7 +579,7 @@ CategoricalEncoding <- function(data = NULL,
   }
 
   # Buhlmann credibility ----
-  # GroupValue = GroupVariables[2]
+  # GroupValue = GroupVariables[1]
   if(tolower(Method) == "credibility") {
     if(Debug) print('CategoricalEncoding Credibility 1')
     if(!Scoring) ComponentList <- list()
@@ -614,24 +614,20 @@ CategoricalEncoding <- function(data = NULL,
 
         } else {
 
-          if(Debug) print('CategoricalEncoding Credibility 4.b')
           GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
+
           if(tolower(ML_Type) %chin% c("classification","classifier")) {
-            if(Debug) print('CategoricalEncoding Credibility 5.b')
             GroupMean <- data[, list(
               Mean = mean(get(TargetVariable), na.rm = TRUE),
               N = .N,
               Var_Group = mean(get(TargetVariable), na.rm = TRUE) * (1 - mean(get(TargetVariable), na.rm = TRUE)) / .N),
               keyby = eval(GroupValue)]
-            if(Debug) print('CategoricalEncoding Credibility 5.c')
             PopVar <- (GrandMean * (1 - GrandMean)) / data[, .N]
-            if(Debug) print('CategoricalEncoding Credibility 5.d')
             GroupMean[, Z := PopVar / (Var_Group + PopVar)]
-            if(Debug) print('CategoricalEncoding Credibility 5.e')
             GroupMean[, paste0(GroupValue, "_Credibility") := Z * Mean + (1 - Z) * GrandMean]
-            if(Debug) print('CategoricalEncoding Credibility 5.f')
             GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Z = NULL)]
           } else if(tolower(ML_Type) == "regression") {
+
             if(Debug) print('CategoricalEncoding Credibility 6.a')
             g <- data[, .N, by = GroupValue]
             N <- g[1L, get(names(g)[length(names(g))])]
@@ -639,6 +635,7 @@ CategoricalEncoding <- function(data = NULL,
               Mean =      mean(get(TargetVariable), na.rm = TRUE),
               EPV = var(get(TargetVariable), na.rm = TRUE)),
               keyby = eval(GroupValue)]
+            GroupMean[, EPV := mean(EPV)]
             if(Debug) print('CategoricalEncoding Credibility 6.b')
             GroupMean[, VHM := sum((Mean - eval(GrandMean)) ^ 2)/(.N-1) - EPV / N]
             if(Debug) print('CategoricalEncoding Credibility 6.c')
