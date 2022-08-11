@@ -26,7 +26,7 @@ Language: en-US
 LazyData: true
 NeedsCompilation: no
 Packaged: 2021-10-26 14:00:00 UTC
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1
 SystemRequirements: Java (>= 7.0)
 Author: Adrian Antico [aut, cre], Douglas Pestana [ctb]
 ByteCompile: TRUE

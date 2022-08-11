@@ -46,10 +46,9 @@ AutoCatBoostFunnelCARMA(
   CalendarKurts = NULL,
   CalendarQuantiles = NULL,
   CalendarQuantilesSelected = "q50",
-  CohortLags = list(day = c(1L, 7L, 21L), week = c(1L, 4L, 52L), month = c(1L, 6L,
-    12L)),
-  CohortMovingAverages = list(day = c(1L, 7L, 21L), week = c(1L, 4L, 52L), month =
-    c(1L, 6L, 12L)),
+  CohortLags = list(day = c(1L, 7L, 21L), week = c(1L, 4L, 52L), month = c(1L, 6L, 12L)),
+  CohortMovingAverages = list(day = c(1L, 7L, 21L), week = c(1L, 4L, 52L), month = c(1L,
+    6L, 12L)),
   CohortStandardDeviations = NULL,
   CohortSkews = NULL,
   CohortKurts = NULL,

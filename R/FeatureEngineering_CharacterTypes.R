@@ -633,11 +633,12 @@ CategoricalEncoding <- function(data = NULL,
             GroupMean[, ":=" (Mean = NULL, N = NULL, Var_Group = NULL, Z = NULL)]
           } else if(tolower(ML_Type) == "regression") {
             if(Debug) print('CategoricalEncoding Credibility 6.a')
-            N <- data[, .N, by = GroupValue][1L,ncol(data)][[1L]]
+            g <- data[, .N, by = GroupValue]
+            N <- g[1L, get(names(g)[length(names(g))])]
             GroupMean <- data[, list(
               Mean =      mean(get(TargetVariable), na.rm = TRUE),
               EPV = var(get(TargetVariable), na.rm = TRUE)),
-              keyby = eval(GroupValue)][, EPV := mean(EPV)]
+              keyby = eval(GroupValue)]
             if(Debug) print('CategoricalEncoding Credibility 6.b')
             GroupMean[, VHM := sum((Mean - eval(GrandMean)) ^ 2)/(.N-1) - EPV / N]
             if(Debug) print('CategoricalEncoding Credibility 6.c')

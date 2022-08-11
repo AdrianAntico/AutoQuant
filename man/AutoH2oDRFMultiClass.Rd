@@ -16,9 +16,12 @@ AutoH2oDRFMultiClass(
   ReturnModelObjects = TRUE,
   SaveModelObjects = FALSE,
   IfSaveModel = "mojo",
-  MaxMem = {     gc()    
+  MaxMem = {
+     gc()
+    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1e+06)), "G")
+ },
   NThreads = max(1, parallel::detectCores() - 2),
   model_path = NULL,
   metadata_path = NULL,

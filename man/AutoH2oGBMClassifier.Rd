@@ -13,9 +13,12 @@ AutoH2oGBMClassifier(
   TargetColumnName = NULL,
   FeatureColNames = NULL,
   WeightsColumn = NULL,
-  MaxMem = {     gc()    
+  MaxMem = {
+     gc()
+    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1e+06)), "G")
+ },
   NThreads = max(1L, parallel::detectCores() - 2L),
   model_path = NULL,
   metadata_path = NULL,

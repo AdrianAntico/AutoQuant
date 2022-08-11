@@ -157,6 +157,7 @@ if(!("tsoutliers" %in% rownames(installed.packages()))) install.packages("tsoutl
 if(!("xgboost" %in% rownames(installed.packages()))) install.packages("xgboost"); print("xgboost")
 if(!("lightgbm" %in% rownames(installed.packages()))) install.packages("lightgbm"); print("lightgbm")
 if(!("regmedint" %in% rownames(installed.packages()))) install.packages("regmedint"); print("regmedint")
+if(!("lme4" %in% rownames(installed.packages()))) install.packages("regmedint"); print("regmedint")
 if(!("brms" %in% rownames(installed.packages()))) install.packages("brms"); print("brms")
 for(pkg in c("RCurl","jsonlite")) if (! (pkg %in% rownames(installed.packages()))) { install.packages(pkg) }
 install.packages("h2o", type = "source", repos = (c("http://h2o-release.s3.amazonaws.com/h2o/latest_stable_R")))

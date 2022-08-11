@@ -18,9 +18,12 @@ AutoH2oGAMClassifier(
   Link = "logit",
   eval_metric = "auc",
   CostMatrixWeights = c(1, 0, 0, 1),
-  MaxMem = {     gc()    
+  MaxMem = {
+     gc()
+    
     paste0(as.character(floor(as.numeric(system("awk '/MemFree/ {print $2}' /proc/meminfo",
-    intern = TRUE))/1e+06)), "G") },
+    intern = TRUE))/1e+06)), "G")
+ },
   NThreads = max(1, parallel::detectCores() - 2),
   model_path = NULL,
   metadata_path = NULL,
