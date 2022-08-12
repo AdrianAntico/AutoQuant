@@ -631,7 +631,6 @@ CategoricalEncoding <- function(data = NULL,
           } else if(tolower(ML_Type) == "regression") {
 
             if(Debug) print('CategoricalEncoding Credibility 6.a')
-            g <- data[, .N, by = GroupValue]
             GroupMean <- data[, list(
               Mean =      mean(get(TargetVariable), na.rm = TRUE),
               EPV = var(get(TargetVariable), na.rm = TRUE),
