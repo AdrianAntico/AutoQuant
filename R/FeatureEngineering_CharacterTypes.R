@@ -214,6 +214,8 @@ DummifyDT <- function(data,
 #'
 #' @description Categorical encoding for factor and character columns
 #'
+#' @seealso http://helios.mm.di.uoa.gr/~rouvas/ssi/sigkdd/sigkdd.vol3.1/barreca.pdf for details and some theory about the method
+#'
 #' @author Adrian Antico
 #'
 #' @family Feature Engineering
@@ -630,7 +632,6 @@ CategoricalEncoding <- function(data = NULL,
 
             if(Debug) print('CategoricalEncoding Credibility 6.a')
             g <- data[, .N, by = GroupValue]
-            N <- g[1L, get(names(g)[length(names(g))])]
             GroupMean <- data[, list(
               Mean =      mean(get(TargetVariable), na.rm = TRUE),
               EPV = var(get(TargetVariable), na.rm = TRUE),
@@ -685,100 +686,6 @@ CategoricalEncoding <- function(data = NULL,
       return(list(data = data, FactorCompenents = ComponentList))
     } else {
       if(Debug) print('CategoricalEncoding Credibility 13.b')
-      return(data)
-    }
-  }
-
-  # M Estimator ----
-  if(tolower(Method) == "m_estimator") {
-
-    if(Debug) print('CategoricalEncoding m-estimator 1')
-
-    # Loop through GroupVariables
-    if(!Scoring) ComponentList <- list()
-    for(GroupValue in GroupVariables) {
-
-      if(Debug) print('CategoricalEncoding m-estimator 2')
-
-      # Setkey to join easily
-      data.table::setkeyv(x = data, cols = eval(GroupValue))
-
-      # Encode
-      if(!Scoring) {
-
-        if(Debug) print('CategoricalEncoding m-estimator 3')
-
-        # Encode
-        if(tolower(ML_Type) == "multiclass") {
-          if(Debug) print('CategoricalEncoding m-estimator 4.a')
-          GroupMean <- data[, list(N = .N), by = c(TargetVariable, GroupValue)]
-          if(Debug) print('CategoricalEncoding m-estimator 4.b')
-          GroupMean[, GrandSum := sum(N)]
-          if(Debug) print('CategoricalEncoding m-estimator 4.c')
-          GroupMean[, TargetSum := sum(N), by = eval(TargetVariable)]
-          if(Debug) print('CategoricalEncoding m-estimator 4.d')
-          GroupMean[, TargetMean := TargetSum / GrandSum]
-          if(Debug) print('CategoricalEncoding m-estimator 4.e')
-          GroupMean[, TargetGroupMean := N / TargetSum]
-          if(Debug) print('CategoricalEncoding m-estimator 4.f')
-          GroupMean[, paste0(GroupValue, "_Mest") := (TargetGroupMean + TargetMean) / 2]
-          if(Debug) print('CategoricalEncoding m-estimator 4.g')
-          GroupMean[, (setdiff(names(GroupMean), c(paste0(GroupValue, "_Mest"), TargetVariable, GroupValue))) := NULL]
-          if(Debug) print('CategoricalEncoding m-estimator 4.h')
-          GroupMean <- data.table::dcast.data.table(data = GroupMean, formula = get(GroupValue) ~ get(TargetVariable), fun.aggregate = sum, value.var = paste0(GroupValue, "_Mest"), fill = 0)
-          if(Debug) print('CategoricalEncoding m-estimator 4.i')
-          data.table::setnames(x = GroupMean, names(GroupMean), c(eval(GroupValue), paste0(GroupValue, "_Mest_TargetLevel_", names(GroupMean)[-1L])))
-          if(Debug) print('CategoricalEncoding m-estimator 4.j')
-          data.table::setkeyv(GroupMean, cols = eval(GroupValue))
-        } else {
-          if(Debug) print('CategoricalEncoding m-estimator 4.b')
-          GrandMean <- data[, mean(get(TargetVariable), na.rm = TRUE)]
-          if(Debug) print('CategoricalEncoding m-estimator 4.c')
-          GroupMean <- data[, list(Mean = sum(get(TargetVariable), na.rm = TRUE), N = .N), keyby = eval(GroupValue)]
-          if(Debug) print('CategoricalEncoding m-estimator 4.d')
-          GroupMean[, paste0(GroupValue, "_Mest") := (Mean + GrandMean) / 2]
-          if(Debug) print('CategoricalEncoding m-estimator 4.e')
-          GroupMean[, ":=" (Mean = NULL, N = NULL)]
-        }
-        if(Debug) print('CategoricalEncoding m-estimator 5')
-        if(!is.null(SavePath)) data.table::fwrite(GroupMean, file = file.path(SavePath, paste0(GroupValue, "_Mest.csv")))
-      } else if(Scoring && is.null(SupplyFactorLevelList)) {
-        if(Debug) print('CategoricalEncoding m-estimator 4.c')
-        GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_Mest.csv")))
-        if(Debug) print('CategoricalEncoding m-estimator 4.d')
-        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
-      } else if(Scoring && !is.null(SupplyFactorLevelList)) {
-        if(Debug) print('CategoricalEncoding m-estimator 4.e')
-        GroupMean <- SupplyFactorLevelList[[paste0(GroupValue)]]
-        if(Debug) print('CategoricalEncoding m-estimator 4.f')
-        data.table::setkeyv(GroupMean, cols = eval(GroupValue))
-      }
-
-      # Merge back to data
-      if(tolower(ML_Type) == "mutliclass") {
-        if(Debug) print('CategoricalEncoding m-estimator 6')
-        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := mget(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
-      } else {
-        if(Debug) print('CategoricalEncoding m-estimator 7')
-        data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
-      }
-      if(Debug) print('CategoricalEncoding m-estimator 8')
-      if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
-      if(Debug) print('CategoricalEncoding m-estimator 9')
-      if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
-      if(Debug) print('CategoricalEncoding m-estimator 10')
-      if(Scoring && !is.null(ImputeValueScoring)) {
-        if(Debug) print('CategoricalEncoding m-estimator 11')
-        data.table::set(data, i = which(is.na(data[[paste0(GroupValue, "_Mest")]])), j = paste0(GroupValue, "_Mest"), value = ImputeValueScoring)
-      }
-    }
-
-    # Return
-    if(!Scoring && ReturnFactorLevelList) {
-      if(Debug) print('CategoricalEncoding m-estimator 12')
-      return(list(data = data, FactorCompenents = ComponentList))
-    } else {
-      if(Debug) print('CategoricalEncoding m-estimator 13')
       return(data)
     }
   }
