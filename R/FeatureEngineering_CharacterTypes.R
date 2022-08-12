@@ -633,7 +633,8 @@ CategoricalEncoding <- function(data = NULL,
             N <- g[1L, get(names(g)[length(names(g))])]
             GroupMean <- data[, list(
               Mean =      mean(get(TargetVariable), na.rm = TRUE),
-              EPV = var(get(TargetVariable), na.rm = TRUE)),
+              EPV = var(get(TargetVariable), na.rm = TRUE),
+              N = .N),
               keyby = eval(GroupValue)]
             GroupMean[, EPV := mean(EPV)]
             if(Debug) print('CategoricalEncoding Credibility 6.b')
@@ -720,7 +721,7 @@ CategoricalEncoding <- function(data = NULL,
           if(Debug) print('CategoricalEncoding m-estimator 4.e')
           GroupMean[, TargetGroupMean := N / TargetSum]
           if(Debug) print('CategoricalEncoding m-estimator 4.f')
-          GroupMean[, paste0(GroupValue, "_Mest") := (TargetGroupMean + TargetMean) / N]
+          GroupMean[, paste0(GroupValue, "_Mest") := (TargetGroupMean + TargetMean) / 2]
           if(Debug) print('CategoricalEncoding m-estimator 4.g')
           GroupMean[, (setdiff(names(GroupMean), c(paste0(GroupValue, "_Mest"), TargetVariable, GroupValue))) := NULL]
           if(Debug) print('CategoricalEncoding m-estimator 4.h')
@@ -735,7 +736,7 @@ CategoricalEncoding <- function(data = NULL,
           if(Debug) print('CategoricalEncoding m-estimator 4.c')
           GroupMean <- data[, list(Mean = sum(get(TargetVariable), na.rm = TRUE), N = .N), keyby = eval(GroupValue)]
           if(Debug) print('CategoricalEncoding m-estimator 4.d')
-          GroupMean[, paste0(GroupValue, "_Mest") := (Mean + GrandMean) / N]
+          GroupMean[, paste0(GroupValue, "_Mest") := (Mean + GrandMean) / 2]
           if(Debug) print('CategoricalEncoding m-estimator 4.e')
           GroupMean[, ":=" (Mean = NULL, N = NULL)]
         }
