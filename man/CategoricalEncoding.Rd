@@ -110,6 +110,8 @@ test <- RemixAutoML::CategoricalEncoding(
 
 }
 \seealso{
+http://helios.mm.di.uoa.gr/~rouvas/ssi/sigkdd/sigkdd.vol3.1/barreca.pdf for details and some theory about the method
+
 Other Feature Engineering: 
 \code{\link{AutoDataPartition}()},
 \code{\link{AutoDiffLagN}()},
