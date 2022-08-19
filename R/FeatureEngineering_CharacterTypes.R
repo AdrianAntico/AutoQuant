@@ -690,7 +690,6 @@ CategoricalEncoding <- function(data = NULL,
       return(data)
     }
   }
-
 }
 
 #' @title DummyVariables

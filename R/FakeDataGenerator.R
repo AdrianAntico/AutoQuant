@@ -374,3 +374,80 @@ FakeDataGenerator <- function(Correlation = 0.70,
   # Return data
   return(data)
 }
+
+#' @title BenchmarkData
+#'
+#' @description Modified version of h2o datatable benchmark data
+#'
+#' @param N = 10000000,
+#' @param RandomLevels = 1000000
+#' @param NAs = -1L
+#' @param Sort = TRUE
+#' @param FixedEffects c(5,10,15), number of levels for each variable
+#' @param IntVars 3
+#' @param CharVars 3
+#' @param RandomEffects c(3)
+#'
+#' @export
+BenchmarkData <- function(NRows = 10000000,
+                          Levels = 1000000,
+                          NAs = -1L,
+                          FixedEffects = c(5,10,15),
+                          CharVars = 3,
+                          IntVars = 3,
+                          Sort = TRUE) {
+  library(data.table)
+  N <- as.integer(NRows)
+  K <- as.integer(Levels)
+  nas <- as.integer(NAs)
+  sort <- as.integer(Sort)
+
+  stopifnot(nas <= 100L, nas >= 0L, sort %in% c(0L,1L))
+
+  set.seed(108)
+
+  DT = list()
+
+  # Character Variables
+  if(CharVars) {
+    DT[["RandomEffectChar_100"]] <- sample(sprintf("id%03d",  seq_len(K)), N, TRUE)                     # large groups (char)
+    DT[["RandomEffectChar_10"]]  <- sample(sprintf("id%03d",  seq_len(ceiling(0.10 * K))), N, TRUE)     # small groups (char)
+    DT[["RandomEffect Char_1"]]   <- sample(sprintf("id%010d", seq_len(ceiling(0.01 * K))), N, TRUE)    # large groups (char)
+  }
+
+  if(IntVars) {
+    DT[["RandomEffectInt_100"]] <- sample(K, N, TRUE)                                                   # Lowest grain Factor (individual)         (int)
+    DT[["RandomEffectInt_10"]] <- sample(ceiling(0.10 * K), N, TRUE)                                    # 2nd lowest grain Factor (1 hierarchy up) (int)
+    DT[["RandomEffectInt_1"]] <- sample(ceiling(0.01 * K), N, TRUE)                                     # 3rd lowest grain Factor (2 hierarchy up) (int)
+  }
+
+  for(fe in seq_along(FixedEffects)) {
+    DT[[paste0("FixedEffect", fe)]] <- sample(FixedEffects[fe], N, TRUE)    # fixed effect: lower level counts
+  }
+
+  DT[["TargetVariable"]] =  round(runif(N, max = 100), 6)     # numeric e.g. 23.574912
+
+  setDT(DT)
+
+  # Missing Values
+  if(nas > 0L) {
+    cat("Inputting NAs\n")
+    for(col in names(DT)[seq_len(3L)]) {
+      ucol = unique(DT[[col]])
+      nna = as.integer(length(ucol) * (nas/100))
+      if(nna) set(DT, DT[.(sample(ucol, nna)), on = col, which = TRUE], col, NA)
+      rm(ucol)
+    }
+    nna = as.integer(nrow(DT) * (nas/100))
+    if(nna) {
+      for(col in names(DT)[4L:6L]) set(DT, sample(nrow(DT), nna), col, NA)
+    }
+  }
+
+  # Sort Data
+  if(sort == 1L) {
+    cat("Sorting data\n")
+    setkeyv(DT, names(DT)[seq_len(5L)])
+  }
+  return(DT)
+}

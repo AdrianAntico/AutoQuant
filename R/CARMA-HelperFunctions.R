@@ -668,7 +668,7 @@ CarmaTruncateData <- function(data. = data,
 
 #' @title CARMA_Get_IndepentVariablesPass
 #'
-#' CARMA_Get_IndepentVariablesPass is to help manage carma code
+#' @description CARMA_Get_IndepentVariablesPass is to help manage carma code
 #'
 #' @author Adrian Antico
 #' @family Carma Helper

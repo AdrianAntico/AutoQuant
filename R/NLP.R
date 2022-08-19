@@ -504,7 +504,7 @@ KerasTrainEval <- function(PriorOutput = NULL,
 
 #' @title Keras_BinaryScoreEval
 #'
-#' @description
+#' @description Evaluation metrics
 #'
 #' @author Adrian Antico
 #' @family DL

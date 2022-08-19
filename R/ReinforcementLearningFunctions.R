@@ -35,7 +35,7 @@ RPM_Binomial_Bandit <- function(Success,
 
 #' @title RL_Initialize
 #'
-#' RL_Initialize sets up the components necessary for RL
+#' @description RL_Initialize sets up the components necessary for RL
 #'
 #' @author Adrian Antico
 #' @family Reinforcement Learning
@@ -87,7 +87,7 @@ RL_Initialize <- function(ParameterGridSet = NULL,
 
 #' @title RL_Update
 #'
-#' RL_Update updates the bandit probabilities for selecting different grids
+#' @description RL_Update updates the bandit probabilities for selecting different grids
 #'
 #' @author Adrian Antico
 #' @family Reinforcement Learning
