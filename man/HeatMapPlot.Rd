@@ -47,6 +47,7 @@ Other Graphics:
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
 \code{\link{CorrMatrixPlot}()},
+\code{\link{DensityPlot}()},
 \code{\link{HistPlot}()},
 \code{\link{PlotlyConversion}()},
 \code{\link{StockData}()},

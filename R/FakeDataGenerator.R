@@ -384,8 +384,8 @@ FakeDataGenerator <- function(Correlation = 0.70,
 #' @param NAs = -1L
 #' @param Sort = TRUE
 #' @param FixedEffects c(5,10,15), number of levels for each variable
-#' @param IntVars 3
-#' @param CharVars 3
+#' @param IntVars TRUE
+#' @param CharVars FALSE
 #' @param RandomEffects c(3)
 #'
 #' @export
@@ -393,8 +393,8 @@ BenchmarkData <- function(NRows = 10000000,
                           Levels = 1000000,
                           NAs = -1L,
                           FixedEffects = c(5,10,15),
-                          CharVars = 3,
-                          IntVars = 3,
+                          CharVars = TRUE,
+                          IntVars = TRUE,
                           Sort = TRUE) {
   library(data.table)
   N <- as.integer(NRows)
@@ -412,7 +412,7 @@ BenchmarkData <- function(NRows = 10000000,
   if(CharVars) {
     DT[["RandomEffectChar_100"]] <- sample(sprintf("id%03d",  seq_len(K)), N, TRUE)                     # large groups (char)
     DT[["RandomEffectChar_10"]]  <- sample(sprintf("id%03d",  seq_len(ceiling(0.10 * K))), N, TRUE)     # small groups (char)
-    DT[["RandomEffect Char_1"]]   <- sample(sprintf("id%010d", seq_len(ceiling(0.01 * K))), N, TRUE)    # large groups (char)
+    DT[["RandomEffectChar_1"]]   <- sample(sprintf("id%010d", seq_len(ceiling(0.01 * K))), N, TRUE)     # large groups (char)
   }
 
   if(IntVars) {
@@ -425,7 +425,7 @@ BenchmarkData <- function(NRows = 10000000,
     DT[[paste0("FixedEffect", fe)]] <- sample(FixedEffects[fe], N, TRUE)    # fixed effect: lower level counts
   }
 
-  DT[["TargetVariable"]] =  round(runif(N, max = 100), 6)     # numeric e.g. 23.574912
+  DT[["TargetVar"]] =  round(runif(N, max = 100), 6)     # numeric e.g. 23.574912
 
   setDT(DT)
 

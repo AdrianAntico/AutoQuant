@@ -37,6 +37,7 @@ Other Graphics:
 \code{\link{BarPlot}()},
 \code{\link{BoxPlot}()},
 \code{\link{ChartTheme}()},
+\code{\link{DensityPlot}()},
 \code{\link{HeatMapPlot}()},
 \code{\link{HistPlot}()},
 \code{\link{PlotlyConversion}()},

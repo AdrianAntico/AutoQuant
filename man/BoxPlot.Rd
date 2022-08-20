@@ -151,6 +151,7 @@ Other Graphics:
 \code{\link{BarPlot}()},
 \code{\link{ChartTheme}()},
 \code{\link{CorrMatrixPlot}()},
+\code{\link{DensityPlot}()},
 \code{\link{HeatMapPlot}()},
 \code{\link{HistPlot}()},
 \code{\link{PlotlyConversion}()},

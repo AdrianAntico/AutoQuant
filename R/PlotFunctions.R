@@ -250,6 +250,34 @@ StockPlot <- function(StockDataOutput,
   return(p1)
 }
 
+#' @title DensityPlot
+#'
+#' @description Density plots, by groups, with transparent continuous plots
+#'
+#' @family Graphics
+#'
+#' @param data data.table
+#' @param GroupVariables = NULL
+#' @param MeasureVariables = NULL
+#'
+#' @export
+DensityPlot <- function(data, GroupVariables, MeasureVars) {
+  if(length(GroupVariables) == 0L) {
+    plotly::ggplotly(
+      eval(ggplot2::ggplot(data, ggplot2::aes(x = get(MeasureVars))) +
+             ggplot2::geom_density(alpha = 0.3) +
+             RemixAutoML::ChartTheme(BackGroundColor = 'gray75', ChartColor = RColorBrewer::brewer.pal(n = 3L, name = 'Dark2')[[3L]])))
+  } else {
+    xx <- data.table::melt.data.table(
+      data = data,
+      id.vars = c(GroupVariables), measure.vars= c(MeasureVars), variable.name='Method', value.name='Value')
+    plotly::ggplotly(
+      eval(ggplot2::ggplot(xx, ggplot2::aes(x = Value, fill = Method)) +
+             ggplot2::geom_density(alpha = 0.3) +
+             RemixAutoML::ChartTheme(BackGroundColor = 'gray75', ChartColor = RColorBrewer::brewer.pal(n = 3L, name = 'Dark2')[[3L]])))
+  }
+}
+
 
 #' @title HeatMapPlot
 #'

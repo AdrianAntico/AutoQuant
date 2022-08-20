@@ -9,8 +9,8 @@ BenchmarkData(
   Levels = 1e+06,
   NAs = -1L,
   FixedEffects = c(5, 10, 15),
-  CharVars = 3,
-  IntVars = 3,
+  CharVars = TRUE,
+  IntVars = TRUE,
   Sort = TRUE
 )
 }
@@ -19,9 +19,9 @@ BenchmarkData(
 
 \item{FixedEffects}{c(5,10,15), number of levels for each variable}
 
-\item{CharVars}{3}
+\item{CharVars}{FALSE}
 
-\item{IntVars}{3}
+\item{IntVars}{TRUE}
 
 \item{Sort}{= TRUE}
 
