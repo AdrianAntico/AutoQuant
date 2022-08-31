@@ -280,7 +280,15 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
     # Encode
     x <- FactorLevelsList$EncodingMethod
-    x <- paste0(toupper(substr(x = x, start = 1, stop = 1)), substr(x = x, start = 2, stop = nchar(x)))
+    if(x == 'target_encoding') {
+      x <- 'TargetEncode'
+    } else if(x == 'credibility') {
+      x <- 'Crediblity'
+    } else if(x == 'woe') {
+      x <- "WOE"
+    } else if(x == 'poly_encode') {
+      x <- 'PolyEncode'
+    }
     y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
     if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
     xx <- names(data.table::copy(ScoringData))

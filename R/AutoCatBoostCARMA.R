@@ -19,7 +19,7 @@
 #' @param FC_Periods Set the number of periods you want to have forecasts for. E.g. 52 for weekly data to forecast a year ahead
 #' @param PDFOutputPath NULL or a path file to output PDFs to a specified folder
 #' @param SaveDataPath NULL Or supply a path. Data saved will be called 'ModelID'_data.csv
-#' @param EncodingMethod 'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
+#' @param EncodingMethod 'binary', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'
 #' @param TargetTransformation TRUE or FALSE. If TRUE, select the methods in the Methods arg you want tested. The best one will be applied.
 #' @param Methods Choose from 'YeoJohnson', 'BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', or 'Logit'. If more than one is selected, the one with the best normalization pearson statistic will be used. Identity is automatically selected and compared.
 #' @param XREGS Additional data to use for model development and forecasting. Data needs to be a complete series which means both the historical and forward looking values over the specified forecast window needs to be supplied.
@@ -74,6 +74,8 @@
 #' @param SubSample Can use if BootStrapType is neither Bayesian nor No. Pass NULL to use Catboost default. Used for bagging.
 #' @param ScoreFunction Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)
 #' @param MinDataInLeaf Defaults to 1. Used if GrowPolicy is not SymmetricTree
+#' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
+#' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
 #' @examples
 #' \dontrun{
 #'
@@ -318,48 +320,48 @@ AutoCatBoostCARMA <- function(data,
                               NonNegativePred = FALSE,
                               RoundPreds = FALSE,
                               TrainOnFull = FALSE,
-                              TargetColumnName = 'Target',
-                              DateColumnName = 'DateTime',
+                              TargetColumnName = NULL,
+                              DateColumnName = NULL,
                               HierarchGroups = NULL,
                               GroupVariables = NULL,
-                              FC_Periods = 30,
-                              TimeUnit = 'week',
-                              TimeGroups = c('weeks','months'),
+                              FC_Periods = 5,
+                              TimeUnit = NULL,
+                              TimeGroups = NULL,
                               PDFOutputPath = NULL,
                               SaveDataPath = NULL,
                               NumOfParDepPlots = 10L,
                               EncodingMethod = 'credibility',
                               TargetTransformation = FALSE,
-                              Methods = c('BoxCox', 'Asinh', 'Log', 'LogPlus1', 'Sqrt', 'Asin', 'Logit'),
+                              Methods = c('Standardize','Asinh', 'Log', 'LogPlus1', 'Sqrt'),
                               AnomalyDetection = NULL,
                               XREGS = NULL,
-                              Lags = c(1L:5L),
-                              MA_Periods = c(2L:5L),
+                              Lags = NULL,
+                              MA_Periods = NULL,
                               SD_Periods = NULL,
                               Skew_Periods = NULL,
                               Kurt_Periods = NULL,
                               Quantile_Periods = NULL,
                               Quantiles_Selected = c('q5','q95'),
-                              Difference = TRUE,
-                              FourierTerms = 6L,
-                              CalendarVariables = c('minute', 'hour', 'wday', 'mday', 'yday', 'week', 'isoweek', 'month', 'quarter', 'year'),
-                              HolidayVariable = c('USPublicHolidays','EasterGroup','ChristmasGroup','OtherEcclesticalFeasts'),
+                              Difference = FALSE,
+                              FourierTerms = 0L,
+                              CalendarVariables = NULL, # c('minute', 'hour', 'wday', 'mday', 'yday', 'week', 'isoweek', 'month', 'quarter', 'year'),
+                              HolidayVariable = NULL, # c('USPublicHolidays','EasterGroup','ChristmasGroup','OtherEcclesticalFeasts'),
                               HolidayLookback = NULL,
-                              HolidayLags = 1L,
-                              HolidayMovingAverages = 1L:2L,
+                              HolidayLags = NULL,
+                              HolidayMovingAverages = NULL, # 1L:2L,
                               TimeTrendVariable = FALSE,
                               ZeroPadSeries = NULL,
                               DataTruncate = FALSE,
                               SplitRatios = c(0.7, 0.2, 0.1),
-                              PartitionType = 'timeseries',
-                              TaskType = 'GPU',
+                              PartitionType = 'random',
+                              TaskType = 'CPU',
                               NumGPU = 1,
                               DebugMode = FALSE,
                               Timer = TRUE,
                               EvalMetric = 'RMSE',
-                              EvalMetricValue = 1.5,
+                              EvalMetricValue = 1.2,
                               LossFunction = 'RMSE',
-                              LossFunctionValue = 1.5,
+                              LossFunctionValue = 1.2,
                               GridTune = FALSE,
                               PassInGrid = NULL,
                               ModelCount = 100,
@@ -367,8 +369,8 @@ AutoCatBoostCARMA <- function(data,
                               MaxRunMinutes = 24L*60L,
                               Langevin = FALSE,
                               DiffusionTemperature = 10000,
-                              NTrees = 1000,
-                              L2_Leaf_Reg = NULL,
+                              NTrees = 500,
+                              L2_Leaf_Reg = 5,
                               LearningRate = NULL,
                               RandomStrength = 1,
                               BorderCount = 254,
@@ -376,14 +378,23 @@ AutoCatBoostCARMA <- function(data,
                               RSM = 1,
                               BootStrapType = 'Bayesian',
                               GrowPolicy = 'SymmetricTree',
-                              ModelSizeReg = 0.5,
+                              ModelSizeReg = 2.0,
                               FeatureBorderType = 'GreedyLogSum',
                               SamplingUnit = 'Group',
                               SubSample = NULL,
                               ScoreFunction = 'Cosine',
-                              MinDataInLeaf = 1) {
+                              MinDataInLeaf = 1,
+                              SaveModel = FALSE,
+                              ArgsList = NULL) {
+
+  if(DebugMode) print(data)
+
   # Load catboost ----
   loadNamespace(package = 'catboost')
+
+  if(length(ArgsList) > 0L && length(ArgsList$Model) > 0L) {
+    TrainOnFull <- TRUE
+  }
 
   # Args checking ----
   if(DebugMode) print('# Purified args: see CARMA HELPER FUNCTIONS----')
@@ -405,7 +416,9 @@ AutoCatBoostCARMA <- function(data,
   TaskType <- Args$TaskType; rm(Args)
 
   # Grab all official parameters and their evaluated arguments
-  ArgsList <- c(as.list(environment()))
+  if(length(ArgsList) == 0L) ArgsList <- c(as.list(environment()))
+
+  print(names(ArgsList))
 
   # Convert data to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -414,16 +427,21 @@ AutoCatBoostCARMA <- function(data,
   # Variables for Program: Redefine HoldOutPerids ----
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2L] * length(unique(data[[eval(DateColumnName)]])), 0L)
 
+  if(DebugMode) print('Fill Start')
+  if(DebugMode) print(data)
+
   # Feature Engineering: Add Zero Padding for missing dates ----
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
-  if(data[, .N] != unique(data)[, .N]) stop('There is duplicates in your data')
+  if(data[, .N] != unique(data)[, .N]) {data <- unique(data); ZeroPadSeries <- 'maxmax'}
   if(!is.null(ZeroPadSeries)) {
-    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.0, SimpleImpute=FALSE)
-    data <- ModelDataPrep(data=data, Impute=TRUE, CharToFactor=FALSE, FactorToChar=FALSE, IntToNumeric=FALSE, LogicalToBinary=FALSE, DateToChar=FALSE, RemoveDates=FALSE, MissFactor='0', MissNum=0, IgnoreCols=NULL)
+    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
   } else {
-    temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.25, SimpleImpute=FALSE)
+    temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
     if(temp[,.N] != data[,.N]) stop('There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function')
   }
+
+  if(DebugMode) print('Fill Done')
+  if(DebugMode) print(data)
 
   # Modify FC_Periods ----
   if(DebugMode) print('# Check lengths of XREGS')
@@ -441,7 +459,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Set Keys for data.table usage ----
   if(DebugMode) print('# Set Keys for data.table usage ----')
-  if(!is.null(GroupVariables)) {
+  if(length(GroupVariables) > 0L) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
     if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c('GroupVar', eval(DateColumnName)))
   } else {
@@ -453,23 +471,26 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print('Data Wrangling: Remove Unnecessary Columns ----')
   data <- CarmaSubsetColumns(data.=data, XREGS.=XREGS, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName)
 
-  # Feature Engineering: Concat Categorical Columns - easier to deal with this way ----
-  if(DebugMode) print('Feature Engineering: Concat Categorical Columns - easier to deal with this way ----')
-  if(!is.null(GroupVariables)) {
+  # GroupVar creation: feature engineering: Concat Categorical Columns - easier to deal with this way ----
+  if(DebugMode) print('GroupVar creation: feature engineering: Concat Categorical Columns - easier to deal with this way ----')
+  if(length(GroupVariables) > 0L) {
     data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables]
+    MergeGroupVariablesBack <- data[, .N, by = c('GroupVar',GroupVariables)]
     if(length(GroupVariables) > 1L) data[, eval(GroupVariables) := NULL] else if(GroupVariables != 'GroupVar') data[, eval(GroupVariables) := NULL]
+  } else {
+    MergeGroupVariablesBack <- NULL
   }
 
   # Variables for Program: Store unique values of GroupVar in GroupVarVector ----
   if(DebugMode) print('Variables for Program: Store unique values of GroupVar in GroupVarVector ----')
-  if(!is.null(GroupVariables)) {
+  if(length(GroupVariables) > 0L) {
     GroupVarVector <- data.table::as.data.table(x = unique(as.character(data[['GroupVar']])))
     data.table::setnames(GroupVarVector, 'V1', 'GroupVar')
   }
 
   # Data Wrangling: Standardize column ordering ----
   if(DebugMode) print('Data Wrangling: Standardize column ordering ----')
-  if(!is.null(GroupVariables)) data.table::setcolorder(data, c('GroupVar', eval(DateColumnName), eval(TargetColumnName))) else data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
+  if(length(GroupVariables) > 0L) data.table::setcolorder(data, c('GroupVar', eval(DateColumnName), eval(TargetColumnName))) else data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
 
   # Data Wrangling: Convert DateColumnName to Date or POSIXct ----
   if(DebugMode) print('Data Wrangling: Convert DateColumnName to Date or POSIXct ----')
@@ -493,10 +514,12 @@ AutoCatBoostCARMA <- function(data,
 
   # Data Wrangling: Sort data ----
   if(DebugMode) print('Data Wrangling: Sort data by GroupVar then DateColumnName ----')
-  if(!is.null(GroupVariables)) data <- data[order(GroupVar, get(DateColumnName))] else data <- data[order(get(DateColumnName))]
+  if(DebugMode) print(data)
+  if(length(GroupVariables) > 0L) data <- data[order(GroupVar, get(DateColumnName))] else data <- data[order(get(DateColumnName))]
 
   # Feature Engineering: Create Fourier Features ----
   if(DebugMode) print('Feature Engineering: Fourier Features ----')
+  if(DebugMode) print(data)
   Output <- CarmaFourier(data.=data, XREGS.=XREGS, FourierTerms.=FourierTerms, TimeUnit.=TimeUnit, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, HierarchGroups.=HierarchGroups)
   FourierTerms <- Output$FourierTerms; Output$FourierTerms <- NULL
   FourierFC <- Output$FourierFC; Output$FourierFC <- NULL
@@ -504,12 +527,13 @@ AutoCatBoostCARMA <- function(data,
 
   # Feature Engineering: Create Calendar Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Calendar Variables ----')
+  if(DebugMode) print(data)
   if(!is.null(CalendarVariables)) data <- CreateCalendarVariables(data=data, DateCols=eval(DateColumnName), AsFactor=FALSE, TimeUnits=CalendarVariables)
 
   # Feature Engineering: Create Holiday Variables ----
   if(DebugMode) print('Feature Engineering: Add Create Holiday Variables ----')
   if(!is.null(HolidayVariable)) {
-    data <- CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL)
+    data <- CreateHolidayVariables(data, DateCols = eval(DateColumnName), LookbackDays = if(!is.null(HolidayLookback)) HolidayLookback else LB(TimeUnit), HolidayGroups = HolidayVariable, Holidays = NULL, Debug = DebugMode)
     if(!(tolower(TimeUnit) %chin% c('1min','5min','10min','15min','30min','hour'))) {
       data[, eval(DateColumnName) := lubridate::as_date(get(DateColumnName))]
     } else {
@@ -519,10 +543,11 @@ AutoCatBoostCARMA <- function(data,
 
   # Anomaly detection by Group and Calendar Vars ----
   if(DebugMode) print('Anomaly detection by Group and Calendar Vars ----')
+  if(DebugMode) print(AnomalyDetection)
   if(!is.null(AnomalyDetection)) {
     data <- GenTSAnomVars(
       data = data, ValueCol = eval(TargetColumnName),
-      GroupVars = if(!is.null(CalendarVariables) && !is.null(GroupVariables)) c('GroupVar', paste0(DateColumnName, '_', CalendarVariables[1])) else if(!is.null(GroupVariables)) 'GroupVar' else NULL,
+      GroupVars = if(!is.null(CalendarVariables) && length(GroupVariables) > 0L) c('GroupVar', paste0(DateColumnName, '_', CalendarVariables[1])) else if(length(GroupVariables) > 0L) 'GroupVar' else NULL,
       DateVar = eval(DateColumnName), KeepAllCols = TRUE, IsDataScaled = FALSE,
       HighThreshold = AnomalyDetection$tstat_high,
       LowThreshold = AnomalyDetection$tstat_low)
@@ -532,10 +557,16 @@ AutoCatBoostCARMA <- function(data,
 
   # Feature Engineering: Target Transformation ----
   if(DebugMode) print('Feature Engineering: Add Target Transformation ----')
-  if(TargetTransformation) {
+  if(TargetTransformation && Methods != 'Standardize') {
     TransformResults <- AutoTransformationCreate(data, ColumnNames=TargetColumnName, Methods=Methods, Path=NULL, TransID='Trans', SaveOutput=FALSE)
     data <- TransformResults$Data; TransformResults$Data <- NULL
     TransformObject <- TransformResults$FinalResults; rm(TransformResults)
+  } else if(TargetTransformation && Methods != 'Standardize') {
+    if(length(GroupVariables) > 0L) x <- 'GroupVar' else x <- NULL
+    TransformResults <- RemixAutoML::Standardize(data, ColNames = TargetColumnName, GroupVars = x, Center = TRUE, Scale = TRUE, ScoreTable = FALSE)
+    data <- TransformResults$data
+    TransformObject <- TransformResults$ScoreTable
+    rm(TransformResults)
   } else {
     TransformObject <- NULL
   }
@@ -547,7 +578,7 @@ AutoCatBoostCARMA <- function(data,
   # Variables for CARMA function IDcols ----
   if(DebugMode) print('Variables for CARMA function:IDcols----')
   IDcols <- names(data)[which(names(data) %chin% DateColumnName)]
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, names(data)[which(names(data) == TargetColumnName)], names(data)[which(names(data) == 'TargetDiffMidStep')])
+  if(Difference && length(GroupVariables) > 0L) IDcols <- c(IDcols, names(data)[which(names(data) == TargetColumnName)], names(data)[which(names(data) == 'TargetDiffMidStep')])
 
   # Feature Engineering: Differencing ----
   if(DebugMode) print('Feature Engineering: Add Difference Data ----')
@@ -557,7 +588,7 @@ AutoCatBoostCARMA <- function(data,
   FC_Periods <- Output$FC_Periods; Output$FC_Periods <- NULL
   DiffTrainOutput <- Output$DiffTrainOutput
   Train <- Output$Train; rm(Output)
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, 'TargetDiffMidStep')
+  if(Difference && length(GroupVariables) > 0L) IDcols <- c(IDcols, 'TargetDiffMidStep')
 
   # Feature Engineering: Lags and Rolling Stats ----
   if(DebugMode) print('Feature Engineering: Lags and Rolling Stats ----')
@@ -569,7 +600,7 @@ AutoCatBoostCARMA <- function(data,
   data <- Output$data; rm(Output)
 
   # Create GroupVar ----
-  if(!is.null(GroupVariables) && !'GroupVar' %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = c(GroupVariables)]
+  if(length(GroupVariables) > 0L && !'GroupVar' %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = c(GroupVariables)]
 
   # Data Wrangling: ModelDataPrep() to prepare data ----
   if(DebugMode) print('Data Wrangling: ModelDataPrep() to prepare data ----')
@@ -582,7 +613,7 @@ AutoCatBoostCARMA <- function(data,
   # Feature Engineering: Add TimeTrend Variable ----
   if(DebugMode) print('Feature Engineering: Add TimeTrend Variable----')
   if(TimeTrendVariable) {
-    if(!is.null(GroupVariables)) data[, TimeTrend := seq_len(.N), by = 'GroupVar'] else data[, TimeTrend := seq_len(.N)]
+    if(length(GroupVariables) > 0L) data[, TimeTrend := seq_len(.N), by = 'GroupVar'] else data[, TimeTrend := seq_len(.N)]
   }
 
   # Store Date Info ----
@@ -606,7 +637,7 @@ AutoCatBoostCARMA <- function(data,
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----
   if(DebugMode) print('Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train ----')
-  if(!is.null(GroupVariables)) data.table::setorderv(x = data, cols = c('GroupVar',eval(DateColumnName)), order = c(1,1)) else data.table::setorderv(x = data, cols = c(eval(DateColumnName)), order = c(1))
+  if(length(GroupVariables) > 0L) data.table::setorderv(x = data, cols = c('GroupVar',eval(DateColumnName)), order = c(1,1)) else data.table::setorderv(x = data, cols = c(eval(DateColumnName)), order = c(1))
   Step1SCore <- data.table::copy(data)
 
   # Define Target and Features ----
@@ -619,85 +650,99 @@ AutoCatBoostCARMA <- function(data,
   if(!is.null(SplitRatios) || !TrainOnFull) TOF <- FALSE else TOF <- TRUE
 
   # Run AutoCatBoostRegression and return list of ml objects ----
-  TestModel <- AutoCatBoostRegression(
+  if(!(length(ArgsList) > 0L && length(ArgsList$Model) > 0L)) {
+    TestModel <- AutoCatBoostRegression(
 
-    # GPU or CPU and the number of available GPUs
-    task_type = TaskType,
-    NumGPUs = NumGPU,
-    OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+      # GPU or CPU and the number of available GPUs
+      task_type = TaskType,
+      NumGPUs = NumGPU,
+      OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
 
-    # Metadata arguments
-    ModelID = 'CatBoost',
-    model_path = getwd(),
-    metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
-    SaveModelObjects = FALSE,
-    ReturnModelObjects = TRUE,
-    SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
+      # Metadata arguments
+      ModelID = 'CatBoost',
+      model_path = getwd(),
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      SaveModelObjects = FALSE,
+      ReturnModelObjects = TRUE,
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
 
-    # Data arguments
-    data = train,
-    TrainOnFull = TOF,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    PrimaryDateColumn = eval(DateColumnName),
-    WeightsColumnName = if('Weights' %in% names(train)) 'Weights' else NULL,
-    IDcols = IDcols,
-    EncodeMethod = EncodingMethod,
-    TransformNumericColumns = NULL,
-    Methods = NULL,
+      # Data arguments
+      data = train,
+      TrainOnFull = TOF,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      PrimaryDateColumn = eval(DateColumnName),
+      WeightsColumnName = if('Weights' %in% names(train)) 'Weights' else NULL,
+      IDcols = IDcols,
+      EncodeMethod = EncodingMethod,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
 
-    # Model evaluation
-    eval_metric = EvalMetric,
-    eval_metric_value = EvalMetricValue,
-    loss_function = LossFunction,
-    loss_function_value = LossFunctionValue,
-    MetricPeriods = 10L,
-    NumOfParDepPlots = NumOfParDepPlots,
+      # Model evaluation
+      eval_metric = EvalMetric,
+      eval_metric_value = EvalMetricValue,
+      loss_function = LossFunction,
+      loss_function_value = LossFunctionValue,
+      MetricPeriods = 10L,
+      NumOfParDepPlots = NumOfParDepPlots,
 
-    # Grid tuning arguments
-    PassInGrid = PassInGrid,
-    GridTune = GridTune,
-    MaxModelsInGrid = ModelCount,
-    MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-    MaxRunMinutes = 60*60,
-    BaselineComparison = 'default',
+      # Grid tuning arguments
+      PassInGrid = PassInGrid,
+      GridTune = GridTune,
+      MaxModelsInGrid = ModelCount,
+      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+      MaxRunMinutes = 60*60,
+      BaselineComparison = 'default',
 
-    # ML args
-    langevin = Langevin,
-    diffusion_temperature = DiffusionTemperature,
-    Trees = NTrees,
-    Depth = Depth,
-    LearningRate = LearningRate,
-    L2_Leaf_Reg = L2_Leaf_Reg,
-    RandomStrength = RandomStrength,
-    BorderCount = BorderCount,
-    RSM = if(TaskType == 'GPU') NULL else RSM,
-    BootStrapType = BootStrapType,
-    GrowPolicy = GrowPolicy,
+      # ML args
+      langevin = Langevin,
+      diffusion_temperature = DiffusionTemperature,
+      Trees = NTrees,
+      Depth = Depth,
+      LearningRate = LearningRate,
+      L2_Leaf_Reg = L2_Leaf_Reg,
+      RandomStrength = RandomStrength,
+      BorderCount = BorderCount,
+      RSM = if(TaskType == 'GPU') NULL else RSM,
+      BootStrapType = BootStrapType,
+      GrowPolicy = GrowPolicy,
 
-    # New ML args
-    model_size_reg = ModelSizeReg,
-    feature_border_type = FeatureBorderType,
-    sampling_unit = SamplingUnit,
-    subsample = SubSample,
-    score_function = ScoreFunction,
-    min_data_in_leaf = MinDataInLeaf,
-    DebugMode = DebugMode)
+      # New ML args
+      model_size_reg = ModelSizeReg,
+      feature_border_type = FeatureBorderType,
+      sampling_unit = SamplingUnit,
+      subsample = SubSample,
+      score_function = ScoreFunction,
+      min_data_in_leaf = MinDataInLeaf,
+      DebugMode = DebugMode)
 
-  # Udpate ModelFeatures
-  # ModelFeatures <- TestModel$ArgsList$FeatureColNames
+    # Return model object for when TrainOnFull is FALSE ----
+    if(!TrainOnFull && SaveModel) {
+      ArgsList[['Model']] <- TestModel$Model
+      ArgsList[['FactorLevelsList']] <- TestModel$FactorLevelsList
+      TestModel$Model <- NULL
+      return(list(TestModel = TestModel, ArgsList = ArgsList))
+    } else if(!TrainOnFull) {
+      return(TestModel)
+    } else if(SaveModel) {
+      ArgsList[['Model']] <- TestModel$Model
+    }
 
-  # Return model object for when TrainOnFull is FALSE ----
-  if(!TrainOnFull) return(TestModel)
+    # Variable for storing ML model: Pull model object out of TestModel list ----
+    if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list ----')
+    Model <- TestModel$Model
+
+  } else {
+    for(i in 1:10) print('SKIPPING ML TRAINING ')
+    Model <- ArgsList[['Model']]
+    TestModel <- list()
+    TestModel$FactorLevelsList <- ArgsList$FactorLevelsList
+  }
 
   # Turn warnings into errors back on ----
   if(DebugMode) options(warn = 2)
-
-  # Variable for storing ML model: Pull model object out of TestModel list ----
-  if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list ----')
-  Model <- TestModel$Model
 
   # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
   if(DebugMode) print('Variable for interation counts: max number of rows in Step1SCore data.table across all group ----')
@@ -733,7 +778,7 @@ AutoCatBoostCARMA <- function(data,
 
       # Update flat feature engineering ----
       if(DebugMode) print('Update feature engineering ----')
-      UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i)
+      UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i, Debug = DebugMode)
 
       # Update Lags and MA's ----
       if(DebugMode) print('Update Lags and MAs ----')
@@ -750,9 +795,11 @@ AutoCatBoostCARMA <- function(data,
 
   # Return data prep ----
   if(DebugMode) print('Return data prep ----')
-  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, DiffTrainOutput.=DiffTrainOutput)
+  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, DiffTrainOutput.=DiffTrainOutput, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
+
+  if(SaveModel) ArgsList[['Model']] <- Model
 
   # Return ----
   return(list(

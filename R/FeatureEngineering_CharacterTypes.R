@@ -820,11 +820,16 @@ EncodeCharacterVariables <- function(RunMode = 'train',
                                      ImputeMissingValue = 0,
                                      Debug = FALSE) {
 
+  if(Debug) print("EncodeCharacterVariables 1")
+
   # Change of variable
   if(RunMode != 'train') Score <- TRUE else Score <- FALSE
 
   # Prepare data
   if(RunMode == 'train') {
+
+    if(Debug) print("EncodeCharacterVariables 2.a")
+
     if(!is.null(ValidationData) && !is.null(TestData)) {
       data.table::set(TrainData, j = "ID_Factorizer", value = "TRAIN")
       data.table::set(ValidationData, j = "ID_Factorizer", value = "VALIDATE")
@@ -839,15 +844,20 @@ EncodeCharacterVariables <- function(RunMode = 'train',
       temp <- TrainData
     }
   } else {
+
+    if(Debug) print("EncodeCharacterVariables 2.b")
+
     temp <- TrainData
   }
 
   # Encode
   if(EncodeMethod == "binary") {
+    if(Debug) print("EncodeCharacterVariables 3.a")
     temp <- DummifyDT(data=temp, cols=CategoricalVariableNames, KeepFactorCols=KeepCategoricalVariables, OneHot=FALSE, SaveFactorLevels=if(!is.null(MetaDataPath)) TRUE else FALSE, ReturnFactorLevels=ReturnMetaData, SavePath=MetaDataPath, ImportFactorLevels=FALSE, FactorLevelsList=MetaDataList)
     MetaDataList <- temp$FactorLevelsList
     temp <- temp$data
   } else if(EncodeMethod %chin% c('m_estimator', 'credibility', 'woe', 'target_encoding')) {
+    if(Debug) print("EncodeCharacterVariables 3.b")
     if(RunMode == 'train') temp_train <- temp[ID_Factorizer == "TRAIN"] else temp_train <- temp
     temp1 <- CategoricalEncoding(data=temp_train, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables, Debug = Debug)
     MetaDataList <- temp1$FactorCompenents
@@ -868,19 +878,23 @@ EncodeCharacterVariables <- function(RunMode = 'train',
 
     # Encoding
     if(!is.null(ValidationData) && !is.null(TestData)) {
+      if(Debug) print("EncodeCharacterVariables 3.c")
       temp_validate <- temp[ID_Factorizer == "VALIDATE"]
       temp_test <- temp[ID_Factorizer == "TEST"]
       temp_other <- data.table::rbindlist(list(temp_validate, temp_test), use.names = TRUE, fill = TRUE)
       temp2 <- CategoricalEncoding(data=temp_other, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=TRUE, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
       temp <- data.table::rbindlist(list(temp2,temp_train), use.names = TRUE, fill = TRUE)
     } else if(!is.null(ValidationData)) {
+      if(Debug) print("EncodeCharacterVariables 3.d")
       temp_validate <- temp[ID_Factorizer == "VALIDATE"]
       temp2 <- CategoricalEncoding(data=temp_validate, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=TRUE, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
       temp <- data.table::rbindlist(list(temp2,temp_train), use.names = TRUE, fill = TRUE)
     } else {
+      if(Debug) print("EncodeCharacterVariables 3.e")
       temp <- temp_train
     }
   } else {
+    if(Debug) print("EncodeCharacterVariables 3.f")
     temp <- RemixAutoML::CategoricalEncoding(data=temp, ML_Type=ModelType, GroupVariables=CategoricalVariableNames, TargetVariable=TargetVariableName, Method=EncodeMethod, SavePath=MetaDataPath, Scoring=Score, ImputeValueScoring=ImputeMissingValue, ReturnFactorLevelList=TRUE, SupplyFactorLevelList=MetaDataList, KeepOriginalFactors=KeepCategoricalVariables)
     MetaDataList <- temp$FactorCompenents
     temp <- temp$data
@@ -888,17 +902,20 @@ EncodeCharacterVariables <- function(RunMode = 'train',
 
   # Finalize data
   if(RunMode == 'train') {
+    if(Debug) print("EncodeCharacterVariables 4a")
     TrainData <- temp[ID_Factorizer == "TRAIN"]
     data.table::set(TrainData, j = "ID_Factorizer", value = NULL)
     if(!is.null(ValidationData)) {
       ValidationData <- temp[ID_Factorizer == "VALIDATE"]
       data.table::set(ValidationData, j = "ID_Factorizer", value = NULL)
     }
+    if(Debug) print("EncodeCharacterVariables 4b")
     if(!is.null(TestData)) {
       TestData <- temp[ID_Factorizer == "TEST"]
       data.table::set(TestData, j = "ID_Factorizer", value = NULL)
     }
   } else {
+    if(Debug) print("EncodeCharacterVariables 4c")
     if('ID_Factorizer' %in% names(TrainData)) data.table::set(TrainData, j = 'ID_Factorizer', value = NULL)
   }
 

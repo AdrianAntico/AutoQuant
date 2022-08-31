@@ -12,6 +12,7 @@ QA_Results[, TaskType := data.table::fifelse(runif(.N) < 0.5, "GPU", "CPU")]
 QA_Results[, Success := "Failure"]
 QA_Results[, RunTime := 123.456]
 QA_Results[, DateTime := Sys.time()]
+# QA_Results[, SaveModel := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
 # NOT Train On FULL TOF
 # run = 37
@@ -23,6 +24,8 @@ QA_Results[, DateTime := Sys.time()]
 # run = 109
 # run = 117
 # run = 125
+
+# run = 101
 for(run in  seq_len(QA_Results[,.N])) {
 
   # Data ----
@@ -107,6 +110,9 @@ for(run in  seq_len(QA_Results[,.N])) {
   # Build forecast ----
   TestModel <- tryCatch({RemixAutoML::AutoCatBoostCARMA(
 
+    SaveModel = FALSE,
+    ArgsList = TestModel$ArgsList, # NULL, #TestModel$ArgsList,
+
     # data args
     data = data1,
     XREGS = xregs1,
@@ -122,9 +128,10 @@ for(run in  seq_len(QA_Results[,.N])) {
     TrainOnFull = TOF,
     SplitRatios = c(1 - 10 / 100, 10 / 100),
     PartitionType = "random",
-    FC_Periods = 33,
+    FC_Periods = 5,
     TaskType = tasktype,
     NumGPU = 1,
+    EncodingMethod = 'target_encoding',
     Timer = TRUE,
     DebugMode = TRUE,
 
@@ -138,8 +145,8 @@ for(run in  seq_len(QA_Results[,.N])) {
     # Calendar-related features
     CalendarVariables = c("week","wom","month","quarter"),
     HolidayVariable = c("USPublicHolidays"),
-    HolidayLags = c(1,2,3),
-    HolidayMovingAverages = c(2,3),
+    HolidayLags = NULL, #c(1,2,3),
+    HolidayMovingAverages = NULL, #c(2,3),
 
     # Lags, moving averages, and other rolling stats
     Lags = list("weeks" = c(1:5), "months" = c(1:3)),
@@ -208,180 +215,181 @@ for(run in  seq_len(QA_Results[,.N])) {
 
 # Defaults ----
 
-# library(RemixAutoML)
-# library(data.table)
-# library(lubridate)
-#
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
-# source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
-#
-# # Collection data.table
-# QA_Results <- data.table::CJ(
-#   Group = c(0,1,2,3),
-#   xregs = c(0,1,2,3),
-#   TOF = c(TRUE, FALSE),
-#   Trans = c(TRUE, FALSE),
-#   Diff = c(TRUE, FALSE))
-#
-# # Other tests
-# QA_Results[, TimeWeights := data.table::fifelse(runif(.N) < 0.5, 0.9999, 1)]
-# QA_Results[, TaskType := data.table::fifelse(runif(.N) < 0.5, "GPU", "CPU")]
-# QA_Results[, Success := "Failure"]
-#
-# run = 125
-#
-# # Data ----
-# if(QA_Results[run, Group] == 0L) {
-#   data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
-# } else if(QA_Results[run, Group] == 1L) {
-#   data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
-# } else if(QA_Results[run, Group] == 2L) {
-#   data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
-# } else if(QA_Results[run, Group] == 3L) {
-#   data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
-# }
-#
-# # xregs
-# if(QA_Results[run, xregs] == 0L) {
-#   xregs <- NULL
-# } else if(QA_Results[run, xregs] == 1L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg1.csv"))[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg1.csv"))[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg1.csv"))[['data']]
-# } else if(QA_Results[run, xregs] == 2L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg2.csv"))[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg2.csv"))[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg2.csv"))[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg2.csv"))[['data']]
-# } else if(QA_Results[run, xregs] == 3L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg3.csv"))[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg3.csv"))[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg3.csv"))[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg3.csv"))[['data']]
-# }
-#
-# # Testing params
-# TOF <- QA_Results[run, TOF]
-# Trans <- QA_Results[run, Trans]
-# Diff <- QA_Results[run, Diff]
-# weights <- QA_Results[run, TimeWeights]
-# tasktype <- QA_Results[run, TaskType]
-# if(QA_Results[run, Group] == 0L) {
-#   groupvariables <- NULL
-# } else if(QA_Results[run, Group] == 1L) {
-#   groupvariables <- "Dept"
-# } else if(QA_Results[run, Group] == 2L) {
-#   groupvariables <- c("Store","Dept")
-# } else if(QA_Results[run, Group] == 3L) {
-#   groupvariables <- c("Region","Store","Dept")
-# }
-#
-# # Ensure series have no missing dates (also remove series with more than 25% missing values)
-# data <- RemixAutoML::TimeSeriesFill(
-#   data,
-#   DateColumnName = "Date",
-#   GroupVariables = groupvariables,
-#   TimeUnit = "weeks",
-#   FillType = "maxmax",
-#   MaxMissingPercent = 0.25,
-#   SimpleImpute = TRUE)
-#
-# # Set negative numbers to 0
-# data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
-#
-# # Ensure series have no missing dates (also remove series with more than 25% missing values)
-# if(QA_Results[run, xregs] != 0L) {
-#   xregs <- RemixAutoML::TimeSeriesFill(
-#     xregs,
-#     DateColumnName = "Date",
-#     GroupVariables = groupvariables,
-#     TimeUnit = "weeks",
-#     FillType = "maxmax",
-#     MaxMissingPercent = 0.25,
-#     SimpleImpute = TRUE)
-# }
-#
-# # Copy data
-# data1 <- data.table::copy(data)
-# if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
-#
-#
-# data = data1
-# XREGS = xregs1
-# TimeWeights = weights
-# TargetColumnName = "Weekly_Sales"
-# DateColumnName = "Date"
-# HierarchGroups = NULL
-# GroupVariables = groupvariables
-# EncodingMethod = 'credibility'
-# TimeUnit = "weeks"
-# TimeGroups = c("weeks","months")
-# TrainOnFull = TOF
-# SplitRatios = c(1 - 10 / 100, 10 / 100)
-# PartitionType = "random"
-# FC_Periods = 10
-# TaskType = tasktype
-# NumGPU = 1
-# Timer = TRUE
-# DebugMode = TRUE
-# TargetTransformation = Trans
-# Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit")
-# Difference = Diff
-# NonNegativePred = TRUE
-# RoundPreds = FALSE
-# CalendarVariables = c("week","wom","month","quarter")
-# HolidayVariable = c("USPublicHolidays")
-# HolidayLookback = 7
-# HolidayLags = c(1,2,3)
-# HolidayMovingAverages = c(2,3)
-# Lags = list("weeks" = c(1:5), "months" = c(1:3))
-# MA_Periods = list("weeks" = c(2:5), "months" = c(2,3))
-# SD_Periods = NULL
-# Skew_Periods = NULL
-# Kurt_Periods = NULL
-# Quantile_Periods = NULL
-# Quantiles_Selected = NULL
-# AnomalyDetection = NULL
-# FourierTerms = 0
-# TimeTrendVariable = TRUE
-# ZeroPadSeries = NULL
-# DataTruncate = FALSE
-# GridTune = FALSE
-# PassInGrid = NULL
-# ModelCount = 5
-# MaxRunsWithoutNewWinner = 50
-# MaxRunMinutes = 60*60
-# PDFOutputPath = NULL
-# SaveDataPath = NULL
-# NumOfParDepPlots = 0L
-# EvalMetric = "RMSE"
-# EvalMetricValue = 1
-# LossFunction = "RMSE"
-# LossFunctionValue = 1
-# NTrees = 50L
-# Depth = 6L
-# L2_Leaf_Reg = NULL
-# LearningRate = NULL
-# Langevin = FALSE
-# DiffusionTemperature = 10000
-# RandomStrength = 1
-# BorderCount = 254
-# RSM = NULL
-# GrowPolicy = "SymmetricTree"
-# BootStrapType = "Bayesian"
-# ModelSizeReg = 0.5
-# FeatureBorderType = "GreedyLogSum"
-# SamplingUnit = "Group"
-# SubSample = NULL
-# ScoreFunction = "Cosine"
-# MinDataInLeaf = 1
+library(RemixAutoML)
+library(data.table)
+library(lubridate)
+
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CARMA-HelperFunctions.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
+source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
+
+# Collection data.table
+QA_Results <- data.table::CJ(
+  Group = c(0,1,2,3),
+  xregs = c(0,1,2,3),
+  TOF = c(TRUE, FALSE),
+  Trans = c(TRUE, FALSE),
+  Diff = c(TRUE, FALSE))
+
+# Other tests
+QA_Results[, TimeWeights := data.table::fifelse(runif(.N) < 0.5, 0.9999, 1)]
+QA_Results[, TaskType := data.table::fifelse(runif(.N) < 0.5, "GPU", "CPU")]
+QA_Results[, Success := "Failure"]
+
+run = 101
+
+# Data ----
+if(QA_Results[run, Group] == 0L) {
+  data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
+} else if(QA_Results[run, Group] == 1L) {
+  data <- RemixAutoML:::Post_Query_Helper('"onegroupevalwalmart.csv"')[['data']]
+} else if(QA_Results[run, Group] == 2L) {
+  data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
+} else if(QA_Results[run, Group] == 3L) {
+  data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
+}
+
+# xregs
+if(QA_Results[run, xregs] == 0L) {
+  xregs <- NULL
+} else if(QA_Results[run, xregs] == 1L) {
+  if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
+  if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg1.csv"))[['data']]
+  if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg1.csv"))[['data']]
+  if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg1.csv"))[['data']]
+} else if(QA_Results[run, xregs] == 2L) {
+  if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg2.csv"))[['data']]
+  if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg2.csv"))[['data']]
+  if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg2.csv"))[['data']]
+  if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg2.csv"))[['data']]
+} else if(QA_Results[run, xregs] == 3L) {
+  if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg3.csv"))[['data']]
+  if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg3.csv"))[['data']]
+  if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg3.csv"))[['data']]
+  if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg3.csv"))[['data']]
+}
+
+# Testing params
+TOF <- QA_Results[run, TOF]
+Trans <- QA_Results[run, Trans]
+Diff <- QA_Results[run, Diff]
+weights <- QA_Results[run, TimeWeights]
+tasktype <- QA_Results[run, TaskType]
+if(QA_Results[run, Group] == 0L) {
+  groupvariables <- NULL
+} else if(QA_Results[run, Group] == 1L) {
+  groupvariables <- "Dept"
+} else if(QA_Results[run, Group] == 2L) {
+  groupvariables <- c("Store","Dept")
+} else if(QA_Results[run, Group] == 3L) {
+  groupvariables <- c("Region","Store","Dept")
+}
+
+# Ensure series have no missing dates (also remove series with more than 25% missing values)
+data <- RemixAutoML::TimeSeriesFill(
+  data,
+  DateColumnName = "Date",
+  GroupVariables = groupvariables,
+  TimeUnit = "weeks",
+  FillType = "maxmax",
+  MaxMissingPercent = 0.25,
+  SimpleImpute = TRUE)
+
+# Set negative numbers to 0
+data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
+
+# Ensure series have no missing dates (also remove series with more than 25% missing values)
+if(QA_Results[run, xregs] != 0L) {
+  xregs <- RemixAutoML::TimeSeriesFill(
+    xregs,
+    DateColumnName = "Date",
+    GroupVariables = groupvariables,
+    TimeUnit = "weeks",
+    FillType = "maxmax",
+    MaxMissingPercent = 0.25,
+    SimpleImpute = TRUE)
+}
+
+# Copy data
+data1 <- data.table::copy(data)
+if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
+
+SaveModel = FALSE #FALSE
+ArgsList = NULL #TestModel$ArgsList #ArgsList
+data = data1
+XREGS = xregs1
+TimeWeights = weights
+TargetColumnName = "Weekly_Sales"
+DateColumnName = "Date"
+HierarchGroups = NULL
+GroupVariables = groupvariables
+EncodingMethod = 'target_encoding' #'credibility'
+TimeUnit = "weeks"
+TimeGroups = c("weeks","months")
+TrainOnFull = TOF
+SplitRatios = c(1 - 10 / 100, 10 / 100)
+PartitionType = "random"
+FC_Periods = 10
+TaskType = tasktype
+NumGPU = 1
+Timer = TRUE
+DebugMode = TRUE
+TargetTransformation = Trans
+Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit")
+Difference = Diff
+NonNegativePred = TRUE
+RoundPreds = FALSE
+CalendarVariables = c("week","wom","month","quarter")
+HolidayVariable = c("USPublicHolidays")
+HolidayLookback = 7
+HolidayLags = c(1,2,3)
+HolidayMovingAverages = c(2,3)
+Lags = list("weeks" = c(1:5), "months" = c(1:3))
+MA_Periods = list("weeks" = c(2:5), "months" = c(2,3))
+SD_Periods = NULL
+Skew_Periods = NULL
+Kurt_Periods = NULL
+Quantile_Periods = NULL
+Quantiles_Selected = NULL
+AnomalyDetection = NULL
+FourierTerms = 0
+TimeTrendVariable = TRUE
+ZeroPadSeries = NULL
+DataTruncate = FALSE
+GridTune = FALSE
+PassInGrid = NULL
+ModelCount = 5
+MaxRunsWithoutNewWinner = 50
+MaxRunMinutes = 60*60
+PDFOutputPath = NULL
+SaveDataPath = NULL
+NumOfParDepPlots = 0L
+EvalMetric = "RMSE"
+EvalMetricValue = 1
+LossFunction = "RMSE"
+LossFunctionValue = 1
+NTrees = 50L
+Depth = 6L
+L2_Leaf_Reg = NULL
+LearningRate = NULL
+Langevin = FALSE
+DiffusionTemperature = 10000
+RandomStrength = 1
+BorderCount = 254
+RSM = NULL
+GrowPolicy = "SymmetricTree"
+BootStrapType = "Bayesian"
+ModelSizeReg = 0.5
+FeatureBorderType = "GreedyLogSum"
+SamplingUnit = "Group"
+SubSample = NULL
+ScoreFunction = "Cosine"
+MinDataInLeaf = 1
 
 # CarmaTimeSeriesFeatures ----
 # data.=data
@@ -405,36 +413,38 @@ for(run in  seq_len(QA_Results[,.N])) {
 # DebugMode.=DebugMode
 #
 # Update time series features ----
-# ModelType="catboost"
-# DebugMode.=DebugMode
-# UpdateData.=UpdateData
-# GroupVariables.=GroupVariables
-# Difference.=Difference
-# CalendarVariables.=CalendarVariables
-# HolidayVariable.=HolidayVariable
-# IndepVarPassTRUE.=IndepentVariablesPass
-# data.=data
-# CalendarFeatures.=CalendarFeatures
-# XREGS.=XREGS
-# HierarchGroups.=HierarchGroups
-# GroupVarVector.=GroupVarVector
-# TargetColumnName.=TargetColumnName
-# DateColumnName.=DateColumnName
-# Preds.=Preds
-# HierarchSupplyValue.=HierarchSupplyValue
-# IndependentSupplyValue.=IndependentSupplyValue
-# TimeUnit.=TimeUnit
-# TimeGroups.=TimeGroups
-# Lags.=Lags
-# MA_Periods.=MA_Periods
-# SD_Periods.=SD_Periods
-# Skew_Periods.=Skew_Periods
-# Kurt_Periods.=Kurt_Periods
-# Quantile_Periods.=Quantile_Periods
-# Quantiles_Selected.=Quantiles_Selected
-# HolidayLags.=HolidayLags
-# HolidayMovingAverages.=HolidayMovingAverages
-#
+ModelType="catboost"
+DebugMode.=DebugMode
+UpdateData.=UpdateData
+GroupVariables.=GroupVariables
+Difference.=Difference
+CalendarVariables.=CalendarVariables
+HolidayVariable.=HolidayVariable
+IndepVarPassTRUE.=IndepentVariablesPass
+data.=data
+CalendarFeatures.=CalendarFeatures
+XREGS.=XREGS
+HierarchGroups.=HierarchGroups
+GroupVarVector.=GroupVarVector
+TargetColumnName.=TargetColumnName
+DateColumnName.=DateColumnName
+Preds.=Preds
+HierarchSupplyValue.=HierarchSupplyValue
+IndependentSupplyValue.=IndependentSupplyValue
+TimeUnit.=TimeUnit
+FourierTerms. = NULL
+TimeGroups.=TimeGroups
+Lags.=Lags
+MA_Periods.=MA_Periods
+SD_Periods.=SD_Periods
+Skew_Periods.=Skew_Periods
+Kurt_Periods.=Kurt_Periods
+Quantile_Periods.=Quantile_Periods
+Quantiles_Selected.=Quantiles_Selected
+HolidayLags.=HolidayLags
+HolidayMovingAverages.=HolidayMovingAverages
+HolidayLookback. = 7
+
 # Data ----
 # data                 = Temporary
 # RowNumsID            = "ID"
@@ -535,21 +545,21 @@ for(run in  seq_len(QA_Results[,.N])) {
 # DebugMode = DebugMode
 
 # Carma score ----
-# i.=i
-# N.=N
-# GroupVariables.=GroupVariables
-# ModelFeatures.=ModelFeatures
-# HierarchGroups.=HierarchGroups
-# DateColumnName.=DateColumnName
-# Difference.=Difference
-# TargetColumnName.=TargetColumnName
-# Step1SCore.=Step1SCore
-# Model.=Model
-# FutureDateData.=FutureDateData
-# NonNegativePred.=NonNegativePred
-# UpdateData.=UpdateData
-# FactorList.= TestModel$FactorLevelsList
-# EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
+i.=i
+N.=N
+GroupVariables.=GroupVariables
+ModelFeatures.=ModelFeatures
+HierarchGroups.=HierarchGroups
+DateColumnName.=DateColumnName
+Difference.=Difference
+TargetColumnName.=TargetColumnName
+Step1SCore.=Step1SCore
+Model.=Model
+FutureDateData.=FutureDateData
+NonNegativePred.=NonNegativePred
+UpdateData.=UpdateData
+FactorList.= TestModel$FactorLevelsList
+EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
 
 # Catboost scoring ----
 

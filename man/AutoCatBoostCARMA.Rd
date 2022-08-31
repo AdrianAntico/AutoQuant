@@ -10,50 +10,48 @@ AutoCatBoostCARMA(
   NonNegativePred = FALSE,
   RoundPreds = FALSE,
   TrainOnFull = FALSE,
-  TargetColumnName = "Target",
-  DateColumnName = "DateTime",
+  TargetColumnName = NULL,
+  DateColumnName = NULL,
   HierarchGroups = NULL,
   GroupVariables = NULL,
-  FC_Periods = 30,
-  TimeUnit = "week",
-  TimeGroups = c("weeks", "months"),
+  FC_Periods = 5,
+  TimeUnit = NULL,
+  TimeGroups = NULL,
   PDFOutputPath = NULL,
   SaveDataPath = NULL,
   NumOfParDepPlots = 10L,
   EncodingMethod = "credibility",
   TargetTransformation = FALSE,
-  Methods = c("BoxCox", "Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+  Methods = c("Standardize", "Asinh", "Log", "LogPlus1", "Sqrt"),
   AnomalyDetection = NULL,
   XREGS = NULL,
-  Lags = c(1L:5L),
-  MA_Periods = c(2L:5L),
+  Lags = NULL,
+  MA_Periods = NULL,
   SD_Periods = NULL,
   Skew_Periods = NULL,
   Kurt_Periods = NULL,
   Quantile_Periods = NULL,
   Quantiles_Selected = c("q5", "q95"),
-  Difference = TRUE,
-  FourierTerms = 6L,
-  CalendarVariables = c("minute", "hour", "wday", "mday", "yday", "week", "isoweek",
-    "month", "quarter", "year"),
-  HolidayVariable = c("USPublicHolidays", "EasterGroup", "ChristmasGroup",
-    "OtherEcclesticalFeasts"),
+  Difference = FALSE,
+  FourierTerms = 0L,
+  CalendarVariables = NULL,
+  HolidayVariable = NULL,
   HolidayLookback = NULL,
-  HolidayLags = 1L,
-  HolidayMovingAverages = 1L:2L,
+  HolidayLags = NULL,
+  HolidayMovingAverages = NULL,
   TimeTrendVariable = FALSE,
   ZeroPadSeries = NULL,
   DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1),
-  PartitionType = "timeseries",
-  TaskType = "GPU",
+  PartitionType = "random",
+  TaskType = "CPU",
   NumGPU = 1,
   DebugMode = FALSE,
   Timer = TRUE,
   EvalMetric = "RMSE",
-  EvalMetricValue = 1.5,
+  EvalMetricValue = 1.2,
   LossFunction = "RMSE",
-  LossFunctionValue = 1.5,
+  LossFunctionValue = 1.2,
   GridTune = FALSE,
   PassInGrid = NULL,
   ModelCount = 100,
@@ -61,8 +59,8 @@ AutoCatBoostCARMA(
   MaxRunMinutes = 24L * 60L,
   Langevin = FALSE,
   DiffusionTemperature = 10000,
-  NTrees = 1000,
-  L2_Leaf_Reg = NULL,
+  NTrees = 500,
+  L2_Leaf_Reg = 5,
   LearningRate = NULL,
   RandomStrength = 1,
   BorderCount = 254,
@@ -70,12 +68,14 @@ AutoCatBoostCARMA(
   RSM = 1,
   BootStrapType = "Bayesian",
   GrowPolicy = "SymmetricTree",
-  ModelSizeReg = 0.5,
+  ModelSizeReg = 2,
   FeatureBorderType = "GreedyLogSum",
   SamplingUnit = "Group",
   SubSample = NULL,
   ScoreFunction = "Cosine",
-  MinDataInLeaf = 1
+  MinDataInLeaf = 1,
+  SaveModel = FALSE,
+  ArgsList = NULL
 )
 }
 \arguments{
@@ -109,7 +109,7 @@ AutoCatBoostCARMA(
 
 \item{NumOfParDepPlots}{Supply a number for the number of partial dependence plots you want returned}
 
-\item{EncodingMethod}{'binary', 'm_estimator', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
+\item{EncodingMethod}{'binary', 'credibility', 'woe', 'target_encoding', 'poly_encode', 'backward_difference', 'helmert'}
 
 \item{TargetTransformation}{TRUE or FALSE. If TRUE, select the methods in the Methods arg you want tested. The best one will be applied.}
 
@@ -216,6 +216,10 @@ AutoCatBoostCARMA(
 \item{ScoreFunction}{Default is Cosine. CPU options are Cosine and L2. GPU options are Cosine, L2, NewtonL2, and NewtomCosine (not available for Lossguide)}
 
 \item{MinDataInLeaf}{Defaults to 1. Used if GrowPolicy is not SymmetricTree}
+
+\item{SaveModel}{Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object}
+
+\item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object}
 }
 \value{
 See examples

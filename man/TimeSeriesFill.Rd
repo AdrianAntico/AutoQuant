@@ -39,7 +39,7 @@ TimeSeriesFill For Completing Time Series Data For Single Series or Time Series 
 \dontrun{
 
 # Pull in data
-data <- data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
 
 # Run function
 data <- TimeSeriesFill(

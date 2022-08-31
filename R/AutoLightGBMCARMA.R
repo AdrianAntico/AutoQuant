@@ -518,7 +518,7 @@ AutoLightGBMCARMA <- function(data = NULL,
 
   # Set Keys for data.table usage ----
   if(DebugMode) print('# Set Keys for data.table usage----')
-  if(!is.null(GroupVariables)) {
+  if(length(GroupVariables) > 0L) {
     data.table::setkeyv(x = data, cols = c(eval(GroupVariables), eval(DateColumnName)))
     if(!is.null(XREGS)) data.table::setkeyv(x = XREGS, cols = c('GroupVar', eval(DateColumnName)))
   } else {
@@ -530,28 +530,26 @@ AutoLightGBMCARMA <- function(data = NULL,
   if(DebugMode) print('Data Wrangling: Remove Unnecessary Columns----')
   data <- CarmaSubsetColumns(data.=data, XREGS.=XREGS, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName)
 
-  # Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----
-  if(DebugMode) print('Feature Engineering: Concat Categorical Columns - easier to deal with this way (it splits back at end):----')
-  if(!is.null(GroupVariables)) {
-    if(length(GroupVariables) > 1) {
-      data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables]
-      data[, eval(GroupVariables) := NULL]
-    } else {
-      data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables]
-      if(GroupVariables != 'GroupVar') data[, eval(GroupVariables) := NULL]
-    }
+  # GroupVar creation: feature engineering: Concat Categorical Columns - easier to deal with this way ----
+  if(DebugMode) print('GroupVar creation: feature engineering: Concat Categorical Columns - easier to deal with this way ----')
+  if(length(GroupVariables) > 0L) {
+    data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables]
+    MergeGroupVariablesBack <- data[, .N, by = c('GroupVar',GroupVariables)]
+    if(length(GroupVariables) > 1L) data[, eval(GroupVariables) := NULL] else if(GroupVariables != 'GroupVar') data[, eval(GroupVariables) := NULL]
+  } else {
+    MergeGroupVariablesBack <- NULL
   }
 
   # Variables for Program: Store unique values of GroupVar in GroupVarVector----
   if(DebugMode) print('Variables for Program: Store unique values of GroupVar in GroupVarVector----')
-  if(!is.null(GroupVariables)) {
+  if(length(GroupVariables) > 0L) {
     GroupVarVector <- data.table::as.data.table(x = unique(as.character(data[['GroupVar']])))
     data.table::setnames(GroupVarVector, 'V1', 'GroupVar')
   }
 
   # Data Wrangling: Standardize column ordering ----
   if(DebugMode) print('Data Wrangling: Standardize column ordering----')
-  if(!is.null(GroupVariables)) data.table::setcolorder(data, c('GroupVar', eval(DateColumnName), eval(TargetColumnName))) else data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
+  if(length(GroupVariables) > 0L) data.table::setcolorder(data, c('GroupVar', eval(DateColumnName), eval(TargetColumnName))) else data.table::setcolorder(data, c(eval(DateColumnName), eval(TargetColumnName)))
 
   # Data Wrangling: Convert DateColumnName to Date or POSIXct ----
   if(DebugMode) print('Data Wrangling: Convert DateColumnName to Date or POSIXct----')
@@ -573,7 +571,7 @@ AutoLightGBMCARMA <- function(data = NULL,
 
   # Data Wrangling: Sort data by GroupVar then DateColumnName ----
   if(DebugMode) print('Data Wrangling: Sort data by GroupVar then DateColumnName----')
-  if(!is.null(GroupVariables)) data <- data[order(GroupVar, get(DateColumnName))] else data <- data[order(get(DateColumnName))]
+  if(length(GroupVariables) > 0L) data <- data[order(GroupVar, get(DateColumnName))] else data <- data[order(get(DateColumnName))]
 
   # Feature Engineering: Fourier Features ----
   if(DebugMode) print('Feature Engineering: Fourier Features ----')
@@ -601,7 +599,7 @@ AutoLightGBMCARMA <- function(data = NULL,
   if(!is.null(AnomalyDetection)) {
     data <- GenTSAnomVars(
       data = data, ValueCol = eval(TargetColumnName),
-      GroupVars = if(!is.null(CalendarVariables) && !is.null(GroupVariables)) c('GroupVar', paste0(DateColumnName, '_', CalendarVariables[1])) else if(!is.null(GroupVariables)) 'GroupVar' else NULL,
+      GroupVars = if(!is.null(CalendarVariables) && length(GroupVariables) > 0L) c('GroupVar', paste0(DateColumnName, '_', CalendarVariables[1])) else if(length(GroupVariables) > 0L) 'GroupVar' else NULL,
       DateVar = eval(DateColumnName), KeepAllCols = TRUE, IsDataScaled = FALSE,
       HighThreshold = AnomalyDetection$tstat_high, LowThreshold = AnomalyDetection$tstat_low)
     data[, paste0(eval(TargetColumnName), '_zScaled') := NULL]
@@ -625,7 +623,7 @@ AutoLightGBMCARMA <- function(data = NULL,
   # Variables for CARMA function IDcols ----
   if(DebugMode) print('Variables for CARMA function:IDcols----')
   IDcols <- names(data)[which(names(data) %chin% DateColumnName)]
-  if(Difference && !is.null(GroupVariables)) IDcols <- c(IDcols, names(data)[which(names(data) == TargetColumnName)], names(data)[which(names(data) == 'TargetDiffMidStep')])
+  if(Difference && length(GroupVariables) > 0L) IDcols <- c(IDcols, names(data)[which(names(data) == TargetColumnName)], names(data)[which(names(data) == 'TargetDiffMidStep')])
 
   # Feature Engineering: Add Difference Data ----
   if(DebugMode) print('Feature Engineering: Add Difference Data----')
@@ -646,7 +644,7 @@ AutoLightGBMCARMA <- function(data = NULL,
   data <- Output$data; rm(Output)
 
   # Create GroupVar ----
-  if(!is.null(GroupVariables)) if(!'GroupVar' %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables]
+  if(length(GroupVariables) > 0L) if(!'GroupVar' %chin% names(data)) data[, GroupVar := do.call(paste, c(.SD, sep = ' ')), .SDcols = GroupVariables]
 
   # Data Wrangling: ModelDataPrep() to prepare data ----
   if(DebugMode) print('Data Wrangling: ModelDataPrep() to prepare data ----')
@@ -659,7 +657,7 @@ AutoLightGBMCARMA <- function(data = NULL,
   # Feature Engineering: Add TimeTrend Variable ----
   if(DebugMode) print('Feature Engineering: Add TimeTrend Variable----')
   if(TimeTrendVariable) {
-    if(!is.null(GroupVariables)) data[, TimeTrend := seq_len(.N), by = 'GroupVar'] else data[, TimeTrend := seq_len(.N)]
+    if(length(GroupVariables) > 0L) data[, TimeTrend := seq_len(.N), by = 'GroupVar'] else data[, TimeTrend := seq_len(.N)]
   }
 
   # Store Date Info----
@@ -686,7 +684,7 @@ AutoLightGBMCARMA <- function(data = NULL,
 
   # Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----
   if(DebugMode) print('Data Wrangling: copy data or train for later in function since AutoRegression will modify data and train----')
-  if(!is.null(GroupVariables)) {
+  if(length(GroupVariables) > 0L) {
     data.table::setorderv(x = data, cols = c('GroupVar',eval(DateColumnName)), order = c(1,1))
     Step1SCore <- data.table::copy(data)
   } else {
@@ -838,7 +836,7 @@ AutoLightGBMCARMA <- function(data = NULL,
 
   # Grab factor level list ----
   if(DebugMode) print('Grab factor level list----')
-  if(!is.null(GroupVariables)) FactorList <- TestModel$FactorLevelsList else FactorList <- NULL
+  if(length(GroupVariables) > 0L) FactorList <- TestModel$FactorLevelsList else FactorList <- NULL
 
   # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
   if(DebugMode) print('Variable for interation counts: max number of rows in Step1SCore data.table across all group ----')
@@ -886,7 +884,7 @@ AutoLightGBMCARMA <- function(data = NULL,
 
   # Return data prep ----
   if(DebugMode) print('Return data prep ----')
-  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred)
+  Output <- CarmaReturnDataPrep(UpdateData.=UpdateData, FutureDateData.=FutureDateData, dataStart.=dataStart, DateColumnName.=DateColumnName, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, Difference.=Difference, TargetTransformation.=TargetTransformation, TransformObject.=TransformObject, NonNegativePred.=NonNegativePred, MergeGroupVariablesBack.=MergeGroupVariablesBack, Debug = DebugMode)
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
 

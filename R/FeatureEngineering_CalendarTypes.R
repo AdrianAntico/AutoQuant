@@ -393,7 +393,12 @@ CreateHolidayVariables <- function(data,
 
   # Create Temp Date Columns ----
   if(Debug) print('CreateHolidayVariables 13')
-  MinDate <- data[, min(get(DateCols[1L]), na.rm = TRUE)]
+  if(Debug) {
+    print(data)
+    print(str(data))
+    print(DateCols)
+  }
+  MinDate <- min(data[[DateCols[1L]]], na.rm = TRUE)
 
   # Run holiday function to get unique dates ----
   if(Debug) print('CreateHolidayVariables 14')
