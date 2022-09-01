@@ -28,6 +28,13 @@ QA_Results[, DateTime := Sys.time()]
 # run = 101
 for(run in  seq_len(QA_Results[,.N])) {
 
+
+  # Unequal Start Dates
+  # data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
+  # data[is.na(ID), ID := 'KEEP']
+  # data <- data[ID == 'KEEP'][, ID := NULL]
+
+
   # Data ----
   if(QA_Results[run, Group] == 0L) {
     data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
@@ -111,7 +118,7 @@ for(run in  seq_len(QA_Results[,.N])) {
   TestModel <- tryCatch({RemixAutoML::AutoCatBoostCARMA(
 
     SaveModel = FALSE,
-    ArgsList = TestModel$ArgsList, # NULL, #TestModel$ArgsList,
+    ArgsList = NULL, #TestModel$ArgsList, # NULL, #TestModel$ArgsList,
 
     # data args
     data = data1,
@@ -253,6 +260,11 @@ if(QA_Results[run, Group] == 0L) {
 } else if(QA_Results[run, Group] == 3L) {
   data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
 }
+
+# Unequal Start Dates
+data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
+data[is.na(ID), ID := 'KEEP']
+data <- data[ID == 'KEEP'][, ID := NULL]
 
 # xregs
 if(QA_Results[run, xregs] == 0L) {

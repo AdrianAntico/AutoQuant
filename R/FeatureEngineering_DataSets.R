@@ -414,6 +414,9 @@ TimeSeriesFill <- function(data = NULL,
     data[, eval(DateColumnName) := as.Date(as.character(get(DateColumnName)), format = "%Y%m%d")]
   }
 
+  # Encoding Fill
+  if(FillType == c())
+
   # Fill from the absolute min date to the absolute max date
   if(FillType == "maxmax") {
 

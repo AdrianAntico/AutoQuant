@@ -214,8 +214,6 @@ DummifyDT <- function(data,
 #'
 #' @description Categorical encoding for factor and character columns
 #'
-#' @seealso http://helios.mm.di.uoa.gr/~rouvas/ssi/sigkdd/sigkdd.vol3.1/barreca.pdf for details and some theory about the method
-#'
 #' @author Adrian Antico
 #'
 #' @family Feature Engineering
@@ -689,6 +687,47 @@ CategoricalEncoding <- function(data = NULL,
       if(Debug) print('CategoricalEncoding Credibility 13.b')
       return(data)
     }
+  }
+
+  # Not os ----
+  # GroupValue = GroupVariables[1]
+  if(tolower(Method) == "meow") {
+    if(Debug) print('Categorical Encoding ME 1')
+    if(!Scoring) ComponentList <- list()
+    GroupValue <- GroupVariables[length(GroupVariables)]
+    # GroupValue = GroupVariables[1]
+    if(!Scoring) {
+      if(Debug) print('Categorical Encoding ME 2.a')
+      Output <- Rappture::MEOW(data = data, TargetType = 'regression', TargetVariable = TargetVariable, RandomEffects = GroupVariables, Nest = seq_along(GroupVariables))
+      data <- Output$data; ComponentList[[eval(GroupValue)]] <- Output$ComponentList
+      if(Debug) print('CategoricalEncoding ME 2.aa')
+      if(!is.null(SavePath)) data.table::fwrite(ComponentList[[eval(GroupValue)]], file = file.path(SavePath, paste0(GroupValue, "_MixedEffects.csv")))
+      if(ReturnFactorLevelList) return(list(data = data, FactorCompenents = ComponentList)) else return(data)
+    } else if(Scoring && is.null(SupplyFactorLevelList)) {
+      if(Debug) print('Categorical Encoding ME 2.b')
+      GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_MixedEffects.csv")))
+      data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+    } else if(Scoring && !is.null(SupplyFactorLevelList)) {
+      if(Debug) print('Categorical Encoding ME 2.c')
+      GroupMean <- SupplyFactorLevelList[[eval(GroupValue)]]
+      data.table::setkeyv(GroupMean, cols = eval(GroupValue))
+    }
+
+    # Merge back to data
+    if(Debug) print('Categorical Encoding ME 3')
+    data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
+    if(Debug) print('Categorical Encoding ME 4')
+    if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
+    if(Debug) print('CategoricalEncoding ME 5')
+    if(!Scoring) ComponentList[[eval(GroupValue)]] <- GroupMean
+    if(Scoring && !is.null(ImputeValueScoring)) {
+      if(Debug) print('Categorical Encoding ME 6')
+      data.table::set(data, i = which(is.na(data[[paste0(GroupValue, "_MixedEffects")]])), j = paste0(GroupValue, "_MixedEffects"), value = ImputeValueScoring)
+    }
+
+    # Return
+    if(Debug) print('Categorical Encoding ME 7')
+    return(data)
   }
 }
 
