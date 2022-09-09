@@ -1,3 +1,4 @@
+
 #' @title AutoDataPartition
 #'
 #' @description This function will take your ratings matrix and model and score your data in parallel.
@@ -392,6 +393,14 @@ PartitionData <- function(data = NULL,
 #'   TimeUnit = "weeks",
 #'   FillType = "maxmax",
 #'   SimpleImpute = FALSE)
+#'
+#' # data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+#' # DateColumnName = "Date"
+#' # GroupVariables = c("Store","Dept")
+#' # TimeUnit = "weeks"
+#' # FillType = "maxmax" # "minmin" # "maxmin" # "dynamic:method" # "minmax" #
+#' # SimpleImpute = FALSE
+#'
 #' }
 #' @return Returns a data table with missing time series records filled (currently just zeros)
 #' @export
@@ -404,7 +413,7 @@ TimeSeriesFill <- function(data = NULL,
                            SimpleImpute = FALSE) {
 
   # Grab args
-  if(length(FillType) > 1) FillType <- FillType[1]
+  if(length(FillType) > 1L) FillType <- FillType[1L]
 
   # Set up list
   CJList <- list()
@@ -412,6 +421,16 @@ TimeSeriesFill <- function(data = NULL,
   # Check date type
   if(class(data[[DateColumnName]])[1L] %in% c('numeric','integer')) {
     data[, eval(DateColumnName) := as.Date(as.character(get(DateColumnName)), format = "%Y%m%d")]
+  }
+
+  # Fill other
+  x <- tryCatch({substr(x = FillType[1L], start = 1L, stop = 7L)}, error = function(x) NULL)
+  if(length(x) > 0L && tolower(x) == "dynamic") {
+
+    # Fill
+    TargetColumnName <- setdiff(names(data), c(GroupVariables,DateColumnName))
+    FillData <- Rappture::FE.Impute.TimeSeriesFill(data,TargetColumnName,DateColumnName,TimeUnit,FillType,CJList,GroupVariables = GroupVariables)
+    return(FillData)
   }
 
   # Fill from the absolute min date to the absolute max date

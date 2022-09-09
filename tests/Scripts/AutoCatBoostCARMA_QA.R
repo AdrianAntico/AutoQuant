@@ -12,9 +12,13 @@ QA_Results[, TaskType := data.table::fifelse(runif(.N) < 0.5, "GPU", "CPU")]
 QA_Results[, Success := "Failure"]
 QA_Results[, RunTime := 123.456]
 QA_Results[, DateTime := Sys.time()]
+QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 # QA_Results[, SaveModel := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
+FillNow <- FALSE
+
 # NOT Train On FULL TOF
+# run = 1
 # run = 37
 # run = 45
 # run = 53
@@ -25,15 +29,8 @@ QA_Results[, DateTime := Sys.time()]
 # run = 117
 # run = 125
 
-# run = 101
-for(run in  seq_len(QA_Results[,.N])) {
-
-
-  # Unequal Start Dates
-  # data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
-  # data[is.na(ID), ID := 'KEEP']
-  # data <- data[ID == 'KEEP'][, ID := NULL]
-
+# run = 69
+for(run in seq_len(QA_Results[,.N])) {
 
   # Data ----
   if(QA_Results[run, Group] == 0L) {
@@ -44,6 +41,18 @@ for(run in  seq_len(QA_Results[,.N])) {
     data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
   } else if(QA_Results[run, Group] == 3L) {
     data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
+  }
+
+  if(!FillNow && QA_Results$Group[run] == 3L) {
+
+    # Unequal Start Dates
+    data[Store == 1 & Date < "2010-05-05", ID := 'REMOVE']
+    data[is.na(ID), ID := 'KEEP']
+    data <- data[ID == 'KEEP'][, ID := NULL]
+
+    data[Store == 1 & Date > "2011-11-30", ID := 'REMOVE']
+    data[is.na(ID), ID := 'KEEP']
+    data <- data[ID == 'KEEP'][, ID := NULL]
   }
 
   # xregs
@@ -83,14 +92,16 @@ for(run in  seq_len(QA_Results[,.N])) {
   }
 
   # Ensure series have no missing dates (also remove series with more than 25% missing values)
-  data <- RemixAutoML::TimeSeriesFill(
-    data,
-    DateColumnName = "Date",
-    GroupVariables = groupvariables,
-    TimeUnit = "weeks",
-    FillType = "maxmax",
-    MaxMissingPercent = 0.25,
-    SimpleImpute = TRUE)
+  if(FillNow) {
+    data <- RemixAutoML::TimeSeriesFill(
+      data = data.table::copy(data),
+      DateColumnName = "Date",
+      GroupVariables = groupvariables,
+      TimeUnit = "weeks",
+      FillType = if(length(groupvariables) > 0L) "dynamic:target_encoding" else 'maxmax',
+      MaxMissingPercent = 0.25,
+      SimpleImpute = TRUE)
+  }
 
   # Set negative numbers to 0
   data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
@@ -138,13 +149,12 @@ for(run in  seq_len(QA_Results[,.N])) {
     FC_Periods = 5,
     TaskType = tasktype,
     NumGPU = 1,
-    EncodingMethod = 'target_encoding',
     Timer = TRUE,
     DebugMode = TRUE,
 
     # Target variable transformations
     TargetTransformation = Trans,
-    Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit"),
+    Methods = "Asinh",
     Difference = Diff,
     NonNegativePred = FALSE,
     RoundPreds = FALSE,
@@ -165,10 +175,11 @@ for(run in  seq_len(QA_Results[,.N])) {
     Quantiles_Selected = NULL,
 
     # Bonus features
+    EncodingMethod = 'meow',
+    ZeroPadSeries = "dynamic:meow",
     AnomalyDetection = NULL,
     FourierTerms = 0,
     TimeTrendVariable = TRUE,
-    ZeroPadSeries = NULL,
     DataTruncate = FALSE,
 
     # ML grid tuning args
@@ -215,7 +226,6 @@ for(run in  seq_len(QA_Results[,.N])) {
   # Outcome
   if(!is.null(TestModel)) QA_Results[run, Success := "Success"]
   rm(TestModel)
-  #data.table::fwrite(QA_Results, file = system.file('tests/Testing_Data/AutoCatBoostCARMA_QA.csv', package = 'RemixAutoML'))
   RemixAutoML:::Post_Append_Helper(QA_Results,'AutoCatBoostCARMA_QA')
   Sys.sleep(5)
 }
@@ -225,6 +235,8 @@ for(run in  seq_len(QA_Results[,.N])) {
 library(RemixAutoML)
 library(data.table)
 library(lubridate)
+
+FillMissingDates = FALSE
 
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CalendarTypes.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_CrossRowOperations.R"))
@@ -247,8 +259,11 @@ QA_Results <- data.table::CJ(
 QA_Results[, TimeWeights := data.table::fifelse(runif(.N) < 0.5, 0.9999, 1)]
 QA_Results[, TaskType := data.table::fifelse(runif(.N) < 0.5, "GPU", "CPU")]
 QA_Results[, Success := "Failure"]
+QA_Results[, RunTime := 123.456]
+QA_Results[, DateTime := Sys.time()]
+QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
-run = 101
+run = 69
 
 # Data ----
 if(QA_Results[run, Group] == 0L) {
@@ -262,7 +277,10 @@ if(QA_Results[run, Group] == 0L) {
 }
 
 # Unequal Start Dates
-data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
+data[Store == 1 & Date < "2010-05-05", ID := 'REMOVE']
+data[is.na(ID), ID := 'KEEP']
+data <- data[ID == 'KEEP'][, ID := NULL]
+data[Store == 1 & Date > "2011-11-30", ID := 'REMOVE']
 data[is.na(ID), ID := 'KEEP']
 data <- data[ID == 'KEEP'][, ID := NULL]
 
@@ -302,15 +320,42 @@ if(QA_Results[run, Group] == 0L) {
   groupvariables <- c("Region","Store","Dept")
 }
 
+
+
+# x <- data[!is.na(Weekly_Sales)]
+# x[Region == 'A' & Store == 1 & Dept == 1]
+# xx <- x[, list(max_date = max(Date),min_date = min(Date)), by = c("Region","Store","Dept")]
+
+# x <- data1[!is.na(Weekly_Sales)]
+# x[Region == 'A' & Store == 1 & Dept == 1]
+# xx <- x[, list(max_date = max(Date),min_date = min(Date)), by = c("Region","Store","Dept")]
+
+# x <- TestModel$Forecast[!is.na(Weekly_Sales)]
+# x[GroupVar == 'A 1 1']
+# xx <- x[, list(max_date = max(Date),min_date = min(Date)), by = 'GroupVar']
+#
+# x <- train[!is.na(Weekly_Sales)]
+# x[GroupVar == 'A 1 1']
+# xx <- x[, list(max_date = max(Date),min_date = min(Date)), by = 'GroupVar']
+#
+# x <- Step1SCore
+# x[GroupVar == 'A 1 1']
+# xx <- x[, list(max_date = max(Date),min_date = min(Date)), by = 'GroupVar']
+#
+# x <- UpdateData[!is.na(Weekly_Sales)]
+# View(x[GroupVar == 'A 1 1'])
+# xx <- x[, max(Date), by = 'GroupVar']
+# xx <- x[, min(Date), by = 'GroupVar']
+
 # Ensure series have no missing dates (also remove series with more than 25% missing values)
-data <- RemixAutoML::TimeSeriesFill(
-  data,
-  DateColumnName = "Date",
-  GroupVariables = groupvariables,
-  TimeUnit = "weeks",
-  FillType = "maxmax",
-  MaxMissingPercent = 0.25,
-  SimpleImpute = TRUE)
+# data <- RemixAutoML::TimeSeriesFill(
+#   data = data.table::copy(data),
+#   DateColumnName = "Date",
+#   GroupVariables = groupvariables,
+#   TimeUnit = "weeks",
+#   FillType = if(length(groupvariables) > 0L) "dynamic:target_encoding" else 'maxmax',
+#   MaxMissingPercent = 0.25,
+#   SimpleImpute = TRUE)
 
 # Set negative numbers to 0
 data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
@@ -330,6 +375,9 @@ if(QA_Results[run, xregs] != 0L) {
 # Copy data
 data1 <- data.table::copy(data)
 if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
+
+# Start Timer
+Start <- Sys.time()
 
 SaveModel = FALSE #FALSE
 ArgsList = NULL #TestModel$ArgsList #ArgsList
@@ -352,7 +400,7 @@ NumGPU = 1
 Timer = TRUE
 DebugMode = TRUE
 TargetTransformation = Trans
-Methods = c("Asinh", "Log", "LogPlus1", "Sqrt", "Asin", "Logit")
+Methods = "Asinh"
 Difference = Diff
 NonNegativePred = TRUE
 RoundPreds = FALSE
@@ -371,7 +419,7 @@ Quantiles_Selected = NULL
 AnomalyDetection = NULL
 FourierTerms = 0
 TimeTrendVariable = TRUE
-ZeroPadSeries = NULL
+ZeroPadSeries = 'dynamic:target_encoding'
 DataTruncate = FALSE
 GridTune = FALSE
 PassInGrid = NULL
@@ -402,6 +450,19 @@ SamplingUnit = "Group"
 SubSample = NULL
 ScoreFunction = "Cosine"
 MinDataInLeaf = 1
+ReturnShap = FALSE
+
+
+
+# # Time Series Fill
+# data
+# DateColumnName=eval(DateColumnName)
+# GroupVariables=GroupVariables
+# TimeUnit=TimeUnit
+# FillType=ZeroPadSeries
+# MaxMissingPercent=0.95
+# SimpleImpute=TRUE
+
 
 # CarmaTimeSeriesFeatures ----
 # data.=data
@@ -423,39 +484,43 @@ MinDataInLeaf = 1
 # HolidayLags.=HolidayLags
 # HolidayMovingAverages.=HolidayMovingAverages
 # DebugMode.=DebugMode
-#
-# Update time series features ----
-ModelType="catboost"
-DebugMode.=DebugMode
-UpdateData.=UpdateData
-GroupVariables.=GroupVariables
-Difference.=Difference
-CalendarVariables.=CalendarVariables
-HolidayVariable.=HolidayVariable
-IndepVarPassTRUE.=IndepentVariablesPass
-data.=data
-CalendarFeatures.=CalendarFeatures
-XREGS.=XREGS
-HierarchGroups.=HierarchGroups
-GroupVarVector.=GroupVarVector
-TargetColumnName.=TargetColumnName
-DateColumnName.=DateColumnName
-Preds.=Preds
-HierarchSupplyValue.=HierarchSupplyValue
-IndependentSupplyValue.=IndependentSupplyValue
-TimeUnit.=TimeUnit
-FourierTerms. = NULL
-TimeGroups.=TimeGroups
-Lags.=Lags
-MA_Periods.=MA_Periods
-SD_Periods.=SD_Periods
-Skew_Periods.=Skew_Periods
-Kurt_Periods.=Kurt_Periods
-Quantile_Periods.=Quantile_Periods
-Quantiles_Selected.=Quantiles_Selected
-HolidayLags.=HolidayLags
-HolidayMovingAverages.=HolidayMovingAverages
-HolidayLookback. = 7
+
+
+
+# # Update time series features ----
+# ModelType="catboost"
+# DebugMode.=DebugMode
+# UpdateData.=UpdateData
+# GroupVariables.=GroupVariables
+# Difference.=Difference
+# CalendarVariables.=CalendarVariables
+# HolidayVariable.=HolidayVariable
+# IndepVarPassTRUE.=IndepentVariablesPass
+# data.=data
+# CalendarFeatures.=CalendarFeatures
+# XREGS.=XREGS
+# HierarchGroups.=HierarchGroups
+# GroupVarVector.=GroupVarVector
+# TargetColumnName.=TargetColumnName
+# DateColumnName.=DateColumnName
+# Preds.=Preds
+# HierarchSupplyValue.=HierarchSupplyValue
+# IndependentSupplyValue.=IndependentSupplyValue
+# TimeUnit.=TimeUnit
+# FourierTerms. = 0
+# TimeGroups.=TimeGroups
+# Lags.=Lags
+# MA_Periods.=MA_Periods
+# SD_Periods.=SD_Periods
+# Skew_Periods.=Skew_Periods
+# Kurt_Periods.=Kurt_Periods
+# Quantile_Periods.=Quantile_Periods
+# Quantiles_Selected.=Quantiles_Selected
+# HolidayLags.=HolidayLags
+# HolidayMovingAverages.=HolidayMovingAverages
+# HolidayLookback. = 7
+
+
 
 # Data ----
 # data                 = Temporary
@@ -482,7 +547,9 @@ HolidayLookback. = 7
 # Quantile_RollWindows = Quantile_Periods.
 # Quantiles_Selected   = Quantiles_Selected.
 # Debug                = DebugMode.
-#
+
+
+
 # Keep GDL Features ----
 # IndepVarPassTRUE = NULL
 # data.
@@ -497,6 +564,9 @@ HolidayLookback. = 7
 # HolidayVariable=HolVar
 # TargetColumnName.,DateColumnName.
 # Preds.
+
+
+
 
 # AutoCatBoostRegression Args ----
 # task_type = TaskType
@@ -556,7 +626,11 @@ HolidayLookback. = 7
 # min_data_in_leaf = MinDataInLeaf
 # DebugMode = DebugMode
 
-# Carma score ----
+
+
+
+# # Carma score ----
+Type = 'catboost'
 i.=i
 N.=N
 GroupVariables.=GroupVariables
@@ -572,9 +646,13 @@ NonNegativePred.=NonNegativePred
 UpdateData.=UpdateData
 FactorList.= TestModel$FactorLevelsList
 EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
+dt = data
+RoundPreds. = TRUE
+
+
+
 
 # Catboost scoring ----
-
 # i == 1
 # TargetType = 'regression'
 # ScoringData = Step1SCore.
@@ -601,7 +679,8 @@ EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
 # MDP_MissFactor = '0'
 # MDP_MissNum = -1
 
-# i == 2
+
+# i == 2 ----
 # TargetType = 'regression'
 # ScoringData = temp
 # FeatureColumnNames = ModelFeatures.
@@ -625,6 +704,8 @@ EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
 # MDP_MissFactor = '0'
 # MDP_MissNum = -1
 
+
+
 # Return data ----
 # UpdateData.=UpdateData
 # FutureDateData.=FutureDateData
@@ -638,7 +719,7 @@ EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
 # NonNegativePred.=NonNegativePred
 # DiffTrainOutput.=DiffTrainOutput
 
-# Difference data reverse single series
+
 
 
 # ----

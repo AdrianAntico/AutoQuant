@@ -548,6 +548,7 @@ CarmaFeatures <- function(data. = data,
     ModelFeatures <- setdiff(names(train.), c(eval(TargetColumnName.), eval(DateColumnName.)))
     TargetVariable <- eval(TargetColumnName.)
   }
+  ModelFeatures <- ModelFeatures[!ModelFeatures %in% 'Weights']
   return(list(ModelFeatures = ModelFeatures, TargetVariable = TargetVariable))
 }
 
@@ -568,6 +569,7 @@ CarmaFeatures <- function(data. = data,
 #' @param UpdateData. Passthrough
 #' @param FactorList. Passthrough
 #' @param EncodingMethod. Passthrough
+#' @param dt Passthrough
 #'
 #' @noRd
 CarmaScore <- function(Type = 'catboost',
@@ -586,7 +588,8 @@ CarmaScore <- function(Type = 'catboost',
                        RoundPreds. = RoundPreds,
                        UpdateData. = UpdateData,
                        FactorList. = NULL,
-                       EncodingMethod. = NULL) {
+                       EncodingMethod. = NULL,
+                       dt = NULL) {
 
   # Row counts
   if(i. != 1) N. <- as.integer(N. + 1L)
@@ -628,7 +631,36 @@ CarmaScore <- function(Type = 'catboost',
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = '0',
           MDP_MissNum = -1)
+
+
+        # TargetType = 'regression'
+        # ScoringData = Step1SCore.
+        # FeatureColumnNames = ModelFeatures.
+        # FactorLevelsList = FactorList.
+        # IDcols = IDcols
+        # OneHot = FALSE
+        # ModelObject = Model.
+        # ModelPath = getwd()
+        # ReturnShapValues = FALSE
+        # MultiClassTargetLevels = NULL
+        # RemoveModel = FALSE
+        # ModelID = 'ModelTest'
+        # ReturnFeatures = TRUE
+        # TransformNumeric = FALSE
+        # BackTransNumeric = FALSE
+        # TransformationObject = NULL
+        # TransID = NULL
+        # TransPath = NULL
+        # TargetColumnName = NULL
+        # MDP_Impute = FALSE
+        # MDP_CharToFactor = FALSE
+        # MDP_RemoveDates = TRUE
+        # MDP_MissFactor = '0'
+        # MDP_MissNum = -1
+
+
       } else if(Type == 'xgboost') {
+
         Preds <- AutoXGBoostScoring(
           TargetType = 'regression',
           ScoringData = Step1SCore.,
@@ -651,7 +683,31 @@ CarmaScore <- function(Type = 'catboost',
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = '0',
           MDP_MissNum = -1)
+
+        # TargetType = 'regression'
+        # ScoringData = Step1SCore.
+        # FeatureColumnNames = ModelFeatures.
+        # IDcols = IDcols
+        # ModelObject = Model.
+        # ModelPath = getwd()
+        # ModelID = 'ModelTest'
+        # EncodingMethod = EncodingMethod.
+        # ReturnFeatures = TRUE
+        # TransformNumeric = FALSE
+        # BackTransNumeric = FALSE
+        # TargetColumnName = NULL
+        # TransformationObject = NULL
+        # FactorLevelsList = FactorList.
+        # TransID = NULL
+        # TransPath = NULL
+        # MDP_Impute = TRUE
+        # MDP_CharToFactor = TRUE
+        # MDP_RemoveDates = TRUE
+        # MDP_MissFactor = '0'
+        # MDP_MissNum = -1
+
       } else if(Type == 'lightgbm') {
+
         Preds <- RemixAutoML::AutoLightGBMScoring(
           TargetType = 'regression',
           ScoringData = Step1SCore.,
@@ -674,6 +730,30 @@ CarmaScore <- function(Type = 'catboost',
           MDP_RemoveDates = TRUE,
           MDP_MissFactor = '0',
           MDP_MissNum = -1)
+
+        # TargetType = 'regression'
+        # ScoringData = Step1SCore.
+        # FeatureColumnNames = ModelFeatures.
+        # IDcols = IDcols
+        # ModelObject = Model.
+        # ModelPath = getwd()
+        # ModelID = 'ModelTest'
+        # EncodingMethod = EncodingMethod.
+        # ReturnFeatures = TRUE
+        # TransformNumeric = FALSE
+        # BackTransNumeric = FALSE
+        # TargetColumnName = NULL
+        # TransformationObject = NULL
+        # FactorLevelsList = FactorList.
+        # TransID = NULL
+        # TransPath = NULL
+        # MDP_Impute = TRUE
+        # MDP_CharToFactor = TRUE
+        # MDP_RemoveDates = TRUE
+        # MDP_MissFactor = '0'
+        # MDP_MissNum = -1
+        # Debug = TRUE
+
       }
 
     } else {
@@ -681,6 +761,7 @@ CarmaScore <- function(Type = 'catboost',
       # Define IDcols
       IDcols <- eval(TargetColumnName.)
       IDcols <- IDcols[IDcols %chin% names(Step1SCore.)]
+      if(length(IDcols) == 0L) IDcols <- NULL
 
       # Score Model No Group Variables
       if(Type == 'catboost') {
@@ -758,13 +839,33 @@ CarmaScore <- function(Type = 'catboost',
     }
 
     # Data Wrangline: grab historical data and one more future record
-    if(Difference.) {
-      #if(eval(TargetColumnName.) %chin% names(Step1SCore.)) if(eval(TargetColumnName.) %chin% names(Preds)) data.table::set(Preds, j = eval(TargetColumnName.), value = NULL)
-      if(eval(DateColumnName.) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName.), value = NULL)
-      UpdateData. <- cbind(FutureDateData. = FutureDateData.[seq_len(N.)], Preds)
+    if(Difference.) if(eval(DateColumnName.) %chin% names(Preds)) data.table::set(Preds, j = eval(DateColumnName.), value = NULL)
+    data.table::setnames(Preds, 'Predict', 'Predictions', skip_absent = TRUE)
+    if(length(dt) > 0L && 'GroupVar' %in% names(dt)) {
+      gg <- dt[,.N, by = 'GroupVar']
+      ggg <- sort(gg[, unique(N)])
+      l <- length(FutureDateData.)
+      if(length(ggg) > 1L) {
+        # gggg = ggg[1]
+        max_ggg <- max(ggg)
+        Preds[, FutureDateData. := FutureDateData.[length(FutureDateData.)]]
+        co <- ncol(Preds)
+        data.table::setcolorder(Preds, neworder = c(co, 1L:(co-1L)))
+        for(gggg in ggg) {
+          gv <- as.character(gg[N == eval(gggg)][['GroupVar']])
+          if(gggg == max_ggg) {
+            data.table::set(Preds, i = which(Preds[['GroupVar']] %in% gv), j = 'FutureDateData.', value = rep(eval(FutureDateData.), length(gv)))
+          } else {
+            data.table::set(Preds, i = which(Preds[['GroupVar']] %in% gv), j = 'FutureDateData.', value = rep(eval(FutureDateData.[(l - gggg + 1L):l]), length(gv)))
+          }
+        }
+
+        UpdateData. <- Preds
+
+      } else {
+        UpdateData. <- cbind(FutureDateData. = FutureDateData.[seq_len(N.)], Preds)
+      }
     } else {
-      if(NonNegativePred.) Preds[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
-      if(RoundPreds.) Preds[, Predictions := round(Predictions)]
       UpdateData. <- cbind(FutureDateData. = FutureDateData.[seq_len(N.)], Preds)
     }
 
@@ -772,6 +873,7 @@ CarmaScore <- function(Type = 'catboost',
     data.table::setnames(UpdateData., 'FutureDateData.', eval(DateColumnName.))
 
   } else {
+
     if(!is.null(GroupVariables.)) {
 
       # Modify target reference
@@ -783,7 +885,8 @@ CarmaScore <- function(Type = 'catboost',
         temp <- temp[ID == N.][, ID := NULL]
       } else {
         temp <- data.table::copy(UpdateData.[, ID := seq_len(.N), by = 'GroupVar'])
-        temp <- temp[ID == N.][, ID := NULL]
+        temp <- temp[, ID2 := max(ID), by = 'GroupVar']
+        temp <- temp[ID == ID2][, ID := NULL][, ID2 := NULL]
       }
 
       # Score model
@@ -811,44 +914,30 @@ CarmaScore <- function(Type = 'catboost',
           MDP_MissFactor = '0',
           MDP_MissNum = -1)
 
-
-
-
-        TargetType = 'regression'
-        ScoringData = temp
-        FeatureColumnNames = ModelFeatures.
-        FactorLevelsList = FactorList.
-        IDcols = IDcols
-        OneHot = FALSE
-        ModelObject = Model.
-        ModelPath = getwd()
-        ModelID = 'ModelTest'
-        ReturnFeatures = FALSE
-        TransformNumeric = FALSE
-        BackTransNumeric = FALSE
-        TargetColumnName = NULL
-        TransformationObject = NULL
-        TransID = NULL
-        TransPath = NULL
-        MDP_Impute = FALSE
-        MDP_CharToFactor = FALSE
-        MDP_RemoveDates = TRUE
-        MDP_MissFactor = '0'
-        MDP_MissNum = -1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        # TargetType = 'regression'
+        # ScoringData = temp
+        # FeatureColumnNames = ModelFeatures.
+        # FactorLevelsList = FactorList.
+        # IDcols = IDcols
+        # OneHot = FALSE
+        # ModelObject = Model.
+        # ModelPath = getwd()
+        # ModelID = 'ModelTest'
+        # ReturnFeatures = FALSE
+        # TransformNumeric = FALSE
+        # BackTransNumeric = FALSE
+        # TargetColumnName = NULL
+        # TransformationObject = NULL
+        # TransID = NULL
+        # TransPath = NULL
+        # MDP_Impute = FALSE
+        # MDP_CharToFactor = FALSE
+        # MDP_RemoveDates = TRUE
+        # MDP_MissFactor = '0'
+        # MDP_MissNum = -1
+        # ReturnShapValues = FALSE
+        # RemoveModel = FALSE
+        # Debug = TRUE
 
       } else if(Type == 'xgboost') {
         Preds <- AutoXGBoostScoring(
@@ -904,17 +993,26 @@ CarmaScore <- function(Type = 'catboost',
       # Update data group case
       data.table::setnames(Preds, 'Predictions', 'Preds')
       if(NonNegativePred. && !Difference.) Preds[, Preds := data.table::fifelse(Preds < 0.5, 0, Preds)]
-      Preds <- cbind(UpdateData.[ID == N.], Preds)
+      Preds <- cbind(UpdateData.[, ID2 := max(ID), by = 'GroupVar'][ID == ID2][, ID2 := NULL], Preds)
       if(Difference.) Preds[, ModTarget := Preds][, eval(TargetColumnName.) := Preds] else Preds[, eval(TargetColumnName.) := Preds]
       Preds[, Predictions := Preds][, Preds := NULL]
       if(RoundPreds.) Preds[, Predictions := round(Predictions)]
-      UpdateData. <- UpdateData.[ID != N.]
+      UpdateData. <- UpdateData.[, ID2 := max(ID), by = 'GroupVar'][ID != ID2][, ID2 := NULL]
       if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt')) && any(class(Preds[[eval(DateColumnName.)]]) == 'Date')) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
+      x_ <- setdiff(names(Preds),names(UpdateData.))
+      if(length(x_) > 0L && x_ == "Predictions") {
+        Preds[, Predict := Predictions][, Predictions := NULL]
+      }
+
+      # Stack Previous Data with 1-Step Ahead Forecast Data
+      #   Datasets must have the same exact names
       UpdateData. <- data.table::rbindlist(list(UpdateData., Preds))
-      if(Difference.) UpdateData.[ID %in% c(N.-1, N.), eval(TargetColumnName.) := cumsum(get(TargetColumnName.)), by = 'GroupVar']
+      if(Difference.) UpdateData. <- UpdateData.[, ID2 := max(ID), by = 'GroupVar'][ID %in% c(ID2-1, ID2), eval(TargetColumnName.) := cumsum(get(TargetColumnName.)), by = 'GroupVar'][, ID2 := NULL]
       UpdateData.[, ID := NULL]
 
     } else {
+
+      # print("CARMA HELPER SCORING 5")
 
       # Score Model
       if(Type == 'catboost') {
@@ -1168,7 +1266,11 @@ UpdateFeatures <- function(UpdateData. = NULL,
 
     if(Debug) print('UpdateFeatures 17')
 
-    if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else LBD <- LB(TimeUnit.)
+    print('Update Features 17.a')
+    print(HolidayLookback.)
+    print(TimeUnit.)
+
+    if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else if(!is.null(TimeUnit.)) LBD <- LB(TimeUnit.) else LBD <- 1L
     if(is.null(GroupVariables.)) {
 
       if(Debug) print('UpdateFeatures 18')
@@ -1195,10 +1297,11 @@ UpdateFeatures <- function(UpdateData. = NULL,
       if(Debug) print('UpdateFeatures 22')
 
     } else {
+      print("Update Features 17.b holiday variables create")
       UpdateData. <- CreateHolidayVariables(
         UpdateData.,
         DateCols = eval(DateColumnName.),
-        LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
+        LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else if(!is.null(TimeUnit.)) LB(TimeUnit.) else 1L,
         HolidayGroups = HolidayVariable.,
         Holidays = NULL)
     }

@@ -4,9 +4,7 @@ XGBoost_QA_Results_Regression <- data.table::CJ(
   Transformation = c(TRUE,FALSE),
   GridTune = c(TRUE,FALSE),
   Success = "Failure",
-  PartitionInFunction = c(TRUE,FALSE),
-  MetricTrain = -1.2,
-  MetricTest = -1.2
+  PartitionInFunction = c(TRUE,FALSE)
 )
 
 # Remove impossible combinations
@@ -142,7 +140,6 @@ for(run in seq_len(XGBoost_QA_Results_Regression[,.N])) {
   # Outcome
   if(!is.null(TestModel)) {
     XGBoost_QA_Results_Regression[run, Success := "Success"]
-    XGBoost_QA_Results_Regression[run, MetricTest := TestModel$EvaluationMetrics$TestData[Metric == 'R2', MetricValue]]
   }
   TestModel <- NULL
   Sys.sleep(5)

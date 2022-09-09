@@ -9,11 +9,14 @@ QA_Results <- data.table::CJ(
 # Other tests
 QA_Results[, Success := 'Failure']
 QA_Results[, Encoding := data.table::fifelse(runif(.N) < 0.5, "credibility", "binary")]
+QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
-# run = 38
+FillNow = FALSE
+
+# run = 110
 # run = 39
-# run = 125
-# run = 126
+# run = 101
+# run = 128
 for(run in seq_len(QA_Results[,.N])) {
 
   # Data ----
@@ -25,6 +28,18 @@ for(run in seq_len(QA_Results[,.N])) {
     data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
   } else if(QA_Results[run, Group] == 3L) {
     data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
+  }
+
+  if(!FillNow && QA_Results[run, Group] == 3L) {
+
+    # Unequal Start Dates
+    data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
+    data[is.na(ID), ID := 'KEEP']
+    data <- data[ID == 'KEEP'][, ID := NULL]
+
+    data[Region == 'A' & Date > "2011-11-30", ID := 'REMOVE']
+    data[is.na(ID), ID := 'KEEP']
+    data <- data[ID == 'KEEP'][, ID := NULL]
   }
 
   # xregs
@@ -67,9 +82,10 @@ for(run in seq_len(QA_Results[,.N])) {
     DateColumnName = 'Date',
     GroupVariables = groupvariables,
     TimeUnit = 'weeks',
-    FillType = 'maxmax',
+    FillType = if(length(groupvariables) > 0L) "dynamic:target_encoding" else 'maxmax',
     MaxMissingPercent = 0.25,
     SimpleImpute = TRUE)
+
 
   # Set negative numbers to 0
   data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
@@ -93,6 +109,10 @@ for(run in seq_len(QA_Results[,.N])) {
   # Build forecast ----
   TestModel <- tryCatch({RemixAutoML::AutoXGBoostCARMA(
 
+
+    SaveModel = FALSE,
+    ArgsList = NULL,
+
     # Data Artifacts
     data = data1,
     XREGS = xregs1,
@@ -106,25 +126,25 @@ for(run in seq_len(QA_Results[,.N])) {
     TimeGroups = c('weeks','months'),
 
     # Data Wrangling Features
-    ZeroPadSeries = NULL,
+    ZeroPadSeries = "dynamic:meow",
+    EncodingMethod = 'meow',
     DataTruncate = FALSE,
     SplitRatios = c(1 - 10 / 100, 10 / 100),
-    PartitionType = 'timeseries',
+    PartitionType = 'random',
     AnomalyDetection = NULL,
-    EncodingMethod = QA_Results[run, Encoding],
 
     # Productionize
     FC_Periods = 4,
     TrainOnFull = TOF,
     NThreads = 64,
     Timer = TRUE,
-    DebugMode = FALSE,
+    DebugMode = TRUE,
     SaveDataPath = getwd(),
     PDFOutputPath = getwd(),
 
     # Target Transformations
     TargetTransformation = Trans,
-    Methods = c('BoxCox', 'Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit'),
+    Methods = 'Asinh',
     Difference = Diff,
 
     # Features
@@ -171,6 +191,22 @@ for(run in seq_len(QA_Results[,.N])) {
 }
 
 # Defaults ----
+
+
+# Collection data.table
+# QA_Results <- data.table::CJ(
+#   Group = c(0,1,2,3),
+#   xregs = c(0,1,2,3),
+#   TOF = c(TRUE, FALSE),
+#   Trans = c(TRUE, FALSE),
+#   Diff = c(TRUE, FALSE))
+#
+# # Other tests
+# QA_Results[, Success := 'Failure']
+# QA_Results[, Encoding := data.table::fifelse(runif(.N) < 0.5, "credibility", "binary")]
+# QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
+#
+#
 # library(RemixAutoML)
 # library(data.table)
 # library(lubridate)
@@ -190,7 +226,7 @@ for(run in seq_len(QA_Results[,.N])) {
 # # run = 37
 # # run = 38
 # # run = 39
-# run = 125
+# run = 110
 #
 # # Data
 # if(QA_Results[run, Group] == 0L) {
@@ -201,6 +237,18 @@ for(run in seq_len(QA_Results[,.N])) {
 #   data <- RemixAutoML:::Post_Query_Helper('"twogroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 3L) {
 #   data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
+# }
+#
+#
+#   # Unequal Start Dates
+# if(QA_Results[run, Group] > 0L) {
+#   data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
+#   data[is.na(ID), ID := 'KEEP']
+#   data <- data[ID == 'KEEP'][, ID := NULL]
+#
+#   data[Region == 'A' & Date > "2011-11-30", ID := 'REMOVE']
+#   data[is.na(ID), ID := 'KEEP']
+#   data <- data[ID == 'KEEP'][, ID := NULL]
 # }
 #
 # # xregs
@@ -238,35 +286,38 @@ for(run in seq_len(QA_Results[,.N])) {
 # }
 #
 # # Ensure series have no missing dates (also remove series with more than 25% missing values)
-# data <- RemixAutoML::TimeSeriesFill(
-#   data,
-#   DateColumnName = 'Date',
-#   GroupVariables = groupvariables,
-#   TimeUnit = 'weeks',
-#   FillType = 'maxmax',
-#   MaxMissingPercent = 0.25,
-#   SimpleImpute = TRUE)
+# # data <- RemixAutoML::TimeSeriesFill(
+# #   data,
+# #   DateColumnName = 'Date',
+# #   GroupVariables = groupvariables,
+# #   TimeUnit = 'weeks',
+# #   FillType = 'dynamic:meow',
+# #   MaxMissingPercent = 0.25,
+# #   SimpleImpute = TRUE)
 #
 # # Set negative numbers to 0
 # data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
 #
 # # Ensure series have no missing dates (also remove series with more than 25% missing values)
-# if(QA_Results[run, xregs] != 0L) {
-#   xregs <- RemixAutoML::TimeSeriesFill(
-#     xregs,
-#     DateColumnName = 'Date',
-#     GroupVariables = groupvariables,
-#     TimeUnit = 'weeks',
-#     FillType = 'maxmax',
-#     MaxMissingPercent = 0.25,
-#     SimpleImpute = TRUE)
-# }
+# # if(QA_Results[run, xregs] != 0L) {
+# #   xregs <- RemixAutoML::TimeSeriesFill(
+# #     xregs,
+# #     DateColumnName = 'Date',
+# #     GroupVariables = groupvariables,
+# #     TimeUnit = 'weeks',
+# #     FillType = 'maxmax',
+# #     MaxMissingPercent = 0.25,
+# #     SimpleImpute = TRUE)
+# # }
 #
 # # Copy data
 # data1 <- data.table::copy(data)
 # if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
 #
 # # Copy data
+# SaveModel = FALSE
+# ArgsList = NULL
+#
 # data1 <- data1
 # XREGS <- xregs1
 # NonNegativePred = FALSE
@@ -277,11 +328,11 @@ for(run in seq_len(QA_Results[,.N])) {
 # GroupVariables = groupvariables
 # TimeUnit = 'weeks'
 # TimeGroups = c('weeks','months')
-# EncodingMethod = 'binary'
-# ZeroPadSeries = NULL
+# EncodingMethod = 'meow'
+# ZeroPadSeries = 'dynamic:meow'
 # DataTruncate = FALSE
 # SplitRatios = c(1 - 10 / 110, 10 / 110)
-# PartitionType = 'timeseries'
+# PartitionType = 'random'
 # AnomalyDetection = NULL
 # FC_Periods = 4
 # TrainOnFull = TOF
@@ -291,7 +342,7 @@ for(run in seq_len(QA_Results[,.N])) {
 # SaveDataPath = getwd()
 # PDFOutputPath = getwd()
 # TargetTransformation = Trans
-# Methods = c('BoxCox', 'Asinh', 'Asin', 'Log', 'LogPlus1', 'Sqrt', 'Logit')
+# Methods = 'Asinh'
 # Difference = Diff
 # Lags = list('weeks' = c(1:5), 'months' = c(1:3))
 # MA_Periods = list('weeks' = c(2:5), 'months' = c(2,3))
@@ -321,6 +372,8 @@ for(run in seq_len(QA_Results[,.N])) {
 # MinChildWeight = 1.0
 # SubSample = 1.0
 # ColSampleByTree = 1.0
+
+
 
 # Differencing ----
 # GroupVariables.=GroupVariables
@@ -426,24 +479,24 @@ for(run in seq_len(QA_Results[,.N])) {
 # DateColumnName.
 
 # CarmaScore ----
-# i = 1
-# Type = 'xgboost'
-# i.=i
-# N.=N
-# EncodingMethod. = EncodingMethod
-# GroupVariables.=GroupVariables
-# ModelFeatures.=ModelFeatures
-# HierarchGroups.=HierarchGroups
-# DateColumnName.=DateColumnName
-# Difference.=Difference
-# TargetColumnName.=TargetColumnName
-# Step1SCore.=Step1SCore
-# Model.=Model
-# FutureDateData.=FutureDateData
-# NonNegativePred.=NonNegativePred
-# RoundPreds.=RoundPreds
-# UpdateData.= if(i == 1) NULL else UpdateData
-# FactorList.=FactorList
+i = 1
+Type = 'xgboost'
+i.=i
+N.=N
+EncodingMethod. = EncodingMethod
+GroupVariables.=GroupVariables
+ModelFeatures.=ModelFeatures
+HierarchGroups.=HierarchGroups
+DateColumnName.=DateColumnName
+Difference.=Difference
+TargetColumnName.=TargetColumnName
+Step1SCore.=Step1SCore
+Model.=Model
+FutureDateData.=FutureDateData
+NonNegativePred.=NonNegativePred
+RoundPreds.=RoundPreds
+UpdateData.= if(i == 1) NULL else UpdateData
+FactorList.=TestModel$FactorLevelsList
 
 # XGBoost Scoring ----
 # i == 1

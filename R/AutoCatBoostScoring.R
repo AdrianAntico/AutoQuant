@@ -270,12 +270,14 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Identify column numbers for factor variables ----
+  if(Debug) print('Scoring Here 1')
   CatFeatures <- tryCatch({sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))}, error = function(x) NULL)
   CatFeatures <- CatFeatures[CatFeatures %in% which(names(ScoringData) %in% FeatureColumnNames)]
   if(!is.null(IDcols)) CatFeatures <- CatFeatures[!CatFeatures %in% which(names(ScoringData) %in% IDcols)]
   if(identical(CatFeatures, numeric(0))) CatFeatures <- NULL
 
   # DummifyDT categorical columns ----
+  if(Debug) print('Scoring Here 2')
   if(length(CatFeatures) > 0L) {
 
     # Encode
@@ -288,6 +290,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       x <- "WOE"
     } else if(x == 'poly_encode') {
       x <- 'PolyEncode'
+    } else if(tolower(x) == 'meow') {
+      x <- 'MEOW'
     }
     y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
     if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
@@ -309,7 +313,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
     ScoringData <- Output$TrainData
     MetaData <- Output$MetaData
 
-    # Args to step through
+    # # Args to step through
     # RunMode = 'score'
     # ModelType = TargetType
     # TrainData = ScoringData
@@ -326,6 +330,14 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
     # Update FeatureColumnNames
     if(!is.character(CatFeatures)) zz <- names(ScoringData)[CatFeatures] else zz <- CatFeatures
+    zz <- names(FactorLevelsList)[-length(FactorLevelsList)]
+    if(tolower(FactorLevelsList$EncodingMethod) == 'meow') {
+      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_MixedEffects')))
+    } else if(tolower(FactorLevelsList$EncodingMethod) == 'credibility') {
+      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_Credibility')))
+    } else if(tolower(FactorLevelsList$EncodingMethod) == 'target_encoding') {
+      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_TargetEncode')))
+    }
     yy <- names(data.table::copy(ScoringData))
     FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %in% zz]
     FeatureColumnNames <- c(FeatureColumnNames, setdiff(yy,xx))
@@ -363,6 +375,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Convert FeatureColumnNames to Character Names ----
+  if(Debug) print('Scoring Here 3')
   if(data.table::is.data.table(FeatureColumnNames)) {
     FeatureColumnNames <- FeatureColumnNames[[1L]]
   } else if(is.numeric(FeatureColumnNames)) {
@@ -375,8 +388,9 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Subset Columns Needed ----
+  if(Debug) print('Scoring Here 4')
   if(ReturnFeatures && TargetType != 'multiclass') ScoringMerge <- data.table::copy(ScoringData)
-  if(!is.null(IDcols) && TargetType != 'multiregression') {
+  if(!is.null(IDcols) && TargetType != 'multiregression' && any(FeatureColumnNames %chin% c(IDcols))) {
     FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% c(IDcols)]
   } else if(TargetType == 'multiregression') {
     temp <- setdiff(names(ScoringData), c(TargetColumnName, FeatureColumnNames))
@@ -391,22 +405,20 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Remove unnecessary columns
+  if(Debug) print('Scoring Here 5')
   if(!identical(setdiff(names(ScoringData), FeatureColumnNames), character(0)) && TargetType != 'multiregression') {
-
-    # Debugging
     if(Debug) {
       print('AutoCatBoostHurdleModelScoring QA Check 2')
       print(c(setdiff(names(ScoringData), FeatureColumnNames)))
       print(all(c(setdiff(names(ScoringData), FeatureColumnNames)) %in% names(ScoringData)))
     }
-
     data.table::set(ScoringData, j = c(setdiff(names(ScoringData), FeatureColumnNames)), value = NULL)
-
   } else if(TargetType == 'multiregression') {
     data.table::set(ScoringData, j = setdiff(names(ScoringData), FeatureColumnNames), value = NULL)
   }
 
   # Initialize Catboost Data Conversion ----
+  if(Debug) print('Scoring Here 6')
   if(!is.null(CatFeatures)) {
     ScoringPool <- catboost::catboost.load_pool(ScoringData, cat_features = CatFeatures)
   } else {
@@ -417,6 +429,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(is.null(ModelObject)) ModelObject <- catboost::catboost.load_model(file.path(ModelPath, ModelID))
 
   # Score model ----
+  if(Debug) print('Scoring Here 7')
   if(TargetType %chin% c('regression', 'multiregression')) {
     predict <- data.table::as.data.table(
       catboost::catboost.predict(
@@ -455,7 +468,8 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   # Remove Model ----
   if(RemoveModel) rm(ModelObject)
 
-  # Score model -----
+  # MultiClass Mgt -----
+  if(Debug) print('Scoring Here 8')
   if(TargetType == 'multiclass') {
     data.table::setnames(predict, 'V1', 'Predictions')
     if(is.null(MultiClassTargetLevels)) MultiClassTargetLevels <- data.table::fread(file.path(ModelPath, paste0(ModelID, '_TargetLevels.csv')))
@@ -471,6 +485,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Rename predicted value ----
+  if(Debug) print('Scoring Here 9')
   if(TargetType == 'regression') {
     data.table::setnames(predict, 'V1', 'Predictions')
   } else if(TargetType == 'multiregression') {
@@ -480,13 +495,36 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   }
 
   # Merge features back on ----
-  if(ReturnFeatures && TargetType != 'multiclass') predict <- cbind(predict, ScoringMerge)
+  if(ReturnFeatures && TargetType != 'multiclass') {
+    if(Debug) {
+      print('Scoring Here 10')
+      print(predict[, .N])
+      print(ScoringMerge[, .N])
+      print(ReturnFeatures && TargetType != 'multiclass')
+      print(predict)
+      print(ScoringMerge)
+      print('HERE 1')
+      print(length(predict[[1L]]))
+    }
+    ScoringMerge[, Predict := predict[[1L]]]# <- cbind(ScoringMerge, predict)
+    if(Debug) print('HERE 2')
+    predict <- ScoringMerge
+    if(Debug) print('HERE 3')
+    data.table::setcolorder(predict, c(ncol(predict), 1L:(ncol(predict)-1L)))
+  }
+
+  if(Debug) print('HERE 4')
 
   # Back Transform Numeric Variables ----
   if(BackTransNumeric && TargetType != 'multiregression') {
+
+    if(Debug) print('Scoring Here 11')
+
     grid_trans_results <- data.table::copy(TransformationObject)
     data.table::set(grid_trans_results, i = which(grid_trans_results[['ColumnName']] == eval(TargetColumnName)), j = 'ColumnName', value = 'Predictions')
     grid_trans_results <- grid_trans_results[ColumnName != eval(TargetColumnName)]
+
+    if(Debug) print('Scoring Here 12')
 
     # Run Back-Transform ----
     predict <- AutoTransformationScore(
@@ -495,11 +533,18 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       FinalResults = grid_trans_results,
       TransID = NULL,
       Path = NULL)
+
+    print('Scoring Here 13')
+
   } else if(BackTransNumeric && TargetType == 'multiregression') {
+
+    if(Debug) print('Scoring Here 11.b')
 
     # Prepare transformation object
     TransformationObject <- data.table::rbindlist(list(TransformationObject, TransformationObject))
     for(z in seq_along(TransformationObject)) TransformationObject[length(TargetColumnName.) + z, ColumnName := paste0('Predict.V',z)]
+
+    if(Debug) print('Scoring Here 12.b')
 
     # Back transform
     predict <- AutoTransformationScore(
@@ -508,10 +553,19 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       FinalResults = TransformationObject,
       TransID = NULL,
       Path = NULL)
+
+    if(Debug) print('Scoring Here 13.b')
   }
 
   # Return data ----
+  if(Debug) print("HERE 5")
+  if(Debug) print(check1)
   if(check1) {
+    if(Debug) {
+      print('Scoring Here 14.a')
+      print(predict[, .N])
+      print(ShapValues[, .N])
+    }
     return(cbind(predict, ShapValues))
   } else {
     return(predict)

@@ -695,15 +695,77 @@ CategoricalEncoding <- function(data = NULL,
     if(Debug) print('Categorical Encoding ME 1')
     if(!Scoring) ComponentList <- list()
     GroupValue <- GroupVariables[length(GroupVariables)]
-    # GroupValue = GroupVariables[1]
+
+    # Setkey to join easily
+    data.table::setkeyv(x = data, cols = eval(GroupValue))
+
     if(!Scoring) {
       if(Debug) print('Categorical Encoding ME 2.a')
-      Output <- Rappture::MEOW(data = data, TargetType = 'regression', TargetVariable = TargetVariable, RandomEffects = GroupVariables, Nest = seq_along(GroupVariables))
-      data <- Output$data; ComponentList[[eval(GroupValue)]] <- Output$ComponentList
+
+      # Create temp cols
+      if(length(GroupVariables) > 1L) {
+
+        if(Debug) print('Categorical Encoding ME 2.ab')
+
+        nam <- seq_along(names(data))
+        Output <- Rappture::Utils.Nest(data, GroupVariables)
+
+        if(Debug) print('Categorical Encoding ME 2.ac')
+
+        data <- Output$data; res <- Output$NestVars
+        Output <- Rappture::MEOW(data, TargetType = 'regression', TargetVariable = TargetVariable, RandomEffects = res, CollapseEPV = TRUE, Debug = TRUE)
+
+        if(Debug) print('Categorical Encoding ME 2.ad')
+
+        data <- Output$data; data <- data[, .SD, .SDcols = c(names(data)[c(nam, ncol(data))])]
+        print(names(data)[c(nam, ncol(data))])
+        data.table::setnames(x = data, old = names(data)[ncol(data)], new = paste0(GroupVariables[length(GroupVariables)], "_MixedEffects"))
+        print(names(data))
+        if(Debug) print('Categorical Encoding ME 2.ae')
+
+        x <- Output$ComponentList
+        N <- 2L:(ncol(x) - 1L)
+        # gg = 2
+        for(gg in N) {
+          if(Debug) {print('Categorical Encoding ME 2.af'); print(gg)}
+          x[, ID := nchar(get(names(x)[gg]))]
+          x[, eval(GroupVariables[gg]) := substr(x = get(names(x)[gg]), start = ID, stop = nchar(get(names(x)[gg])))]
+          print(names(x))
+        }
+
+        print(names(x))
+        data.table::setnames(x = x, old = names(x)[(length(GroupVariables) + 1L)], new = paste0(GroupVariables[length(GroupVariables)], "_MixedEffects"))
+        print(names(x))
+
+        if(Debug) print('Categorical Encoding ME 2.ag')
+
+        x[, ID := NULL]
+
+        if(Debug) print('Categorical Encoding ME 2.ah')
+        print(GroupVariables)
+        x <- x[, .SD, .SDcols = c(GroupVariables, paste0(GroupVariables[length(GroupVariables)], "_MixedEffects"))]
+
+        if(Debug) print('Categorical Encoding ME 2.ai')
+
+        ComponentList[[eval(GroupValue)]] <- x
+      } else {
+        Output <- Rappture::MEOW(data = data, TargetType = 'regression', TargetVariable = TargetVariable, RandomEffects = GroupVariables, CollapseEPV = TRUE)
+        data <- Output$data; ComponentList[[eval(GroupValue)]] <- Output$ComponentList
+      }
+
       if(Debug) print('CategoricalEncoding ME 2.aa')
       if(!is.null(SavePath)) data.table::fwrite(ComponentList[[eval(GroupValue)]], file = file.path(SavePath, paste0(GroupValue, "_MixedEffects.csv")))
       if(ReturnFactorLevelList) return(list(data = data, FactorCompenents = ComponentList)) else return(data)
+
     } else if(Scoring && is.null(SupplyFactorLevelList)) {
+
+      # Create temp cols
+      if(length(GroupVariables) > 0L) {
+        nam <- names(data.table::copy(data))
+        Output <- Rappture::Utils.Nest(data, GroupVariables)
+        data <- Output$data; res <- Output$NestVars; rm(Output)
+      }
+
       if(Debug) print('Categorical Encoding ME 2.b')
       GroupMean <- data.table::fread(file = file.path(SavePath, paste0(GroupValue, "_MixedEffects.csv")))
       data.table::setkeyv(GroupMean, cols = eval(GroupValue))
@@ -715,7 +777,14 @@ CategoricalEncoding <- function(data = NULL,
 
     # Merge back to data
     if(Debug) print('Categorical Encoding ME 3')
-    data[GroupMean, eval(names(GroupMean)[!names(GroupMean) %chin% GroupValue]) := get(paste0("i.", names(GroupMean)[!names(GroupMean) %chin% GroupValue]))]
+    if('GroupVar' %in% names(data)) {
+      data.table::setkeyv(x = GroupMean, cols = 'GroupVar')
+      data.table::setkeyv(x = data, cols = 'GroupVar')
+      data[GroupMean, eval(names(GroupMean)[ncol(GroupMean)]) := get(paste0("i.", names(GroupMean)[ncol(GroupMean)]))]
+    } else {
+      data[GroupMean, eval(names(GroupMean)[ncol(GroupMean)]) := get(paste0("i.", names(GroupMean)[ncol(GroupMean)]))]
+    }
+
     if(Debug) print('Categorical Encoding ME 4')
     if(!KeepOriginalFactors) data.table::set(data, j = GroupValue, value = NULL)
     if(Debug) print('CategoricalEncoding ME 5')

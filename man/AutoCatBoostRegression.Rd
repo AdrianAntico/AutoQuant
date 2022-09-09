@@ -6,6 +6,7 @@
 \usage{
 AutoCatBoostRegression(
   OutputSelection = c("Importances", "EvalPlots", "EvalMetrics", "Score_TrainData"),
+  ReturnShap = TRUE,
   data = NULL,
   ValidationData = NULL,
   TestData = NULL,
@@ -61,6 +62,8 @@ AutoCatBoostRegression(
 }
 \arguments{
 \item{OutputSelection}{You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')}
+
+\item{ReturnShap}{TRUE. Set to FALSE to not generate shap values.}
 
 \item{data}{This is your data set for training and testing your model}
 

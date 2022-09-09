@@ -115,9 +115,9 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
     ValidationData = VValidationData,
     TestData = TTestData,
     TargetColumnName = "Adrian",
-    FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
+    FeatureColNames = names(TTrainData)[!names(TTrainData) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian","Weights")],
     PrimaryDateColumn = NULL,
-    WeightsColumnName = "Weights",
+    WeightsColumnName = NULL,
     IDcols = c("IDcol_1","IDcol_2","DateTime"),
     TransformNumericColumns = trans,
     Methods = c("Asinh","Asin","Log","LogPlus1","Sqrt","Logit"),
@@ -226,14 +226,14 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
   if(!is.null(TestModel)) {
 
     # Start Timer
-    Start <- Sys.time()
+    # Start <- Sys.time()
     # library(RemixAutoML)
     # library(data.table)
     # TargetType = "regression"
     # ScoringData = if(!tof && !PartitionInFunction) TTestData else TTrainData
     # ReturnShapValues = FALSE
-    # FeatureColumnNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")]
-    # IDcols = c("IDcol_1","IDcol_2")
+    # FeatureColumnNames = colnames[[1]] #names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")]
+    # IDcols = c("IDcol_1","IDcol_2","Weights")
     # EncodingMethod = "credibility"
     # FactorLevelsList = NULL
     # TargetLevels = NULL
@@ -252,16 +252,16 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
     # MDP_RemoveDates = TRUE
     # MDP_MissFactor = "0"
     # MDP_MissNum = -1
-    ModelID = "Test_Model_1"
-    colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
+    # ModelID = "Test_Model_1"
+    # colnames <- data.table::fread(file = file.path(getwd(), paste0(ModelID, "_ColNames.csv")))
     Preds <- tryCatch({RemixAutoML::AutoLightGBMScoring(
       TargetType = "regression",
       ScoringData = if(!tof && !PartitionInFunction) TTestData else TTrainData,
       ReturnShapValues = FALSE,
-      FeatureColumnNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian")],
-      IDcols = c("IDcol_1","IDcol_2"),
+      FeatureColumnNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian",'Weights')],
+      IDcols = c("IDcol_1","IDcol_2","Weights"),
       EncodingMethod = "credibility",
-      FactorLevelsList = NULL,
+      FactorLevelsList = TestModel$FactorLevelsList,
       TargetLevels = NULL,
       ModelObject = NULL,
       ModelPath = getwd(),
@@ -279,8 +279,6 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
       MDP_MissFactor = "0",
       MDP_MissNum = -1)}, error = function(x) NULL)
 
-
-
     if(!is.null(Preds)) LightGBM_QA_Results_Regression[run, ScoreSuccess := "Success"]
 
     # Timer
@@ -292,12 +290,30 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
   RemixAutoML:::Post_Append_Helper(LightGBM_QA_Results_Regression,'AutoLightGBMRegression_QA')
 }
 
-# Scoring ----
+# Setup
+# LightGBM_QA_Results_Regression <- data.table::CJ(
+#   TOF = c(TRUE,FALSE),
+#   Transformation = c(TRUE,FALSE),
+#   GridTune = c(TRUE,FALSE),
+#   Success = "Failure",
+#   PartitionInFunction = c(TRUE,FALSE))
+#
+# # Remove impossible combinations
+# LightGBM_QA_Results_Regression <- LightGBM_QA_Results_Regression[!(TOF & GridTune)]
+# LightGBM_QA_Results_Regression <- LightGBM_QA_Results_Regression[!(PartitionInFunction & TOF)]
+# LightGBM_QA_Results_Regression[, RunNumber := seq_len(.N)]
+# LightGBM_QA_Results_Regression[, ScoreSuccess := "Failure"]
+# LightGBM_QA_Results_Regression[, RunTimeTrain := 123.456]
+# LightGBM_QA_Results_Regression[, RunTimeScore := 123.456]
+# LightGBM_QA_Results_Regression[, DateTime := Sys.time()]
+#
+#
+# # Scoring ----
 # TargetType = "regression"
 # ScoringData = if(!tof && !PartitionInFunction) TTestData else TTrainData
 # ReturnShapValues = FALSE
-# FeatureColumnNames = colnames[[1L]]
-# IDcols = c("IDcol_1","IDcol_2")
+# FeatureColumnNames = names(data)[!names(data) %in% c("IDcol_1", "IDcol_2","DateTime","Adrian",'Weights')]
+# IDcols = c("IDcol_1","IDcol_2","Weights")
 # EncodingMethod = "credibility"
 # FactorLevelsList = NULL
 # TargetLevels = NULL
@@ -316,8 +332,8 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
 # MDP_RemoveDates = TRUE
 # MDP_MissFactor = "0"
 # MDP_MissNum = -1
-#
-# # # Main Code ----
+# #
+# # # # Main Code ----
 # library(RemixAutoML)
 # library(data.table)
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLearningFunctions.R"))
@@ -494,7 +510,11 @@ for(run in seq_len(LightGBM_QA_Results_Regression[,.N])) {
 # gpu_device_id = -1
 # gpu_use_dp = TRUE
 # num_gpu = 1
-#
+
+
+
+
+
 # # Data Prep ----
 # Algo = "lightgbm"
 # ModelType="regression"

@@ -49,6 +49,14 @@ data <- TimeSeriesFill(
   TimeUnit = "weeks",
   FillType = "maxmax",
   SimpleImpute = FALSE)
+
+# data <- data.table::fread("https://www.dropbox.com/s/2str3ek4f4cheqi/walmart_train.csv?dl=1")
+# DateColumnName = "Date"
+# GroupVariables = c("Store","Dept")
+# TimeUnit = "weeks"
+# FillType = "maxmax" # "minmin" # "maxmin" # "dynamic:method" # "minmax" #
+# SimpleImpute = FALSE
+
 }
 }
 \seealso{

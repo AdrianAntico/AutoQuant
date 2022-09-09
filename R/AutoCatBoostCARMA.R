@@ -330,7 +330,7 @@ AutoCatBoostCARMA <- function(data,
                               PDFOutputPath = NULL,
                               SaveDataPath = NULL,
                               NumOfParDepPlots = 10L,
-                              EncodingMethod = 'credibility',
+                              EncodingMethod = 'target_encoding',
                               TargetTransformation = FALSE,
                               Methods = c('Standardize','Asinh', 'Log', 'LogPlus1', 'Sqrt'),
                               AnomalyDetection = NULL,
@@ -350,7 +350,7 @@ AutoCatBoostCARMA <- function(data,
                               HolidayLags = NULL,
                               HolidayMovingAverages = NULL, # 1L:2L,
                               TimeTrendVariable = FALSE,
-                              ZeroPadSeries = NULL,
+                              ZeroPadSeries = 'maxmax',
                               DataTruncate = FALSE,
                               SplitRatios = c(0.7, 0.2, 0.1),
                               PartitionType = 'random',
@@ -384,6 +384,7 @@ AutoCatBoostCARMA <- function(data,
                               SubSample = NULL,
                               ScoreFunction = 'Cosine',
                               MinDataInLeaf = 1,
+                              ReturnShap = FALSE,
                               SaveModel = FALSE,
                               ArgsList = NULL) {
 
@@ -434,7 +435,7 @@ AutoCatBoostCARMA <- function(data,
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
   if(data[, .N] != unique(data)[, .N]) {data <- unique(data); ZeroPadSeries <- 'maxmax'}
   if(length(ZeroPadSeries) > 0L) {
-    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
+    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
   } else {
     temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
     if(temp[,.N] != data[,.N]) stop('There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function')
@@ -617,7 +618,7 @@ AutoCatBoostCARMA <- function(data,
   }
 
   # Store Date Info ----
-  FutureDateData <- unique(data[, get(DateColumnName)])
+  FutureDateData <- sort(unique(data[, get(DateColumnName)]))
 
   # Create TimeWeights ----
   if(DebugMode) print('Create TimeWeights ----')
@@ -650,13 +651,14 @@ AutoCatBoostCARMA <- function(data,
   if(!is.null(SplitRatios) || !TrainOnFull) TOF <- FALSE else TOF <- TRUE
 
   # Run AutoCatBoostRegression and return list of ml objects ----
-  if(!(length(ArgsList) > 0L && length(ArgsList$Model) > 0L)) {
+  if(!(length(ArgsList) > 0L && length(ArgsList[['Model']]) > 0L)) {
     TestModel <- AutoCatBoostRegression(
 
       # GPU or CPU and the number of available GPUs
       task_type = TaskType,
       NumGPUs = NumGPU,
       OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+      ReturnShap = ReturnShap,
 
       # Metadata arguments
       ModelID = 'CatBoost',
@@ -718,6 +720,10 @@ AutoCatBoostCARMA <- function(data,
       min_data_in_leaf = MinDataInLeaf,
       DebugMode = DebugMode)
 
+    # Remove Weights
+    ModelFeatures <- ModelFeatures[!ModelFeatures %in% 'Weights']
+    ArgsList[['FeatureColNames']] <- ModelFeatures
+
     # Return model object for when TrainOnFull is FALSE ----
     if(!TrainOnFull && SaveModel) {
       ArgsList[['Model']] <- TestModel$Model
@@ -733,9 +739,10 @@ AutoCatBoostCARMA <- function(data,
     # Variable for storing ML model: Pull model object out of TestModel list ----
     if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list ----')
     Model <- TestModel$Model
+    TestModel$FactorLevelsList$EncodingMethod
 
   } else {
-    for(i in 1:10) print('SKIPPING ML TRAINING ')
+    for(i in 1L:10L) print('SKIPPING ML TRAINING ')
     Model <- ArgsList[['Model']]
     TestModel <- list()
     TestModel$FactorLevelsList <- ArgsList$FactorLevelsList
@@ -758,7 +765,7 @@ AutoCatBoostCARMA <- function(data,
     # Score model ----
     if(DebugMode) print('Score model ----')
     if(i == 1L) UpdateData <- NULL
-    Output <- CarmaScore(Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod)
+    Output <- CarmaScore(Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
     UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
     Preds <- Output$Preds; Output$Preds <- NULL
     N <- Output$N; rm(Output)
@@ -769,8 +776,10 @@ AutoCatBoostCARMA <- function(data,
 
       # Timer ----
       if(DebugMode) print('Timer----')
-      if(Timer) if(i != 1) print(paste0('Forecast future step: ', i-1))
-      if(Timer) starttime <- Sys.time()
+      if(Timer) {
+        if(i != 1) print(paste('Forecast future step: ', i-1))
+        starttime <- Sys.time()
+      }
 
       # Create single future record ----
       if(DebugMode) print('Create single future record ----')
@@ -788,6 +797,7 @@ AutoCatBoostCARMA <- function(data,
       if(Timer) endtime <- Sys.time()
       if(Timer && i != 1) print(endtime - starttime)
     }
+
   }
 
   # Memory support ----

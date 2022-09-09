@@ -41,7 +41,7 @@ AutoXGBoostCARMA(
   HolidayMovingAverages = 3L,
   TimeTrendVariable = FALSE,
   DataTruncate = FALSE,
-  ZeroPadSeries = NULL,
+  ZeroPadSeries = "maxmax",
   SplitRatios = c(1 - 10/100, 10/100),
   TreeMethod = "hist",
   NThreads = max(1, parallel::detectCores() - 2L),
@@ -60,7 +60,9 @@ AutoXGBoostCARMA(
   MaxDepth = 9L,
   MinChildWeight = 1,
   SubSample = 1,
-  ColSampleByTree = 1
+  ColSampleByTree = 1,
+  SaveModel = FALSE,
+  ArgsList = NULL
 )
 }
 \arguments{
@@ -171,6 +173,10 @@ AutoXGBoostCARMA(
 \item{SubSample}{Random forecast setting}
 
 \item{ColSampleByTree}{Self explanatory}
+
+\item{SaveModel}{Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object}
+
+\item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object}
 }
 \value{
 See examples

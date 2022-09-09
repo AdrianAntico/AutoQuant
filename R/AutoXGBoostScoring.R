@@ -137,17 +137,71 @@ AutoXGBoostScoring <- function(TargetType = NULL,
         ScoringData <- DummifyDT(data=ScoringData, cols=CatFeatures, KeepFactorCols=FALSE, OneHot=FALSE, SaveFactorLevels=FALSE, SavePath=ModelPath, ImportFactorLevels=TRUE, ReturnFactorLevels=FALSE, ClustScore=FALSE, GroupVar=TRUE)
       }
     }
-  } else if(!is.null(EncodingMethod)) {
-    if(!is.null(FactorLevelsList)) {
-      ScoringData <- CategoricalEncoding(data=ScoringData, ML_Type=TargetType, GroupVariables=names(FactorLevelsList), TargetVariable=NULL, Method=EncodingMethod, SavePath=NULL, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=FactorLevelsList, KeepOriginalFactors=FALSE)
-    } else {
-      CatFeatures <- sort(c(as.numeric(which(sapply(ScoringData, is.factor))), as.numeric(which(sapply(ScoringData, is.character)))))
-      CatFeatures <- names(ScoringData)[CatFeatures]
-      if(length(IDcols) > 0L) CatFeatures <- CatFeatures[!CatFeatures %in% IDcols]
-      if(!identical(CatFeatures, character(0)) && !is.null(CatFeatures)) {
-        ScoringData <- CategoricalEncoding(data=ScoringData, ML_Type=TargetType, GroupVariables=CatFeatures, TargetVariable=NULL, Method=EncodingMethod, SavePath=ModelPath, Scoring=TRUE, ImputeValueScoring=0, ReturnFactorLevelList=FALSE, SupplyFactorLevelList=NULL, KeepOriginalFactors=FALSE)
-      }
+  } else if(length(EncodingMethod) > 0L && length(FactorLevelsList$EncodingMethod) > 0L) {
+
+    # Encode
+    x <- FactorLevelsList$EncodingMethod
+    if(x == 'target_encoding') {
+      x <- 'TargetEncode'
+    } else if(x == 'credibility') {
+      x <- 'Crediblity'
+    } else if(x == 'woe') {
+      x <- "WOE"
+    } else if(x == 'poly_encode') {
+      x <- 'PolyEncode'
+    } else if(tolower(x) == 'meow') {
+      x <- 'MEOW'
     }
+    y <- names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]
+    if(length(y) != 0) data.table::set(ScoringData, j = c(names(ScoringData)[which(names(ScoringData) %like% paste0('_', x))]), value = NULL)
+    xx <- names(data.table::copy(ScoringData))
+    Output <- RemixAutoML:::EncodeCharacterVariables(
+      RunMode = 'score',
+      ModelType = TargetType,
+      TrainData = ScoringData,
+      ValidationData = NULL,
+      TestData = NULL,
+      TargetVariableName = NULL,
+      CategoricalVariableNames = names(FactorLevelsList)[-length(FactorLevelsList)],
+      EncodeMethod = FactorLevelsList$EncodingMethod,
+      KeepCategoricalVariables = TRUE,
+      ReturnMetaData = TRUE,
+      MetaDataPath = ModelPath,
+      MetaDataList = FactorLevelsList,
+      ImputeMissingValue = 0)
+    ScoringData <- Output$TrainData
+    MetaData <- Output$MetaData
+
+    # # Args to step through
+    # RunMode = 'score'
+    # ModelType = TargetType
+    # TrainData = ScoringData
+    # ValidationData = NULL
+    # TestData = NULL
+    # TargetVariableName = NULL
+    # CategoricalVariableNames = names(FactorLevelsList)[-length(FactorLevelsList)]
+    # EncodeMethod = FactorLevelsList$EncodingMethod
+    # KeepCategoricalVariables = TRUE
+    # ReturnMetaData = TRUE
+    # MetaDataPath = ModelPath
+    # MetaDataList = FactorLevelsList
+    # ImputeMissingValue = 0
+    # Debug = FALSE
+
+    # Update FeatureColumnNames
+    zz <- names(FactorLevelsList)[-length(FactorLevelsList)]
+    if(tolower(FactorLevelsList$EncodingMethod) == 'meow') {
+      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_MixedEffects')))
+    } else if(tolower(FactorLevelsList$EncodingMethod) == 'credibility') {
+      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_Credibility')))
+    } else if(tolower(FactorLevelsList$EncodingMethod) == 'target_encoding') {
+      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_TargetEncode')))
+    }
+    yy <- names(data.table::copy(ScoringData))
+    FeatureColumnNames <- unique(FeatureColumnNames[!FeatureColumnNames %in% zz])
+    FeatureColumnNames <- unique(c(FeatureColumnNames, setdiff(yy,xx)))
+    CatFeatures <- NULL
+
   }
 
   # Load model ----

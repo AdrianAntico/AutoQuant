@@ -20,7 +20,7 @@ AutoCatBoostCARMA(
   PDFOutputPath = NULL,
   SaveDataPath = NULL,
   NumOfParDepPlots = 10L,
-  EncodingMethod = "credibility",
+  EncodingMethod = "target_encoding",
   TargetTransformation = FALSE,
   Methods = c("Standardize", "Asinh", "Log", "LogPlus1", "Sqrt"),
   AnomalyDetection = NULL,
@@ -40,7 +40,7 @@ AutoCatBoostCARMA(
   HolidayLags = NULL,
   HolidayMovingAverages = NULL,
   TimeTrendVariable = FALSE,
-  ZeroPadSeries = NULL,
+  ZeroPadSeries = "maxmax",
   DataTruncate = FALSE,
   SplitRatios = c(0.7, 0.2, 0.1),
   PartitionType = "random",
@@ -74,6 +74,7 @@ AutoCatBoostCARMA(
   SubSample = NULL,
   ScoreFunction = "Cosine",
   MinDataInLeaf = 1,
+  ReturnShap = FALSE,
   SaveModel = FALSE,
   ArgsList = NULL
 )

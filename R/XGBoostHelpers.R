@@ -402,7 +402,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(Algo == "xgboost") {
       Names <- Names[!ColNames %chin% c(eval(TargetColumnName.), eval(IDcols.), eval(WeightsColumnName.))]
     } else if(Algo == "lightgbm") {
-      Names <- Names[!ColNames %chin% c(eval(TargetColumnName.), eval(IDcols.))]
+      Names <- Names[!ColNames %chin% c(eval(TargetColumnName.), eval(IDcols.), eval(WeightsColumnName.))]
     }
     if(SaveModelObjects.) data.table::fwrite(Names, file = file.path(model_path., paste0(ModelID., '_ColNames.csv')))
   }
@@ -576,6 +576,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   # Convert data to model object data
   if(DebugMode.) print("Convert data to model object data")
   if('GroupVar' %chin% names(dataTrain)) data.table::set(dataTrain, j = 'GroupVar', value = NULL)
+  if('Weights' %chin% names(dataTrain)) data.table::set(dataTrain, j = 'Weights', value = NULL)
   if(tolower(Algo) == 'xgboost') {
     datatrain <- xgboost::xgb.DMatrix(as.matrix(dataTrain), label = TrainTarget)
   } else if(tolower(Algo) == 'lightgbm') {
@@ -584,6 +585,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   if(!TrainOnFull.) {
     if(DebugMode.) print("Convert data to model object dataTest")
     if('GroupVar' %chin% names(dataTest)) data.table::set(dataTest, j = 'GroupVar', value = NULL)
+    if('Weights' %chin% names(dataTest)) data.table::set(dataTest, j = 'Weights', value = NULL)
     if(tolower(Algo) == 'xgboost') {
       datavalidate <- xgboost::xgb.DMatrix(as.matrix(dataTest), label = TestTarget)
     } else if(tolower(Algo) == 'lightgbm') {
@@ -592,6 +594,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
     if(!is.null(TestData.)) {
       if(DebugMode.) print("Convert data to model object TestData.")
       if('GroupVar' %chin% names(TestData.)) data.table::set(TestData., j = 'GroupVar', value = NULL)
+      if('Weights' %chin% names(TestData.)) data.table::set(TestData., j = 'Weights', value = NULL)
       if(tolower(Algo) == 'xgboost') {
         datatest <- xgboost::xgb.DMatrix(as.matrix(TestData.), label = FinalTestTarget)
         EvalSets <- list(train = datavalidate, test = datatest)

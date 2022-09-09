@@ -1271,6 +1271,7 @@ CatBoostValidationData <- function(ModelType = "classification",
 #' @param model_path. Passthrough
 #' @param metadata_path. Passthrough
 #' @param GrowPolicy. = GrowPolicy
+#' @param ReturnShap = TRUE
 #'
 #' @noRd
 CatBoostImportances <- function(ModelType = "regression",
@@ -1285,7 +1286,8 @@ CatBoostImportances <- function(ModelType = "regression",
                                 ModelID. = ModelID,
                                 model_path. = model_path,
                                 metadata_path. = metadata_path,
-                                GrowPolicy. = GrowPolicy) {
+                                GrowPolicy. = GrowPolicy,
+                                ReturnShap = TRUE) {
 
   # Gather artifacts
   if(!GrowPolicy. %chin% c("Depthwise","Lossguide")) {
@@ -1306,15 +1308,19 @@ CatBoostImportances <- function(ModelType = "regression",
     }
 
     # Shap Values
-    ShapList <- list()
-    if(ModelType != "multiclass" && length(TargetColumnName.) == 1L) {
-      if(!is.null(TrainPool.)) ShapList[["Train_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = TrainPool., type = "ShapValues"))
-      if(!is.null(TestPool.)) {
-        ShapList[["Validation_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = TestPool., type = "ShapValues"))
-        ShapList[["Train_Shap"]] <- data.table::rbindlist(list(ShapList$Train_Shap, ShapList$Validation_Shap))
-        ShapList$Validation_Shap <- NULL
+    if(ReturnShap) {
+      ShapList <- list()
+      if(ModelType != "multiclass" && length(TargetColumnName.) == 1L) {
+        if(!is.null(TrainPool.)) ShapList[["Train_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = TrainPool., type = "ShapValues"))
+        if(!is.null(TestPool.)) {
+          ShapList[["Validation_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = TestPool., type = "ShapValues"))
+          ShapList[["Train_Shap"]] <- data.table::rbindlist(list(ShapList$Train_Shap, ShapList$Validation_Shap))
+          ShapList$Validation_Shap <- NULL
+        }
+        if(!is.null(FinalTestPool.)) ShapList[["Test_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = FinalTestPool., type = "ShapValues"))
       }
-      if(!is.null(FinalTestPool.)) ShapList[["Test_Shap"]] <- data.table::as.data.table(catboost::catboost.get_feature_importance(model., pool = FinalTestPool., type = "ShapValues"))
+    } else {
+      ShapList <- list()
     }
 
     # Gather importances

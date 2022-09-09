@@ -59,6 +59,8 @@
 #' @param MinChildWeight Records in leaf
 #' @param SubSample Random forecast setting
 #' @param ColSampleByTree Self explanatory
+#' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
+#' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
 #' @examples
 #' \dontrun{
 #'
@@ -209,7 +211,7 @@ AutoXGBoostCARMA <- function(data = NULL,
                              HolidayMovingAverages = 3L,
                              TimeTrendVariable = FALSE,
                              DataTruncate = FALSE,
-                             ZeroPadSeries = NULL,
+                             ZeroPadSeries = 'maxmax',
                              SplitRatios = c(1 - 10/100, 10/100),
                              TreeMethod = 'hist',
                              NThreads = max(1, parallel::detectCores()-2L),
@@ -228,7 +230,9 @@ AutoXGBoostCARMA <- function(data = NULL,
                              MaxDepth = 9L,
                              MinChildWeight = 1.0,
                              SubSample = 1.0,
-                             ColSampleByTree = 1.0) {
+                             ColSampleByTree = 1.0,
+                             SaveModel = FALSE,
+                             ArgsList = NULL) {
 
   # Purified args: see CARMA HELPER FUNCTIONS ----
   Args <- CARMA_Define_Args(TimeUnit=TimeUnit,TimeGroups=TimeGroups,HierarchGroups=HierarchGroups,GroupVariables=GroupVariables,FC_Periods=FC_Periods,PartitionType=PartitionType,TrainOnFull=TrainOnFull,SplitRatios=SplitRatios)
@@ -246,6 +250,11 @@ AutoXGBoostCARMA <- function(data = NULL,
   if(!tolower(EvalMetric) %chin% c('RMSE','MAE','MAPE','r2')) EvalMetric <- 'RMSE'
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
 
+  # Grab all official parameters and their evaluated arguments
+  if(length(ArgsList) == 0L) ArgsList <- c(as.list(environment()))
+
+  print(names(ArgsList))
+
   # Convert data to data.table ----
   if(DebugMode) print('Convert data to data.table----')
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -253,11 +262,11 @@ AutoXGBoostCARMA <- function(data = NULL,
 
   # Feature Engineering: Add Zero Padding for missing dates ----
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
-  if(!is.null(ZeroPadSeries)) {
-    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.0, SimpleImpute=FALSE)
-    data <- ModelDataPrep(data=data, Impute=TRUE, CharToFactor=FALSE, FactorToChar=FALSE, IntToNumeric=FALSE, LogicalToBinary=FALSE, DateToChar=FALSE, RemoveDates=FALSE, MissFactor='0', MissNum=0, IgnoreCols=NULL)
+  if(data[, .N] != unique(data)[, .N]) {data <- unique(data); ZeroPadSeries <- 'maxmax'}
+  if(length(ZeroPadSeries) > 0L) {
+    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
   } else {
-    temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.25, SimpleImpute=FALSE)
+    temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
     if(temp[,.N] != data[,.N]) stop('There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function')
   }
 
@@ -459,98 +468,119 @@ AutoXGBoostCARMA <- function(data = NULL,
   # Machine Learning: Build Model ----
   if(DebugMode) options(warn = 0)
   if(DebugMode) print('Machine Learning: Build Model')
-  TestModel <- AutoXGBoostRegression(
+  print(!(length(ArgsList) > 0L && length(ArgsList$Model) > 0L))
+  print(length(ArgsList) > 0L)
+  print(length(ArgsList[['Model']]) > 0L)
+  print(ArgsList[['Model']])
+  if(!(length(ArgsList) > 0L && length(ArgsList[['Model']]) > 0L)) {
+    TestModel <- AutoXGBoostRegression(
 
-    # GPU or CPU
-    TreeMethod = TreeMethod,
-    NThreads = NThreads,
-    DebugMode = DebugMode,
+      # GPU or CPU
+      TreeMethod = TreeMethod,
+      NThreads = NThreads,
+      DebugMode = DebugMode,
 
-    # Metadata arguments
-    model_path = getwd(),
-    metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
-    ModelID = 'XGBoost',
-    ReturnFactorLevels = TRUE,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
+      # Metadata arguments
+      model_path = getwd(),
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      ModelID = 'XGBoost',
+      ReturnFactorLevels = TRUE,
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
 
-    # Data arguments
-    data = train,
-    TrainOnFull = TrainOnFull,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    IDcols = IDcols,
-    TransformNumericColumns = NULL,
-    Methods = NULL,
-    EncodingMethod = EncodingMethod,
+      # Data arguments
+      data = train,
+      TrainOnFull = TrainOnFull,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      IDcols = IDcols,
+      TransformNumericColumns = NULL,
+      Methods = NULL,
+      EncodingMethod = EncodingMethod,
 
-    # Model evaluation
-    LossFunction = LossFunction,
-    eval_metric = EvalMetric,
-    NumOfParDepPlots = 10,
+      # Model evaluation
+      LossFunction = LossFunction,
+      eval_metric = EvalMetric,
+      NumOfParDepPlots = 10,
 
-    # Grid tuning arguments - PassInGrid is the best of GridMetrics
-    PassInGrid = NULL,
-    GridTune = GridTune,
-    grid_eval_metric = GridEvalMetric,
-    BaselineComparison = 'default',
-    MaxModelsInGrid = ModelCount,
-    MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-    MaxRunMinutes = MaxRunMinutes,
-    Verbose = 1L,
+      # Grid tuning arguments - PassInGrid is the best of GridMetrics
+      PassInGrid = NULL,
+      GridTune = GridTune,
+      grid_eval_metric = GridEvalMetric,
+      BaselineComparison = 'default',
+      MaxModelsInGrid = ModelCount,
+      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+      MaxRunMinutes = MaxRunMinutes,
+      Verbose = 1L,
 
-    # ML Args
-    Trees = NTrees,
-    eta = LearningRate,
-    max_depth = MaxDepth,
-    min_child_weight = MinChildWeight,
-    subsample = SubSample,
-    colsample_bytree = ColSampleByTree)
+      # ML Args
+      Trees = NTrees,
+      eta = LearningRate,
+      max_depth = MaxDepth,
+      min_child_weight = MinChildWeight,
+      subsample = SubSample,
+      colsample_bytree = ColSampleByTree)
 
-  # Return if TrainOnFull is FALSE ----
-  if(!TrainOnFull) return(TestModel)
 
-  # Variable for storing ML model: Pull model object out of TestModel list ----
-  if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list----')
-  Model <- TestModel$Model
+    # Return model object for when TrainOnFull is FALSE ----
+    if(!TrainOnFull && SaveModel) {
+      ArgsList[['Model']] <- TestModel$Model
+      ArgsList[['FactorLevelsList']] <- TestModel$FactorLevelsList
+      TestModel$Model <- NULL
+      return(list(TestModel = TestModel, ArgsList = ArgsList))
+    } else if(!TrainOnFull) {
+      return(TestModel)
+    } else if(SaveModel) {
+      ArgsList[['Model']] <- TestModel$Model
+    }
 
-  # Grab factor level list ----
-  if(DebugMode) print('Grab factor level list----')
-  if(length(GroupVariables) > 0L) FactorList <- TestModel$FactorLevelsList else FactorList <- NULL
+    # Variable for storing ML model: Pull model object out of TestModel list ----
+    if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list ----')
+    Model <- TestModel$Model
+    TestModel$FactorLevelsList$EncodingMethod
+
+  } else {
+    for(i in 1:10) print('SKIPPING ML TRAINING ')
+    Model <- ArgsList[['Model']]
+    TestModel <- list()
+    TestModel$FactorLevelsList <- ArgsList$FactorLevelsList
+  }
+
+  # Turn warnings into errors back on ----
+  if(DebugMode) options(warn = 2)
 
   # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
   if(DebugMode) print('Variable for interation counts: max number of rows in Step1SCore data.table across all group ----')
   N <- CarmaRecordCount(GroupVariables.=GroupVariables,Difference.=Difference, Step1SCore.=Step1SCore)
-
-  # Number of forecast periods----
-  if(DebugMode) print('Number of forecast periods----')
-  ForecastRuns <- FC_Periods
 
   # ARMA PROCESS FORECASTING ----
   if(DebugMode) print('ARMA PROCESS FORECASTING----')
   # i = 1
   # i = 2
   # i = 3
-  for(i in seq_len(ForecastRuns + 1L)) {
+  for(i in seq_len(FC_Periods+1L)) {
 
     # Score model ----
     if(DebugMode) print('Score model ----')
     if(i == 1L) UpdateData <- NULL
-    Output <- CarmaScore(EncodingMethod.=EncodingMethod, Type = 'xgboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=FactorList)
+    print(TestModel$FactorLevelsList)
+    Output <- CarmaScore(Type = 'xgboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
     UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
     Preds <- Output$Preds; Output$Preds <- NULL
     N <- Output$N; rm(Output)
 
     # Update features for next run ----
-    if(i != ForecastRuns + 1L) {
+    if(i != FC_Periods + 1L) {
 
       # Timer----
       if(DebugMode) print('Timer----')
-      if(Timer) if(i != 1) print(paste('Forecast future step: ', i-1))
-      if(Timer) starttime <- Sys.time()
+      if(Timer) {
+        if(i != 1) print(paste('Forecast future step: ', i-1))
+        starttime <- Sys.time()
+      }
 
       # Create single future record ----
       if(DebugMode) print('Create single future record----')
@@ -558,7 +588,7 @@ AutoXGBoostCARMA <- function(data = NULL,
 
       # Update feature engineering ----
       if(DebugMode) print('Update feature engineering ----')
-      UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i)
+      UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i, Debug = DebugMode)
 
       # Update Lags and MA's ----
       if(DebugMode) print('Update Lags and MAs----')

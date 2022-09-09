@@ -54,6 +54,8 @@
 #' @param ModelCount Set the number of models to try in the grid tune
 #' @param MaxRunsWithoutNewWinner Number of consecutive runs without a new winner in order to terminate procedure
 #' @param MaxRunMinutes Default 24L*60L
+#' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
+#' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
 #'
 #' # ML Args begin
 #' @param Device_Type = 'CPU'
@@ -199,6 +201,8 @@
 #'   DebugMode = FALSE,
 #'   SaveDataPath = NULL,
 #'   PDFOutputPath = NULL,
+#'   SaveModel = FALSE,
+#'   ArgsList = NULL,
 #'
 #'   # Target Transformations
 #'   TargetTransformation = TRUE,
@@ -370,10 +374,12 @@ AutoLightGBMCARMA <- function(data = NULL,
                               HolidayMovingAverages = 3L,
                               TimeTrendVariable = FALSE,
                               DataTruncate = FALSE,
-                              ZeroPadSeries = NULL,
+                              ZeroPadSeries = 'maxmax',
                               SplitRatios = c(1 - 10/100, 10/100),
                               PartitionType = 'random',
                               Timer = TRUE,
+                              SaveModel = FALSE,
+                              ArgsList = NULL,
                               DebugMode = FALSE,
 
                               # Grid tuning args
@@ -484,6 +490,11 @@ AutoLightGBMCARMA <- function(data = NULL,
   if(!tolower(EvalMetric) %chin% c('RMSE','MAE','MAPE','r2')) EvalMetric <- 'RMSE'
   if(!TrainOnFull) HoldOutPeriods <- round(SplitRatios[2]*length(unique(data[[eval(DateColumnName)]])),0)
 
+  # Grab all official parameters and their evaluated arguments
+  if(length(ArgsList) == 0L) ArgsList <- c(as.list(environment()))
+
+  print(names(ArgsList))
+
   # Convert data to data.table ----
   if(DebugMode) print('Convert data to data.table----')
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -491,11 +502,11 @@ AutoLightGBMCARMA <- function(data = NULL,
 
   # Feature Engineering: Add Zero Padding for missing dates ----
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
+  if(data[, .N] != unique(data)[, .N]) {data <- unique(data); ZeroPadSeries <- 'maxmax'}
   if(!is.null(ZeroPadSeries)) {
-    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.0, SimpleImpute=FALSE)
-    data <- ModelDataPrep(data=data, Impute=TRUE, CharToFactor=FALSE, FactorToChar=FALSE, IntToNumeric=FALSE, LogicalToBinary=FALSE, DateToChar=FALSE, RemoveDates=FALSE, MissFactor='0', MissNum=0, IgnoreCols=NULL)
+    data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=FALSE)
   } else {
-    temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.25, SimpleImpute=FALSE)
+    temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=FALSE)
     if(temp[,.N] != data[,.N]) stop('There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function')
   }
 
@@ -701,170 +712,193 @@ AutoLightGBMCARMA <- function(data = NULL,
   # Machine Learning: Build Model ----
   if(DebugMode) options(warn = 0)
   if(DebugMode) print('Machine Learning: Build Model')
-  TestModel <- AutoLightGBMRegression(
+  if(!(length(ArgsList) > 0L && length(ArgsList[['Model']]) > 0L)) {
 
-    # GPU or CPU
-    NThreads = parallel::detectCores(),
+    TestModel <- AutoLightGBMRegression(
 
-    # Metadata args
-    OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
-    model_path = getwd(),
-    metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
-    ModelID = 'LightGBM',
-    NumOfParDepPlots = 3L,
-    ReturnFactorLevels = TRUE,
-    ReturnModelObjects = TRUE,
-    SaveModelObjects = FALSE,
-    SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
-    DebugMode = DebugMode,
+      # GPU or CPU
+      NThreads = parallel::detectCores(),
 
-    # Data args
-    data = train,
-    TrainOnFull = TrainOnFull,
-    ValidationData = valid,
-    TestData = test,
-    TargetColumnName = TargetVariable,
-    FeatureColNames = ModelFeatures,
-    PrimaryDateColumn = NULL,
-    WeightsColumnName = if(!is.null(TimeWeights)) 'Weights' else NULL,
-    IDcols = IDcols,
-    EncodingMethod = EncodingMethod,
-    TransformNumericColumns = NULL,
-    Methods = c('Log','LogPlus1','Sqrt'),
+      # Metadata args
+      OutputSelection = c('Importances','EvalPlots','EvalMetrics','Score_TrainData'),
+      model_path = getwd(),
+      metadata_path = if(!is.null(PDFOutputPath)) PDFOutputPath else getwd(),
+      ModelID = 'LightGBM',
+      NumOfParDepPlots = 3L,
+      ReturnFactorLevels = TRUE,
+      ReturnModelObjects = TRUE,
+      SaveModelObjects = FALSE,
+      SaveInfoToPDF = if(!is.null(PDFOutputPath)) TRUE else FALSE,
+      DebugMode = DebugMode,
 
-    # Grid parameters
-    GridTune = GridTune,
-    grid_eval_metric = GridEvalMetric,
-    BaselineComparison = 'default',
-    MaxModelsInGrid = ModelCount,
-    MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
-    MaxRunMinutes = MaxRunMinutes,
-    PassInGrid = NULL,
+      # Data args
+      data = train,
+      TrainOnFull = TrainOnFull,
+      ValidationData = valid,
+      TestData = test,
+      TargetColumnName = TargetVariable,
+      FeatureColNames = ModelFeatures,
+      PrimaryDateColumn = NULL,
+      WeightsColumnName = if(!is.null(TimeWeights)) 'Weights' else NULL,
+      IDcols = IDcols,
+      EncodingMethod = EncodingMethod,
+      TransformNumericColumns = NULL,
+      Methods = c('Log','LogPlus1','Sqrt'),
 
-    # Core parameters
-    # https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
-    device_type = tolower(Device_Type),
-    objective = LossFunction,
-    metric = EvalMetric,
-    input_model = Input_Model,
-    task = Task,
-    boosting = Boosting,
-    LinearTree = LinearTree,
-    Trees = Trees,
-    eta = ETA,
-    num_leaves = Num_Leaves,
-    deterministic = Deterministic,
+      # Grid parameters
+      GridTune = GridTune,
+      grid_eval_metric = GridEvalMetric,
+      BaselineComparison = 'default',
+      MaxModelsInGrid = ModelCount,
+      MaxRunsWithoutNewWinner = MaxRunsWithoutNewWinner,
+      MaxRunMinutes = MaxRunMinutes,
+      PassInGrid = NULL,
 
-    # Learning Parameters
-    # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
-    force_col_wise = Force_Col_Wise,
-    force_row_wise = Force_Row_Wise,
-    max_depth = Max_Depth,
-    min_data_in_leaf = Min_Data_In_Leaf,
-    min_sum_hessian_in_leaf = Min_Sum_Hessian_In_Leaf,
-    bagging_freq = Bagging_Freq,
-    bagging_fraction = Bagging_Fraction,
-    feature_fraction = Feature_Fraction,
-    feature_fraction_bynode = Feature_Fraction_Bynode,
-    lambda_l1 = Lambda_L1,
-    lambda_l2 = Lambda_L2,
-    extra_trees = Extra_Trees,
-    early_stopping_round = Early_Stopping_Round,
-    first_metric_only = First_Metric_Only,
-    max_delta_step = Max_Delta_Step,
-    linear_lambda = Linear_Lambda,
-    min_gain_to_split = Min_Gain_To_Split,
-    drop_rate_dart = Drop_Rate_Dart,
-    max_drop_dart = Max_Drop_Dart,
-    skip_drop_dart = Skip_Drop_Dart,
-    uniform_drop_dart = Uniform_Drop_Dart,
-    top_rate_goss = Top_Rate_Goss,
-    other_rate_goss = Other_Rate_Goss,
-    monotone_constraints = Monotone_Constraints,
-    monotone_constraints_method = NULL,
-    monotone_penalty = Monotone_Penalty,
-    forcedsplits_filename = Forcedsplits_Filename, # use for AutoStack option; .json file
-    refit_decay_rate = Refit_Decay_Rate,
-    path_smooth = Path_Smooth,
+      # Core parameters
+      # https://lightgbm.readthedocs.io/en/latest/Parameters.html#core-parameters
+      device_type = tolower(Device_Type),
+      objective = LossFunction,
+      metric = EvalMetric,
+      input_model = Input_Model,
+      task = Task,
+      boosting = Boosting,
+      LinearTree = LinearTree,
+      Trees = Trees,
+      eta = ETA,
+      num_leaves = Num_Leaves,
+      deterministic = Deterministic,
 
-    # IO Dataset Parameters
-    # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
-    max_bin = Max_Bin,
-    min_data_in_bin = Min_Data_In_Bin,
-    data_random_seed = Data_Random_Seed,
-    is_enable_sparse = Is_Enable_Sparse,
-    enable_bundle = Enable_Bundle,
-    use_missing = Use_Missing,
-    zero_as_missing = Zero_As_Missing,
-    two_round = Two_Round,
+      # Learning Parameters
+      # https://lightgbm.readthedocs.io/en/latest/Parameters.html#learning-control-parameters
+      force_col_wise = Force_Col_Wise,
+      force_row_wise = Force_Row_Wise,
+      max_depth = Max_Depth,
+      min_data_in_leaf = Min_Data_In_Leaf,
+      min_sum_hessian_in_leaf = Min_Sum_Hessian_In_Leaf,
+      bagging_freq = Bagging_Freq,
+      bagging_fraction = Bagging_Fraction,
+      feature_fraction = Feature_Fraction,
+      feature_fraction_bynode = Feature_Fraction_Bynode,
+      lambda_l1 = Lambda_L1,
+      lambda_l2 = Lambda_L2,
+      extra_trees = Extra_Trees,
+      early_stopping_round = Early_Stopping_Round,
+      first_metric_only = First_Metric_Only,
+      max_delta_step = Max_Delta_Step,
+      linear_lambda = Linear_Lambda,
+      min_gain_to_split = Min_Gain_To_Split,
+      drop_rate_dart = Drop_Rate_Dart,
+      max_drop_dart = Max_Drop_Dart,
+      skip_drop_dart = Skip_Drop_Dart,
+      uniform_drop_dart = Uniform_Drop_Dart,
+      top_rate_goss = Top_Rate_Goss,
+      other_rate_goss = Other_Rate_Goss,
+      monotone_constraints = Monotone_Constraints,
+      monotone_constraints_method = NULL,
+      monotone_penalty = Monotone_Penalty,
+      forcedsplits_filename = Forcedsplits_Filename, # use for AutoStack option; .json file
+      refit_decay_rate = Refit_Decay_Rate,
+      path_smooth = Path_Smooth,
 
-    # Convert Parameters
-    convert_model = Convert_Model,
-    convert_model_language = Convert_Model_Language,
+      # IO Dataset Parameters
+      # https://lightgbm.readthedocs.io/en/latest/Parameters.html#io-parameters
+      max_bin = Max_Bin,
+      min_data_in_bin = Min_Data_In_Bin,
+      data_random_seed = Data_Random_Seed,
+      is_enable_sparse = Is_Enable_Sparse,
+      enable_bundle = Enable_Bundle,
+      use_missing = Use_Missing,
+      zero_as_missing = Zero_As_Missing,
+      two_round = Two_Round,
 
-    # Objective Parameters
-    # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
-    boost_from_average = Boost_From_Average,
-    alpha = Alpha,
-    fair_c = Fair_C,
-    poisson_max_delta_step = Poisson_Max_Delta_Step,
-    tweedie_variance_power = Tweedie_Variance_Power,
-    lambdarank_truncation_level = Lambdarank_Truncation_Level,
+      # Convert Parameters
+      convert_model = Convert_Model,
+      convert_model_language = Convert_Model_Language,
 
-    # Metric Parameters (metric is in Core)
-    # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
-    is_provide_training_metric = TRUE,
-    eval_at = Eval_At,
+      # Objective Parameters
+      # https://lightgbm.readthedocs.io/en/latest/Parameters.html#objective-parameters
+      boost_from_average = Boost_From_Average,
+      alpha = Alpha,
+      fair_c = Fair_C,
+      poisson_max_delta_step = Poisson_Max_Delta_Step,
+      tweedie_variance_power = Tweedie_Variance_Power,
+      lambdarank_truncation_level = Lambdarank_Truncation_Level,
 
-    # Network Parameters
-    # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
-    num_machines = Num_Machines,
+      # Metric Parameters (metric is in Core)
+      # https://lightgbm.readthedocs.io/en/latest/Parameters.html#metric-parameters
+      is_provide_training_metric = TRUE,
+      eval_at = Eval_At,
 
-    # GPU Parameters
-    # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
-    gpu_platform_id = Gpu_Platform_Id,
-    gpu_device_id = Gpu_Device_Id,
-    gpu_use_dp = Gpu_Use_Dp,
-    num_gpu = Num_Gpu)
+      # Network Parameters
+      # https://lightgbm.readthedocs.io/en/latest/Parameters.html#network-parameters
+      num_machines = Num_Machines,
 
-  # Return if TrainOnFull is FALSE ----
-  if(!TrainOnFull) return(TestModel)
+      # GPU Parameters
+      # https://lightgbm.readthedocs.io/en/latest/Parameters.html#gpu-parameters
+      gpu_platform_id = Gpu_Platform_Id,
+      gpu_device_id = Gpu_Device_Id,
+      gpu_use_dp = Gpu_Use_Dp,
+      num_gpu = Num_Gpu)
 
-  # Variable for storing ML model: Pull model object out of TestModel list ----
-  if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list----')
-  Model <- TestModel$Model
+    # Remove Weights
+    ModelFeatures <- ModelFeatures[!ModelFeatures %in% 'Weights']
+    ArgsList[['FeatureColNames']] <- ModelFeatures
 
-  # Grab factor level list ----
-  if(DebugMode) print('Grab factor level list----')
-  if(length(GroupVariables) > 0L) FactorList <- TestModel$FactorLevelsList else FactorList <- NULL
+    # Return model object for when TrainOnFull is FALSE ----
+    if(!TrainOnFull && SaveModel) {
+      ArgsList[['Model']] <- TestModel$Model
+      ArgsList[['FactorLevelsList']] <- TestModel$FactorLevelsList
+      TestModel$Model <- NULL
+      return(list(TestModel = TestModel, ArgsList = ArgsList))
+    } else if(!TrainOnFull) {
+      return(TestModel)
+    } else if(SaveModel) {
+      ArgsList[['Model']] <- TestModel$Model
+    }
+
+    # Variable for storing ML model: Pull model object out of TestModel list ----
+    if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list ----')
+    Model <- TestModel$Model
+    TestModel$FactorLevelsList$EncodingMethod
+
+  } else {
+    for(i in 1:10) print('SKIPPING ML TRAINING ')
+    Model <- ArgsList[['Model']]
+    TestModel <- list()
+    TestModel$FactorLevelsList <- ArgsList$FactorLevelsList
+  }
+
+  # Turn warnings into errors back on ----
+  if(DebugMode) options(warn = 2)
 
   # Variable for interation counts: max number of rows in Step1SCore data.table across all group ----
   if(DebugMode) print('Variable for interation counts: max number of rows in Step1SCore data.table across all group ----')
   N <- CarmaRecordCount(GroupVariables.=GroupVariables,Difference.=Difference, Step1SCore.=Step1SCore)
 
-  # Number of forecast periods----
-  if(DebugMode) print('Number of forecast periods----')
-  ForecastRuns <- FC_Periods
-
   # ARMA PROCESS FORECASTING ----
-  if(DebugMode) print('ARMA PROCESS FORECASTING----')
-  for(i in seq_len(ForecastRuns + 1L)) {
+  if(DebugMode) print('ARMA PROCESS FORECASTING ----')
+  # i = 1
+  # i = 2
+  # i = 3
+  for(i in seq_len(FC_Periods+1L)) {
 
     # Score model ----
     if(DebugMode) print('Score model ----')
     if(i == 1L) UpdateData <- NULL
-    Output <- CarmaScore(EncodingMethod.=EncodingMethod, Type = 'lightgbm', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=FactorList)
+    Output <- CarmaScore(Type = 'lightgbm', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
     UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
     Preds <- Output$Preds; Output$Preds <- NULL
     N <- Output$N; rm(Output)
 
     # Update features for next run ----
-    if(i != ForecastRuns + 1L) {
+    if(i != FC_Periods + 1L) {
 
       # Timer----
       if(DebugMode) print('Timer----')
-      if(Timer) if(i != 1) print(paste('Forecast future step: ', i-1))
-      if(Timer) starttime <- Sys.time()
+      if(Timer) {
+        if(i != 1) print(paste('Forecast future step: ', i-1))
+        starttime <- Sys.time()
+      }
 
       # Create single future record ----
       if(DebugMode) print('Create single future record----')
@@ -872,7 +906,7 @@ AutoLightGBMCARMA <- function(data = NULL,
 
       # Update feature engineering ----
       if(DebugMode) print('Update feature engineering ----')
-      UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i)
+      UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i, Debug = DebugMode)
 
       # Update Lags and MA's ----
       if(DebugMode) print('Update Lags and MAs----')

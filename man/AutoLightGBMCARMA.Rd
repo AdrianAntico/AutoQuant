@@ -43,10 +43,12 @@ AutoLightGBMCARMA(
   HolidayMovingAverages = 3L,
   TimeTrendVariable = FALSE,
   DataTruncate = FALSE,
-  ZeroPadSeries = NULL,
+  ZeroPadSeries = "maxmax",
   SplitRatios = c(1 - 10/100, 10/100),
   PartitionType = "random",
   Timer = TRUE,
+  SaveModel = FALSE,
+  ArgsList = NULL,
   DebugMode = FALSE,
   GridTune = FALSE,
   GridEvalMetric = "mae",
@@ -199,6 +201,12 @@ AutoLightGBMCARMA(
 
 \item{Timer}{Setting to TRUE prints out the forecast number while it is building}
 
+\item{SaveModel}{Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object}
+
+\item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
+
+# ML Args begin}
+
 \item{DebugMode}{Setting to TRUE generates printout of all header code comments during run time of function}
 
 \item{GridTune}{Set to TRUE to run a grid tune}
@@ -209,9 +217,7 @@ AutoLightGBMCARMA(
 
 \item{MaxRunsWithoutNewWinner}{Number of consecutive runs without a new winner in order to terminate procedure}
 
-\item{MaxRunMinutes}{Default 24L*60L
-
-# ML Args begin}
+\item{MaxRunMinutes}{Default 24L*60L}
 
 \item{Device_Type}{= 'CPU'}
 
@@ -427,6 +433,8 @@ Results <- AutoLightGBMCARMA(
   DebugMode = FALSE,
   SaveDataPath = NULL,
   PDFOutputPath = NULL,
+  SaveModel = FALSE,
+  ArgsList = NULL,
 
   # Target Transformations
   TargetTransformation = TRUE,

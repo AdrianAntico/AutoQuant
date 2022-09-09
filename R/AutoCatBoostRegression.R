@@ -6,6 +6,7 @@
 #' @family Automated Supervised Learning - Regression
 #'
 #' @param OutputSelection You can select what type of output you want returned. Choose from c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData')
+#' @param ReturnShap TRUE. Set to FALSE to not generate shap values.
 #' @param data This is your data set for training and testing your model
 #' @param TrainOnFull Set to TRUE to train on full data and skip over evaluation steps
 #' @param ValidationData This is your holdout data set used in modeling either refine your hyperparameters. Catboost using both training and validation data in the training process so you should evaluate out of sample performance with this data set.
@@ -140,6 +141,7 @@
 #' @return Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvalutionBoxPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, ParDepBoxPlots.R, GridCollect, catboostgrid, and a transformation details file.
 #' @export
 AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots', 'EvalMetrics', 'Score_TrainData'),
+                                   ReturnShap = TRUE,
                                    data = NULL,
                                    ValidationData = NULL,
                                    TestData = NULL,
@@ -309,7 +311,7 @@ AutoCatBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots
   # Gather importance and shap values ----
   if(DebugMode) print('Running CatBoostImportances()')
   if(any(c('importances','importance') %chin% tolower(OutputSelection))) {
-    Output <- tryCatch({CatBoostImportances(ModelType='regression', TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TrainData.=TrainData, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)}, error = function(x) list(Interaction = NULL, VariableImportance = NULL, ShapValues = NULL))
+    Output <- tryCatch({CatBoostImportances(ModelType='regression', ReturnShap = ReturnShap, TargetColumnName.=TargetColumnName, TrainPool.=TrainPool, TestPool.=TestPool, FinalTestPool.=FinalTestPool, TrainData.=TrainData, ValidationData.=ValidationData, SaveModelObjects.=SaveModelObjects, model.=model, ModelID.=ModelID, model_path.=model_path, metadata_path.=metadata_path, GrowPolicy.=GrowPolicy)}, error = function(x) list(Interaction = NULL, VariableImportance = NULL, ShapValues = NULL))
     Interaction <- Output$Interaction; Output$Interaction <- NULL
     VariableImportance <- Output$VariableImportance; Output$VariableImportance <- NULL
     ShapValues <- Output$ShapValues; Output$ShapValues <- NULL; rm(Output)

@@ -7,11 +7,14 @@ QA_Results <- data.table::CJ(
   Diff = c(TRUE, FALSE))
 QA_Results[, RunTime := 123.456]
 QA_Results[, DateTime := Sys.time()]
+QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
+
+FillNow = FALSE
 
 # Other tests
 QA_Results[, Success := "Failure"]
 
-# run = 1
+# run = 125
 # run = 37
 for(run in seq_len(QA_Results[,.N])) {
 
@@ -26,24 +29,35 @@ for(run in seq_len(QA_Results[,.N])) {
     data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
   }
 
+  if(!FillNow && QA_Results[run, Group] == 3L) {
+
+    data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
+    data[is.na(ID), ID := 'KEEP']
+    data <- data[ID == 'KEEP'][, ID := NULL]
+
+    data[Region == 'A' & Date > "2011-11-30", ID := 'REMOVE']
+    data[is.na(ID), ID := 'KEEP']
+    data <- data[ID == 'KEEP'][, ID := NULL]
+  }
+
   # xregs
   if(QA_Results[run, xregs] == 0L) {
     xregs <- NULL
   } else if(QA_Results[run, xregs] == 1L) {
-    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
-    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg1.csv"))[['data']]
-    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg1.csv"))[['data']]
-    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg1.csv"))[['data']]
+    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg1.csv"')[['data']]
+    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg1.csv"')[['data']]
+    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg1.csv"')[['data']]
+    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg1.csv"')[['data']]
   } else if(QA_Results[run, xregs] == 2L) {
-    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg2.csv"))[['data']]
-    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg2.csv"))[['data']]
-    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg2.csv"))[['data']]
-    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg2.csv"))[['data']]
+    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg2.csv"')[['data']]
+    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg2.csv"')[['data']]
+    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg2.csv"')[['data']]
+    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg2.csv"')[['data']]
   } else if(QA_Results[run, xregs] == 3L) {
-    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg3.csv"))[['data']]
-    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg3.csv"))[['data']]
-    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg3.csv"))[['data']]
-    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg3.csv"))[['data']]
+    if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg3.csv"')[['data']]
+    if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg3.csv"')[['data']]
+    if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg3.csv"')[['data']]
+    if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg3.csv"')[['data']]
   }
 
   # Testing params
@@ -53,22 +67,23 @@ for(run in seq_len(QA_Results[,.N])) {
   if(QA_Results[run, Group] == 0L) {
     groupvariables <- NULL
   } else if(QA_Results[run, Group] == 1L) {
-    groupvariables <- "Dept"
+    groupvariables <- 'Dept'
   } else if(QA_Results[run, Group] == 2L) {
-    groupvariables <- c("Store","Dept")
+    groupvariables <- c('Store','Dept')
   } else if(QA_Results[run, Group] == 3L) {
-    groupvariables <- c("Region","Store","Dept")
+    groupvariables <- c('Region','Store','Dept')
   }
 
   # Ensure series have no missing dates (also remove series with more than 25% missing values)
   data <- RemixAutoML::TimeSeriesFill(
     data,
-    DateColumnName = "Date",
+    DateColumnName = 'Date',
     GroupVariables = groupvariables,
-    TimeUnit = "weeks",
-    FillType = "maxmax",
+    TimeUnit = 'weeks',
+    FillType = if(length(groupvariables) > 0L) "dynamic:target_encoding" else 'maxmax',
     MaxMissingPercent = 0.25,
     SimpleImpute = TRUE)
+
 
   # Set negative numbers to 0
   data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
@@ -77,10 +92,10 @@ for(run in seq_len(QA_Results[,.N])) {
   if(QA_Results[run, xregs] != 0L) {
     xregs <- RemixAutoML::TimeSeriesFill(
       xregs,
-      DateColumnName = "Date",
+      DateColumnName = 'Date',
       GroupVariables = groupvariables,
-      TimeUnit = "weeks",
-      FillType = "maxmax",
+      TimeUnit = 'weeks',
+      FillType = 'maxmax',
       MaxMissingPercent = 0.25,
       SimpleImpute = TRUE)
   }
@@ -88,8 +103,6 @@ for(run in seq_len(QA_Results[,.N])) {
   # Copy data
   data1 <- data.table::copy(data)
   if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
-
-  # Start Timer
   Start <- Sys.time()
 
   # Build forecast ----
@@ -109,12 +122,12 @@ for(run in seq_len(QA_Results[,.N])) {
     TimeWeights = 0.9999,
 
     # Data Wrangling Features
-    ZeroPadSeries = NULL,
+    ZeroPadSeries = 'dynamic:meow',
+    EncodingMethod = "meow",
     DataTruncate = FALSE,
     SplitRatios = c(1 - 10 / 100, 10 / 100),
-    PartitionType = "timeseries",
+    PartitionType = "time",
     AnomalyDetection = NULL,
-    EncodingMethod = "credibility",
 
     # Productionize
     FC_Periods = 4,
@@ -127,7 +140,7 @@ for(run in seq_len(QA_Results[,.N])) {
 
     # Target Transformations
     TargetTransformation = Trans,
-    Methods = c("BoxCox", "Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit"),
+    Methods = "Asinh",
     Difference = Diff,
 
     # Features
@@ -243,7 +256,9 @@ for(run in seq_len(QA_Results[,.N])) {
   QA_Results[run, RunTime := as.numeric(difftime(time1 = End, Start))]
 
   # Outcome
-  if(!is.null(TestModel)) QA_Results[run, Success := "Success"]
+  if(!is.null(TestModel)) {
+    QA_Results[run, Success := "Success"]
+  }
   rm(TestModel)
   RemixAutoML:::Post_Append_Helper(QA_Results,'AutoLightGBMCARMA_QA')
   Sys.sleep(5)
@@ -251,6 +266,7 @@ for(run in seq_len(QA_Results[,.N])) {
 
 
 # Defaults ----
+
 # library(RemixAutoML)
 # library(data.table)
 # library(lubridate)
@@ -264,6 +280,9 @@ for(run in seq_len(QA_Results[,.N])) {
 #   Diff = c(TRUE, FALSE))
 # QA_Results[, RunTime := 123.456]
 # QA_Results[, DateTime := Sys.time()]
+# QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
+#
+# FillNow = FALSE
 #
 # # Other tests
 # QA_Results[, Success := "Failure"]
@@ -281,9 +300,9 @@ for(run in seq_len(QA_Results[,.N])) {
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/FeatureEngineering_ModelBased.R"))
 # source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelEvaluationPlots.R"))
 #
-# run = 1
+# run = 125
 #
-# # Data
+# # Data ----
 # if(QA_Results[run, Group] == 0L) {
 #   data <- RemixAutoML:::Post_Query_Helper('"nogroupevalwalmart.csv"')[['data']]
 # } else if(QA_Results[run, Group] == 1L) {
@@ -294,24 +313,36 @@ for(run in seq_len(QA_Results[,.N])) {
 #   data <- RemixAutoML:::Post_Query_Helper('"threegroupevalwalmart.csv"')[['data']]
 # }
 #
+# if(QA_Results[run, Mixed][[1L]] && QA_Results[run, Group] == 3L) {
+#
+#   # Unequal Start Dates
+#   data[Region == 'A' & Date < "2010-05-05", ID := 'REMOVE']
+#   data[is.na(ID), ID := 'KEEP']
+#   data <- data[ID == 'KEEP'][, ID := NULL]
+#
+#   data[Region == 'A' & Date > "2011-11-30", ID := 'REMOVE']
+#   data[is.na(ID), ID := 'KEEP']
+#   data <- data[ID == 'KEEP'][, ID := NULL]
+# }
+#
 # # xregs
 # if(QA_Results[run, xregs] == 0L) {
 #   xregs <- NULL
 # } else if(QA_Results[run, xregs] == 1L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg1.csv"))[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg1.csv"))[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg1.csv"))[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg1.csv"))[['data']]
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg1.csv"')[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg1.csv"')[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg1.csv"')[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg1.csv"')[['data']]
 # } else if(QA_Results[run, xregs] == 2L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg2.csv"))[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg2.csv"))[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg2.csv"))[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg2.csv"))[['data']]
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg2.csv"')[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg2.csv"')[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg2.csv"')[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg2.csv"')[['data']]
 # } else if(QA_Results[run, xregs] == 3L) {
-#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("nogroupfcwalmartxreg3.csv"))[['data']]
-#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("onegroupfcwalmartxreg3.csv"))[['data']]
-#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("twogroupfcwalmartxreg3.csv"))[['data']]
-#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper(shQuote("threegroupfcwalmartxreg3.csv"))[['data']]
+#   if(QA_Results[run, Group] == 0L) xregs <- RemixAutoML:::Post_Query_Helper('"nogroupfcwalmartxreg3.csv"')[['data']]
+#   if(QA_Results[run, Group] == 1L) xregs <- RemixAutoML:::Post_Query_Helper('"onegroupfcwalmartxreg3.csv"')[['data']]
+#   if(QA_Results[run, Group] == 2L) xregs <- RemixAutoML:::Post_Query_Helper('"twogroupfcwalmartxreg3.csv"')[['data']]
+#   if(QA_Results[run, Group] == 3L) xregs <- RemixAutoML:::Post_Query_Helper('"threegroupfcwalmartxreg3.csv"')[['data']]
 # }
 #
 # # Testing params
@@ -321,22 +352,23 @@ for(run in seq_len(QA_Results[,.N])) {
 # if(QA_Results[run, Group] == 0L) {
 #   groupvariables <- NULL
 # } else if(QA_Results[run, Group] == 1L) {
-#   groupvariables <- "Dept"
+#   groupvariables <- 'Dept'
 # } else if(QA_Results[run, Group] == 2L) {
-#   groupvariables <- c("Store","Dept")
+#   groupvariables <- c('Store','Dept')
 # } else if(QA_Results[run, Group] == 3L) {
-#   groupvariables <- c("Region","Store","Dept")
+#   groupvariables <- c('Region','Store','Dept')
 # }
 #
 # # Ensure series have no missing dates (also remove series with more than 25% missing values)
 # data <- RemixAutoML::TimeSeriesFill(
 #   data,
-#   DateColumnName = "Date",
+#   DateColumnName = 'Date',
 #   GroupVariables = groupvariables,
-#   TimeUnit = "weeks",
-#   FillType = "maxmax",
+#   TimeUnit = 'weeks',
+#   FillType = if(length(groupvariables) > 0L) "dynamic:target_encoding" else 'maxmax',
 #   MaxMissingPercent = 0.25,
 #   SimpleImpute = TRUE)
+#
 #
 # # Set negative numbers to 0
 # data <- data[, Weekly_Sales := data.table::fifelse(Weekly_Sales < 0, 0, Weekly_Sales)]
@@ -345,10 +377,10 @@ for(run in seq_len(QA_Results[,.N])) {
 # if(QA_Results[run, xregs] != 0L) {
 #   xregs <- RemixAutoML::TimeSeriesFill(
 #     xregs,
-#     DateColumnName = "Date",
+#     DateColumnName = 'Date',
 #     GroupVariables = groupvariables,
-#     TimeUnit = "weeks",
-#     FillType = "maxmax",
+#     TimeUnit = 'weeks',
+#     FillType = 'maxmax',
 #     MaxMissingPercent = 0.25,
 #     SimpleImpute = TRUE)
 # }
@@ -356,8 +388,12 @@ for(run in seq_len(QA_Results[,.N])) {
 # # Copy data
 # data1 <- data.table::copy(data)
 # if(QA_Results[run, xregs] != 0L) xregs1 <- data.table::copy(xregs) else xregs1 <- NULL
+# Start <- Sys.time()
+#
 #
 # # Copy data
+# ArgsList <- NULL
+# SaveModel <- FALSE
 # data = data1
 # XREGS = xregs1
 # NonNegativePred = FALSE
@@ -371,12 +407,12 @@ for(run in seq_len(QA_Results[,.N])) {
 # TimeWeights = 0.9999
 #
 # # Data Wrangling Features
-# ZeroPadSeries = NULL
+# ZeroPadSeries = 'dynamic:meow'
 # DataTruncate = FALSE
 # SplitRatios = c(1 - 10 / 100, 10 / 100)
-# PartitionType = "timeseries"
+# PartitionType = "time"
 # AnomalyDetection = NULL
-# EncodingMethod = "credibility"
+# EncodingMethod = "meow"
 #
 # # Productionize
 # FC_Periods = 4
@@ -389,7 +425,7 @@ for(run in seq_len(QA_Results[,.N])) {
 #
 # # Target Transformations
 # TargetTransformation = Trans
-# Methods = c("Asinh", "Asin", "Log", "LogPlus1", "Sqrt", "Logit")
+# Methods = "Asinh"
 # Difference = Diff
 #
 # # Features
@@ -499,6 +535,18 @@ for(run in seq_len(QA_Results[,.N])) {
 # Gpu_Device_Id = -1
 # Gpu_Use_Dp = TRUE
 # Num_Gpu = 1
+
+
+
+# # TimeSeriesFill ----
+# DateColumnName=eval(DateColumnName)
+# GroupVariables=GroupVariables
+# TimeUnit=TimeUnit
+# FillType=ZeroPadSeries
+# MaxMissingPercent=0.0
+# SimpleImpute=FALSE
+
+
 
 # Differencing ----
 # GroupVariables.=GroupVariables
@@ -621,7 +669,11 @@ for(run in seq_len(QA_Results[,.N])) {
 # NonNegativePred.=NonNegativePred
 # RoundPreds.=RoundPreds
 # UpdateData.= if(i == 1) NULL else UpdateData
-# FactorList.=FactorList
+# FactorList.=TestModel$FactorLevelsList
+# Debug = TRUE
+# ReturnShapValues = FALSE
+
+
 
 # LightGBM Scoring
 # TargetType = 'regression'
