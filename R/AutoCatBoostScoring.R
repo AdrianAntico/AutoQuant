@@ -352,6 +352,7 @@ AutoCatBoostScoring <- function(TargetType = NULL,
   if(!is.null(CatFeatures)) CatFeatures <- CatFeatures - 1L
 
   # ModelDataPrep Check ----
+  if(ReturnFeatures && TargetType != 'multiclass') ScoringMerge <- data.table::copy(ScoringData)
   if(any(c(MDP_Impute, MDP_CharToFactor, MDP_RemoveDates))) {
     ScoringData <- ModelDataPrep(
       data = ScoringData,
@@ -389,7 +390,6 @@ AutoCatBoostScoring <- function(TargetType = NULL,
 
   # Subset Columns Needed ----
   if(Debug) print('Scoring Here 4')
-  if(ReturnFeatures && TargetType != 'multiclass') ScoringMerge <- data.table::copy(ScoringData)
   if(!is.null(IDcols) && TargetType != 'multiregression' && any(FeatureColumnNames %chin% c(IDcols))) {
     FeatureColumnNames <- FeatureColumnNames[!FeatureColumnNames %chin% c(IDcols)]
   } else if(TargetType == 'multiregression') {

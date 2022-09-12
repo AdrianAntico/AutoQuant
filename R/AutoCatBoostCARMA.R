@@ -434,9 +434,9 @@ AutoCatBoostCARMA <- function(data,
   # Feature Engineering: Add Zero Padding for missing dates ----
   if(DebugMode) print('Feature Engineering: Add Zero Padding for missing dates----')
   if(data[, .N] != unique(data)[, .N]) {data <- unique(data); ZeroPadSeries <- 'maxmax'}
-  if(length(ZeroPadSeries) > 0L) {
+  if(length(ZeroPadSeries) > 0L && length(GroupVariables) > 0L) {
     data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.95, SimpleImpute=TRUE)
-  } else {
+  } else if(length(GroupVariables) > 0L) {
     temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType='maxmax', MaxMissingPercent=0.95, SimpleImpute=TRUE)
     if(temp[,.N] != data[,.N]) stop('There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function')
   }
@@ -760,44 +760,65 @@ AutoCatBoostCARMA <- function(data,
   # i = 1
   # i = 2
   # i = 3
-  for(i in seq_len(FC_Periods+1L)) {
+  if(length(Lags) > 0L) {
 
-    # Score model ----
-    if(DebugMode) print('Score model ----')
-    if(i == 1L) UpdateData <- NULL
-    Output <- CarmaScore(Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
-    UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
-    Preds <- Output$Preds; Output$Preds <- NULL
-    N <- Output$N; rm(Output)
+    for(i in seq_len(FC_Periods+1L)) {
+
+      # Score model ----
+      if(DebugMode) print('Score model ----')
+      if(i == 1L) UpdateData <- NULL
+      Output <- CarmaScore(Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
+      UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
+      Preds <- Output$Preds; Output$Preds <- NULL
+      N <- Output$N; rm(Output)
+
+      # Update data for next prediction ----
+      if(DebugMode) print('Update data for next prediction ----')
+      if(i != FC_Periods+1L) {
+
+        # Timer ----
+        if(DebugMode) print('Timer----')
+        if(Timer) {
+          if(i != 1) print(paste('Forecast future step: ', i-1))
+          starttime <- Sys.time()
+        }
+
+        # Create single future record ----
+        if(DebugMode) print('Create single future record ----')
+        CalendarFeatures <- NextTimePeriod(UpdateData.=FutureDateData, TimeUnit.=TimeUnit, DateColumnName.=DateColumnName)
+
+        # Update flat feature engineering ----
+        if(DebugMode) print('Update feature engineering ----')
+        UpdateData <- UpdateFeatures(RollingVars. = TRUE, UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i, Debug = DebugMode)
+
+        # Update Lags and MA's ----
+        if(DebugMode) print('Update Lags and MAs ----')
+        UpdateData <- CarmaRollingStatsUpdate(ModelType='catboost', DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=Preds, HierarchSupplyValue.=HierarchSupplyValue, IndependentSupplyValue.=IndependentSupplyValue, TimeUnit.=TimeUnit, TimeGroups.=TimeGroups, Lags.=Lags, MA_Periods.=MA_Periods, SD_Periods.=SD_Periods, Skew_Periods.=Skew_Periods, Kurt_Periods.=Kurt_Periods, Quantile_Periods.=Quantile_Periods, Quantiles_Selected.=Quantiles_Selected, HolidayLags.=HolidayLags, HolidayMovingAverages.=HolidayMovingAverages)
+
+        # Print time to complete ----
+        if(Timer) endtime <- Sys.time()
+        if(Timer && i != 1) print(endtime - starttime)
+      }
+
+    }
+
+  } else {
+
+    # Prepare data
+    if(DebugMode) print('# Prepare data')
+    if(length(GroupVariables) > 0L) {
+      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = 5, GroupVariables. = GroupVariables, SkipPeriods = NULL)
+      UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
+    } else {
+      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = 5, GroupVariables. = NULL, SkipPeriods = NULL)
+      UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
+    }
+
+    # Score Future
+    UpdateData <- CarmaScore(Type = 'catboost', i. = 0L, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
 
     # Update data for next prediction ----
     if(DebugMode) print('Update data for next prediction ----')
-    if(i != FC_Periods+1L) {
-
-      # Timer ----
-      if(DebugMode) print('Timer----')
-      if(Timer) {
-        if(i != 1) print(paste('Forecast future step: ', i-1))
-        starttime <- Sys.time()
-      }
-
-      # Create single future record ----
-      if(DebugMode) print('Create single future record ----')
-      CalendarFeatures <- NextTimePeriod(UpdateData.=UpdateData, TimeUnit.=TimeUnit, DateColumnName.=DateColumnName)
-
-      # Update flat feature engineering ----
-      if(DebugMode) print('Update feature engineering ----')
-      UpdateData <- UpdateFeatures(UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i, Debug = DebugMode)
-
-      # Update Lags and MA's ----
-      if(DebugMode) print('Update Lags and MAs ----')
-      UpdateData <- CarmaRollingStatsUpdate(ModelType='catboost', DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=Preds, HierarchSupplyValue.=HierarchSupplyValue, IndependentSupplyValue.=IndependentSupplyValue, TimeUnit.=TimeUnit, TimeGroups.=TimeGroups, Lags.=Lags, MA_Periods.=MA_Periods, SD_Periods.=SD_Periods, Skew_Periods.=Skew_Periods, Kurt_Periods.=Kurt_Periods, Quantile_Periods.=Quantile_Periods, Quantiles_Selected.=Quantiles_Selected, HolidayLags.=HolidayLags, HolidayMovingAverages.=HolidayMovingAverages)
-
-      # Print time to complete ----
-      if(Timer) endtime <- Sys.time()
-      if(Timer && i != 1) print(endtime - starttime)
-    }
-
   }
 
   # Memory support ----

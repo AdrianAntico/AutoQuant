@@ -591,6 +591,66 @@ CarmaScore <- function(Type = 'catboost',
                        EncodingMethod. = NULL,
                        dt = NULL) {
 
+  if(i. == 0L) {
+
+    # Modify target reference
+    if(Difference.) IDcols = 'ModTarget' else IDcols <- eval(TargetColumnName.)
+
+    # Score model
+    if(Type == 'catboost') {
+      x <- AutoCatBoostScoring(
+        TargetType = 'regression',
+        ScoringData = UpdateData.,
+        FeatureColumnNames = ModelFeatures.,
+        FactorLevelsList = FactorList.,
+        IDcols = unique(c(IDcols, DateColumnName.)),
+        OneHot = FALSE,
+        ModelObject = Model.,
+        ModelPath = getwd(),
+        ModelID = 'ModelTest',
+        ReturnFeatures = TRUE,
+        TransformNumeric = FALSE,
+        BackTransNumeric = FALSE,
+        TargetColumnName = NULL,
+        TransformationObject = NULL,
+        TransID = NULL,
+        TransPath = NULL,
+        MDP_Impute = FALSE,
+        MDP_CharToFactor = FALSE,
+        MDP_RemoveDates = TRUE,
+        MDP_MissFactor = '0',
+        MDP_MissNum = -1)
+      return(data.table::setnames(x = x, old = 'Predict', new = 'Predictions'))
+
+
+      # TargetType = 'regression'
+      # ScoringData = UpdateData.
+      # FeatureColumnNames = ModelFeatures.
+      # FactorLevelsList = FactorList.
+      # IDcols = unique(c(IDcols, DateColumnName.))
+      # OneHot = FALSE
+      # ModelObject = Model.
+      # ModelPath = getwd()
+      # ModelID = 'ModelTest'
+      # ReturnFeatures = TRUE
+      # TransformNumeric = FALSE
+      # BackTransNumeric = FALSE
+      # TargetColumnName = NULL
+      # TransformationObject = NULL
+      # TransID = NULL
+      # TransPath = NULL
+      # MDP_Impute = FALSE
+      # MDP_CharToFactor = FALSE
+      # MDP_RemoveDates = TRUE
+      # MDP_MissFactor = '0'
+      # MDP_MissNum = -1
+      # ReturnShapValues = FALSE
+      # Debug = TRUE
+
+
+    }
+  }
+
   # Row counts
   if(i. != 1) N. <- as.integer(N. + 1L)
 
@@ -1136,6 +1196,95 @@ NextTimePeriod <- function(UpdateData. = UpdateData,
 }
 
 #' @param UpdateData. Passthrough
+#' @param TimeUnit. Passthrough
+#' @param DateColumnName. Passthrough
+#' @param GroupVariables. Passthrough
+#'
+#' @noRd
+FutureTimePeriods <- function(UpdateData. = UpdateData,
+                              TimeUnit. = TimeUnit,
+                              DateColumnName. = DateColumnName,
+                              FC_Periods = 5,
+                              GroupVariables. = NULL,
+                              SkipPeriods = NULL) {
+
+  # Get latest date
+  if(data.table::is.data.table(UpdateData.)) {
+    d <- max(UpdateData.[[eval(DateColumnName.)]])
+  } else {
+    d <- max(UpdateData.)
+  }
+
+  # Computer periods ahead
+  if(tolower(TimeUnit.) %chin% c('hour','hours')) {
+
+    x <- c(d + lubridate::hours(1L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::hours(i))
+
+  } else if(tolower(TimeUnit.) %chin% c('1min','1mins','1minute','1minutes')) {
+
+    x <- c(d + lubridate::minutes(1L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::minutes(i))
+
+  } else if(tolower(TimeUnit.) %chin% c('5min','5mins','5minute','5minutes')) {
+
+    x <- c(d + lubridate::minutes(5L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::minutes(i*5))
+
+  } else if(tolower(TimeUnit.) %chin% c('10min','10mins','10minute','10minutes')) {
+
+    x <- c(d + lubridate::minutes(10L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::minutes(i*10))
+
+  } else if(tolower(TimeUnit.) %chin% c('15min','15mins','15minute','15minutes')) {
+
+    x <- c(d + lubridate::minutes(15L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::minutes(i*15))
+
+  } else if(tolower(TimeUnit.) %chin% c('30min','30mins','30minute','30minutes')) {
+
+    x <- c(d + lubridate::minutes(1L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::minutes(i*30))
+
+  } else if(tolower(TimeUnit.) %chin% c('day','days')) {
+
+    x <- c(d + lubridate::days(1L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::days(i))
+
+  } else if(tolower(TimeUnit.) %chin% c('week','weeks')) {
+
+    x <- c(d + lubridate::weeks(1L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::weeks(i))
+
+  } else if(tolower(TimeUnit.) %chin% c('month','months')) {
+
+    x <- c(d %m+% months(1L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d %m+% months(i))
+
+  } else if(tolower(TimeUnit.) %chin% c('quarter','quarters')) {
+
+    x <- c(d %m+% months(1L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d %m+% months(3*i))
+
+  } else if(tolower(TimeUnit.) %chin% c('years','year')) {
+
+    x <- c(d + lubridate::years(1L)); for(i in seq_len(FC_Periods)[-1L]) x <- c(x, d + lubridate::years(i))
+
+  }
+
+  # Panel Case: Returns data.table
+  if(length(GroupVariables.) > 0L) {
+    y <- unique(UpdateData.[, .SD, .SDcols = 'GroupVar'])
+    x <- cbind(y, rep(x,y[,.N]))
+    data.table::setnames(x = x, old = names(x)[ncol(x)], DateColumnName.)
+    return(x)
+  }
+
+  # Time Series Case: returns vector
+  x <- data.table::as.data.table(x)
+  data.table::setnames(x = x, old = names(x)[ncol(x)], DateColumnName.)
+  return(x)
+}
+
+
+# Create a single sequence of dates
+# cj that with the dims
+# merge on max dates by dims
+# subset values > max dates
+
+# Pass on
+
+#' @param UpdateData. Passthrough
 #' @param GroupVariables. Passthrough
 #' @param CalendarFeatures. Passthrough
 #' @param CalendarVariables. Passthrough
@@ -1153,6 +1302,8 @@ NextTimePeriod <- function(UpdateData. = UpdateData,
 #' @param TimeUnit. Passthrough
 #' @param AnomalyDetection. Passthrough
 #' @param i. Passthrough
+#' @param Debug Passthrough
+#' @param RollingVars. Passthrough
 #'
 #' @noRd
 UpdateFeatures <- function(UpdateData. = NULL,
@@ -1173,152 +1324,305 @@ UpdateFeatures <- function(UpdateData. = NULL,
                            TimeUnit. = NULL,
                            AnomalyDetection. = NULL,
                            i. = i,
+                           RollingVars. = TRUE,
                            Debug = FALSE) {
 
-  if(Debug) print('UpdateFeatures 1')
 
-  # Merge groups vars
-  if(!is.null(GroupVariables.)) CalendarFeatures. <- cbind(unique(GroupVarVector.), CalendarFeatures.)
+  if(RollingVars.) {
 
-  if(Debug) print('UpdateFeatures 2')
+    if(Debug) print('UpdateFeatures 1')
 
-  # Update colname for date
-  data.table::setnames(CalendarFeatures., names(CalendarFeatures.)[ncol(CalendarFeatures.)], eval(DateColumnName.))
+    # Merge groups vars
+    if(!is.null(GroupVariables.)) CalendarFeatures. <- cbind(unique(GroupVarVector.), CalendarFeatures.)
 
-  if(Debug) print('UpdateFeatures 3')
+    if(Debug) print('UpdateFeatures 2')
 
-  # Merge XREGS if not null
-  if(!is.null(XREGS.)) {
-    if(!is.null(GroupVariables.)) {
-      if(Debug) print('UpdateFeatures 4')
-      CalendarFeatures. <- ModelDataPrep(data = CalendarFeatures., Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
-      CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = c('GroupVar', eval(DateColumnName.)), all = FALSE)
-    } else {
-      if(Debug) print('UpdateFeatures 4.1')
-      CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = eval(DateColumnName.), all = FALSE)
+    # Update colname for date
+    data.table::setnames(CalendarFeatures., names(CalendarFeatures.)[ncol(CalendarFeatures.)], eval(DateColumnName.))
+
+    if(Debug) print('UpdateFeatures 3')
+
+    # Merge XREGS if not null
+    if(!is.null(XREGS.)) {
+      if(!is.null(GroupVariables.)) {
+        if(Debug) print('UpdateFeatures 4')
+        CalendarFeatures. <- ModelDataPrep(data = CalendarFeatures., Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
+        CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = c('GroupVar', eval(DateColumnName.)), all = FALSE)
+      } else {
+        if(Debug) print('UpdateFeatures 4.1')
+        CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = eval(DateColumnName.), all = FALSE)
+      }
     }
-  }
 
-  if(Debug) print('UpdateFeatures 5')
+    if(Debug) print('UpdateFeatures 5')
 
-  # Add fouier terms
-  if(is.null(GroupVariables.) && FourierTerms. > 0) {
-    if(Debug) print('UpdateFeatures 6')
-    CalendarFeatures. <- merge(CalendarFeatures., FourierFC., by = DateColumnName., all = FALSE)
-  } else if(FourierTerms. > 0) {
-    if(Debug) print('UpdateFeatures 6.1')
-    if(!is.null(FourierFC.)) {
-      if(Debug) print('UpdateFeatures 6.2')
-      if(length(FourierFC.) != 0) CalendarFeatures. <- merge(CalendarFeatures., FourierFC., by = c('GroupVar',eval(DateColumnName.)), all = FALSE)
+    # Add fouier terms
+    if(is.null(GroupVariables.) && FourierTerms. > 0) {
+      if(Debug) print('UpdateFeatures 6')
+      CalendarFeatures. <- merge(CalendarFeatures., FourierFC., by = DateColumnName., all = FALSE)
+    } else if(FourierTerms. > 0) {
+      if(Debug) print('UpdateFeatures 6.1')
+      if(!is.null(FourierFC.)) {
+        if(Debug) print('UpdateFeatures 6.2')
+        if(length(FourierFC.) != 0) CalendarFeatures. <- merge(CalendarFeatures., FourierFC., by = c('GroupVar',eval(DateColumnName.)), all = FALSE)
+      }
     }
-  }
 
-  if(Debug) print('UpdateFeatures 7')
+    if(Debug) print('UpdateFeatures 7')
 
-  # Prepare for more feature engineering
-  if(!tolower(TimeGroups.[1L]) %chin% c('5min','10min','15min','30min','hour')) CalendarFeatures.[, eval(DateColumnName.) := data.table::as.IDate(get(DateColumnName.))]
+    # Prepare for more feature engineering
+    if(!tolower(TimeGroups.[1L]) %chin% c('5min','10min','15min','30min','hour')) CalendarFeatures.[, eval(DateColumnName.) := data.table::as.IDate(get(DateColumnName.))]
 
-  if(Debug) print('UpdateFeatures 8')
+    if(Debug) print('UpdateFeatures 8')
 
-  # Update calendar variables
-  if(!is.null(CalendarVariables.)) {
+    # Update calendar variables
+    if(!is.null(CalendarVariables.)) {
 
-    if(Debug) print('UpdateFeatures 9')
+      if(Debug) print('UpdateFeatures 9')
 
-    CalendarFeatures. <- CreateCalendarVariables(
-      data = CalendarFeatures.,
-      DateCols = eval(DateColumnName.),
-      AsFactor = FALSE,
-      TimeUnits = CalendarVariables.)
-  }
-
-  if(Debug) print('UpdateFeatures 10')
-
-  # Update Time Trend feature
-  if(TimeTrendVariable.) CalendarFeatures.[, TimeTrend := eval(N.) + 1]
-
-  if(Debug) print('UpdateFeatures 11')
-
-  # Prepare data for scoring
-  for(zz in seq_along(TargetColumnName.)) {
-    if(Debug) print('UpdateFeatures 12')
-    if(zz == 1) temp <- cbind(CalendarFeatures., 1) else temp <- cbind(temp, 1)
-    if(Debug) print('UpdateFeatures 12.1')
-    data.table::setnames(temp, 'V2', c(eval(TargetColumnName.[zz])))
-  }
-
-  if(Debug) print('UpdateFeatures 13')
-
-  if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
-
-  if(Debug) print('UpdateFeatures 14')
-
-  if(any(class(temp[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) temp[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
-
-  if(Debug) print('UpdateFeatures 15')
-
-  UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
-
-  if(Debug) print('UpdateFeatures 16')
-
-  # Update holiday feature
-  if(!is.null(HolidayVariable.) && any(is.na(UpdateData.[['HolidayCounts']]))) {
-
-    if(Debug) print('UpdateFeatures 17')
-
-    print('Update Features 17.a')
-    print(HolidayLookback.)
-    print(TimeUnit.)
-
-    if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else if(!is.null(TimeUnit.)) LBD <- LB(TimeUnit.) else LBD <- 1L
-    if(is.null(GroupVariables.)) {
-
-      if(Debug) print('UpdateFeatures 18')
-
-      temp <- UpdateData.[(.N-LBD):.N]
-
-      if(Debug) print('UpdateFeatures 19')
-
-      UpdateData. <- UpdateData.[1:(.N-LBD-1)]
-
-      if(Debug) print('UpdateFeatures 20')
-
-      temp <- CreateHolidayVariables(
-        temp,
+      CalendarFeatures. <- CreateCalendarVariables(
+        data = CalendarFeatures.,
         DateCols = eval(DateColumnName.),
-        LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
-        HolidayGroups = HolidayVariable.,
-        Holidays = NULL)
-
-      if(Debug) print('UpdateFeatures 21')
-
-      UpdateData. <- data.table::rbindlist(list(UpdateData., temp))
-
-      if(Debug) print('UpdateFeatures 22')
-
-    } else {
-      print("Update Features 17.b holiday variables create")
-      UpdateData. <- CreateHolidayVariables(
-        UpdateData.,
-        DateCols = eval(DateColumnName.),
-        LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else if(!is.null(TimeUnit.)) LB(TimeUnit.) else 1L,
-        HolidayGroups = HolidayVariable.,
-        Holidays = NULL)
+        AsFactor = FALSE,
+        TimeUnits = CalendarVariables.)
     }
+
+    if(Debug) print('UpdateFeatures 10')
+
+    # Update Time Trend feature
+    if(TimeTrendVariable.) CalendarFeatures.[, TimeTrend := eval(N.) + 1]
+
+    if(Debug) print('UpdateFeatures 11')
+
+    # Prepare data for scoring
+    for(zz in seq_along(TargetColumnName.)) {
+      if(Debug) print('UpdateFeatures 12')
+      if(zz == 1) temp <- cbind(CalendarFeatures., 1) else temp <- cbind(temp, 1)
+      if(Debug) print('UpdateFeatures 12.1')
+      data.table::setnames(temp, 'V2', c(eval(TargetColumnName.[zz])))
+    }
+
+    if(Debug) print('UpdateFeatures 13')
+
+    if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
+
+    if(Debug) print('UpdateFeatures 14')
+
+    if(any(class(temp[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) temp[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
+
+    if(Debug) print('UpdateFeatures 15')
+
+    UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
+
+    if(Debug) print('UpdateFeatures 16')
+
+    # Update holiday feature
+    if(!is.null(HolidayVariable.) && any(is.na(UpdateData.[['HolidayCounts']]))) {
+
+      if(Debug) print('UpdateFeatures 17')
+
+      print('Update Features 17.a')
+      print(HolidayLookback.)
+      print(TimeUnit.)
+
+      if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else if(!is.null(TimeUnit.)) LBD <- LB(TimeUnit.) else LBD <- 1L
+      if(is.null(GroupVariables.)) {
+
+        if(Debug) print('UpdateFeatures 18')
+
+        temp <- UpdateData.[(.N-LBD):.N]
+
+        if(Debug) print('UpdateFeatures 19')
+
+        UpdateData. <- UpdateData.[1:(.N-LBD-1)]
+
+        if(Debug) print('UpdateFeatures 20')
+
+        temp <- CreateHolidayVariables(
+          temp,
+          DateCols = eval(DateColumnName.),
+          LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
+          HolidayGroups = HolidayVariable.,
+          Holidays = NULL)
+
+        if(Debug) print('UpdateFeatures 21')
+
+        UpdateData. <- data.table::rbindlist(list(UpdateData., temp))
+
+        if(Debug) print('UpdateFeatures 22')
+
+      } else {
+        print("Update Features 17.b holiday variables create")
+        UpdateData. <- CreateHolidayVariables(
+          UpdateData.,
+          DateCols = eval(DateColumnName.),
+          LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else if(!is.null(TimeUnit.)) LB(TimeUnit.) else 1L,
+          HolidayGroups = HolidayVariable.,
+          Holidays = NULL)
+      }
+    }
+
+    if(Debug) print('UpdateFeatures 23')
+
+    # Update Anomaly Detection
+    if(i. > 1 && !is.null(AnomalyDetection.)) {
+      if(Debug) print('UpdateFeatures 24')
+      UpdateData.[, ':=' (AnomHigh = 0, AnomLow = 0)]
+    }
+
+    if(Debug) print('UpdateFeatures done')
+
+    # Return
+    return(UpdateData = UpdateData.)
+
+  } else {
+
+    if(Debug) print('UpdateFeatures 1')
+
+    # Merge groups vars
+    if(!is.null(GroupVariables.)) CalendarFeatures. <- cbind(unique(GroupVarVector.), CalendarFeatures.)
+
+    if(Debug) print('UpdateFeatures 2')
+
+    # Update colname for date
+    data.table::setnames(CalendarFeatures., names(CalendarFeatures.)[ncol(CalendarFeatures.)], eval(DateColumnName.))
+
+    if(Debug) print('UpdateFeatures 3')
+
+    # Merge XREGS if not null
+    if(!is.null(XREGS.)) {
+      if(!is.null(GroupVariables.)) {
+        if(Debug) print('UpdateFeatures 4')
+        CalendarFeatures. <- ModelDataPrep(data = CalendarFeatures., Impute = FALSE, CharToFactor = FALSE, FactorToChar = TRUE, IntToNumeric = FALSE, DateToChar = FALSE, RemoveDates = FALSE, MissFactor = '0', MissNum = -1, IgnoreCols = NULL)
+        CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = c('GroupVar', eval(DateColumnName.)), all = FALSE)
+      } else {
+        if(Debug) print('UpdateFeatures 4.1')
+        CalendarFeatures. <- merge(CalendarFeatures., XREGS., by = eval(DateColumnName.), all = FALSE)
+      }
+    }
+
+    if(Debug) print('UpdateFeatures 5')
+
+    # Add fouier terms
+    if(is.null(GroupVariables.) && FourierTerms. > 0) {
+      if(Debug) print('UpdateFeatures 6')
+      CalendarFeatures. <- merge(CalendarFeatures., FourierFC., by = DateColumnName., all = FALSE)
+    } else if(FourierTerms. > 0) {
+      if(Debug) print('UpdateFeatures 6.1')
+      if(!is.null(FourierFC.)) {
+        if(Debug) print('UpdateFeatures 6.2')
+        if(length(FourierFC.) != 0) CalendarFeatures. <- merge(CalendarFeatures., FourierFC., by = c('GroupVar',eval(DateColumnName.)), all = FALSE)
+      }
+    }
+
+    if(Debug) print('UpdateFeatures 7')
+
+    # Prepare for more feature engineering
+    if(!tolower(TimeGroups.[1L]) %chin% c('5min','10min','15min','30min','hour')) CalendarFeatures.[, eval(DateColumnName.) := data.table::as.IDate(get(DateColumnName.))]
+
+    if(Debug) print('UpdateFeatures 8')
+
+    # Update calendar variables
+    if(!is.null(CalendarVariables.)) {
+
+      if(Debug) print('UpdateFeatures 9')
+
+      CalendarFeatures. <- CreateCalendarVariables(
+        data = CalendarFeatures.,
+        DateCols = eval(DateColumnName.),
+        AsFactor = FALSE,
+        TimeUnits = CalendarVariables.)
+    }
+
+    if(Debug) print('UpdateFeatures 10')
+
+    # Update Time Trend feature
+    if(TimeTrendVariable.) CalendarFeatures.[, TimeTrend := eval(N.) + 1]
+
+    if(Debug) print('UpdateFeatures 11')
+
+    # Prepare data for scoring
+    for(zz in seq_along(TargetColumnName.)) {
+      if(Debug) print('UpdateFeatures 12')
+      if(zz == 1) temp <- cbind(CalendarFeatures., 1) else temp <- cbind(temp, 1)
+      if(Debug) print('UpdateFeatures 12.1')
+      data.table::setnames(temp, 'V2', c(eval(TargetColumnName.[zz])))
+    }
+
+    if(Debug) print('UpdateFeatures 13')
+
+    if(any(class(UpdateData.[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) UpdateData.[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
+
+    if(Debug) print('UpdateFeatures 14')
+
+    if(any(class(temp[[eval(DateColumnName.)]]) %chin% c('POSIXct','POSIXt','IDate'))) temp[, eval(DateColumnName.) := as.Date(get(DateColumnName.))]
+
+    if(Debug) print('UpdateFeatures 15')
+
+    UpdateData. <- data.table::rbindlist(list(UpdateData., temp), fill = TRUE)
+
+    if(Debug) print('UpdateFeatures 16')
+
+    # Update holiday feature
+    if(!is.null(HolidayVariable.) && any(is.na(UpdateData.[['HolidayCounts']]))) {
+
+      if(Debug) print('UpdateFeatures 17')
+
+      print('Update Features 17.a')
+      print(HolidayLookback.)
+      print(TimeUnit.)
+
+      if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else if(!is.null(TimeUnit.)) LBD <- LB(TimeUnit.) else LBD <- 1L
+      if(is.null(GroupVariables.)) {
+
+        if(Debug) print('UpdateFeatures 18')
+
+        temp <- UpdateData.[(.N-LBD):.N]
+
+        if(Debug) print('UpdateFeatures 19')
+
+        UpdateData. <- UpdateData.[1:(.N-LBD-1)]
+
+        if(Debug) print('UpdateFeatures 20')
+
+        temp <- CreateHolidayVariables(
+          temp,
+          DateCols = eval(DateColumnName.),
+          LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else LB(TimeUnit.),
+          HolidayGroups = HolidayVariable.,
+          Holidays = NULL)
+
+        if(Debug) print('UpdateFeatures 21')
+
+        UpdateData. <- data.table::rbindlist(list(UpdateData., temp))
+
+        if(Debug) print('UpdateFeatures 22')
+
+      } else {
+        print("Update Features 17.b holiday variables create")
+        UpdateData. <- CreateHolidayVariables(
+          UpdateData.,
+          DateCols = eval(DateColumnName.),
+          LookbackDays = if(!is.null(HolidayLookback.)) HolidayLookback. else if(!is.null(TimeUnit.)) LB(TimeUnit.) else 1L,
+          HolidayGroups = HolidayVariable.,
+          Holidays = NULL)
+      }
+    }
+
+    if(Debug) print('UpdateFeatures 23')
+
+    # Update Anomaly Detection
+    if(i. > 1 && !is.null(AnomalyDetection.)) {
+      if(Debug) print('UpdateFeatures 24')
+      UpdateData.[, ':=' (AnomHigh = 0, AnomLow = 0)]
+    }
+
+    if(Debug) print('UpdateFeatures done')
+
+    # Return
+    return(UpdateData = UpdateData.)
+
   }
-
-  if(Debug) print('UpdateFeatures 23')
-
-  # Update Anomaly Detection
-  if(i. > 1 && !is.null(AnomalyDetection.)) {
-    if(Debug) print('UpdateFeatures 24')
-    UpdateData.[, ':=' (AnomHigh = 0, AnomLow = 0)]
-  }
-
-  if(Debug) print('UpdateFeatures done')
-
-  # Return
-  return(UpdateData = UpdateData.)
 }
 
 #' @title CarmaTimeSeriesScorePrep
@@ -2153,11 +2457,7 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
   print("CarmaReturnDataPrep 4.7")
 
   # Remove target variables values on FC periods
-  if(!is.null(GroupVariables.)) {
-    UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := NA, by = 'GroupVar']
-  } else {
-    UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := NA]
-  }
+  data.table::set(x = UpdateData., i = which(!UpdateData.[[DateColumnName.]] %in% FutureDateData.), j = eval(TargetColumnName.), value = NA)
 
   print("CarmaReturnDataPrep 4.8")
 

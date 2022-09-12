@@ -29,7 +29,7 @@ FillNow <- FALSE
 # run = 117
 # run = 125
 
-# run = 69
+# run = 16
 for(run in seq_len(QA_Results[,.N])) {
 
   # Data ----
@@ -166,8 +166,8 @@ for(run in seq_len(QA_Results[,.N])) {
     HolidayMovingAverages = NULL, #c(2,3),
 
     # Lags, moving averages, and other rolling stats
-    Lags = list("weeks" = c(1:5), "months" = c(1:3)),
-    MA_Periods = list("weeks" = c(2:5), "months" = c(2,3)),
+    Lags = NULL, # list("weeks" = c(1:5), "months" = c(1:3)),
+    MA_Periods = NULL,  #list("weeks" = c(2:5), "months" = c(2,3)),
     SD_Periods = NULL,
     Skew_Periods = NULL,
     Kurt_Periods = NULL,
@@ -263,7 +263,8 @@ QA_Results[, RunTime := 123.456]
 QA_Results[, DateTime := Sys.time()]
 QA_Results[, Mixed := data.table::fifelse(runif(.N) < 0.5, TRUE, FALSE)]
 
-run = 69
+run = 5
+
 
 # Data ----
 if(QA_Results[run, Group] == 0L) {
@@ -277,12 +278,12 @@ if(QA_Results[run, Group] == 0L) {
 }
 
 # Unequal Start Dates
-data[Store == 1 & Date < "2010-05-05", ID := 'REMOVE']
-data[is.na(ID), ID := 'KEEP']
-data <- data[ID == 'KEEP'][, ID := NULL]
-data[Store == 1 & Date > "2011-11-30", ID := 'REMOVE']
-data[is.na(ID), ID := 'KEEP']
-data <- data[ID == 'KEEP'][, ID := NULL]
+#data[Store == 1 & Date < "2010-05-05", ID := 'REMOVE']
+#data[is.na(ID), ID := 'KEEP']
+#data <- data[ID == 'KEEP'][, ID := NULL]
+#data[Store == 1 & Date > "2011-11-30", ID := 'REMOVE']
+#data[is.na(ID), ID := 'KEEP']
+#data <- data[ID == 'KEEP'][, ID := NULL]
 
 # xregs
 if(QA_Results[run, xregs] == 0L) {
@@ -390,7 +391,7 @@ HierarchGroups = NULL
 GroupVariables = groupvariables
 EncodingMethod = 'MEOW' #'target_encoding' #'credibility'
 TimeUnit = "weeks"
-TimeGroups = c("weeks","months")
+TimeGroups = "weeks"
 TrainOnFull = TOF
 SplitRatios = c(1 - 10 / 100, 10 / 100)
 PartitionType = "random"
@@ -407,10 +408,10 @@ RoundPreds = FALSE
 CalendarVariables = c("week","wom","month","quarter")
 HolidayVariable = c("USPublicHolidays")
 HolidayLookback = 7
-HolidayLags = c(1,2,3)
-HolidayMovingAverages = c(2,3)
-Lags = list("weeks" = c(1:5), "months" = c(1:3))
-MA_Periods = list("weeks" = c(2:5), "months" = c(2,3))
+HolidayLags = NULL # c(1,2,3)
+HolidayMovingAverages = NULL #c(2,3)
+Lags = NULL # list("weeks" = c(1:5), "months" = c(1:3))
+MA_Periods = NULL # list("weeks" = c(2:5), "months" = c(2,3))
 SD_Periods = NULL
 Skew_Periods = NULL
 Kurt_Periods = NULL
@@ -451,6 +452,31 @@ SubSample = NULL
 ScoreFunction = "Cosine"
 MinDataInLeaf = 1
 ReturnShap = FALSE
+
+
+
+
+
+# GroupVarVector.=GroupVarVector
+# UpdateData.=UpdateData
+# GroupVariables.=GroupVariables
+# CalendarFeatures.=CalendarFeatures
+# CalendarVariables.=CalendarVariables
+# DateColumnName.=DateColumnName
+# XREGS.=XREGS
+# FourierTerms.=FourierTerms
+# FourierFC.=FourierFC
+# TimeGroups.=TimeGroups
+# TimeTrendVariable.=TimeTrendVariable
+# N.=N
+# TargetColumnName.=TargetColumnName
+# HolidayVariable.=HolidayVariable
+# HolidayLookback.=HolidayLookback
+# TimeUnit.=TimeUnit
+# AnomalyDetection.=AnomalyDetection
+# i.=i
+# Debug = DebugMode
+
 
 
 
@@ -629,25 +655,26 @@ ReturnShap = FALSE
 
 
 
-# # Carma score ----
-Type = 'catboost'
-i.=i
-N.=N
-GroupVariables.=GroupVariables
-ModelFeatures.=ModelFeatures
-HierarchGroups.=HierarchGroups
-DateColumnName.=DateColumnName
-Difference.=Difference
-TargetColumnName.=TargetColumnName
-Step1SCore.=Step1SCore
-Model.=Model
-FutureDateData.=FutureDateData
-NonNegativePred.=NonNegativePred
-UpdateData.=UpdateData
-FactorList.= TestModel$FactorLevelsList
-EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
-dt = data
-RoundPreds. = TRUE
+# Carma score ----
+# Type = 'catboost'
+# i.=2
+# N.=N
+# GroupVariables.=GroupVariables
+# ModelFeatures.=ModelFeatures
+# HierarchGroups.=HierarchGroups
+# DateColumnName.=DateColumnName
+# Difference.=Difference
+# TargetColumnName.=TargetColumnName
+# Step1SCore.=Step1SCore
+# Model.=Model
+# FutureDateData.=FutureDateData
+# NonNegativePred.=NonNegativePred
+# UpdateData.=UpdateData
+# FactorList.= TestModel$FactorLevelsList
+# EncodingMethod. = TestModel$FactorLevelsList$EncodingMethod
+# dt = data
+# RoundPreds. = TRUE
+
 
 
 
@@ -680,6 +707,8 @@ RoundPreds. = TRUE
 # MDP_MissNum = -1
 
 
+
+
 # i == 2 ----
 # TargetType = 'regression'
 # ScoringData = temp
@@ -703,6 +732,9 @@ RoundPreds. = TRUE
 # MDP_RemoveDates = TRUE
 # MDP_MissFactor = '0'
 # MDP_MissNum = -1
+
+
+
 
 
 

@@ -350,10 +350,10 @@ AutoH2OCARMA <- function(AlgoType = "drf",
   # Feature Engineering: Add Zero Padding for missing dates ----
   if(DebugMode) print("Feature Engineering: Add Zero Padding for missing dates----")
   if(data[, .N] != unique(data)[, .N]) stop("There is duplicates in your data")
-  if(!is.null(ZeroPadSeries)) {
+  if(!is.null(ZeroPadSeries) && length(GroupVariables) > 0L) {
     data <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType=ZeroPadSeries, MaxMissingPercent=0.0, SimpleImpute=FALSE)
     data <- ModelDataPrep(data=data, Impute=TRUE, CharToFactor=FALSE, FactorToChar=FALSE, IntToNumeric=FALSE, LogicalToBinary=FALSE, DateToChar=FALSE, RemoveDates=FALSE, MissFactor="0", MissNum=0, IgnoreCols=NULL)
-  } else {
+  } else if(length(GroupVariables) > 0L) {
     temp <- TimeSeriesFill(data, DateColumnName=eval(DateColumnName), GroupVariables=GroupVariables, TimeUnit=TimeUnit, FillType="maxmax", MaxMissingPercent=0.25, SimpleImpute=FALSE)
     if(temp[,.N] != data[,.N]) stop("There are missing dates in your series. You can utilize the ZeroPadSeries argument to handle this or manage it before running the function")
   }
