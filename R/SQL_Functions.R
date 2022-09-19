@@ -1166,11 +1166,11 @@ PostGRE_RemoveCreateAppend <- function(data = NULL,
       User = User.,
       Port = Port.,
       Password = Password.)
-    }, error = function(x) NULL)
+    }, error = function(x) print("Table does not exist"))
 
   # Create
   tryCatch({
-    PostGRE_CreateTable(
+    RemixAutoML::PostGRE_CreateTable(
       data = data,
       DBName = DBName.,
       Schema = Schema.,
@@ -1182,7 +1182,7 @@ PostGRE_RemoveCreateAppend <- function(data = NULL,
       User = User.,
       Port = Port.,
       Password = Password.)
-  }, error = function(x) NULL)
+  }, error = function(x) print("Error is creating table"))
 
   # Add data
   tryCatch({
@@ -1197,7 +1197,7 @@ PostGRE_RemoveCreateAppend <- function(data = NULL,
       User = User.,
       Port = Port.,
       Password = Password.)
-  }, error = function(x) NULL)
+  }, error = function(x) print("Error in saving data to new table"))
 }
 
 #' @title PostGRE_ListTables
