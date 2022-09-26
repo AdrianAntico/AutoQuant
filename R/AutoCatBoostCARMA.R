@@ -761,9 +761,7 @@ AutoCatBoostCARMA <- function(data,
 
     if(DebugMode) print("ARIMA FORECAST: length(Lags) > 0L")
 
-    # i = 1
-    # i = 2
-    # i = 3
+    # i = 1; # i = 2; # i = 3
     for(i in seq_len(FC_Periods+1L)) {
 
       # Score model ----
@@ -780,10 +778,7 @@ AutoCatBoostCARMA <- function(data,
 
         # Timer ----
         if(DebugMode) print('Timer----')
-        if(Timer) {
-          if(i != 1) print(paste('Forecast future step: ', i-1))
-          starttime <- Sys.time()
-        }
+        if(Timer) {if(i != 1) print(paste('Forecast future step: ', i-1)); starttime <- Sys.time()}
 
         # Create single future record ----
         if(DebugMode) print('Create single future record ----')
@@ -801,7 +796,6 @@ AutoCatBoostCARMA <- function(data,
         if(Timer) endtime <- Sys.time()
         if(Timer && i != 1) print(endtime - starttime)
       }
-
     }
 
   } else {
