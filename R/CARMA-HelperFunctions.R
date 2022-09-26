@@ -1165,7 +1165,7 @@ CarmaScore <- function(Type = 'catboost',
 NextTimePeriod <- function(UpdateData. = UpdateData,
                            TimeUnit. = TimeUnit,
                            DateColumnName. = DateColumnName) {
-  d <- max(UpdateData.)
+  d <- max(UpdateData.[[DateColumnName.]])
   if(tolower(TimeUnit.) %chin% c('hour','hours')) {
     CalendarFeatures <- data.table::as.data.table(d + lubridate::hours(1))
   } else if(tolower(TimeUnit.) %chin% c('1min','1mins','1minute','1minutes')) {

@@ -757,13 +757,13 @@ AutoCatBoostCARMA <- function(data,
 
   # ARMA PROCESS FORECASTING ----
   if(DebugMode) print('ARMA PROCESS FORECASTING ----')
-  # i = 1
-  # i = 2
-  # i = 3
   if(length(Lags) > 0L && all(Lags != 0) || (length(MA_Periods) > 0L && all(MA_Periods != 0))) {
 
     if(DebugMode) print("ARIMA FORECAST: length(Lags) > 0L")
 
+    # i = 1
+    # i = 2
+    # i = 3
     for(i in seq_len(FC_Periods+1L)) {
 
       # Score model ----
@@ -787,7 +787,7 @@ AutoCatBoostCARMA <- function(data,
 
         # Create single future record ----
         if(DebugMode) print('Create single future record ----')
-        CalendarFeatures <- NextTimePeriod(UpdateData.=FutureDateData, TimeUnit.=TimeUnit, DateColumnName.=DateColumnName)
+        CalendarFeatures <- NextTimePeriod(UpdateData.=UpdateData, TimeUnit.=TimeUnit, DateColumnName.=DateColumnName)
 
         # Update flat feature engineering ----
         if(DebugMode) print('Update feature engineering ----')
