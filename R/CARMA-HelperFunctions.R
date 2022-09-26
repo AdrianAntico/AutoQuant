@@ -506,20 +506,17 @@ CarmaPartition <- function(data. = data,
 
     # Remove ID Column
     if('ID' %chin% names(data.)) data.table::set(data., j = 'ID', value = NULL)
-  }
-
-  # Variables for CARMA function: Define data sets
-  if(!is.null(SplitRatios.) || !TrainOnFull.) {
     train <- DataSets$TrainData
     valid <- DataSets$ValidationData
     if(NumSets. == 2L) test  <- NULL else test <- DataSets$TestData
-    rm(DataSets)
+    return(list(train = train, valid = valid, test = test, data = data.))
+
   } else {
     train <- data.
     valid <- NULL
     test  <- NULL
+    return(list(train = train, valid = valid, test = test, data = data.))
   }
-  return(list(train = train, valid = valid, test = test, data = data.))
 }
 
 #' @param data. Passthrough

@@ -760,7 +760,9 @@ AutoCatBoostCARMA <- function(data,
   # i = 1
   # i = 2
   # i = 3
-  if(length(Lags) > 0L) {
+  if(length(Lags) > 0L && all(Lags != 0) || (length(MA_Periods) > 0L && all(MA_Periods != 0))) {
+
+    if(DebugMode) print("ARIMA FORECAST: length(Lags) > 0L")
 
     for(i in seq_len(FC_Periods+1L)) {
 
@@ -804,18 +806,25 @@ AutoCatBoostCARMA <- function(data,
 
   } else {
 
+    if(DebugMode) print("!ARIMA FORECAST: length(Lags) == 0L")
+
     # Prepare data
     if(DebugMode) print('# Prepare data')
     if(length(GroupVariables) > 0L) {
-      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = 5, GroupVariables. = GroupVariables, SkipPeriods = NULL)
+      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = FC_Periods, GroupVariables. = GroupVariables, SkipPeriods = NULL)
+      if(DebugMode) print(UpdateData)
       UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
+      if(DebugMode) print(UpdateData)
     } else {
-      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = 5, GroupVariables. = NULL, SkipPeriods = NULL)
+      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = FC_Periods, GroupVariables. = NULL, SkipPeriods = NULL)
+      if(DebugMode) print(UpdateData)
       UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
+      if(DebugMode) print(UpdateData)
     }
 
     # Score Future
     UpdateData <- CarmaScore(Type = 'catboost', i. = 0L, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
+    if(DebugMode) print(UpdateData)
 
     # Update data for next prediction ----
     if(DebugMode) print('Update data for next prediction ----')
