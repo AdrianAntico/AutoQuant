@@ -921,10 +921,10 @@ AutoLightGBMCARMA <- function(data = NULL,
     # Prepare data
     if(DebugMode) print('Score model ----')
     if(length(GroupVariables) > 0L) {
-      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = 5, GroupVariables. = GroupVariables, SkipPeriods = NULL)
+      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = FC_Periods, GroupVariables. = GroupVariables, SkipPeriods = NULL)
       UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
     } else {
-      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = 5, GroupVariables. = NULL, SkipPeriods = NULL)
+      UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = FC_Periods, GroupVariables. = NULL, SkipPeriods = NULL)
       UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i, Debug = DebugMode)
     }
 
