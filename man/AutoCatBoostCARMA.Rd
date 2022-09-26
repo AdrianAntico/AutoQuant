@@ -22,7 +22,7 @@ AutoCatBoostCARMA(
   NumOfParDepPlots = 10L,
   EncodingMethod = "target_encoding",
   TargetTransformation = FALSE,
-  Methods = c("Standardize", "Asinh", "Log", "LogPlus1", "Sqrt"),
+  Methods = c("Asinh", "Log", "LogPlus1", "Sqrt"),
   AnomalyDetection = NULL,
   XREGS = NULL,
   Lags = NULL,
