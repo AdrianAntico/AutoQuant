@@ -76,7 +76,8 @@ AutoCatBoostCARMA(
   MinDataInLeaf = 1,
   ReturnShap = FALSE,
   SaveModel = FALSE,
-  ArgsList = NULL
+  ArgsList = NULL,
+  ExpandEncoding = FALSE
 )
 }
 \arguments{
@@ -221,6 +222,8 @@ AutoCatBoostCARMA(
 \item{SaveModel}{Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object}
 
 \item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object}
+
+\item{ExpandEncoding}{= FALSE}
 }
 \value{
 See examples

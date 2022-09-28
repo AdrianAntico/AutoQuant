@@ -76,6 +76,7 @@
 #' @param MinDataInLeaf Defaults to 1. Used if GrowPolicy is not SymmetricTree
 #' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
 #' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
+#' @param ExpandEncoding = FALSE
 #' @examples
 #' \dontrun{
 #'
@@ -386,7 +387,8 @@ AutoCatBoostCARMA <- function(data,
                               MinDataInLeaf = 1,
                               ReturnShap = FALSE,
                               SaveModel = FALSE,
-                              ArgsList = NULL) {
+                              ArgsList = NULL,
+                              ExpandEncoding = FALSE) {
 
   if(DebugMode) print(data)
 
@@ -451,8 +453,12 @@ AutoCatBoostCARMA <- function(data,
   HoldOutPeriods <- Output$HoldOutPeriods; rm(Output)
 
   # Merge data and XREG for Training ----
-  if(DebugMode) print('merging xregs to data')
-  if(!is.null(XREGS)) {
+  if(DebugMode) print('xregs management')
+  if(length(XREGS) == 0L && 'Rappture' %in% installed.packages() && ExpandEncoding) {
+    Output <- Rappture:::FC.XREGS(data,TargetColumnName, DateColumnName,FC_Periods,TimeUnit,gv = GroupVariables, xrs = XREGS, em = 'MEOW', wd = SaveDataPath, db = DebugMode)
+    data <- Output$data; Output$data <- NULL
+    XREGS <- Output$XREGS; rm(Output)
+  } else if(!is.null(XREGS)) {
     Output <- CarmaMergeXREGS(data.=data, XREGS.=XREGS, TargetColumnName.=TargetColumnName, GroupVariables.=GroupVariables, DateColumnName.=DateColumnName)
     data <- Output$data; Output$data <- NULL
     XREGS <- Output$XREGS; rm(Output)

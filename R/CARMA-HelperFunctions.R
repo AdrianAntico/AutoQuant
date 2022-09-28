@@ -1259,9 +1259,17 @@ FutureTimePeriods <- function(UpdateData. = UpdateData,
 
   }
 
-  # Panel Case: Returns data.table
-  if(length(GroupVariables.) > 0L) {
+  # IF:
+  #     Panel Case: Returns data.table
+  # ELSE IF:
+  #     used for XREGS Management at beginning of CARMA. Need to figure out the max_date for the forecast horizon
+  if(length(GroupVariables.) > 0L && 'GroupVar' %in% names(UpdateData.)) {
     y <- unique(UpdateData.[, .SD, .SDcols = 'GroupVar'])
+    x <- cbind(y, rep(x,y[,.N]))
+    data.table::setnames(x = x, old = names(x)[ncol(x)], DateColumnName.)
+    return(x)
+  } else if(length(GroupVariables.) > 0L) {
+    y <- unique(UpdateData.[, .SD, .SDcols = GroupVariables.])
     x <- cbind(y, rep(x,y[,.N]))
     data.table::setnames(x = x, old = names(x)[ncol(x)], DateColumnName.)
     return(x)
