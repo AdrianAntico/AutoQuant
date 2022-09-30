@@ -89,8 +89,6 @@ ScatterCopula <- function(data = NULL,
   c1 <- as.numeric(data[,.N])
   c2 <- as.numeric(SampleCount)
   if(!is.null(SampleCount)) if(c1 > c2) temp <- data[order(runif(.N))][seq_len(SampleCount)] else temp <- data
-
-  temp <- data[order(runif(.N))][seq_len(min(SampleCount, .N))][, .SD, .SDcols = unique(c(y_var, x_var, GroupVariable, FacetRow, FacetCol, SizeVar1))]
   temp[, Var1 := data.table::frank(get(y_var)) * (1 / 0.001) / .N * 0.001]
   temp[, Var2 := data.table::frank(get(x_var)) * (1 / 0.001) / .N * 0.001]
 
