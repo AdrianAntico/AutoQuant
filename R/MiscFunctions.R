@@ -1,7 +1,10 @@
-#' PrintToPDF
+#' @title PrintToPDF
+#'
+#' @description Print a list of elements to pdf
 #'
 #' @author Adrian Antico
 #' @family Misc
+#'
 #' @param Path Path file to the location where you want your pdf saved
 #' @param OutputName Supply a name for the file you want saved
 #' @param ObjectList List of objects to print to pdf
@@ -13,6 +16,7 @@
 #' @param Paper 'USr' for landscape. 'special' means that Width and Height are used to determine page size
 #' @param BackgroundColor Default is 'transparent'
 #' @param ForegroundColor Default is 'black'
+#'
 #' @noRd
 PrintToPDF <- function(Path,
                        OutputName,

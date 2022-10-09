@@ -40,7 +40,9 @@ AutoXGBoostMultiClass(
   max_depth = NULL,
   min_child_weight = NULL,
   subsample = NULL,
-  colsample_bytree = NULL
+  colsample_bytree = NULL,
+  alpha = 0,
+  lambda = 1
 )
 }
 \arguments{
@@ -115,6 +117,10 @@ AutoXGBoostMultiClass(
 \item{subsample}{Number, or vector for subsample to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
 
 \item{colsample_bytree}{Number, or vector for colsample_bytree to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
+
+\item{alpha}{0. L1 Reg.}
+
+\item{lambda}{1. L2 Reg.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvaluationMetrics.csv, GridCollect, GridList, and TargetLevels

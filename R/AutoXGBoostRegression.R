@@ -45,6 +45,8 @@
 #' @param min_child_weight Number, or vector for min_child_weight to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(1.0, 10.0, 1.0)
 #' @param subsample Number, or vector for subsample to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)
 #' @param colsample_bytree Number, or vector for colsample_bytree to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)
+#' @param alpha 0. L1 Reg.
+#' @param lambda 1. L2 Reg.
 #' @examples
 #' \dontrun{
 #' # Create some dummy correlated data
@@ -154,7 +156,9 @@ AutoXGBoostRegression <- function(OutputSelection = c('Importances', 'EvalPlots'
                                   max_depth = NULL,
                                   min_child_weight = NULL,
                                   subsample = NULL,
-                                  colsample_bytree = NULL) {
+                                  colsample_bytree = NULL,
+                                  alpha = 0,
+                                  lambda = 1) {
 
   # Check args ----
   if(DebugMode) print("Check args ----")

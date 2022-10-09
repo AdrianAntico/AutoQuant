@@ -41,6 +41,8 @@
 #' @param MaxRunMinutes In minutes
 #' @param BaselineComparison Set to either "default" or "best". Default is to compare each successive model build to the baseline model using max trees (from function args). Best makes the comparison to the current best model.
 #' @param DebugMode Set to TRUE to get a print out of the steps taken internally
+#' @param alpha 0. L1 Reg.
+#' @param lambda 1. L2 Reg.
 #' @examples
 #' \dontrun{
 # Create some dummy correlated data
@@ -142,7 +144,9 @@ AutoXGBoostMultiClass <- function(OutputSelection = c("Importances", "EvalPlots"
                                   max_depth = NULL,
                                   min_child_weight = NULL,
                                   subsample = NULL,
-                                  colsample_bytree = NULL) {
+                                  colsample_bytree = NULL,
+                                  alpha = 0,
+                                  lambda = 1) {
 
   # ----
 

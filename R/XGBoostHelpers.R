@@ -654,6 +654,8 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
 #' @param PassInGrid. Passthrough
 #' @param BestGrid. Passthrough
 #' @param Trees. Passthrough
+#' @param Alpha. Passthrough
+#' @param Lambda. = Lambda Passthrough
 #' @param NumLevels. Passthrough
 #'
 #' @noRd
@@ -666,10 +668,14 @@ XGBoostFinalParams <- function(GridTune.=GridTune,
                                TreeMethod.=TreeMethod,
                                BestGrid.=BestGrid,
                                Trees.=Trees,
+                               Alpha. = Alpha,
+                               Lambda. = Lambda,
                                NumLevels. = NumLevels) {
 
   # Parameter list
   base_params <- list()
+  base_params$alpha <- Alpha.
+  base_params$lambda <- Lambda.
   base_params$booster <- 'gbtree'
   base_params$objective <- LossFunction.
   base_params$eval_metric <- tolower(eval_metric.)

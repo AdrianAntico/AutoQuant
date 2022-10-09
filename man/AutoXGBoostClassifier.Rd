@@ -42,7 +42,9 @@ AutoXGBoostClassifier(
   min_child_weight = 1,
   subsample = 1,
   colsample_bytree = 1,
-  DebugMode = FALSE
+  DebugMode = FALSE,
+  alpha = 0,
+  lambda = 1
 )
 }
 \arguments{
@@ -121,6 +123,10 @@ AutoXGBoostClassifier(
 \item{colsample_bytree}{Number, or vector for colsample_bytree to test.  For running grid tuning, a NULL value supplied will mean these values are tested seq(0.55, 1.0, 0.05)}
 
 \item{DebugMode}{TRUE to print to console the steps taken}
+
+\item{alpha}{0. L1 Reg.}
+
+\item{lambda}{1. L2 Reg.}
 }
 \value{
 Saves to file and returned in list: VariableImportance.csv, Model, ValidationData.csv, EvalutionPlot.png, EvaluationMetrics.csv, ParDepPlots.R a named list of features with partial dependence calibration plots, GridCollect, and GridList
