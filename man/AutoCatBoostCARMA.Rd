@@ -77,6 +77,7 @@ AutoCatBoostCARMA(
   ReturnShap = FALSE,
   SaveModel = FALSE,
   ArgsList = NULL,
+  ModelID = "CatBoostFC1",
   ExpandEncoding = FALSE
 )
 }
@@ -222,6 +223,8 @@ AutoCatBoostCARMA(
 \item{SaveModel}{Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object}
 
 \item{ArgsList}{ArgsList is for scoring. Must contain named element 'Model' with a catboost model object}
+
+\item{ModelID}{Something to name your model if you want it saved}
 
 \item{ExpandEncoding}{= FALSE}
 }

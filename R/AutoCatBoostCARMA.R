@@ -77,6 +77,7 @@
 #' @param SaveModel Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object
 #' @param ArgsList ArgsList is for scoring. Must contain named element 'Model' with a catboost model object
 #' @param ExpandEncoding = FALSE
+#' @param ModelID Something to name your model if you want it saved
 #' @examples
 #' \dontrun{
 #'
@@ -388,6 +389,7 @@ AutoCatBoostCARMA <- function(data,
                               ReturnShap = FALSE,
                               SaveModel = FALSE,
                               ArgsList = NULL,
+                              ModelID = 'CatBoostFC1',
                               ExpandEncoding = FALSE) {
 
   if(DebugMode) print(data)
@@ -395,12 +397,28 @@ AutoCatBoostCARMA <- function(data,
   # Load catboost ----
   loadNamespace(package = 'catboost')
 
-  if(length(ArgsList) > 0L && length(ArgsList$Model) > 0L) {
-    TrainOnFull <- TRUE
+  # Prepare environment for using existing model
+  # if(): length(ArgsList) > 0L
+  # If I want to retrain + forecast, I supply ArgsList w/o model to
+  #    update the args based on the model configuration but then
+  #    train the model anyways
+  if(length(ArgsList) > 0L) {
+    if(length(ArgsList$Model) > 0L) {
+      skip_cols <- c('TrainOnFull','data','FC_Periods','SaveModel')
+      SaveModel <- FALSE
+      TrainOnFull <- TRUE
+    } else {
+      skip_cols <- c('TrainOnFull','data','FC_Periods')
+    }
+    default_args <- formals(fun = RemixAutoML::AutoCatBoostCARMA)
+    for(sc in skip_cols) default_args[[sc]] <- NULL
+    nar <- names(ArgsList)
+    for(arg in names(default_args)) if(length(arg) > 0L && arg %in% nar && length(ArgsList[[arg]]) > 0L) assign(x = arg, value = ArgsList[[arg]])
   }
 
   # Args checking ----
   if(DebugMode) print('# Purified args: see CARMA HELPER FUNCTIONS----')
+  if(length(ModelID) == 0) ModelID <- 'CatBoostFC1'
   Args <- CARMA_Define_Args(TimeUnit=TimeUnit, TimeGroups=TimeGroups, HierarchGroups=HierarchGroups, GroupVariables=GroupVariables, FC_Periods=FC_Periods, PartitionType=PartitionType, TrainOnFull=TrainOnFull, SplitRatios=SplitRatios, SD_Periods=SD_Periods, Skew_Periods=Skew_Periods, Kurt_Periods=Kurt_Periods, Quantile_Periods=Quantile_Periods, TaskType=TaskType, BootStrapType=BootStrapType, GrowPolicy=GrowPolicy, TimeWeights=TimeWeights, HolidayLookback=HolidayLookback, Difference=Difference, NonNegativePred=NonNegativePred)
   IndepentVariablesPass <- Args$IndepentVariablesPass
   NonNegativePred <- Args$NonNegativePred
@@ -421,7 +439,7 @@ AutoCatBoostCARMA <- function(data,
   # Grab all official parameters and their evaluated arguments
   if(length(ArgsList) == 0L) ArgsList <- c(as.list(environment()))
 
-  print(names(ArgsList))
+  if(DebugMode) print(names(ArgsList))
 
   # Convert data to data.table ----
   if(!data.table::is.data.table(data)) data.table::setDT(data)
@@ -654,7 +672,7 @@ AutoCatBoostCARMA <- function(data,
   TargetVariable <- Output$TargetVariable; rm(Output)
 
   # Switch up TrainOnFull if SplitRatios is not null ----
-  if(!is.null(SplitRatios) || !TrainOnFull) TOF <- FALSE else TOF <- TRUE
+  if(length(SplitRatios) > 0 || !TrainOnFull) TOF <- FALSE else TOF <- TRUE
 
   # Run AutoCatBoostRegression and return list of ml objects ----
   if(!(length(ArgsList) > 0L && length(ArgsList[['Model']]) > 0L)) {
@@ -731,21 +749,30 @@ AutoCatBoostCARMA <- function(data,
     ArgsList[['FeatureColNames']] <- ModelFeatures
 
     # Return model object for when TrainOnFull is FALSE ----
-    if(!TrainOnFull && SaveModel) {
+    # SaveModel == TRUE && TrainOnFull == TRUE --> return after FC
+    # TrainOnFull == FALSE --> return early
+    if(SaveModel) {
+
+      # Add new items
       ArgsList[['Model']] <- TestModel$Model
       ArgsList[['FactorLevelsList']] <- TestModel$FactorLevelsList
-      TestModel$Model <- NULL
-      return(list(TestModel = TestModel, ArgsList = ArgsList))
-    } else if(!TrainOnFull) {
-      return(TestModel)
-    } else if(SaveModel) {
-      ArgsList[['Model']] <- TestModel$Model
-    }
+      TestModel$Model <- ArgsList[['Model']]
 
-    # Variable for storing ML model: Pull model object out of TestModel list ----
-    if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list ----')
-    Model <- TestModel$Model
-    TestModel$FactorLevelsList$EncodingMethod
+      # Save model
+      Model <- ArgsList[['Model']]
+      Path <- file.path(SaveDataPath, paste0(ModelID,'.rds'))
+      if(length(SaveDataPath) > 0L && dir.exists(SaveDataPath)) saveRDS(object = ArgsList, file = Path)
+      if(!TrainOnFull) return(list(TestModel = TestModel, ArgsList = ArgsList))
+      TestModel$Model <- NULL
+
+    } else if(!TrainOnFull) {
+
+      return(TestModel)
+
+    } else {
+      if(DebugMode) print('Store Model in variable ----')
+      Model <- TestModel$Model
+    }
 
   } else {
     for(i in 1L:10L) print('SKIPPING ML TRAINING ')
@@ -771,7 +798,7 @@ AutoCatBoostCARMA <- function(data,
     for(i in seq_len(FC_Periods+1L)) {
 
       # Score model ----
-      if(DebugMode) print('Score model ----')
+      if(DebugMode) print('  - - Score model')
       if(i == 1L) UpdateData <- NULL
       Output <- CarmaScore(Type = 'catboost', i.=i, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
       UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
@@ -787,15 +814,15 @@ AutoCatBoostCARMA <- function(data,
         if(Timer) {if(i != 1) print(paste('Forecast future step: ', i-1)); starttime <- Sys.time()}
 
         # Create single future record ----
-        if(DebugMode) print('Create single future record ----')
+        if(DebugMode) print('  - - Create single future record')
         CalendarFeatures <- NextTimePeriod(UpdateData.=UpdateData, TimeUnit.=TimeUnit, DateColumnName.=DateColumnName)
 
         # Update flat feature engineering ----
-        if(DebugMode) print('Update feature engineering ----')
+        if(DebugMode) print('  - - Update feature engineering')
         UpdateData <- UpdateFeatures(RollingVars. = TRUE, UpdateData.=UpdateData, GroupVariables.=GroupVariables, CalendarFeatures.=CalendarFeatures, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=i, Debug = DebugMode)
 
         # Update Lags and MA's ----
-        if(DebugMode) print('Update Lags and MAs ----')
+        if(DebugMode) print('  - - Update Lags and MAs')
         UpdateData <- CarmaRollingStatsUpdate(ModelType='catboost', DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=Preds, HierarchSupplyValue.=HierarchSupplyValue, IndependentSupplyValue.=IndependentSupplyValue, TimeUnit.=TimeUnit, TimeGroups.=TimeGroups, Lags.=Lags, MA_Periods.=MA_Periods, SD_Periods.=SD_Periods, Skew_Periods.=Skew_Periods, Kurt_Periods.=Kurt_Periods, Quantile_Periods.=Quantile_Periods, Quantiles_Selected.=Quantiles_Selected, HolidayLags.=HolidayLags, HolidayMovingAverages.=HolidayMovingAverages)
 
         # Print time to complete ----
@@ -812,17 +839,12 @@ AutoCatBoostCARMA <- function(data,
     if(DebugMode) print('# Prepare data')
     if(length(GroupVariables) > 0L) {
       UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = FC_Periods, GroupVariables. = GroupVariables, SkipPeriods = NULL)
-      if(DebugMode) print(UpdateData)
-      UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
-      if(DebugMode) print(UpdateData)
     } else {
       UpdateData <- FutureTimePeriods(UpdateData. = Step1SCore, TimeUnit. = TimeUnit, DateColumnName. = DateColumnName, FC_Periods = FC_Periods, GroupVariables. = NULL, SkipPeriods = NULL)
-      if(DebugMode) print(UpdateData)
-      UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
-      if(DebugMode) print(UpdateData)
     }
 
-    # Score Future
+    # UpdateFeatures and Score Future
+    UpdateData <- UpdateFeatures(RollingVars. = FALSE, UpdateData.=Step1SCore, GroupVariables.=GroupVariables, CalendarFeatures.=UpdateData, CalendarVariables.=CalendarVariables, GroupVarVector.=GroupVarVector, DateColumnName.=DateColumnName, XREGS.=XREGS, FourierTerms.=FourierTerms, FourierFC.=FourierFC, TimeGroups.=TimeGroups, TimeTrendVariable.=TimeTrendVariable, N.=N, TargetColumnName.=TargetColumnName, HolidayVariable.=HolidayVariable, HolidayLookback.=HolidayLookback, TimeUnit.=TimeUnit, AnomalyDetection.=AnomalyDetection, i.=1, Debug = DebugMode)
     UpdateData <- CarmaScore(Type = 'catboost', i. = 0L, N.=N, GroupVariables.=GroupVariables, ModelFeatures.=ModelFeatures, HierarchGroups.=HierarchGroups, DateColumnName.=DateColumnName, Difference.=Difference, TargetColumnName.=TargetColumnName, Step1SCore.=Step1SCore, Model.=Model, FutureDateData.=FutureDateData, NonNegativePred.=NonNegativePred, RoundPreds.=RoundPreds, UpdateData.=UpdateData, FactorList.=TestModel$FactorLevelsList, EncodingMethod.=EncodingMethod, dt = data)
     if(DebugMode) print(UpdateData)
 
@@ -839,7 +861,14 @@ AutoCatBoostCARMA <- function(data,
   UpdateData <- Output$UpdateData; Output$UpdateData <- NULL
   TransformObject <- Output$TransformObject; rm(Output)
 
-  if(SaveModel) ArgsList[['Model']] <- Model
+  # Save model
+  if(SaveModel) {
+    ArgsList[['Model']] <- Model
+    if(length(SaveDataPath) > 0L) Path <- file.path(SaveDataPath, paste0(ModelID,'.rds')) else Path <- NULL
+    if(length(Path) > 0L && dir.exists(SaveDataPath)) {
+      saveRDS(object = ArgsList, file = Path)
+    }
+  }
 
   # Return ----
   return(list(

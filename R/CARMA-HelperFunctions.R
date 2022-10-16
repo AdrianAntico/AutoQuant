@@ -1332,6 +1332,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
                            RollingVars. = TRUE,
                            Debug = FALSE) {
 
+  if(Debug) print(UpdateData.)
 
   if(RollingVars.) {
 
@@ -1424,11 +1425,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     # Update holiday feature
     if(!is.null(HolidayVariable.) && any(is.na(UpdateData.[['HolidayCounts']]))) {
 
-      if(Debug) print('UpdateFeatures 17')
-
-      print('Update Features 17.a')
-      print(HolidayLookback.)
-      print(TimeUnit.)
+      if(Debug) print('Update Features 17.a')
 
       if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else if(!is.null(TimeUnit.)) LBD <- LB(TimeUnit.) else LBD <- 1L
       if(is.null(GroupVariables.)) {
@@ -1476,6 +1473,8 @@ UpdateFeatures <- function(UpdateData. = NULL,
     }
 
     if(Debug) print('UpdateFeatures done')
+
+    if(Debug) print(UpdateData.)
 
     # Return
     return(UpdateData = UpdateData.)
@@ -1571,11 +1570,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
     # Update holiday feature
     if(!is.null(HolidayVariable.) && any(is.na(UpdateData.[['HolidayCounts']]))) {
 
-      if(Debug) print('UpdateFeatures 17')
-
-      print('Update Features 17.a')
-      print(HolidayLookback.)
-      print(TimeUnit.)
+      if(Debug) print('Update Features 17')
 
       if(!is.null(HolidayLookback.)) LBD <- HolidayLookback. else if(!is.null(TimeUnit.)) LBD <- LB(TimeUnit.) else LBD <- 1L
       if(is.null(GroupVariables.)) {
@@ -1623,6 +1618,8 @@ UpdateFeatures <- function(UpdateData. = NULL,
     }
 
     if(Debug) print('UpdateFeatures done')
+
+    if(Debug) print(UpdateData.)
 
     # Return
     return(UpdateData = UpdateData.)
