@@ -77,7 +77,7 @@ AutoCatBoostCARMA(
   ReturnShap = FALSE,
   SaveModel = FALSE,
   ArgsList = NULL,
-  ModelID = "CatBoostFC1",
+  ModelID = "FC001",
   ExpandEncoding = FALSE
 )
 }

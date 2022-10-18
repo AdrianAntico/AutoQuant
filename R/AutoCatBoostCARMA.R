@@ -161,7 +161,7 @@
 #' # Kick off feature + grid tuning
 #' for(Run in seq_len(TotalRuns)) {
 #'
-#'   # Print run number
+#'   # print run number
 #'   for(zz in seq_len(100)) print(Run)
 #'
 #'   # Use fresh data for each run
@@ -389,7 +389,7 @@ AutoCatBoostCARMA <- function(data,
                               ReturnShap = FALSE,
                               SaveModel = FALSE,
                               ArgsList = NULL,
-                              ModelID = 'CatBoostFC1',
+                              ModelID = 'FC001',
                               ExpandEncoding = FALSE) {
 
   if(DebugMode) print(data)
@@ -403,22 +403,35 @@ AutoCatBoostCARMA <- function(data,
   #    update the args based on the model configuration but then
   #    train the model anyways
   if(length(ArgsList) > 0L) {
+    if(DebugMode) for(i in 1:10) print('ArgsList > 0')
+    if(DebugMode) for(i in 1:10) print(rep(length(ArgsList$Model) > 0L, 10L))
     if(length(ArgsList$Model) > 0L) {
-      skip_cols <- c('TrainOnFull','data','FC_Periods','SaveModel')
+      if(DebugMode) for(i in 1:10) print('ArgsList$Model > 0')
+      skip_cols <- c('TrainOnFull','data','FC_Periods','SaveModel','ArgsList','ModelID')
       SaveModel <- FALSE
       TrainOnFull <- TRUE
     } else {
-      skip_cols <- c('TrainOnFull','data','FC_Periods')
+      skip_cols <- c('TrainOnFull','data','FC_Periods','ArgsList','ModelID')
     }
     default_args <- formals(fun = RemixAutoML::AutoCatBoostCARMA)
     for(sc in skip_cols) default_args[[sc]] <- NULL
     nar <- names(ArgsList)
+
+    for(i in 1:10) print("  ")
+    print(names(default_args))
+    for(i in 1:10) print("  ")
+    print(TrainOnFull)
+    print(FC_Periods)
+    print(ModelID)
+
     for(arg in names(default_args)) if(length(arg) > 0L && arg %in% nar && length(ArgsList[[arg]]) > 0L) assign(x = arg, value = ArgsList[[arg]])
+  } else {
+    if(DebugMode) print(rep('length(ArgsList) == 0'), 10)
   }
 
   # Args checking ----
   if(DebugMode) print('# Purified args: see CARMA HELPER FUNCTIONS----')
-  if(length(ModelID) == 0) ModelID <- 'CatBoostFC1'
+  if(length(ModelID) == 0) ModelID <- 'FC001'
   Args <- CARMA_Define_Args(TimeUnit=TimeUnit, TimeGroups=TimeGroups, HierarchGroups=HierarchGroups, GroupVariables=GroupVariables, FC_Periods=FC_Periods, PartitionType=PartitionType, TrainOnFull=TrainOnFull, SplitRatios=SplitRatios, SD_Periods=SD_Periods, Skew_Periods=Skew_Periods, Kurt_Periods=Kurt_Periods, Quantile_Periods=Quantile_Periods, TaskType=TaskType, BootStrapType=BootStrapType, GrowPolicy=GrowPolicy, TimeWeights=TimeWeights, HolidayLookback=HolidayLookback, Difference=Difference, NonNegativePred=NonNegativePred)
   IndepentVariablesPass <- Args$IndepentVariablesPass
   NonNegativePred <- Args$NonNegativePred
@@ -753,21 +766,24 @@ AutoCatBoostCARMA <- function(data,
     # TrainOnFull == FALSE --> return early
     if(SaveModel) {
 
+      if(DebugMode) cat(rep('SaveModel == TRUE \n'))
+
       # Add new items
       ArgsList[['Model']] <- TestModel$Model
       ArgsList[['FactorLevelsList']] <- TestModel$FactorLevelsList
-      TestModel$Model <- ArgsList[['Model']]
 
       # Save model
       Model <- ArgsList[['Model']]
       Path <- file.path(SaveDataPath, paste0(ModelID,'.rds'))
       if(length(SaveDataPath) > 0L && dir.exists(SaveDataPath)) saveRDS(object = ArgsList, file = Path)
-      if(!TrainOnFull) return(list(TestModel = TestModel, ArgsList = ArgsList))
+      if(!TrainOnFull) return(list(ModelInformation = TestModel, ArgsList = ArgsList))
       TestModel$Model <- NULL
 
     } else if(!TrainOnFull) {
 
-      return(TestModel)
+      if(DebugMode) cat(rep('SaveModel == FALSE \n'))
+
+      return(list(TestModel = TestModel, ArgsList = ArgsList))
 
     } else {
       if(DebugMode) print('Store Model in variable ----')
@@ -825,7 +841,7 @@ AutoCatBoostCARMA <- function(data,
         if(DebugMode) print('  - - Update Lags and MAs')
         UpdateData <- CarmaRollingStatsUpdate(ModelType='catboost', DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=Preds, HierarchSupplyValue.=HierarchSupplyValue, IndependentSupplyValue.=IndependentSupplyValue, TimeUnit.=TimeUnit, TimeGroups.=TimeGroups, Lags.=Lags, MA_Periods.=MA_Periods, SD_Periods.=SD_Periods, Skew_Periods.=Skew_Periods, Kurt_Periods.=Kurt_Periods, Quantile_Periods.=Quantile_Periods, Quantiles_Selected.=Quantiles_Selected, HolidayLags.=HolidayLags, HolidayMovingAverages.=HolidayMovingAverages)
 
-        # Print time to complete ----
+        # print time to complete ----
         if(Timer) endtime <- Sys.time()
         if(Timer && i != 1) print(endtime - starttime)
       }
