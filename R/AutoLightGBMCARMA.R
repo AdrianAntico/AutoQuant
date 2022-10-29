@@ -474,6 +474,40 @@ AutoLightGBMCARMA <- function(data = NULL,
                               Gpu_Use_Dp = TRUE,
                               Num_Gpu = 1) {
 
+  # Prepare environment for using existing model
+  # if(): length(ArgsList) > 0L
+  # If I want to retrain + forecast, I supply ArgsList w/o model to
+  #    update the args based on the model configuration but then
+  #    train the model anyways
+  if(length(ArgsList) > 0L) {
+    if(DebugMode) for(i in 1:10) print('ArgsList > 0')
+    if(DebugMode) for(i in 1:10) print(rep(length(ArgsList$Model) > 0L, 10L))
+    if(length(ArgsList$Model) > 0L) {
+      if(DebugMode) for(i in 1:10) print('ArgsList$Model > 0')
+      skip_cols <- c('TrainOnFull','data','FC_Periods','SaveModel','ArgsList','ModelID')
+      SaveModel <- FALSE
+      TrainOnFull <- TRUE
+    } else {
+      skip_cols <- c('TrainOnFull','data','FC_Periods','ArgsList','ModelID')
+    }
+    default_args <- formals(fun = RemixAutoML::AutoLightGBMCARMA)
+    for(sc in skip_cols) default_args[[sc]] <- NULL
+    nar <- names(ArgsList)
+
+    if(Debug) {
+      for(i in 1:10) print("  ")
+      print(names(default_args))
+      for(i in 1:10) print("  ")
+      print(TrainOnFull)
+      print(FC_Periods)
+      print(ModelID)
+    }
+
+    for(arg in names(default_args)) if(length(arg) > 0L && arg %in% nar && length(ArgsList[[arg]]) > 0L) assign(x = arg, value = ArgsList[[arg]])
+  } else {
+    if(DebugMode) print(rep('length(ArgsList) == 0'), 10)
+  }
+
   # Purified args: see CARMA HELPER FUNCTIONS ----
   Args <- CARMA_Define_Args(TimeUnit=TimeUnit,TimeGroups=TimeGroups,HierarchGroups=HierarchGroups,GroupVariables=GroupVariables,FC_Periods=FC_Periods,PartitionType=PartitionType,TrainOnFull=TrainOnFull,SplitRatios=SplitRatios)
   IndepentVariablesPass <- Args$IndepentVariablesPass
@@ -845,24 +879,36 @@ AutoLightGBMCARMA <- function(data = NULL,
     ArgsList[['FeatureColNames']] <- ModelFeatures
 
     # Return model object for when TrainOnFull is FALSE ----
-    if(!TrainOnFull && SaveModel) {
+    # SaveModel == TRUE && TrainOnFull == TRUE --> return after FC
+    # TrainOnFull == FALSE --> return early
+    if(SaveModel) {
+
+      if(DebugMode) cat(rep('SaveModel == TRUE \n'))
+
+      # Add new items
       ArgsList[['Model']] <- TestModel$Model
       ArgsList[['FactorLevelsList']] <- TestModel$FactorLevelsList
+
+      # Save model
+      Model <- ArgsList[['Model']]
+      Path <- file.path(SaveDataPath, paste0(ModelID,'.rds'))
+      if(length(SaveDataPath) > 0L && dir.exists(SaveDataPath)) saveRDS(object = ArgsList, file = Path)
+      if(!TrainOnFull) return(list(ModelInformation = TestModel, ArgsList = ArgsList))
       TestModel$Model <- NULL
-      return(list(TestModel = TestModel, ArgsList = ArgsList))
+
     } else if(!TrainOnFull) {
-      return(TestModel)
-    } else if(SaveModel) {
-      ArgsList[['Model']] <- TestModel$Model
+
+      if(DebugMode) cat(rep('SaveModel == FALSE \n'))
+
+      return(list(TestModel = TestModel, ArgsList = ArgsList))
+
+    } else {
+      if(DebugMode) print('Store Model in variable ----')
+      Model <- TestModel$Model
     }
 
-    # Variable for storing ML model: Pull model object out of TestModel list ----
-    if(DebugMode) print('Variable for storing ML model: Pull model object out of TestModel list ----')
-    Model <- TestModel$Model
-    TestModel$FactorLevelsList$EncodingMethod
-
   } else {
-    for(i in 1:10) print('SKIPPING ML TRAINING ')
+    for(i in 1L:10L) print('SKIPPING ML TRAINING ')
     Model <- ArgsList[['Model']]
     TestModel <- list()
     TestModel$FactorLevelsList <- ArgsList$FactorLevelsList

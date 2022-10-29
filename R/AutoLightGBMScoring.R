@@ -195,17 +195,16 @@ AutoLightGBMScoring <- function(TargetType = NULL,
     }
     zz <- names(FactorLevelsList)[-length(FactorLevelsList)]
     if(tolower(FactorLevelsList$EncodingMethod) == 'meow') {
-      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_MixedEffects')))
+      if(!tolower(TargetType) %in% 'multiclass') FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_MixedEffects')))
     } else if(tolower(FactorLevelsList$EncodingMethod) == 'credibility') {
-      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_Credibility')))
+      if(!tolower(TargetType) %in% 'multiclass') FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_Credibility')))
     } else if(tolower(FactorLevelsList$EncodingMethod) == 'target_encoding') {
-      FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_TargetEncode')))
+      if(!tolower(TargetType) %in% 'multiclass') FeatureColumnNames <- unique(c(FeatureColumnNames, paste0(names(FactorLevelsList)[-length(FactorLevelsList)], '_TargetEncode')))
     }
     yy <- names(data.table::copy(ScoringData))
     FeatureColumnNames <- unique(FeatureColumnNames[!FeatureColumnNames %in% zz])
     FeatureColumnNames <- unique(c(FeatureColumnNames, setdiff(yy,xx)))
     CatFeatures <- NULL
-
   }
 
   # Load model ----

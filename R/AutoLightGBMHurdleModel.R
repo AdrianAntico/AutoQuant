@@ -2145,6 +2145,32 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
       MDP_MissFactor = "0",
       MDP_MissNum = -1)
 
+    # # QA Args
+    # ReturnShapValues = FALSE
+    # EncodingMethod = EncodingMethod
+    # TargetType = TargetType
+    # ScoringData = if(!is.null(TestData)) data.table::copy(TestData) else if(!is.null(ValidationData)) data.table::copy(ValidationData) else data.table::copy(data)
+    # FeatureColumnNames = FeatureNames
+    # IDcols = c(IDcols, "Target_Buckets")
+    # FactorLevelsList = FactorLevelsList
+    # TargetLevels = TargetLevels
+    # OneHot = FALSE
+    # ModelObject = ClassModel
+    # ModelPath = if(!is.null(ClassModel)) NULL else Paths
+    # ModelID = ModelID
+    # ReturnFeatures = TRUE
+    # TransformNumeric = FALSE
+    # BackTransNumeric = FALSE
+    # TargetColumnName = NULL
+    # TransformationObject = NULL
+    # TransID = NULL
+    # TransPath = NULL
+    # MDP_Impute = TRUE
+    # MDP_CharToFactor = TRUE
+    # MDP_RemoveDates = TRUE
+    # MDP_MissFactor = "0"
+    # MDP_MissNum = -1
+
     # Nuance
     if(TargetType != "Classification") {
       TestData <- cbind(temp, TestData[, .SD, .SDcols = c(setdiff(names(TestData),names(temp)))])
@@ -2201,6 +2227,7 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
 
   # Begin regression model building ----
   if(DebugMode) print('Begin regression model building----')
+  # bucket = 3
   for(bucket in looper) {
 
     # Define data sets ----
@@ -2473,11 +2500,19 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
           if(ValTrue) {
             x <- unique(which(names(ValidationData) %in% 'Predictions'))
             if(length(x) > 1L) data.table::set(ValidationData, j = x[length(x)], value = NULL)
-            data.table::setnames(ValidationData, 'Predictions', Val)
+            if('Predictions' %in% names(ValidationData)) {
+              data.table::setnames(ValidationData, 'Predictions', Val)
+            } else {
+              data.table::setnames(ValidationData, 'Predict', Val)
+            }
           } else {
             x <- unique(which(names(TestData) %in% 'Predictions'))
             if(length(x) > 1L) data.table::set(TestData, j = x[length(x)], value = NULL)
-            data.table::setnames(TestData, 'Predictions', Val)
+            if('Predictions' %in% names(TestData)) {
+              data.table::setnames(TestData, 'Predictions', Val)
+            } else {
+              data.table::setnames(TestData, 'Predict', Val)
+            }
           }
 
         } else {
@@ -2500,17 +2535,29 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
               data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
             } else {
               Degenerate <- Degenerate + 1L
-              data.table::set(TestData, j = paste0('Predictions', Buckets[bucket]), value = Buckets[bucket])
+              if('Predictions' %in% names(TestData)) {
+                data.table::set(TestData, j = paste0('Predictions', Buckets[bucket]), value = Buckets[bucket])
+              } else {
+                data.table::set(TestData, j = paste0('Predict', Buckets[bucket]), value = Buckets[bucket])
+              }
               data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
             }
           } else if(!is.null(ValidationData)) {
             if(bucket == max(looper)) {
               Degenerate <- Degenerate + 1L
-              data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              if('Predictions' %in% names(ValidationData)) {
+                data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              } else {
+                data.table::set(ValidationData, j = paste0('Predict', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              }
               data.table::setcolorder(ValidationData, c(ncol(ValidationData), 1L:(ncol(ValidationData) - 1L)))
             } else {
               Degenerate <- Degenerate + 1L
-              data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket]), value = Buckets[bucket])
+              if('Predictions' %in% names(ValidationData)) {
+                data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket]), value = Buckets[bucket])
+              } else {
+                data.table::set(ValidationData, j = paste0('Predict', Buckets[bucket]), value = Buckets[bucket])
+              }
               data.table::setcolorder(ValidationData, c(ncol(ValidationData), 1L:(ncol(ValidationData) - 1L)))
             }
           }
@@ -2537,6 +2584,15 @@ AutoLightGBMHurdleModel <- function(TrainOnFull = FALSE,
 
   # Rearrange Column order----
   if(DebugMode) print('Rearrange Column order----')
+  if(length(TestData) > 0L) {
+    if('Predictions_MultiClass' %in% names(TestData)) TestData[, Predictions_MultiClass := as.numeric(Predictions_MultiClass)]
+  }
+  if(length(ValidationData) > 0L) {
+    if('Predictions_MultiClass' %in% names(ValidationData)) ValidationData[, Predictions_MultiClass := as.numeric(Predictions_MultiClass)]
+  }
+  if(length(data) > 0L) {
+    if('Predictions_MultiClass' %in% names(data)) data[, Predictions_MultiClass := as.numeric(Predictions_MultiClass)]
+  }
   if(!TrainOnFull || !is.null(ValidationData)) {
 
     # Change object names

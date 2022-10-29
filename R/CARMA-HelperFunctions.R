@@ -1454,7 +1454,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
         if(Debug) print('UpdateFeatures 22')
 
       } else {
-        print("Update Features 17.b holiday variables create")
+        if(Debug) print("Update Features 17.b holiday variables create")
         UpdateData. <- CreateHolidayVariables(
           UpdateData.,
           DateCols = eval(DateColumnName.),
@@ -1599,7 +1599,7 @@ UpdateFeatures <- function(UpdateData. = NULL,
         if(Debug) print('UpdateFeatures 22')
 
       } else {
-        print("Update Features 17.b holiday variables create")
+        if(Debug) print("Update Features 17.b holiday variables create")
         UpdateData. <- CreateHolidayVariables(
           UpdateData.,
           DateCols = eval(DateColumnName.),
@@ -2354,7 +2354,7 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
                                 MergeGroupVariablesBack. = NULL,
                                 Debug = FALSE) {
 
-  print("CarmaReturnDataPrep 1")
+  if(Debug) print("CarmaReturnDataPrep 1")
 
   # Remove duplicate columns
   if(sum(names(UpdateData.) %chin% eval(DateColumnName.)) > 1) data.table::set(UpdateData., j = which(names(UpdateData.) %chin% eval(DateColumnName.))[2L], value = NULL)
@@ -2364,7 +2364,7 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
     data.table::set(UpdateData., j = x, value = NULL)
   }
 
-  print("CarmaReturnDataPrep 2")
+  if(Debug) print("CarmaReturnDataPrep 2")
 
   # Reverse Difference
   if(is.null(GroupVariables.) && Difference.) {
@@ -2377,35 +2377,35 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
     if(NonNegativePred.) UpdateData.[, Predictions := data.table::fifelse(Predictions < 0.5, 0, Predictions)]
   }
 
-  print("CarmaReturnDataPrep 3")
+  if(Debug) print("CarmaReturnDataPrep 3")
 
   # BackTransform
   if(TargetTransformation.) {
 
-    print("CarmaReturnDataPrep 4.1")
+    if(Debug) print("CarmaReturnDataPrep 4.1")
 
     if(length(TargetColumnName.) == 1L) {
 
-      print("CarmaReturnDataPrep 4.2a")
+      if(Debug) print("CarmaReturnDataPrep 4.2a")
 
       temptrans <- data.table::copy(TransformObject.)
 
       # If FALSE, then Method = 'Standardize'
       if('ColumnName' %in% names(TransformObject.)) {
 
-        print("CarmaReturnDataPrep 4.3a")
+        if(Debug) print("CarmaReturnDataPrep 4.3a")
 
         data.table::set(TransformObject., i = 1L, j = 'ColumnName', value = 'Predictions')
         TransformObject. <- data.table::rbindlist(list(temptrans, TransformObject.))
 
-        print("CarmaReturnDataPrep 4.4")
+        if(Debug) print("CarmaReturnDataPrep 4.4")
 
         # Ensure positive values in case transformation method requires that
         if(Difference. && !is.null(GroupVariables.)) {
           UpdateData.[!get(DateColumnName.) %in% FutureDateData., eval(TargetColumnName.) := 1, by = 'GroupVar']
         }
 
-        print("CarmaReturnDataPrep 4.5")
+        if(Debug) print("CarmaReturnDataPrep 4.5")
 
         # Backtrans
         UpdateData. <- AutoTransformationScore(
@@ -2415,11 +2415,11 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
           TransID = NULL,
           Path = NULL)
 
-        print("CarmaReturnDataPrep 4.6")
+        if(Debug) print("CarmaReturnDataPrep 4.6")
 
       } else {
 
-        print("CarmaReturnDataPrep 4.3b")
+        if(Debug) print("CarmaReturnDataPrep 4.3b")
 
         UpdateData. <- RemixAutoML::StandardizeScoring(UpdateData., TransformObject., Apply = 'backtransform', GroupVars = GroupVariables.)
 
@@ -2427,7 +2427,7 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
 
     } else {
 
-      print("CarmaReturnDataPrep 4.2b")
+      if(Debug) print("CarmaReturnDataPrep 4.2b")
 
       for(zz in seq_along(TargetColumnName.)) {
 
@@ -2456,12 +2456,12 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
     }
   }
 
-  print("CarmaReturnDataPrep 4.7")
+  if(Debug) print("CarmaReturnDataPrep 4.7")
 
   # Remove target variables values on FC periods
   data.table::set(x = UpdateData., i = which(!UpdateData.[[DateColumnName.]] %in% FutureDateData.), j = eval(TargetColumnName.), value = NA)
 
-  print("CarmaReturnDataPrep 4.8")
+  if(Debug) print("CarmaReturnDataPrep 4.8")
 
   # Return data prep
   if(!is.null(GroupVariables.)) {
@@ -2491,7 +2491,7 @@ CarmaReturnDataPrep <- function(UpdateData. = UpdateData,
     }
   }
 
-  print("CarmaReturnDataPrep 4.9")
+  if(Debug) print("CarmaReturnDataPrep 4.9")
 
   # Return data
   return(list(UpdateData = UpdateData., TransformObject = TransformObject.))

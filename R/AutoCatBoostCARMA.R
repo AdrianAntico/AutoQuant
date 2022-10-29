@@ -417,12 +417,14 @@ AutoCatBoostCARMA <- function(data,
     for(sc in skip_cols) default_args[[sc]] <- NULL
     nar <- names(ArgsList)
 
-    for(i in 1:10) print("  ")
-    print(names(default_args))
-    for(i in 1:10) print("  ")
-    print(TrainOnFull)
-    print(FC_Periods)
-    print(ModelID)
+    if(Debug) {
+      for(i in 1:10) print("  ")
+      print(names(default_args))
+      for(i in 1:10) print("  ")
+      print(TrainOnFull)
+      print(FC_Periods)
+      print(ModelID)
+    }
 
     for(arg in names(default_args)) if(length(arg) > 0L && arg %in% nar && length(ArgsList[[arg]]) > 0L) assign(x = arg, value = ArgsList[[arg]])
   } else {
@@ -761,7 +763,7 @@ AutoCatBoostCARMA <- function(data,
     ModelFeatures <- ModelFeatures[!ModelFeatures %in% 'Weights']
     ArgsList[['FeatureColNames']] <- ModelFeatures
 
-    # Return model object for when TrainOnFull is FALSE ----
+    # Return model object for when TrainOnFull is FALSE
     # SaveModel == TRUE && TrainOnFull == TRUE --> return after FC
     # TrainOnFull == FALSE --> return early
     if(SaveModel) {
@@ -782,7 +784,6 @@ AutoCatBoostCARMA <- function(data,
     } else if(!TrainOnFull) {
 
       if(DebugMode) cat(rep('SaveModel == FALSE \n'))
-
       return(list(TestModel = TestModel, ArgsList = ArgsList))
 
     } else {
@@ -811,7 +812,10 @@ AutoCatBoostCARMA <- function(data,
     if(DebugMode) print("ARIMA FORECAST: length(Lags) > 0L")
 
     # i = 1; # i = 2; # i = 3
+    acc <- 0
     for(i in seq_len(FC_Periods+1L)) {
+
+      if(Timer && i != 1) starttime <- Sys.time()
 
       # Score model ----
       if(DebugMode) print('  - - Score model')
@@ -824,10 +828,6 @@ AutoCatBoostCARMA <- function(data,
       # Update data for next prediction ----
       if(DebugMode) print('Update data for next prediction ----')
       if(i != FC_Periods+1L) {
-
-        # Timer ----
-        if(DebugMode) print('Timer----')
-        if(Timer) {if(i != 1) print(paste('Forecast future step: ', i-1)); starttime <- Sys.time()}
 
         # Create single future record ----
         if(DebugMode) print('  - - Create single future record')
@@ -842,8 +842,7 @@ AutoCatBoostCARMA <- function(data,
         UpdateData <- CarmaRollingStatsUpdate(ModelType='catboost', DebugMode.=DebugMode, UpdateData.=UpdateData, GroupVariables.=GroupVariables, Difference.=Difference, CalendarVariables.=CalendarVariables, HolidayVariable.=HolidayVariable, IndepVarPassTRUE.=IndepentVariablesPass, data.=data, CalendarFeatures.=CalendarFeatures, XREGS.=XREGS, HierarchGroups.=HierarchGroups, GroupVarVector.=GroupVarVector, TargetColumnName.=TargetColumnName, DateColumnName.=DateColumnName, Preds.=Preds, HierarchSupplyValue.=HierarchSupplyValue, IndependentSupplyValue.=IndependentSupplyValue, TimeUnit.=TimeUnit, TimeGroups.=TimeGroups, Lags.=Lags, MA_Periods.=MA_Periods, SD_Periods.=SD_Periods, Skew_Periods.=Skew_Periods, Kurt_Periods.=Kurt_Periods, Quantile_Periods.=Quantile_Periods, Quantiles_Selected.=Quantiles_Selected, HolidayLags.=HolidayLags, HolidayMovingAverages.=HolidayMovingAverages)
 
         # print time to complete ----
-        if(Timer) endtime <- Sys.time()
-        if(Timer && i != 1) print(endtime - starttime)
+        if(Timer && i != 1) {endtime <- Sys.time(); rt <- round(endtime - starttime, 4); acc <- acc + rt; print(paste('Forecast step: ', i-1, " :: step runtime --> ", rt, " :: total run time --> ", acc))}
       }
     }
 

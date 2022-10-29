@@ -117,7 +117,7 @@ XGBoostDataPrep <- function(Algo = 'xgboost',
   if(!is.null(WeightsColumnName.)) {
     if(Algo == 'xgboost') {
       WeightsVector <- data.[[eval(WeightsColumnName.)]]
-      data.table::set(data., j = WeightsColumnName., value = NULL)
+      if(WeightsColumnName. %in% names(data.)) data.table::set(data., j = WeightsColumnName., value = NULL)
       if(!is.null(ValidationData.) && WeightsColumnName. %chin% names(ValidationData.)) data.table::set(ValidationData., j = WeightsColumnName., value = NULL)
       if(!is.null(TestData.) && WeightsColumnName. %chin% names(TestData.)) data.table::set(TestData., j = WeightsColumnName., value = NULL)
       FeatureColNames. <- FeatureColNames.[!FeatureColNames. %chin% WeightsColumnName.]
@@ -668,8 +668,8 @@ XGBoostFinalParams <- function(GridTune.=GridTune,
                                TreeMethod.=TreeMethod,
                                BestGrid.=BestGrid,
                                Trees.=Trees,
-                               Alpha. = Alpha,
-                               Lambda. = Lambda,
+                               Alpha. = alpha,
+                               Lambda. = lambda,
                                NumLevels. = NumLevels) {
 
   # Parameter list

@@ -204,7 +204,7 @@ AutoXGBoostClassifier <- function(OutputSelection = c('Importances', 'EvalPlots'
 
   # Final Params ----
   if(DebugMode) print("Final Params ----")
-  Output <- XGBoostFinalParams(PassInGrid.=PassInGrid, TrainOnFull.=TrainOnFull, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees)
+  Output <- XGBoostFinalParams(PassInGrid.=PassInGrid, TrainOnFull.=TrainOnFull, BestGrid.=BestGrid, GridTune.=GridTune, LossFunction.=LossFunction, eval_metric.=eval_metric, NThreads.=NThreads, TreeMethod.=TreeMethod, Trees.=Trees, Alpha.=alpha, Lambda.=lambda)
   base_params <- Output$base_params
   NTrees <- if(length(Output$NTrees) > 1L) max(Output$NTrees) else Output$NTrees; rm(Output)
 

@@ -506,7 +506,11 @@ AutoCatBoostScoring <- function(TargetType = NULL,
       print('HERE 1')
       print(length(predict[[1L]]))
     }
-    ScoringMerge[, Predict := predict[[1L]]]# <- cbind(ScoringMerge, predict)
+    if(tolower(TargetType) == 'classification') {
+      ScoringMerge[, p1 := predict[[1L]]]
+    } else {
+      ScoringMerge[, Predict := predict[[1L]]]
+    }
     if(Debug) print('HERE 2')
     predict <- ScoringMerge
     if(Debug) print('HERE 3')

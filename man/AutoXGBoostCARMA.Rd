@@ -61,6 +61,8 @@ AutoXGBoostCARMA(
   MinChildWeight = 1,
   SubSample = 1,
   ColSampleByTree = 1,
+  alpha = 0,
+  lambda = 1,
   SaveModel = FALSE,
   ArgsList = NULL
 )
@@ -173,6 +175,10 @@ AutoXGBoostCARMA(
 \item{SubSample}{Random forecast setting}
 
 \item{ColSampleByTree}{Self explanatory}
+
+\item{alpha}{0. L1 Reg.}
+
+\item{lambda}{1. L2 Reg.}
 
 \item{SaveModel}{Logical. If TRUE, output ArgsList will have a named element 'Model' with the CatBoost model object}
 

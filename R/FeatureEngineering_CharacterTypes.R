@@ -718,9 +718,9 @@ CategoricalEncoding <- function(data = NULL,
         if(Debug) print('Categorical Encoding ME 2.ad')
 
         data <- Output$data; data <- data[, .SD, .SDcols = c(names(data)[c(nam, ncol(data))])]
-        print(names(data)[c(nam, ncol(data))])
+        if(Debug) print(names(data)[c(nam, ncol(data))])
         data.table::setnames(x = data, old = names(data)[ncol(data)], new = paste0(GroupVariables[length(GroupVariables)], "_MixedEffects"))
-        print(names(data))
+        if(Debug) print(names(data))
         if(Debug) print('Categorical Encoding ME 2.ae')
 
         x <- Output$ComponentList
@@ -734,18 +734,18 @@ CategoricalEncoding <- function(data = NULL,
             x[, ID := nchar(get(names(x)[1L]))]
           }
           x[, eval(GroupVariables[gg]) := substr(x = get(names(x)[gg]), start = ID+2L, stop = nchar(get(names(x)[gg])))]
-          print(names(x))
+          if(Debug) print(names(x))
         }
 
         data.table::setnames(x = x, old = names(x)[(length(GroupVariables) + 1L)], new = paste0(GroupVariables[length(GroupVariables)], "_MixedEffects"))
-        print(names(x))
+        if(Debug) print(names(x))
 
         if(Debug) print('Categorical Encoding ME 2.ag')
 
         x[, ID := NULL]
 
         if(Debug) print('Categorical Encoding ME 2.ah')
-        print(GroupVariables)
+        if(Debug) print(GroupVariables)
         x <- x[, .SD, .SDcols = c(GroupVariables, paste0(GroupVariables[length(GroupVariables)], "_MixedEffects"))]
 
         if(Debug) print('Categorical Encoding ME 2.ai')

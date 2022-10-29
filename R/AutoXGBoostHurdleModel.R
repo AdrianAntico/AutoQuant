@@ -919,9 +919,17 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           if(DebugMode) print('Change prediction name to prevent duplicates----')
           if(bucket == max(looper)) Val <- paste0('Predictions_', bucket - 1L, '+') else Val <- paste0('Predictions_', bucket)
           if(ValTrue) {
-            data.table::setnames(ValidationData, 'Predictions', Val)
+            if('Predictions' %in% names(TestData)) {
+              data.table::setnames(ValidationData, 'Predictions', Val)
+            } else {
+              data.table::setnames(ValidationData, 'Predict', Val)
+            }
           } else {
-            data.table::setnames(TestData, 'Predictions', Val)
+            if('Predictions' %in% names(TestData)) {
+              data.table::setnames(TestData, 'Predictions', Val)
+            } else {
+              data.table::setnames(TestData, 'Predict', Val)
+            }
           }
 
         } else {
@@ -940,21 +948,37 @@ AutoXGBoostHurdleModel <- function(TreeMethod = "hist",
           if(!is.null(TestData)) {
             if(bucket == max(looper)) {
               Degenerate <- Degenerate + 1L
-              data.table::set(TestData, j = paste0('Predictions', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              if('Predictions' %in% names(TestData)) {
+                data.table::set(TestData, j = paste0('Predictions', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              } else {
+                data.table::set(TestData, j = paste0('Predict', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              }
               data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
             } else {
               Degenerate <- Degenerate + 1L
-              data.table::set(TestData, j = paste0('Predictions', Buckets[bucket]), value = Buckets[bucket])
+              if('Predictions' %in% names(TestData)) {
+                data.table::set(TestData, j = paste0('Predictions', Buckets[bucket]), value = Buckets[bucket])
+              } else {
+                data.table::set(TestData, j = paste0('Predict', Buckets[bucket]), value = Buckets[bucket])
+              }
               data.table::setcolorder(TestData, c(ncol(TestData), 1L:(ncol(TestData) - 1L)))
             }
           } else if(!is.null(ValidationData)) {
             if(bucket == max(looper)) {
               Degenerate <- Degenerate + 1L
-              data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              if('Predictions' %in% names(ValidationData)) {
+                data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              } else {
+                data.table::set(ValidationData, j = paste0('Predict', Buckets[bucket - 1L], '+'), value = Buckets[bucket])
+              }
               data.table::setcolorder(ValidationData, c(ncol(ValidationData), 1L:(ncol(ValidationData) - 1L)))
             } else {
               Degenerate <- Degenerate + 1L
-              data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket]), value = Buckets[bucket])
+              if('Predictions' %in% names(ValidationData)) {
+                data.table::set(ValidationData, j = paste0('Predictions', Buckets[bucket]), value = Buckets[bucket])
+              } else {
+                data.table::set(ValidationData, j = paste0('Predict', Buckets[bucket]), value = Buckets[bucket])
+              }
               data.table::setcolorder(ValidationData, c(ncol(ValidationData), 1L:(ncol(ValidationData) - 1L)))
             }
           }

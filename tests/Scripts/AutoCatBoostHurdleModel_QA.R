@@ -155,9 +155,9 @@ for(run in seq_len(CatBoost_QA[,.N])) {
 }
 
 # Defaults ----
-# library(RemixAutoML)
-# library(data.table)
-#
+library(RemixAutoML)
+library(data.table)
+
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/MiscFunctions.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/CatBoostHelpers.R"))
 source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ModelMetrics.R"))
@@ -174,94 +174,112 @@ source(file.path("C:/Users/Bizon/Documents/GitHub/RemixAutoML/R/ReinforcementLea
 # CARMA = FALSE
 #
 # # !tof && MultiClass
-# run = 1
-#
-# # !tof && Classification
-# # run = 7
-#
-# # Define values
-# tasktypemode <- CatBoost_QA[run, TaskType]
-# tof <- CatBoost_QA[run, TOF]
-# PartitionInFunction <- CatBoost_QA[run, PartitionInFunction]
-# Classify <- CatBoost_QA[run, Classification]
-# Tar <- "Adrian"
-#
-# # Get data
-# if(Classify) {
-#   data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
-# } else {
-#   data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 2)
-# }
-#
-# # Partition Data
-# if(!tof && !PartitionInFunction) {
-#   Sets <- RemixAutoML::AutoDataPartition(
-#     data = data,
-#     NumDataSets = 3,
-#     Ratios = c(0.7,0.2,0.1),
-#     PartitionType = "random",
-#     StratifyColumnNames = "Adrian",
-#     TimeColumnName = NULL)
-#   TTrainData <- Sets$TrainData
-#   VValidationData <- Sets$ValidationData
-#   TTestData <- Sets$TestData
-#   rm(Sets)
-# } else {
-#   TTrainData <- data.table::copy(data)
-#   VValidationData <- NULL
-#   TTestData <- NULL
-# }
-#
-# # Operationalization
-# task_type = 'GPU'
-# ModelID = 'ModelTest'
-# SaveModelObjects = FALSE
-# ReturnModelObjects = TRUE
-#
-# # Data related args
-# data = TTrainData
-# ValidationData = VValidationData
-# TestData = TTestData
-# WeightsColumnName = NULL
-# TrainOnFull = tof
-# Buckets = if(Classify) 0L else c(0,2,3)
-# TargetColumnName = "Adrian"
-# FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")]
-# PrimaryDateColumn = "DateTime"
-# IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")
-# EncodingMethod = list('regression' = 'credibility', 'classification' = 'credibility')
-# DebugMode = FALSE
-#
-# # Metadata args
-# Paths = normalizePath('./')
-# MetaDataPaths = NULL
-# TransformNumericColumns = NULL
-# Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit')
-# ClassWeights = NULL
-# SplitRatios = c(0.70, 0.20, 0.10)
-# NumOfParDepPlots = 10L
-#
-# # Grid tuning setup
-# PassInGrid = NULL
-# GridTune = FALSE
-# BaselineComparison = 'default'
-# MaxModelsInGrid = 1L
-# MaxRunsWithoutNewWinner = 20L
-# MaxRunMinutes = 60L*60L
-# MetricPeriods = 25L
-#
-# # Bandit grid args
-# Langevin = FALSE
-# DiffusionTemperature = 10000
-# Trees = list('classifier' = 50, 'regression' = 50)
-# Depth = list('classifier' = 4, 'regression' = 4)
-# RandomStrength = list('classifier' = 1, 'regression' = 1)
-# BorderCount = list('classifier' = 32, 'regression' = 32)
-# LearningRate = list('classifier' = 0.01, 'regression' = 0.01)
-# L2_Leaf_Reg = list('classifier' = 3.0, 'regression' = 1.0)
-# RSM = list('classifier' = 0.80, 'regression' = 0.80)
-# BootStrapType = list('classifier' = 'Bayesian', 'regression' = 'Bayesian')
-# GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree')
+# Test data.table
+CatBoost_QA <- data.table::CJ(
+  TOF = c(TRUE,FALSE),
+  Classification = c(TRUE,FALSE),
+  TaskType = c("CPU","GPU"),
+  Success = "Failure",
+  ScoreSuccess = "Failure",
+  PartitionInFunction = c(TRUE,FALSE))
+
+# Remove impossible combinations
+CatBoost_QA <- CatBoost_QA[!(PartitionInFunction & TOF)]
+CatBoost_QA[, RunNumber := seq_len(.N)]
+CatBoost_QA[, RunTime := 123.456]
+CatBoost_QA[, DateTime := Sys.time()]
+
+# Path File
+Path <- "C:/Users/Thess/Documents/GitHub/RemixAutoML/tests/Testing_Data"
+
+run = 5
+
+# !tof && Classification
+# run = 7
+
+# Define values
+tasktypemode <- CatBoost_QA[run, TaskType]
+tof <- CatBoost_QA[run, TOF]
+PartitionInFunction <- CatBoost_QA[run, PartitionInFunction]
+Classify <- CatBoost_QA[run, Classification]
+Tar <- "Adrian"
+
+# Get data
+if(Classify) {
+  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 1)
+} else {
+  data <- RemixAutoML::FakeDataGenerator(N = 15000, ZIP = 2)
+}
+
+# Partition Data
+if(!tof && !PartitionInFunction) {
+  Sets <- RemixAutoML::AutoDataPartition(
+    data = data,
+    NumDataSets = 3,
+    Ratios = c(0.7,0.2,0.1),
+    PartitionType = "random",
+    StratifyColumnNames = "Adrian",
+    TimeColumnName = NULL)
+  TTrainData <- Sets$TrainData
+  VValidationData <- Sets$ValidationData
+  TTestData <- Sets$TestData
+  rm(Sets)
+} else {
+  TTrainData <- data.table::copy(data)
+  VValidationData <- NULL
+  TTestData <- NULL
+}
+
+# Operationalization
+task_type = 'GPU'
+ModelID = 'ModelTest'
+SaveModelObjects = FALSE
+ReturnModelObjects = TRUE
+
+# Data related args
+data = TTrainData
+ValidationData = VValidationData
+TestData = TTestData
+WeightsColumnName = NULL
+TrainOnFull = tof
+Buckets = if(Classify) 0L else c(0,2,3)
+TargetColumnName = "Adrian"
+FeatureColNames = names(TTrainData)[!names(data) %in% c("Adrian","IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")]
+PrimaryDateColumn = "DateTime"
+IDcols = c("IDcol_1","IDcol_2","IDcol_3","IDcol_4","IDcol_5","DateTime")
+EncodingMethod = list('classifier' = 'credibility', 'regression' = 'credibility')
+DebugMode = FALSE
+
+# Metadata args
+Paths = normalizePath('./')
+MetaDataPaths = NULL
+TransformNumericColumns = NULL
+Methods = c('Asinh', 'Asin', 'Log', 'LogPlus1', 'Logit')
+ClassWeights = NULL
+SplitRatios = c(0.70, 0.20, 0.10)
+NumOfParDepPlots = 10L
+
+# Grid tuning setup
+PassInGrid = NULL
+GridTune = FALSE
+BaselineComparison = 'default'
+MaxModelsInGrid = 1L
+MaxRunsWithoutNewWinner = 20L
+MaxRunMinutes = 60L*60L
+MetricPeriods = 25L
+
+# Bandit grid args
+Langevin = FALSE
+DiffusionTemperature = 10000
+Trees = list('classifier' = 50, 'regression' = 50)
+Depth = list('classifier' = 4, 'regression' = 4)
+RandomStrength = list('classifier' = 1, 'regression' = 1)
+BorderCount = list('classifier' = 32, 'regression' = 32)
+LearningRate = list('classifier' = 0.01, 'regression' = 0.01)
+L2_Leaf_Reg = list('classifier' = 3.0, 'regression' = 1.0)
+RSM = list('classifier' = 0.80, 'regression' = 0.80)
+BootStrapType = list('classifier' = 'Bayesian', 'regression' = 'Bayesian')
+GrowPolicy = list('classifier' = 'SymmetricTree', 'regression' = 'SymmetricTree')
 #
 # # Scoring Multiclass ----
 # TargetType = TargetType
